@@ -1,0 +1,11 @@
+---
+title:  Entry Distribution Requirements
+---
+
+Entry data distributed among members of the distributed system must be serializable. Entry keys and values are serialized for distribution.
+
+If a native client defines a region, it must register any serializable types for all classes of objects stored in the region. This includes entries that the application gets or puts, as well as entries that are pushed to the client's cache automatically through distribution. The types must be registered before the native client connects to the distributed system.
+
+See [Serializing Data](../cpp-caching-api/serialization_overview.html#concept_2A8DC49D93394392BA34B17AA3452B14) for more information about these requirements.
+
+

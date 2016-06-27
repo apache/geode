@@ -1,0 +1,41 @@
+---
+title:  How Native Client Transactions Work
+---
+
+The syntax for writing client transactions is the same as with server or peer transactions, but when a client performs a transaction, the transaction is delegated to a server that brokers the transaction.
+
+<a id="how-native-client-xacts-work__section_C804F1FE5BDF49CEA037AA589BBF284E"></a>
+## Role of Server Delegates in Transactions
+
+The <span class="keyword">Geode</span> native client can run transactions on the Java cache server, using a server delegate to actually run the transaction code.
+
+For information on transaction requirements and activities on the server side, see [Transactions](../../developing/transactions/chapter_overview.html).
+
+**Note:**
+The client cache blocks until the transaction is successfully committed. However, the client cache block is removed if the transaction is suspended.
+
+Depending on where the data resides, the server transaction delegate may or not be the same member that hosts the transaction. This is the same as for transactions run by the servers, but for server-run transactions, there is no delegate. There is just the member that is directly running its own transaction code.
+
+In this figure, the application code on the client makes changes to data entries Y and Z within a transaction. The server delegate that performs the transaction, M1, does not host the primary copy of the data being modified. The transaction takes place on server M2, where the data resides.
+
+<a id="how-native-client-xacts-work__fig_7E408D84E18C452683077528756E31C3"></a>
+<span class="figtitleprefix">Figure: </span>Transaction Run From a Client
+
+<img src="../common/images/xact-run-from-client.gif" id="how-native-client-xacts-work__image_E9ED33166A994014942ABAD9E6F61755" class="image" />
+To maintain cache consistency, the local client cache is not accessible during a transaction as it may reflect information inconsistent with the transaction in progress. When the transaction completes, the local cache is accessible again.
+
+In addition to the failure conditions common to all transactions, client transactions can also fail if the transaction delegate fails. If the delegate performing the transaction fails, the transaction code throws a `TransactionException`.
+
+<a id="how-native-client-xacts-work__section_434BA87403C1449FADC3E7796E30F3C7"></a>
+
+## Native Client Transaction APIs
+
+The <span class="keyword">Geode</span> API for distributed transactions has the familiar relational database methods, `begin`, `commit`, and `rollback`. There are also APIs available to suspend and resume transactions.
+
+The .NET classes for executing transactions are:
+
+**GemStone::GemFire::Cache::Generic**
+
+-   CacheTransactionManager
+-   TransactionId
+

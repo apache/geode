@@ -1,0 +1,30 @@
+---
+title:  Cache Performance Statistics
+---
+
+Use cache performance statistics to determine the type and number of cache operations being performed and how much time they consume.
+
+These statistics are available if the member creates a cache.
+
+|                                  |                                                                                              |
+|----------------------------------|----------------------------------------------------------------------------------------------|
+| `creates`                        | Total number of cache creates.                                                               |
+| `puts`                           | Total number of cache puts.                                                                  |
+| `gets`                           | Total number of cache gets.                                                                  |
+| `entries`                        | Current number of cache entries.                                                             |
+| `hits`                           | Total number of cache hits.                                                                  |
+| `misses`                         | Total number of cache misses.                                                                |
+| `destroys`                       | Total number of cache destroys.                                                              |
+| `overflows`                      | Total number of cache overflows to persistence backup.                                       |
+| `cacheListenerCallsCompleted`    | Total number of times a cache listener call has completed.                                   |
+| `pdxInstanceDeserializations`    | Total number of times getObject has been called on a PdxInstance.                            |
+| `pdxInstanceDeserializationTime` | Total amount of time, in nanoseconds, spent deserializing PdxInstances by calling getObject. |
+| `pdxInstanceCreations`           | Total number of times a deserialization created a PdxInstance.                               |
+| `pdxSerializations`              | Total number of PDX serializations.                                                          |
+| `pdxSerializedBytes`             | Total number of bytes produced by PDX serialization.                                         |
+| `pdxDeserializations`            | Total number of PDX deserializations.                                                        |
+| `pdxDeserializedBytes`           | Total number of bytes read by PDX deserialization.                                           |
+| `tombstoneCount`                 | Total number of tombstone entries created for performing concurrency checks.                 |
+| `nonReplicatedTombstoneSize`     | Approximate total size (in bytes) of tombstones present in the client cache.                 |
+
+

@@ -1,0 +1,31 @@
+---
+title:  Step 1. Download and install OpenSSL
+---
+
+The open-source OpenSSL toolkit provides a full-strength general purpose cryptography library to operate along with the PKCS sample implementation for encrypted authentication of native client credentials.
+
+Follow these instructions to download and install OpenSSL for your specific operating system.
+
+The native client requires OpenSSL 1.0.1h or later. For Windows platforms, you can use either the regular or the OpenSSL 1.0.1h "Light" version.
+
+**Note:**
+If you use Cygwin, it is recommended that you do not use the OpenSSL library that comes with Cygwin because it is built with `cygwin.dll` as a dependency.
+
+<a id="security__section_5C95C2E4D9244B27BF8FD178E402D993"></a>
+## Linux
+
+Download the OpenSSL tarball archive from the OpenSSL web site at [http://www.openssl.org/source/](http://www.openssl.org/source/). Copy the downloaded tarball file into `NativeClient_xxxx/templates/security/openssl/Linux` and run `buildit.sh`.
+
+<a id="security__section_93651F296C1A4EA5A3FA045EC15FB506"></a>
+
+## Solaris
+
+Download the OpenSSL tarball archive from the OpenSSL web site at [http://www.openssl.org/source/](http://www.openssl.org/source/). Copy the downloaded tarball file into `NativeClient_xxxx/templates/security/openssl/SunOS` and run `buildit.sh`.
+
+<a id="security__section_68961A8829D44BFB8F542F3317464E5E"></a>
+
+## Windows
+
+Download the installer for OpenSSL from [http://www.openssl.org/related/binaries.html](http://www.openssl.org/related/binaries.html). You can also use the OpenSSL "Light" version.
+
+Use the downloaded OpenSSL installer to install it on Windows. You can usually accept the default installation path (`C:\OpenSSL`).

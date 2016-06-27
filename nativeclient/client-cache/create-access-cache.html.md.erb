@@ -1,0 +1,53 @@
+---
+title:  Creating and Accessing a Cache
+---
+
+When you create a native client cache, you are creating a native client cache instance. You must provide some basic configuration information such as a connection name and cache initialization parameters for the native client's cache instance.
+
+When you create a cache, you provide the following input:
+
+-   **Connection name**. Used in logging to identify both the distributed system connection and the cache instance. If you do not specify a connection name, a unique (but non-descriptive) default name is assigned.
+-   **`cache.xml` to initialize the cache (if the initialization is not done programmatically)**. To modify the cache structure, edit `cache.xml` in your preferred text editor. No changes to the application code are required. If you do not specify a cache initialization file, you need to initialize the cache programmatically.
+
+The `cache.xml` file contains XML declarations for cache, region, and region entry configuration.
+
+This XML declares server connection pools and regions:
+
+``` pre
+<cache>
+  <region name="clientRegion1" refid="PROXY">
+    <region-attributes pool-name="serverPool1"/>
+  </region>
+  <region name="clientRegion2" refid="PROXY">
+    <region-attributes pool-name="serverPool2"/>
+  </region>
+  <region name="localRegion3" refid="LOCAL"/>
+  <pool name="serverPool1">
+    <locator host="host1" port="40404"/>
+  </pool>
+  <pool name="serverPool2">
+    <locator host="host2" port="40404"/>
+  </pool>
+</cache>
+    
+```
+
+When you use the regions, the client regions connect to the servers through the pools named in their configurations.
+
+This file can have any name, but is generally referred to as `cache.xml` .
+
+For a list of the parameters in the `cache.xml` file, including the DTD, see [Cache Initialization File](../cache-init-file/chapter-overview.html#chapter-overview).
+
+To create your cache, call the `CacheFactory create` function.
+
+The `cache` object it returns gives access to the native client caching API. For example:
+
+``` pre
+CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory();
+CachePtr cachePtr = cacheFactory->create();
+    
+```
+
+**Note:** For more information on how to create a cache, see [Pivotal GemFire Native Client C++ API](../cpp-caching-api/cpp-caching-api.html#concept_CEC658A999414AC3A494578C214BF64E) or [Pivotal GemFire Native Client C# .NET API](../dotnet-caching-api/dotnet-caching-api.html#concept_FC6776DCE6ED48B887A6137761104AA4).
+
+

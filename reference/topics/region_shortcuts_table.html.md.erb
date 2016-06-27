@@ -1,0 +1,502 @@
+---
+title:  Region Shortcuts Quick Reference
+---
+
+This section provides a quick reference for all region shortcuts.
+
+<a id="reference_ufj_5kz_4k__section_6B142E06F22C4B0EACE7CA369F9C2618"></a>
+[Region Shortcuts Default Configurations](#reference_ufj_5kz_4k__table_lkl_hws_mk) summarizes the default configurations for each region shortcut. See the cross reference for additional information about each shortcut.
+
+<a id="reference_ufj_5kz_4k__table_lkl_hws_mk"></a>
+
+<table>
+<caption><span class="tablecap">Table 1. Region Shortcuts Default Configurations</span></caption>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Region Shortcut</th>
+<th>Region Attributes</th>
+<th>Other Attributes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><p>[LOCAL](region_shortcuts_reference.html#reference_w2h_3cd_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_q44_t11_nk" class="p">
+scope:
+local
+data-policy:
+NORMAL
+</div></td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><p>[LOCAL\_HEAP\_LRU](region_shortcuts_reference.html#reference_wd5_lpy_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_axf_z11_nk" class="p">
+scope:
+local
+data-policy:
+NORMAL
+</div></td>
+<td><div id="reference_ufj_5kz_4k__p_mwf_gb1_nk" class="p">
+<span class="keyword parmname">Eviction Attributes</span>
+<table>
+<tbody>
+<tr class="odd">
+<td>eviction-algorithm:</td>
+<td>lru-heap-percentage</td>
+</tr>
+<tr class="even">
+<td>eviction-action:</td>
+<td>local-destroy</td>
+</tr>
+</tbody>
+</table>
+</div></td>
+</tr>
+<tr class="odd">
+<td><p>[LOCAL\_OVERFLOW](region_shortcuts_reference.html#reference_adk_y4y_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_fsq_jc1_nk" class="p">
+scope:
+local
+data-policy:
+NORMAL
+</div></td>
+<td><p><span class="keyword parmname">Eviction Attributes</span></p>
+<div id="reference_ufj_5kz_4k__p_rsq_jc1_nk" class="p">
+<table>
+<tbody>
+<tr class="odd">
+<td>eviction-algorithm:</td>
+<td>lru-heap-percentage</td>
+</tr>
+<tr class="even">
+<td>eviction-action:</td>
+<td>overflow-to-disk</td>
+</tr>
+</tbody>
+</table>
+</div></td>
+</tr>
+<tr class="even">
+<td><p>[LOCAL\_PERSISTENT](region_shortcuts_reference.html#reference_l5r_y4y_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_ctq_jc1_nk" class="p">
+scope:
+local
+data-policy:
+PERSISTENT-REPLICATE
+</div></td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><p>[LOCAL\_PERSISTENT\_OVERFLOW](region_shortcuts_reference.html#reference_a45_y4y_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_ttq_jc1_nk" class="p">
+scope:
+local
+data-policy:
+PERSISTENT-REPLICATE
+</div></td>
+<td><p><span class="keyword parmname">Eviction Attributes</span></p>
+<div id="reference_ufj_5kz_4k__p_e5q_jc1_nk" class="p">
+<table>
+<tbody>
+<tr class="odd">
+<td>eviction-algorithm:</td>
+<td>lru-heap-percentage</td>
+</tr>
+<tr class="even">
+<td>eviction-action:</td>
+<td>overflow-to-disk</td>
+</tr>
+</tbody>
+</table>
+</div></td>
+</tr>
+<tr class="even">
+<td><p>[PARTITION](region_shortcuts_reference.html#reference_ow5_4qy_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_p5q_jc1_nk" class="p">
+data-policy:
+PARTITION
+</div></td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><p>[PARTITION\_HEAP\_LRU](region_shortcuts_reference.html#reference_twx_y4y_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_bvq_jc1_nk" class="p">
+data-policy:
+PARTITION
+</div></td>
+<td><p><span class="keyword parmname">Eviction Attributes</span></p>
+<div id="reference_ufj_5kz_4k__p_lvq_jc1_nk" class="p">
+<table>
+<tbody>
+<tr class="odd">
+<td>eviction-algorithm:</td>
+<td>lru-heap-percentage</td>
+</tr>
+<tr class="even">
+<td>eviction-action:</td>
+<td>local-destroy</td>
+</tr>
+</tbody>
+</table>
+</div></td>
+</tr>
+<tr class="even">
+<td><p>[PARTITION\_OVERFLOW](region_shortcuts_reference.html#reference_js1_z4y_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_wvq_jc1_nk" class="p">
+data-policy:
+PARTITION
+</div></td>
+<td><p><span class="keyword parmname">Eviction Attributes</span></p>
+<div id="reference_ufj_5kz_4k__p_gwq_jc1_nk" class="p">
+<table>
+<tbody>
+<tr class="odd">
+<td>eviction-algorithm:</td>
+<td>lru-heap-percentage</td>
+</tr>
+<tr class="even">
+<td>eviction-action:</td>
+<td>overflow-to-disk</td>
+</tr>
+</tbody>
+</table>
+</div></td>
+</tr>
+<tr class="odd">
+<td><p>[PARTITION\_PERSISTENT](region_shortcuts_reference.html#reference_d4k_jpy_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_qwq_jc1_nk" class="p">
+data-policy:
+PERSISTENT-PARTITION
+</div></td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><p>[PARTITION\_PERSISTENT\_OVERFLOW](region_shortcuts_reference.html#reference_v5l_jpy_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_axq_jc1_nk" class="p">
+data-policy:
+PERSISTENT-PARTITION
+</div></td>
+<td><p><span class="keyword parmname">Eviction Attributes</span></p>
+<div id="reference_ufj_5kz_4k__p_lxq_jc1_nk" class="p">
+<table>
+<tbody>
+<tr class="odd">
+<td>eviction-algorithm:</td>
+<td>lru-heap-percentage</td>
+</tr>
+<tr class="even">
+<td>eviction-action:</td>
+<td>overflow-to-disk</td>
+</tr>
+</tbody>
+</table>
+</div></td>
+</tr>
+<tr class="odd">
+<td><p>[PARTITION\_PROXY](region_shortcuts_reference.html#reference_v4m_jpy_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_wxq_jc1_nk" class="p">
+data-policy:
+PARTITION
+</div></td>
+<td><div id="reference_ufj_5kz_4k__p_dyq_jc1_nk" class="p">
+<span class="keyword parmname">Partition Attributes</span>
+<table>
+<tbody>
+<tr class="odd">
+<td>local-max-memory:</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+</div></td>
+</tr>
+<tr class="even">
+<td><p>[PARTITION\_PROXY\_REDUNDANT](region_shortcuts_reference.html#reference_c1n_jpy_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_oyq_jc1_nk" class="p">
+data-policy:
+PARTITION
+</div></td>
+<td><div id="reference_ufj_5kz_4k__p_uyq_jc1_nk" class="p">
+<span class="keyword parmname">Partition Attributes</span>
+<table>
+<tbody>
+<tr class="odd">
+<td>redundant-copies:</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>local-max-memory</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+</div></td>
+</tr>
+<tr class="odd">
+<td><p>[PARTITION\_REDUNDANT](region_shortcuts_reference.html#reference_shn_jpy_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_gzq_jc1_nk" class="p">
+data-policy:
+PARTITION
+</div></td>
+<td><div id="reference_ufj_5kz_4k__p_lzq_jc1_nk" class="p">
+<span class="keyword parmname">Partition Attributes</span>
+<table>
+<tbody>
+<tr class="odd">
+<td>redundant-copies:</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+</div></td>
+</tr>
+<tr class="even">
+<td><p>[PARTITION\_REDUNDANT\_HEAP\_LRU](region_shortcuts_reference.html#reference_m4n_jpy_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_szq_jc1_nk" class="p">
+data-policy:
+PARTITION
+</div></td>
+<td><p><span class="keyword parmname">Eviction Attributes</span></p>
+<div id="reference_ufj_5kz_4k__p_a1r_jc1_nk" class="p">
+<table>
+<tbody>
+<tr class="odd">
+<td>eviction-algorithm:</td>
+<td>lru-heap-percentage</td>
+</tr>
+<tr class="even">
+<td>eviction-action:</td>
+<td>local-destroy</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="reference_ufj_5kz_4k__p_f1r_jc1_nk" class="p">
+<span class="keyword parmname">Partition Attributes</span>
+<table>
+<tbody>
+<tr class="odd">
+<td>redundant-copies:</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+</div></td>
+</tr>
+<tr class="odd">
+<td><p>[PARTITION\_REDUNDANT\_OVERFLOW](region_shortcuts_reference.html#reference_own_jpy_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_n1r_jc1_nk" class="p">
+data-policy:
+PARTITION
+</div></td>
+<td><p><span class="keyword parmname">Eviction Attributes</span></p>
+<div id="reference_ufj_5kz_4k__p_w1r_jc1_nk" class="p">
+<table>
+<tbody>
+<tr class="odd">
+<td>eviction-algorithm:</td>
+<td>lru-heap-percentage</td>
+</tr>
+<tr class="even">
+<td>eviction-action:</td>
+<td>overflow-to-disk</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="reference_ufj_5kz_4k__p_bbr_jc1_nk" class="p">
+<span class="keyword parmname">Partition Attributes</span>
+<table>
+<tbody>
+<tr class="odd">
+<td>redundant-copies:</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+</div></td>
+</tr>
+<tr class="even">
+<td><p>[PARTITION\_REDUNDANT\_PERSISTENT](region_shortcuts_reference.html#reference_bd4_jpy_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_jbr_jc1_nk" class="p">
+data-policy:
+PERSISTENT-PARTITION
+</div></td>
+<td><div id="reference_ufj_5kz_4k__p_pbr_jc1_nk" class="p">
+<span class="keyword parmname">Partition Attributes</span>
+<table>
+<tbody>
+<tr class="odd">
+<td>redundant-copies:</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+</div></td>
+</tr>
+<tr class="odd">
+<td><p>[PARTITION\_REDUNDANT\_PERSISTENT\_OVERFLOW](region_shortcuts_reference.html#reference_xqq_tvc_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_xbr_jc1_nk" class="p">
+data-policy:
+PERSISTENT-PARTITION
+</div></td>
+<td><p><span class="keyword parmname">Eviction Attributes</span></p>
+<div id="reference_ufj_5kz_4k__p_fcr_jc1_nk" class="p">
+<table>
+<tbody>
+<tr class="odd">
+<td>eviction-algorithm:</td>
+<td>lru-heap-percentage</td>
+</tr>
+<tr class="even">
+<td>eviction-action:</td>
+<td>overflow-to-disk</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="reference_ufj_5kz_4k__p_lcr_jc1_nk" class="p">
+<span class="keyword parmname">Partition Attributes</span>
+<table>
+<tbody>
+<tr class="odd">
+<td>redundant-copies:</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+</div></td>
+</tr>
+<tr class="even">
+<td><p>[REPLICATE](region_shortcuts_reference.html#reference_wq4_jpy_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_tcr_jc1_nk" class="p">
+data-policy:
+REPLICATE
+scope:
+distributed-ack
+</div></td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><p>[REPLICATE\_HEAP\_LRU](region_shortcuts_reference.html#reference_xx4_jpy_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_cdr_jc1_nk" class="p">
+data-policy:
+preloaded
+scope:
+distributed-ack
+</div></td>
+<td><p><span class="keyword parmname">Eviction Attributes</span></p>
+<div id="reference_ufj_5kz_4k__p_ldr_jc1_nk" class="p">
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td>eviction-algorithm:</td>
+<td>lru-heap-percentage</td>
+</tr>
+<tr class="even">
+<td>eviction-action:</td>
+<td>local-destroy
+<div class="note note">
+**Note:**
+<p>Normally, you cannot have a <code class="ph codeph">local-destroy</code> eviction policy on replicated regions. However, the REPLICATE_HEAP_LRU region is not the same as other replicated regions. This region is preloaded and remains in synch by registering interest in the keys of its peer's replicated regions.</p>
+</div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<span class="keyword parmname">Subscription Attributes</span>
+<div id="reference_ufj_5kz_4k__p_pdr_jc1_nk" class="p">
+<table>
+<tbody>
+<tr class="odd">
+<td>interest-policy:</td>
+<td>all</td>
+</tr>
+</tbody>
+</table>
+</div></td>
+</tr>
+<tr class="even">
+<td><p>[REPLICATE\_OVERFLOW](region_shortcuts_reference.html#reference_t2p_jpy_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_wdr_jc1_nk" class="p">
+data-policy:
+replicate
+scope:
+distributed-ack
+</div></td>
+<td><p><span class="keyword parmname">Eviction Attributes</span></p>
+<div id="reference_ufj_5kz_4k__p_f2r_jc1_nk" class="p">
+<table>
+<tbody>
+<tr class="odd">
+<td>eviction-algorithm:</td>
+<td>lru-heap-percentage</td>
+</tr>
+<tr class="even">
+<td>eviction-action:</td>
+<td>overflow-to-disk</td>
+</tr>
+</tbody>
+</table>
+</div></td>
+</tr>
+<tr class="odd">
+<td><p>[REPLICATE\_PERSISTENT](region_shortcuts_reference.html#reference_emp_jpy_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_n2r_jc1_nk" class="p">
+data-policy:
+PERSISTENT-REPLICATE
+scope:
+distributed-ack
+</div></td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><p>[REPLICATE\_PERSISTENT\_OVERFLOW](region_shortcuts_reference.html#reference_tsp_jpy_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_w2r_jc1_nk" class="p">
+data-policy:
+PERSISTENT-REPLICATE
+scope:
+distributed-ack
+</div></td>
+<td><p><span class="keyword parmname">Eviction Attributes</span></p>
+<div id="reference_ufj_5kz_4k__p_gfr_jc1_nk" class="p">
+<table>
+<tbody>
+<tr class="odd">
+<td>eviction-algorithm:</td>
+<td>lru-heap-percentage</td>
+</tr>
+<tr class="even">
+<td>eviction-action:</td>
+<td>overflow-to-disk</td>
+</tr>
+</tbody>
+</table>
+</div></td>
+</tr>
+<tr class="odd">
+<td><p>[REPLICATE\_PROXY](region_shortcuts_reference.html#reference_n1q_jpy_lk)</p></td>
+<td><div id="reference_ufj_5kz_4k__p_pfr_jc1_nk" class="p">
+data-policy:
+EMPTY
+scope:
+distributed-ack
+</div></td>
+<td> </td>
+</tr>
+</tbody>
+</table>
+
+: <span class="tablecap">Table 1. Region Shortcuts Default Configurations</span>
+
+

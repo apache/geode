@@ -1,0 +1,21 @@
+---
+title:  Implementing the Shared Assembly
+---
+
+Follow these steps to install the shared assembly into the Global Assembly Cache (GAC).
+
+1.  Go to the `NativeClient_xxxx` directory.
+
+    ``` pre
+    cd %GFCPP%
+    ```
+
+2.  Run the GAC utility to install `GemStone.GemFire.Cache.dll` into the GAC.
+
+    ``` pre
+    gacutil.exe /if GemStone.GemFire.Cache.dll
+    ```
+
+When you are ready to uninstall, use the `/u` switch. More information on the GAC utility can be found at [http://www.msdn.com](https://msdn.microsoft.com), or by using `gacutil.exe                 /?`.
+
+

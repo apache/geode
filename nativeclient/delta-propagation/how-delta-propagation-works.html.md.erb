@@ -1,0 +1,19 @@
+---
+title:  How Delta Propagation Works
+---
+
+<span class="keyword">Geode</span> propagates object deltas using methods that you program on the client side. The methods are in the delta interface, which you implement in your cached objects’ classes.
+
+This figure shows delta propagation for a change to an entry with key, `k`, and value object, `v`.
+
+<a id="how-delta-propagation-works__fig_C4846E7C4C0E4D6097736B5BFBBF93A7"></a>
+<span class="figtitleprefix">Figure: </span>Delta Propagation
+
+<img src="../common/images/delta-propagation.gif" alt="Delta Propagation" id="how-delta-propagation-works__image_69D664D2A4344785A52AC2D492E4B557" class="image" />
+
+1.  **get operation**. The `get` works as usual; the cache returns the full entry object from the local cache or, if it is unavailable there, from a server cache or from a loader.
+2.  **update methods**. You need to add code to the object’s update methods so that they save delta information for object updates, in addition to the work they were already doing.
+3.  **put operation**. The `put` works as usual in the local cache, using the full value, then calls `hasDelta` to check for deltas and `toDelta` to serialize the information.
+4.  **receipt of delta**. `fromDelta` extracts the delta information that was serialized by `toDelta` and applies it to the object in the local cache. The delta is applied directly to the existing value or to a clone, depending on how you configure it for the region.
+5.  **additional distributions**. As with full distributions, receiving members forward the delta according to their configurations and connections to other members. In the example, the server would forward the delta to its peers and its other clients as needed. Receiving members do not recreate the delta; `toDelta` is only called in the originating member.
+

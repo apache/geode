@@ -1,0 +1,27 @@
+---
+title:  Using PDX Serialization with Delta Propagation
+---
+
+To use delta propagation with PDX serialization, you must implement the `Delta` interface methods.
+
+<a id="concept_F33AC930A8F14F0A9EE07AC31FFD8C8F__section_6C08121D7A034993A7422985FBC9A0D9"></a>
+Users can include delta propagation support with PDX serialization by implementing the `Delta` interface methods. However, using delta propagation with PDX will require the users to implement Java side classes and the objects will remain in deserialized form at all times on the server and you will lose one of the main benefits of PDX.
+
+The following code snippet is a sample implementation of the Delta interface methods for using with PDX serialization.
+
+``` pre
+class PdxWithDelta : public PdxSerializable, public Delta
+{
+public:
+
+  bool hasDelta();
+  void toDelta(DataOutput& output);
+  void fromDelta(DataInput& input);
+  DeltaPtr clone();
+
+// other PdxSerializable methods here...
+
+};
+```
+
+

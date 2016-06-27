@@ -1,0 +1,26 @@
+---
+title:  Writing the Continuous Query
+---
+
+Each CQ uses a query and any number of listeners. The query filters the events on the server and the listener handles the events that make it through the query filter. With the query and the listener in hand, you can create and execute your query through the API.
+
+This is the basic syntax for the CQ query:
+
+``` pre
+SELECT * FROM /fullRegionPath [iterator] [WHERE clause]
+```
+
+The CQ query must satisfy the standard <span class="keyword">Geode</span> native client querying specifications described in [Remote Querying](../remote-querying/remote-querying.html#security). It also must satisfy these restrictions:
+
+-   The `FROM` clause must contain only a single region specification, with optional iterator variable.
+-   The query must be a `SELECT` expression only, preceded by zero or more `IMPORT` statements. This means the query cannot be a statement like `/tradeOrder.name` or `(SELECT * from                     /tradeOrder).size`.
+-   The CQ query cannot use:
+    -   Cross region joins
+    -   Drill-downs into nested collections
+    -   `DISTINCT`
+    -   Projections
+    -   Bind parameters
+
+Queries not meeting these constraints generate an `UnsupportedOperationException` from the `QueryServicenewCq` method.
+
+

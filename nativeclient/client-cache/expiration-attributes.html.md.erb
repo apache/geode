@@ -1,0 +1,71 @@
+---
+title:  Specifying Expiration Attributes
+---
+
+<a id="expiration-attributes__section_4901B92DE7EB408F81792920C9E4ED7C"></a>
+Expiration attributes govern the automatic eviction of regions and region entries from the cache. Eviction is based on the time elapsed since the last update or access to the object. This is referred to as the least-recently-used (LRU) eviction process. Expiration options range from marking the expired object as invalid to completely removing it from the distributed cache. Eviction can help keep data current by removing outdated entries, prompting a reload the next time they are requested. Eviction may also be used to recover space in the cache by clearing out unaccessed entries and regions.
+
+Similar to application plug-ins, expiration activities are hosted by each application that defines a region in its cache.
+
+The following example shows a declaration that causes the region's entries to be invalidated in the local cache after they have not been accessed for one minute.
+
+``` pre
+<region-attributes>
+    <entry-idle-time>
+        <expiration-attributes timeout="60" action="local-invalidate"/>
+    </entry-idle-time>
+</region-attributes>
+```
+
+Region and region entry expiration attributes are set at the region level. By default, regions and entries do not expire. The following attributes cover two types of expiration: time-to-live (TTL) and idle timeout.
+
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><code class="ph codeph">RegionTimeToLive</code></td>
+<td>Number of seconds that the region remains in the cache after the last creation or update before the expiration action occurs.</td>
+</tr>
+<tr class="even">
+<td><code class="ph codeph">EntryTimeToLive</code></td>
+<td>For entries, the counter is set to zero for <code class="ph codeph">create</code> and <code class="ph codeph">put</code> operations. Region counters are reset when the region is created and when an entry has its counter reset. An update to an entry causes the time-to-live (TTL) counters to be reset for the entry and its region.</td>
+</tr>
+<tr class="odd">
+<td><code class="ph codeph">RegionIdleTimeout</code></td>
+<td>Number of seconds that the region remains in the cache after the last access before the expiration action occurs.</td>
+</tr>
+<tr class="even">
+<td><code class="ph codeph">EntryIdleTimeout</code></td>
+<td>The idle timeout counter for an object is reset when its TTL counter is reset. An entry's idle timeout counter is also reset whenever the entry is accessed through a <code class="ph codeph">get</code> operation.
+<p>The idle timeout counter for a region is reset whenever the idle timeout is reset for one of its entries.</p></td>
+</tr>
+</tbody>
+</table>
+
+<a id="expiration-attributes__section_F338C1117B7B44398F59523B881EDD55"></a>
+
+## Using Statistics to Measure Expiration
+
+Expiration is measured by comparing expiration attribute settings with the last accessed time and last modified time statistics. These statistics are directly available to applications through the `CacheStatistics` object that is returned by the `Region::getStatistics` and `RegionEntry::getStatistics` functions. The `CacheStatistics` object also provides a function for resetting the statistics counters.
+
+<a id="expiration-attributes__section_6B402F97ECD8492A8798AC838D0BB606"></a>
+
+## Expiration Actions
+
+You can specify one of the following actions for each expiration attribute:
+
+-   **Destroy**. Removes the object completely from the cache. For regions, all entries are destroyed as well. Destroy actions are distributed according to the region's distribution settings.
+-   **Invalidate**. Marks the object as invalid. For entries, the value is set to `NULL`. You invalidate a region by invalidating all its entries. Invalidate actions are distributed according to the region's distribution settings. When an entry is invalid, a `get` causes the cache to retrieve the entry according to the steps described in [Entry Retrieval](accessing-entries.html#accessing-entries__section_AD6AFD842C144C128FA1C7F0B9283372).
+-   **Local destroy**. Destroys the object in the local cache but does not distribute the operation.
+-   **Local invalidate**. Invalidates the object in the local cache but does not distribute the operation.
+    **Note:**
+    Destruction and invalidation cause the same event notification activities whether carried out explicitly or through expiration activities.
+
+<a id="expiration-attributes__section_57F5B32CE9B34F29907E8697F51817F9"></a>
+
+## Region Expiration
+
+Expiration activities in distributed regions can be distributed or performed only in the local cache. So one cache could control region expiration for a number of caches in the distributed system.

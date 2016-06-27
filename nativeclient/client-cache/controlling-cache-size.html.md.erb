@@ -1,0 +1,24 @@
+---
+title:  Controlling Cache Size
+---
+
+You can control cache size through region size limits, cache size limits, or a combination of the two.
+
+<a id="controlling-cache-size__section_A0C25D6D1D5243778800AE67CAD8CB2C"></a>
+<span class="keyword">Geode</span> controls region size by moving least recently used (LRU) entries from the region or from all cache regions.
+
+<a id="controlling-cache-size__section_3C7994A4C9D9468F860D99C0ED086D74"></a>
+
+## Controlling Region Size
+
+You can cap the size of any region with the region attribute [LruEntriesLimit](lru-entries-limit.html#concept_75D723D60E044FF9AE97C939699AB10A). You can specify whether to destroy the entries or overflow them to disk in the attribute [DiskPolicy](disk-policy.html#disk-policy). If you overflow entries to disk, you must also specify the attribute [PersistenceManager](persistence-manager.html#persistence-manager).
+
+<a id="controlling-cache-size__section_E59CA4D5724147DC83E8991E654AC155"></a>
+
+## Controlling Cache Size
+
+You can control overall cache size with the [heap-lru-limit](../setting-properties/attributes-gfcpp.html#attributes-gfcpp), which is set in `gfcpp.properties`. This property sets the maximum amount of memory used for the cache, in megabytes. If a new entry causes memory to grow past this limit, the LRU algorithm is called to evict entries. Heap LRU causes eviction to occur on all regions in the cache, overriding region-level [LruEntriesLimit](lru-entries-limit.html#concept_75D723D60E044FF9AE97C939699AB10A) settings when it needs to reclaim memory.
+
+For each region, evictions are performed according to the region's `DiskPolicy` and `PersistenceManager` settings. If you use `heap-lru-limit`, review these region attributes for all your caching regions, to be sure you are evicting the way you want to.
+
+The related [heap-lru-delta](../setting-properties/attributes-gfcpp.html#attributes-gfcpp) property, also set in `gfcpp.properties`, is the amount of memory to free up once the LRU evictions have begun. Memory is reclaimed until the amount of memory used is below `heap-lru-limit` minus `heap-lru-delta`.

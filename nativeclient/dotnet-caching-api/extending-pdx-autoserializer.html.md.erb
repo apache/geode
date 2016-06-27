@@ -1,0 +1,68 @@
+---
+title:  Extend the PDX Autoserializer
+---
+
+This example code demonstrates how to extend the autoserializer to customize serialization.
+
+## Extending the Autoserializer
+
+``` pre
+public class AutoSerializerEx : ReflectionBasedAutoSerializer
+{
+   public override object WriteTransform(FieldInfo fi, Type type, object originalValue)
+   {
+      if (fi.FieldType.Equals(Type.GetType("System.Guid")))
+      {
+        return originalValue.ToString();
+      }
+      else if (fi.FieldType.Equals(Type.GetType("System.Decimal")))
+      {
+        return originalValue.ToString();
+      }
+      else
+        return base.WriteTransform(fi, type, originalValue);
+    }
+    public override object ReadTransform(FieldInfo fi, Type type, object serializeValue)
+   {
+      if (fi.FieldType.Equals(Type.GetType("System.Guid")))
+      {
+        Guid g = new Guid((string)serializeValue);
+        return g;
+      }
+      else if (fi.FieldType.Equals(Type.GetType("System.Decimal")))
+      {
+        return Convert.ToDecimal((string)serializeValue);
+      }
+      else
+        return base.ReadTransform(fi, type, serializeValue);
+    }
+
+   public override FieldType GetFieldType(FieldInfo fi, Type type)  
+   {
+      if (fi.FieldType.Equals(Type.GetType("System.Guid")) || 
+fi.FieldType.Equals(Type.GetType("System.Decimal")))
+        return FieldType.STRING;
+      return base.GetFieldType(fi, type);
+   }
+
+   public override bool IsIdentityField(FieldInfo fi, Type type)
+   {
+        return true;
+      return base.IsIdentityField(fi, type);
+   }
+   public override string GetFieldName(FieldInfo fi, Type type)
+   {
+        return fi.Name + "NewName";
+ 
+      return fi.Name ;
+    }
+ 
+   public override bool IsFieldIncluded(FieldInfo fi, Type type)
+   {
+        return false;
+      return base.IsFieldIncluded(fi, type);
+    }
+}
+```
+
+

@@ -1,0 +1,155 @@
+---
+title:  POST /gemfire-api/v1/queries/{queryId}
+---
+
+Execute the specified named query passing in scalar values for query parameters in the POST body.
+
+## Resource URL
+
+``` pre
+http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/queries/{queryId}
+```
+
+## Parameters
+
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Description</th>
+<th>Example Values</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>{queryId}</td>
+<td>QueryID for named query.</td>
+<td>selectOrders</td>
+</tr>
+<tr class="even">
+<td><em>query bind parameter values</em></td>
+<td>Bind parameters for the query are specified in the request body (JSON).</td>
+<td><p>Specify the parameter @type and @value for each bind parameter. For example, to provide values to the following query:</p>
+<pre class="pre codeblock"><code>SELECT o FROM /orders o WHERE o.quantity &gt; $1 AND o.totalprice &gt; $2</code></pre>
+<p>You could pass in the following JSON in the request body as the bind parameters:</p>
+<pre class="pre codeblock"><code>[
+        {
+             &quot;@type&quot;:  &quot;int &quot;,
+             &quot;@value&quot;: 2
+        },
+        { 
+            &quot;@type&quot;:  &quot;double &quot;,
+             &quot;@value&quot;: 110.00
+        }
+]</code></pre></td>
+</tr>
+</tbody>
+</table>
+
+## Example Request
+
+``` pre
+POST /gemfire-api/v1/queries/selectOrders
+Accept: application/json
+Content-Type: application/json
+
+[
+        {
+             "@type":  "int ",
+             "@value": 2
+        },
+        { 
+            "@type":  "double ",
+             "@value": 110.00
+        }
+]
+```
+
+## Example Success Response
+
+``` pre
+Response Payload: application/json
+
+200 OK
+Content-Length: <#-of-bytes>
+Content-Type: application/json
+
+[
+    {
+        "description":  "Purchase order for  company - B",
+         "totalPrice": 350,
+         "purchaseOrderNo": 1112,
+         "customerId": 102,
+         "deliveryDate":  "Thu Feb 20 00:00:00 IST 2014",
+         "contact":  "John Doe",
+         "email":  "John.Doe@pivotal.io",
+         "phone":  "01-2048096",
+         "items": [
+            {
+                 "description":  "Product-AAAA",
+                 "quantity": 10,
+                 "itemNo": 1,
+                 "unitPrice": 20,
+                 "totalPrice": 200,
+                 "type-class":  "com.gemstone.gemfire.web.rest.domain.Item"
+            },
+            {
+                 "description":  "Product-BBB",
+                 "quantity": 15,
+                 "itemNo": 2,
+                 "unitPrice": 10,
+                 "totalPrice": 150,
+                 "type-class":  "com.gemstone.gemfire.web.rest.domain.Item"
+            }
+        ],
+         "orderDate":  "Mon Feb 10 00:00:00 IST 2014",
+         "type-class":  "com.gemstone.gemfire.web.rest.domain.Order"
+    },
+    {...},
+    {...}
+}
+```
+
+## Error Codes
+
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Status Code</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>404 NOT FOUND</td>
+<td>Query with specified ID could not be found.</td>
+</tr>
+<tr class="even">
+<td>500 INTERNAL SERVER ERROR</td>
+<td>Encountered error at server:
+<ul>
+<li>Syntax of the OQL queryString is invalid!</li>
+<li>A function was applied to a parameter that is improper for that function!</li>
+<li>Bind parameter is not of the expected type!</li>
+<li>Name in the query cannot be resolved!&quot;</li>
+<li>The number of bound parameters does not match the number of placeholders!</li>
+<li>Query is not permitted on this type of region!</li>
+<li>Query execution time is exceeded max query execution time (gemfire.Cache.MAX_QUERY_EXECUTION_TIME) configured!</li>
+<li>Data referenced in from clause is not available for querying!&quot;</li>
+<li>Query execution gets canceled due to low memory conditions and the resource manager critical heap percentage has been set!&quot;</li>
+<li>Error encountered while executing named query!&quot;</li>
+</ul></td>
+</tr>
+</tbody>
+</table>
+
+

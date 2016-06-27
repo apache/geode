@@ -1,0 +1,36 @@
+---
+title:  Type Conversions
+---
+
+Java rules within a query string require the query processor to perform implicit conversions and promotions under certain cases in order to evaluate expressions that contain different types.
+
+The query processor performs binary numeric promotion, method invocation conversion, and temporal type conversion.
+
+<a id="security__section_A445225717A646478C656DA8AB8334CD"></a>
+## Binary numeric promotion
+
+Binary numeric promotion widens all operands in a numeric expression to the widest representation used by any of the operands. In each expression, the query processor applies the following rules in order:
+
+-   If either operand is of type double, the other is converted to double.
+-   If either operand is of type float, the other is converted to float.
+-   If either operand is of type long, the other is converted to long.
+-   Both operands are converted to type int.
+
+The query processor performs binary numeric promotion on the operands of the following operators:
+
+-   comparison operators &lt;, &lt;=, &gt;, and &gt;=
+-   equality operators = and &lt;&gt;
+
+This is essentially the same behavior as in Java, except that chars are not considered to be numeric in the native client query language.
+
+<a id="security__section_ED0CF17A3119452D8A6FCB95FEEBF3B3"></a>
+
+## Method invocation conversion
+
+Method invocation conversion in the query language follows the same rules as Java method invocation conversion, except that the query language uses runtime types instead of compile time types, and handles null arguments differently than in Java. One aspect of using runtime types is that an argument with a null value has no typing information, and so can be matched with any type parameter. When a null argument is used, if the query processor cannot determine the proper method to invoke based on the non-null arguments, it throws an `AmbiguousNameException`. For more information on method invocation in query strings, see [Method Invocation](8a-method-invocation.html#security).
+
+<a id="security__section_940BA11A53204B3985B955102CB52681"></a>
+
+## Temporal type conversion
+
+The temporal types that the query language supports on the cache server include the Java types `java.util.Date` and `java.sql.Date`, which are treated the same and can be freely compared and used in indexes. When compared with each other, these types are all treated as nanosecond quantities.

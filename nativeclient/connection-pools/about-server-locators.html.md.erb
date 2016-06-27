@@ -1,0 +1,17 @@
+---
+title:  Server Locators
+---
+
+Server locators continuously monitor server availability and server load information. The client is configured with a list of server locators and consults a server locator to request a connection to a server in the distributed system.
+
+Locators provide clients with dynamic server discovery and server load balancing. They give clients connection information for the server with the least load at any given time.
+
+Server locators provide these main features:
+
+-   **Automated discovery of servers and locators**. Adding and removing servers or locators is made easy as each client does not require a list of servers to be configured at the time of pool creation.
+-   **Client load rebalancing**. Server locators give clients dynamic server information and provide server load rebalancing after servers depart or join the system.
+-   **High availability**. When a client/server connection receives an exception, the connection is automatically failed over to another available connection in the pool. Redundancy is also provided for client subscriptions.
+
+Alternatively, you can configure a pool statically with a list of endpoints. When the pools are statically configured, a round-robin load balancing policy is used to distribute connections across the servers.
+
+

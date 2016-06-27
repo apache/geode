@@ -1,0 +1,19 @@
+---
+title:  Connection Pools
+---
+
+Clients contain connection pools. Each region is associated with a connection pool using a region attribute, and operations on the region use connections from the respective pools.
+
+The server connectivity options are specified in the connection pool configuration. Each pool has a minimum and maximum number of connections.
+
+Each cache operation that requires server connectivity obtains a connection from the pool for the server group that the operation affects, performs the operation using the connection, and returns the connection to the pool. If the pool size is less than the maximum number of connections and all connections are in use, the connection pool creates a new connection and returns it. If the pool is at the maximum number of connections, that thread blocks until a connection becomes available or a `free-connection-timeout` occurs. If a `free-connection-timeout` occurs, an `AllConnectionsInUse` exception is thrown.
+
+The connection pool has a configurable timeout period that is used to expire idle connections. The idle connections are expired until the pool has the minimum number of connections. A monitoring thread expires idle connections, adds sufficient connections to bring up the count to minimum, closes connections whose lifetime has been exceeded. See the `load-conditioning-interval` and `idle-timeout` attributes of the [&lt;pool&gt;](../../reference/topics/client-cache.html#cc-pool) element. A separate thread (ping) tests each connected endpoint for its status and if the endpoint is not reachable, the thread closes all connections that have been made to the endpoint. See the `ping-interval` attribute of the &lt;pool&gt; element&gt;.
+
+<a id="client-load-balancing__fig_226964BAA1464DBA9F5CEDC2CB7B3585"></a>
+<span class="figtitleprefix">Figure: </span>Logical Architecture of Client/Server Connections
+
+<img src="../common/images/client-server-arch.gif" id="client-load-balancing__image_1E8316666E1B4CC2ADE4D927B629E49F" class="image" />
+When a connection receives an exception, the operation is failed over to another connection from the pool. The failover mechanism obtains the endpoint to failover to from the locator or from the specified endpoint list in the pool.
+
+

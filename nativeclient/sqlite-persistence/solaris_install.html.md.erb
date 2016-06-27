@@ -1,0 +1,58 @@
+---
+title:  Solaris Installation
+---
+
+This topic describes how to install the SQLite Persistence Manager on Solaris for use with the <span class="keyword">Geode</span> native client.
+
+The *`productDir`* directory refers to the path to the native client product directory.
+
+The following libraries must be present in the runtime linking path:
+
+-   `libSqLiteImpl.so` is provided in `productDir/lib`, so it is already present in the runtime linking path.
+-   `libsqlite3.so` is the SQLite Library. You need to create this library and make available in the runtime linking path, or copied to `productDir/lib`, as described below.
+
+The <span class="keyword">Geode</span> Native Client has been tested with SQLite version 3.7.14.1.
+
+<a id="concept_613BCAD15D9C4B3C94BBA3C1A26B6166__section_FAB703D706D54311963399A714D466F9"></a>
+## Downloading, Building, and Installing the Library
+
+You create the SQLite database library by downloading the latest .zip file and compiling the source code.
+
+1.  Download the source code `sqlite-autoconf-NNNNNNN.tar.gz` file (where *NNNNNNN* corresponds to the version) for SQLite version 3.7.14.1 or later from [http://www.sqlite.org/download.html](http://www.sqlite.org/download.html).
+2.  Update your PATH environment variable to include the location of the Solaris `ar` command.
+
+    ``` pre
+    export PATH=/usr/css/bin:$PATH
+    ```
+
+3.  Extract the source code from the .tar.gz file. First unzip:
+
+    ``` pre
+    gzip -d sqlite-autoconf-3071401.tar.gz
+    ```
+
+    Then untar the file:
+
+    ``` pre
+    tar -xvf sqlite-autoconf-3071401.tar
+    ```
+
+4.  Change directories to the extracted source files, and follow the install instructions located in the "INSTALL" file.
+    1.  Run the `configure` command for 32-bit or 64-bit Solaris systems with the following options, all entered on a single command line. Change the` --prefix` directory specification to the location where you want the libraries:
+        -   **32-bit:**
+
+            ``` pre
+            CC=cc CFLAGS="-xarch=v8plus -code=pic32" ./configure --prefix=/desired_binary_location/sqlite-binaries
+            ```
+
+        -   **64-bit:**
+
+            ``` pre
+            CC=cc CFLAGS="-xarch=v9 -code=pic32" ./configure --prefix=/desired_binary_location/sqlite-binaries     CFLAGS="-m64"
+            ```
+
+    2.  Run `gmake                                     install`. The libraries will be available in the `sqlite-binaries` directory that you specified.
+
+5.  Copy `/desired_binary_location/sqlite-binaries/lib/libsqlite3.so` file to `productDir/lib`.
+
+

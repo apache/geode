@@ -1,0 +1,19 @@
+---
+title:  Cache Initialization File Basics
+---
+
+The contents of the cache initialization file are used to populate or update a cache.
+
+This occurs when a cache server starts up, when a client application explicitly creates its cache, or when a client explicitly loads a new structure into an existing cache.
+
+The initialization file can have any name, but is generally referred to as `cache.xml`. Both client applications and cache servers can use an optional `cache.xml` file to ease the initialization process.
+
+<a id="file-basics__section_E54BF7911C224016B822768B537FA464"></a>
+## File Contents
+
+The contents of a declarative XML file correspond to APIs declared in the `Cache.hpp` and `Region.hpp` header files. The cache initialization file allows you to accomplish declaratively many of the cache management activities that you can program through the API.
+
+-   The contents of the cache initialization file must conform to the XML definition in `productDir/dtd/gfcpp-cache8000.dtd` (see [Native Client Cache XML DTD](cache-dtd.html#cache-dtd)).
+-   The name of the declarative XML file is specified when establishing a connection to the distributed system. You can define it by setting the `cache-xml-file` configuration attribute in the `gfcpp.properties` file for the native client. For details about the `gfcpp.properties` file, see [Setting System and Cache Properties](../setting-properties/chapter-overview.html#system_and_cache_properties).
+
+

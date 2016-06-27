@@ -1,0 +1,68 @@
+---
+title:  Using a Custom Class
+---
+
+This example shows how to use the defined `BankAccount` custom key type and the `AccountHistory` value type.
+
+The example takes you through these basic operations: registering, creating a cache, connecting to the distributed system, putting data, getting data, and closing the cache.
+
+## Using a BankAccount Object
+
+``` pre
+#include <gfcpp/GemfireCppCache.hpp>
+#include "BankAccount.hpp"
+#include "AccountHistory.hpp"
+using namespace gemfire;
+/*
+This example connects, registers types, creates the cache, creates a
+region, and then puts and gets user defined type BankAccount.
+*/
+int main( int argc, char** argv ) {
+    // Register the user-defined serializable type.
+    Serializable::registerType( AccountHistory::createDeserializable );
+    Serializable::registerType( BankAccount::createDeserializable );
+ 
+    CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory();
+    // Create a cache.
+    CachePtr cachePtr = cacheFactory->setSubscriptionEnabled(true)
+                        ->addServer("localhost", 24680)
+                        ->create();
+ 
+    // Create a region.
+    RegionFactoryPtr regionFactory = 
+                        cachePtr->createRegionFactory(CACHING_PROXY);
+    RegionPtr regionPtr = regionFactory->create("BankAccounts");
+ 
+    // Place some instances of BankAccount cache region.
+    BankAccountPtr KeyPtr(new BankAccount(2309, 123091));
+    AccountHistoryPtr ValPtr(new AccountHistory());
+    ValPtr->addLog( "Created account" );
+    regionPtr->put( KeyPtr, ValPtr );
+    printf( "Put an AccountHistory in cache keyed with BankAccount.\n" );
+    // Call custom behavior on instance of BankAccount.
+    KeyPtr->showAccountIdentifier();
+    // Call custom behavior on instance of AccountHistory.
+    ValPtr->showAccountHistory();
+    // Get a value out of the region.
+    AccountHistoryPtr historyPtr =
+                      dynCast<AccountHistoryPtr>( regionPtr->get( KeyPtr ) );
+    if ( historyPtr != NULLPTR ) {
+        printf( "Found AccountHistory in the cache.\n" );
+        historyPtr->showAccountHistory();
+        historyPtr->addLog( "debit $1,000,000." );
+        regionPtr->put( KeyPtr, historyPtr );
+        printf( "Updated AccountHistory in the cache.\n" );
+    }
+    // Look up the history again.
+    historyPtr = dynCast<AccountHistoryPtr>( regionPtr->get( KeyPtr ) );
+    if ( historyPtr != NULLPTR ) {
+        printf( "Found AccountHistory in the cache.\n" );
+        historyPtr->showAccountHistory();
+    }
+    // Close the cache and disconnect from the servers
+    cachePtr->close();
+    return 0;
+}
+```
+
+

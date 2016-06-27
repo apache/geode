@@ -1,0 +1,69 @@
+---
+title:  Security-Related System Properties (gfcpp.properties)
+---
+
+The table describes the security-related system properties in the `gfcpp.properties` file for native client authentication and authorization.
+
+<a id="security__section_6DC4C72A2EEB432AA40DE97D438FD1E7"></a><a id="security__table_92A6A66523764199A19BCD66BA189921"></a>
+
+<table>
+<caption><span class="tablecap">Table 1. System Properties for Client Authentication and Authorization</span></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><code class="ph codeph">security-client-auth-factory</code></td>
+<td>Sets the key for the <code class="ph codeph">AuthInitialize</code> factory function.</td>
+</tr>
+<tr class="even">
+<td><code class="ph codeph">security-client-auth-library</code></td>
+<td>Registers the path to the <code class="ph codeph">securityImpl.dll</code> library.</td>
+</tr>
+<tr class="odd">
+<td><code class="ph codeph">security-client-dhalgo</code></td>
+<td>Returns the Diffie-Hellman secret key cipher algorithm.</td>
+</tr>
+<tr class="even">
+<td><code class="ph codeph">security-client-kspath</code></td>
+<td>Path to a .pem file, which contains the public certificates for all <span class="keyword">Geode</span> cache servers to which the client can connect through specified endpoints.</td>
+</tr>
+<tr class="odd">
+<td><code class="ph codeph">security-client-kspasswd</code></td>
+<td>Password for the public key file store on the client.</td>
+</tr>
+<tr class="even">
+<td><code class="ph codeph">security-keystorepath</code></td>
+<td>Path to the public keystore.</td>
+</tr>
+<tr class="odd">
+<td><code class="ph codeph">security-alias</code></td>
+<td>Alias name for the key in the keystore.</td>
+</tr>
+<tr class="even">
+<td><code class="ph codeph">security-keystorepass</code></td>
+<td>Sets the password for the password-protected keystore.</td>
+</tr>
+<tr class="odd">
+<td><code class="ph codeph">ssl-enabled</code></td>
+<td>Enables SSL-based client/server communication when set to true. When true, the other ssl-* settings are required. The default is false, which causes communication to use plain socket connections.</td>
+</tr>
+<tr class="even">
+<td><code class="ph codeph">ssl-keystore</code></td>
+<td>Name of the .PEM keystore file, containing the client’s private key. Not set by default. Required if <code class="ph codeph">ssl-enabled</code> is true.</td>
+</tr>
+<tr class="odd">
+<td><code class="ph codeph">ssl-keystore-password</code></td>
+<td>Sets the password for the private key PEM file for SSL.</td>
+</tr>
+<tr class="even">
+<td><code class="ph codeph">ssl-truststore</code></td>
+<td><p>Name of the .PEM truststore file, containing the servers’ public certificate. Not set by default. Required if <code class="ph codeph">ssl-enabled</code> is true.</p></td>
+</tr>
+</tbody>
+</table>
+
+: <span class="tablecap">Table 1. System Properties for Client Authentication and Authorization</span>
+
+

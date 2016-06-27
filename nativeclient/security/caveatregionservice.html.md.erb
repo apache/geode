@@ -1,0 +1,27 @@
+---
+title:  Requirements and Caveats for RegionService
+---
+
+For each region, you can perform operations through the `Cache` instance or the `RegionService` instances, but not both.
+
+**Note:**
+Through the `Cache` you can create a region that uses a pool configured for multi-user authentication, then access and do work on the region using your `RegionService` instances.
+
+To use `RegionService`:
+
+-   Configure regions as EMPTY. Depending on your data access requirements, this configuration might affect performance, because the client goes to the server for every `get`.
+-   If you are running durable CQs through the region services, stop and start the offline event storage for the client as a whole. The server manages one queue for the entire client process, so you need to request the stop and start of durable client queue (CQ) event messaging for the cache as a whole, through the ClientCache instance. If you closed the `RegionService` instances, event processing would stop, but the events from the server would continue, and would be lost.
+
+    Stop with:
+
+    ``` pre
+    cachePtr->close(true);
+    ```
+
+    Start up again in this order:
+
+    1.  Create the cache.
+    2.  Create all region service instances. Initialize CQ listeners.
+    3.  Call the cache `readyForEvents` method.
+
+

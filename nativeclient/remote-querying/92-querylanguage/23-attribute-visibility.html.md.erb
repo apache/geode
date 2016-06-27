@@ -1,0 +1,45 @@
+---
+title:  Attribute Visibility
+---
+
+Within the current query scope, you can access any available object or object attribute.
+
+In querying, an object's attribute is any identifier that can be mapped to a public field or method in the object.
+
+In the `FROM` specification, any object that is in scope is valid, so at the beginning of a query all cached regions and their attributes on the cache server are in scope.
+
+This query is valid because name resolves to the Region method `getName`:
+
+``` pre
+/portfolios.name
+```
+
+This query is valid because `toArray` resolves to the `Collection` method with the same name:
+
+``` pre
+SELECT DISTINCT * FROM /portfolios.toArray
+```
+
+<a id="security__section_611591AEA6084A5ABB00DE3E19984498">You cannot, however, refer to the attribute of a collection object in the region path expression where the collection itself is specified. The following statement is invalid because neither <code class="ph codeph">Collection</code> nor <code class="ph codeph">Region</code> contain an attribute named <code class="ph codeph">positions</code>. The entry values collection (specified by <code class="ph codeph">/portfolios</code>) that does contain an attribute named positions is not yet part of the query name space.</a>
+``` pre
+/* INCORRECT: positions is not an attribute of Region or of Collection */
+SELECT DISTINCT * FROM /portfolios.positions
+```
+
+The following `SELECT` statement is valid, because `positions` is an element of the entry value collection that is specified by `/portfolios`. The entry value collection is in scope as soon as the specification in the FROM expression is complete (before `WHERE` or `SELECT` are evaluated).
+
+``` pre
+SELECT DISTINCT positions FROM /portfolios
+```
+
+You can also refer to positions inside the FROM clause after the `/portfolios` entry value collection is created. In this example, positions is an element of the `/portfolios` entry value collection and values is an attribute of positions:
+``` pre
+IMPORT javaobject.Position;
+SELECT DISTINCT posnVal
+FROM /portfolios, positions.values posnVal TYPE Position
+WHERE posnVal.mktValue >= 25.00
+```
+
+After the comma in the FROM clause, `/portfolios` is in scope, so its value collection can be iterated. In this case, this is done with the second FROM clause specification, `positions.values`.
+
+

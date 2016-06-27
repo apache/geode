@@ -1,0 +1,37 @@
+---
+title:  Object Lifetimes
+---
+
+The .NET API provides a managed set of assemblies for the C++ API. The underlying C++ object will stay in memory until the .NET object is garbage-collected.
+
+The underlying C++ API employs reference counting using smart pointers for most classes. This means that all API operations with those objects return a reference to the underlying object and not a copy. Consequently, the underlying object will not be freed as long as the .NET application holds a reference to an object. In other words, the underlying object will stay in memory until the .NET object is garbage-collected. As long as a reference to an object is alive, the artifacts it maintains will also be alive.
+
+For example, as long as a `Region` object is not garbage-collected, then the destructor of the C++ native persistence manager (if any) for the region is not invoked.
+
+In the C++ API, the references to an object are reduced when the object goes out of scope for stack allocation, or is deleted explicitly for heap allocation. The object is destroyed when its reference count reaches zero. In the .NET API, the references are reduced when the object is garbage-collected or is explicitly disposed with the .NET `using` statement.
+
+Because a reference to the object is returned, any change to the object also immediately changes the object as stored internally. For example, if an object is put into the cache using `Region.Put`, a reference of the object is stored in the internal structures. If you modify the object, the internal object also changes. However, it is not distributed to other members of the distributed system until another `Region.Put` is done.
+
+To find out if a class is reference counted, look at the online API documentation for the class. If the class is wrapped by `UMWrap` or `SBWrap`, the class is reference counted.
+
+These are examples of classes that are reference counted:
+
+-   `Cache`
+-   `CacheStatistics`
+-   `DistributedSystem`
+-   `Properties`
+-   `RegionAttributes`
+-   `AttributesMutator`
+-   `RegionEntry`
+-   `Region`
+-   `EntryEvent`
+-   `RegionEvent`
+
+These are examples of classes that are not reference counted:
+
+-   `AttributesFactory`
+-   `DataInput`
+-   `DataOutput`
+-   `SystemProperties`
+
+

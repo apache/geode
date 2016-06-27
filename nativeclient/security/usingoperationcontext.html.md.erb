@@ -1,0 +1,27 @@
+---
+title:  Determining Pre- or Post-Operation Authorization
+---
+
+The `OperationContext` object that is passed to the `authorizeOperation` method of the callback as the second argument provides an `isPostOperation` method that returns true when the callback is invoked in the post-operation phase.
+
+For example:
+
+``` pre
+bool authorizeOperation(Region region, OperationContext context)
+{
+If(context.isPostOperation())
+{
+    //It's a post-operation
+}
+else
+{
+    //It's a pre-operation
+}
+}
+```
+
+If an authorization failure occurs in a pre-operation or post-operation callback on the server, the operation throws a `NotAuthorizedException` on the client.
+
+For more information, see [Authorization](../../managing/security/authorization_overview.html).
+
+

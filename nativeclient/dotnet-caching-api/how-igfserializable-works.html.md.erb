@@ -1,0 +1,19 @@
+---
+title:  How Serialization Works with IGFSerializable
+---
+
+When your application puts an object into the cache for distribution, <span class="keyword">Geode</span> serializes the data by taking these steps.
+
+1.  Calls the appropriate `ClassId` function and creates the `TypeId` from it.
+2.  Writes the `TypeId` for the instance.
+3.  Invokes the `ToData` function for the instance.
+
+When your application subsequently receives a byte array, <span class="keyword">Geode</span> takes the following steps:
+
+1.  Decodes the `TypeId` and creates an object of the designated type, using the registered factory functions.
+2.  Invokes the `FromData` function with input from the data stream.
+3.  Decodes the data and then populates the data fields.
+
+The `TypeId` is an integer of four bytes, which is a combination of `ClassId` integer and `0x27`, which is an indicator of user-defined type.
+
+

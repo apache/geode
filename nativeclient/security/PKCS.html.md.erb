@@ -1,0 +1,28 @@
+---
+title:  Using PKCS for Encrypted Authentication
+---
+
+This section discusses the concepts and configurations for the sample UserPassword and PKCS implementations. Descriptions of their interfaces, classes, and methods are available in the API.
+
+**Note:**
+Native client samples are provided in source form only in the "templates" directory within the product directory.
+
+With PKCS, clients send encrypted authentication credentials in the form of standard PKCS signatures to a <span class="keyword">Geode</span> cache server when they connect to the server. The credentials consist of the alias name and digital signature created using the private key that is retrieved from the provided keystore. The server uses a corresponding public key to decrypt the credentials. If decryption is successful then the client is authenticated and it connects to the cache server. For unsuccessful decryption, the server sends an `AuthenticationFailedException` to the client, and the client connection to the cache server is closed.
+
+When clients require authentication to connect to a cache server, they use the `PKCSAuthInit` class implementing the `AuthInitialize` interface to obtain their credentials. For the PKCS sample provided by <span class="keyword">Geode</span>, the credentials consist of an alias and an encrypted byte array. The private key is obtained from the PKCS\#12 keystore file. To accomplish this,` PKCSAuthInit` gets the alias retrieved from the `security-alias `property, and the keystore path from the `security-keystorepath` property. `PKCSAuthInit` also gets the password for the password-protected keystore file from the `security-keystorepass` property so the keystore can be opened.
+
+**Building the securityImpl Library**
+
+To use the PKCS sample implementation, you need to build OpenSSL and then build the securityImpl library. In the `gfcpp.properties `file for the client, specify the `PKCSAuthInit` callback, the keystore path, the security alias, and the keystore password, like this:
+
+``` pre
+security-client-auth-library=securityImpl
+security-client-auth-factory=createPKCSAuthInitInstance
+security-keystorepath=<PKCS#12 keystore path>
+security-alias=<alias>
+security-keystorepass=<keystore password>
+```
+
+For server side settings, see the description of PKCS sample in [Security](../../managing/security/chapter_overview.html#security).
+
+

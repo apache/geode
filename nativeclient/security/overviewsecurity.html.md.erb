@@ -1,0 +1,29 @@
+---
+title:  Security
+---
+
+*Security* describes how to implement the security framework for the <span class="keyword">Geode</span> native client, including authentication, authorization, ecryption, and SSL client/server communication.
+
+The security framework authenticates clients that attempt to connect to a <span class="keyword">Geode</span> cache server, and authorizes client cache operations. You can also configure it for client authentication of servers, and you can plug in your own implementations for authentication and authorization.
+
+-   **[Authentication](../../nativeclient/security/overviewauthentication.html)**
+
+    A client is authenticated when it connects, with valid credentials, to a <span class="keyword">Geode</span> cache server that is configured with the client `Authenticator` callback.
+
+-   **[Encrypted Authentication](../../nativeclient/security/encrypted-auth.html)**
+
+    You can set up encrypted authentication using Diffe-Hellman or the sample PKCS implementation.
+
+-   **[Client Authorization](../../nativeclient/security/overviewclientauthorization.html)**
+
+    Using a provided callback that implements the `AccessControl` interface, you can configure each server to authorize some or all cache operations.
+
+-   **[Security-Related System Properties (gfcpp.properties)](../../nativeclient/security/security-systemprops.html)**
+
+    The table describes the security-related system properties in the `gfcpp.properties` file for native client authentication and authorization.
+
+-   **[SSL Client/Server Communication](../../nativeclient/security/overviewsslclientserver.html)**
+
+    This section describes how to configure OpenSSL; implement SSL-based communication between your clients and servers; and run clients and servers with SSL enabled.
+
+

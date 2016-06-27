@@ -1,0 +1,27 @@
+---
+title:  Remote Querying
+---
+
+*Remote Querying* documents remote querying from the native client to the <span class="keyword">Geode</span> cache server. Using examples and procedures, it describes how to use the APIs to run queries against cached data; work with query strings in the native client; create and manage queries; and create indexes.
+
+-   **[Remote Querying Basics](../../nativeclient/remote-querying/91-quickintro/1-quickintro-overview.html)**
+
+    Use the <span class="keyword">Geode</span> native client query API to query your cached data stored on a <span class="keyword">Geode</span> cache server. The query is evaluated and executed on the cache server, and the results are returned to the native client.
+
+-   **[Using Query Strings in the Native Client](../../nativeclient/remote-querying/93-querystrings/1-querystring-overview.html)**
+
+    To use a query string in a native client, specify the string as a parameter in a `QueryService::newQuery` method, then execute the query using `Query::execute`, passing in the required parameters.
+
+-   **[Accessing Cached Data](../../nativeclient/remote-querying/92-querylanguage/2-accessingdata.html)**
+
+    Accessing your cached data through the querying service is similar to accessing database contents through SQL queries. How you specify your regions and region contents is particular to the native client.
+
+-   **[Query Language Elements](../../nativeclient/remote-querying/93-querystrings/8-query-language-elements.html)**
+
+    This section discusses various aspects and tools of the native client query engine.
+
+-   **[Remote Query API](../../nativeclient/remote-querying/95-remotequeryapi/1-remote-query-api-overview.html)**
+
+    You use the native client querying API to access all the querying functionality discussed in the previous sections.
+
+

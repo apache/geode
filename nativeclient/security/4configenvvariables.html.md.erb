@@ -1,0 +1,29 @@
+---
+title:  Step 3. Configure environment variables
+---
+
+Configure your system environment to build and run OpenSSL. Follow the environment setup that applies to your operating system.
+
+For all references to the Pivotal\_GemFire\_NativeClient\_*64bit*\_*xxxx* directory, replace *64bit* with the appropriate architecture and *xxxx* with the actual four-digit product build number.
+
+<a id="security__section_6C173D0D8C8343EA92961C954032E2CA"></a>
+## Bourne and Korn shells (sh, ksh, bash)
+
+``` pre
+% OPENSSL=<parent folder for OpenSSL binaries>; export OPENSSL
+% GFCPP=<path to installation, typically C:\Pivotal_GemFire_NativeClient_64bit_xxxx>; export GFCPP
+% LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$GFCPP/lib:$GFCPP/ssl_libs:$OPENSSL/lib
+% export LD_LIBRARY_PATH
+% CLASSPATH=$GEMFIRE/lib/gfSecurityImpl.jar:$CLASSPATH
+```
+
+<a id="security__section_76CF86EDC2234BA6BF7DA6E253C71F61"></a>
+
+## Windows
+
+``` pre
+> set GFCPP=<path to installation, typically C:\Pivotal_GemFire_NativeClient_32or64bit_xxxx>
+> set OPENSSL=<path to installed OpenSSL, typically C:\OpenSSL>
+> set PATH=<path to Java JDK or JRE>\bin;%GFCPP%\bin;%GFCPP%\ssl_libs;%OPENSSL%\bin;%PATH%
+> set CLASSPATH=<path to GemFire installation>\lib\gfSecurityImpl.jar;%CLASSPATH%
+```

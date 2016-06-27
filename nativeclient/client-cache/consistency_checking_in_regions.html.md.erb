@@ -1,0 +1,20 @@
+---
+title:  Region Consistency
+---
+
+<span class="keyword">Geode</span> ensures that all copies of a region eventually reach a consistent state on all members and clients that host the region.
+
+By default <span class="keyword">Geode</span> members perform consistency checks when they apply updates to a distributed region, in order to ensure that all copies of the region eventually become consistent on all <span class="keyword">Geode</span> members and client caches that host the region. Different types of region ensure consistency using different techniques. However, when consistency checking is enabled (the default) all entries in a region require additional overhead in order to store version and timestamp information.
+
+Although a region must have the same consistency checking configuration on all <span class="keyword">Geode</span> members that host the region, you can optionally disable consistency checking in a client cache region while leaving consistency checking enabled for the region on <span class="keyword">Geode</span> members. This configuration may be necessary in certain cases where the client must view all updates to a given region, even when <span class="keyword">Geode</span> members discards an update in order to preserve region consistency.
+
+See [Consistency for Region Updates](../../developing/distributed_regions/region_entry_versions.html#topic_CF2798D3E12647F182C2CEC4A46E2045) for more information.
+
+<a id="concept_77340A4999AC4861972A0EE10303E557__section_167CD194A5374C64B4064783490F3EA8"></a>
+## Native Client Overhead for Consistency Checks
+
+In the native client regions, the overhead for performing consistency check is an additional 11 bytes per region entry. This overhead is slightly smaller than the overhead required to provide consistency checking on server-side region entries.
+
+If you cannot support the additional overhead in your deployment, you can disable consistency checks by setting the region attribute `concurrency-checks-enabled` to false for each region hosted by your client.
+
+

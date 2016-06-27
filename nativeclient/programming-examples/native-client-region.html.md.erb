@@ -1,0 +1,31 @@
+---
+title:  Declaring a Native Client Region
+---
+
+The following example shows how to declare a native client region in a `cache.xml` file.
+
+<span class="figtitleprefix">Figure: </span>Declaring a Native Client Region Using cache.xml
+
+``` pre
+<cache>
+  <region name = "root1" >
+    <region-attributes refid="CACHING_PROXY" pool-name="poolName1"/>
+  </region>
+  <region name = "root2" >
+    <region-attributes refid="PROXY" pool-name="poolName2"/>
+  </region>
+  <pool name="poolName1" subscription-enabled="true">
+    <server host="localhost" port="40404" />
+  </pool>
+  <pool name="poolName2" subscription-enabled="true">
+    <server host="localhost" port="40404" />
+  </pool>
+</cache>
+```
+
+-   The pool defines a list of cache servers that the native client region can communicate with.
+-   The *CACHING\_PROXY* setting causes the client region to cache data and to communicate with the servers. The *PROXY* setting causes the client region to communicate with the servers, but cache no data.
+-   The region *subscription-enabled* property, if `true` , indicates that the client should receive data updates when server data changes.
+-   Native clients do not specify cache loaders or writers, which are provided by the server.
+
+

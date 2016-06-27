@@ -1,0 +1,45 @@
+---
+title:  Native Client Configuration
+---
+
+You configure the native client in two files: `gfcpp.properties` for native client system-level configuration and `cache.xml` for cache-level configuration.
+
+The configuration of the caches is part of the application development process. See [Cache Initialization File](../cache-init-file/chapter-overview.html#chapter-overview). (The cache-level configuration file is generally referred to as `cache.xml`, but you can use any name.)
+
+-   [About gfcpp.properties Configuration File](native-client-config.html#native-client-config__section_67D24B8F8C6C46CDA3474E6E42963D04)
+-   [Configuration File Locations](native-client-config.html#native-client-config__section_88780874FD6C4BBD9B1B993758A985BB)
+-   [Configuring System Properties for the Native Client](native-client-config.html#native-client-config__section_6EBE269F15A1497BB4ABBF659F978DA1)
+-   [Running a Native Client Out of the Box](native-client-config.html#native-client-config__section_7F09E85DD0144972AAA7028D81780129)
+
+<a id="native-client-config__section_67D24B8F8C6C46CDA3474E6E42963D04"></a>
+## About gfcpp.properties Configuration File
+
+The `gfcpp.properties` file provides local settings required to connect a client to a distributed system, along with settings for licensing, logging, and statistics. See [Attributes in gfcpp.properties](attributes-gfcpp.html#attributes-gfcpp).
+
+The application software may include a set of `gfcpp.properties` files. You set any attributes needed for the application design in these files, then you can add any attributes needed for the local site.
+
+If you do not have `gfcpp.properties` files, use any text editor to create them. See [gfcpp.properties Example File](../gfcpp.properties/chapter_overview.html#concept_41DADD6F4E41495A89CCBB8A790ED9DF) for a sample of the file format and contents.
+
+<a id="native-client-config__section_88780874FD6C4BBD9B1B993758A985BB"></a>
+
+## Configuration File Locations
+
+A native client looks for `gfcpp.properties` first in the working directory where the process runs, then in `productDir/defaultSystem`. Use the `defaultSystem` directory to group configuration files or to share them among processes for more convenient administration. If `gfcpp.properties` is not found, the process starts up with the default settings.
+
+For the `cache.xml` cache configuration file, a native client looks for the path specified by the `cache-xml-file` attribute in `gfcpp.properties` (see [Attributes in gfcpp.properties](attributes-gfcpp.html#attributes-gfcpp)). If the `cache.xml` is not found, the process starts with an unconfigured cache.
+
+<a id="native-client-config__section_6EBE269F15A1497BB4ABBF659F978DA1"></a>
+
+## Configuring System Properties for the Native Client
+
+The typical configuration procedure for a native client includes the high-level steps listed below. The rest of this chapter provides the details.
+
+1.  Place the `gfcpp.properties` file for the application in the working directory or in `productDir/defaultSystem`. Use the configuration file that came with the application software if there is one, or create your own. See [gfcpp.properties Example File](../gfcpp.properties/chapter_overview.html#concept_41DADD6F4E41495A89CCBB8A790ED9DF) for a sample of the file format and contents.
+2.  Place the `cache.xml` file for the application in the desired location and specify its path in the `gfcpp.properties` file.
+3.  Add other attributes to the `gfcpp.properties` file as needed for the local system architecture. See [Attributes in gfcpp.properties](attributes-gfcpp.html#attributes-gfcpp) for the configurable attributes, and [gfcpp.properties Example File](../gfcpp.properties/chapter_overview.html#concept_41DADD6F4E41495A89CCBB8A790ED9DF) for a sample of the file format.
+
+<a id="native-client-config__section_7F09E85DD0144972AAA7028D81780129"></a>
+
+## Running a Native Client Out of the Box
+
+If you start a native client without any configurations, it uses any attributes set programmatically plus any hard-coded defaults (listed in [Attributes in gfcpp.properties](attributes-gfcpp.html#attributes-gfcpp)). Running with the defaults is a convenient way to learn the operation of the distributed system and to test which attributes need to be reconfigured for your environment.

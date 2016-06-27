@@ -1,0 +1,17 @@
+---
+title:  Suspending and Resuming Transactions
+---
+
+The ability to suspend and resume transactions is useful when a thread must perform operations that should not be part of the transaction before the transaction can complete.
+
+When a transaction is suspended, it loses the transactional view of the cache. None of the previous operations (before calling suspend) are visible to the thread. Subsequently any operations that are performed by the thread do not participate in the suspended transaction.
+
+When a transaction is resumed, the resuming thread assumes the transactional view. A transaction that is suspending on a member must be resumed on the same member. Before resuming a transaction, you may want to check if the transaction exists on the member and whether it is suspended. You may optionally use the `tryResume` method.
+
+If the member with the primary copy of the data crashes, the transactional view that applied to that data is lost. The secondary member for the data cannot resume transactions suspended on the crashed member. You need to take remedial steps to retry the transaction on a new primary copy of the data.
+
+If a suspended transaction is not touched for a period of time, <span class="keyword">Geode</span> cleans it up automatically. By default, the timeout for a suspended transaction is 30 minutes and can be configured by using the `suspended-tx-timeout` property of the `gfcpp.properties` file. The suspended transaction timeout value is specified in milliseconds.
+
+See [Running a Native Client Transaction](running-native-client-xact.html) for code examples of how to suspend and resume a transaction.
+
+

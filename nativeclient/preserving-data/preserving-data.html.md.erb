@@ -1,0 +1,21 @@
+---
+title:  Preserving Data
+---
+
+A server may preserve the data queued and intended to be sent to a native client, such that the data is not discarded if communication between the server and native client is disrupted. Preservation prevents message loss, which can cause a native client to have inconsistent data. Redundant queues and a high availability server implementation may further ensure that queued data is not lost.
+
+There is a tradeoff between the quantity of data that a server must queue and the amount of time that the server maintains and continues to queue data intended for a native client that is not communicating with the distributed system. Client configuration specifies the amount of time that the server is to continue queueing messages. High availability permits a secondary server to assume the role of a primary server with respect to queued data in the event that the primary server no longer functions. Designation of primary and secondary servers, as well as the number of redundant copies of the queue are configurable.
+
+-   **[High Availability for Client-Server Communication](../../nativeclient/preserving-data/high-availability-client-server.html)**
+
+    The <span class="keyword">Geode</span> native client provides reliable event messaging from cache server to client to prevent data loss during server failover operations. High availability is implemented in the cache server and is configured in the native client.
+
+-   **[Enabling Queue Conflation to Improve Update Performance](../../nativeclient/preserving-data/using-queue-conflation.html)**
+
+    Conflation of entry update messages can reduce the number of update messages a native client receives, thereby increasing performance. The native client receives only the most recent update for a particular entry key.
+
+-   **[Durable Client Messaging](../../nativeclient/preserving-data/durable-client-messaging.html)**
+
+    You can configure the redundancy level for client queues that are stored on cache servers. This ensures that the client will not lose messages if it loses the connection to its primary server.
+
+

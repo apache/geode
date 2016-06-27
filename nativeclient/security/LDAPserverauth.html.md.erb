@@ -1,0 +1,27 @@
+---
+title:  Using an LDAP Server for Client Authentication
+---
+
+An LDAP server can be used by a <span class="keyword">Geode</span> cache server using the sample LDAP implementation provided in <span class="keyword">Geode</span> server product.
+
+See the [Security](../../managing/security/chapter_overview.html#security) to verify authentication credentials for native clients attempting to connect to the <span class="keyword">Geode</span> servers and sending user name and passwords using the sample UserPassword scheme.
+
+**Note:**
+The user name and password with this sample implementation is sent out in plaintext. For better security, either turn on credential encryption using Diffie-Hellman key exchange, or use a scheme like PKCS.
+
+When a client initiates a connection to a cache server, the client submits its credentials to the server and the server submits those credentials to the LDAP server. To be authenticated, the credentials for the client need to match one of the valid entries in the LDAP server. The credentials can consist of the entry name and the corresponding password. If the submitted credentials result in a connection to the LDAP server because the credentials match the appropriate LDAP entries, then the client is authenticated and granted a connection to the server. If the server fails to connect to the LDAP server with the supplied credentials then an `AuthenticationFailedException` is sent to the client and its connection with the cache server is closed.
+
+**Configuration Settings**
+
+In the `gfcpp.properties` file for the client, specify the `UserPasswordAuthInit` callback, the user name, and the password, like this:
+
+``` pre
+security-client-auth-library=securityImpl
+security-client-auth-factory=createUserPasswordAuthInitInstance
+security-username=<username>
+security-password=<password>
+```
+
+For server side settings and LDAP server configuration, see [Security](../../managing/security/chapter_overview.html#security).
+
+

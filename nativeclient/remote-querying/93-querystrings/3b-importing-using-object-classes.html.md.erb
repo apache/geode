@@ -1,0 +1,31 @@
+---
+title:  Importing and Using Object Classes
+---
+
+To facilitate the specification of type in variable type declarations and in typecasting expressions, a query string can have `IMPORT` statements preceding the declarations. By using `IMPORT` in the query string, the client can tell the cache server about the class definition of the serialized object that is present in the cache server region.
+
+The only place you can have a package name in a query is in an import statement. These are valid:
+
+``` pre
+IMPORT com.myFolder.Portfolio;
+IMPORT com.myFolder.Portfolio AS MyPortfolio;
+```
+
+The first form of the import statement allows Portfolio to be used as the name of the class, `com.myFolder.Portfolio`. The second form provides an alternative class name, MyPortfolio, to be used. This is useful when a class name is not unique across packages and classes in a single query.
+
+## Using Imported Classes
+
+The following example uses imported classes:
+``` pre
+IMPORT com.commonFolder.Portfolio;
+IMPORT com.myFolder.Portfolio AS MyPortfolio;
+SELECT DISTINCT mpflo.status
+FROM /portfolios pflo TYPE Portfolio,
+/myPortfolios mpflo TYPE MyPortfolio,
+WHERE pflo.status = 'active' and mpflo.id = pflo.id
+```
+
+This entire query string must be passed to the query engine, including the `IMPORT` statements.
+Common type names do not require an `IMPORT` statement. The following table lists the types that are defined by the system and the Java types they represent.
+
+

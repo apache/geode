@@ -1,0 +1,53 @@
+---
+title:  Specifying the Object Types of FROM Clause Collections
+---
+
+To resolve implicit attribute names, the query engine must be able to associate each attribute or method name to a single iterator expression in the `FROM` clause.
+
+Depending on the complexity of the query, the engine may be able to discover the proper associations on its own, but providing the specifications described here increases the chances for success.
+
+The server region being queried should contain only homogeneous objects of the same type. See [Setting Object Type Constraints](../91-quickintro/3-quickintro-requirements.html#security__section_407A315F22014CD8A0BC622454789888) for more information.
+
+The object type information must be available when the query is created. To provide the appropriate information to the query engine, specify the type for each of your `FROM` clause collection objects by importing the object's class before running the query and typing the object inside the query. For the example region, this query is valid (all of the examples in this section assume that this `IMPORT` statement is provided):
+
+**Query Using IMPORT and TYPE for Object Typing**
+
+``` pre
+IMPORT javaobject.Position;
+SELECT DISTINCT mktValue
+FROM /portfolios, positions.values TYPE Position
+WHERE mktValue > 25.00
+```
+
+This entire query string must be passed to the query engine, including the IMPORT statement. Import the object’s class before running the query and typecast the object inside the query. For the example region, both of these queries are valid:
+
+**Query Using IMPORT and Typecasting for Object Typing**
+
+``` pre
+IMPORT javaobject.Position;
+SELECT DISTINCT value.mktValue
+  FROM /portfolios, (map<string,Position>)positions
+  WHERE value.mktValue > 25.00
+IMPORT cacheRunner.Position;
+SELECT DISTINCT mktValue
+  FROM /portfolios, (collection<Position>)positions.values
+  WHERE mktValue > 25.00
+```
+
+This entire query string must be passed to the query engine, including the `IMPORT` statement. Use named iterators in the `FROM` clause and explicitly prefix the path expression with iterator names.
+
+**Query Using Named Iterators for Object Typing**
+
+``` pre
+SELECT DISTINCT posnVal
+
+FROM /portfolios pflo, pflo.positions.values posnVal
+
+WHERE posnVal.mktValue >= 25.00
+```
+
+The `IMPORT` statements in these examples assume that the `classes` directory of the examples is in the `CLASSPATH`. This is required so the cache server can process `IMPORT` statements. The class's package name cannot be used in the `FROM` clause. The package name must be specified in an `IMPORT` statement.
+
+There is one exception to these typing guidelines. If one `FROM` expression lacks explicit typing, the query engine associates all unresolved attributes with that expression and creates the query. An exception is thrown if any of these attributes are not found at execution time.
+
+

@@ -1,0 +1,38 @@
+---
+title:  About the Native Client C\# .NET API
+---
+
+The Microsoft .NET Framework interface for the <span class="keyword">Apache Geode</span> native client provides complete access to the native client C++ functionality from any .NET Framework language (C\#, C++/CLI, VB.NET, and J\#). This enables clients using C\# and other .NET languages to use the capabilities provided by the <span class="keyword">Geode</span> C++ API.
+
+The <span class="keyword">Geode</span> native client uses a set of assemblies managed by the C++ Common Language Infrastructure (C++ CLI). C++ CLI includes the libraries and objects necessary for common language types, and it is the framework for .NET applications.
+
+The .NET API for the native client adds .NET Framework CLI language binding for the <span class="keyword">Geode</span> native client product.
+
+Using C\#, you can write callbacks and define user objects in the cache. The following figure shows an overview of how a C\# application accesses the native client C++ API functionality through C++/CLI .
+
+<a id="concept_A97823CFEA20400BBB135AC964746850__fig_D025097BFCEA4D7ABDB173AD6ABE099D"></a>
+<span class="figtitleprefix">Figure: </span>C\# .NET Application Accessing the C++ API
+
+<img src="../common/images/6-DotNet_API-1.gif" id="concept_A97823CFEA20400BBB135AC964746850__image_D91728696A7B4E03A04712EF32C5FBEC" class="image imagecenter" />
+
+**Note:**
+This chapter uses C\# as the reference language, but other .NET languages work the same way.
+
+The <span class="keyword">Geode</span> C\# .NET API is provided in the GemStone::GemFire::Cache::Generic namespace. This namespace allows you to manage your cache, regions, and data using the .NET Generics APIs.
+
+Use the <span class="keyword">Geode</span> C\# .NET API to programmatically create, populate, and manage a <span class="keyword">Geode</span> distributed system.
+
+**Note:**
+The C\# .NET library is thread-safe except where otherwise indicated in the online API documentation.
+
+For complete and current information on the <span class="keyword">Geode</span> APIs, see the online .NET API documentation. For general information on .NET, see the Microsoft developer’s network website.
+
+-   **[C\# .NET Naming and Usage Conventions](../../nativeclient/dotnet-caching-api/csharp-dotnet-naming-conventions.html)**
+
+    Unless noted, the .NET API classes and functions have the same names as their C++ counterparts in the namespace `GemStone::GemFire::Cache`. In .NET, all method names start with a capital letter.
+
+-   **[Primary APIs](../../nativeclient/dotnet-caching-api/primary-apis-cache-generic.html)**
+
+    These are the main APIs within `GemStone::GemFire::Cache::Generic` used for cache, region, and data entry management in <span class="keyword">Geode</span> C\# .NET. For detailed information about the APIs, see the .NET API documentation included in the product or available online.
+
+

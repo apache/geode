@@ -1,0 +1,41 @@
+---
+title:  Ephemeral TCP Port Limits
+---
+
+By default, Windows’ ephemeral ports are within the range 1024-4999, inclusive.You can increase the range.
+
+<a id="socket_comm__section_F535D5D99206498DBBD5A6CC3230F25B"></a>
+If you are repeatedly receiving the following exception:
+
+``` pre
+java.net.BindException: Address already in use: connect
+```
+
+and if your system is experiencing a high degree of network activity, such as numerous short-lived client connections, this could be related to a limit on the number of ephemeral TCP ports. While this issue could occur with other operating systems, typically, it is only seen with Windows due to a low default limit.
+
+Perform this procedure to increase the limit:
+
+1.  Open the Windows Registry Editor.
+2.  Navigate to the following key:
+
+    ``` pre
+    HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameter
+    ```
+
+3.  From the Edit menu, click New, and then add the following registry entry:
+
+    ``` pre
+    Value Name: MaxUserPort 
+    Value Type: DWORD  
+    Value data: 36863
+    ```
+
+4.  Exit the Registry Editor, and then restart the computer.
+
+This affects all versions of the Windows operating system.
+
+**Note for UDP on Unix Systems**
+
+Unix systems have a default maximum socket buffer size for receiving UDP multicast and unicast transmissions that is lower than the default settings for mcast-recv-buffer-size and udp-recv-buffer-size. To achieve high-volume multicast messaging, you should increase the maximum Unix buffer size to at least one megabyte.
+
+

@@ -1,0 +1,52 @@
+---
+title:  Remote Querying Requirements
+---
+
+Note the particular requirements for using region endpoints; setting server region data policy and scope; implementing equals and hashcode methods; and setting object type constraints.
+
+<a id="security__section_AB5CC1F7CA1949FEA8A35687BC486F10"></a>
+## Using Region Endpoints
+
+When you are using region endpoints, at least one region must exist on the native client before a query can be executed through the client. All objects in the region belong to the same class hierarchy (homogenous types).
+
+<a id="security__section_A619799378B14214AF922D819907FF38"></a>
+
+## Setting Server Region Data Policy and Scope
+
+Native client remote querying only accesses the data that is available in the remote cache server region, so no local cache loading operations are performed. Depending on the cache server region's scope and data-policy attribute settings, this could mean that your queries and indexes only see a part of the data available for the server region in the distributed cache.
+
+To ensure a complete data set for your queries and indexes, your cache server region must use one of the REPLICATE region shortcut settings in the region attribute refid or it must explicitly have its data policy set to replicate or persistent-replicate .
+
+For a cache server region, setting its data policy to replicate or `persistent-replicate` ensures that it reflects the state of the entire distributed region. Without replication, some server cache entries may not be available.
+
+Depending on your use of the server cache, the non-global distributed scopes `distributed-ack` and `distributed-no-ack `may encounter race conditions during entry distribution that cause the data set to be out of sync with the distributed region. The global scope guarantees data consistency across the distributed system, but at the cost of reduced performance.
+
+The following table summarizes the effects of cache server region scope and data policy settings on the data available to your querying and indexing operations. For more information, see the [Distributed and Replicated Regions](../../../developing/distributed_regions/chapter_overview.html).
+
+<a id="security__table_92A6A66523764199A19BCD66BA189921"></a>
+
+|                                           |                    |                                        |
+|-------------------------------------------|--------------------|----------------------------------------|
+| **Region Scope**                          | **Not replicated** | **Replicated**                         |
+| `distributeded-ack or distributed-no-ack` | N/A                | FULL data set (if no race conditions). |
+| `global`                                  | N/A                | FULL data set.                         |
+
+: <span class="tablecap">Table 1. Effects of Cache Server Region Scope and Data Policy on the Data Available for Querying</span>
+
+<a id="security__section_18C174BB0B2A4F23B9A78F872FA220C4"></a>
+
+## Implementing the equals and haschcode Methods
+
+The `Portfolio` and `Position` query objects for the cache server must have the `equals` and `hashCode` methods implemented, and those methods must provide the properties and behavior mentioned in the online documentation for `Object.equals` and `Object.hashCode`. Inconsistent query results can occur if these methods are absent.
+
+See the `Object` class description in the Java API documentation for more information about the equals and hashCode methods.
+
+<a id="security__section_407A315F22014CD8A0BC622454789888"></a>
+
+## Setting Object Type Constraints
+
+Performing queries on cache server regions containing heterogeneous objects, which are objects of different data types, may produce undesirable results. Queries should be performed only on regions that contain homogeneous objects of the same object type, although subtypes are allowed.
+
+So your queries will address homogeneous data types, you need to be aware of the values that the client adds to the server. You can set the `key-constraint` and value-constraint region attributes to restrict region entry keys and values to a specific object type. However, because objects put from the client remain in serialized form in the server cache and do not get deserialized until a query is executed, it is still possible to put heterogeneous objects from the client.
+
+See [Specifying the object types of FROM clause collections](../93-querystrings/3d-specify-object-types.html#security) for more information on associating object types with queries.

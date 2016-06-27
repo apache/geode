@@ -1,0 +1,19 @@
+---
+title:  Sending Cache Ready Messages to the Server
+---
+
+After a durable client connects and initializes its cache, regions, cache listeners, and any interest registration, it invokes `readyForEvents` to indicate to the servers that the client is ready to receive any messages accumulated for it.
+
+## Durable Client Cache Ready Notification (C++)
+
+The following example shows how to call `readyForEvents`.
+
+``` pre
+//Send ready for event message to server(only for durable clients).
+//Server will send queued events to client after receiving this.
+cachePtr->readyForEvents();
+```
+
+To keep the client from losing events, do not call this method until all regions and listeners are created. For more information, see [Reconnection](reconnection.html#concept_38C027837216434CB5DEC84DF56B807E).
+
+

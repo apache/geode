@@ -1,0 +1,42 @@
+---
+title:  history
+---
+
+Show or save the command history.
+
+This history can be saved to a file which can also be used as a script later.
+
+A history of commands that have been executed successfully is also logged in `.gfsh.history` file in the home directory of the user running gfsh.
+
+**Availability:** Online or offline.
+
+**Syntax:**
+
+``` pre
+history [--file=<history text file>]
+```
+
+<a id="concept_3C89B4C4D3EA47DE9CB046286D26F0BC__table_onp_pfg_2w"></a>
+
+| Name    | Description                                              | Default Value |
+|---------|----------------------------------------------------------|---------------|
+| --file  | File to which the history is to be saved.                |               |
+| --clear | When set to `true`, clears the history of gfsh commands. | false         |
+
+: <span class="tablecap">Table 1. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+history
+history --file=./mycommands.gfsh;
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>history --file=./mycommands.gfsh
+Wrote successfully to file ./mycommands.gfsh
+```
+
+

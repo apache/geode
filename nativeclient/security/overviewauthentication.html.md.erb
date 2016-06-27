@@ -1,0 +1,31 @@
+---
+title:  Authentication
+---
+
+A client is authenticated when it connects, with valid credentials, to a <span class="keyword">Geode</span> cache server that is configured with the client `Authenticator` callback.
+
+Once the client is authenticated, the server assigns the client a unique ID and principal, used to authorize operations. The client must trust all cache servers in the server system as it may connect to any one of them. For information on configuring client/server , see [Client/Server Configuration](../../topologies_and_comm/cs_configuration/chapter_overview.html).
+
+-   **[Process and Multiuser Authentication](../../nativeclient/security/authentication-levels.html)**
+
+    Client connections can be authenticated at two levels, process and multiuser.
+
+-   **[Configuring Credentials for Authentication](../../nativeclient/security/systempropsforauth.html)**
+
+    The native client uses system properties to acquire valid credentials for authentication by the server. You define these properties in the `gfcpp.properties` file, which the native client accesses during startup.
+
+-   **[Configuring Authentication by the Cache Server](../../nativeclient/security/authforcacheserver.html)**
+
+    When the cache server receives client credentials during the handshake operation, the server authenticates the client with the callback configured in the `security-client-authenticator` system property. The handshake succeeds or fails depending on the results of the authentication process.
+
+-   **[Server Authentication Errors](../../nativeclient/security/handling-serv-auth-errors.html)**
+
+-   **[Creating Multiple Secure User Connections](../../nativeclient/security/createsecureconnregionservice.html)**
+
+    To create multiple, secure connections to your servers from a single client, so the client can service different user types, you create an authenticated `RegionService` for each user.
+
+-   **[Using an LDAP Server for Client Authentication](../../nativeclient/security/LDAPserverauth.html)**
+
+    An LDAP server can be used by a <span class="keyword">Geode</span> cache server using the sample LDAP implementation provided in <span class="keyword">Geode</span> server product.
+
+

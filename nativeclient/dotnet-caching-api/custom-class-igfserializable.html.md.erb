@@ -1,0 +1,135 @@
+---
+title:  Using a Custom Class With IGFSerializable
+---
+
+An example shows how to use the `BankAccount` custom key type and the `AccountHistory` value type that were previously defined.
+
+## Using a BankAccount Object
+
+``` pre
+class AccountHistory : IGFSerializable   
+   {
+      #region Private members
+      private List<string> m_history;
+      #endregion
+      public AccountHistory()
+      {
+         m_history = new List<string>();
+      }
+      public void ShowAccountHistory()
+      {
+         Console.WriteLine("AccountHistory:");
+         foreach (string hist in m_history) {
+           Console.WriteLine("\t{0}", hist);
+         }
+      }
+      public void AddLog(string entry)
+      {
+         m_history.Add(entry);
+      }
+         public static IGFSerializable CreateInstance()
+      {
+         return new AccountHistory();
+      }
+      #region IGFSerializable Members
+      public IGFSerializable FromData(DataInput input)
+      {
+         int len = input.ReadInt32();
+         m_history.Clear();
+         for (int i = 0; i < len; i++) {
+            m_history.Add(input.ReadUTF());
+         }
+         return this;
+      }
+      public void ToData(DataOutput output)
+      {
+         output.WriteInt32(m_history.Count);
+         foreach (string hist in m_history) {
+            output.WriteUTF(hist);
+         }
+      }
+         public UInt32 ClassId
+      {
+         get
+         {
+            return 0x05;
+         }
+      }
+      public UInt32 ObjectSize
+      {
+         get
+         {
+            UInt32 objectSize = 0;
+            foreach (string hist in m_history) {
+            }
+            return objectSize;
+         }
+      }
+      #endregion
+   }
+      public class TestBankAccount
+      {
+         public static void Main()
+         {
+            // Register the user-defined serializable type.
+            Serializable.RegisterType(AccountHistory.CreateInstance);
+            Serializable.RegisterType(BankAccountKey.CreateInstance);
+            // Create a cache.
+            CacheFactory cacheFactory = CacheFactory.CreateCacheFactory(null);
+            Cache cache = cacheFactory.Create();
+            // Create a region.
+            RegionFactory regionFactory =
+            cache.CreateRegionFactory(RegionShortcut.CACHING_PROXY);
+            Region region = regionFactory.Create("BankAccounts");
+            // Place some instances of BankAccount cache region.
+            BankAccountKey baKey = new BankAccountKey(2309, 123091);
+            AccountHistory ahVal = new AccountHistory();
+            ahVal.AddLog("Created account");
+            region.Put(baKey, ahVal);
+            Console.WriteLine("Put an AccountHistory in cache keyed with
+            BankAccount.");
+            // Display the BankAccount information.
+            Console.WriteLine(baKey.ToString());
+            // Call custom behavior on instance of AccountHistory.
+            ahVal.ShowAccountHistory();
+            // Get a value out of the region.
+            AccountHistory history = region.Get(baKey) as AccountHistory;
+            if (history != null)
+            {
+               Console.WriteLine("Found AccountHistory in the cache.");
+               history.ShowAccountHistory();
+               history.AddLog("debit $1,000,000.");
+               region.Put(baKey, history);
+               Console.WriteLine("Updated AccountHistory in the cache.");
+            }
+            // Look up the history again.
+            history = region.Get(baKey) as AccountHistory;
+            if (history != null)
+            {
+               Console.WriteLine("Found AccountHistory in the cache.");
+               history.ShowAccountHistory();
+            }
+            // Close the cache.
+            cache.Close();
+         }
+      }
+
+      //Example 5.12 Using ICacheLoader to Load New Integers in the Region
+      class ExampleLoaderCallback : ICacheLoader
+      {
+         #region Private members
+         private int m_loads = 0;
+         #endregion
+         #region Public accessors
+         public int Loads
+         {
+            get
+            {
+               return m_loads;
+            }
+         }
+         #endregion
+      }
+```
+
+

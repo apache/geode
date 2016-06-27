@@ -1,0 +1,44 @@
+---
+title:  Troubleshooting
+---
+
+This section provides troubleshooting information for the native client.
+
+<a id="troubleshooting__section_32E817A073B8408F8FEDB5599C5CCEF6"></a>
+## Cannot Acquire Windows Performance Data
+
+When you attempt to run performance measurements for the native client on Windows, you may encounter the following error message in the run logs:
+
+``` pre
+Can't get Windows performance data. RegQueryValueEx returned 5
+```
+
+This can occur because incorrect information is returned when a Win32 application calls the ANSI version of `RegQueryValueEx` Win32 API with `HKEY_PERFORMANCE_DATA`. This error is described in Microsoft KB article ID 226371 at [http://support.microsoft.com/kb/226371/en-us](http://support.microsoft.com/kb/226371/en-us).
+To successfully acquire Windows performance data, you need to verify that you have the proper registry key access permissions in the system registry. In particular, make sure that `Perflib` in the following registry path is readable (`KEY_READ` access) by the <span class="keyword">Geode</span> process:
+
+``` pre
+HKEY_LOCAL_MACHINE\
+    SOFTWARE\
+    Microsoft\
+    Windows NT\
+    CurrentVersion\
+    Perflib
+```
+
+An example of reasonable security on the performance data would be to grant administrators `KEY_ALL_ACCESS` and interactive users `KEY_READ` access. This particular configuration prevents non-administrator remote users from querying performance data.
+
+See [http://support.microsoft.com/kb/310426](http://support.microsoft.com/kb/310426) and [http://support.microsoft.com/kb/146906](http://support.microsoft.com/kb/146906) for instructions about how to ensure that <span class="keyword">Geode</span> processes have access to the registry keys associated with performance.
+
+<a id="troubleshooting__section_65EC3B1EAC55421BB734E72E7BFEBFFC"></a>
+
+## Generating a Process Memory Dump Image for Fatal Errors
+
+You can generate a process memory dump image (core files in Unix systems and minidumps in Windows). The image is produced when a fatal error occurs that normally terminates the program.
+
+When the system property `crash-dump-enabled` is set to `true`, a dump image is generated (the default is `true`). The dump file is generated in the same location as the `log-file` directory, and has the same prefix as the log file. The name is `<prefix>-<time>.core.<pid>` in Unix, and `<prefix>-<time>-<pid>.dmp` in Windows).
+
+Unix systems generate core files automatically for such errors, but this option is useful for providing a custom location and name, as well as for systems where core dump generation is disabled. For Unix, when system core dump generation is turned on (`ulimit -c`) this property can be set to `false`.
+
+For .NET clients, when this property is set then `AccessViolation` exceptions are trapped and a crash dump is created to assist with further analysis. Applications receive a `FatalInternalException` for this case, with the `InnerException` set to the originating `AccessViolationException`.
+
+This requires the availability of `dbghelp.dll` on Windows, either in the same directory as `gfcppcache.dll` or in the system `PATH`. The file is installed by default, though for Windows 2000 a newer version may be required for minidumps. For Unix systems, the `gcore` command should be available (gdb &gt; 5.2 on Linux; available by default in Solaris).

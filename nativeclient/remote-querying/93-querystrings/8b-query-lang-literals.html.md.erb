@@ -1,0 +1,19 @@
+---
+title:  Query Language Literals Supported by Native Client
+---
+
+Query language expressions can contain literals as well as operators and attribute names. The native client supports many types of literals.
+
+-   `boolean`. Boolean value, either `TRUE` or `FALSE`.
+-   `integer` and `long`. Type `long` if it is suffixed with the ASCII letter L. Otherwise it is of type `int`.
+-   `floating point`.Type float if it is suffixed with an ASCII letter F. Otherwise its type is double and it can optionally be suffixed with an ASCII letter D . A double or floating point literal can optionally include an exponent suffix of E or e, followed by a signed or unsigned number.
+-   `string`. Delimited by single quotation marks. Embedded single quotation marks are doubled. For example, the character string `'Hello'` evaluates to the value `Hello`, while the character string `'He said,                     ''Hello'''` evaluates to `He said, 'Hello'`. Embedded newlines are kept as part of the string literal.
+-   `char`. Type `char` if it is a string literal prefixed by the keyword `CHAR`; otherwise it is of type `string `. The CHAR literal for the single quotation mark character is `CHAR ''''` (four single quotation marks).
+-   `date`. `java.sql.Date` object that uses the JDBC format prefixed with the `DATE` keyword: `DATE yyyy-mm-dd`. In the Date, `yyyy` represents the year, `mm` represents the month, and `dd` represents the day. The year must be represented by four digits; a two-digit shorthand for the year is not allowed.
+-   `time`. Not supported.
+-   `timestamp`. Not supported.
+-   `NIL`. Equivalent alternative of `NULL`.
+-   `NULL`. Same as `null` in Java.
+-   `UNDEFINED`. Special literal that is a valid value for any data type. An `UNDEFINED` value is the result of accessing an attribute of a null-valued attribute. If you access an attribute that has an explicit value of null, then it is not undefined. For example, if a query accesses the attribute `address.city` and address is null, then the result is undefined. If the query accesses `address`, then the result is not undefined, it is null.
+
+

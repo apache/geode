@@ -1,0 +1,134 @@
+---
+title:  Running gfsh Commands on the OS Command Line
+---
+
+<a id="topic_fpf_y1g_tp__section_4BACD4EE33934083AC7046DF8B0A753A"></a>
+You can run some `gfsh` commands directly from your operating system's prompt by preceding the command with `gfsh`. This can be useful for Unix shell or Windows batch scripting. For example:
+
+``` pre
+stymon@ubuntu:~/gemfire$ gfsh start locator --name=locator2 --port=10335
+```
+
+If the command is successful, the output appears and the operating system prompt reappears:
+
+``` pre
+stymon@ubuntu:~/gemfire$ gfsh start locator --name=locator2 --port=10335
+...............................
+Locator in /home/stymon/gemfire/locator2 on ubuntu.local[10335] as locator2 is currently online.
+Process ID: 3135
+Uptime: 16 seconds
+GemFire Version: 8.0.0
+Java Version: 1.7.0_65
+Log File: /home/stymon/gemfire/locator2/locator2.log
+JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
+Class-Path: /home/stymon/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependencies.jar:/usr/local/java/lib/tools.jar
+
+Cluster configuration service is up and running.
+```
+
+To see which gfsh commands are available directly on the prompt:
+
+``` pre
+$ gfsh help
+```
+
+The following output appears:
+
+``` pre
+$ gfsh help
+Pivotal GemFire(TM) v8.0.0 Command Line Shell
+
+USAGE
+gfsh [ <command> [option]* | <help> [command] | [--help | -h] | [-e "<command> [option]*"]* ]
+
+OPTIONS
+-e  Execute a command
+    Commands may be any that are available from the interactive gfsh prompt. 
+    For commands that require a Manager to complete, the first command in the
+    list must be "connect".
+
+AVAILABLE COMMANDS
+compact offline-disk-store
+    Compact an offline disk store. If the disk store is large, additional
+    memory may need to be allocated to the process using the --J=-Xmx###
+    parameter.
+describe offline-disk-store
+    Display information about an offline disk store.
+encrypt password
+    Encrypt a password for use in data source configuration.
+run
+    Execute a set of GFSH commands. Commands that normally prompt for
+    additional input will instead use default values.
+start jconsole
+    Start the JDK's JConsole tool in a separate process. JConsole will be
+    launched, but connecting to GemFire must be done manually.
+start jvisualvm
+    Start the JDK's Java VisualVM (jvisualvm) tool in a separate process. Java
+    VisualVM will be launched, but connecting to GemFire must be done manually.
+start locator
+    Start a Locator.
+start pulse
+    Open a new window in the default Web browser with the URL for the Pulse
+    application.
+start server
+    Start a GemFire Cache Server.
+status locator
+    Display the status of a Locator. Possible statuses are: started, online,
+    offline or not responding.
+status server
+    Display the status of a GemFire Cache Server.
+stop locator
+    Stop a Locator.
+stop server
+    Stop a GemFire Cache Server.
+validate offline-disk-store
+    Scan the contents of a disk store to verify that it has no errors.
+version
+    Display product version information.
+
+EXAMPLES
+gfsh
+    Start GFSH in interactive mode.
+gfsh -h
+    Displays 'this' help. ('gfsh --help' or 'gfsh help' is equivalent)
+gfsh help start locator
+    Display help for the "start locator" command.
+gfsh start locator --name=locator1
+    Start a Locator with the name "locator1".
+gfsh -e "connect" -e "list members"
+    Connect to a running Locator using the default connection information and
+    run the "list members" command.
+```
+
+To summarize, you can run the following gfsh commands directly from the operating system shell:
+
+-   gfsh compact offline-disk-store
+-   gfsh describe offline-disk-store
+-   gfsh encrypt password
+-   gfsh run
+-   gfsh start jconsole
+-   gfsh start jvisualvm
+-   gfsh start locator
+-   gfsh start pulse
+-   gfsh start server
+-   gfsh status locator
+-   gfsh status server
+-   gfsh stop locator
+-   gfsh stop server
+-   gfsh validate offline-disk-store
+-   gfsh version
+
+## Running Multiple gfsh Commands on the OS Command Line
+
+To run multiple commands directly on the command line:
+
+``` pre
+prompt>gfsh -e "start locator --name=locator1" -e "start server --name=server1"
+
+prompt>gfsh -e "start jconsole"
+
+prompt>gfsh -e "connect --locators=remotehost[10334]" -e "rebalance" -e "gc"
+    
+```
+
+

@@ -1,0 +1,31 @@
+---
+title:  Sending Periodic Acknowledgment
+---
+
+Servers use periodic acknowledgment to reduce the likelihood of duplicate notifications, and to reduce resource usage.
+
+<a id="concept_868B8082463846DE9F35BBEA56105C82__section_D4375BCCF8A2426BA58073B9549B6F04"></a>
+When redundancy is enabled for high availability and `redundancy-level` is set to 1 or higher, clients send (and servers expect) periodic acknowledgment messages at configurable intervals for notifications they have received. A periodic ack is not sent by the client if there are no unacknowledged notifications at the time.
+
+Use the following system properties in the `gfcpp.properties` file to configure periodic ack.
+
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><code class="ph codeph">notify-ack-interval</code></td>
+<td><p>Minimum period between two consecutive acknowledgment messages sent from the client to the server. The default setting (in seconds) is 10.</p></td>
+</tr>
+<tr class="even">
+<td><code class="ph codeph">notify-dupcheck-life</code></td>
+<td><p>Minimum time a client continues to track a notification source for duplicates when no new notifications arrive before expiring it. The default setting (in seconds) is 300.</p></td>
+</tr>
+</tbody>
+</table>
+
+The Pool API also provides attributes to configure periodic ack and duplicate message tracking timeout. See `subscription-message-tracking-timeout` and `subscription-ack-interval` in the list of pool attributes under[Configuring Pools for Servers or Locators](../connection-pools/configuring-pools.html#configuring-pools).
+
+

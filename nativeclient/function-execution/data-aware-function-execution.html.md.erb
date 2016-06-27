@@ -1,0 +1,11 @@
+---
+title:  Understanding Data-Aware Function Routing
+---
+
+Achieving linear scalability is predicated upon being able to horizontally partition the application data such that concurrent operations by distributed applications can be done independently across partitions.
+
+In other words, if the application requirements for transactions can be restricted to a single partition, and all data required for the transaction can be colocated to a single server member or a small subset of server members, then true parallelism can be achieved by vectoring the concurrent accessors to the ever-growing number of partitions.
+
+Most scalable enterprise applications grow in data volume, where the number of data items managed rather than the size of individual items grows over time. If the above logic holds (especially true for OLTP class applications), then we can derive sizable benefits by routing the data-dependent application code to the fabric member hosting the data. This routing of application code to the data of interest is called data-aware function routing, or behavior routing.
+
+

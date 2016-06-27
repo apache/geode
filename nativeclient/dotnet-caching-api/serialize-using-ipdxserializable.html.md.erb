@@ -1,0 +1,100 @@
+---
+title:  Serialize Using the GemFire IPdxSerializable Interface
+---
+
+Use this procedure to program your domain object for PDX serialization using the `IPdxSerializable` Interface. When you write objects using PDX serialization, they are distributed to the server tier in PDX serialized form. When you run queries against the objects on the servers, only the fields you specify are deserialized.
+
+**Procedure**
+
+1.  In your domain class, implement `GemStone::GemFire::Cache::Generic::IPdxSerializable`. Example:
+
+    ``` pre
+    using GemStone.GemFire.Cache.Generic;
+           ...
+           public class PortfolioPdx : IPdxSerializable
+    ```
+
+2.  If your domain class does not have a zero-arg constructor, create one for it.
+
+    If you also use PDX serialization in Java for the object, serialize the object in the same way for each language. Serialize the same fields in the same order and mark the same identify fields.
+
+3.  Program the `IPdxSerializable ToData` function to serialize your object as required by your application.
+    1.  Write your domain class's standard. NET data fields using the `IPdxWriter` write methods. GemFire automatically provides `IPdxWriter` to the `ToData` function for `IPdxSerializable` objects.
+    2.  Call the `ToData markIdentifyField` function for each field GemFire should use to identify your object. This is used to compare objects for operations like `DISTINCT` queries. The `markIdentifyField` call must come after the associated field write methods.
+
+        Example:
+
+        ``` pre
+        // object fields
+        private int m_id;
+        private string m_pkid;
+        private PositionPdx m_position1;
+        private PositionPdx m_position2;
+        private Hashtable m_positions;
+        private string m_type;
+        private string m_status;
+        private string[] m_names;
+        private byte[] m_newVal;
+        private DateTime m_creationDate;
+        private byte[] m_arrayZeroSize;
+        private byte[] m_arrayNull;
+        // ToData
+        public void ToData(IPdxWriter writer)
+        {
+           writer.WriteInt("id", m_id)
+           //identity field
+              .MarkIdentityField("id")
+              .WriteString("pkid", m_pkid)
+              .WriteObject("position1", m_position1)
+              .WriteObject("position2", m_position2)
+        .WriteObject("positions", m_positions)
+        .WriteString("type", m_type)
+        .WriteString("status", m_status)
+        .WriteStringArray("names", m_names)
+        .WriteByteArray("newVal", m_newVal)
+        .WriteDate("creationDate", m_creationDate)
+        .WriteByteArray("arrayNull", m_arrayNull)
+        .WriteByteArray("arrayZeroSize", m_arrayZeroSize);
+        }
+        ```
+
+4.  Program `IPdxSerializable FromData` to read your data fields from the serialized form into the object's fields using the `IPdxReader` read methods. GemFire automatically provides `IPdxReader` to the `FromData` function for `IPdxSerializable` objects.
+
+    Use the same names as you did in `ToData` and call the read operations in the same order as you called the write operations in your `ToData` implementation.
+
+    Example:
+
+    ``` pre
+    public void FromData(IPdxReader reader)
+       {
+          m_id = reader.ReadInt("id");
+     
+          bool isIdentity = reader.IsIdentityField("id");
+     
+             throw new IllegalStateException("Portfolio id is identity field");
+     
+          bool isId = reader.HasField("id");
+     
+             throw new IllegalStateException("Portfolio id field not found");
+     
+          bool isNotId = reader.HasField("ID");
+     
+             throw new IllegalStateException("Portfolio isNotId field found");
+     
+          m_pkid = reader.ReadString("pkid");
+          m_position1 = (PositionPdx)reader.ReadObject("position1");
+          m_position2 = (PositionPdx)reader.ReadObject("position2");
+          m_positions = (Hashtable)reader.ReadObject("positions");
+          m_type = reader.ReadString("type");
+          m_status = reader.ReadString("status");
+          m_names = reader.ReadStringArray("names");
+          m_newVal = reader.ReadByteArray("newVal");
+          m_creationDate = reader.ReadDate("creationDate");
+          m_arrayNull = reader.ReadByteArray("arrayNull");
+          m_arrayZeroSize = reader.ReadByteArray("arrayZeroSize");
+    }
+    ```
+
+5.  Optionally, program your domain object's equals and hashcode methods.
+
+

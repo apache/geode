@@ -1,0 +1,11 @@
+---
+title:  Local, Remote, and Distributed Caches
+---
+
+The *distributed system* defines how native client and cache server processes find each other.
+
+The distributed system keeps track of its membership list and makes its members aware of the identities of the other members in the distributed system.
+
+A cache for a native client is referred to as its *local cache*. All other caches in the distributed system are considered *remote caches* to the application. Every cache server and application process has its own cache. The term *distributed cache* is used to describe the union of all caches in a <span class="keyword">Geode</span> distributed system.
+
+

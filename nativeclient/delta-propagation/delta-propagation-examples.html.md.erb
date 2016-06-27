@@ -1,0 +1,338 @@
+---
+title:  Examples of Delta Propagation
+---
+
+Examples describe delta propagation operations and provide implementation code for C\# .NET and C++.
+
+<a id="examples__section_B94DCD0A4B4142A88166E5011475AB7C"></a>
+## Delta Propagation in the Client/Server
+
+In this example, the feeder client is connected to the first server, and the receiver client is connected to the second. The servers are peers to each other.
+
+<a id="examples__fig_09CF542F4AB2471FB67287A05305DAA2"></a>
+<span class="figtitleprefix">Figure: </span>Example of Delta Propagation in the Client/Server
+
+<img src="../common/images/delta-propagation-in-client-server.gif" id="examples__image_6A18D7CE07C243D6B03C5EE82786C36C" class="image" />
+
+These are the main operations shown in the example:
+
+1.  In the Feeder client, the application updates the entry object and puts the entry. In response to the `put`, <span class="keyword">Geode</span> calls `hasDelta`, which returns true.
+2.  <span class="keyword">Geode</span> calls `toDelta` and forwards the extracted delta to the server. If `hasDelta` returned false, <span class="keyword">Geode</span> would distribute the full entry value.
+3.  In Server1, <span class="keyword">Geode</span> applies the delta to the cache, distributes the received delta to the server’s peers, and forwards it to any other clients with interest in the entry (there are no other clients to Server1 in this example).
+4.  In Server2, <span class="keyword">Geode</span> applies the delta to the cache and forwards it to its interested clients, which in this case is just Receiver client.
+
+<a id="examples__section_C6CB9DB1EB684CD48A38002EF59E54F0"></a>
+
+## Client Example Files
+
+These example files, from the product `quickstart` examples, show the basic approach to programming a delta propagation implementation for an entry value object, named `DeltaExample` in this example.
+
+**XML file used for the examples**
+
+``` pre
+<cache>
+  <region name="root" refid="CACHING_PROXY">
+    <region-attributes cloning-enabled="true" pool-name="examplePool"/>
+  </region>
+  <pool name="examplePool" subscription-enabled="true" server-group="ServerGroup1">
+    <locator host="localhost" port="34756"/>
+  </pool>
+</cache>
+```
+
+**Delta Example Implementation (C\# .NET)**
+
+``` pre
+using System;
+using GemStone.GemFire.Cache;
+
+namespace GemStone.GemFire.Cache.QuickStart
+{
+  public class DeltaExample : IGFDelta, IGFSerializable, ICloneable
+    {
+      // data members
+      private Int32 m_field1;
+      private Int32 m_field2;
+      private Int32 m_field3;
+ 
+      // delta indicators
+      private bool m_f1set;
+      private bool m_f2set;
+      private bool m_f3set;
+ 
+      public DeltaExample(Int32 field1, Int32 field2, Int32 field3)
+      {
+        m_field1 = field1;
+        m_field2 = field2;
+        m_field3 = field3;
+        reset();
+      }
+
+      public DeltaExample()
+      {
+        reset();
+      }
+
+      public DeltaExample(DeltaExample copy)
+      {
+        m_field1 = copy.m_field1;
+        m_field2 = copy.m_field2;
+        m_field3 = copy.m_field3;
+        reset();
+      }
+ 
+      private void reset()
+      {
+        m_f1set = false;
+        m_f2set = false;
+        m_f3set = false;
+      }
+
+      public Int32 getField1()
+      {
+        return m_field1;
+      }
+      // REPEAT FOR OTHER FIELDS
+ 
+      public void setField1(Int32 val)
+      {
+        lock(this)
+        {
+          m_field1 = val;
+          m_f1set = true;
+        }
+      }
+      // REPEAT FOR OTHER FIELDS
+ 
+      public bool HasDelta()
+      {
+        return m_f1set || m_f2set || m_f3set;
+      }
+
+      public void ToDelta(DataOutput DataOut)
+      {
+        lock(this)
+        {
+          DataOut.WriteBoolean(m_f1set);
+          if (m_f1set)
+            {
+              DataOut.WriteInt32(m_field1);
+            }
+          // REPEAT FOR OTHER FIELDS
+ 
+          reset();
+        }
+      }
+
+      public void FromDelta(DataInput DataIn)
+      {
+        lock(this)
+        {
+          m_f1set = DataIn.ReadBoolean();
+          if (m_f1set)
+            {
+              m_field1 = DataIn.ReadInt32();
+            }
+          // REPEAT FOR OTHER FIELDS
+ 
+        }
+      }
+
+      public void ToData(DataOutput DataOut)
+      {
+        DataOut.WriteInt32(m_field1);
+        DataOut.WriteInt32(m_field2);
+        DataOut.WriteInt32(m_field3);
+      }
+
+      public IGFSerializable FromData(DataInput DataIn)
+      {
+        m_field1 = DataIn.ReadInt32();
+        m_field2 = DataIn.ReadInt32();
+        m_field3 = DataIn.ReadInt32();
+        return this;
+      }
+
+      public UInt32 ClassId
+      {
+        get
+          {
+            return 0x02;
+          }
+      }
+      public UInt32 ObjectSize
+      {
+        get
+          {
+            UInt32 objectSize = 0;
+            return objectSize;
+          }
+      }
+ 
+      public static IGFSerializable create()
+      {
+        return new DeltaExample();
+      }
+
+      public Object Clone()
+      {
+        return new DeltaExample(this);
+      }
+    }
+}
+```
+
+**Delta Example Implementation (C++)**
+
+``` pre
+#ifndef __Delta_Example__
+#define __Delta_Example__
+
+#include <gfcpp/GemfireCppCache.hpp>
+
+using namespace gemfire;
+
+class DeltaExample: public Cacheable, public Delta
+{
+
+private:
+
+  // data members
+  int32_t m_field1;
+  int32_t m_field2;
+  int32_t m_field3;
+
+  // delta indicators
+  mutable bool m_f1set;
+  mutable bool m_f2set;
+  mutable bool m_f3set;
+
+public:
+
+  DeltaExample(int32_t field1, int32_t field2, int32_t field3) :
+    m_field1(field1), m_field2(field2), m_field3(field3)
+  {
+    reset();
+  }
+
+  DeltaExample()
+  {
+    reset();
+  }
+
+  DeltaExample(DeltaExample * copy)
+  {
+    m_field1 = copy->m_field1;
+    m_field2 = copy->m_field2;
+    m_field3 = copy->m_field3;
+    reset();
+  }
+
+  void reset() const
+  {
+    m_f1set = false;
+    m_f2set = false;
+    m_f3set = false;
+  }
+
+  int getField1()
+  {
+    return m_field1;
+  }
+  // REPEAT FOR OTHER FIELDS
+
+  void setField1(int val)
+  {
+    lock();
+    m_field1 = val;
+    m_f1set = true;
+    unlock();
+  }
+  // REPEAT FOR OTHER FIELDS
+
+  virtual bool hasDelta()
+  {
+    return m_f1set || m_f2set || m_f3set;
+  }
+
+  virtual void toDelta(DataOutput& out) const
+  {
+    lock();
+
+    out.writeBoolean(m_f1set);
+    if (m_f1set)
+      {
+        out.writeInt(m_field1);
+      }
+    // REPEAT FOR OTHER FIELDS
+
+    reset();
+
+    unlock();
+  }
+
+  virtual void fromDelta(DataInput& in)
+  {
+    lock();
+
+    in.readBoolean(&m_f1set);
+    if (m_f1set)
+      {
+        in.readInt(&m_field1);
+      }
+    // REPEAT FOR OTHER FIELDS
+
+    reset();
+
+    unlock();
+  }
+
+  virtual void toData(DataOutput& output) const
+  {
+    lock();
+    output.writeInt(m_field1);
+    output.writeInt(m_field2);
+    output.writeInt(m_field3);
+    unlock();
+  }
+
+  virtual Serializable* fromData(DataInput& input)
+  {
+    lock();
+    input.readInt(&m_field1);
+    input.readInt(&m_field2);
+    input.readInt(&m_field3);
+    unlock();
+    return this;
+  }
+
+  virtual int32_t classId() const
+  {
+    return 2;
+  }
+
+  virtual uint32_t objectSize() const
+  {
+    return 0;
+  }
+
+  DeltaPtr clone()
+  {
+    return DeltaPtr(new DeltaExample(this));
+  }
+
+  virtual ~DeltaExample()
+  {
+  }
+
+  static Serializable* create()
+  {
+    return new DeltaExample();
+  }
+
+  void lock() const { /* add platform dependent synchronization code here */ }
+
+  void unlock() const { /* add platform dependent synchronization code here */ }
+};
+#endif
+```

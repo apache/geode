@@ -1,0 +1,21 @@
+---
+title:  Durable Client Messaging Requirements
+---
+
+The messaging queues used for durable messaging are the same regular messaging queues used for basic server-to-client messaging, with additional requirements.
+
+See [Implementing Durable Client/Server Messaging](../../developing/events/implementing_durable_client_server_messaging.html) for requirements, options, and functionality of messaging queues. If you are using highly available servers, see [High Availability for Client-Server Communication](high-availability-client-server.html#concept_F7A143F51EEA46B28AC612DEB7849D99)for additional requirements.
+
+For durable client messaging, you also need the following:
+
+-   **Durable clients**. If the client is durable, the server continues to maintain the client queues when the client disconnects.
+    **Note:**
+    Redundancy management is handled by the client, so when the client is disconnected from the server the redundancy of client events is not maintained. Even if the servers fail one at a time, so that running clients have time to fail over and pick new secondary servers, an offline durable client cannot fail over. As a result, the client loses its queued messages.
+
+-   **Durable interest registration**. A durable client’s interest registrations specify whether its interest in a key is durable. If it is, the servers continue queuing messages for that key while the client is disconnected.
+-   **Reconnection conditions.** You can program the durable client to detect whether the previously registered subscription queue is available upon reconnection and determine an approximate count of pending events in the queue. Based on the results, you can then decide whether to receive the remaining events (`Cache.readyForEvents`) or close the cache if the number is too large.
+-   **Cache ready message**. When it is ready to receive the stored messages, a durable client must call `Cache.readyForEvents` to send a cache ready message to the server.
+-   **Disconnect keepalive specification**. When a durable client disconnects normally it must tell the server whether to maintain the message queue or delete it.
+-   **Durable client callback method**. If you use cache listeners on the durable clients, you have the option to implement the `afterRegionLive` callback method. This callback is invoked after the durable client connects to its servers, when it has received all of its stored messages and replayed the events.
+
+

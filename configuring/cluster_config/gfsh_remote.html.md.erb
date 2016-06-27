@@ -1,0 +1,70 @@
+---
+title:  Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS
+---
+
+You can connect gfsh via HTTP or HTTPS to a remote cluster and manage the cluster using gfsh commands.
+
+To connect gfsh using the HTTP protocol to a remote GemFire cluster:
+
+1.  Launch gfsh. See [Starting gfsh](../../tools_modules/gfsh/starting_gfsh.html#concept_DB959734350B488BBFF91A120890FE61). 
+2.  When starting the remote cluster on the remote host, you can optionally specify `--http-bind-address` and `--http-service-port` as GemFire properties when starting up your JMX manager (server or locator). These properties can be then used in the URL used when connecting from your local system to the HTTP service in the remote cluster. For example:
+    ``` pre
+    gfsh>start server --name=server1 --J=-Dgemfire.jmx-manager=true \
+    --J=-Dgemfire.jmx-manager-start=true -J=-Dgemfire.http-service-port=8080 \
+    --J=-Dgemfire.http-service-bind-address=my.remote.cluster
+    ```
+
+    This command must be executed directly on the host machine that will ultimately act as the remote GemFire server that hosts the HTTP service for remote administration. (You cannot launch a GemFire server remotely.)
+
+3.  On your local system, run the gfsh `connect` command to connect to the remote system. Include the `--use-http` and `--url` parameters. For example:
+    ``` pre
+    gfsh>connect --use-http=true --url="http://my.remote.cluster:8080/gemfire/v1"
+
+    Successfully connected to: GemFire Manager's HTTP service @ http://my.remote.cluster:8080/gemfire/v1
+    ```
+
+    See [connect](../../tools_modules/gfsh/command-pages/connect.html).
+
+    gfsh is now connected to the remote system. Most gfsh commands will now execute on the remote system; however, there are exceptions. The following commands are executed on the local cluster :
+
+    -   `alter disk-store`
+    -   `compact offline-disk-store`
+    -   `describe offline-disk-store`
+    -   `help`
+    -   `hint`
+    -   `sh` (for executing OS commands)
+    -   `sleep`
+    -   `start jconsole` (however, you can connect JConsole to a remote cluster when gfsh is connected to the cluster via JMX)
+    -   `start jvisualvm`
+    -   `start locator`
+    -   `start server`
+    -   `status locator`\*
+    -   `status server`\*
+    -   `stop locator`\*
+    -   `stop server`\*
+    -   `run` (for executing gfsh scripts)
+    -   `validate disk-store`
+    -   `version`
+
+    \* You can stop and obtain the status of *remote locators and servers* when gfsh is connected to the cluster via JMX or HTTP/S by using the `--name` option for these `stop`/`status` commands. If you are using the `--pid` or `--dir` option for these commands, then the` stop`/`status` commands are executed only locally.
+
+To configure SSL for the remote connection (HTTPS), specify the GemFire configuration parameters in <span class="ph filepath">gemfire.properties</span> or <span class="ph filepath">gfsecurity-properties</span> or upon server startup:
+
+-   http-service-ssl-enabled
+-   http-service-ssl-require-authentication
+-   http-service-ssl-protocols
+-   http-service-ssl-ciphers
+-   http-service-ssl-keystore
+-   http-service-ssl-keystore-password
+-   http-service-ssl-keystore-type
+-   http-service-ssl-truststore
+-   http-service-ssl-truststore-password
+
+See [SSL](../../managing/security/ssl_overview.html) for details on configuring these parameters.
+
+The above parameters also apply to all HTTP services hosted on the configured JMX Manager, which can include the following:
+
+-   Developer REST API service
+-   Pulse monitoring tool
+
+

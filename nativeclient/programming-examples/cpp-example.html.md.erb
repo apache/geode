@@ -1,0 +1,36 @@
+---
+title:  API Programming Example – C++
+---
+
+The next example uses the C++ API to implement a cache loader, which is generally used to retrieve data from an outside source.
+
+<span class="figtitleprefix">Figure: </span>Implementing a Cache Loader (C++)
+
+``` pre
+CacheablePtr TestCacheLoader::load(
+                                   const RegionPtr& region,
+                                   const CacheableKeyPtr& key,
+                                   const UserDataPtr& aCallbackArgument)
+{
+  m_bInvoked = true;
+  printf("CacheLoader.load : %s\n", printEvent(region, key,
+          aCallbackArgument).c_str());
+  CacheablePtr value = NULLPTR;
+  try {
+    value = region->get(key, aCallbackArgument);
+  } catch(Exception& ex) {
+    fprintf(stderr, "Exception in TestCacheCallback::printEvent [%s]\n", ex.getMessage());
+  }
+  if (value != NULLPTR) {
+    printf( "Loader found value: ");
+    std::string formatValue = printEntryValue(value);
+    printf( "%s\n",formatValue.c_str());
+  } else {
+    printf( " Loader did not find a value");
+  }
+ 
+  return value;
+}
+```
+
+

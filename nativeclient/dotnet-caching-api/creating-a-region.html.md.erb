@@ -1,0 +1,37 @@
+---
+title:  Creating a Region
+---
+
+To create a region, you create a `RegionFactory` using the `RegionShortcut` that most closely fits your region configuration.
+
+From that point, you customize the settings for region attributes as needed.
+
+Creating a region using the native client API only creates a proxy client side region. A corresponding region with the same name and path must also exist on the servers that have been configured for client connections and upon which the client will perform its operations.
+
+## Creating a CACHING\_PROXY Region
+
+This example creates a region using a CACHING\_PROXY RegionShortcut with no further modifications:
+
+``` pre
+RegionFactory regionFactory =
+cache.CreateRegionFactory(RegionShortcut.CACHING_PROXY);
+ 
+IRegion<string, string> region = regionFactory
+.Create<string, string>("exampleRegion");
+```
+
+## Creating a CACHING\_PROXY Region with LRU
+
+This example creates a region based on the CACHING\_PROXY RegionShortcut with two additional region attributes settings. For information on the settings, see [Region Attributes Descriptions](../client-cache/region-attributes-desc.html#region-attributes-desc).
+
+``` pre
+RegionFactory regionFactory =
+cache.CreateRegionFactory(RegionShortcut.CACHING_PROXY);
+// Create the example Region programmatically.
+IRegion<string, string> region = regionFactory
+.SetLruEntriesLimit(20000)
+.SetInitialCapacity(20000)
+.Create<string, string>("exampleRegion");
+```
+
+

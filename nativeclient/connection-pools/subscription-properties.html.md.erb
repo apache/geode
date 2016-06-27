@@ -1,0 +1,25 @@
+---
+title:  Subscription Properties
+---
+
+Each connection pool has a single subscription connection that can be to any server that matches the requirements of the connection pool.
+
+When a client registers interest for a region, if the connection pool does not already have a subscription channel, the connection pool sends a message to the server locator, and the server locator chooses servers to host the queue and return those server names to the client. The client then contacts the chosen servers and asks them to create the queue.
+
+The client maintains at least one connection with each server hosting a queue. If the server does not detect any connections from a non-durable client, it drops the client queue and closes all artifacts for the client. For information about durable client subscriptions, see [Durable Client Messaging](../preserving-data/durable-client-messaging.html#concept_F88B659FB4324F599924F3F2933452B4).
+
+<a id="subscription-properties__section_294BD33FBDC6454FAD9C5118829EBBA4"></a>
+## Requesting a Subscription Region Queue
+
+The client-to-server locator request is a short lived TCP request. The client sends a message with:
+
+-   The client ID.
+-   (Optional) target server group.
+-   Number of redundant copies.
+-   Servers to exclude from the results. This list is used if the client cannot connect to a server and needs to request a new one.
+
+The server locator responds with a list of servers. The client is responsible for contacting the primary and secondaries and asking them to host the queue.
+
+For durable subscriptions, the server locator must be able to locate the servers that host the queues for the durable client. When a durable client sends a request, the server locator queries all the available servers to see if they are hosting the subscription region queue for the durable client. If the server is located, the client is connected to the server hosting the subscription region queue.
+
+

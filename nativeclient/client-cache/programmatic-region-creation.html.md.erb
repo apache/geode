@@ -1,0 +1,24 @@
+---
+title:  Programmatic Region Creation
+---
+
+You create regions programmatically with the `regionFactory` class.
+
+**Note:**
+Before creating a region, specify region attributes. See [Region Attributes](region-attributes.html#region-attributes).
+
+Create your regions using the `regionFactory` class.
+
+**C++ RegionFactory Example**
+
+``` pre
+RegionFactoryPtr regionFactory =
+    cachePtr->createRegionFactory(CACHING_PROXY);
+RegionPtr regPtr0 = regionFactory->setLruEntriesLimit(20000)
+        ->create("exampleRegion0");
+    
+```
+
+**Note:** For more information on how to create a region, see [Pivotal GemFire Native Client C++ API](../cpp-caching-api/cpp-caching-api.html#concept_CEC658A999414AC3A494578C214BF64E), [Pivotal GemFire Native Client C# .NET API](../dotnet-caching-api/dotnet-caching-api.html#concept_FC6776DCE6ED48B887A6137761104AA4), and the native client API reference.
+
+

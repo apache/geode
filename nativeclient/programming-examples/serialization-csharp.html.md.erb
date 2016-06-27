@@ -1,0 +1,100 @@
+---
+title:  C\# Serialization Example
+---
+
+This example shows how to implement a user-defined Serializable object.
+
+<span class="figtitleprefix">Figure: </span>Implementing a User-Defined Serializable Object (C\# .NET)
+
+``` pre
+class User : IGFSerializable
+{
+  private string m_name;
+  private int m_userId;
+  ExampleObject m_eo;
+ 
+  public User(string name, int userId)
+  {
+    m_name = name;
+    m_userId = userId;
+    m_eo = new ExampleObject();
+  }
+
+  public User()
+  {
+    m_name = string.Empty;
+    m_userId = 0;
+    m_eo = new ExampleObject();
+  }
+ 
+  public int UserId
+  {
+    get
+      {
+        return m_userId;
+      }
+ 
+  }
+ 
+  public string Name
+  {
+    get
+      {
+        return m_name;
+      }
+  }
+
+  public ExampleObject EO
+  {
+    get
+      {
+        return m_eo;
+      }
+    set
+      {
+        m_eo = value;
+      }
+  }
+ 
+  public override string ToString()
+  {
+    return string.Format("User: {0}, {1}\n{2}", m_userId, m_name,
+                         m_eo.ToString());
+  }
+ 
+  // Our TypeFactoryMethod
+  public static IGFSerializable CreateInstance()
+  {
+    return new User();
+  }
+ 
+#region IGFSerializable Members
+ 
+  public UInt32 ClassId()
+  {
+    get
+      {
+        return 45; // must match Java
+      }
+  }
+  
+  public IGFSerializable FromData(DataInput input)
+  {
+    m_name = input.ReadUTF();
+    m_userId = input.ReadInt32();
+    m_eo.FromData(input);
+    return this;
+  }
+ 
+  public void ToData(DataOutput output)
+  {
+    output.writeUTF(m_name);
+    output.writeInt32(m_userId);
+    eo.ToData(output);
+  }
+ 
+#endregion
+}
+```
+
+

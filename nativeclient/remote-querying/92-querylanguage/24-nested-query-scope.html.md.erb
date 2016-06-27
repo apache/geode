@@ -1,0 +1,38 @@
+---
+title:  Nested Query Scopes
+---
+
+You can nest scopes by using nested `SELECT` statements. Names in an inner scope hide identical names in an outer scope.
+
+In the query below, the inner `SELECT` creates a new scope, the positions of the current portfolio, inside the outer `SELECT` 's scope, `/portfolios`. This inner scope (the collection of entry values from the `/portfolios` region) is first searched for the `secId` element. The outer scope is searched only if the `secId` element is not found in the inner scope.
+
+``` pre
+IMPORT javaobject.Position;
+SELECT DISTINCT * FROM /portfolios
+   WHERE NOT
+    (SELECT DISTINCT * FROM positions.values TYPE Position
+       WHERE secId='YYY').isEmpty
+```
+
+This statement shows the outer scope in bold. The outer scope has all the attributes of a Portfolio in it.
+
+``` pre
+IMPORT javaobject.Position;
+SELECT DISTINCT * FROM /portfolios
+      WHERE NOT
+        (SELECT DISTINCT * FROM positions.values TYPE Position
+            WHERE secId='YYY').isEmpty
+```
+
+<a id="security__section_611591AEA6084A5ABB00DE3E19984498"></a>
+Now the statement with the inner scope is shown in bold. The inner scope has all the attributes of a `Portfolio` in it (inherited from the outer scope), and all the attributes of a `Position` as well.
+
+``` pre
+IMPORT javaobject.Position;
+SELECT DISTINCT * FROM /portfolios
+   WHERE NOT
+     (SELECT DISTINCT * FROM positions.values TYPE Position
+         WHERE secId='YYY).isEmpty
+```
+
+

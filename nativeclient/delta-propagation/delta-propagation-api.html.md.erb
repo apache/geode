@@ -1,0 +1,30 @@
+---
+title:  Delta Propagation API
+---
+
+Delta propagation uses configuration properties and a simple API to send and receive deltas.
+
+<a id="delta-propagation-api__section_5787FD2053544B2AB6E7DCC3CEC14204"></a>
+## .NET - for C\#
+
+Your application class must implement:
+
+-   `GemStone::GemFire::Cache::IGFDelta `
+-   `GemStone::GemFire::Cache::IGFSerializable `
+
+`IGFDelta` provides the methods, `HasDelta`, `ToDelta`, and `FromDelta`, which you program to report on, send, and receive deltas for your class.
+
+Additionally, for cloning, your class must implement the standard .NET `IClonable` interface and its `Clone` method. See [Cloning](delta-propagation-properties.html#delta-propagation-properties).
+
+<a id="delta-propagation-api__section_F3F89A01A4084D3092B88D16E43D8B37"></a>
+
+## C++
+
+Your application must publicly derive from:
+
+-   `gemfire::Delta `
+-   `gemfire::Cacheable `
+
+`Delta` provides the methods, `hasDelta`, `toDelta`, `fromDelta`, which you program to report on, send, and receive deltas for your class.
+
+For cloning, use the `clone` method provided in the Delta interface. See [Cloning](delta-propagation-properties.html#delta-propagation-properties).

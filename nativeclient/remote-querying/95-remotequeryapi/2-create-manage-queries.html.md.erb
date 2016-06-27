@@ -1,0 +1,49 @@
+---
+title:  Creating and Managing Queries
+---
+
+You create queries on the cache server by obtaining a `QueryService` method and manage them through the resulting `Query` object. The `Region` interface has several shortcut query methods.
+
+The `newQuery` method for the `Query` interface binds a query string. By invoking the `execute` method, the query is submitted to the cache server and returns` SelectResults`, which is either a `ResultSet` or a `StructSet`.
+
+The `QueryService` method is the entry point to the query package. It is retrieved from the Cache instance through `Cache::getQueryService`. If you are using the Pool API you must obtain the `QueryService` from the pools and not from the cache.
+
+<a id="running-native-client-xact__section_41564A36A1DE4EEDA8F3E00992F8D02B"></a>
+## Query
+
+A `Query` is obtained from a `QueryService` method, which is obtained from the cache. The `Query` interface provides methods for managing the compilation and execution of queries, and for retrieving an existing query string.
+
+You must obtain a `Query` object for each new query. The following example demonstrates the method used to obtain a new instance of `Query`:
+
+``` pre
+QueryPtr newQuery(const char * querystr); 
+```
+
+<a id="running-native-client-xact__section_0F92AD1BDB29426BB24CD41F5A0FAB78"></a>
+
+## Region Shortcut Query Methods
+
+The `Region` interface has several shortcut query methods. All take a `query` predicate which is used in the `WHERE` clause of a standard query. See [WHERE Clause](../93-querystrings/4-where-clause.html#security) for more information. Each of the following examples also set the query response timeout to 10 seconds to allow sufficient time for the operation to succeed.
+
+-   The `query` method retrieves a collection of values satisfying the query predicate. This call retrieves active portfolios, which in the sample data are the portfolios with keys `111, 222, and 333`:
+
+    ``` pre
+    SelectResultsPtr
+    results = regionPtr->query("status 'active' ");
+    ```
+
+-   The `selectValue` method retrieves one value object. In this call, you request the portfolio with `ID ABC-1` :
+
+    ``` pre
+    SerializablePtr
+    port = region->selectValue("ID='ABC-1'");
+    ```
+
+-   The `existsValue` method returns a boolean indicating if any entry exists that satisfies the predicate. This call returns false because there is no entry with the indicated type:
+
+    ``` pre
+    bool entryExists
+    = region->existsValue("'type' = 'QQQ' ");
+    ```
+
+For more information about these shortcut query methods, see the Region class description in the native client API documentation.

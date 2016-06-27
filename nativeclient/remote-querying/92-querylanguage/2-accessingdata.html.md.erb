@@ -1,0 +1,34 @@
+---
+title:  Accessing Cached Data
+---
+
+Accessing your cached data through the querying service is similar to accessing database contents through SQL queries. How you specify your regions and region contents is particular to the native client.
+
+The query language supports drilling down into nested object structures. Regions can contain nested data collections that are unavailable until referenced in the FROM clause.
+
+This discussion describes how to navigate to your cached data through the native client query service.
+
+**Note:**
+Querying and indexing only operate on remote cache server contents.
+
+-   **[Basic Region Access](../../../nativeclient/remote-querying/92-querylanguage/21-basic-region-access.html)**
+
+    In the context of a query, you specify the name of a region by its full path, starting with a forward slash (/ ).
+
+-   **[Attribute Visibility](../../../nativeclient/remote-querying/92-querylanguage/23-attribute-visibility.html)**
+
+    Within the current query scope, you can access any available object or object attribute.
+
+-   **[Modifying Query Scope](../../../nativeclient/remote-querying/92-querylanguage/22-drilldown-modify-query-scope.html)**
+
+    The query engine resolves names and path expressions according to the name space that is currently in scope in the query. This is not the region scope attribute, but the scope of the query statement.
+
+-   **[Nested Query Scopes](../../../nativeclient/remote-querying/92-querylanguage/24-nested-query-scope.html)**
+
+    You can nest scopes by using nested `SELECT` statements. Names in an inner scope hide identical names in an outer scope.
+
+-   **[When Names Cannot Be Resolved](../../../nativeclient/remote-querying/92-querylanguage/25-when-names-cant-resolve.html)**
+
+    When a query is executed and a name or path expression resolves to more than one region name in the scope, or if the name cannot be resolved at all, the client receives a `QueryException`. The `QueryException` contains the message that is generated for the exception that occurs on the server.
+
+

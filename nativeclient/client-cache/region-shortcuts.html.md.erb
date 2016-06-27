@@ -1,0 +1,65 @@
+---
+title:  RegionShortcuts
+---
+
+<a id="region-shortcuts__section_62D2AB580EDB4165970E4FC42A35C80B"></a>
+<span class="keyword">Geode</span> provides a number of predefined, shortcut region attributes settings for your use, in `RegionShortcut`.
+
+Shortcut attributes are a convenience only. They are named attributes that <span class="keyword">Geode</span> has already stored for you. You can override their settings by storing new attributes with the same `id` as the predefined attributes.
+
+You can also create custom region attributes and store them with an identifier for later retrieval. Both types of stored attributes are referred to as named region attributes. You can create and store your attribute settings in the `cache.xml` file and through the API.
+
+Retrieve named attributes by providing the ID to the region creation. This example uses the shortcut `CACHING_PROXY` attributes to create a region:
+
+``` pre
+<region name="testRegion" refid="CACHING_PROXY"/>
+```
+
+You can modify named attributes as needed. For example, this adds a cache listener to the region:
+
+``` pre
+<region name="testRegion" refid="CACHING_PROXY">
+    <region-attributes>
+        <cache-listener library-name="myAppLib"
+            library-function-name ="myCacheListener" />
+    </region-attributes>
+</region>
+```
+
+In this example, the modified region shortcut is saved to the cache using the region attribute id, for retrieval and use by a second region:
+
+``` pre
+<region name="testRegion" refid="CACHING_PROXY">
+    <region-attributes id="Caching_Proxy_With_Listener">
+        <cache-listener library-name="myAppLib"
+            library-function-name ="myCacheListener" />
+    </region-attributes>
+</region>
+<region name="newTestRegion" refid="Caching_Proxy_With_Listener"/>
+```
+
+<a id="region-shortcuts__section_49150358B8F443E8AF027E4E920E820A"></a>
+
+## Shortcut Attribute Options
+
+You can select the most common region attributes settings from `RegionShortcut`, the predefined named region attributes.
+
+This section provides an overview of the options available in the region shortcut settings.
+
+**Note:**
+For complete listings and descriptions, including information on the underlying `RegionAttributes` settings for each shortcut, see the online documentation for `RegionShortcut`.
+
+These are the options available in `RegionShortcut`.
+
+**Communication with Servers and Data Storage**
+
+-   `PROXY` does not store data in the client cache, but connects the region to the servers for data requests and updates, interest registrations, and so on.
+-   `CACHING_PROXY` stores data in the client cache and connects the region to the servers for data requests and updates, interest registrations, and so on.
+-   LOCAL stores data in the client cache and does not connect the region to the servers. This is a client-side-only region.
+
+**Data Eviction**
+
+For the non-`PROXY` regions--the regions that store data in the client cache--you can add data eviction:
+
+-   `ENTRY_LRU` causes least recently used data to be evicted from memory when the region reaches the entry count limit.
+

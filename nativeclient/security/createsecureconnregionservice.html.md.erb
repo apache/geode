@@ -1,0 +1,43 @@
+---
+title:  Creating Multiple Secure User Connections
+---
+
+To create multiple, secure connections to your servers from a single client, so the client can service different user types, you create an authenticated `RegionService` for each user.
+
+Typically, a <span class="keyword">Geode</span> client embedded in an application server supports data requests from many users. Each user can be authorized to access a subset of data on the servers. For example, customer users are allowed only to see and update their own orders and shipments.
+
+The authenticated users all access the same Cache through instances of the `RegionService` interface. See [RegionService](../client-cache/caching-apis.html#caching-apis__section_8F81996678B64BBE94EF352527F7F006).
+
+To implement multiple user connections in your client cache, create your Cache as usual, with these additions:
+
+1.  Configure your client’s server pool for multiple secure user authentication. Example:
+
+    ``` pre
+    <pool name="serverPool" multiuser-authentication="true">
+         <locator host="host1" port="44444"/>
+    </pool>
+    ```
+
+    This enables access through the pool for the `RegionService` instances and disables it for the Cache instance.
+
+2.  After you create your cache, for each user, call your Cache instance `createAuthenticatedView` method, providing the user’s particular credentials. These are create method calls for two users:
+
+    ``` pre
+    PropertiesPtr credentials1 = Properties::create();
+    credentials1->insert("security-username", "root1");
+    credentials1->insert("security-password", "root1");
+    RegionServicePtr userCache1 = cachePtr->createAuthenticatedView(credentials1);
+
+    PropertiesPtr credentials2 = Properties::create();
+    credentials2->insert("security-username", "root2");
+    credentials2->insert("security-password", "root2");
+    RegionServicePtr userCache2 = cachePtr->createAuthenticatedView(credentials2);
+    ```
+
+    For each user, do all of your caching and region work through the assigned region service pointer. Use the region service to get your regions, and the query service, if you need that, and then do your work with them. Access to the server cache will be governed by the server’s configured authorization rules for each individual user.
+
+3.  To close your cache, close the Cache instance.
+
+-   **[Requirements and Caveats for RegionService](../../nativeclient/security/caveatregionservice.html)**
+
+

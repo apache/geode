@@ -1,0 +1,39 @@
+---
+title:  Configuring Durable Client Reconnection
+---
+
+You can configure the durable native client to obtain an approximate count of pending events upon durable client reconnection. Based on the returned number, you can determine whether to proceed and receive the pending events or to close the cache.
+
+Use the `getPendingEventCount` (C++ API) and the `PendingEventCount` (C\# .NET API) property to detect whether the previously registered subscription queue is available upon durable client reconnection and the count of pending events in the queue. Based on the returned results, you can then decide whether to receive the remaining events or close the cache if the number is too large.
+
+For example, for a client with only the default pool created:
+
+``` pre
+Pool pool = PoolManager.Find("PoolName");
+int pendingEvents = pool.PendingEventCount;
+  … // handle possible data loss
+} else { // pendingEvents >= 0
+  … // decide to invoke readyForEvents() or Cache.close(false)/Pool.destroy()
+}
+```
+
+For a client with multiple pools:
+
+``` pre
+int pendingEvents = 0;
+int pendingEvents1 = PoolManager.Find(“pool1”).PendingEventCount;
+pendingEvents += (pendingEvents1 > 0) ? pendingEvents1 : 0;
+int pendingEvents2 = PoolManager.Find(“pool2”).PendingEventCount;
+pendingEvents += (pendingEvents2 > 0) ? pendingEvents2 : 0;
+// process individual pool counts separately.
+```
+
+The `getPendingEventCount` method and PendingEventCount property can return the following possible values:
+
+-   A value representing a count of events pending at the server. Note that this count is an approximate value based on the time the durable client pool connected or reconnected to the server. Any number of invocations will return the same value.
+-   A zero value if there are no events pending at server for this client pool
+-   A negative value indicates that no queue is available at the server for the client pool.
+    -   A value of -1 indicates that the client pool has reconnected to the server after its durable-client-timeout period has elapsed. The pool's subscription queue has been removed possibly causing data loss.
+    -   A value of -2 indicates that this client pool has connected to server for the first time.
+
+

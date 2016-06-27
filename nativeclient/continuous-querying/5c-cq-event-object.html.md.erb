@@ -1,0 +1,60 @@
+---
+title:  CqEvent Object
+---
+
+The `CqEvent` object contains information about the CQ event.
+
+-   Entry key and new value.
+-   Base operation that triggered the CQ event in the server.
+-   `CqQuery` object associated with this CQ event.
+-   Query operation associated with this CQ event. This operation describes the change affected to the query results by the cache event. Possible values are:
+    -   `CREATE`, which corresponds to the standard database `INSERT` operation.
+    -   ` UPDATE`
+    -   `DESTROY`, which corresponds to the standard database `DELETE` operation.
+
+<a id="security__section_A619799378B14214AF922D819907FF38"></a>
+This table describes the query operation based on whether the old and new entry values in the region entry event satisfy the query criteria.
+
+<a id="security__table_92A6A66523764199A19BCD66BA189921"></a>
+
+<table>
+<caption><span class="tablecap">Table 1. Query Operation Based on Old and New Entry Values</span></caption>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><strong>Old Entry Value</strong></td>
+<td><strong>New Entry Value</strong></td>
+<td><strong>Query Operation</strong></td>
+</tr>
+<tr class="even">
+<td>No value or value does not satisfy the query criteria.</td>
+<td>No value (operation is <code class="ph codeph">invalidate</code> or <code class="ph codeph">destroy</code>) or value does not satisfy the query.
+<p></p>
+<p>Value satisfies the query.</p></td>
+<td>N/A - no event
+<p></p>
+<p></p>
+<p><code class="ph codeph">create</code></p></td>
+</tr>
+<tr class="odd">
+<td>Value satisfies the query</td>
+<td>No value (operation is <code class="ph codeph">invalidate</code> or <code class="ph codeph">destroy</code>) or value does not satisfy the query.
+<p></p>
+<p>Value satisfies the query.</p></td>
+<td><code class="ph codeph">destroy</code>
+<p></p>
+<p></p>
+<p><code class="ph codeph">update</code></p></td>
+</tr>
+</tbody>
+</table>
+
+: <span class="tablecap">Table 1. Query Operation Based on Old and New Entry Values</span>
+
+You can use the query operation to decide what to do with the `CqEvent` in your listeners. For example, a `CqListener` that displays query results on screen might stop displaying the entry, start displaying the entry, or update the entry display depending on the query operation.
+
+

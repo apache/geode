@@ -1,0 +1,38 @@
+---
+title:  Declarative Region Creation
+---
+
+Declarative region creation involves placing the region's XML declaration, with the appropriate attribute settings, in the `cache.xml` file that is loaded at cache creation.
+
+**Note:**
+Before creating a region, specify region attributes. See [Region Attributes](region-attributes.html#region-attributes).
+
+Regions are placed inside the cache declaration in `region` elements. For example:
+
+``` pre
+<cache>
+  <pool name="examplePool" subscription-enabled="true" >
+    <server host="localhost" port="40404" />
+  </pool>
+  <region name="A" refid="PROXY">
+    <region-attributes pool-name="examplePool"/>
+  </region>
+  <region name="A1">
+    <region-attributes refid="PROXY" pool-name="examplePool"/>
+  </region>
+  <region name="A2" refid="CACHING_PROXY">
+    <region-attributes pool-name="examplePool">
+      <region-time-to-live>
+        <expiration-attributes timeout="120" action="invalidate"/>
+      </region-time-to-live>
+    </region-attributes>
+  </region>
+</cache>
+    
+```
+
+The `cache.xml` file contents must conform to the DTD provided in the `productDir/dtd/gfcpp-cache8000.dtd` file. For details, see [Cache Initialization File](../cache-init-file/chapter-overview.html#chapter-overview).
+
+**Note:** For more information on how to create a region, see [Pivotal GemFire Native Client C++ API](../cpp-caching-api/cpp-caching-api.html#concept_CEC658A999414AC3A494578C214BF64E), [Pivotal GemFire Native Client C# .NET API](../dotnet-caching-api/dotnet-caching-api.html#concept_FC6776DCE6ED48B887A6137761104AA4), and the native client API reference.
+
+

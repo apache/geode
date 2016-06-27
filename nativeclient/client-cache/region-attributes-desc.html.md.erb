@@ -1,0 +1,41 @@
+---
+title:  Mutable and Immutable Region Attributes
+---
+
+Attributes that are immutable (fixed) after region creation govern storage location, data distribution, statistics, application plug-ins, and the configuration and management of the region's data hashmap.
+
+This table lists the immutable attributes and their default settings.
+
+<a id="region-attributes-desc__table_B1CC036A7929449A8CD06E56678A6CB2"></a>
+
+| Immutable Region Attribute                                                                                                                | Default Setting |
+|-------------------------------------------------------------------------------------------------------------------------------------------|-----------------|
+| See [CachingEnabled](caching-enabled.html#caching-enabled)                                                        | true            |
+| See [InitialCapacity](initial-capacity.html#initial-capacity)                                                     | 16 (entries)    |
+| See [LoadFactor](load-factor.html#load-factor)                                                                    | 0.75            |
+| See [ConcurrencyLevel](concurrency-level.html#concurrency-level)                                                  | 16              |
+| See [DiskPolicy](disk-policy.html#disk-policy)                                                                    |                 |
+| See [PersistenceManager](persistence-manager.html#persistence-manager)                                            | NULL            |
+| PartitionResolver. See [Specifying Application Plug-In Attributes](application-plugins.html#application-plugins). |                 |
+
+: <span class="tablecap">Table 1. Immutable Region Attributes</span>
+
+Mutable region attributes identify expiration and cache listener, cache writer and cache loader actions that are run from the defining client. The next table lists the mutable attributes that generally can be modified after region creation by using the `AttributesMutator` for the region.
+
+<a id="region-attributes-desc__table_98120276A645432A840F991C18039621"></a>
+
+| Mutable Region Attribute                                                                                                                 | Default Setting |
+|------------------------------------------------------------------------------------------------------------------------------------------|-----------------|
+| Expiration attributes. See [Specifying Expiration Attributes](expiration-attributes.html#expiration-attributes). | no expiration   |
+| See [LruEntriesLimit](lru-entries-limit.html#concept_75D723D60E044FF9AE97C939699AB10A).                          | 0 (no limit)    |
+| CacheLoader. See [Specifying Application Plug-In Attributes](application-plugins.html#application-plugins).      |                 |
+| CacheWriter. See [Specifying Application Plug-In Attributes](application-plugins.html#application-plugins).      |                 |
+| CacheListener. See [Specifying Application Plug-In Attributes](application-plugins.html#application-plugins).    |                 |
+
+: <span class="tablecap">Table 2. Mutable Region Attributes</span>
+
+See [Specifying Application Plug-In Attributes](application-plugins.html#application-plugins) for information about using `AttributesMutator` with cache listeners, cache loaders, and cache writers.
+
+The remainder of this section examines these attributes in detail. Throughout the descriptions, `cache.xml` file snippets show how each attribute can be set declaratively.
+
+

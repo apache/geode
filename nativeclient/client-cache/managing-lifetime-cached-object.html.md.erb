@@ -1,0 +1,54 @@
+---
+title:  Managing the Lifetime of a Cached Object
+---
+
+All cacheable objects derive from `SharedBase` , which provides reference counting. Cacheable objects are referenced using `SharedPtr` types.
+
+<a id="managing-lifetime-cached-object__section_5F8E6FE4F9AB4C658516DB0D31DD4FF8"></a>
+When `SharedPtr` retrieves a cached object, the object remains alive as long as that pointer or the cache itself references the object.
+
+A native client may have many pointers that reference an object. Regardless of how many pointers to the object are deleted, the object remains alive until the last remaining pointer is deleted. At that point the object is deleted.
+
+This is a very simple example:
+
+``` pre
+CacheableStringPtr p = CacheableString::create ("string");
+region.put ("key", p) ;
+```
+
+In the example:
+
+-   The act of object creation allocates memory and initializes the object.
+-   When you assign the object to a `SharedPtr` , you relinquish control of the lifetime of that object to the reference counting mechanism for the cache.
+-   The put operation does not actually copy the object into the cache. Rather, it copies a `SharedPtr` into the cache's hashmap. Consequently, the object remains alive in the cache when the original `SharedPtr` goes away.
+
+The client can make use of an object after you have initialized the object. For example, another `SharedPtr` might issue a `get` to retrieve the object from the cache:
+
+``` pre
+CacheableStringPtr p2 = region.get ("key") ;
+```
+
+Because `p` (the original `SharedPtr` ) and `p2` point to the same object in memory, it is possible under some circumstances for multiple `SharedPtr` types to work on the same object in data storage.
+
+**Note:**
+Once you have put an object into the cache, do not delete it explicitly. Attempting to do so can produce undesirable results.
+
+<a id="managing-lifetime-cached-object__section_8753DE6DF3864BEC806D39F623CBE3E0"></a>
+
+## Changed Objects
+
+If an object update is received, the cache no longer holds the same object. Rather, it holds a completely different instance of the object. The client does not see the updates until it calls a `get` to fetch the object again from the local cache, or (in a cache plug-in) calls `EntryEvent::getNewValue`.
+
+For more about plug-ins, see [Application Plug-Ins](application-plugins.html#application-plugins).
+
+<a id="managing-lifetime-cached-object__section_065526A7FFBB464591A5E119EB8D6CA6"></a>
+
+## Object Expiration
+
+When a cache automatically deletes an object as a result of an expiration action, the reference counting pointers protect the client from situations that might otherwise result if the cache actually freed the object's memory. Instead, the client disconnects the object from the cache by deleting the cache's `SharedPtr` reference, while leaving untouched any client threads with a `SharedPtr` to that object.
+
+<a id="managing-lifetime-cached-object__section_6D700999EE534BD7999D5B428301F5A6"></a>
+
+## Object Lifetime Across the Distributed Cache
+
+An object remains alive until every copy of the object is gone. In distributed regions, expiration activities can be local or distributed, depending on a region's distribution settings. One cache could control the expiration of all copies of an object in all the caches in the distributed system. Alternatively, each cache could control the expiration of its own local copy of the object. If the configuration gives each cache local control, and the expiration parameters are set to different lengths of time in different caches, some copies of an object may still exist after it has disappeared in other caches. See [Expiration Attributes](expiration-attributes.html#expiration-attributes) for more information.

@@ -1,0 +1,13 @@
+---
+title:  Using Thread Safety in Cache Management
+---
+
+When you perform structural changes on your cache, such as creating or closing a `Cache`, `Pool`, or `Region`, synchronize your operations or do them in a single thread.
+
+Other non-structural operations, like region gets, puts, and queries, are thread safe, and you can perform them in a multithreaded way. There are caveats to this, for example, when two threads update the same key simultaneously, there is no way to determine which thread's operation will prevail.
+
+You may need to protect cached objects from concurrent usage and modification. The native client does not guard cached objects themselves from concurrent access.
+
+Always catch and handle exceptions that may be thrown, for problems like trying to create a `Pool` with the same name more than once.
+
+

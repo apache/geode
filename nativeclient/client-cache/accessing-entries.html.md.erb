@@ -1,0 +1,44 @@
+---
+title:  Accessing Entries
+---
+
+<a id="accessing-entries__section_310C0BE952BC489C9E97811DAE8736E4"></a>
+Use the API to retrieve the entry key, entry value, and the `RegionEntry` object itself. A variety of functions provide information for individual entries and for the set of all entries resident in the region. The online API documentation lists all available access functions.
+
+A region's entry keys and `RegionEntry` objects are directly available from the local cache. Applications can directly access the local cache's stored entry value through the `RegionEntry::getValue` function. The `getValue` function either returns the value if a valid value is present in the local cache, or `NULL` if the value is not valid locally. This function does no data loading, nor does it look elsewhere in the distributed system for a valid value.
+
+**Note:** Direct access through `RegionEntry::getValue` does not reset an entry's timestamp for LRU expiration. See [Specifying Expiration Attributes](expiration-attributes.html#expiration-attributes) for more information about LRU expiration.
+
+In comparison, the standard `Region::get` functions consider all caches and all applicable loaders in the distributed system in an attempt to return a valid entry value to the calling application. The primary attribute setting affecting entry retrieval is `CacheLoader`. See [Specifying Application Plug-In Attributes](application-plugins.html#application-plugins).
+
+The standard `Region::get` functions may implement a number of operations in order to retrieve a valid entry value. The operations used depend on the region's attribute settings and on the state of the entry itself. By default, the client retrieves entry values through calls to the `get` function. The client can override this behavior for any region by defining a cache loader for the region.
+
+The following sections discuss the `get` function and special considerations for entry retrieval.
+
+<a id="accessing-entries__section_AD6AFD842C144C128FA1C7F0B9283372"></a>
+
+## Entry Retrieval
+
+You retrieve entry values with the `Region::get` function.
+
+When an entry value is requested from a region, it is either retrieved from the cache server or fetched by the region's locally-defined cache loader in this sequence:
+
+1.  local cache search
+2.  server cache
+3.  local load (For distributed regions, the local load is fetched before remote cache values)
+
+<a id="accessing-entries__section_82B624FE364F4034AF010D20A8D0DF68"></a>
+
+## How the get Operation Affects the Local Entry Value
+
+If a `get` operation retrieves an entry value from outside the local cache through a local load, it automatically `put`s the value into the cache for future reference.
+
+Note that these load operations do not invoke a cache writer. Because the loader and writer operate against the same data source, you do not need to perform a cache write for entries that were just fetched from that data source. For descriptions of these processes, see [Specifying Application Plug-In Attributes](application-plugins.html#application-plugins).
+
+**Note:** Access through a `get` operation resets an entry's timestamp for LRU expiration.
+
+<a id="accessing-entries__section_F636614605C84513B2B7F4A674FD6E38"></a>
+
+## Getting Multiple Entries Using getAll
+
+You can use the `getAll` Region API to get all values for an array of keys from the local cache or cache server. Under [Bulk Put Operations Using putAll](../cpp-caching-api/add-entry-to-cache.html#concept_26D4E6C6BC6F4AB8884E33119999656D__section_748916759F0246619CD27E7456DCA365) for more information.

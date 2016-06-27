@@ -1,0 +1,31 @@
+---
+title:  Serializing Data
+---
+
+All data that <span class="keyword">Geode</span> moves out of the local cache must be serializable.
+
+-   **[Region Data Requiring Serialization](../../nativeclient/cpp-caching-api/region_data_requiring_serialization.html)**
+
+    Certain region types (including client regions) require serialization.
+
+-   **[Data Serialization Options](../../nativeclient/cpp-caching-api/serialization_options.html)**
+
+    The native client C++ API gives you two serialization options: the `GemFire::Serializable` interface and GemFire PDX serialization.
+
+-   **[Serializing Data with PDX Serialization](../../nativeclient/cpp-caching-api/pdx_serialization.html)**
+
+    PDX is a cross-language data format that can reduce the cost of distributing and serializing your objects. PDX stores data in named fields that you can access individually to avoid the cost of deserializing the entire data object. When you use PDX serialization with the native client C++ API, you can register a PdxSerializer for the entire cache, implement PDX serialization for each domain object or use automatic PDX serialization by running the `pdxautoserializer` tool.
+
+-   **[Serializing Data with the Serializable Interface](../../nativeclient/cpp-caching-api/serialization_using_serializable.html)**
+
+    The native client C++ API provides a `Serializable` interface that you can use for fast and compact data serialization. This section discusses the <span class="keyword">Geode</span> serializable interface, and presents implementation examples.
+
+-   **[Serializing Object Graphs](../../nativeclient/cpp-caching-api/object-graphs.html)**
+
+    If you have a graph of objects where each node can be serializable, the parent node can call `DataOutput::writeObject` to delegate the serialization responsibility to its child nodes. Similarly, your application can call `DataInput::readObject` to deserialize the object graph.
+
+-   **[Serializing and Accessing Data as a Blob](../../nativeclient/cpp-caching-api/data-as-blob.html)**
+
+    If you have data that is best handled as a blob, such as structs that do not contain pointers, use the serializable type `CacheableBytes` . `CacheableBytes` is a blob class that implements the serialization for you.
+
+

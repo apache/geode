@@ -1,0 +1,83 @@
+---
+title:  Mapping of cache.xml Elements to gfsh Configuration Commands.
+---
+
+You can configure a <span class="keyword">Geode</span> cluster using either cache.xml files, or you can use gfsh and the cluster configuration service to configure a cluster. This section maps cache.xml elements to the gfsh commands that configure and manage a cluster.
+
+<a id="reference_qvw_zyq_54__table_in3_dzq_54"></a>
+
+<table>
+<caption><span class="tablecap">Table 1. Migrating cache.xml elements to gfsh commands</span></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>cache.xml Element</th>
+<th>gfsh Command</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>&lt;cache&gt;, &lt;cache-server&gt;</td>
+<td><ul>
+<li>[start server](command-pages/start.html#topic_3764EE2DB18B4AE4A625E0354471738A)</li>
+<li>[status server](command-pages/status.html#topic_E5DB49044978404D9D6B1971BF5D400D)</li>
+<li>[stop server](command-pages/stop.html#topic_723EE395A63A40D6819618AFC2902115)</li>
+<li>[alter runtime](command-pages/alter.html#topic_7E6B7E1B972D4F418CB45354D1089C2B)</li>
+</ul></td>
+</tr>
+<tr class="even">
+<td>&lt;async-event-queue&gt;</td>
+<td><ul>
+<li>[create async-event-queue](command-pages/create.html#topic_ryz_pb1_dk)</li>
+<li>[list async-event-queues](command-pages/list.html#topic_j22_kzk_2l)</li>
+</ul></td>
+</tr>
+<tr class="odd">
+<td>&lt;pdx&gt;</td>
+<td>[configure pdx](command-pages/configure.html#topic_jdkdiqbgphqh)</td>
+</tr>
+<tr class="even">
+<td>&lt;region&gt;</td>
+<td><ul>
+<li>[create region](command-pages/create.html#topic_54B0985FEC5241CA9D26B0CE0A5EA863)</li>
+<li>[alter region](command-pages/alter.html#topic_E74ED23CB60342538B2175C326E7D758)</li>
+<li>[destroy region](command-pages/destroy.html#topic_BEDACECF4599407794ACBC0E56B30F65)</li>
+<li>[describe region](command-pages/describe.html#topic_DECF7D3D33F54071B6B8AD4EA7E3F90B)</li>
+<li>[list regions](command-pages/list.html#topic_F0ECEFF26086474498598035DD83C588)</li>
+<li>[rebalance](command-pages/rebalance.html)</li>
+</ul></td>
+</tr>
+<tr class="odd">
+<td>&lt;index&gt;</td>
+<td><ul>
+<li>[create index](command-pages/create.html#topic_960A5B6FD3D84E1881EE118E299DD12D)</li>
+<li>[destroy index](command-pages/destroy.html#topic_D00219CCD6F64C1582A0802AC5CDF3F3)</li>
+<li>[list indexes](command-pages/list.html#topic_B3B51B6DEA484EE086C4F657EC9831F2)</li>
+</ul></td>
+</tr>
+<tr class="even">
+<td>&lt;disk-store&gt;</td>
+<td><ul>
+<li>[create disk-store](command-pages/create.html#topic_bkn_zty_ck)</li>
+<li>[alter disk-store](command-pages/alter.html#topic_99BCAD98BDB5470189662D2F308B68EB)</li>
+<li>[backup disk-store](command-pages/backup.html#topic_E74ED23CB60342538B2175C326E7D758)</li>
+<li>[compact disk-store](command-pages/compact.html#topic_F113C95C076F424E9AA8AC4F1F6324CC)</li>
+<li>[compact offline-disk-store](command-pages/compact.html#topic_9CCFCB2FA2154E16BD775439C8ABC8FB)</li>
+<li>[describe disk-store](command-pages/describe.html#topic_C635B500BE6A4F1D9572D0BC98A224F2)</li>
+<li>[describe offline-disk-store](command-pages/describe.html#topic_kys_yvk_2l)</li>
+<li>[destroy disk-store](command-pages/destroy.html#topic_yfr_l2z_ck)</li>
+<li>[list disk-stores](command-pages/list.html#topic_BC14AD57EA304FB3845766898D01BD04)</li>
+<li>[revoke missing-disk-store](command-pages/revoke.html)</li>
+<li>[show missing-disk-stores](command-pages/show.html#topic_7B3D624D5B4F41D1A0F8A9C3C8B2E780)</li>
+<li>[validate offline-disk-store](command-pages/validate.html)</li>
+</ul></td>
+</tr>
+</tbody>
+</table>
+
+: <span class="tablecap">Table 1. Migrating cache.xml elements to gfsh commands</span>
+
+

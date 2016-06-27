@@ -1,0 +1,72 @@
+---
+title:  About the Native Client C++ API
+---
+
+The native client C++ API allows C++ and .NET developers to programmatically create, populate, and manage a <span class="keyword">Geode</span> distributed system. The C++ library is thread-safe, except where specified otherwise in the online API documentation.
+
+This chapter gives a general overview of the classes in the `gemfire`, `gemfire_statistics`, and `gemfire_admin` namespaces. For complete and current information on the classes listed here, see the online C++ API documentation.
+
+<a id="concept_AB12290E89CA4724AC9F51EFF7B8B8EA__section_14B45E09CA014951AD38D0E051DF8727"></a>
+## Cache Classes
+
+The native client C++ API has the following cache classes:
+
+-   **CacheFactory**. Use this class to create and configure a `Cache` instance. If `cache.xml` is specified, the cache is created based on the declarations loaded from that file.
+-   **Cache**. Entry point to the client caching API. The cache is created by calling the `create` function of the factory class, `CacheFactory`. Regions are configured and obtained using the `Cache::createRegionFactory()` API.
+
+<a id="concept_AB12290E89CA4724AC9F51EFF7B8B8EA__section_9F27929D85CC4EBFB29925974776C985"></a>
+
+## Region Classes
+
+The native client C++ API has the following region classes:
+
+-   **Region**. Provides functions for managing regions and cached data. Use these functions to perform the following actions:
+    -   Retrieve information about the region, such as its parent region and region attribute objects.
+    -   Invalidate or destroy the region.
+    -   Create, update, invalidate and destroy region entries.
+    -   Retrieve region entry keys, entry values, and RegionEntry objects, either individually or as entire sets.
+    -   Retrieve the statistics object associated with the region.
+    -   Set and get user-defined attributes.
+-   **RegionEntry**. Contains the key and value for the entry, and provides all non-distributed entry operations. This object's operations are not distributed and do not affect statistics.
+
+<a id="concept_AB12290E89CA4724AC9F51EFF7B8B8EA__section_CEC4E57E76E84D099D0F55F49F3B64DA"></a>
+
+## Region Attribute Classes
+
+The native client C++ API has the following region attribute classes:
+
+-   **RegionAttributes**. Holds all attribute values for a region and provides functions for retrieving all attribute settings. This class can be modified by the `AttributesMutator` class after region creation.
+-   **AttributesMutator** . Allows modification of an existing region’s attributes for application plug-ins and expiration actions. Each region has an `AttributesMutator` instance.
+
+<a id="concept_AB12290E89CA4724AC9F51EFF7B8B8EA__section_658D04298E13459382D48544AF36A2FA"></a>
+
+## Application Plug-In Classes
+
+The native client C++ API has the following application plug-in classes:
+
+-   **CacheLoader**. Loads data into a region on a cache miss.
+-   **CacheWriter**. Synchronously handles region and entry events before the events occur. Entry events are `create`, `update`, `invalidate`, and `destroy`. Region events are invalidate and destroy. This class has the ability to abort events.
+-   **CacheListener**. Handles region and entry events after they occur. Entry events are `create`, `update`, `invalidate`, and `destroy`. Region events are invalidate and destroy.
+
+<a id="concept_AB12290E89CA4724AC9F51EFF7B8B8EA__section_B3479F5739B048C0BD3EDA89BE0266E0"></a>
+
+## Event Handling Classes
+
+The native client C++ API has the following event handling classes:
+
+-   **RegionEvent**. Provides information about the event, such as what region the event originated in, whether the event originated in a cache remote to the event handler, and whether the event resulted from a distributed operation.
+-   **EntryEvent**. Provides all available information for the `RegionEvent`, and provides entry-specific information such as the old and new entry values and whether the event resulted from a `load` operation.
+
+<a id="concept_AB12290E89CA4724AC9F51EFF7B8B8EA__section_42764C6327944514AE4A26684D7EBCB0"></a>
+
+## Statistics API
+
+The `StatisticsType` API represents a blueprint for the same type of `Statistics`. The `StatisticsType` API is a collection of `StatisticDescriptor`. Internally, each `StatisticDescriptor` describes data of each individual statistic. `StatisticsFactory` provides functionality for creating `StatisticDescriptor`, `StatisticsType`, and `Statistics`.
+
+-   **CacheStatistics** --This class defines common statistics functions. `Region` and `RegionEntry` both have functions that return a `CacheStatistics` object for accessing and resetting their statistics counts.
+-   **StatisticDescriptor**. An instance of this class describes a statistic whose value is updated by an application and may be archived by the native client. Each statistic has a type of either `int`, `long`, or `double`, and either a gauge or a counter. The value of a gauge can increase and decrease, and the value of a counter strictly increases. Create an instance of `StatisticDescriptor` by calling one of these `StatisticsFactory` functions: `createDoubleCounter`, `createDoubleGauge`, `createIntCounter`, `createIntGauge ]`, `createLongCounter`, `createLongGauge`.
+-   **StatisticsType**. An instance of this class describes a logical collection of `StatisticDescriptors`. These descriptions are used to create an instance of `Statistics`. Create an instance of `StatisticsType` by calling `StatisticsFactory::createType`.
+-   **Statistics**. An instance of this class represents concrete `Statistics` of the associated `StatisticsType`. This class stores data related to all individual statistic objects. Create an instance by calling `StatisticsFactory::createStatistics`. This class has functions to get, set, and increment statistic values.
+-   **StatisticsFactory**. This class provides functions for creating instances of `StatisticDescriptor`, `StatisticsType`, and `Statistics objects`. This is a singleton class, and you acquire its instance by using `StatisticsFactory::getExistingInstance`.
+
+To create new statistics, see [Creating New Statistics](creating-new-statistics.html#concept_664156CBD79C44C4B200DA2D64180A65).

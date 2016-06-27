@@ -1,0 +1,29 @@
+---
+title:  Accessing an Entry
+---
+
+The standard `Region::get API` method returns the value associated with the specified key, and passes the callback argument to any cache loaders or cache writers that are invoked in the operation.
+
+If the value is not present locally, it is requested from the cache server. If the cache server request is unsuccessful, a local cache loader is invoked.
+
+The entry value is either retrieved from the local cache or fetched by the region’s locally defined cache loader.
+
+In the following example, the program uses the API to do a get for each entry that was put into the cache:
+
+``` pre
+for ( int32_t i=0; i< 100; i++) {
+    CacheableInt32Ptr res = dynCast<CacheableInt32Ptr>(regionPtr->get(i));
+}
+```
+
+<a id="concept_2B85EC4AB9FA446998147A1539D818CC__section_80F9A9E8F8514A9FBA19106C2473B370"></a>
+## Bulk Get Operations Using getAll
+
+You can use the `Region::getAll` API (`Region.GetAll` for .NET) to gets values for an array of keys from the local cache or server. If the value for a key is not present locally, then it is requested from the server.
+
+**Note:**
+The value returned is not copied, so multi-threaded applications should not modify the value directly, but should instead use the update methods.
+
+The getAll API also supports providing a callback argument to any cache loaders or cache writers that are invoked in the operation. See the Region API documentation for more information about using `getAll`.
+
+

@@ -1,0 +1,36 @@
+---
+title:  Adding Entries to the Cache
+---
+
+<a id="adding-entries-to-cache__section_57CE90DC5C694CB79F05C943DE6F5E4B"></a>
+A region is populated with cached entries in several ways:
+
+-   Explicitly, when an application executes a `create` or a `put` operation for a single entry or for multiple entries that do not already exist in the cache.
+-   Implicitly, when a client does a get on a single entry or on multiple entries that do not already exist in the cache. In this case, the entry is retrieved from a remote cache or through a cache loader. Under [Specifying Application Plug-In Attributes](application-plugins.html#application-plugins), see the portion on a cache loader. A client can also use `getAll` to populate a region with all values for an array of keys. See [Accessing Entries](accessing-entries.html#accessing-entries).
+-   Automatically, when entries are created in remote caches.
+
+If any cache writer is available in the distributed region, it is called before the entry is created and it can abort the creation process.
+
+**Note:**
+For more information on how to create entries, see [Pivotal GemFire Native Client C++ API](../cpp-caching-api/cpp-caching-api.html#concept_CEC658A999414AC3A494578C214BF64E), [Pivotal GemFire Native Client C# .NET API](../dotnet-caching-api/dotnet-caching-api.html#concept_FC6776DCE6ED48B887A6137761104AA4), and the native client API reference.
+
+<a id="adding-entries-to-cache__section_873FFF2CAC804B8E9676AB8098CF2434"></a>
+
+## Adding Entries to the Local Cache
+
+If just the local cache is to be populated, you can either `create` an entry using the `localCreate` Region API, or `put` an entry using `localPut`. See the C++ and .NET online API documentation for details about `localCreate` and `localPut`.
+
+`DateTime` objects must be stored in the cache in UTC, so that times correspond between client and server. If you use a date with a different time zone, convert it when storing into and retrieving from the cache. This example converts a local time to UTC for a put operation:
+
+``` pre
+DateTime t1( 2009, 8, 13, 4, 11, 0, DateTimeKind.Local);
+region0.Put( 1, t1.ToUniversalTime() );
+```
+
+<a id="adding-entries-to-cache__section_7CFEB263E2FE4775A3C9A29351A33911"></a>
+
+## Adding Multiple Entries Using PutAll
+
+If you need to add many cache entries to a region at one time, you can improve cache performance by using the `putAll` function to add them in a single distributed operation. Multiple key/value pairs are stored in a hashmap, then the hashmap contents are processed on the server as either new entries, updates, or invalidates for existing entries.
+
+Under [Adding an Entry to the Cache](../cpp-caching-api/add-entry-to-cache.html#concept_26D4E6C6BC6F4AB8884E33119999656D) see "Bulk Put Operations Using putAll" for more information about the `putAll` API. Additional details are available in the online API documentation for `Region::putAll` (C++), or `Region.PutAll` (.NET).

@@ -1,0 +1,27 @@
+---
+title:  Durable Message Replay
+---
+
+When the primary server receives the cache ready message, the servers and client execute a procedure to update the queue and replay the events from the stored messages.
+
+Durable message replay proceeds as follows. To avoid overwriting current entries with old data, the client does not apply the updates to its cache.
+
+1.  The server finds the queue for this durable client ID and updates its information, including the client’s socket and remote ports.
+
+    If the client has timed out while it was disconnected, its queues are gone and the server then treats it as a new client. See [Initial Operation](initial-operation.html).
+
+2.  All servers that have a queue for this client place a marker in the queue.
+
+    Messages in the queue before the marker are considered to have come while the client was disconnected. Messages after the marker are handled normally.
+
+3.  The cache server sends the queued messages to the client. This includes any messages that were evicted to disk.
+4.  The client receives the messages but does not apply the updates to its cache. If cache listeners are installed, they handle the events. For implications, see [Implementing Cache Listeners for Durable Clients](impl-cache-listeners-durable-clients.html#concept_3BD651087FC4470C8BAB6AFD97AEA689).
+5.  The client receives the marker message indicating that all past events have been played back.
+6.  The cache server sends the current list of live regions.
+7.  In each live region on the client, the marker event triggers the `afterRegionLive` callback.
+
+    After the callback, the client begins normal processing of events from the server and applies the updates to its cache.
+
+Even when a new client starts up for the first time, the cache ready markers are inserted in the queues. If messages start coming into the new queues before the servers insert the marker, those messages are considered as having happened while the client was disconnected, and their events are replayed the same as in the reconnect case.
+
+

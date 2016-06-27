@@ -1,0 +1,34 @@
+---
+title:  Programming to Get Function Results
+---
+
+<span class="keyword">Geode</span> provides a default result collector. If you need special results handling, code a custom `ResultsCollector` implementation to replace the provided default. Use the `Execution::withCollector` method to define your custom collector.
+
+**Note:**
+This section applies only to functions that return results.
+
+To program your client to get the results from a function, use the result collector returned from the function execution, like this:
+
+``` pre
+ResultCollectorPtr rc = FunctionService::onRegion(region)
+                    ->withArgs(args)
+                    ->withFilter(keySet)
+                    ->withCollector(new MyCustomResultCollector())
+                    .execute(Function);
+CacheableVectorPtr functionResult = rc.getResult(); 
+```
+
+The `getResult` methods of the <span class="keyword">Geode</span> default result collector block until all results are received, then return the full result set.
+
+You can handle the results in a custom manner if you wish. To do this:
+
+1.  Write a class that extends `ResultCollector` and code the methods to handle the results as you need. The methods are of two types: one handles data and information from <span class="keyword">Geode</span> and populates the results set, while the other returns the compiled results to the calling application:
+
+    1.  `addResult` is called by <span class="keyword">Geode</span> when results arrive from the `Function` methods. Use `addResult` to add a single result to the ResultCollector.
+    2.  `endResults` is called by <span class="keyword">Geode</span> to signal the end of all results from the function execution.
+    3.  `getResult` is available to your executing application (the one that calls `Execution.execute`) to retrieve the results. This may block until all results are available.
+    4.  `clearResults` is called by <span class="keyword">Geode</span> to clear partial results from the results collector. This is used only for highly available `onRegion` functions where the calling application waits for the results. If the call fails, before <span class="keyword">Geode</span> retries the execution, it calls `clearResults` to ready the instance for a clean set of results.
+
+2.  Use the `Execution` object in your executing member to call `withCollector`, passing your custom collector, as shown in the example above.
+
+

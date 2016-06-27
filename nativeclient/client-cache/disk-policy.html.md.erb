@@ -1,0 +1,36 @@
+---
+title:  DiskPolicy
+---
+
+<a id="disk-policy__section_F3A921FC67B44DD795BD9B5C180FCBB1"></a>
+If the `lru-entries-limit` attribute is greater than zero, the optional `disk-policy` attribute determines how over-limit LRU entries are handled. LRU entries over the limit are either destroyed by default (`disk-policy` is none ) or written to disk (`overflows`).
+
+**Note:**
+If `LruEntriesLimit` is `0`, or `CachingEnabled` is `false`, do not set the `disk-policy` attribute. An `IllegalStateException` is thrown if the attribute is set.
+
+This declaration causes LRU to overflow to disk:
+
+``` pre
+<region-attributes lru-entries-limit="20000"
+    disk-policy="overflows">
+  <persistence-manager ... />
+</region-attributes>
+```
+
+Overflow requires a persistence manager for cache-to-disk and disk-to-cache operations. See [PersistenceManager](persistence-manager.html#persistence-manager).
+
+<a id="disk-policy__section_FE325E59644149ACA43DA2ABB4CF0F7A"></a>
+
+## Overflowing Data to Disk
+
+Region data can be stored to disk using the overflow process to satisfy region capacity restrictions without completely destroying the local cache data. The storage mechanism uses disk files to hold region entry data. When an entry is overflowed, its value is written to disk but its key and entry object remain in the cache. This also uses the region attribute [DiskPolicy](disk-policy.html#disk-policy).
+
+Overflow allows you to keep the region within a user-specified size in memory by relegating the values of least recently used (LRU) entries to disk. Overflow essentially uses disk as a swap space for entry values. When the region size reaches the specified threshold, entry values are moved from memory to disk, as shown in the following figure. If an entry is requested whose value is only on disk, the value is copied back into memory, possibly causing the value of a different LRU entry to be overflowed to disk.
+
+<a id="disk-policy__fig_67963EC3BDD64272BBDAD9517E1D78A0"></a>
+
+<span class="figtitleprefix">Figure: </span>Data Flow Between Overflow Region and Disk Files
+
+<img src="../common/images/client-cache-data-flow.gif" alt="Data Flow Between Overflow Region and Disk Files" id="disk-policy__image_687021ECD97A40FB843DBDE59C555384" class="image" />
+
+In this figure the value of the LRU entry X has been moved to disk to recover space in memory. The key for the entry remains in memory. From the distributed system perspective, the value on disk is as much a part of the region as the data in memory. A `get` performed on region B looks first in memory and then on disk as part of the local cache search.

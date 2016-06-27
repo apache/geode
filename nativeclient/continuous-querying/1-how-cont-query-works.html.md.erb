@@ -1,0 +1,64 @@
+---
+title:  How Continuous Querying Works
+---
+
+C++ and C\# .NET clients register interest in events using simple query expressions. Events are sent to client listeners that you can program to do whatever your application requires.
+
+-   [Overview of CQ Operations](1-how-cont-query-works.html#security__section_D4F0FAC4880A49A18D6E11B777C2716A)
+-   [Logical Architecture and Data Flow](1-how-cont-query-works.html#security__section_9FEA0CFD3DA64BF5B42B37F5CE05C993)
+-   [State and Life Cycle](1-how-cont-query-works.html#security__section_677EB38AB60E4410A8A60980CD3BAACB)
+
+<a id="security__section_D4F0FAC4880A49A18D6E11B777C2716A"></a>
+## Overview of CQ Operations
+
+You subscribe to server-side events using SQL-type query filtering. The native client sends a query to the server side for execution and receives the events that satisfy the criteria.
+
+For example, in a region storing stock market trade orders, you can retrieve all orders over a certain price by running a CQ with a query like this:
+
+``` pre
+SELECT * FROM /tradeOrder t WHERE t.price > 100.00
+```
+
+When the CQ is running, the server sends the client all new events that affect the results of the query. On the native client side, listeners programmed by you receive and process incoming events. For the example query on `/tradeOrder`, you might program a listener to push events to a GUI where higher-priced orders are displayed. CQ event delivery uses the client/server subscription framework described in [Client to Server Connection Process](../client-cache/client-to-server-connection.html#client-to-server-connection).
+
+CQs do not update the native client region. This is in contrast to other server-to-client messaging, like the updates sent to satisfy interest registration and responses to get requests from the client. CQs are notification tools for the CQ listeners, which can be programmed in any way your application requires.
+
+When a CQ is running against a server region, each entry event is evaluated against the CQ query by the thread that updates the server cache. If either the old or the new entry value satisfies the query, the thread puts a `CqEvent` in the client's queue. The `CqEvent` contains information from the original cache event, plus information specific to the CQ's execution. Once received by the client, the `CqEvent` is passed to the `onEvent` method of all `CqListeners` defined for the CQ.
+
+<a id="security__section_9FEA0CFD3DA64BF5B42B37F5CE05C993"></a>
+
+## Logical Architecture and Data Flow
+
+Clients can execute any number of CQs, with each CQ given any number of listeners. This figure shows the logical architecture of continuous querying.
+
+<img src="../common/images/10-Continuous_Querying-1.gif" id="security__image_7B1C48755BE541BDBCD7DCD442728754" class="image" />
+
+The next figure shows the typical CQ data flow when entries are updated in the server cache. A description of the data flow follows, along with a description of CQ state and life cycle.
+
+<img src="../common/images/10-Continuous_Querying-3.gif" id="security__image_F5E03A24E29C41B683EC6E85B3B64977" class="image" />
+
+1.  Entry events come to the server's cache from any source: the server or its peers, distribution from remote sites, or updates from a client.
+2.  For each event, the server's CQ executor framework checks for a match with the CQs it has running.
+3.  If the old or new entry value satisfies a CQ query, a CQ event is sent to the CQ's listeners on the client side. Each listener for the CQ gets the event. In the preceding figure:
+    -   Both new and old prices for entry X satisfy the CQ query, so that event is sent indicating an update to the query results.
+    -   The old price for entry Y satisfied the query, so it was part of the query results. The invalidation of entry Y means that it does not satisfy the query. Because of this, the event is sent indicating that it is destroyed in the query results.
+    -   The price for the newly created entry Z does not satisfy the query, so no event is sent.
+
+The region operations do not translate directly to specific query operations, and the query operations do not specifically describe the region events. Instead, each query operation describes how its corresponding region event affects the query results. For more information, see [CqEvent Object](5c-cq-event-object.html#security).
+
+<a id="security__section_677EB38AB60E4410A8A60980CD3BAACB"></a>
+
+## State and Life Cycle
+
+A CQ has three possible states that can be accessed from the client by calling `CqQuery.getState`.
+
+-   `STOPPED`. The CQ has been created but not yet executed, or it has been explicitly stopped from executing. The stopped CQ uses system resources. You start or restart the CQ by calling the execute method on `CqQuery`.
+-   `RUNNING`. The CQ is being executed on the server for all events in the region referenced by the query. Results are sent to all client listeners associated with the `CqQuery`.
+-   `CLOSED`. The CQ is closed and is not using system resources. Invoking an execute or stop method on closed `CqQuery` throws an exception.
+
+**Typical CQ life cycle**
+
+1.  The client creates the CQ. This sets up everything for running the query and provides the client with a `CqQuery` object, but does not execute the CQ. At this point, the query is in a `STOPPED `state, ready to be closed or run.
+2.  The client runs the CQ with an API call to one of the `CqQuery execute*` methods. This puts the query into a `RUNNING` state on the client and on the server.
+3.  The CQ is closed by a client call to `CqQuery.close`. This de-allocates all resources in use for the CQ on the client and server. At this point, the cycle could begin again with the creation of a new `CqQuery` instance.
+

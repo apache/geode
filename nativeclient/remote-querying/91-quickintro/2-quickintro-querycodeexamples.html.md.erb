@@ -1,0 +1,42 @@
+---
+title:  Executing a Query from the Native Client
+---
+
+C\#/.NET and C++ examples show how to execute a query from the native client.
+
+**Note:**
+In all queries that use the example data, it is assumed that the `/portfolios` region has `javaobject.Portfolio` objects on the cache server.
+
+1.  If you are using the C++ native client, get a pointer to the `QueryService` method.
+2.  Create a `QueryPtr` to a query (C++) or create a query instance (C\# .NET) that is compatible with the OQL specification.
+3.  Use the `execute` method for the `Query` interface to submit the query string to the cache server. The server remotely evaluates the query string and returns the results to the client.
+4.  You can iterate through the returned objects as part of the query process.
+
+<a id="security__section_15C6689C363B469B947B177E1DE73208"></a>
+## C\#/.NET Example
+
+``` pre
+Query<Portfolio> qry = qrySvc.NewQuery("SELECT DISTINCT * FROM /Portfolios");
+ISelectResults<Portfolio> results = qry.Execute();
+SelectResultsIterator<Portfolio> iter = results.GetIterator(); 
+while (iter.MoveNext()) {
+    Console.WriteLine( iter.Current.ToString()); }
+```
+
+<a id="security__section_79FEE9FE8530496A8FD984C6D6D03894"></a>
+
+## C++ Example
+
+**Note:**
+The C++ examples in this chapter all assume that you have already obtained a pointer to the `QueryService`.
+
+``` pre
+QueryServicePtr qrySvcPtr = cachePtr->getQueryService("examplePool");
+QueryPtr qry = qrySvcPtr->newQuery(
+               "SELECT DISTINCT * FROM /Portfolios WHERE status = ‘active’");
+SelectResultsPtr resultsPtr = qry->execute(10);
+SelectResultsIterator iter = resultsPtr->getIterator();
+while (iter.hasNext()) {
+    PortfolioPtr portfolio = dynCast<PortfolioPtr > (iter.next());
+}
+```

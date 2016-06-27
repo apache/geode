@@ -1,0 +1,34 @@
+---
+title:  Creating a Proxy Client-Side Region
+---
+
+This section provides code examples for creating and customizing proxy client-side regions.
+
+**Note:**
+Creating a region through the native client API only creates a proxy client-side region. A corresponding region with the same name and path should also exist on the servers that have been configured for client connections and upon which the client will perform its operations.
+
+To create a region, you create a `RegionFactory` using the `RegionShortcut` that most closely fits your region configuration. From that, create your region, customizing the settings as region attributes as needed.
+
+## Creating a CACHING\_PROXY Region
+
+This example creates a region using a CACHING\_PROXY `RegionShortcut` with no further modifications:
+
+``` pre
+RegionFactoryPtr regionFactory = 
+            cachePtr->createRegionFactory(CACHING_PROXY);
+regionPtr = regionFactory ->create("exampleRegion");
+```
+
+## Creating a CACHING\_PROXY Region with LRU
+
+This example creates a region based on the CACHING\_PROXY RegionShortcut with two additional region attributes settings. For information on the settings, see [Region Attributes Descriptions](../client-cache/region-attributes-desc.html#region-attributes-desc).
+
+``` pre
+RegionFactoryPtr regionFactory = 
+              cachePtr->createRegionFactory(CACHING_PROXY);
+regionPtr = regionFactory->setLruEntriesLimit( 20000 )
+              ->setInitialCapacity( 20000 )
+              ->create("exampleRegion");
+```
+
+

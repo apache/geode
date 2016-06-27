@@ -1,0 +1,64 @@
+---
+title:  Query Code Samples Returning ResultSet
+---
+
+API examples demonstrate methods for returning `ResultSet` for both built-in and user-fined data types.
+
+**Query Returns a ResultSet for a Built-In Data Type**
+
+``` pre
+QueryServicePtr qrySvcPtr = cachePtr->getQueryService("examplePool");
+QueryPtr query = qrySvcPtr->newQuery("select distinct pkid from /Portfolios");
+//specify 10 seconds for the query timeout period
+SelectResultsPtr results = query->execute(10);
+{
+   printf( "\nNo results returned from the server");
+}
+
+//obtaining a handle to resultset
+ResultSetPtr rs(dynamic_cast<ResultSet*> (results.ptr()));
+{
+   printf ("\nResultSet is not obtained \n"); return;
+}
+//iterating through the resultset using row index.
+for (int32_t row=0; row < rs->size(); row++)
+{
+   SerializablePtr ser((*rs)[row]);
+   CacheableStringPtr str(dynamic_cast<CacheableString*> (ser.ptr()));
+   if (str != NULLPTR)
+   {
+      printf("\n string column contains - %s \n", str->asChar() );
+   }
+}
+```
+
+**Query Returns a ResultSet for a User-Defined Data Type**
+
+``` pre
+QueryServicePtr qrySvcPtr = cachePtr->getQueryService("examplePool");
+const char * querystring = "select distinct * from /Portfolios";
+QueryPtr query = qrySvcPtr->newQuery(querystring);
+//specify 10 seconds for the query timeout period
+SelectResultsPtr results = query->execute(10);
+{
+   printf( "\nNo results returned from the server");
+}
+//obtaining a handle to resultset
+ResultSetPtr rs(dynamic_cast<ResultSet*> (results.ptr()));
+{
+   printf ("\nResultSet is not obtained \n"); return;
+}
+//iterating through the resultset using iterators.
+SelectResultsIterator iter = rs->getIterator();
+while (iter.hasNext())
+{
+   SerializablePtr ser = iter.next();
+   PortfolioPtr port(dynamic_cast<Portfolio*> (ser.ptr()));
+   if (port != NULLPTR)
+   {
+      printf("\nPortfolio object is - %s \n", port->toString()->asChar() );
+   }
+} // end of rows
+```
+
+

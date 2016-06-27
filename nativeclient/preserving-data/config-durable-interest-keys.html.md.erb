@@ -1,0 +1,33 @@
+---
+title:  Configuring Durable Interest in Keys
+---
+
+When a durable client disconnects, its servers keep queuing messages for selected keys. The client indicates which keys by registering durable interest for those keys.
+
+This fine-grained control handles the constraints of queue size and memory by saving only the critical messages.
+
+You still register interest for other keys, but not durable interest. When the client is connected to its servers, it receives messages for those non-durable keys. When the client is disconnected, its non-durable interest registrations are deleted but messages that are already in the queue remain there.
+
+For durable clients, all interest registration is done immediately after the regions are created. This is required whether interest registration is durable or not durable. An extra `registerInterest` parameter specified for durable clients indicates whether the registration is durable (true) or not (false).
+
+## API Client Durable Interest List Registration (C++)
+
+The following programmatic example registers durable interest in Key-1. The interest registration happens immediately after region creation and before anything else.
+
+``` pre
+// Durable client interest registration can be
+// durable (true) or nondurable(default).
+VectorOfCacheableKey keys;
+keys.push_back( CacheableString::create("Key-1") );
+regionPtr->registerKeys(keys,true);
+```
+
+<a id="concept_6456354A9AD945C780A5AA864B41B564__section_3DE5872B0888410EB42D52CFB28C79E5"></a>
+You use the typical methods for interest registration and configure notification by subscription on the server as usual. For details, see [Registering Interest for Entries](../client-cache/registering-interest-for-entries.html#registering-interest-for-entries).
+
+**Note:**
+Changing interest registration after the durable client connects the first time can cause data inconsistency and is not recommended.
+
+At restart, if the client doesn't register durable interest for exactly the same keys as before then the entries in the interest list are not copied from the server during the registration. Instead, the client cache starts out empty and entries are added during updates. If no updates come in for an entry, it never shows up in the client cache.
+
+

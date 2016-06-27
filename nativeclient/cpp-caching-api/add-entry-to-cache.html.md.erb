@@ -1,0 +1,44 @@
+---
+title:  Adding an Entry to the Cache
+---
+
+You can populate a native client region with cache entries using the `Region::put` or the `Region::create` API functions. Code examples demonstrate these actions.
+
+The `put` function places a new value into a region entry with the specified key, while the `create` function creates a new entry in the region. Both functions provide a user-defined parameter object to any cache writer invoked in the process, and new values for both functions are propagated to a connected cache server.
+
+## Adding Entries Using create
+
+When the put function adds an entry, the previous value is overwritten if there is already an entry associated with the specified key in the region. In the next example, the program uses the API to put 100 entries into the cache by iteratively creating keys and values, both of which are integers.
+
+``` pre
+for ( int32_t i=0; i < 100; i++ ) {
+    regionPtr->put( i, CacheableInt32::create(i) );
+}
+```
+
+<a id="concept_26D4E6C6BC6F4AB8884E33119999656D__section_748916759F0246619CD27E7456DCA365"></a>
+## Bulk Put Operations Using putAll
+
+You can batch up multiple key/value pairs into a hashmap and put them into the cache with a single operation using the `Region::putAll` API function (`Region.PutAll` for .NET) . Each entry is processed for interest registration on the server, so each entry requires its own unique event ID. Updates and creates can be mixed in a `putAll` operation, so those events need to be addressed on the cache server for appropriate cache listener invocation on distributed system members. Map entries retain their original order when they are processed at the server.
+
+The following table lists the client and cache server statistics for `putAll`.
+
+<a id="concept_26D4E6C6BC6F4AB8884E33119999656D__table_4693B08B5B4D44118DC399C8826C9750"></a>
+
+| Statistic Type     | Chart Name                | Description                                                                                                                                     |
+|--------------------|---------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| `CachePerfStats`   | `Putalls`                 | Total number of times a map is added or replaced in the cache as a result of a local operation. Also reports the number of `putAll` operations. |
+| `CacheperfStats`   | `putallTime`              | Total time to replace a map in the cache as a result of a local operation.                                                                      |
+| `CacheServerStats` | `putAllRequests`          | Number of `putAll` requests.                                                                                                                    |
+| `CacheServerStats` | `putAllResponses`         | Number of `putAll` responses written to the cache client.                                                                                       |
+| `CacheServerStats` | `processPutAllTime`       | Total time to process a cache client `putAll` request, including the time to put all objects into the cache.                                    |
+| `CacheServerStats` | `readPutAllRequestTime`   | Total time to read `putAll` requests.                                                                                                           |
+| `CacheServerStats` | `writePutAllResponseTime` | Total time to write `putAll` responses.                                                                                                         |
+| `CacheClientStats` | `putAll`                  | Number of `putAll` requests sent to the cache server.                                                                                           |
+| `CacheClientStats` | `sendPutAllTime`          | Total time for `sendPutAll` .                                                                                                                   |
+
+: <span class="tablecap">Table 1. PutAll Statistics for Cache Server and Client</span>
+
+The putAll API also supports providing a callback argument to any cache loaders or cache writers that are invoked in the operation.
+
+

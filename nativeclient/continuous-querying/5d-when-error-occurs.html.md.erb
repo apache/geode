@@ -1,0 +1,19 @@
+---
+title:  When an Error Occurs in a Running CQ
+---
+
+When an error occurs in CQ execution on the server, specific information on the error itself is stored in the server's log file. An exception is passed to the client, and the client throws an exception.
+
+The server log will contain an error message indicating an error while processing CQ , like this:
+
+``` pre
+[error 2007/12/18 12:03:18.903 PST <RMI TCP Connection(2)-
+10.80.10.91> tid=0x18] Error while processing CQ on the event, key :
+key-1, CqName :testCQEvents_0, ClientId :
+identity(carlos(3249):52623/35391,connection=1,durableAttributes=null)
+Error :No public attribute named 'ID' was found in class java.lang.Object
+```
+
+Errors in CQ execution are usually caused by data errors, such as invalid object types that are stored in the server region. In this case, the query is trying to read into an object of type Portfolio for an entry where an empty object has been stored. You can avoid these types of errors by placing constraints on the region entries, or by otherwise controlling the types of objects stored in your server regions.
+
+

@@ -1,0 +1,16 @@
+---
+title:  Using Iterator Variables
+---
+
+For each collection expressed in the `FROM` clause, you can associate an explicit variable. The variable is added to the current scope and becomes the iterator variable bound to the elements of the collection as they are iterated over. In this example, `pflo` and `posnVal` are both explicit iterator variables.
+
+**Query Using Explicit Iterator Variables**
+
+``` pre
+IMPORT javaobject.Position;
+SELECT DISTINCT pflo."type", posnVal.qty
+FROM /portfolios pflo, positions.values posnVal TYPE Position
+WHERE pflo.status = 'active' and posnVal.mktValue > 25.00
+```
+
+

@@ -1,0 +1,43 @@
+---
+title:  A Simple C\# Example
+---
+
+An example shows how to connect to <span class="keyword">Geode</span>, create a cache and region, put and get keys and values, and disconnect.
+
+## Simple C\# Code
+
+``` pre
+class BasicOperations
+{
+   public static void Main(string[] args)
+   {
+      try
+      {
+         // 1. Create a cache
+         CacheFactory cacheFactory = CacheFactory.CreateCacheFactory();
+         Cache cache = cacheFactory.Create();
+
+         // 2. Create default region attributes using region factory
+         RegionFactory regionFactory =
+            cache.CreateRegionFactory(RegionShortcut.CACHING_PROXY);
+
+         // 3. Create a region
+         IRegion<int, string> region =
+            regionFactory.Create<int, string>("exampleRegion");
+
+         // 4. Put some entries
+         region[111] = "Value1";
+         region[123] = "123";
+
+         // 5. Get the entries
+         string result1 = region[111];
+         string result2 = region[123];
+
+         // 6. Close cache
+         cache.Close();
+      }
+   }
+}
+```
+
+

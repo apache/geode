@@ -1,0 +1,26 @@
+---
+title:  Enabling Queue Conflation to Improve Update Performance
+---
+
+Conflation of entry update messages can reduce the number of update messages a native client receives, thereby increasing performance. The native client receives only the most recent update for a particular entry key.
+
+Conflation is enabled for a cache server region, so all clients receiving updates for a particular region benefit from the conflation. To enable conflation, set the cache server’s `enable-subscription-conflation` region attribute to `true`. This region attribute is `false` by default.
+
+The queue managment code conflates entry updates as part of the enqueue operation. If the previous enqueued item for that key is also an `update` operation, the queue management code removes that previously enqueued update, leaving only the latest update to be sent when event distribution occurs. For high availability, conflation also occurs for any secondary queues.
+
+Only entry `update` messages in a cache server region with `distributed-no-ack` scope are conflated. Region operations and entry operations other than updates are not conflated.
+
+For more information, see [Conflate the Server Subscription Queue](../../developing/events/conflate_server_subscription_queue.html).
+
+<a id="concept_AEFA04AF9ABD42C0A37ED31806596D24__section_BE506A32A8E44073B197B03AC5232C01"></a>
+## Overriding Queue Conflation Per-Client
+
+Override conflation on a per-client basis by setting the conflate-events property in the native client’s `gfcpp.properties` file.
+
+Valid settings are:
+
+-   `server`. Uses the server settings.
+-   `true`. Conflates everything sent to the client.
+-   `false`. Does not conflate anything sent to the client.
+
+

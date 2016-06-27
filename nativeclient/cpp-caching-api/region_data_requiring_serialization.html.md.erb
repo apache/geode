@@ -1,0 +1,19 @@
+---
+title:  Region Data Requiring Serialization
+---
+
+Certain region types (including client regions) require serialization.
+
+Region data in the following types of regions must be serializable:
+
+-   Partitioned regions (except functions that add data locally to a partitioned region use the deserialized form).
+-   Distributed regions.
+-   Regions that are persisted or overflowed to disk.
+-   Server or client regions in a client/server installation.
+-   Regions distributed between gateways in a multi-site installation.
+-   Regions that receive events from remote caches.
+-   Regions that provide function arguments and results.
+
+To minimize the cost of serialization and deserialization, <span class="keyword">Geode</span> avoids changing the data format whenever possible. This means your data may be stored in the cache in serialized or deserialized form, depending on how you use it. For example, if a server acts only as a storage location for data distribution between clients, it makes sense to leave the data in serialized form, ready to be transmitted to clients that request it. Partitioned region data is always stored in serialized form with one exception—functions that add data to a partitioned region locally use the deserialized form.
+
+

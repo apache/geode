@@ -1,0 +1,21 @@
+---
+title:  Configuring Authentication by the Cache Server
+---
+
+When the cache server receives client credentials during the handshake operation, the server authenticates the client with the callback configured in the `security-client-authenticator` system property. The handshake succeeds or fails depending on the results of the authentication process.
+
+Here is an example of how you could configure `security-client-authenticator` in the `gfcpp.properties` file:
+
+`security-client-authenticator=templates.security.PKCSAuthenticator.create`
+
+In the preceding configuration sample, `PKCSAuthenticator` is the callback class implementing the `Authenticator` interface and `create` is its factory method.
+
+The following example shows an implementation of the static `create` method:
+
+``` pre
+public static Authenticator create() {
+  return new PKCSAuthenticator();
+}
+```
+
+

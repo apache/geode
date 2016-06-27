@@ -1,0 +1,34 @@
+---
+title:  Basic Region Access
+---
+
+In the context of a query, you specify the name of a region by its full path, starting with a forward slash (/ ).
+
+<a id="security__section_789E081192A74B00B0E726EDC1C574C4"></a>
+## Object Attributes
+
+You can access the Region object's public fields and methods from a region path, referred to as the region's attributes. Using this method, `/portfolios.name` returns "`portfolios`" and `/portfolios.name.length` returns `10` . An attribute is mapped to a Java class member in three possible ways with the following priority until a match is found. If the attribute is named x, then:
+
+``` pre
+public method getX()
+public method x()
+public field x
+```
+
+**Note:**
+The term *attribute* in this context is not the same as a region attribute.
+
+<a id="security__section_D64CB943612640D6B899023E5D997DB2"></a>
+
+## Region Data
+
+You can also access entry keys and entry data through the region:
+
+-   `/portfolios.keySet` returns the `Set` of entry keys in the region
+-   `/portfolios.entrySet` returns the `Set` of `Region.Entry` objects
+-   `/portfolios.values` returns the Collection of entry values
+-   `/portfolios` return the Collection of entry values
+    **Note:**
+    These collections are immutable. Invoking modifier methods on them, such as `add` and `remove`, result in an `UnsupportedOperationException`.
+
+For the last two bullets, the FROM clause `/portfolios.values` and `/portfolios` return the same thing.

@@ -1,0 +1,41 @@
+---
+title:  Implementing Delta Propagation
+---
+
+By default, delta propagation is enabled in your distributed system and is used for objects that implement the delta interface. You program the client-side methods to extract delta information for your entries and to apply received delta information.
+
+For more information, see [Delta Propagation API](delta-propagation-api.html#delta-propagation-api).
+
+**Prerequisites**
+
+-   Study your object types and expected application behavior to determine which objects should use delta propagation. Delta propagation is not beneficial for all data and data modification scenarios. See [Exceptions and Limitations](performance.html#performance).
+-   Decide whether to enable cloning. Cloning is disabled by default. See [cloning-enabled](delta-propagation-properties.html#delta-propagation-properties).
+-   If you enable cloning, consider providing your own implementation, to optimize performance.
+-   If you do not enable cloning, be sure to synchronize your delta code.
+-   If you do not enable cloning, review all associated listener code for dependencies on the entry event old value. Without cloning, <span class="keyword">Geode</span> modifies the entry in place and so loses its reference to the old value. For delta events, the `EntryEvent` methods to retrieve the old and new values both return the new value.
+
+**Procedure**
+
+For every class in which you want delta propagation, implement the delta interface and update your methods to support delta propagation. Exactly how you do this depends on your application and object needs, but these steps describe the basic approach.
+
+1.  Study the object contents to decide how to handle delta changes.
+
+    Delta propagation has the same issues of distributed concurrency control as the distribution of full objects, but on a more detailed level. Some parts of your objects may be able to change independent of one another while others may always need to change together. Send deltas large enough to keep your data logically consistent. If, for example, field A and field B depend on each other, then your delta distributions should either update both fields or neither. As with regular updates, the fewer producers you have on a data region, the lower your likelihood of concurrency issues.
+
+2.  In the application code that puts entries, put the fully populated object into the local cache. This usually means doing a `get` on the entry, unless you are sure it does not already exist anywhere in the distributed region.
+
+    Even though you are planning to send only deltas, errors on the receiving end could cause <span class="keyword">Geode</span> to request the full object, so you must provide it to the originating put method. Do this even in empty producers, with regions configured for no local data storage.
+
+3.  Change each field’s update method to record information about the update.
+
+    The information must be sufficient for `toDelta` to encode the delta and any additional required delta information when it is invoked.
+
+4.  Write `hasDelta` to report on whether a delta is available.
+5.  When writing your serialization methods, `toDelta`, `fromDelta`, `toData`, `fromData`, be sure to exclude any fields used to manage delta state, which do not need to be sent.
+6.  Write `toDelta` to create a byte stream with the changes to the object and any other information that `fromDelta` will need to apply the changes. Before returning from `toDelta`, reset your delta state to indicate that there are no delta changes waiting to be sent.
+7.  Write `fromDelta` to decode the byte stream that `toDelta` creates and update the object.
+8.  Make sure you provide adequate synchronization to your object to maintain a consistent object state.
+
+    If you do not use cloning, you will probably need to synchronize on reads and writes to avoid reading partially written updates from the cache. This might involve `toDelta`, `fromDelta`, and other object access and update methods. Additionally, your implementation should take into account the possibility of concurrent invocations of `fromDelta` and one or more of the object's update methods.
+
+

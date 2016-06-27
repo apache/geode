@@ -1,0 +1,157 @@
+---
+title:  Pool Configuration Example and Settings
+---
+
+Connection pools require standard client/server distributed system and cache configuration settings. You must also configure settings for the locator, server, and pool elements.
+
+-   Locator. Host and port where a server locator is listening.
+-   Server. Host and port where a server is listening.
+-   Pool. Client/server connection pool.
+
+The example shows a declarative pool configuration. Following the example is a table that describes the attributes that can be configured.
+
+## Example—Declarative Pool Configuration
+
+This example shows a declarative pool configuration.
+
+**Note:**
+You create an instance of `PoolFactory` through `PoolManager`.
+
+``` pre
+<pool free-connection-timeout="12345" idle-timeout="5555"
+      load-conditioning-interval="23456"
+      max-connections="7" min-connections="3"
+      name="test_pool_1" ping-interval="12345"
+      read-timeout="23456" retry-attempts="3" server-group="ServerGroup1"
+      socket-buffer-size="32768" statistic-interval="10123"
+      subscription-ack-interval="567" subscription-enabled="true"
+      subscription-message-tracking-timeout="900123"
+      subscription-redundancy="0" thread-local-connections="true">
+   <locator host="localhost" port="34756"/>
+</pool>
+```
+
+<a id="configuring-pools__section_E7AA69F3BB6C4FEA8094E2BC5278A349"></a>
+## Pool Attributes
+
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Attribute Name</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code class="ph codeph">free-connection-timeout</code></td>
+<td><p>Number of milliseconds (ms) that the client waits for a free connection if <code class="ph codeph"> max-connections</code> limit is configured and all connections are in use.</p></td>
+<td><p>10000 ms</p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">idle-timeout</code></p></td>
+<td><p>Number of milliseconds to wait for a connection to become idle for load balancing</p></td>
+<td><p>5000 ms</p></td>
+</tr>
+<tr class="odd">
+<td><code class="ph codeph">load-conditioning-interval</code></td>
+<td><p>Interval in which the pool checks to see if a connection to a specific server should be moved to a different server to improve the load balance.</p></td>
+<td><p>300000 ms (5 minutes)</p></td>
+</tr>
+<tr class="even">
+<td><code class="ph codeph">max-connections</code></td>
+<td><p>Maximum number of connections that the pool can create. If all connections are in use, an operation requiring a client-to server-connection is blocked until a connection is available or the <code class="ph codeph"> free-connection-timeout</code> is reached. If set to -1, there is no maximum. The setting must indicate a cap greater than <code class="ph codeph"> min-connections</code>.</p>
+<div class="note note">
+**Note:**
+<p>If you use this setting to cap your pool connections, disable the pool attribute <code class="ph codeph"> pr-single-hop-enabled</code>. Leaving single hop enabled can increase thrashing and lower performance.</p>
+</div></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">min-connections</code></p></td>
+<td><p>Number of connections that must be created initially.</p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">name</code></p></td>
+<td><p>Pool name.</p></td>
+<td><p></p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">ping-interval</code></p></td>
+<td><p>Interval between pinging the server to show the client is alive, set in milliseconds. Pings are only sent when the <code class="ph codeph">ping-interval</code> elapses between normal client messages. This must be set lower than the server’s <code class="ph codeph">maximum-time-between-pings</code>.</p></td>
+<td><p>10000 ms</p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">pr-single-hop-enabled</code></p></td>
+<td><p>Setting used for single-hop access to partitioned region data in the servers for some data operations. See [PartitionResolver](../client-cache/application-plugins.html#application-plugins__section_348E00A84F274D4B9DBA9ECFEB2F012E). See note in <code class="ph codeph">thread-local-connections</code> below.</p></td>
+<td><p>True</p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">read-timeout</code></p></td>
+<td><p>Number of milliseconds to wait for a response from a server before the connection times out.</p></td>
+<td><p>10000</p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">retry-attempts</code></p></td>
+<td><p>Number of times to retry an operation after a time-out or exception for high availability. If set to -1, the pool tries every available server once until it succeeds or has tried all servers.</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">server-group</code></p></td>
+<td><p>Server group from which to select connections. If not specified, the global group of all connected servers is used.</p></td>
+<td><p>empty</p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">socket-buffer-size</code></p></td>
+<td><p>Size of the socket buffer, in bytes, on each connection established.</p></td>
+<td><p>32768</p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">statistic-interval</code></p></td>
+<td><p>Default frequency, in milliseconds, with which the client statistics are sent to the server. A value of <code class="ph codeph">-1</code> indicates that the statistics are not sent to the server.</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">subscription-ack-interval</code></p></td>
+<td><p>Number of milliseconds to wait before sending an acknowledgment to the server about events received from the subscriptions.</p></td>
+<td><p>100</p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">subscription-enabled</code></p></td>
+<td><p>Whether to establish a server to client subscription.</p></td>
+<td><p>False</p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">subscription-message-tracking-timeout</code></p></td>
+<td><p>Number of milliseconds for which messages sent from a server to a client are tracked. The tracking is done to minimize duplicate events.</p></td>
+<td><p>90000</p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">subscription-redundancy</code></p></td>
+<td><p>Redundancy for servers that contain subscriptions established by the client. A value of <code class="ph codeph">-1</code> causes all available servers in the specified group to be made redundant.</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">thread-local-connections</code></p></td>
+<td><p>Whether the connections must have affinity to the thread that last used them.</p>
+<div class="note note">
+**Note:**
+<p>To set this to <code class="ph codeph">true</code>, also set <code class="ph codeph">pr-single-hop-enabled</code> to <code class="ph codeph">false</code>. A <code class="ph codeph">true</code> value in <code class="ph codeph">pr-single-hop-enabled</code> automatically assigns a <code class="ph codeph">false</code> value to <code class="ph codeph">thread-local-connections</code>...</p>
+</div></td>
+<td><p>False</p></td>
+</tr>
+<tr class="odd">
+<td><code class="ph codeph">update-locator-list-interval</code></td>
+<td>An integer number of milliseconds defining the interval between locator list updates. If the value is less than or equal to 0, the update will be disabled.</td>
+<td>5000</td>
+</tr>
+</tbody>
+</table>
+
+

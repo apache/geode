@@ -1,0 +1,36 @@
+---
+title:  Implementing User-Defined Objects in Java Clients
+---
+
+You can use one of two methods to implement a user-defined object in a Java client that works with C++ clients: `Instantiator.register` and `DataSerializable`.
+
+<a id="concept_3DE42CA33684403D8C3730E99C882B55__section_8AC81EE12D8F406DB7602AEAFFD33F2B"></a>
+## Instantiator.register
+
+With the `Instantiator.register` method, a client sends a `RegistrationMessage` to every Java VM in its distributed system. The message announces the mapping between a user-defined classId and class name. The other JVMs can deserialize the byte array with the correct class.
+
+If two clients are in different distributed systems, a `RegistrationMessage` cannot be sent between them. For example: a `put` made by a client in one distributed system will hang when a client in another distributed system performs a get in pure Java mode. Similarly, a `put` made by a C++ client will cause a Java client to hang.
+
+<a id="concept_3DE42CA33684403D8C3730E99C882B55__section_3F42D06A70644030869D381D03D45CC8"></a>
+
+## DataSerializable
+
+Using the `DataSerializable` method, the user-defined object is serialized into the following byte array:
+
+``` pre
+45 <2-byte-length> <class-name>
+```
+
+A Java client can deserialize the byte array, but a C++ client cannot convert the Java class name to a C++ class name.
+
+<a id="concept_3DE42CA33684403D8C3730E99C882B55__section_F3F13E1732EB4995B2C78B0BB1ED18BB"></a>
+
+## Implementation
+
+The `DataSerializable` method does not support using a nested object, while `Instantiator.register` does support the use of nested objects. A workaround is to let each Java client manually initiate an object for each possible user object class a C++ client provides, using the following code:
+
+``` pre
+User u = new User("", 0);
+```
+
+See [Java Serialization Example](../programming-examples/serialization-java.html#serialization-java) for a code sample that shows how to set up user object classes in a Java client.

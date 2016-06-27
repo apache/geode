@@ -1,0 +1,18 @@
+---
+title:  ConcurrencyChecksEnabled
+---
+
+This attribute determines whether members perform checks to provide consistent handling for concurrent or out-of-order updates to distributed regions.
+
+A client cache can disable consistency checking for a region even if server caches enable consistency checking for the same region. This configuration ensures that the client sees all events for the region, but it does not prevent the client cache region from becoming out-of-sync with the server cache.
+
+Optionally enable concurrency checks for the region. Example:
+
+``` pre
+<region-attributes concurrency-checks-enabled="true"> 
+</region-attributes>
+```
+
+See [Region Consistency](consistency_checking_in_regions.html#concept_77340A4999AC4861972A0EE10303E557) for more information.
+
+

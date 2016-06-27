@@ -1,0 +1,30 @@
+---
+title:  Using serverKeys to Retrieve a Set of Region Keys
+---
+
+<a id="using-serverkeys-to-retrieve__section_8D2276A2D70E4F80998D26BB74F9681C"></a>
+You can retrieve the set of keys defined in the cache server process that are associated with the client region by using the `Region::serverKeys` API function. If the server region is defined as a replicate, the keys returned consist of the entire set of keys for the region.
+
+The following example shows how the client can programmatically call `serverKeys`.
+
+``` pre
+VectorOfCacheableKey keysVec;
+region->serverKeys( keysVec );
+size_t vlen = keysVec.size();
+bool foundKey1 = false;
+bool foundKey2 = false;
+for( size_t i = 0; i < vlen; i++ ) {
+    CacheableStringPtr strPtr = dynCast<CacheableStringPtr> keysVec.at( i );
+    std::string veckey = strPtr->asChar();
+        printf( "found skey1" );
+        foundKey1 = true;
+    }
+        printf( "found skey2" );
+        foundKey2 = true;
+    }
+}
+```
+
+An `UnsupportedOperationException` occurs if the client region is not a native client region. A `MessageException` occurs if the message received from the server could not be handled, which can occur if an unregistered `typeId` is received in the reply.
+
+

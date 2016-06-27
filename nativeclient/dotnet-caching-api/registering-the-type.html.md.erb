@@ -1,0 +1,32 @@
+---
+title:  Register the Type
+---
+
+To use the `BankAccount` type, you must register it with the type system. Then, when an incoming stream contains a `BankAccount`, it can be manufactured from the associated `TypeFactoryMethod.`
+
+``` pre
+Serializable.RegisterType(BankAccount.CreateInstance);
+```
+
+Typically, you would register the type before creating the system.
+
+<a id="concept_FFFB0AAA131E46D09065F910EFF218CB__section_1B68CDA7392E45CAA413362F42CCF829"></a>
+## Using ClassId
+
+A `ClassId` is an integer that returns the `ClassId` of the instance being serialized. The `ClassId` is used by deserialization to determine what instance type to create and deserialize into.
+
+<a id="concept_FFFB0AAA131E46D09065F910EFF218CB__section_8A63DBA039744DCCB6840A7F1F5734DA"></a>
+
+## Using DSFID
+
+A `DSFID` is an integer that returns the data serialization fixed ID type. `DSFID` is used to determine what instance type to create and deserialize into. `DSFID` should not be overridden by custom implementations, and it is reserved only for built-in serializable types.
+
+<a id="concept_FFFB0AAA131E46D09065F910EFF218CB__section_A02B5E61D03B4B0893DFF3D21F2346F9"></a>
+
+## Using Custom Key Types
+
+If your application uses its own key types that are too complex to easily force into string, you can probably improve performance by using a custom type and implementing `HashCode` and `Equals` functions. For example, if you have hybrid data types such as floating point numbers, you can implement your own type that encapsulates the floating point number. Comparing floating point numbers in this way provides greater performance than comparing a string representation of the floating point numbers, with such noticeable improvements as faster cache access and smaller payloads.
+
+See [Serialization in Native Client Mode with a Java Server](../cpp-caching-api/serialization_using_serializable.html#concept_696AB5206C3E45898CC1A24CDD93D003__section_AFB685227E4048BF9FB4FD7C55AED274) for information about implementing key types for a native client that is used with a Java cache server.
+
+To extend a type that implements `IPdxSerializable` or `IGFSerializable` for your key, override and implement the `HashCode` and `Equals` methods in the key as needed.

@@ -1,0 +1,32 @@
+---
+title:  Reconnection
+---
+
+During initialization, operations on the client cache can come from multiple sources.
+
+-   Cache operations by the application.
+-   Results returned by the cache server in response to the client’s interest registrations.
+-   Callbacks triggered by replaying old events from the queue.
+
+These procedures can act on the cache concurrently, and the cache is never blocked from doing operations.
+
+<span class="keyword">Geode</span> handles the conflicts between the application and interest registration, but you need to prevent the callback problem. Writing callback methods that do cache operations is never recommended, but it is a particularly bad idea for durable clients, as explained in [Implementing Cache Listeners for Durable Clients](impl-cache-listeners-durable-clients.html).
+
+Program the durable client to perform these steps, in order, when it reconnects:
+
+1.  Create the cache and regions. This ensures that all cache listeners are ready. At this point, the application hosting the client can begin cache operations.
+2.  Issue its register interest requests. This allows the client cache to be populated with the initial interest registration results. The primary server responds with the current state of those entries if they still exist in the server’s cache.
+3.  Call `Cache.readyForEvents`. This tells the servers that all regions and listeners on the client are now ready to process messages from the servers. The cache ready message triggers the queued message replay process on the primary server.
+
+For an example that demonstrates `Cache.readyForEvents`, see [Sending the Cache Ready Message to the Server](sending-cache-ready-message.html#concept_C28D015FA85B4EE4B2F8D2DA5FCAFBFF).
+
+This figure shows the concurrent procedures that occur during the initialization process. The application begins operations immediately on the client (step 1), while the client's cache ready message (also step 1) triggers a series of queue operations on the cache servers (starting with step 2 on the primary server). At the same time, the client registers interest (step 2 on the client) and receives a response from the server.
+
+Message B2 applies to an entry in Region A, so the cache listener handles B2's event. Because B2 comes before the marker, the client does not apply the update to the cache.
+
+<a id="concept_38C027837216434CB5DEC84DF56B807E__fig_5A5566FB9EBE4A6D906E9D8FA687B4C5"></a>
+<span class="figtitleprefix">Figure: </span> Initialization of a Reconnected Durable Client
+
+<img src="../common/images/7-Preserving_Data-2.gif" id="concept_38C027837216434CB5DEC84DF56B807E__image_1B3693DB90D041F193496BA24849D114" class="image" />
+
+Only one region is shown for simplicity, but the messages in the queue could apply to multiple regions. Also, the figure omits the concurrent cache updates on the servers, which would normally be adding more messages to the client's message queue.

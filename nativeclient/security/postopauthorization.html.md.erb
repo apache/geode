@@ -1,0 +1,13 @@
+---
+title:  Post-Operative Authorization
+---
+
+Authorization in the post-operation phase occurs on the server after the operation is complete and before the results are sent to the client.
+
+The callback can modify the results of certain operations, such as `query`, `get` and `keySet`, or even completely disallow the operation. For example, a post-operation callback for a query operation can filter out sensitive data or data that the client should not receive, or even completely fail the operation.
+
+The `security-client-accessor-pp` system property in the server’s `gemfire.properties` file specifies the callback to invoke in the post-operation phase. For example:
+
+`security-client-accessor-pp=templates.security.XmlAuthorization.create`
+
+

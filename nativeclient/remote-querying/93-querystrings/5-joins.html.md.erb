@@ -1,0 +1,15 @@
+---
+title:  Joins
+---
+
+If collections in the `FROM` clause are not related to each other, you can use the `WHERE` clause to join them.
+
+The statement below returns all the persons from the `/Persons` region with the same name as a flower in the `/Flowers` region.
+
+``` pre
+SELECT DISTINCT p FROM /Persons p, /Flowers f WHERE p.name = f.name
+```
+
+Indexes are supported for region joins. To create indexes for region joins, you create single-region indexes for both sides of the join condition. These are used during query execution for the join condition.
+
+

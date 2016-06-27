@@ -1,0 +1,40 @@
+---
+title:  Region Entries
+---
+
+Region entries hold cached application data. Entries are automatically managed according to region attribute settings.
+
+You can create, update, invalidate, and destroy entries through explicit API calls or through operations distributed from other caches.
+
+When the number of entries is very large, a partitioned region can provide the required data management capacity if the total size of the data is greater than the heap in any single JVM.
+
+When an entry is created, a new object is instantiated in the region containing:
+
+-   The entry key.
+-   The entry value. This is the application data object. The entry value may be set to `NULL`, which is the equivalent of an invalid value.
+
+Entry operations invoke callbacks to user-defined application plug-ins. In this chapter, the calls that may affect the entry operation itself (by providing a value or aborting the operation, for example) are highlighted, but all possible interactions are not listed. For details, see [Application Plug-Ins](application-plugins.html#application-plugins).
+
+`DateTime` objects must be stored in the cache in UTC, so that times correspond between client and server. If you use a date with a different time zone, convert it when storing into and retrieving from the cache.
+
+-   **[Entry Distribution Requirements](../../nativeclient/client-cache/requirements-for-distrib.html)**
+
+    Entry data distributed among members of the distributed system must be serializable. Entry keys and values are serialized for distribution.
+
+-   **[Registering Interest for Entries](../../nativeclient/client-cache/registering-interest-for-entries.html)**
+
+    For native client regions, you can programmatically register interest in entry keys stored on a cache server region. A client region receives update notifications from the cache server for the keys of interest.
+
+-   **[Using serverKeys to Retrieve a Set of Region Keys](../../nativeclient/client-cache/using-serverkeys-to-retrieve.html)**
+
+-   **[Adding Entries to the Cache](../../nativeclient/client-cache/adding-entries-to-cache.html)**
+
+-   **[Updating Entries](../../nativeclient/client-cache/updating-entries.html)**
+
+-   **[Accessing Entries](../../nativeclient/client-cache/accessing-entries.html)**
+
+-   **[Invalidating or Destroying Cached Entries](../../nativeclient/client-cache/invalidating-cached-entries.html)**
+
+-   **[Notification for Operations](../../nativeclient/client-cache/notification-for-operations.html)**
+
+

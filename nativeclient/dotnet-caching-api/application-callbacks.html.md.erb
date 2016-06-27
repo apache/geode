@@ -1,0 +1,81 @@
+---
+title:  Application Callbacks
+---
+
+For region-level events, an application can use `AttributesFactory.SetCache*` methods to implement and register the `ICacheLoader`, `ICacheWriter`, and `ICacheListener` interfaces to perform custom actions.
+
+You can use `Region.Put` for simple caching situations. For more complex needs, you should implement the `ICacheLoader` interface and allow the cache to manage the creation and loading of objects. When a `Region.Get          `is called for a region entry with a value of null, the `ICacheLoader::Load` method of the cache loader (if any) for the region is invoked. A static `CacheLoader::NetSearch` method is provided which can be used by `ICacheLoader` implementations to locate the requested key in the distributed system. The `ICacheListener` interface can be used to listen to various region events after events such as create, update, or invalidate of region entries have occurred. The `ICacheWriter` interface is invoked before the events have occurred.
+
+## Using ICacheLoader to Load New Integers in the Region
+
+This example demonstrates an `ICacheLoader` implementation for loading new integers into a region.
+
+``` pre
+class SimpleCacheLoader<TKey, TVal> : ICacheLoader<TKey, TVal>
+   {
+      #region ICacheLoader Members
+      public TVal Load(IRegion<TKey, TVal> region, TKey key, object helper)
+      {
+         Console.WriteLine("SimpleCacheLoader: Received Load event for region:
+         {0} and key: {1}", region.Name, key);
+         return default(TVal);
+      }
+      public void Close(IRegion<TKey, TVal> region)
+      {
+         Console.WriteLine("SimpleCacheLoader: Received Close event of region:
+         {0}", region.Name);
+      }
+      #endregion
+   }
+```
+
+## Using ICacheWriter to Track Creates and Updates for a Region
+
+This example implements `ICacheWriter` to track region entry `create` and `update` events. This example just reports the events to the screen, but you can do whatever you need to do with the events.
+
+``` pre
+class SimpleCacheWriter<TKey, TVal> : ICacheWriter<TKey, TVal>
+   {
+      #region ICacheWriter<TKey, TVal> Members
+      public bool BeforeUpdate(EntryEvent<TKey, TVal> ev)
+      {
+         Console.WriteLine("SimpleCacheWriter: Received BeforeUpdate event for: {0}", ev.Key);
+         return true;
+      }
+      // ... handle other entry events as needed
+      public bool BeforeRegionClear(RegionEvent<TKey, TVal> ev)
+      {
+         Console.WriteLine("SimpleCacheWriter: Received BeforeRegionClear event of region: {0}",
+         ev.Region.Name);
+         return true;
+      }
+      // ... handle other region events as needed
+      #endregion
+   }
+```
+
+## A Sample ICacheListener Implementation
+
+This example implements `ICacheListener`.
+
+``` pre
+class SimpleCacheListener<TKey, TVal> : ICacheListener<TKey, TVal>
+   {
+      #region ICacheListener<TKey, TVal> Members
+      public void AfterCreate(EntryEvent<TKey, TVal> ev)
+      {
+         Console.WriteLine("SimpleCacheListener: Received AfterCreate event
+         for: {0}", ev.Key);
+      }
+      // ... handle other entry events as needed
+      public void AfterRegionDestroy(RegionEvent<TKey, TVal> ev)
+      {
+         Console.WriteLine("SimpleCacheListener: Received AfterRegionDestroy
+         event of region: {0}", ev.Region.Name);
+      }
+      // ... handle other region events as needed
+      #endregion
+   }
+```
+
+

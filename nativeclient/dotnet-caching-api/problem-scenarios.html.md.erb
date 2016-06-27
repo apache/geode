@@ -1,0 +1,32 @@
+---
+title:  Problem Scenarios
+---
+
+These scenarios describe processes and implementations that should be avoided when using `AppDomains`.
+
+-   [Using Application Callbacks](problem-scenarios.html#concept_025AAAF8896C4F4CB4530EE9CEEF4BAE__section_FFC3E18AD8F042DA9EFB42852242AAE0)
+-   [Loading an Application DLL in Multiple AppDomains](problem-scenarios.html#concept_025AAAF8896C4F4CB4530EE9CEEF4BAE__section_9FEC4666F4FD467AA57AD70943703F00)
+-   [Native Client inside IIS](problem-scenarios.html#concept_025AAAF8896C4F4CB4530EE9CEEF4BAE__section_646373554C764DD3A919A906A5F05EE9)
+
+<a id="concept_025AAAF8896C4F4CB4530EE9CEEF4BAE__section_FFC3E18AD8F042DA9EFB42852242AAE0"></a>
+## Using Application Callbacks
+
+**Scenario:** A .NET thread loads the <span class="keyword">Geode</span> DLL in application domain `AD1`. This thread may have access to the other domains in the application if code access security allows it. This thread can then call `AppDomain.CreateInstance` to create a callback object ( `ICacheListener`, `ICacheLoader`, or `ICacheWriter`) in another domain called `AD2`. If the callback object is marshaled by reference, the callback is executed in the domain where it is created (`AD2`). The thread that loads the <span class="keyword">Geode</span> DLL in domain `AD1` runs the callback methods in the second domain, `AD2`. An exception is thrown when the callback method is invoked because the native code that invokes the callback is not allowed to cross the `AppDomain` boundary.
+
+**Resolution:** When an application creates and unloads application domains it should ensure that the application domain where the <span class="keyword">Geode</span> .NET DLL is loaded is the same domain where the application callback and `IGFSerializable` objects are created.
+
+<a id="concept_025AAAF8896C4F4CB4530EE9CEEF4BAE__section_9FEC4666F4FD467AA57AD70943703F00"></a>
+
+## Loading an Application DLL in Multiple AppDomains
+
+**Scenario:** the application loads the <span class="keyword">Geode</span> DLL in one application domain, then reloads the <span class="keyword">Geode</span> DLL in another application domain (with or without unloading the previous `AppDomain` ). The callbacks, as well as other interface implementations, like `IPdxSerializable` and `IGFSerializable`, throw exceptions because the native C++ code does not know about `AppDomains` and is loaded only once in the initial `AppDomain`.
+
+**Resolution:** The application should always use the first `AppDomain` to load the <span class="keyword">Geode</span> DLL, or it should not load the <span class="keyword">Geode</span> DLL multiple times.
+
+<a id="concept_025AAAF8896C4F4CB4530EE9CEEF4BAE__section_646373554C764DD3A919A906A5F05EE9"></a>
+
+## Native Client inside IIS
+
+**Scenario:** When you deploy more than one web application inside an Internet Information Service (IIS), the IIS creates an appdomain subprocess for each web application in the single process, but the native client C++ cache instance remains a singleton in the process. Because of this, you can run into conflicts between cache creation and closure by the different appdomains. For example, if one appdomain calls `cache.close`, it closes the cache for the entire process. Any further cache access operations by the other appdomains return cache closed exceptions.
+
+**Resolution:** `Cache create`/`close` provides reference counting of `Cache` `create` and `close`. Each process can use the counter to make sure it creates the `Cache` once and closes it once. To enable this, set the <span class="keyword">Geode</span> system property, `appdomain-enabled` to true .

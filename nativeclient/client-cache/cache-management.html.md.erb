@@ -1,0 +1,29 @@
+---
+title:  Cache Management
+---
+
+This section covers cache management.
+
+<a id="using-thread-safety__section_165DAD3CE6CA44D9A883FC91D4F09343"></a>
+
+-   **[Client-to-Server Connection Process](../../nativeclient/client-cache/client-to-server-connection.html)**
+
+    It is important to understand the sequence of events that occur when the native client connects with a <span class="keyword">Geode</span> cache server.
+
+-   **[Controlling Cache Size](../../nativeclient/client-cache/controlling-cache-size.html)**
+
+    You can control cache size through region size limits, cache size limits, or a combination of the two.
+
+-   **[Managing the Lifetime of a Cached Object](../../nativeclient/client-cache/managing-lifetime-cached-object.html)**
+
+    All cacheable objects derive from `SharedBase` , which provides reference counting. Cacheable objects are referenced using `SharedPtr` types.
+
+-   **[Using Thread Safety in Cache Management](../../nativeclient/client-cache/using-thread-safety.html)**
+
+    When you perform structural changes on your cache, such as creating or closing a `Cache`, `Pool`, or `Region`, synchronize your operations or do them in a single thread.
+
+-   **[Troubleshooting](../../nativeclient/client-cache/troubleshooting.html)**
+
+    This section provides troubleshooting information for the native client.
+
+

@@ -1,0 +1,22 @@
+---
+title:  Creating a Cache
+---
+
+The code snippets in this section show cache creation.
+
+When you create your cache, the system automatically connects your process to the server tier. For systems with security enabled, the credentials for a connecting client are authenticated when it creates the cache. See [Security](../security/overviewsecurity.html#security) for more information about authenticated connections.
+
+## Creating the System Connection and the Cache
+
+In this example, the application creates the cache by calling the `CacheFactory::create` function, specifying the servers to connect to:
+
+``` pre
+CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory();
+    CachePtr cachePtr = cacheFactory  
+                        ->addServer("localhost", 40404)
+                        ->addServer("localhost", 40405)
+                        ->setSubscriptionEnabled(true)
+                        ->create();
+```
+
+

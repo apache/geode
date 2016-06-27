@@ -1,0 +1,18 @@
+---
+title:  Defining Properties Programmatically
+---
+
+You can pass in specific gfcpp properties programmatically by using a `Properties` object to define the non-default properties.
+
+Example:
+
+``` pre
+PropertiesPtr systemProps = Properties::create();
+systemProps->insert( "statistic-archive-file", "stats.gfs" );
+systemProps->insert( "cache-xml-file", "./myapp-cache.xml" );
+systemProps->insert( "stacktrace-enabled", "true" );
+CacheFactoryPtr systemPtr = CacheFactory::createCacheFactory(systemProps);
+    
+```
+
+

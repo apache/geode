@@ -1,0 +1,123 @@
+---
+title:  Running the Function
+---
+
+In this section you create an `Execution` object and use its methods to define and run the function. To run a function with high availability, you call `getResult` from the results collector returned from the `execute` method.
+
+<a id="running-function__section_8BC7F999141A40E389B8DC276EAB9F7E"></a>
+## Configuring and Running a Function
+
+You specify the members that run the function and, optionally, the data set over which the functions run.
+
+-   **Servers**. Execute the function in a single server or a set of servers, specified by the server pool. To specify data sets for this type of function, pass arguments in to the function.
+-   **Data set**. Specify a region and possibly a set of keys on which to run.
+
+In every client where you want to execute the function and process the results:
+
+1.  Use one of the `FunctionService on*` methods to create an `Execution` object. The `on*` methods, `onRegion`, `onServer` and `onServers`, define the highest level where the function is run. If you use `onRegion` you can further narrow your run scope by setting key filters. The function run using `onRegion` is a data dependent function – the others are data-independent functions.
+
+    You can run a data dependent function against custom partitioned and colocated partitioned regions. From the client, provide the appropriate key sets to the function call.
+
+2.  Use the `Execution` object as needed for additional function configuration. You can:
+
+    -   Provide a set of data keys to `withFilter` to narrow the execution scope. This works only for `onRegion Execution` objects.
+    -   Provide function arguments to `withArgs`.
+    -   Define a custom `ResultCollector` to `withCollector`. See [Programming to Get Function Results](handling-function-results.html#handling-function-results).
+
+3.  Call the `Execution` object execute method to run the function.
+4.  To run a function with high availability, call `getResult` from the results collector returned from `execute`. Calling a highly available function without using `getResult` disables the high availability functionality.
+
+## Running a Function on a Region (C++)
+
+``` pre
+regPtr0 = initRegion();
+ExecutionPtr exc = FunctionService::onRegion(regPtr0);
+CacheableVectorPtr routingObj = CacheableVector::create();
+char buf[128];
+bool getResult = true;
+ 
+sprintf(buf, "VALUE--%d", 10);
+CacheablePtr value(CacheableString::create(buf));
+ 
+sprintf(buf, "KEY--%d", 100);
+CacheableKeyPtr key = CacheableKey::create(buf);
+regPtr0->put(key, value);
+ 
+sprintf(buf, "KEY--%d", 100);
+CacheableKeyPtr key1 = CacheableKey::create(buf);
+routingObj->push_back(key1);
+ 
+CacheablePtr args = routingObj;
+CacheableVectorPtr executeFunctionResult = exc->withFilter(routingObj)->
+    withArgs(args)->execute(func)->getResult();
+```
+
+## Running a Function on a Server Pool (C++)
+
+``` pre
+pptr = PoolManager::find(poolName);
+ExecutionPtr exc = FunctionService::onServer(cache);
+CacheableVectorPtr routingObj = CacheableVector::create();
+char buf[128];
+bool getResult = true;
+sprintf(buf, "VALUE--%d", 10);
+CacheablePtr value(CacheableString::create(buf));
+ 
+sprintf(buf, "KEY--%d", 100);
+CacheableKeyPtr key = CacheableKey::create(buf);
+regPtr0->put(key, value);
+ 
+sprintf(buf, "KEY--%d", 100);
+CacheableKeyPtr key1 = CacheableKey::create(buf);
+routingObj->push_back(key1);
+ 
+CacheablePtr args = routingObj;
+CacheableVectorPtr executeFunctionResult =
+exc->withArgs(args)->execute(func)->getResult();
+```
+
+## Running a Function on a Region (C\# .NET)
+
+``` pre
+IRegion<string, string> fregion =
+    regionFactory.Create<string, string>("exampleRegion");
+for (int i = 0; i < 34; i++)
+{
+  fregion.Put("KEY--" + i, "VALUE--" + i, null);
+}
+ 
+object[] routingObj = new object[17];
+int j = 0;
+for (int i = 0; i < 34; i++)
+{
+  routingObj[j] = "KEY--" + i;
+  j++;
+}
+object args0 = true;
+Boolean getResult = true;
+// data dependent function execution -- get function with result
+Execution<object> exc =
+    Generic.FunctionService.OnRegion<string, string, object>(fregion);
+Generic.IResultCollector rc =
+    exc.WithArgs((IGFSerializable)args0).WithFilter(
+        (IGFSerializable[])routingObj).Execute(getFuncName);
+object[] executeFunctionResult = rc.GetResult();
+```
+
+## Running a Function on a Server Pool (C\# .NET)
+
+``` pre
+exc = Generic.FunctionService.OnServer<object>(cache);
+List<object> args1 = new List<object>();
+for (int i = 0; i < routingObj.Length; i++)
+{
+  Console.WriteLine("routingObj[{0}]={1}.", i, (routingObj[i] as string));
+  args1.Add(routingObj[i]);
+}
+rc = exc.WithArgs((IGFSerializable)args1).Execute(getFuncIName);
+executeFunctionResult = rc.GetResult();
+Console.WriteLine("on one server: result count= {0}.",
+    executeFunctionResult.Length);
+```
+
+

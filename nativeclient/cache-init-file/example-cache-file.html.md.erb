@@ -1,0 +1,50 @@
+---
+title:  Example cache.xml File
+---
+
+An example `cache.xml` file shows cache and region initialization for a client, presenting a subset of the possible data configurations.
+
+For detailed information about cache and region configuration, including the default attribute settings, see [The Native Client Cache](../client-cache/chapter-overview.html#native-client-cache). Also see the online API documentation for `Cache` and `RegionAttributes`.
+
+For information a cache with server pool, see [Using Connection Pools](../connection-pools/connection-pools.html#using-connection-pools). The example below shows a `cache.xml` file that creates two regions.
+
+-   Region `region1` is defined with a full set of region attributes and application plug-ins. The region's entries have `RegionTimeToLive` and `RegionIdleTimeout` expiration attributes set ([Expiration Attributes](../client-cache/expiration-attributes.html#expiration-attributes)).
+-   Region `region2` uses mostly default values.
+
+``` pre
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 8.0//EN"
+    "http://www.gemstone.com/dtd/gfcpp-cache8000.dtd">
+<!-- Sample cache.xml file -->
+<!-- Example Declarative Cache Initialization with cache.xml -->
+<cache>
+    <pool name="examplePool" subscription-enabled="true">
+        <server host="localhost" port="24680" />
+    </pool>
+    <region name="root1" refid="CACHING_PROXY">
+        <region-attributes pool-name="examplePool"
+            initial-capacity="25"
+            load-factor="0.32"
+            concurrency-level="10"
+            lru-entries-limit="35">
+            <region-idle-time>
+                <expiration-attributes timeout="20" action="destroy"/>
+            </region-idle-time>
+            <entry-idle-time>
+                <expiration-attributes timeout="10" action="invalidate"/>
+            </entry-idle-time>
+            <region-time-to-live>
+                <expiration-attributes timeout="5" action="local-destroy"/>
+            </region-time-to-live>
+            <entry-time-to-live>
+                <expiration-attributes timeout="10" action="local-invalidate"/>
+            </entry-time-to-live>
+        </region-attributes>
+    </region>
+</cache>
+```
+
+For details about the individual region attributes, see [Region Attributes](../client-cache/region-attributes.html#region-attributes).
+
+

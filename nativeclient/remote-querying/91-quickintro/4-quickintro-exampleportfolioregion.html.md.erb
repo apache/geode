@@ -1,0 +1,61 @@
+---
+title:  Examples Data and Class Definitions
+---
+
+Examples show C++ and corresponding Java class definitions and sample data for the example `/portfolios` region. The region's keys are the portfolio ID.
+
+User-defined data types must implement the `Serializable` interface on the native client side, while corresponding Java classes must implement the `DataSerializable` interface. The C++ objects for the native client must correspond to the Java objects for the <span class="keyword">Geode</span> cache server. This means that an object on one side should deserialize correctly at the other side.
+
+**Sample C++ class definition**
+
+``` pre
+class Portfolio : public Serializable {
+   int ID;
+   char * type;
+   char * status;
+   Map<Position> positions;
+}
+class Position : public Serializable {
+   char * secId;
+   double mktValue;
+   double qty;
+}
+```
+
+**Corresponding Java class definition**
+
+``` pre
+class Portfolio implements DataSerializable {
+    int ID;
+    String type;
+    String status;
+    Map positions;
+}
+class Position implements DataSerializable {
+    String secId;
+    double mktValue;
+    double qty;
+}
+```
+
+The following table lists the sample data in the /portfolios region.
+
+<a id="running-native-client-xact__table_92A6A66523764199A19BCD66BA189921"></a>
+
+|        |          |               |                     |                        |                   |
+|--------|----------|---------------|---------------------|------------------------|-------------------|
+| **id** | **type** | **Statusted** | **Position: secID** | **Position: mktValue** | **Position: qty** |
+| 111    | xyz      | active        | xxx                 | 27.34                  | 1000.00           |
+|        |          |               | xxy                 | 26.31                  | 1200.00           |
+|        |          |               | xxz                 | 24.30                  | 1500.00           |
+| 222    | xyz      | active        | yyy                 | 18.29                  | 5000.00           |
+| 333    | abc      | active        | aaa                 | 24.30                  | 10.00             |
+| 333    | abc      | active        | aab                 | 23.10                  | 15.00             |
+| 444    | abc      | inactive      | bbb                 | 50.41                  | 100.00            |
+| 444    | abc      | inactive      | bbc                 | 55.00                  | 90.00             |
+
+: <span class="tablecap">Table 1. Entry values in /portfolios</span>
+
+Because the client cache waits during transaction execution, and client regions are not distributed, the only activities that interact with a client transaction are those that occur on the server.
+
+

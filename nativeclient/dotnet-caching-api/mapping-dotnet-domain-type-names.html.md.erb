@@ -1,0 +1,26 @@
+---
+title:  Map .NET Domain Type Names to PDX Type Names with IPdxTypeMapper
+---
+
+PDX serialized instances in Java map to .NET types with the same name. If you need to adjust the .NET name, then you need to use the IPdxTypeMapper.
+
+See the [Java to .NET Type Mapping Table](java-to-dotnet-type-mapping.html#concept_24D0AAC71FF1483AB47A7772DA018966) for current mappings.
+
+## Using IPdxTypeMapper
+
+``` pre
+//This demonstrates, how to map .NET type to pdx type or java type
+            public class PdxTypeMapper : IPdxTypeMapper
+            {
+              public string ToPdxTypeName(string localTypeName)
+              {
+                return "pdx_" + localTypeName;
+              }
+              public string FromPdxTypeName(string pdxTypeName)
+              {
+                return pdxTypeName.Substring(4);//need to extract "pdx_"
+              }
+}
+```
+
+

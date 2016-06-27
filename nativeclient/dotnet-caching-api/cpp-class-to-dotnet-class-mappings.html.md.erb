@@ -1,0 +1,165 @@
+---
+title:  C++ Class to .NET Class Mappings
+---
+
+Wherever the native C++ class methods use pass-by-reference semantics to return data, the corresponding .NET methods return the object instead of using pass-by-reference semantics.
+
+<a id="concept_FD847E19497C4985ACB247C0FA2C2AD5__table_8D8D228E223E4E89A313A17DB5C38652"></a>
+
+<table>
+<caption><span class="tablecap">Table 1. C++ Class to .NET Class Mappings</span></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><p>C++ Class</p></th>
+<th><p>.NET Class</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>class <code class="ph codeph">gemfire::AttributesFactory</code></td>
+<td>Sealed class <code class="ph codeph">AttributesFactory</code></td>
+</tr>
+<tr class="even">
+<td><p>class <code class="ph codeph">gemfire::AttributesMutator</code></p></td>
+<td>Sealed class <code class="ph codeph">AttributesMutator</code></td>
+</tr>
+<tr class="odd">
+<td>class <code class="ph codeph">gemfire::Cache</code></td>
+<td>Sealed class <code class="ph codeph">Cache</code></td>
+</tr>
+<tr class="even">
+<td><p>abstract class <code class="ph codeph">gemfire:: Cacheable</code></p></td>
+<td><p>Interface <code class="ph codeph">IPdxSerializable</code> or interface <code class="ph codeph">IGFSerializable</code></p></td>
+</tr>
+<tr class="odd">
+<td><p>class <code class="ph codeph">gemfire::CacheableBytes</code></p></td>
+<td><p><code class="ph codeph">Byte[]</code> or <code class="ph codeph">ArrayList&lt;Byte&gt;</code></p></td>
+</tr>
+<tr class="even">
+<td><p>class <code class="ph codeph">gemfire::Cacheableint32</code></p></td>
+<td><p><code class="ph codeph">Int32</code></p></td>
+</tr>
+<tr class="odd">
+<td><p>class <code class="ph codeph">gemfire:: CacheableString</code></p></td>
+<td><p><code class="ph codeph">String</code></p></td>
+</tr>
+<tr class="even">
+<td><p>abstract class <code class="ph codeph">gemfire:: CacheableKey</code></p></td>
+<td><p>You can use any type that implements <code class="ph codeph">hashcode</code> and <code class="ph codeph">equals</code>. The generic .NET built-in types are all suitable.</p></td>
+</tr>
+<tr class="odd">
+<td><p>abstract class <code class="ph codeph">gemfire::CacheListener</code></p></td>
+<td><p>Interface <code class="ph codeph">ICacheListener</code></p></td>
+</tr>
+<tr class="even">
+<td><p>class <code class="ph codeph">gemfire:: CacheLoader</code></p></td>
+<td><p>Interface <code class="ph codeph">ICacheLoader</code> plus static class <code class="ph codeph">CacheLoader</code></p></td>
+</tr>
+<tr class="odd">
+<td><p>class <code class="ph codeph">gemfire:: CacheWriter</code></p></td>
+<td><p>Interface class <code class="ph codeph">ICacheWriter</code></p></td>
+</tr>
+<tr class="even">
+<td><p>class <code class="ph codeph">gemfire::CacheFactory</code></p></td>
+<td><p>Sealed class <code class="ph codeph">CacheFactory</code></p></td>
+</tr>
+<tr class="odd">
+<td><p>class <code class="ph codeph">gemfire::DataInput</code></p></td>
+<td><p>With <code class="ph codeph">IPdxSerializable</code>, <code class="ph codeph">IPdxReader.</code></p>
+<p>With <code class="ph codeph">IGFSerializable</code>, sealed class <code class="ph codeph">DataInput</code>.</p></td>
+</tr>
+<tr class="even">
+<td><p>class <code class="ph codeph">gemfire:: DataOutput</code></p></td>
+<td><p>With <code class="ph codeph">IPdxSerializable</code>, <code class="ph codeph">IPdxWriter.</code></p>
+<p>With <code class="ph codeph">IGFSerializable</code>, sealed class <code class="ph codeph">DataOutput</code> .</p></td>
+</tr>
+<tr class="odd">
+<td><p>class <code class="ph codeph">gemfire:: DiskPolicyType</code></p></td>
+<td><p>enum <code class="ph codeph">DiskPolicyType</code> plus static class <code class="ph codeph">DiskPolicy</code> containing convenience methods for <code class="ph codeph">DiskPolicyType</code> enumeration</p></td>
+</tr>
+<tr class="even">
+<td><p>class <code class="ph codeph">gemfire:: DistributedSystem</code></p></td>
+<td><p>Sealed class <code class="ph codeph">Distr</code>ibutedSystem</p></td>
+</tr>
+<tr class="odd">
+<td><p>class <code class="ph codeph">gemfire:: EntryEvent</code></p></td>
+<td><p>Sealed class <code class="ph codeph">EntryEvent</code></p></td>
+</tr>
+<tr class="even">
+<td><p>class <code class="ph codeph">gemfire:: Exception</code></p></td>
+<td><p>Class <code class="ph codeph">GemfireException</code></p></td>
+</tr>
+<tr class="odd">
+<td><p>all other exceptions deriving from <code class="ph codeph">gemfire::                                     Exception</code></p></td>
+<td><p>Corresponding exceptions deriving from <code class="ph codeph">GemfireException</code></p></td>
+</tr>
+<tr class="even">
+<td><p>class <code class="ph codeph">gemfire:: ExpirationAction</code></p></td>
+<td><p>enum <code class="ph codeph">ExpirationAction</code> plus static class <code class="ph codeph">Expiration</code> containing convenience methods for <code class="ph codeph">ExpirationAction</code> enumeration</p></td>
+</tr>
+<tr class="odd">
+<td><p>class <code class="ph codeph">gemfire:: Log</code></p></td>
+<td><p>Static class <code class="ph codeph">Log</code>. The native <code class="ph codeph">Log::log</code> method is mapped to <code class="ph codeph">Log.Write</code> to avoid the conflict with the class name which is reserved for the constructors of Log class. The various loglevel <code class="ph codeph">Throw</code> or <code class="ph codeph">Catch</code> methods are not implemented, since they are redundant to <code class="ph codeph">Log::Log</code> , <code class="ph codeph">Log::LogThrow</code>, and <code class="ph codeph">Log::LogCatch</code> methods that take <code class="ph codeph">LogLevel</code> as a parameter.</p></td>
+</tr>
+<tr class="even">
+<td><p>enum <code class="ph codeph">gemfire:: MemberType</code></p></td>
+<td><p>enum <code class="ph codeph">MemberType</code></p></td>
+</tr>
+<tr class="odd">
+<td><p>abstract class <code class="ph codeph">gemfire:: PersistanceManager</code></p></td>
+<td><p>Not provided. You can register a C++ implementation using <code class="ph codeph">AttributesFactory.SetPersistenceManager</code> but you cannot implement a new one in .NET</p></td>
+</tr>
+<tr class="even">
+<td><p>class <code class="ph codeph">gemfire:: Properties</code></p></td>
+<td><p>Sealed class <code class="ph codeph">Properties</code></p></td>
+</tr>
+<tr class="odd">
+<td><p>class <code class="ph codeph">gemfire:: Properties::Visitor</code></p></td>
+<td><p>Delegate <code class="ph codeph">PropertiesVisitor</code></p></td>
+</tr>
+<tr class="even">
+<td><p>abstract class <code class="ph codeph">gemfire:: Region</code></p></td>
+<td><p>Class <code class="ph codeph">IRegion</code></p></td>
+</tr>
+<tr class="odd">
+<td><p>class <code class="ph codeph">gemfire:: RegionAttributes</code></p></td>
+<td><p>Sealed class <code class="ph codeph">RegionAttributes</code></p></td>
+</tr>
+<tr class="even">
+<td><p>class <code class="ph codeph">gemfire:: ScopeType</code></p></td>
+<td><p>enum <code class="ph codeph">ScopeType</code> plus static class <code class="ph codeph">Scope</code> containing convenience methods for <code class="ph codeph">ScopeType</code> enumeration+</p></td>
+</tr>
+<tr class="odd">
+<td><p>abstract class <code class="ph codeph">gemfire:: Serializable</code></p></td>
+<td><p>Two options:</p>
+<ul>
+<li><p>Interface <code class="ph codeph">IPdxSerializable</code></p></li>
+<li><p>Interface <code class="ph codeph">IGFSerializable</code> plus wrapper <code class="ph codeph">Serializable</code> class for native <code class="ph codeph">Serializable</code> and <code class="ph codeph">UserData</code> objects. The native <code class="ph codeph">toString</code> method is not provided, since the <code class="ph codeph">ToString</code> method of the base object class provides the same functionality.</p></li>
+</ul></td>
+</tr>
+<tr class="even">
+<td><p>class <code class="ph codeph">gemfire:: SystemProperties</code></p></td>
+<td><p>Sealed class <code class="ph codeph">SystemProperties</code></p></td>
+</tr>
+<tr class="odd">
+<td><p>class <code class="ph codeph">gemfire:: UserData</code></p></td>
+<td><p>Two options:</p>
+<ul>
+<li><p>Interface <code class="ph codeph">IPdxSerializable</code></p></li>
+<li><p>Interface <code class="ph codeph">IGFSerializable</code></p></li>
+</ul></td>
+</tr>
+<tr class="even">
+<td><p>class <code class="ph codeph">gemfire:: VectorT&lt;T&gt;</code></p></td>
+<td><p>Array of the given type, such as T[]</p></td>
+</tr>
+</tbody>
+</table>
+
+: <span class="tablecap">Table 1. C++ Class to .NET Class Mappings</span>
+
+

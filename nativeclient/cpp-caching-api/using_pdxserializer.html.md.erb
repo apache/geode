@@ -1,0 +1,100 @@
+---
+title:  Serialize Your Domain Objects with PdxSerializer and PdxWrapper
+---
+
+For domain objects that you cannot or do not want to modify, use the `PdxSerializer` and the `PdxWrapper` classes to serialize and deserialize the object's fields.
+
+You register a `PdxSerializer` implementation for the entire cache, programming it for all of the domain objects that you handle in this way. This way you do not have to implement the `PdxSerializable` interface for each domain class.
+
+The `PdxSerializer` allows domain classes to be serialized and deserialized as PDXs without modification of the domain class. It only requires that the domain class have a constructor accessible to the `PdxSerializer` to create an instance. The domain class will be held in a wrapper class `PdxWrapper`.
+
+`PdxSerializer` has the following methods:
+
+-   The `toData` method returns true if the PdxSerializer was able to serialize userObject, false if not.
+-   If the PdxSerializer was able to deserialize the object, the `fromData` method returns a void pointer to the user object to be wrapped in a `PdxWrapper`.
+
+When you later reference the user object, use the `PdxWrapper` class. `PdxWrapper` holds a shared reference to the object in the local cache and is used during serialization and deserialization. `PdxWrapper` acts as a container for the user domain object and needs to wrap every instance of the object that uses a registered `PdxSerializer`. The object instance will not be modified. In addition, when using `PdxWrapper`, you will need to provide a function pointer to a "de-allocator" which will delete the user object when the reference is no longer held.
+
+The following code example defines a user object and a `PdxSerializer`. It then registers the new `PdxSerializer` and then uses `PdxWrapper` to put the object in a region and retrieve the object from a region.
+
+``` pre
+class UserClass
+{
+public:
+
+  int m_int;
+  string m_string;
+
+  UserClass(int intVal, string stringVal)
+  {
+    m_int = intVal;
+    m_string = stringVal;
+  }
+
+  static void deallocate(void * object, char * className)
+  {
+      UserClass * userObject = reinterpret_cast<UserClass*>(object);
+      delete userObject;
+    }
+  }
+};
+
+class UserPdxSerializer : public PdxSerializer
+{
+public:
+
+  void* fromData(char * className, PdxReaderPtr pdxReader)
+  {
+    if (strcmp(className, "com.example.UserClass") != 0) {
+      return NULL;
+    }
+
+    int intVal = pdxReader->readInt("m_int");
+    string stringVal = pdxReader->readString("m_string");
+
+    UserClass * userObject = new UserClass(intVal, stringVal);
+
+    return (void*) userObject;
+  }
+
+  bool toData(void * object, char * className, PdxWriterPtr pdxWriter)
+  {
+    if (strcmp(className, "com.example.UserClass") != 0) {
+      return false;
+    }
+
+    UserClass * userObject = reinterpret_cast<UserClass*>(object);
+
+    pdxWriter->writeInt("m_int", userObject->m_int);
+    pdxWriter->writeString("m_string", userObject->m_string);
+
+    return true;
+  }
+
+  UserDeallocator getDeallocator(char * className)
+  {
+      return UserClass::deallocate;
+    } else {
+      return NULL;
+    }
+  }
+};
+
+// Register a user PDX serializer
+
+Serializable::registerPdxSerializer(new UserPdxSerializer);
+
+// Put a user object into a region.
+
+UserClass * userObject = new UserClass(123, "someValue");
+PdxWrapperPtr pdxWrapper = new PdxWrapper(userObject, "com.example.UserClass", 
+                                          UserClass::deallocate);
+region->put("key", pdxWrapper);
+
+// Get a user object from a region.
+
+pdxWrapper = dynCast<PdxWrapperPtr>(region->get("key"));
+UserClass * userObject = reinterpret_cast<UserClass*>(pdxWrapper->getObject());
+```
+
+

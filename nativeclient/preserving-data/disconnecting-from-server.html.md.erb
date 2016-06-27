@@ -1,0 +1,21 @@
+---
+title:  Disconnecting from the Server
+---
+
+When a durable client closes its cache and disconnects, it tells the servers whether to maintain its queues.
+
+For this purpose, use the version of `Cache::close` with the boolean `keepalive` parameter set, as shown in the following example. If the setting is true, the servers keep the durable client’s queues and durable subscriptions alive for the timeout period. In addition to in-memory queue retention, the servers can evict the most recent durable client queue updates to disk to reduce memory consumption.
+
+Only the resources and data related to the session are removed, such as port numbers and non-durable subscriptions. If the setting is false, the servers do the same cleanup that they would do for a nondurable client.
+
+## Durable Client Disconnect With Queues Maintained
+
+``` pre
+// Close the Cache and disconnect with keepalive=true.
+// Server will queue events for durable registrations and CQs
+// When the client reconnects (within a timeout period) and sends
+// "readyForEvents()", the server will deliver all stored events
+cachePtr->close(true);
+```
+
+

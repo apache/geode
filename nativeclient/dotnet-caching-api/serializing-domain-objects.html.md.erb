@@ -1,0 +1,29 @@
+---
+title:  Serialize Your Domain Objects with IPdxSerializer
+---
+
+For domain objects that you cannot or do not want to modify, use the `IPdxSerializer` class to serialize and deserialize the object's fields.
+
+You use one `IPdxSerializer` implementation for the entire cache, programming it for all of the domain objects that you handle in this way. This way you do not have to implement the `IPdxSerializable` interface for each domain class.
+
+With `IPdxSerializer`, you leave your domain object as-is and handle the serialization and deserialization in the separate serializer. You register the serializer in your cache PDX configuration. Then program the serializer to handle all of the domain objects you need.
+
+If you write your own `IPdxSerializer` and you also use the `ReflectionBasedAutoSerializer`, then the `IPdxSerializer` needs to own the `ReflectionBasedAutoSerializer` and delegate to it. A cache can only have a single `IPdxSerializer` instance.
+
+**Note:**
+The `IPdxSerializer` `toData` and `fromData` methods differ from those for `IPdxSerializable`. They have different parameters and results.
+
+To register an `IPdxSerializer`, you can use the following code. Note that you can only register the `IPdxSerializer` in the application code. It cannot be configured declaratively in `cache.xml`.
+
+Example:
+
+``` pre
+using GemStone.GemFire.Cache.Generic;
+...
+// Register a PdxSerializer to serialize
+// domain objects using PDX serialization
+ 
+Serializable.RegisterPdxSerializer(new MyPdxSerializer());
+```
+
+

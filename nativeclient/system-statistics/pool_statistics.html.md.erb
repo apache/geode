@@ -1,0 +1,30 @@
+---
+title:  Pool Statistics
+---
+
+Use the pool object to get statistics on connection pools.
+
+|                               |                                                                                                               |
+|-------------------------------|---------------------------------------------------------------------------------------------------------------|
+| `locators`                    | Current number of locators discovered.                                                                        |
+| `servers`                     | Current number of servers discovered.                                                                         |
+| `locatorRequests`             | Number of requests from this connection pool to a locator.                                                    |
+| `locatorResponses`            | Number of responses from the locator to this connection pool.                                                 |
+| `poolConnections`             | Current number of pool connections.                                                                           |
+| `connects`                    | Total number of times a connection has been created.                                                          |
+| `ConnectionWaitTime`          | Total time (nanoseconds) spent waiting for a connection.                                                      |
+| `disconnects`                 | Total number of times a connection has been destroyed.                                                        |
+| `minPoolSizeConnect`          | Total number of connects done to maintain minimum pool size.                                                  |
+| `loadConditioningConnects`    | Total number of connects done due to load conditioning.                                                       |
+| `idleDisconnects`             | Total number of disconnects done due to idle expiration.                                                      |
+| `loadConditioningDisconnects` | Total number of disconnects done due to load conditioning expiration.                                         |
+| `connectionWaitsInProgress`   | Current number of threads waiting for a connection.                                                           |
+| `connectionWaits`             | Total number of times a thread completed waiting for a connection (by timing out or by getting a connection). |
+| `clientOpsInProgress`         | Current number of clientOps being executed.                                                                   |
+| `clientOps`                   | Total number of clientOps completed successfully.                                                             |
+| `clientOpFailures`            | Total number of clientOp attempts that have failed.                                                           |
+| `clientOpTimeouts`            | Total number of clientOp attempts that have timed out.                                                        |
+| `QueryExecutions`             | Total number of queryExecutions.                                                                              |
+| `QueryExecutionTime`          | Total time spent while processing queryExecution.                                                             |
+
+

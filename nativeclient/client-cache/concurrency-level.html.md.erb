@@ -1,0 +1,18 @@
+---
+title:  ConcurrencyLevel
+---
+
+<a id="concurrency-level__section_20FB0B9EEE9442BAAD87E3C488610866"></a>
+This attribute estimates the maximum number of application threads that concurrently access a region entry at one time. This attribute helps optimize the use of system resources and reduce thread contention.
+
+The following declaration sets the region's `ConcurrencyLevel` to `16`:
+
+``` pre
+<region-attributes concurrency-level="16">
+</region-attributes>
+```
+
+**Note:**
+When `CachingEnabled` is `false`, do not set the `ConcurrencyLevel` attribute. An `IllegalStateException` is thrown if the attribute is set.
+
+

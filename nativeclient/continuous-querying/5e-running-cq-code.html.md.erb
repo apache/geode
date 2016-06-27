@@ -1,0 +1,67 @@
+---
+title:  Running the Continuous Query Code
+---
+
+Create your CQ from an instance of the QueryService . Once created, the CQ is maintained primarily through the CqQuery interface. The following two C++ and C\# examples show the basic calls in the CQ life cycle.
+
+## CQ Creation, Execution, and Close (C++)
+
+``` pre
+// Get cache and qrySvcPtr - refs to local cache and QueryService
+// Create client /tradeOrder region configured to talk to the server
+// Create CqAttribute using CqAttributeFactory
+CqAttributesFactory cqf;
+// Create a listener and add it to the CQ attributes
+// callback defined below
+CqListenerPtr tradeEventListener (new TradeEventListener());
+QueryServicePtr qrySvcPtr = cachePtr->getQueryService();" cqf.addCqListener(tradeEventListener);
+CqAttributesPtr cqa = cqf.create();
+// Name of the CQ and its query
+char* cqName = "priceTracker";
+char* queryStr = "SELECT * FROM /tradeOrder t where t.price > 100.00";
+// Create the CqQuery
+CqQueryPtr priceTracker = qrySvcPtr->newCq(cqName, queryStr, cqa); try {
+  // Execute CQ
+  priceTracker->execute();
+} catch (Exception& ex){
+  ex.printStackTrace();
+}
+  // Now the CQ is running on the server, sending CqEvents to the listener
+  . . .
+}
+// End of life for the CQ - clear up resources by closing
+priceTracker->close()
+```
+
+## CQ Creation, Execution, and Close (C\# .NET)
+
+``` pre
+// Get cache and queryService - refs to local cache and QueryService
+// Create client /tradeOrder region configured to talk to the server
+// Create CqAttribute using CqAttributeFactory
+CqAttributesFactory cqf = new CqAttributesFactory();
+// Create a listener and add it to the CQ attributes
+//callback defined below
+ICqListener tradeEventListener = new TradeEventListener();
+cqf.addCqListener(tradeEventListener);
+CqAttributes cqa = cqf.create();
+// Name of the CQ and its query
+String cqName = "priceTracker ";
+String queryStr = "SELECT * FROM /tradeOrder t where t.price >100.00 ";
+QueryService queryService = cache.GetQueryService();
+// Create the CqQuery
+CqQuery priceTracker = queryService.newCq(cqName, queryStr, cqa, true);
+try {
+  // Execute CQ
+  priceTracker.execute();
+  }catch (Exception ex){
+  //handle exception
+  }
+// Now the CQ is running on the server, sending CqEvents to the listener
+// . . .
+}
+// End of life for the CQ - clear up resources by closing
+priceTracker.close();
+```
+
+

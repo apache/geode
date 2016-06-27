@@ -1,0 +1,43 @@
+---
+title:  Serialize with PDX Serialization
+---
+
+<span class="keyword">Geode</span>'s Portable Data eXchange (PDX) is a cross-language data format that can reduce the cost of distributing and serializing your objects. PDX stores data in named fields that you can access individually, to avoid the cost of deserializing the entire data object. PDX also allows you to mix versions of objects where you have added or removed fields.
+
+PDX serialization is supported by C++ clients. If you have C++ clients that may receive events for a region, you can now use PDX serialization on the region's entries.
+
+You have two options for <span class="keyword">Geode</span> PDX serialization when using the C\# .NET caching API. You can program your domain objects using the `IPdxSerializable` interface, or you can use <span class="keyword">Geode</span>’s reflection-based autoserializer.
+
+-   **[Geode PDX Serialization Features](../../nativeclient/dotnet-caching-api/dotnet-pdx-serialization-features.html)**
+
+    <span class="keyword">Geode</span> PDX serialization offers several advantages.
+
+-   **[Serialize Using the Geode PDX Autoserializer](../../nativeclient/dotnet-caching-api/dotnet-pdx-autoserializer.html)**
+
+    When you register the reflection-based serializer, <span class="keyword">Geode</span> uses it to serialize all objects that do not implement `IPdxSerializable` or `IGFSerializable`. You can customize the auto-serialization behavior for your domain objects by adding serialization attributes to your object’s fields.
+
+-   **[Extend the PDX Autoserializer](../../nativeclient/dotnet-caching-api/extending-pdx-autoserializer.html)**
+
+    This example code demonstrates how to extend the autoserializer to customize serialization.
+
+-   **[Serialize Your Domain Objects with IPdxSerializer](../../nativeclient/dotnet-caching-api/serializing-domain-objects.html)**
+
+    For domain objects that you cannot or do not want to modify, use the `IPdxSerializer` class to serialize and deserialize the object's fields.
+
+-   **[Serialize Using the GemFire IPdxSerializable Interface](../../nativeclient/dotnet-caching-api/serialize-using-ipdxserializable.html)**
+
+    Use this procedure to program your domain object for PDX serialization using the `IPdxSerializable` Interface. When you write objects using PDX serialization, they are distributed to the server tier in PDX serialized form. When you run queries against the objects on the servers, only the fields you specify are deserialized.
+
+-   **[Program Your Application to Use IPdxInstance](../../nativeclient/dotnet-caching-api/programming-ipdxinstance.html)**
+
+    An `IPdxInstance` is a lightweight wrapper around PDX serialized bytes. It provides applications with run-time access to fields of a PDX serialized object.
+
+-   **[Use the IPdxInstanceFactory to Create IPdxInstances](../../nativeclient/dotnet-caching-api/using-ipdxinstancefactory.html)**
+
+    You can use the `IPdxInstanceFactory` to create an `IPdxInstance` from raw data when the domain class is not available on the server.
+
+-   **[Map .NET Domain Type Names to PDX Type Names with IPdxTypeMapper](../../nativeclient/dotnet-caching-api/mapping-dotnet-domain-type-names.html)**
+
+    PDX serialized instances in Java map to .NET types with the same name. If you need to adjust the .NET name, then you need to use the IPdxTypeMapper.
+
+

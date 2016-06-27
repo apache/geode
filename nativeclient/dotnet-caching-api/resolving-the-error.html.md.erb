@@ -1,0 +1,9 @@
+---
+title:  Resolving the Error
+---
+
+Each computer where the common language runtime is installed has a machine-wide code cache called the Global Assembly Cache (GAC). The global assembly cache stores assemblies specifically designated to be shared by several applications on the computer.
+
+As a general guideline, keep assembly dependencies private, and locate assemblies in the application directory unless sharing an assembly is explicitly required. Share assemblies by installing them into the global assembly cache only when necessary.
+
+

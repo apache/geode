@@ -1,0 +1,147 @@
+---
+title:  Java to .NET Type Mapping Table
+---
+
+The following table provides a mapping between Java and .NET types.
+
+<a id="concept_24D0AAC71FF1483AB47A7772DA018966__table_F85EC7AA1E1140E9888B753E812E65E4"></a>
+
+<table>
+<caption><span class="tablecap">Table 1. Java types and .NET types</span></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Java Type</th>
+<th>.NET Type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><p>instances of <code class="ph codeph">PdxSerializable</code></p></td>
+<td><p>.NET class of same name</p></td>
+</tr>
+<tr class="even">
+<td><p>instances of <code class="ph codeph">PdxInstance</code></p></td>
+<td><p>.NET class of same name</p></td>
+</tr>
+<tr class="odd">
+<td><p>instances serialized by a <code class="ph codeph">PdxSerializer</code></p></td>
+<td><p>.NET class of same name</p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">java.lang.Byte </code></p></td>
+<td><p><code class="ph codeph">System.SByte </code></p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">java.lang.Boolean </code></p></td>
+<td><p><code class="ph codeph">System.Boolean </code></p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">java.lang.Character </code></p></td>
+<td><p><code class="ph codeph">System.Char </code></p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">java.lang.Short </code></p></td>
+<td><p><code class="ph codeph">System.Int16 </code></p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">java.lang.Integer </code></p></td>
+<td><p><code class="ph codeph">System.Int32 </code></p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">java.lang.Long </code></p></td>
+<td><p><code class="ph codeph">System.Int64 </code></p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">java.lang.Float </code></p></td>
+<td><p><code class="ph codeph">System.Float </code></p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">java.lang.Double </code></p></td>
+<td><p><code class="ph codeph">System.Double </code></p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">java.lang.String </code></p></td>
+<td><p><code class="ph codeph">System.String </code></p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">java.util.Date </code></p></td>
+<td><p><code class="ph codeph">System.DateTime </code></p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">byte[] </code></p></td>
+<td><p><code class="ph codeph">System.Byte[] </code></p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">boolean[] </code></p></td>
+<td><p><code class="ph codeph">System.Boolean[] </code></p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">char[] </code></p></td>
+<td><p><code class="ph codeph">System.Char[] </code></p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">short[] </code></p></td>
+<td><p><code class="ph codeph">System.Int16[] </code></p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">int[] </code></p></td>
+<td><p><code class="ph codeph">System.Int32[] </code></p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">long[] </code></p></td>
+<td><p><code class="ph codeph">System.Int64[] </code></p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">float[] </code></p></td>
+<td><p><code class="ph codeph">System.Float[] </code></p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">double[] </code></p></td>
+<td><p><code class="ph codeph">System.Double[] </code></p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">String[] </code></p></td>
+<td><p><code class="ph codeph">System.String[] </code></p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">byte[][] </code></p></td>
+<td><p><code class="ph codeph">System.Byte[][] </code></p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">Object[] </code></p></td>
+<td><p><code class="ph codeph">system.Collections.Generic.List&lt;Object&gt; </code></p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">java.util.HashMap </code></p></td>
+<td><p><code class="ph codeph">System.Collections.Generics.IDictionary&lt;Object,                                     Object&gt; </code></p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">java.util.Hashtable </code></p></td>
+<td><p><code class="ph codeph">System.Collections.Hashtable </code></p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">java.util.ArrayList </code></p></td>
+<td><p><code class="ph codeph">System.Collections.Generic.IList&lt;Object&gt; </code></p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">java.util.Vector </code></p></td>
+<td><p><code class="ph codeph">Collections.ArrayList </code></p></td>
+</tr>
+<tr class="odd">
+<td><p><code class="ph codeph">java.util.HashSet </code></p></td>
+<td><p><code class="ph codeph">CacheableHashSet </code></p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">java.util.LinkedHashSet </code></p></td>
+<td><p><code class="ph codeph">CacheableLinkedHashSet </code></p></td>
+</tr>
+</tbody>
+</table>
+
+: <span class="tablecap">Table 1. Java types and .NET types</span>
+
+

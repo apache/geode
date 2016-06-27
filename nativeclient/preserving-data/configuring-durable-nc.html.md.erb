@@ -1,0 +1,38 @@
+---
+title:  Configuring a Durable Native Client
+---
+
+The durable native client can be configured in the `gfcpp.properties` file, or in the `CacheFactory::set(name,             value)` call.
+
+-   **Durable client ID**—You indicate that the client is durable by giving it a `durable-client-ID`. The servers use this ID to identify the client. For a non-durable client, the `durable-client-ID` is an empty string. The ID can be any number that is unique among the clients attached to servers in the same distributed system.
+
+-   **Durable timeout**—The `durable-timeout` setting specifies how long this client’s servers should wait after the client disconnects before terminating its message queue. During that time, the servers consider the client alive and continue to accumulate messages for it. The default is 300 seconds.
+
+The `durable-timeout` setting is a tuning parameter. When setting the timeout, take into account the normal activity of your application, the average size of your messages, and the level of risk you can handle. Assuming that no messages are being removed from the queue, how long can the application run before the queue reaches the maximum message count? In addition, how long can it run before the queued messages consume all the memory on the client host? How serious is each of those failures to your operation?
+
+To assist with tuning, <span class="keyword">Geode</span> provides statistics that track message queues for durable clients through the disconnect and reconnect cycles. For statistics documentation, see [Statistics](../../managing/statistics/chapter_overview.html).
+
+When the queue is full, it blocks further operations that add messages until the queue size drops to an acceptable level. The action to take is specified on the server. For details on configuring the queue, see [Implementing Durable Client/Server Messaging](../../developing/events/implementing_durable_client_server_messaging.html).
+
+## Configuring a Durable Native Client Using gfcpp.properties
+
+The following example shows `gfcpp.properties` settings to make the client durable and set the durable timeout to 200seconds.
+
+``` pre
+durable-client-id=31
+durable-timeout=200
+```
+
+## Configuring a Durable Client Through the API (C++)
+
+This programmatic example creates a durable client using the `CacheFactory::set(name, value)`.
+
+``` pre
+// Create durable client's properties using the C++ api
+PropertiesPtr pp = Properties::create();
+pp->insert("durable-client-id", "DurableClientId");
+pp->insert("durable-timeout", 200);
+cacheFactoryPtr = CacheFactory::createCacheFactory(pp);
+```
+
+

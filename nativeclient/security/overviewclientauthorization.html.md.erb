@@ -1,0 +1,21 @@
+---
+title:  Client Authorization
+---
+
+Using a provided callback that implements the `AccessControl` interface, you can configure each server to authorize some or all cache operations.
+
+The callback can also modify or even disallow the data being provided by the client in the operation, such as a put or a `putAll` operation. The callback can also register itself as a post-processing filter that is passed operation results like `get`, `getAll`, and `query`.
+
+-   **[Configuring Client Authorization](../../nativeclient/security/config-clientauthorization.html)**
+
+    You can configure authorization on a per-client basis for various cache operations such as create, get, put, query invalidations, interest registration, and region destroys. On the server side, the `securityclient-accessor` system property in the server’s `gemfire.properties` file specifies the authorization callback.
+
+-   **[Post-Operative Authorization](../../nativeclient/security/postopauthorization.html)**
+
+    Authorization in the post-operation phase occurs on the server after the operation is complete and before the results are sent to the client.
+
+-   **[Determining Pre- or Post-Operation Authorization](../../nativeclient/security/usingoperationcontext.html)**
+
+    The `OperationContext` object that is passed to the `authorizeOperation` method of the callback as the second argument provides an `isPostOperation` method that returns true when the callback is invoked in the post-operation phase.
+
+

@@ -1,0 +1,18 @@
+---
+title:  Notification for Operations
+---
+
+<a id="notification-for-operations__section_53F43C51118C4087915CB954CA3439E0"></a>
+Listeners are invoked for client-initiated operations only after the client operation succeeds on the server. Listener invocation on the client indicates that the server has the same data as the client.
+
+If a client operation fails on the server, the operation is rolled back, assuming that no other thread has modified the data in the intervening period. Rollback may not be possible in cases where the entry has been evicted by LRU or expiration during this period. Thus when an exception is received from the server for an operation, local changes may not have been rolled back
+
+<a id="notification-for-operations__section_48240559E20D4FAF8FDEC8D62C098357"></a>
+
+## Event Notification Sequence
+
+Events received on the clients that originated on the server invoke the subscription for the event as seen by the server. Events originating on the client invoke the subscription as seen by the client.
+
+For example, a client that receives a `create` and an `update` from the server fires a `create` event and an `update` event because that is how the server saw it. A cacheless client that does two consecutive put operations has two `afterCreate` events invoked on the originating client because the client does not have any history about the first put , since it is cacheless.
+
+For the same sequence, the server sees an `afterCreate` and an `afterUpdate` event, and a remote client receiving the event sees an `afterCreate` followed by an `afterUpdate` event. A client that caches locally sees an `afterCreate` and an `afterUpdate` for the same scenario (as will the server and remote clients).

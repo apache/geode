@@ -1,0 +1,16 @@
+---
+title:  Method Invocation
+---
+
+The query language supports method invocation inside query expressions.
+
+<a id="security__section_9EB15A373E8C41E1A1C40981588A4DFB">The query processor maps attributes in query strings using the attribute rules described in</a>[Object attributes](../92-querylanguage/21-basic-region-access.html#security__section_789E081192A74B00B0E726EDC1C574C4). Methods declared to return `void` evaluate to `null` when invoked through the query processor.
+If you know that the attribute name maps to a public method that takes no parameters, you can simply include the method name in the query string as an attribute. For example, `emps.isEmpty` is equivalent to `emps.isEmpty`() . In the following example, the query invokes `isEmpty` on positions, and returns the set of all portfolios with no positions.
+
+``` pre
+SELECT DISTINCT * FROM /portfolios WHERE positions.isEmpty
+```
+
+The native client also supports the invocation of public methods with parameters. To invoke methods with parameters, include the method name as an attribute in the query string and provide the method arguments between parentheses. You can only use constants in the query strings.
+
+

@@ -1,0 +1,31 @@
+---
+title:  Cache APIs
+---
+
+The native client has two cache APIs, `RegionService` and `Cache`.
+
+<a id="caching-apis__section_8F81996678B64BBE94EF352527F7F006"></a>
+## RegionService API
+
+`RegionService` provides:
+
+-   Access to existing cache regions.
+-   Access to the standard query service for the cache, which sends queries to the servers. See [Remote Querying](../remote-querying/remote-querying.html#security) and [Continuous Querying](../continuous-querying/continuous-querying.html#security).
+
+`RegionService` is inherited by `Cache`.
+
+You do not use instances of `RegionService` except for secure client applications with many users. See [Creating Multiple Secure User Connections with RegionService](../security/createsecureconnregionservice.html#security).
+
+<a id="caching-apis__section_403383B9B5044A939A89A5BBB4915452"></a>
+
+## Cache API
+
+Use the `Cache` to manage your client caches. You have one `Cache` per client.
+
+The `Cache` inherits `RegionService` and adds management of these client caching features:
+
+-   Region creation.
+-   Subscription keepalive management for durable clients.
+-   Access to the underlying distributed system.
+-   `RegionService` creation for secure access by multiple users.
+
