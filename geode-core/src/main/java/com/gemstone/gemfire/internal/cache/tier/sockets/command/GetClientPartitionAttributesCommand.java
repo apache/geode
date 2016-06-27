@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
@@ -34,12 +35,11 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+
 /**
- * {@link Command} for {@link GetClientPartitionAttributesOp} operation 
- * 
- * 
+ * {@link Command} for {@link GetClientPartitionAttributesOp} operation
  * @since GemFire 6.5
- *
  */
 public class GetClientPartitionAttributesCommand extends BaseCommand {
 
@@ -55,7 +55,8 @@ public class GetClientPartitionAttributesCommand extends BaseCommand {
   @SuppressWarnings("unchecked")
   @Override
   public void cmdExecute(Message msg, ServerConnection servConn, long start)
-      throws IOException, ClassNotFoundException, InterruptedException {
+    throws IOException, ClassNotFoundException, InterruptedException
+  {
     String regionFullPath = null;
     CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
     regionFullPath = msg.getPart(0).getString();
@@ -63,77 +64,81 @@ public class GetClientPartitionAttributesCommand extends BaseCommand {
     if (regionFullPath == null) {
       logger.warn(LocalizedMessage.create(LocalizedStrings.GetClientPartitionAttributes_THE_INPUT_REGION_PATH_IS_NULL));
       errMessage = LocalizedStrings.GetClientPartitionAttributes_THE_INPUT_REGION_PATH_IS_NULL
-          .toLocalizedString();
+        .toLocalizedString();
       writeErrorResponse(msg,
-          MessageType.GET_CLIENT_PARTITION_ATTRIBUTES_ERROR, errMessage
-              .toString(), servConn);
+        MessageType.GET_CLIENT_PARTITION_ATTRIBUTES_ERROR, errMessage
+          .toString(), servConn);
       servConn.setAsTrue(RESPONDED);
+      return;
     }
-    else {
-      Region region = crHelper.getRegion(regionFullPath);
-      if (region == null) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.GetClientPartitionAttributes_REGION_NOT_FOUND_FOR_SPECIFIED_REGION_PATH, regionFullPath));
-        errMessage = LocalizedStrings.GetClientPartitionAttributes_REGION_NOT_FOUND
-            .toLocalizedString()
-            + regionFullPath;
-        writeErrorResponse(msg,
-            MessageType.GET_CLIENT_PARTITION_ATTRIBUTES_ERROR, errMessage
-                .toString(), servConn);
-        servConn.setAsTrue(RESPONDED);
+    Region region = crHelper.getRegion(regionFullPath);
+    if (region == null) {
+      logger.warn(LocalizedMessage
+        .create(LocalizedStrings.GetClientPartitionAttributes_REGION_NOT_FOUND_FOR_SPECIFIED_REGION_PATH,
+          regionFullPath));
+      errMessage = LocalizedStrings.GetClientPartitionAttributes_REGION_NOT_FOUND
+        .toLocalizedString()
+        + regionFullPath;
+      writeErrorResponse(msg,
+        MessageType.GET_CLIENT_PARTITION_ATTRIBUTES_ERROR, errMessage
+          .toString(), servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    }
+
+    try {
+      GeodeSecurityUtil.authorizeClusterRead();
+      Message responseMsg = servConn.getResponseMessage();
+      responseMsg.setTransactionId(msg.getTransactionId());
+      responseMsg
+        .setMessageType(MessageType.RESPONSE_CLIENT_PARTITION_ATTRIBUTES);
+
+      PartitionedRegion prRgion = (PartitionedRegion) region;
+
+      PartitionResolver partitionResolver = prRgion.getPartitionResolver();
+      int numParts = 2; // MINUMUM PARTS
+      if (partitionResolver != null) {
+        numParts++;
       }
-      else {
-        try {
-          Message responseMsg = servConn.getResponseMessage();
-          responseMsg.setTransactionId(msg.getTransactionId());
-          responseMsg
-              .setMessageType(MessageType.RESPONSE_CLIENT_PARTITION_ATTRIBUTES);
+      responseMsg.setNumberOfParts(numParts);
+      // PART 1
+      responseMsg.addObjPart(prRgion.getTotalNumberOfBuckets());
 
-          PartitionedRegion prRgion = (PartitionedRegion)region;
+      // PART 2
+      if (partitionResolver != null) {
+        responseMsg.addObjPart(partitionResolver.getClass().toString()
+          .substring(6));
+      }
 
-          PartitionResolver partitionResolver = prRgion.getPartitionResolver();
-          int numParts = 2; // MINUMUM PARTS
-          if (partitionResolver != null) {
-            numParts++;
+      // PART 3
+      String leaderRegionPath = null;
+      PartitionedRegion leaderRegion = null;
+      String leaderRegionName = prRgion.getColocatedWith();
+      if (leaderRegionName != null) {
+        Cache cache = prRgion.getCache();
+        while (leaderRegionName != null) {
+          leaderRegion = (PartitionedRegion) cache
+            .getRegion(leaderRegionName);
+          if (leaderRegion.getColocatedWith() == null) {
+            leaderRegionPath = leaderRegion.getFullPath();
+            break;
           }
-          responseMsg.setNumberOfParts(numParts);
-          // PART 1
-          responseMsg.addObjPart(prRgion.getTotalNumberOfBuckets());
-          
-          // PART 2
-          if (partitionResolver != null) {
-            responseMsg.addObjPart(partitionResolver.getClass().toString()
-                .substring(6));
+          else {
+            leaderRegionName = leaderRegion.getColocatedWith();
           }
-          
-          // PART 3
-          String leaderRegionPath=null;
-          PartitionedRegion leaderRegion = null;
-          String leaderRegionName = prRgion.getColocatedWith();
-          if (leaderRegionName != null) {
-            Cache cache = prRgion.getCache();
-            while (leaderRegionName != null) {
-              leaderRegion = (PartitionedRegion)cache
-                  .getRegion(leaderRegionName);
-              if (leaderRegion.getColocatedWith() == null) {
-                leaderRegionPath=leaderRegion.getFullPath();
-                break;
-              } else {
-               leaderRegionName = leaderRegion.getColocatedWith();
-              }
-            }
-          }
-          responseMsg.addObjPart(leaderRegionPath);
-          responseMsg.send();
-          msg.clearParts();
-        }
-        catch (Exception e) {
-          writeException(msg, e, false, servConn);
-        }
-        finally {
-          servConn.setAsTrue(Command.RESPONDED);
         }
       }
+      responseMsg.addObjPart(leaderRegionPath);
+      responseMsg.send();
+      msg.clearParts();
+    }
+    catch (Exception e) {
+      writeException(msg, e, false, servConn);
+    }
+    finally {
+      servConn.setAsTrue(Command.RESPONDED);
     }
   }
-
 }
+
+
