@@ -23,12 +23,13 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.internal.GetClientPartitionAttributesOp;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
+import com.gemstone.gemfire.cache.client.internal.ClientMetadataService;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-public class IntegratedClientGetClientPartitionAttrCmdAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
+public class IntegratedClientGetClientPRMetaDataAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
 
   @Test
   public void testGetClientPartitionAttrCmd() {
@@ -40,10 +41,11 @@ public class IntegratedClientGetClientPartitionAttrCmdAuthDistributedTest extend
 
       Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
 
-      assertNotAuthorized(() -> GetClientPartitionAttributesOp.execute((PoolImpl)cache.getDefaultPool(), REGION_NAME), "CLUSTER:READ");
+      ClientMetadataService service = ((GemFireCacheImpl)cache).getClientMetadataService();
+      assertNotAuthorized(() -> service.getClientPRMetadata((LocalRegion)cache.getRegion(region.getName())), "CLUSTER:READ");
     });
 
-    client2.invoke("logging in super-user with correct password", () -> {
+    client2.invoke("logging in super-user", () -> {
       ClientCache cache = new ClientCacheFactory(createClientProperties("super-user", "1234567"))
         .setPoolSubscriptionEnabled(true)
         .addPoolServer("localhost", serverPort)
@@ -51,7 +53,8 @@ public class IntegratedClientGetClientPartitionAttrCmdAuthDistributedTest extend
 
       Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
 
-      GetClientPartitionAttributesOp.execute((PoolImpl)cache.getDefaultPool(), REGION_NAME);
+      ClientMetadataService service = ((GemFireCacheImpl)cache).getClientMetadataService();
+      service.getClientPRMetadata((LocalRegion)cache.getRegion(region.getName()));
     });
   }
 }
