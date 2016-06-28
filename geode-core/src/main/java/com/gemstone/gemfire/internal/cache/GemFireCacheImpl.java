@@ -1101,6 +1101,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     for(CacheService service : loader) {
       service.init(this);
       this.services.put(service.getInterface(), service);
+      system.handleResourceEvent(ResourceEvent.CACHE_SERVICE_CREATE, service);
     }
   }
 

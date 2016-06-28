@@ -21,6 +21,8 @@ package com.gemstone.gemfire.cache.lucene.internal;
 
 import java.util.*;
 
+import com.gemstone.gemfire.cache.lucene.internal.management.LuceneServiceMBean;
+import com.gemstone.gemfire.management.internal.beans.CacheServiceMBeanBase;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
@@ -86,7 +88,12 @@ public class LuceneServiceImpl implements InternalLuceneService {
     FunctionService.registerFunction(new DumpDirectoryFiles());
     registerDataSerializables();
   }
-  
+
+  @Override
+  public CacheServiceMBeanBase getMBean() {
+    return new LuceneServiceMBean(this);
+  }
+
   @Override
   public Class<? extends CacheService> getInterface() {
     return InternalLuceneService.class;

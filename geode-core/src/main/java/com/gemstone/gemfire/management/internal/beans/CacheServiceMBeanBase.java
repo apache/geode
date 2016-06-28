@@ -14,32 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package com.gemstone.gemfire.management.internal.beans;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.management.internal.beans.CacheServiceMBeanBase;
+public interface CacheServiceMBeanBase {
 
-public class MockCacheServiceImpl implements MockCacheService {
-  
-  private Cache cache;
+  public String getId();
 
-  @Override
-  public void init(Cache cache) {
-    this.cache = cache;
-  }
-
-  @Override
-  public Class<? extends CacheService> getInterface() {
-    return MockCacheService.class;
-  }
-
-  @Override
-  public CacheServiceMBeanBase getMBean() {
-    return null;
-  }
-
-  @Override
-  public Cache getCache() {
-    return cache;
-  }
+  public Class getInterfaceClass();
 }

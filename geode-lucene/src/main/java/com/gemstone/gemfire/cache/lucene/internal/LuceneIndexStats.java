@@ -156,4 +156,43 @@ public class LuceneIndexStats {
       .sum();
   }
 
+  public int getQueryExecutions() {
+    return stats.getInt(queryExecutionsId);
+  }
+
+  public long getQueryExecutionTime() {
+    return stats.getLong(queryExecutionTimeId);
+  }
+
+  public int getQueryExecutionsInProgress() {
+    return stats.getInt(queryExecutionsInProgressId);
+  }
+
+  public long getQueryExecutionTotalHits() {
+    return stats.getLong(queryExecutionTotalHits);
+  }
+
+  public int getUpdates() {
+    return stats.getInt(updatesId);
+  }
+
+  public long getUpdateTime() {
+    return stats.getLong(updateTimeId);
+  }
+
+  public int getUpdatesInProgress() {
+    return stats.getInt(updatesInProgressId);
+  }
+
+  public int getCommits() {
+    return stats.getInt(commitsId);
+  }
+
+  public long getCommitTime() {
+    return stats.getLong(commitTimeId);
+  }
+
+  public int getCommitsInProgress() {
+    return stats.getInt(commitsInProgressId);
+  }
 }

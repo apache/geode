@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.management.internal.beans.CacheServiceMBeanBase;
 
 /**
  * Interface for a service that is linked to a cache.
@@ -39,4 +40,10 @@ public interface CacheService {
    * this service. 
    */
   public Class<? extends CacheService> getInterface();
+
+  /**
+   * Returns the MBean associated with this server
+   * @return the MBean associated with this server
+   */
+  public CacheServiceMBeanBase getMBean();
 }

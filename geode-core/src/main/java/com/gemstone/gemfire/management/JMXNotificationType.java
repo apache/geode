@@ -206,4 +206,11 @@ public interface JMXNotificationType {
    * <CODE>gemfire.distributedsystem.locator.started</CODE>.
    */
   public static final String LOCATOR_STARTED = DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.locator.started";
+
+  /**
+   * Notification type which indicates that a cache service is created <BR>
+   * The value of this type string is
+   * <CODE>gemfire.distributedsystem.cache.service.created</CODE>.
+   */
+  public static final String CACHE_SERVICE_CREATED = DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.service.created";
 }
