@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
+
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 import javax.net.ssl.KeyManager;
@@ -83,7 +84,6 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.pdx.PdxReader;
 import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxWriter;
-import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 
@@ -308,15 +308,6 @@ public final class SecurityTestUtils {
     return server1.getPort();
   }
 
-  protected static Cache createCacheClient(String userName, String password, int serverPort, int expectedResult){
-    Properties authProps = new Properties();
-    authProps.setProperty(UserPasswordAuthInit.USER_NAME, userName);
-    authProps.setProperty(UserPasswordAuthInit.PASSWORD, password);
-    int[] ports = new int[1];
-    ports[0] = serverPort;
-    return createCacheClient(UserPasswordAuthInit.class.getName()+".create", authProps, null, ports, 0, false, false, true, expectedResult);
-  }
-
   // 1
   protected static void createCacheClient(final String authInitModule,
                                           final Properties authProps,
@@ -366,7 +357,7 @@ public final class SecurityTestUtils {
   }
 
   // 5
-  protected static Cache createCacheClient(final String authInitModule,
+  protected static void createCacheClient(final String authInitModule,
                                           Properties authProps,
                                           final Properties javaProps,
                                           int[] ports,
@@ -480,7 +471,6 @@ public final class SecurityTestUtils {
     catch (Exception ex) {
       fail("Got unexpected exception when starting client", ex);
     }
-    return cache;
   }
 
   protected static void createCacheClientForMultiUserMode(final int numOfUsers,
