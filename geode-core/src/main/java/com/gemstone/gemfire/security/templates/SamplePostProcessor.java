@@ -39,6 +39,6 @@ public class SamplePostProcessor implements PostProcessor{
                                    String regionPath,
                                    Object key,
                                    Object value) {
-    return MASK;
+    return principal.getName()+"/"+regionPath+"/"+key+"/"+value;
   }
 }
