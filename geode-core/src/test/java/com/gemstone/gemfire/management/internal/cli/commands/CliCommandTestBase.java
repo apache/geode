@@ -16,6 +16,22 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.management.ManagementService;
@@ -28,22 +44,8 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Base class for all the CLI/gfsh command dunit tests.
@@ -154,6 +156,9 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
       if(jsonFile!=null){
         JSONAuthorization.setUpWithJsonFile(jsonFile);
       }
+
+      IgnoredException.addIgnoredException("org.eclipse.jetty.io.EofException");
+      IgnoredException.addIgnoredException("java.nio.channels.ClosedChannelException");
 
       results[0] = jmxHost;
       results[1] = jmxPort;
