@@ -22,9 +22,11 @@ import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
@@ -170,9 +172,13 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
 
       LuceneService service = LuceneServiceProvider.get(cache);
       LuceneQuery<Integer, TestObject> query;
-      query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, queryString, defaultField);
-      PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
-      assertEquals(results.size(), expectedResultsSize);
+      query = service.createLuceneQueryFactory()
+        .setResultLimit(1000)
+        .setPageSize(1000)
+        .create(INDEX_NAME, REGION_NAME, queryString, defaultField);
+      Collection<?> results = query.findKeys();
+
+      assertEquals(expectedResultsSize, results.size());
     });
   }
 
@@ -186,7 +192,7 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
     });
   }
 
-  private static class TestObject implements Serializable {
+  protected static class TestObject implements Serializable {
     private static final long serialVersionUID = 1L;
     private String text;
 
