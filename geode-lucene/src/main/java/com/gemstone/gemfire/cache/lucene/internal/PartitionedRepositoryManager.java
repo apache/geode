@@ -25,16 +25,12 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
 
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
-import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
-import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepositoryImpl;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.LuceneSerializer;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
@@ -51,6 +47,8 @@ import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteHashMap;
  * index repository when the bucket returns to this node.
  */
 public class PartitionedRepositoryManager implements RepositoryManager {
+
+  public static IndexRepositoryFactory indexRepositoryFactory = new IndexRepositoryFactory();
 
   /** map of the parent bucket region to the index repository
    * 
@@ -137,12 +135,8 @@ public class PartitionedRepositoryManager implements RepositoryManager {
     
     if(repo == null) {
       try {
-        BucketRegion fileBucket = getMatchingBucket(fileRegion, bucketId);
-        BucketRegion chunkBucket = getMatchingBucket(chunkRegion, bucketId);
-        RegionDirectory dir = new RegionDirectory(fileBucket, chunkBucket, fileSystemStats);
-        IndexWriterConfig config = new IndexWriterConfig(analyzer);
-        IndexWriter writer = new IndexWriter(dir, config);
-        repo = new IndexRepositoryImpl(fileBucket, writer, serializer, indexStats);
+        repo = indexRepositoryFactory.createIndexRepository(bucketId, userRegion, fileRegion, chunkRegion, serializer,
+          analyzer, indexStats, fileSystemStats);
         IndexRepository oldRepo = indexRepositories.putIfAbsent(bucketId, repo);
         if(oldRepo != null) {
           repo = oldRepo;
@@ -153,20 +147,5 @@ public class PartitionedRepositoryManager implements RepositoryManager {
     }
     
     return repo;
-  }
-
-  /**
-   * Find the bucket in region2 that matches the bucket id from region1.
-   */
-  private BucketRegion getMatchingBucket(PartitionedRegion region, Integer bucketId) throws BucketNotFoundException {
-    //Force the bucket to be created if it is not already
-    region.getOrCreateNodeForBucketWrite(bucketId, null);
-    
-    BucketRegion result = region.getDataStore().getLocalBucketById(bucketId);
-    if(result == null) {
-      throw new BucketNotFoundException("Bucket not found for region " + region + " bucekt id " + bucketId);
-    }
-    
-    return result;
   }
 }

@@ -96,12 +96,10 @@ public class LuceneEventListenerJUnitTest {
 
     listener.processEvents(events);
 
-    verify(repo1, atLeast(numEntries / 6)).create(any(), any());
     verify(repo1, atLeast(numEntries / 6)).delete(any());
-    verify(repo1, atLeast(numEntries / 6)).update(any(), any());
-    verify(repo2, atLeast(numEntries / 6)).create(any(), any());
+    verify(repo1, atLeast(numEntries / 3)).update(any(), any());
     verify(repo2, atLeast(numEntries / 6)).delete(any());
-    verify(repo2, atLeast(numEntries / 6)).update(any(), any());
+    verify(repo2, atLeast(numEntries / 3)).update(any(), any());
     verify(repo1, times(1)).commit();
     verify(repo2, times(1)).commit();
   }
