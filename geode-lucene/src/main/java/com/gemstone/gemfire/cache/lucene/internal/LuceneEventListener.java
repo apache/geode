@@ -94,7 +94,7 @@ public class LuceneEventListener implements AsyncEventListener {
         repo.commit();
       }
       return true;
-    } catch(BucketNotFoundException | RegionDestroyedException e) {
+    } catch(BucketNotFoundException | RegionDestroyedException | PrimaryBucketException e) {
       logger.debug("Bucket not found while saving to lucene index: " + e.getMessage());
       return false;
     } catch(IOException e) {

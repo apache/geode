@@ -96,7 +96,7 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     putEntriesAndValidateQueryResults();
   }
 
-  private void putEntriesAndValidateQueryResults() {
+  protected void putEntriesAndValidateQueryResults() {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
@@ -155,7 +155,7 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     executeTextSearch(accessor, "world", "text", 113);
   }
 
-  private void put113Entries() {
+  protected void put113Entries() {
     accessor.invoke(() -> {
       final Cache cache = getCache();
       Region<Object, Object> region = cache.getRegion(REGION_NAME);
@@ -171,7 +171,7 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     });
   }
 
-  private void addCallbackToMoveBucket(VM vm, final DistributedMember destination) {
+  protected void addCallbackToMoveBucket(VM vm, final DistributedMember destination) {
     vm.invoke(() -> {
       IndexRepositorySpy spy = IndexRepositorySpy.injectSpy();
 
@@ -197,11 +197,11 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     });
   }
 
-  private static class IndexRepositorySpy extends IndexRepositoryFactory {
+  protected static class IndexRepositorySpy extends IndexRepositoryFactory {
 
     private Consumer<Object> beforeWrite = key -> {};
 
-    private static IndexRepositorySpy injectSpy() {
+    public static IndexRepositorySpy injectSpy() {
       IndexRepositorySpy factory = new IndexRepositorySpy();
       PartitionedRepositoryManager.indexRepositoryFactory = factory;
       return factory;
@@ -252,7 +252,7 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     }
   }
 
-  private static <T> Consumer<T> doOnce(Consumer<T> consumer) {
+  protected static <T> Consumer<T> doOnce(Consumer<T> consumer) {
     return new Consumer<T>() {
       boolean done;
 
