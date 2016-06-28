@@ -61,10 +61,12 @@ public class GfshCommandsPostProcessorTest {
 
     // for get command, assert the return value is processed
     gfsh.executeCommand("get --region=region1 --key=key1");
-    assertTrue(gfsh.outputString.contains("Value       : ****"), gfsh.outputString);
+    assertTrue(gfsh.outputString.contains("data-user/region1/key1/value1"), gfsh.outputString);
 
     // for query command, assert the return values are processed
     gfsh.executeCommand("query --query=\"select * from /region1\"");
-    assertTrue(gfsh.outputString.contains("****\n****\n****"), gfsh.outputString);
+    assertTrue(gfsh.outputString.contains("data-user/null/null/value1"), gfsh.outputString);
+    assertTrue(gfsh.outputString.contains("data-user/null/null/value2"), gfsh.outputString);
+    assertTrue(gfsh.outputString.contains("data-user/null/null/value3"), gfsh.outputString);
   }
 }
