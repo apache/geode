@@ -336,8 +336,19 @@ public class GfshParser implements Parser {
       boolean warningValueRequired = false;
       Option warningOption = null;
 
+      boolean updatedDesiredCursorPosition = false;
+      if (!userOptionSet.areOptionsPresent()) {
+        int walkBackwards = remainingBuffer.length() - 1;
+        while (remainingBuffer.charAt(walkBackwards) != '-') {
+          walkBackwards--;
+        }
+        walkBackwards -= 2;
+        desiredCursorPosition += walkBackwards;
+        updatedDesiredCursorPosition = true;
+      }
+
       for (Option option : commandTarget.getOptionParser().getOptions()) {
-        if (userOptionSet.hasOption(option)) {
+        if (!updatedDesiredCursorPosition && userOptionSet.hasOption(option)) {
           // We are supporting option synonyms,
           // so we need to check that here
           for (String string : userOptionSet.getSplit()) {
