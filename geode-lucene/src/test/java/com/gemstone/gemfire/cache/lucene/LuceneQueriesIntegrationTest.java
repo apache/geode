@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -35,6 +36,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.util.CharTokenizer;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
@@ -43,6 +45,7 @@ import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.lucene.test.TestObject;
 import com.gemstone.gemfire.pdx.JSONFormatter;
 import com.gemstone.gemfire.pdx.PdxInstance;
+import com.gemstone.gemfire.pdx.internal.AutoSerializableManager.ObjectArrayField;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -119,28 +122,32 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   @Test()
   public void shouldPaginateResults() throws Exception {
 
-    final LuceneQuery<Object, Object> query = addValuesAndCreateQuery();
+    final LuceneQuery<Object, Object> query = addValuesAndCreateQuery(2);
 
     final PageableLuceneQueryResults<Object, Object> pages = query.findPages();
     assertTrue(pages.hasNext());
-    assertEquals(3, pages.size());
+    assertEquals(7, pages.size());
     final List<LuceneResultStruct<Object, Object>> page1 = pages.next();
     final List<LuceneResultStruct<Object, Object>> page2 = pages.next();
+    final List<LuceneResultStruct<Object, Object>> page3 = pages.next();
+    final List<LuceneResultStruct<Object, Object>> page4 = pages.next();
     List<LuceneResultStruct<Object, Object>> allEntries=new ArrayList<>();
     allEntries.addAll(page1);
     allEntries.addAll(page2);
+    allEntries.addAll(page3);
+    allEntries.addAll(page4);
 
     assertEquals(region.keySet(), allEntries.stream().map(entry -> entry.getKey()).collect(Collectors.toSet()));
     assertEquals(region.values(), allEntries.stream().map(entry -> entry.getValue()).collect(Collectors.toSet()));
-
   }
+
   @Test
   public void shouldReturnValuesFromFindValues() throws Exception {
-    final LuceneQuery<Object, Object> query = addValuesAndCreateQuery();
+    final LuceneQuery<Object, Object> query = addValuesAndCreateQuery(2);
     assertEquals(region.values(), new HashSet(query.findValues()));
   }
 
-  private LuceneQuery<Object, Object> addValuesAndCreateQuery() {
+  private LuceneQuery<Object, Object> addValuesAndCreateQuery(int pagesize) {
     luceneService.createIndex(INDEX_NAME, REGION_NAME, "field1", "field2");
     region = cache.createRegionFactory(RegionShortcut.PARTITION)
       .create(REGION_NAME);
@@ -153,10 +160,14 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     region.put("A", new TestObject(value1, value1));
     region.put("B", new TestObject(value2, value2));
     region.put("C", new TestObject(value3, value3));
+    region.put("D", new TestObject(value1, value1));
+    region.put("E", new TestObject(value2, value2));
+    region.put("F", new TestObject(value3, value3));
+    region.put("G", new TestObject(value1, value2));
 
     index.waitUntilFlushed(60000);
     return luceneService.createLuceneQueryFactory()
-      .setPageSize(2)
+      .setPageSize(pagesize)
       .create(INDEX_NAME, REGION_NAME,
       "one", "field1");
   }
@@ -260,7 +271,101 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     thrown.expect(LuceneQueryException.class);
     query.findPages();
   }
-  
+
+  @Test
+  public void shouldReturnAllResultsWhenPaginationIsDisabled() throws Exception {
+    // Pagination disabled by setting page size = 0.
+    final LuceneQuery<Object, Object> query = addValuesAndCreateQuery(0);
+    final PageableLuceneQueryResults<Object, Object> pages = query.findPages();
+    assertTrue(pages.hasNext());
+    assertEquals(7, pages.size());
+    final List<LuceneResultStruct<Object, Object>> page = pages.next();
+    assertFalse(pages.hasNext());
+    assertEquals(region.keySet(), page.stream().map(entry -> entry.getKey()).collect(Collectors.toSet()));
+    assertEquals(region.values(), page.stream().map(entry -> entry.getValue()).collect(Collectors.toSet()));
+  }
+
+  @Test
+  public void shouldReturnCorrectResultsOnDeletionAfterQueryExecution() throws Exception {
+    final LuceneQuery<Object, Object> query = addValuesAndCreateQuery(2);
+    final PageableLuceneQueryResults<Object, Object> pages = query.findPages();
+    List<LuceneResultStruct<Object, Object>> allEntries=new ArrayList<>();
+    assertTrue(pages.hasNext());
+    assertEquals(7, pages.size());
+    // Destroying an entry from the region after the query is executed.
+    region.destroy("C");
+    final List<LuceneResultStruct<Object, Object>> page1 = pages.next();
+    assertEquals(2, page1.size());
+    final List<LuceneResultStruct<Object, Object>> page2 = pages.next();
+    assertEquals(2, page2.size());
+    final List<LuceneResultStruct<Object, Object>> page3 = pages.next();
+    assertEquals(2, page3.size());
+    assertFalse(pages.hasNext());
+
+    allEntries.addAll(page1);
+    allEntries.addAll(page2);
+    allEntries.addAll(page3);
+    assertEquals(region.keySet(), allEntries.stream().map(entry -> entry.getKey()).collect(Collectors.toSet()));
+    assertEquals(region.values(), allEntries.stream().map(entry -> entry.getValue()).collect(Collectors.toSet()));
+  }
+
+  @Test
+  public void shouldReturnCorrectResultsOnMultipleDeletionsAfterQueryExecution() throws Exception {
+    final LuceneQuery<Object, Object> query = addValuesAndCreateQuery(2);
+
+    final PageableLuceneQueryResults<Object, Object> pages = query.findPages();
+    List<LuceneResultStruct<Object, Object>> allEntries=new ArrayList<>();
+
+    assertTrue(pages.hasNext());
+    assertEquals(7, pages.size());
+
+    // Destroying an entry from the region after the query is executed.
+    region.destroy("C");
+    allEntries.addAll(pages.next());
+
+    // Destroying an entry from allEntries and the region after it is fetched through pages.next().
+    Object removeKey = ((LuceneResultStruct)allEntries.remove(0)).getKey();
+    region.destroy(removeKey);
+    allEntries.addAll(pages.next());
+
+    // Destroying a region entry which has't been fetched through pages.next() yet.
+    Set resultKeySet = allEntries.stream().map(entry -> entry.getKey()).collect(Collectors.toSet());
+
+    for(Object key : region.keySet()) {
+      if (!resultKeySet.contains(key)) {
+        region.destroy(key);
+        break;
+      }
+    }
+
+    allEntries.addAll(pages.next());
+    assertFalse(pages.hasNext());
+
+    assertEquals(region.keySet(), allEntries.stream().map(entry -> entry.getKey()).collect(Collectors.toSet()));
+    assertEquals(region.values(), allEntries.stream().map(entry -> entry.getValue()).collect(Collectors.toSet()));
+  }
+
+  @Test
+  public void shouldReturnCorrectResultsOnAllDeletionsAfterQueryExecution() throws Exception {
+    final LuceneQuery<Object, Object> query = addValuesAndCreateQuery(2);
+
+    final PageableLuceneQueryResults<Object, Object> pages = query.findPages();
+    assertTrue(pages.hasNext());
+    assertEquals(7, pages.size());
+    region.destroy("A");
+    region.destroy("B");
+    region.destroy("C");
+    region.destroy("D");
+    region.destroy("E");
+    region.destroy("F");
+    region.destroy("G");
+    assertTrue(pages.hasNext());
+    final List<LuceneResultStruct<Object, Object>> page1 = pages.next();
+    assertEquals(2, page1.size());
+    assertFalse(pages.hasNext());
+
+  }
+
   private PdxInstance insertAJson(Region region, String key) {
     String jsonCustomer = "{"
         + "\"name\": \""+key+"\","
