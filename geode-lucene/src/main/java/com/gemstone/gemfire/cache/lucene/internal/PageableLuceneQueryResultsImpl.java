@@ -69,32 +69,38 @@ public class PageableLuceneQueryResultsImpl<K,V> implements PageableLuceneQueryR
     this.pageSize = pageSize == 0 ? Integer.MAX_VALUE : pageSize;
   }
 
+
+  public List<LuceneResultStruct<K,V>> getHitEntries(int fromIndex, int toIndex) {
+    List<EntryScore<K>> scores = hits.subList(fromIndex, toIndex);
+    ArrayList<K> keys = new ArrayList<K>(scores.size());
+    for(EntryScore<K> score : scores) {
+      keys.add(score.getKey());
+    }
+
+    Map<K,V> values = userRegion.getAll(keys);
+
+    ArrayList<LuceneResultStruct<K,V>> results = new ArrayList<LuceneResultStruct<K,V>>(scores.size());
+    for(EntryScore<K> score : scores) {
+      V value = values.get(score.getKey());
+      if (value!=null)
+        results.add(new LuceneResultStructImpl(score.getKey(), value, score.getScore()));
+    }
+    return results;
+  }
+
   @Override
   public List<LuceneResultStruct<K,V>> next() {
     if(!hasNext()) {
       throw new NoSuchElementException();
     }
-    
-    int end = currentHit + pageSize;
-    end = end > hits.size() ? hits.size() : end;
-    List<EntryScore<K>> scores = hits.subList(currentHit, end);
-    
-    ArrayList<K> keys = new ArrayList<K>(hits.size());
-    for(EntryScore<K> score : scores) {
-      keys.add(score.getKey());
+    int resultSize = (pageSize != Integer.MAX_VALUE) ? pageSize : hits.size();
+    ArrayList<LuceneResultStruct<K,V>> results = new ArrayList<LuceneResultStruct<K,V>>(resultSize);
+    while (results.size()<pageSize && hasNext()) {
+      int end = currentHit + pageSize - results.size();
+      end = end > hits.size() ? hits.size() : end;
+      results.addAll(getHitEntries(currentHit, end));
+      currentHit = end;
     }
-    
-    Map<K,V> values = userRegion.getAll(keys);
-
-    ArrayList<LuceneResultStruct<K,V>> results = new ArrayList<LuceneResultStruct<K,V>>(hits.size());
-    for(EntryScore<K> score : scores) {
-      V value = values.get(score.getKey());
-      results.add(new LuceneResultStructImpl(score.getKey(), value, score.getScore()));
-    }
-    
-
-    currentHit = end;
-    
     return results;
   }
 
