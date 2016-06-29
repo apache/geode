@@ -56,7 +56,7 @@ DITA is a topic-oriented authoring system. A topic is a unit of content that cov
 
 A DITA map is an XML document that orders a collection of topics and creates a topic hierarchy. A map can contain references to topics or to other maps. Maps control the generation of both HTML help and PDFs. Project Geode uses the \<bookmap\> document type for maps, because it includes a \<bookmeta\> section that supplies the metadata needed to produce PDFs, such as the document title, copyright date, and revision numbers.
 
-You can produce output from the DITA sources using the DITA Open Toolkit (DITA-OT) or use the DITA transformations built into your XML editor. We generate end-user documentation using a Ruby gem, Bookbinder, which performs the DITA transformations and also processes sources in HTML and markdown to produce a deployable Web application. See the [README](README.md) file for Bookbinder instructions.
+You can produce output from the DITA sources using the DITA Open Toolkit (DITA-OT) or use the DITA transformations built into your XML editor. We generate end-user documentation using a Ruby gem, Bookbinder, which performs the DITA transformations and also processes sources in HTML and markdown to produce a deployable Web application. See the README.md file for Bookbinder instructions.
 
 To learn more about DITA markup, how to create and edit DITA files, and find more XML editors that support DITA, visit the [DITA online community](http://dita.xml.org).
 
