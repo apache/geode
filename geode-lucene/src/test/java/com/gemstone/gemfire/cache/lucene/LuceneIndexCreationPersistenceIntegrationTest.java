@@ -159,6 +159,23 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
     });
   }
 
+  @Test
+  public void shouldStoreIndexAndQueueInTheSameDiskStoreAsTheRegion() {
+    createIndex(cache, "text");
+    cache.createDiskStoreFactory()
+      .setDiskDirs(new File[] {diskDirRule.get()})
+      .create("DiskStore");
+    cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
+      .setDiskStoreName("DiskStore")
+      .create(REGION_NAME);
+    final String diskStoreName = cache.getRegion(REGION_NAME).getAttributes().getDiskStoreName();
+    verifyInternalRegions(region -> {
+      assertEquals(diskStoreName, region.getAttributes().getDiskStoreName());
+    });
+    AsyncEventQueue queue = getIndexQueue(cache);
+    assertEquals(diskStoreName, queue.getDiskStoreName());
+  }
+
   private void verifyQueryResultSize(String indexName, String regionName, String queryString, String defaultField, int size) throws Exception {
     LuceneQuery query = luceneService.createLuceneQueryFactory().create(indexName, regionName, queryString, defaultField);
     Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
