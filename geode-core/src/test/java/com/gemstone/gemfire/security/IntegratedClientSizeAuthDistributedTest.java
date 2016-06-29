@@ -34,9 +34,9 @@ public class IntegratedClientSizeAuthDistributedTest extends AbstractIntegratedC
   public void testSize() throws InterruptedException {
 
     AsyncInvocation ai1 = client1.invokeAsync(() -> {
-      ClientCache cache = new ClientCacheFactory(createClientProperties("stranger", "1234567")).setPoolSubscriptionEnabled(true)
-                                                                                               .addPoolServer("localhost", serverPort)
-                                                                                               .create();
+      ClientCache cache = new ClientCacheFactory(createClientProperties("dataWriter", "1234567")).setPoolSubscriptionEnabled(true)
+                                                                                                 .addPoolServer("localhost", serverPort)
+                                                                                                 .create();
 
       assertNotAuthorized(() -> SizeOp.execute((InternalPool) cache.getDefaultPool(), REGION_NAME), "DATA:READ:AuthRegion");
     });
