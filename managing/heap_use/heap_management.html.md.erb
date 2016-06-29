@@ -44,6 +44,7 @@ See your JVM documentation for all JVM-specific settings that can be used to imp
 For the `gfsh start server` command, pass these settings with the `--J` switch, for example: `‑‑J=‑XX:+UseConcMarkSweepGC`.
 
 The following is an example of setting JVM for an application:
+
 ``` pre
 $ java app.MyApplication -Xms=30m -Xmx=30m -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=60
 ```
@@ -51,6 +52,7 @@ $ java app.MyApplication -Xms=30m -Xmx=30m -XX:+UseConcMarkSweepGC -XX:CMSInitia
 **Note:** Do not use the `-XX:+UseCompressedStrings` and `-XX:+UseStringCache` JVM configuration properties when starting up servers. These JVM options can cause issues with data corruption and compatibility.
 
 Or, using `gfsh`:
+
 ``` pre
 $ gfsh start server --name=app.MyApplication --initial-heap=30m --max-heap=30m \
 --J=-XX:+UseConcMarkSweepGC --J=-XX:CMSInitiatingOccupancyFraction=60
@@ -119,12 +121,14 @@ The configuration terms used here are `cache.xml` elements and attributes, but y
 <a id="configuring_resource_manager__section_5D88064B75C643B0849BBD4345A6671B"></a>
 
 gfsh example:
+
 ``` pre
 gfsh>start server --name=server1 --initial-heap=30m --max-heap=30m \
 --critical-heap-percentage=80 --eviction-heap-percentage=60
 ```
 
 cache.xml example:
+
 ``` pre
 <cache>
 <region refid="REPLICATE_HEAP_LRU" />
@@ -165,6 +169,7 @@ Each JVM has its own GC behavior, which affects how efficiently the collector ca
 
 <a id="resource_manager_example_configurations__section_B50C552B114D47F3A63FC906EB282024"></a>
 These examples set the critical threshold to 85 percent of the tenured heap and the eviction threshold to 75 percent. The region `bigDataStore` is configured to participate in the resource manager's eviction activities.
+
 -   gfsh Example:
 
     ``` pre

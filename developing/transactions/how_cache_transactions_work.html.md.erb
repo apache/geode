@@ -22,7 +22,7 @@ All the regions in a <span class="keyword">Geode</span> member cache can partici
 
 A transaction is isolated from changes made concurrently to the cache. Each transaction has its own private view of the cache, including the entries it has read and the changes it has made. The first time the transaction touches an entry in the cache, either to read or write, it produces a snapshot of that entry’s state in the transaction’s view. The transaction maintains its current view of the entry, which reflects only the changes made within the transaction. The transaction remembers the entry’s original state and uses it at commit time to discover write conflicts.
 
-<img src="../../images/transaction-simple.png" id="concept_hls_1j1_wk__image_D21EF847CD1D4B64AD1786033FB44F5C" class="image" />
+<img src="../../images/Transaction-simple.png" id="concept_hls_1j1_wk__image_D21EF847CD1D4B64AD1786033FB44F5C" class="image" />
 
 ## Committing Transactions
 

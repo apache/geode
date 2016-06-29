@@ -6,14 +6,18 @@ After you determine the maximum transmission rate, configure and tune your produ
 
 <a id="multicast__section_8E225FC6829946C287552BC7996F2765"></a>
 For best performance, the producer and the consumers should run on different machines and each process should have at least one CPU dedicated to it. The following is a list of configuration changes that can improve multicast performance. Check with your system administrator about changing any of the limits discussed here.
+
 -   Increase the default datagram size for systems running Microsoft Windows from 1024 bytes to a value that matches your network’s maximum transmission unit (MTU), which is typically 1500 bytes. The higher setting should improve the system’s network performance.
 -   Distribution statistics for stack time probes are disabled by default to increase multicast performance. To reduce multicast speed, you can enable time statistics by setting the gemfire.`enable-time-statistics` property to true.
+
     This enables time statistics for a Java application:
+
     ``` pre
     -Dgemfire.enable-time-statistics=true
     ```
 
     The time statistics properties are passed to the cache server on the `gfsh` the command line:
+
     ``` pre
     gfsh>start server --name=server_name --enable-time-statistics=true
     ```

@@ -59,6 +59,7 @@ The *locator* is a <span class="keyword">Geode</span> process that tells new, co
 ## Step 3. Start Pulse.
 
 Start up the browser-based Pulse monitoring tool. Pulse is a Web Application that provides a graphical dashboard for monitoring vital, real-time health and performance of <span class="keyword">Geode</span> clusters, members, and regions. See [Geode Pulse](../tools_modules/pulse/chapter_overview.html).
+
 ``` pre
 gfsh>start pulse
 ```
@@ -76,8 +77,10 @@ The Pulse application now displays the locator you just started (locator1):
 A <span class="keyword">Geode</span> server is a process that runs as a long-lived, configurable member of a cluster (also called a *distributed system*). The <span class="keyword">Geode</span> server is used primarily for hosting long-lived data regions and for running standard <span class="keyword">Geode</span> processes such as the server in a client/server configuration. See [Running Geode Server Processes](../configuring/running/running_the_cacheserver.html).
 
 Start the cache server:
+
 ``` pre
 gfsh>start server --name=server1 --server-port=40411
+                    
 ```
 
 This commands starts a cache server named "server1" on the specified port of 40411.
@@ -393,6 +396,7 @@ In this step you restart the cache servers in parallel. Because the data is pers
     ```
 
     When server2 starts, note that **server1 completes its start up** in the first gfsh window:
+
     ``` pre
     Server in /home/username/my_gemfire/server1 on ubuntu.local[40411] as server1 is currently online.
     Process ID: 3402

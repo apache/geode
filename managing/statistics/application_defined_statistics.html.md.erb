@@ -9,7 +9,7 @@ The <span class="keyword">Geode</span> package, `com.gemstone.gemfire`, includes
 
 -   **StatisticDescriptor**. Describes an individual statistic. Each statistic has a name and information on the statistic it holds, such as its class type (long, int, etc.) and whether it is a counter that always increments, or a gauge that can vary in any manner.
 -   **StatisticsType**. Logical type that holds a list of `StatisticDescriptors` and provides access methods to them. The `StatisticDescriptors` contained by a `StatisticsType` are each assigned a unique ID within the list. `StatisticsType` is used to create a `Statistics` instance.
--   **Statistics**. Instantiation of an existing `StatisticsType` object with methods for setting, incrementing, and getting individual `StatisticDescriptor` values.
+-   **Statistics**. Instantiation of an existing `StatisticsType` object with methods for setting, incrementing, getting individual `StatisticDescriptor` values, and setting a callback which will recompute the statistic's value at configured sampling intervals.
 -   **StatisticsFactory**. Creates instances of `Statistics`. You can also use it to create instances of `StatisticDescriptor` and `StatisticsType`, because it implements `StatisticsTypeFactory`. `DistributedSystem` is an instance of `StatisticsFactory`.
 -   **StatisticsTypeFactory**. Creates instances of `StatisticDescriptor` and `StatisticsType`.
 

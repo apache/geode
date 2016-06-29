@@ -16,6 +16,7 @@ Information such as the region reference, arguments, the operation being invoked
 ## Server Settings
 
 These are the `gemfire.properties` file (or `gfsecurity.properties` file if you are creating a special restricted access file for security configuration) settings for each server:
+
 ``` pre
 security-client-accessor=templates.security.XmlAuthorization.create
 security-authz-xml-uri=<URI of XML file> 
@@ -37,6 +38,7 @@ This topic lists an example XML file for the dtd. The example defines five roles
 5.  `onRegionFunctionExecutor`
 
 The listing below is a sample XML file:
+
 -   The permissions for each of the roles are described in the permission tags.
 -   The `reader`, `writer`, and `cacheOps` roles have no regions mentioned, so they apply to all regions.
 -   The `queryRegions` role has permissions on `Portfolios` and `Positions` regions.
@@ -97,5 +99,3 @@ The listing below is a sample XML file:
 </permission>
 </acl>
 ```
-
-

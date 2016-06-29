@@ -90,6 +90,7 @@ $ ./geode-jvsd/build/install/geode-jvsd/bin/geode-jvsd
 ## Configure Statistics Sampling in <span class="keyword">Geode</span>
 
 Before you use JVSD, you must enable the collection of <span class="keyword">Geode</span> statistics at runtime. Set the following configurations in gemfire.properties:
+
 ``` pre
 statistic-sampling-enabled=true
 statistic-archive-file=myStats.gfs
@@ -98,6 +99,7 @@ statistic-archive-file=myStats.gfs
 Since collecting statistics at the default sampling rate of once every second does not affect performance, we recommend that sampling should always be enabled, including during development, testing, and in production.
 
 There is a special category of statistics called time-based statistics that can be very useful in troubleshooting and assessing the performance of some <span class="keyword">Geode</span> operations, but they should be used with caution because their collection can affect performance. These statistics can be enabled using the following gemfire.properties configuration:
+
 ``` pre
 enable-time-statistics=true
 ```
