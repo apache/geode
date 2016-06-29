@@ -86,20 +86,22 @@ Once you have created your regions, you can access them through the `Cache` and 
 
 ## Create and Access Data Subregions
 
-An individual region can contain multiple subregions. You can use subregions to create a hierarchical namespace within your cache or to group cached objects for management purposes. The use of subregions is subject to the following restrictions:
+An individual region can contain multiple subregions.
+Subregions are an older feature that will not be useful in new designs
+and applications.
+They are used to create a hierarchical namespace within a cache,
+providing naming that feels like paths in a file system.
+Here are limitations on the use of subregions:
 
 -   A region with LOCAL scope can only have subregions with LOCAL scope.
--   You cannot create a subregion under a partitioned region or create a subregion with type PARTITION.
--   You cannot create a subregion that has different scope (GLOBAL, DISTRIBUTED\_ACK, DISTRIBUTED\_NO\_ACK) settings than a region of the same name in another cache or than the parent region.
--   You cannot reuse an existing region or subregion name.
-
-If the subregion is a distributed replicated region, it will be initialized with data from all other caches in this distributed system that have the same region.
+-   Partitioned region types may not be used with subregions. A subregion may not have a parent that is a partitioned region, and a subregion may not be of type PARTITION.
+-   A subregion must have the same scope (GLOBAL, DISTRIBUTED\_ACK, DISTRIBUTED\_NO\_ACK) as its parent region.
+-   Subregion names must be unique within the cache.
 
 You can create subregions using one of the following methods:
 
--   -   Declaration in the `cache.xml`:
+-   Declaration in the `cache.xml`:
 
-        ``` pre
         <?xml version="1.0"?>
         <cache
             xmlns="http://geode.incubator.apache.org/schema/cache"
@@ -116,18 +118,18 @@ You can create subregions using one of the following methods:
               </region>
           </region>
         </cache>
-        ```
 
-        When the `cache.xml` is loaded at cache creation, the system automatically creates any declared regions and subregions.
+    When the `cache.xml` is loaded at cache creation, the system automatically creates any declared regions and subregions.
 
-    -   `RegionFactory` API calls:
+-   `RegionFactory` API calls:
 
-        ``` pre
         Cache cache = CacheFactory.create();
         RegionFactory rf = cache.createRegionFactory(REPLICATE);
         Region pfloRegion = rf.create("Portfolios");
         Region pvtSubregion = rf.createSubregion(pfloRegion, "Private");
-        ```
+
+`Region` method calls with a `recursive` parameter operate on the given
+region(s) and then recursively on all contained subregions. 
 
 <a id="data_regions__section_7AD53DCC71064883BFA9C53E6040D85A"></a>
 
