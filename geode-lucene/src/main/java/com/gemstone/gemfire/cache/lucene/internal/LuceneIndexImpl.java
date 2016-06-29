@@ -93,7 +93,6 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
       long start = System.nanoTime();
       while (System.nanoTime() - start < TimeUnit.MILLISECONDS.toNanos(maxWaitInMillisecond)) {
         if (0 == queue.size()) {
-          logger.debug("waitUntilFlushed: Queue size is 0");
           flushed = true;
           break;
         } else {
@@ -106,6 +105,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     } else { 
       throw new IllegalArgumentException("The AEQ does not exist for the index "+indexName+" region "+regionPath);
     }
+
     return flushed;
   }
 

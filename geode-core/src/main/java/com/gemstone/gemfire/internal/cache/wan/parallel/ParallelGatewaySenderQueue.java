@@ -1277,7 +1277,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     
     PartitionedRegion prQ = getRandomShadowPR();
-    List batch = new ArrayList();
+    List<GatewaySenderEventImpl> batch = new ArrayList<>();
     if (prQ == null || prQ.getLocalMaxMemory() == 0) {
       try {
         Thread.sleep(50);
@@ -1370,7 +1370,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return batch;
   }
 
-  private void addPeekedEvents(List batch, int batchSize) {
+  private void addPeekedEvents(List<GatewaySenderEventImpl> batch, int batchSize) {
     if (this.resetLastPeeked) {
       if (this.peekedEventsProcessingInProgress) {
         // Peeked event processing is in progress. This means that the original peekedEvents
@@ -1400,7 +1400,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
   }
 
-  private void addPreviouslyPeekedEvents(List batch, int batchSize) {
+  private void addPreviouslyPeekedEvents(List<GatewaySenderEventImpl> batch, int batchSize) {
     for (int i=0; i<batchSize; i++) {
       batch.add(this.peekedEventsProcessing.remove());
       if (this.peekedEventsProcessing.isEmpty()) {
