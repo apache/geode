@@ -16,17 +16,18 @@
  */
 package com.gemstone.gemfire.security;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class IntegratedClientRegionClearAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
 
   @Test
@@ -35,10 +36,9 @@ public class IntegratedClientRegionClearAuthDistributedTest extends AbstractInte
     SerializableRunnable clearUnauthorized = new SerializableRunnable() {
       @Override
       public void run() {
-        ClientCache cache = new ClientCacheFactory(createClientProperties("stranger", "1234567"))
-          .setPoolSubscriptionEnabled(true)
-          .addPoolServer("localhost", serverPort)
-          .create();
+        ClientCache cache = new ClientCacheFactory(createClientProperties("stranger", "1234567")).setPoolSubscriptionEnabled(true)
+                                                                                                 .addPoolServer("localhost", serverPort)
+                                                                                                 .create();
 
         Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
         assertNotAuthorized(() -> region.clear(), "DATA:WRITE:AuthRegion");
@@ -50,10 +50,9 @@ public class IntegratedClientRegionClearAuthDistributedTest extends AbstractInte
     SerializableRunnable clearAuthorized = new SerializableRunnable() {
       @Override
       public void run() {
-        ClientCache cache = new ClientCacheFactory(createClientProperties("authRegionUser", "1234567"))
-          .setPoolSubscriptionEnabled(true)
-          .addPoolServer("localhost", serverPort)
-          .create();
+        ClientCache cache = new ClientCacheFactory(createClientProperties("authRegionUser", "1234567")).setPoolSubscriptionEnabled(true)
+                                                                                                       .addPoolServer("localhost", serverPort)
+                                                                                                       .create();
 
         Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
         region.clear();

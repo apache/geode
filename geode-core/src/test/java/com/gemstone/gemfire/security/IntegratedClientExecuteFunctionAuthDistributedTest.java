@@ -25,8 +25,9 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class IntegratedClientExecuteFunctionAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
 
   private final static Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);

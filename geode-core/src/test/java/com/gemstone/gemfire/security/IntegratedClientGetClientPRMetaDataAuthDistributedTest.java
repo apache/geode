@@ -27,34 +27,34 @@ import com.gemstone.gemfire.cache.client.internal.ClientMetadataService;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
-@Category(DistributedTest.class)
-public class IntegratedClientGetClientPRMetaDataAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
+@Category({ DistributedTest.class, SecurityTest.class })
+public class IntegratedClientGetClientPRMetaDataAuthDistributedTest
+  extends AbstractIntegratedClientAuthDistributedTest {
 
   @Test
   public void testGetClientPartitionAttrCmd() {
     client1.invoke("logging in stranger", () -> {
-      ClientCache cache = new ClientCacheFactory(createClientProperties("stranger", "1234567"))
-        .setPoolSubscriptionEnabled(true)
-        .addPoolServer("localhost", serverPort)
-        .create();
+      ClientCache cache = new ClientCacheFactory(createClientProperties("stranger", "1234567")).setPoolSubscriptionEnabled(true)
+                                                                                               .addPoolServer("localhost", serverPort)
+                                                                                               .create();
 
       Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
 
-      ClientMetadataService service = ((GemFireCacheImpl)cache).getClientMetadataService();
-      assertNotAuthorized(() -> service.getClientPRMetadata((LocalRegion)cache.getRegion(region.getName())), "CLUSTER:READ");
+      ClientMetadataService service = ((GemFireCacheImpl) cache).getClientMetadataService();
+      assertNotAuthorized(() -> service.getClientPRMetadata((LocalRegion) cache.getRegion(region.getName())), "CLUSTER:READ");
     });
 
     client2.invoke("logging in super-user", () -> {
-      ClientCache cache = new ClientCacheFactory(createClientProperties("super-user", "1234567"))
-        .setPoolSubscriptionEnabled(true)
-        .addPoolServer("localhost", serverPort)
-        .create();
+      ClientCache cache = new ClientCacheFactory(createClientProperties("super-user", "1234567")).setPoolSubscriptionEnabled(true)
+                                                                                                 .addPoolServer("localhost", serverPort)
+                                                                                                 .create();
 
       Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
 
-      ClientMetadataService service = ((GemFireCacheImpl)cache).getClientMetadataService();
-      service.getClientPRMetadata((LocalRegion)cache.getRegion(region.getName()));
+      ClientMetadataService service = ((GemFireCacheImpl) cache).getClientMetadataService();
+      service.getClientPRMetadata((LocalRegion) cache.getRegion(region.getName()));
     });
   }
 }

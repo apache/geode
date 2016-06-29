@@ -26,8 +26,9 @@ import com.gemstone.gemfire.cache.client.internal.InternalPool;
 import com.gemstone.gemfire.cache.client.internal.SizeOp;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class IntegratedClientSizeAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
 
   @Test

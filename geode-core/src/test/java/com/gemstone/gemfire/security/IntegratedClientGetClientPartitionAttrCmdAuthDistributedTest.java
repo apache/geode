@@ -23,22 +23,24 @@ import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.internal.GetClientPartitionAttributesOp;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
-@Category(DistributedTest.class)
-public class IntegratedClientGetClientPartitionAttrCmdAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
+@Category({ DistributedTest.class, SecurityTest.class })
+public class IntegratedClientGetClientPartitionAttrCmdAuthDistributedTest
+  extends AbstractIntegratedClientAuthDistributedTest {
 
   @Test
   public void testGetClientPartitionAttrCmd() {
     client1.invoke("logging in stranger", () -> {
-      ClientCache cache =createClientCache("stranger", "1234567", serverPort);
+      ClientCache cache = createClientCache("stranger", "1234567", serverPort);
 
-      assertNotAuthorized(() -> GetClientPartitionAttributesOp.execute((PoolImpl)cache.getDefaultPool(), REGION_NAME), "CLUSTER:READ");
+      assertNotAuthorized(() -> GetClientPartitionAttributesOp.execute((PoolImpl) cache.getDefaultPool(), REGION_NAME), "CLUSTER:READ");
     });
 
     client2.invoke("logging in super-user with correct password", () -> {
       ClientCache cache = createClientCache("super-user", "1234567", serverPort);
 
-      GetClientPartitionAttributesOp.execute((PoolImpl)cache.getDefaultPool(), REGION_NAME);
+      GetClientPartitionAttributesOp.execute((PoolImpl) cache.getDefaultPool(), REGION_NAME);
     });
   }
 }

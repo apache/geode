@@ -28,8 +28,9 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class IntegratedClientGetAllAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
 
   @Test
