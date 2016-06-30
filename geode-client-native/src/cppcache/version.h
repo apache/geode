@@ -1,0 +1,9 @@
+#define GEMFIRE_VERSION "9.0.0.0"
+#define GEMFIRE_BUILDID "1"
+#define GEMFIRE_BUILDDATE "1"
+#define GEMFIRE_SOURCE_REVISION "1"
+#define GEMFIRE_SOURCE_REPOSITORY "1"
+#define GEMFIRE_PRODUCTNAME "Pivotal GemFire Native Client"
+#define GEMFIRE_BITS "64bit"
+
+
