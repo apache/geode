@@ -28,10 +28,13 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.internal.cache.AbstractRegion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 
 import java.io.File;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.mockito.Mockito.*;
 
@@ -121,6 +124,20 @@ public class Fakes {
     when(region.getCache()).thenReturn(cache);
     when(region.getRegionService()).thenReturn(cache);
     return region;
+  }
+
+  /**
+   * Add real map behavior to a mock region. Useful for tests
+   * where you want to mock region that just behaves like a map.
+   * @param mock the mockito mock to add behavior too.
+   */
+  public static void addMapBehavior(Region mock) {
+    //Allow the region to behave like a fake map
+    Map underlyingMap = new HashMap();
+    when(mock.get(any()))
+      .then(invocation -> underlyingMap.get(invocation.getArguments()[0]));
+    when(mock.put(any(), any()))
+      .then(invocation -> underlyingMap.put(invocation.getArguments()[0], invocation.getArguments()[1]));
   }
 
   private Fakes() {

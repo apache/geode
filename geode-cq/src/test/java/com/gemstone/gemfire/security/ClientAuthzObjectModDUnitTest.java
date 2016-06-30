@@ -29,7 +29,6 @@ import com.gemstone.gemfire.security.generator.DummyAuthzCredentialGenerator;
 import com.gemstone.gemfire.security.generator.DummyCredentialGenerator;
 import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -74,7 +73,6 @@ public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestCase {
     server2.invoke("registerInstantiator", () -> Instantiator.register(new MyInstantiator(), false));
   }
 
-  @Category(FlakyTest.class) // GEODE-1228: random ports, BindException, uses Random
   @Test
   public void testAllOpsObjectModWithFailover() throws Exception {
     OperationWithAction[] allOps = allOps();

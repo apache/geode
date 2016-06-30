@@ -925,7 +925,6 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
   }
 
-  @Category(FlakyTest.class) // GEODE-1227: HeadlessGFSH, random ports, BindException
   @Test
   public void testDescribeMixClientWithServers() throws Exception {
     String[] clientIds = setupSystemWithSubAndNonSubClient();

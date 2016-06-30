@@ -26,8 +26,6 @@ import java.util.function.IntSupplier;
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystemJUnitTest;
-import com.gemstone.gemfire.management.internal.cli.parser.Argument;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.junit.Before;
@@ -94,8 +92,8 @@ public class LuceneIndexStatsJUnitTest {
 
   @Test
   public void shouldPollSuppliersForDocumentStat() {
-    stats.addDocumentsSuppplier(() -> 5);
-    stats.addDocumentsSuppplier(() -> 3);
+    stats.addDocumentsSupplier(() -> 5);
+    stats.addDocumentsSupplier(() -> 3);
 
     int documentsId = type.nameToId("documents");
     ArgumentCaptor<IntSupplier> documentsSupplierCaptor = ArgumentCaptor.forClass(IntSupplier.class);

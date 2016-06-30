@@ -40,7 +40,6 @@ import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBase {
@@ -463,7 +462,6 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
    * Dispatcher should not start dispatching events recovered from persistent sender.
    * Check if the remote site receives all the events.
    */
-  @Category(FlakyTest.class) // GEODE-1124: random ports, time sensitive, waitForCriterion, async behavior
   @Test
   public void testPersistentPRWithGatewaySenderPersistenceEnabled_Restart2() {
     //create locator on local site

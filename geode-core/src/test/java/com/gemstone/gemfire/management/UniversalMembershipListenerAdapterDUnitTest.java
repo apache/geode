@@ -61,7 +61,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests the UniversalMembershipListenerAdapter.
@@ -714,7 +713,6 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   /**
    * Tests notification of events for loner bridge clients in server process.
    */
-  @Category(FlakyTest.class) // GEODE-1174: random port, async behavior, condition await loops
   @Test
   public void testSystemClientEventsInServer() throws Exception {
     try {

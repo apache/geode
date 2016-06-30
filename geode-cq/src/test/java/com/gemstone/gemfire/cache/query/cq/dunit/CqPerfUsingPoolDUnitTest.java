@@ -54,7 +54,6 @@ import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * This class tests the ContiunousQuery mechanism in GemFire.
@@ -412,7 +411,6 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
    * To test the changes relating to, executing CQ only once for all similar CQs.
    * @throws Exception
    */
-  @Category(FlakyTest.class) // GEODE-988: random ports, time sensitive, waitForCriterion, 20 second timeouts
   @Test
   public void testMatchingCqs() throws Exception {
     

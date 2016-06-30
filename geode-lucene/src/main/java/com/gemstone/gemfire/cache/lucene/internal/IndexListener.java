@@ -14,32 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package com.gemstone.gemfire.cache.lucene.internal;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.management.internal.beans.CacheServiceMBeanBase;
+import com.gemstone.gemfire.cache.lucene.LuceneIndex;
+import org.apache.lucene.analysis.Analyzer;
 
-public class MockCacheServiceImpl implements MockCacheService {
-  
-  private Cache cache;
+import java.util.Map;
 
-  @Override
-  public void init(Cache cache) {
-    this.cache = cache;
-  }
+public interface IndexListener {
 
-  @Override
-  public Class<? extends CacheService> getInterface() {
-    return MockCacheService.class;
-  }
+  public void beforeIndexCreated(final String indexName, String regionPath,
+      final Analyzer analyzer, final Map<String, Analyzer> fieldAnalyzers,
+      final String... fields);
 
-  @Override
-  public CacheServiceMBeanBase getMBean() {
-    return null;
-  }
+  public void afterIndexCreated(LuceneIndex index);
 
-  @Override
-  public Cache getCache() {
-    return cache;
-  }
+  public void beforeIndexDestroyed(LuceneIndex index);
+
+  public void afterIndexDestroyed(LuceneIndex index);
 }

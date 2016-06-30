@@ -47,7 +47,6 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.internal.tcp.Connection;
 import com.gemstone.gemfire.test.dunit.*;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 import java.io.File;
 import java.io.IOException;
@@ -1438,7 +1437,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
    * end up only have 1 master.
    * GEODE-870
    */
-  @Category(FlakyTest.class) // GEODE-1150: random ports, disk pollution, waitForCriterion, time sensitive, eats exceptions (fixed several)
   @Test
   public void testMultipleLocatorsRestartingAtSameTime() throws Exception {
     disconnectAllFromDS();

@@ -160,9 +160,16 @@ public class IndexRepositoryImplJUnitTest {
     repo.create("key1", new Type2("bar", 1, 2L, 3.0, 4.0f, "Grape Ape doughnut"));
     repo.commit();
     ArgumentCaptor<IntSupplier> captor = ArgumentCaptor.forClass(IntSupplier.class);
-    verify(stats).addDocumentsSuppplier(captor.capture());
+    verify(stats).addDocumentsSupplier(captor.capture());
     IntSupplier supplier = captor.getValue();
     assertEquals(1, supplier.getAsInt());
+  }
+
+  @Test
+  public void cleanupShouldCloseWriter() throws IOException {
+    repo.cleanup();
+    verify(stats).removeDocumentsSupplier(any());
+    assertFalse(writer.isOpen());
   }
 
   private void updateAndRemove(Object key1, Object key2, Object key3,

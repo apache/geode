@@ -31,7 +31,6 @@ import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Assert;
@@ -219,7 +218,6 @@ public class ConnectionManagerJUnitTest {
 //    
 //  }
 
-  @Category(FlakyTest.class) // GEODE-923: time sensitive, expiration, thread sleeps, wait loop
   @Test
   public void testIdleExpiration() throws InterruptedException, AllConnectionsInUseException, NoAvailableServersException {
     final long nanoToMillis = 1000000;
