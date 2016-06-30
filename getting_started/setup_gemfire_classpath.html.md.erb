@@ -31,7 +31,7 @@ The following table lists the dependency JAR files associated with various <span
 <td>server and locator</td>
 <td>geode-dependencies.jar
 <div class="note note">
-**Note:**
+Note:
 <p>Use this library for all standalone or embedded <span class="keyword">Geode</span> processes (including Java clients) that host cache data.</p>
 </div></td>
 </tr>
@@ -51,7 +51,7 @@ gfsh> start locator --name=locator1 --classpath=/path/to/applications/classes.ja
 And to modify the CLASSPATH of a server:
 
 ``` pre
- gfsh> start server --name=server1 --classpath=/path/to/applications/classes.jar
+gfsh> start server --name=server1 --classpath=/path/to/applications/classes.jar
 ```
 
 Application classes supplied as arguments to the `--classpath` option are *prepended* to the server or locator's CLASSPATH, beginning in second position. The first entry in the CLASSPATH is reserved for the core <span class="keyword">Geode</span> jar file, for security reasons.
