@@ -141,6 +141,9 @@ subprojects {
     doFirst {
       writeTestProperties(buildDir, name)
     }
+
+    reports.junitXml.destination = file "$buildDir/test-reports-flaky"
+    
   }
 
   // By proving a file with an arbitrary list of test classes, we can select only those
