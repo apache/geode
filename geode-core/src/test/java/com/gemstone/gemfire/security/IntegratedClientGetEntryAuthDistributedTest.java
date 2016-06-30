@@ -17,6 +17,9 @@
 package com.gemstone.gemfire.security;
 
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheTransactionManager;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
@@ -24,48 +27,42 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-@Category(DistributedTest.class)
-public class IntegratedClientGetEntryAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest{
+@Category({ DistributedTest.class, SecurityTest.class })
+public class IntegratedClientGetEntryAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
 
   @Test
   public void testGetEntry() throws InterruptedException {
     // client1 connects to server as a user not authorized to do any operations
 
-    AsyncInvocation ai1 =  client1.invokeAsync(()->{
-      ClientCache cache = new ClientCacheFactory(createClientProperties("stranger", "1234567"))
-        .setPoolSubscriptionEnabled(true)
-        .addPoolServer("localhost", serverPort)
-        .create();
+    AsyncInvocation ai1 = client1.invokeAsync(() -> {
+      ClientCache cache = new ClientCacheFactory(createClientProperties("stranger", "1234567")).setPoolSubscriptionEnabled(true)
+                                                                                               .addPoolServer("localhost", serverPort)
+                                                                                               .create();
 
       CacheTransactionManager transactionManager = cache.getCacheTransactionManager();
       transactionManager.begin();
       try {
         Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
-        assertNotAuthorized(()->region.getEntry("key3"), "DATA:READ:AuthRegion:key3");
-      }
-      finally {
+        assertNotAuthorized(() -> region.getEntry("key3"), "DATA:READ:AuthRegion:key3");
+      } finally {
         transactionManager.commit();
       }
 
     });
 
-    AsyncInvocation ai2 =  client2.invokeAsync(()->{
-      ClientCache cache = new ClientCacheFactory(createClientProperties("authRegionReader", "1234567"))
-        .setPoolSubscriptionEnabled(true)
-        .addPoolServer("localhost", serverPort)
-        .create();
+    AsyncInvocation ai2 = client2.invokeAsync(() -> {
+      ClientCache cache = new ClientCacheFactory(createClientProperties("authRegionReader", "1234567")).setPoolSubscriptionEnabled(true)
+                                                                                                       .addPoolServer("localhost", serverPort)
+                                                                                                       .create();
 
       CacheTransactionManager transactionManager = cache.getCacheTransactionManager();
       transactionManager.begin();
       try {
         Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
         region.getEntry("key3");
-      }
-      finally {
+      } finally {
         transactionManager.commit();
       }
 

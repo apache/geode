@@ -20,27 +20,41 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.internal.GetClientPartitionAttributesOp;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
+import com.gemstone.gemfire.cache.execute.Function;
+import com.gemstone.gemfire.cache.execute.FunctionService;
+import com.gemstone.gemfire.cache.execute.ResultCollector;
+import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
-public class IntegratedClientGetClientPartitionAttrCmdAuthDistributedTest
+public class IntegratedClientExecuteRegionFunctionAuthDistributedTest
   extends AbstractIntegratedClientAuthDistributedTest {
 
-  @Test
-  public void testGetClientPartitionAttrCmd() {
-    client1.invoke("logging in stranger", () -> {
-      ClientCache cache = createClientCache("stranger", "1234567", serverPort);
+  private final static Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
 
-      assertNotAuthorized(() -> GetClientPartitionAttributesOp.execute((PoolImpl) cache.getDefaultPool(), REGION_NAME), "CLUSTER:READ");
+  @Test
+  public void testExecuteRegionFunction() {
+
+    FunctionService.registerFunction(function);
+
+    client1.invoke("logging in with dataReader", () -> {
+      ClientCache cache = createClientCache("dataReader", "1234567", serverPort);
+
+      FunctionService.registerFunction(function);
+      assertNotAuthorized(() -> FunctionService.onRegion(cache.getRegion(REGION_NAME))
+                                               .withArgs(Boolean.TRUE)
+                                               .execute(function.getId()), "DATA:WRITE");
     });
 
-    client2.invoke("logging in super-user with correct password", () -> {
+    client2.invoke("logging in with super-user", () -> {
       ClientCache cache = createClientCache("super-user", "1234567", serverPort);
 
-      GetClientPartitionAttributesOp.execute((PoolImpl) cache.getDefaultPool(), REGION_NAME);
+      FunctionService.registerFunction(function);
+      ResultCollector rc = FunctionService.onRegion(cache.getRegion(REGION_NAME))
+                                          .withArgs(Boolean.TRUE)
+                                          .execute(function.getId());
+      rc.getResult();
     });
   }
 }

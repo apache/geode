@@ -16,48 +16,43 @@
  */
 package com.gemstone.gemfire.security;
 
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.cache.client.internal.InternalPool;
+import com.gemstone.gemfire.cache.client.internal.SizeOp;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
-public class IntegratedClientRegionClearAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
+public class IntegratedClientSizeAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
 
   @Test
-  public void testRegionClear() throws InterruptedException {
-    // Verify that an unauthorized user can't clear the region
-    SerializableRunnable clearUnauthorized = new SerializableRunnable() {
-      @Override
-      public void run() {
-        ClientCache cache = new ClientCacheFactory(createClientProperties("stranger", "1234567")).setPoolSubscriptionEnabled(true)
+  public void testSize() throws InterruptedException {
+
+    AsyncInvocation ai1 = client1.invokeAsync(() -> {
+      ClientCache cache = new ClientCacheFactory(createClientProperties("dataWriter", "1234567")).setPoolSubscriptionEnabled(true)
                                                                                                  .addPoolServer("localhost", serverPort)
                                                                                                  .create();
 
-        Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
-        assertNotAuthorized(() -> region.clear(), "DATA:WRITE:AuthRegion");
-      }
-    };
-    client1.invoke(clearUnauthorized);
+      assertNotAuthorized(() -> SizeOp.execute((InternalPool) cache.getDefaultPool(), REGION_NAME), "DATA:READ:AuthRegion");
+    });
 
-    // Verify that an authorized user can clear the region
-    SerializableRunnable clearAuthorized = new SerializableRunnable() {
-      @Override
-      public void run() {
-        ClientCache cache = new ClientCacheFactory(createClientProperties("authRegionUser", "1234567")).setPoolSubscriptionEnabled(true)
+    AsyncInvocation ai2 = client2.invokeAsync(() -> {
+      ClientCache cache = new ClientCacheFactory(createClientProperties("authRegionReader", "1234567")).setPoolSubscriptionEnabled(true)
                                                                                                        .addPoolServer("localhost", serverPort)
                                                                                                        .create();
 
-        Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
-        region.clear();
-      }
-    };
-    client2.invoke(clearAuthorized);
+      SizeOp.execute((InternalPool) cache.getDefaultPool(), REGION_NAME);
+    });
+
+    ai1.join();
+    ai2.join();
+    ai1.checkException();
+    ai2.checkException();
   }
 }

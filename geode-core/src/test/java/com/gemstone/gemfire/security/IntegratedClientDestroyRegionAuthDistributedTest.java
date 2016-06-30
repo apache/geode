@@ -18,45 +18,43 @@ package com.gemstone.gemfire.security;
 
 import static org.assertj.core.api.Assertions.*;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class IntegratedClientDestroyRegionAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
 
   @Test
   public void testDestroyRegion() throws InterruptedException {
-    client1.invoke(()-> {
-      ClientCache cache = new ClientCacheFactory(createClientProperties("dataWriter", "1234567"))
-        .setPoolSubscriptionEnabled(true)
-        .addPoolServer("localhost", serverPort)
-        .create();
+    client1.invoke(() -> {
+      ClientCache cache = new ClientCacheFactory(createClientProperties("dataWriter", "1234567")).setPoolSubscriptionEnabled(true)
+                                                                                                 .addPoolServer("localhost", serverPort)
+                                                                                                 .create();
 
       Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
-      assertNotAuthorized(()->region.destroyRegion(), "DATA:MANAGE");
+      assertNotAuthorized(() -> region.destroyRegion(), "DATA:MANAGE");
     });
 
-    client2.invoke(()-> {
-      ClientCache cache = new ClientCacheFactory(createClientProperties("authRegionManager", "1234567"))
-        .setPoolSubscriptionEnabled(true)
-        .addPoolServer("localhost", serverPort)
-        .create();
+    client2.invoke(() -> {
+      ClientCache cache = new ClientCacheFactory(createClientProperties("authRegionManager", "1234567")).setPoolSubscriptionEnabled(true)
+                                                                                                        .addPoolServer("localhost", serverPort)
+                                                                                                        .create();
 
       Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
-      assertNotAuthorized(()->region.destroyRegion(), "DATA:MANAGE");
+      assertNotAuthorized(() -> region.destroyRegion(), "DATA:MANAGE");
     });
 
-    client3.invoke(()-> {
-      ClientCache cache = new ClientCacheFactory(createClientProperties("super-user", "1234567"))
-        .setPoolSubscriptionEnabled(true)
-        .addPoolServer("localhost", serverPort)
-        .create();
+    client3.invoke(() -> {
+      ClientCache cache = new ClientCacheFactory(createClientProperties("super-user", "1234567")).setPoolSubscriptionEnabled(true)
+                                                                                                 .addPoolServer("localhost", serverPort)
+                                                                                                 .create();
 
       Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
       region.destroyRegion();

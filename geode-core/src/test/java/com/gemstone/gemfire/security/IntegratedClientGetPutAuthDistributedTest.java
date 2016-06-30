@@ -31,8 +31,9 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class IntegratedClientGetPutAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
 
   @Test
@@ -50,17 +51,17 @@ public class IntegratedClientGetPutAuthDistributedTest extends AbstractIntegrate
       ClientCache cache = createClientCache("stranger", "1234567", serverPort);
       Region region = cache.getRegion(REGION_NAME);
 
-      assertNotAuthorized(()->region.put("key3", "value3"), "DATA:WRITE:AuthRegion:key3");
-      assertNotAuthorized(()->region.get("key3"), "DATA:READ:AuthRegion:key3");
+      assertNotAuthorized(() -> region.put("key3", "value3"), "DATA:WRITE:AuthRegion:key3");
+      assertNotAuthorized(() -> region.get("key3"), "DATA:READ:AuthRegion:key3");
 
       //putall
-      assertNotAuthorized(()->region.putAll(allValues), "DATA:WRITE:AuthRegion");
+      assertNotAuthorized(() -> region.putAll(allValues), "DATA:WRITE:AuthRegion");
 
       // not authorized for either keys, get no record back
-      Map keyValues =  region.getAll(keys);
+      Map keyValues = region.getAll(keys);
       assertEquals(0, keyValues.size());
 
-      assertNotAuthorized(()->region.keySetOnServer(), "DATA:READ:AuthRegion");
+      assertNotAuthorized(() -> region.keySetOnServer(), "DATA:READ:AuthRegion");
     });
 
 
@@ -76,7 +77,7 @@ public class IntegratedClientGetPutAuthDistributedTest extends AbstractIntegrate
       region.putAll(allValues);
 
       // get all
-      Map keyValues =  region.getAll(keys);
+      Map keyValues = region.getAll(keys);
       assertEquals(2, keyValues.size());
 
       // keyset
@@ -89,17 +90,17 @@ public class IntegratedClientGetPutAuthDistributedTest extends AbstractIntegrate
       ClientCache cache = createClientCache("key1User", "1234567", serverPort);
       Region region = cache.getRegion(REGION_NAME);
 
-      assertNotAuthorized(()->region.put("key2", "value1"), "DATA:WRITE:AuthRegion:key2");
-      assertNotAuthorized(()->region.get("key2"), "DATA:READ:AuthRegion:key2");
+      assertNotAuthorized(() -> region.put("key2", "value1"), "DATA:WRITE:AuthRegion:key2");
+      assertNotAuthorized(() -> region.get("key2"), "DATA:READ:AuthRegion:key2");
 
-      assertNotAuthorized(()->region.putAll(allValues), "DATA:WRITE:AuthRegion");
+      assertNotAuthorized(() -> region.putAll(allValues), "DATA:WRITE:AuthRegion");
 
       // only authorized for one recrod
-      Map keyValues =  region.getAll(keys);
+      Map keyValues = region.getAll(keys);
       assertEquals(1, keyValues.size());
 
       // keyset
-      assertNotAuthorized(()->region.keySetOnServer(), "DATA:READ:AuthRegion");
+      assertNotAuthorized(() -> region.keySetOnServer(), "DATA:READ:AuthRegion");
     });
 
     ai1.join();
