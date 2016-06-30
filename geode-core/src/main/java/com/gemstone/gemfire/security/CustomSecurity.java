@@ -20,7 +20,7 @@ package com.gemstone.gemfire.security;
 import java.security.Principal;
 import java.util.Properties;
 
-public interface ExternalSecurity {
+public interface CustomSecurity {
 
   void init(Properties securityProps);
 
@@ -29,6 +29,4 @@ public interface ExternalSecurity {
   default boolean authorize(Principal principal, GeodePermission permission) {
     return true;
   }
-
-  //post-processing as well if we can find a good way to support it
 }
