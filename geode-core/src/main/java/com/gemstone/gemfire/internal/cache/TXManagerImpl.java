@@ -583,8 +583,15 @@ public class TXManagerImpl implements CacheTransactionManager,
     if (isClosed()) {
       return;
     }
-    this.closed = true;
-    for (TXStateProxy proxy: this.hostedTXStates.values()) {
+    TXStateProxy[] proxies = null;
+    synchronized (this.hostedTXStates) {
+      //After this, newly added TXStateProxy would not operate on the TXState.
+      this.closed = true;
+      
+      proxies = this.hostedTXStates.values().toArray(new TXStateProxy[this.hostedTXStates.size()]);      
+    }
+    
+    for (TXStateProxy proxy: proxies) {
       proxy.getLock().lock();
       try {
         proxy.close();
