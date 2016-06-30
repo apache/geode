@@ -332,6 +332,10 @@ public class GeodeSecurityUtil {
       postProcessor = (PostProcessor) postProcessObject;
       postProcessor.init(securityProps);
     }
+    else{
+      postProcessor = null;
+    }
+
   }
 
   public static Object postProcess(String regionPath, Object key, Object result){
