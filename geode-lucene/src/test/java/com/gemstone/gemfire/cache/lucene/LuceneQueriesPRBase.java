@@ -86,7 +86,6 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
   }
 
   @Test
-  @Ignore("GEODE-1609 - This test currently fails")
   public void returnCorrectResultsWhenBucketIsMovedAndMovedBackOnIndexUpdate() throws InterruptedException {
     final DistributedMember member1 = dataStore1.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
     final DistributedMember member2 = dataStore2.invoke(() -> getCache().getDistributedSystem().getDistributedMember());

@@ -571,7 +571,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
                 BucketRegion bucket = qpr.getDataStore().getLocalBucketById(
                     bucketId);
                 if (bucket == null || !bucket.getBucketAdvisor().isPrimary()) {
-                  itr.remove();
+                  event.setPossibleDuplicate(true);
                 }
               }
               if (isDebugEnabled) {

@@ -18,26 +18,38 @@ package com.gemstone.gemfire.internal.cache.wan.asyncqueue;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionDestroyedException;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
+import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.wan.AsyncEventQueueTestBase;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
+import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
@@ -1562,4 +1574,90 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     int vm3size = (Integer)vm3.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize( "ln" ));
     assertEquals(vm3size, 1000);
   }
+
+  @Test
+  public void testParallelAsyncEventQueueMoveBucketAndMoveItBackDuringDispatching() {
+    Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
+
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
+    final DistributedMember member1 = vm1.invoke(() -> cache.getDistributedSystem().getDistributedMember());
+    final DistributedMember member2 = vm2.invoke(() -> cache.getDistributedSystem().getDistributedMember());
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.createAsyncEventQueue("ln",
+        true, 100, 10, false, false, null, false, new BucketMovingAsyncEventListener(member2)));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR", "ln", isOffHeap() ));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln"));
+    vm1.invoke(() -> AsyncEventQueueTestBase.doPuts( getTestMethodName() + "_PR",
+      113 ));
+
+    vm2.invoke(() -> AsyncEventQueueTestBase.createAsyncEventQueue("ln",
+      true, 100, 10, false, false, null, false, new BucketMovingAsyncEventListener(member1)));
+
+    vm2.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR", "ln", isOffHeap() ));
+    vm1.invoke(() -> AsyncEventQueueTestBase.resumeAsyncEventQueue("ln"));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
+
+    Set<Object> allKeys = new HashSet<Object>();
+    allKeys.addAll(getKeysSeen(vm1, "ln"));
+    allKeys.addAll(getKeysSeen(vm2, "ln"));
+
+    final Set<Long> expectedKeys = LongStream.range(0, 113).mapToObj(Long::valueOf).collect(Collectors.toSet());
+    assertEquals(expectedKeys, allKeys);
+
+    assertTrue(getBucketMoved(vm1, "ln"));
+    assertTrue(getBucketMoved(vm2, "ln"));
+  }
+
+  private static Set<Object> getKeysSeen(VM vm, String asyncEventQueueId) {
+    return vm.invoke(() -> {
+      final BucketMovingAsyncEventListener listener = (BucketMovingAsyncEventListener) getAsyncEventListener(asyncEventQueueId);
+      return listener.keysSeen;
+    });
+  }
+
+  private static boolean getBucketMoved(VM vm, String asyncEventQueueId) {
+    return vm.invoke(() -> {
+      final BucketMovingAsyncEventListener listener = (BucketMovingAsyncEventListener) getAsyncEventListener(asyncEventQueueId);
+      return listener.moved;
+    });
+  }
+
+  private static final class BucketMovingAsyncEventListener implements AsyncEventListener {
+    private final DistributedMember destination;
+    private boolean moved;
+    private Set<Object> keysSeen = new HashSet<Object>();
+
+    public BucketMovingAsyncEventListener(final DistributedMember destination) {
+      this.destination = destination;
+    }
+
+    @Override public boolean processEvents(final List<AsyncEvent> events) {
+      if(!moved) {
+
+        AsyncEvent event1 = events.get(0);
+        moveBucket(destination, event1.getKey());
+        moved = true;
+        return false;
+      }
+
+      events.stream().map(AsyncEvent::getKey).forEach(keysSeen::add);
+      return true;
+    }
+
+    @Override public void close() {
+
+    }
+    private static void moveBucket(final DistributedMember destination, final Object key) {
+      Region<Object, Object> region = cache.getRegion(getTestMethodName() + "_PR");
+      DistributedMember source = cache.getDistributedSystem().getDistributedMember();
+      PartitionRegionHelper.moveBucketByKey(region, source, destination, key);
+    }
+  }
+
+
 }
