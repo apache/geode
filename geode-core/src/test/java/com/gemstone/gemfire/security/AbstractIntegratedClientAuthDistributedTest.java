@@ -47,6 +47,7 @@ public class AbstractIntegratedClientAuthDistributedTest extends JUnit4CacheTest
   protected VM client2 = null;
   protected VM client3 = null;
   protected int serverPort;
+  protected Class postProcessor = null;
 
   @Before
   public void before() throws Exception{
@@ -59,6 +60,9 @@ public class AbstractIntegratedClientAuthDistributedTest extends JUnit4CacheTest
 
     Properties props = new Properties();
     props.setProperty(SECURITY_CLIENT_AUTHENTICATOR, JSONAuthorization.class.getName()+".create");
+    if(postProcessor!=null){
+      props.setProperty(SECURITY_CLIENT_ACCESSOR_PP, postProcessor.getName()+".create");
+    }
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     props.setProperty(SECURITY_LOG_LEVEL, "finest");

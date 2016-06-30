@@ -46,6 +46,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
 
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.DataSerializer;
@@ -394,12 +395,14 @@ public class CacheClientNotifier {
               new IllegalArgumentException("Invalid conflation byte"), clientVersion);
           return;
       }
-      
+
+      proxy = registerClient(socket, proxyID, proxy, isPrimary, clientConflation,
+        clientVersion, acceptorId, notifyBySubscription);
       
       //TODO:hitesh
       Properties credentials = HandShake.readCredentials(dis, dos,
           authenticator, system);
-      if (credentials != null) {
+      if (credentials != null && proxy!=null) {
         if (securityLogWriter.fineEnabled()) {
           securityLogWriter.fine("CacheClientNotifier: verifying credentials for proxyID: " + proxyID);
         }
@@ -424,11 +427,14 @@ public class CacheClientNotifier {
             authzCallback = (AccessControl) authzMethod.invoke(null, (Object[]) null);
             authzCallback.init(principal, member, this.getCache());
           }
+          proxy.setPostAuthzCallback(authzCallback);
+        }
+        else if(subject instanceof Subject){
+          proxy.setSubject((Subject)subject);
         }
       }
     }
     catch (ClassNotFoundException e) {
-
       throw new IOException(LocalizedStrings.CacheClientNotifier_CLIENTPROXYMEMBERSHIPID_OBJECT_COULD_NOT_BE_CREATED_EXCEPTION_OCCURRED_WAS_0.toLocalizedString(e));
     }
     catch (AuthenticationRequiredException ex) {
@@ -441,24 +447,19 @@ public class CacheClientNotifier {
       writeException(dos, HandShake.REPLY_EXCEPTION_AUTHENTICATION_FAILED, ex, clientVersion);
       return;
     }
-    catch (Exception ex) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientNotifier_AN_EXCEPTION_WAS_THROWN_FOR_CLIENT_0_1, new Object[] {proxyID, ""}), ex);
-      writeException(dos, Acceptor.UNSUCCESSFUL_SERVER_TO_CLIENT, ex, clientVersion);
-      return;
-    }
-    try {
-      proxy = registerClient(socket, proxyID, proxy, isPrimary, clientConflation,
-		  clientVersion, acceptorId, notifyBySubscription);
-    }
     catch (CacheException e) {
       logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientNotifier_0_REGISTERCLIENT_EXCEPTION_ENCOUNTERED_IN_REGISTRATION_1, new Object[] {this, e}), e);
       IOException io = new IOException(LocalizedStrings.CacheClientNotifier_EXCEPTION_OCCURRED_WHILE_TRYING_TO_REGISTER_INTEREST_DUE_TO_0.toLocalizedString(e.getMessage()));
       io.initCause(e);
       throw io;
     }
-    if (authzCallback != null && proxy != null) {
-      proxy.setPostAuthzCallback(authzCallback);
+    catch (Exception ex) {
+      logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientNotifier_AN_EXCEPTION_WAS_THROWN_FOR_CLIENT_0_1, new Object[] {proxyID, ""}), ex);
+      writeException(dos, Acceptor.UNSUCCESSFUL_SERVER_TO_CLIENT, ex, clientVersion);
+      return;
     }
+
+
     this._statistics.endClientRegistration(startTime);
   }
 

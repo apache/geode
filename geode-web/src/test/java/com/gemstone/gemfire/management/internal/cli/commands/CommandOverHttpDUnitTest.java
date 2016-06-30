@@ -16,24 +16,15 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.SecurityTest;
-import com.gemstone.gemfire.test.junit.runner.SuiteRunner;
-
 import org.junit.ClassRule;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+import com.gemstone.gemfire.test.junit.runner.SuiteRunner;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 @RunWith(SuiteRunner.class)

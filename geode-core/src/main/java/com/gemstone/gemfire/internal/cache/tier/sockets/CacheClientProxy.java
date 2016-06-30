@@ -17,12 +17,55 @@
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.regex.Pattern;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadState;
+
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheClosedException;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.ClientSession;
+import com.gemstone.gemfire.cache.DynamicRegionFactory;
+import com.gemstone.gemfire.cache.InterestRegistrationEvent;
+import com.gemstone.gemfire.cache.InterestResultPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionDestroyedException;
+import com.gemstone.gemfire.cache.RegionExistsException;
 import com.gemstone.gemfire.cache.client.internal.RegisterInterestTracker;
-import com.gemstone.gemfire.cache.operations.*;
+import com.gemstone.gemfire.cache.operations.DestroyOperationContext;
+import com.gemstone.gemfire.cache.operations.InvalidateOperationContext;
+import com.gemstone.gemfire.cache.operations.OperationContext;
+import com.gemstone.gemfire.cache.operations.PutOperationContext;
+import com.gemstone.gemfire.cache.operations.RegionClearOperationContext;
+import com.gemstone.gemfire.cache.operations.RegionCreateOperationContext;
+import com.gemstone.gemfire.cache.operations.RegionDestroyOperationContext;
 import com.gemstone.gemfire.cache.query.CqException;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
@@ -34,8 +77,21 @@ import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.SystemTimer.SystemTimerTask;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.*;
+import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisee;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
+import com.gemstone.gemfire.internal.cache.ClientServerObserver;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
+import com.gemstone.gemfire.internal.cache.Conflatable;
+import com.gemstone.gemfire.internal.cache.DistributedRegion;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl;
+import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
+import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.FilterProfile;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.InterestRegistrationEventImpl;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.cache.StateFlushOperation;
 import com.gemstone.gemfire.internal.cache.ha.HAContainerWrapper;
 import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
 import com.gemstone.gemfire.internal.cache.ha.HARegionQueueAttributes;
@@ -51,24 +107,8 @@ import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.AccessControl;
-import org.apache.logging.log4j.Logger;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.net.Socket;
-import java.net.SocketException;
-import java.nio.ByteBuffer;
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.regex.Pattern;
 
 /**
  * Class <code>CacheClientProxy</code> represents the server side of the
@@ -223,6 +263,7 @@ public class CacheClientProxy implements ClientSession {
   boolean keepalive = false;
 
   private AccessControl postAuthzCallback;
+  private Subject subject;
 
   /**
    * For multiuser environment..
@@ -360,6 +401,16 @@ public class CacheClientProxy implements ClientSession {
       if (this.postAuthzCallback != null)
         this.postAuthzCallback.close();
       this.postAuthzCallback = authzCallback;
+    }
+  }
+
+  public void setSubject(Subject subject) {
+    //TODO:hitesh synchronization
+    synchronized (this.clientUserAuthsLock) {
+      if (this.subject != null) {
+        subject.logout();
+      }
+      this.subject = subject;
     }
   }
   
@@ -1591,6 +1642,7 @@ public class CacheClientProxy implements ClientSession {
    */
   protected void deliverMessage(Conflatable conflatable)
   {
+    ThreadState state = GeodeSecurityUtil.bindSubject(this.subject);
     ClientUpdateMessage clientMessage = null;
     if(conflatable instanceof HAEventWrapper) {
       clientMessage = ((HAEventWrapper)conflatable).getClientUpdateMessage();
@@ -1599,6 +1651,21 @@ public class CacheClientProxy implements ClientSession {
     } 
 
     this._statistics.incMessagesReceived();
+
+    // post process
+    Object oldValue = clientMessage.getValue();
+    if(oldValue instanceof byte[]){
+      EntryEventImpl.deserialize((byte[])oldValue);
+      Object newValue = GeodeSecurityUtil.postProcess(clientMessage.getRegionName(),
+        clientMessage.getKeyOfInterest(),
+        EntryEventImpl.deserialize((byte[])oldValue));
+      clientMessage.setLatestValue(EntryEventImpl.serialize(newValue));
+    }
+    else{
+      Object newValue = GeodeSecurityUtil.postProcess(clientMessage.getRegionName(),
+        clientMessage.getKeyOfInterest(), oldValue);
+      clientMessage.setLatestValue(newValue);
+    }
 
     if (clientMessage.needsNoAuthorizationCheck() || postDeliverAuthCheckPassed(clientMessage)) {
       // If dispatcher is getting initialized, add the event to temporary queue.
@@ -1625,6 +1692,9 @@ public class CacheClientProxy implements ClientSession {
     } else {
       this._statistics.incMessagesFailedQueued();
     }
+
+    if(state!=null)
+      state.clear();
   }
 
   protected void sendMessageDirectly(ClientMessage message) {

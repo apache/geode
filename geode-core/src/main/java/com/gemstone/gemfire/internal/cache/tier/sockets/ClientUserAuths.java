@@ -27,7 +27,6 @@ import org.apache.shiro.subject.Subject;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
-import com.gemstone.gemfire.security.NotAuthorizedException;
 
 public class ClientUserAuths
 {
@@ -132,11 +131,6 @@ public class ClientUserAuths
           uaa.setDurable();
         }
       }
-    }
-    else
-    {
-      //TODO:throw not authorized exception? will this ever happen??
-      throw new NotAuthorizedException("User is not authorized for CQ");
     }
   }
   

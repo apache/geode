@@ -630,15 +630,6 @@ public class ServerConnection implements Runnable {
     }
     return true;
   }
-
-//  public static AuthorizeRequestPP getPostAuthorizeCallback(ClientProxyMembershipID proxyId, String cqName)
-//  {
-//    ClientUserAuths cua = proxyIdVsClientUserAuths.get(proxyId);
-//    UserAuthAttributes uaa =  cua.getUserAuthAttributes(cqName);
-//    if (uaa != null)
-//      return uaa.getPostAuthzRequest();
-//    return null;
-//  }
   
   public void setCq(String cqName, boolean isDurable) throws Exception
   {

@@ -31,12 +31,10 @@ public class JsonAuthorizationCacheStartRule extends ExternalResource {
   private int httpPort = 0;
   private String jsonFile;
   private Class postProcessor;
-  private boolean doAuthorization;
 
   public JsonAuthorizationCacheStartRule(int jmxManagerPort, String jsonFile, Class postProcessor) {
     this.jmxManagerPort = jmxManagerPort;
     this.jsonFile = jsonFile;
-    this.doAuthorization = true;
     this.postProcessor = postProcessor;
   }
 
@@ -44,20 +42,12 @@ public class JsonAuthorizationCacheStartRule extends ExternalResource {
   public JsonAuthorizationCacheStartRule(int jmxManagerPort, String jsonFile) {
     this.jmxManagerPort = jmxManagerPort;
     this.jsonFile = jsonFile;
-    this.doAuthorization = true;
   }
 
   public JsonAuthorizationCacheStartRule(int jmxManagerPort, int httpPort, String jsonFile) {
     this.jmxManagerPort = jmxManagerPort;
     this.httpPort = httpPort;
     this.jsonFile = jsonFile;
-    this.doAuthorization = true;
-  }
-
-  public JsonAuthorizationCacheStartRule(int jmxManagerPort, String jsonFile, boolean doAuthorization) {
-    this.jmxManagerPort = jmxManagerPort;
-    this.jsonFile = jsonFile;
-    this.doAuthorization = doAuthorization;
   }
 
   protected void before() throws Throwable {
@@ -71,9 +61,7 @@ public class JsonAuthorizationCacheStartRule extends ExternalResource {
     properties.put(HTTP_SERVICE_PORT, String.valueOf(httpPort));
     properties.put(SECURITY_CLIENT_AUTHENTICATOR,
         JSONAuthorization.class.getName() + ".create");
-    if (doAuthorization) {
-      properties.put(SECURITY_CLIENT_ACCESSOR, JSONAuthorization.class.getName() + ".create");
-    }
+
     if(postProcessor!=null){
       properties.put(SECURITY_CLIENT_ACCESSOR_PP, postProcessor.getName()+".create");
     }
@@ -82,8 +70,6 @@ public class JsonAuthorizationCacheStartRule extends ExternalResource {
 
     cache = new CacheFactory(properties).create();
     cache.addCacheServer().start();
-
-    cache.createRegionFactory().create("region1");
   }
 
   public Cache getCache(){

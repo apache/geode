@@ -16,14 +16,15 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.management.CacheServerMXBean;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.management.CacheServerMXBean;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class CacheServerMBeanAuthenticationJUnitTest {
@@ -33,7 +34,7 @@ public class CacheServerMBeanAuthenticationJUnitTest {
 
   @ClassRule
   public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, "cacheServer.json", false);
+      jmxManagerPort, "cacheServer.json");
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);

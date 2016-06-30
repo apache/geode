@@ -343,7 +343,8 @@ public class GeodeSecurityUtil {
     if(subject == null)
       return result;
 
-    return postProcessor.processRegionValue((Principal)subject.getPrincipal(), regionPath, key,  result);
+    String regionName = StringUtils.stripStart(regionPath, "/");
+    return postProcessor.processRegionValue((Principal)subject.getPrincipal(), regionName, key,  result);
   }
 
   public static Object getObject(String factoryName) {

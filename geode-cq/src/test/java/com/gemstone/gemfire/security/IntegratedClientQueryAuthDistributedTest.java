@@ -25,6 +25,8 @@ import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.query.CqAttributes;
 import com.gemstone.gemfire.cache.query.CqAttributesFactory;
+import com.gemstone.gemfire.cache.query.CqEvent;
+import com.gemstone.gemfire.cache.query.CqListener;
 import com.gemstone.gemfire.cache.query.CqQuery;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
@@ -87,11 +89,30 @@ public class IntegratedClientQueryAuthDistributedTest extends AbstractIntegrated
       Pool pool = PoolManager.find(region);
       QueryService qs = pool.getQueryService();
 
-      CqAttributes cqa = new CqAttributesFactory().create();
+      CqAttributesFactory factory = new CqAttributesFactory();
+      factory.addCqListener(new CqListener() {
+        @Override
+        public void onEvent(final CqEvent aCqEvent) {
+          System.out.println(aCqEvent);
+        }
+
+        @Override
+        public void onError(final CqEvent aCqEvent) {
+
+        }
+
+        @Override
+        public void close() {
+
+        }
+      });
+
+
+      CqAttributes cqa = factory.create();
 
       // Create the CqQuery
       CqQuery cq = qs.newCq("CQ1", query, cqa);
-      cq.execute();
+      System.out.println("query result: "+cq.executeWithInitialResults());
 
       cq.stop();
     });

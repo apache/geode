@@ -36,9 +36,9 @@ public class SamplePostProcessor implements PostProcessor{
 
   @Override
   public Object processRegionValue(Principal principal,
-                                   String regionPath,
+                                   String regionName,
                                    Object key,
                                    Object value) {
-    return principal.getName()+"/"+regionPath+"/"+key+"/"+value;
+    return principal.getName()+"/"+regionName+"/"+key+"/"+value;
   }
 }

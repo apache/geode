@@ -20,7 +20,24 @@ package com.gemstone.gemfire.security;
 import java.security.Principal;
 import java.util.Properties;
 
-public interface PostProcessor {
-  void init(Properties securityProps);
-  Object processRegionValue(Principal principal, String regionName, Object key,  Object value);
+public class NoShowValue1PostProcessor implements PostProcessor {
+
+  public static NoShowValue1PostProcessor create(){
+    return new NoShowValue1PostProcessor();
+  }
+
+  @Override
+  public void init(final Properties securityProps) {
+  }
+
+  @Override
+  public Object processRegionValue(final Principal principal,
+                                   final String regionName,
+                                   final Object key,
+                                   final Object value) {
+    if(value.equals("value1"))
+      return null;
+    else
+      return value;
+  }
 }
