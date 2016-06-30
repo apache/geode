@@ -338,13 +338,20 @@ public class GfshParser implements Parser {
 
       boolean updatedDesiredCursorPosition = false;
       if (!userOptionSet.areOptionsPresent()) {
-        int walkBackwards = remainingBuffer.length() - 1;
-        while (remainingBuffer.charAt(walkBackwards) != '-') {
-          walkBackwards--;
+        if (remainingBuffer.contains("-")) {
+          int walkBackwards = remainingBuffer.length() - 1;
+          while (remainingBuffer.charAt(walkBackwards) != '-' && walkBackwards > 0) {
+            walkBackwards--;
+          }
+          while (remainingBuffer.charAt(walkBackwards) == '-' && walkBackwards > 0) {
+            walkBackwards--;
+          }
+          while (remainingBuffer.charAt(walkBackwards) == ' ' && walkBackwards > 0) {
+            walkBackwards--;
+          }
+          desiredCursorPosition += walkBackwards;
+          updatedDesiredCursorPosition = true;
         }
-        walkBackwards -= 2;
-        desiredCursorPosition += walkBackwards;
-        updatedDesiredCursorPosition = true;
       }
 
       for (Option option : commandTarget.getOptionParser().getOptions()) {
@@ -582,21 +589,25 @@ public class GfshParser implements Parser {
       }
 
     }
+
     // Calculate the cursor position
     int newCursor = desiredCursorPosition + ((userOptionSet != null) ? userOptionSet.getNoOfSpacesRemoved() : 0);
 
     String subString = remainingBuffer;
     if (newCursor != cursorStart) {
-      subString = remainingBuffer.substring(newCursor + (sizeReduced ? -1 : 0) - cursorStart).trim();
+      int sizedReducedAdj = sizeReduced ? -1 : 0;
+      int begin = newCursor + sizedReducedAdj - cursorStart;
+      subString = remainingBuffer.substring(begin).trim();
     }
 
-
     // Exception handling
-    if (coe != null && newCursor < cursor && completionCandidates.size() == 0 && !(PreprocessorUtils.containsOnlyWhiteSpaces(subString) || ((subString
-                                                                                                                                               .endsWith(SyntaxConstants.LONG_OPTION_SPECIFIER) && subString
-                                                                                                                                               .startsWith(SyntaxConstants.LONG_OPTION_SPECIFIER)) || (subString
-                                                                                                                                                                                                         .startsWith(SyntaxConstants.SHORT_OPTION_SPECIFIER) && subString
-                                                                                                                                                                                                         .endsWith(SyntaxConstants.SHORT_OPTION_SPECIFIER))))) {
+    if (coe != null // hasException
+      && newCursor < cursor // newCursorIsEarlierThanCursor
+      && completionCandidates.size() == 0 // zeroCompletionCandidates
+      &&!(PreprocessorUtils.containsOnlyWhiteSpaces(subString) // onlyHasWhiteSpaces
+        || ((subString.endsWith(SyntaxConstants.LONG_OPTION_SPECIFIER) && subString.startsWith(SyntaxConstants.LONG_OPTION_SPECIFIER)) // isHypenHyphen
+        || (subString.startsWith(SyntaxConstants.SHORT_OPTION_SPECIFIER) && subString.endsWith(SyntaxConstants.SHORT_OPTION_SPECIFIER))))) { // isHyphen
+
       ExceptionHandler.handleException(coe);
       return cursor;
     }
