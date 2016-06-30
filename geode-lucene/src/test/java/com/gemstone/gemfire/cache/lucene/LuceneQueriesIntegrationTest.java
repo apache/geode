@@ -359,13 +359,11 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     region.destroy("E");
     region.destroy("F");
     region.destroy("G");
+    assertTrue(pages.hasNext());
     final List<LuceneResultStruct<Object, Object>> page1 = pages.next();
+    assertEquals(2, page1.size());
     assertFalse(pages.hasNext());
 
-    List<LuceneResultStruct<Object, Object>> allEntries=new ArrayList<>();
-    allEntries.addAll(page1);
-    assertEquals(region.keySet(), allEntries.stream().map(entry -> entry.getKey()).collect(Collectors.toSet()));
-    assertEquals(region.values(), allEntries.stream().map(entry -> entry.getValue()).collect(Collectors.toSet()));
   }
 
   private PdxInstance insertAJson(Region region, String key) {

@@ -20,6 +20,7 @@
 package com.gemstone.gemfire.cache.lucene.internal;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -42,7 +43,11 @@ public class PageableLuceneQueryResultsImpl<K,V> implements PageableLuceneQueryR
    *  list of docs matching search query
    */
   private final List<EntryScore<K>> hits;
-  
+
+  /**
+   * * Current page of results
+   */
+  private List<LuceneResultStruct<K,V>> currentPage;
   /**
    * The maximum score. Lazily evaluated
    */
@@ -93,20 +98,35 @@ public class PageableLuceneQueryResultsImpl<K,V> implements PageableLuceneQueryR
     if(!hasNext()) {
       throw new NoSuchElementException();
     }
+    List<LuceneResultStruct<K,V>> result = advancePage();
+    currentPage = null;
+    return result;
+  }
+
+  private List<LuceneResultStruct<K, V>> advancePage() {
+    if(currentPage != null) {
+      return currentPage;
+    }
+
     int resultSize = (pageSize != Integer.MAX_VALUE) ? pageSize : hits.size();
-    ArrayList<LuceneResultStruct<K,V>> results = new ArrayList<LuceneResultStruct<K,V>>(resultSize);
-    while (results.size()<pageSize && hasNext()) {
-      int end = currentHit + pageSize - results.size();
+    currentPage = new ArrayList<LuceneResultStruct<K,V>>(resultSize);
+    while (currentPage.size()<pageSize && currentHit < hits.size()) {
+      int end = currentHit + pageSize - currentPage.size();
       end = end > hits.size() ? hits.size() : end;
-      results.addAll(getHitEntries(currentHit, end));
+      currentPage.addAll(getHitEntries(currentHit, end));
       currentHit = end;
     }
-    return results;
+    return currentPage;
   }
 
   @Override
   public boolean hasNext() {
-    return hits.size() > currentHit;
+
+    advancePage();
+    if ( currentPage.isEmpty() ) {
+      return false;
+    }
+    return true;
   }
 
   @Override
