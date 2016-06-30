@@ -8,8 +8,10 @@
 #ifndef __BUCKET_SERVER_LOCATION__
 #define __BUCKET_SERVER_LOCATION__
 
+#include "gf_base.hpp"
 #include "ServerLocation.hpp"
 #include <string>
+#include <stdint.h>
 
 namespace gemfire
 {

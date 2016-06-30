@@ -80,7 +80,7 @@ namespace gemfire
     // ARB: setConnectionStatus is now a public method, as it is used by TcrDistributionManager.
     void setConnectionStatus(bool status);
 
-    inline const int getNumRegionListeners() const
+    inline int getNumRegionListeners() const
     {
       return m_numRegionListener;
     }

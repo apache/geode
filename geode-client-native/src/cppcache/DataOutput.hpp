@@ -30,29 +30,6 @@ namespace gemfire {
  * C style memory allocation that throws OutOfMemoryException
  * if it fails
  */
-#define GF_ALLOC(v,t,s) \
-{ \
-  v = (t*)malloc((s) * sizeof(t)); \
-  if ((v) == NULL) { \
-    throw OutOfMemoryException( \
-        "Out of Memory while allocating buffer for "#t" of size "#s); \
-  } \
-}
-
-/**
- * C style memory re-allocation that throws OutOfMemoryException
- * if it fails
- */
-#define GF_RESIZE(v,t,s) \
-{ \
-  v = (t*)realloc(v, (s) * sizeof(t)); \
-  if ((v) == NULL) { \
-    throw OutOfMemoryException( \
-        "Out of Memory while resizing buffer for "#t); \
-  } \
-}
-
-#define GF_FREE(v) free(v)
 
 /**
  * Provide operations for writing primitive data values, byte arrays,
@@ -703,7 +680,7 @@ public:
   {
     uint32_t size = (uint32_t)( m_buf - m_bytes );
     uint8_t * result;
-    GF_ALLOC(result, uint8_t, size);
+    result = new uint8_t[size];
     memcpy( result, m_bytes, size );
     return result;
   }
@@ -723,9 +700,9 @@ public:
   {
     if (m_haveBigBuffer) {
       // free existing buffer
-      GF_FREE(m_bytes);
+      delete [] m_bytes;
       // create smaller buffer
-      GF_ALLOC(m_bytes, uint8_t, m_lowWaterMark);
+      m_bytes = new uint8_t[m_lowWaterMark];
       m_size = m_lowWaterMark;
       // reset the flag
       m_haveBigBuffer = false;
@@ -747,8 +724,13 @@ public:
         // set flag
         m_haveBigBuffer = true;
       }
+      
+      uint8_t* newPtr = new uint8_t[newSize];
+      memcpy(newPtr, m_bytes, m_size);
+      delete [] m_bytes;
+      m_bytes = newPtr;
       m_size = newSize;
-      GF_RESIZE( m_bytes, uint8_t, m_size );
+
       m_buf = m_bytes + offset;
     }
   }
@@ -778,19 +760,6 @@ public:
     return result;
   }
   
-  static void safeDelete(uint8_t* src)
-  {
-    GF_SAFE_DELETE(src);
-  }
-
-  static DataOutput* getDataOutput()
-  {
-    return new DataOutput();
-  }
-  static void releaseDataOutput(DataOutput* dataOutput)
-  {
-    GF_SAFE_DELETE(dataOutput);
-  }
 private:
 
   void writeObjectInternal( const Serializable* ptr, bool isDelta = false );

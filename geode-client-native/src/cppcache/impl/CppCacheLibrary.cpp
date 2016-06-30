@@ -30,6 +30,7 @@
 
 #include <string>
 
+#include <unistd.h>
 
 using namespace gemfire;
 
@@ -79,7 +80,6 @@ typedef ACE_Singleton<CppCacheLibrary,ACE_Recursive_Thread_Mutex> TheLibrary;
 // internals are prepared. fw_helper framework will handle this.
 CppCacheLibrary* CppCacheLibrary::initLib( void )
 {
-  ACE::init();
   return TheLibrary::instance();
 }
 
