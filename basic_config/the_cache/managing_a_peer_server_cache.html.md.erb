@@ -46,13 +46,11 @@ You start your peer or server cache using a combination of XML declarations and 
         ```
 
     3.  To programmatically create the `Cache` instance:
-
         -   In your Java application, use the `CacheFactory` create method:
 
             ``` pre
             Cache cache = new CacheFactory().create();
             ```
-
         -   If you are running a server using the <span class="keyword">Geode</span> `cacheserver` process, it automatically creates the cache and connection at startup and closes both when it exits.
 
         The system creates the distributed system connection and initializes the cache according to your `gemfire.properties` and `cache.xml` specifications.
