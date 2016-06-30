@@ -63,7 +63,6 @@ See [WAN Configuration](../../reference/topics/elements_ref.html#topic_7B1CABCAD
 
         gfsh>create gateway-sender --id="sender3" --parallel=true --remote-distributed-system-id="3"
         ```
-
     -   **cache.xml configuration**
 
         These example `cache.xml` entries configure two parallel gateway senders to distribute region events to two remote <span class="keyword">Geode</span> clusters (clusters "2" and "3"):
@@ -77,7 +76,6 @@ See [WAN Configuration](../../reference/topics/elements_ref.html#topic_7B1CABCAD
            ... 
         </cache>
         ```
-
     -   **Java configuration**
 
         This example code shows how to configure a parallel gateway sender using the API:
@@ -107,7 +105,6 @@ See [WAN Configuration](../../reference/topics/elements_ref.html#topic_7B1CABCAD
          remote-distributed-system-id="2" 
          maximum-queue-memory="150"/> 
         ```
-
     -   Whether to enable disk persistence, and whether to use a named disk store for persistence or for overflowing queue events. See [Persisting an Event Queue](../../developing/events/configuring_highly_available_gateway_queues.html#configuring_highly_available_gateway_queues). For example:
 
         ``` pre
@@ -123,7 +120,6 @@ See [WAN Configuration](../../reference/topics/elements_ref.html#topic_7B1CABCAD
          enable-persistence="true" disk-store-name="cluster2Store"
          maximum-queue-memory="150"/> 
         ```
-
     -   The number of dispatcher threads to use for processing events from each each gateway queue. The `dispatcher-threads` attribute of the gateway sender specifies the number of threads that process the queue (default of 5). For example:
 
         ``` pre
@@ -143,7 +139,6 @@ See [WAN Configuration](../../reference/topics/elements_ref.html#topic_7B1CABCAD
         When multiple dispatcher threads are configured for a serial queue, each thread operates on its own copy of the gateway sender queue. Queue configuration attributes such as `maximum-queue-memory` are repeated for each dispatcher thread that you configure.
 
         See [Configuring Dispatcher Threads and Order Policy for Event Distribution](../../developing/events/configuring_gateway_concurrency_levels.html#concept_6C52A037E39E4FD6AE4C6A982A4A1A85).
-
     -   For serial gateway senders (parallel=false) that use multiple `dispatcher-threads`, also configure the ordering policy to use for dispatching the events. See [Configuring Dispatcher Threads and Order Policy for Event Distribution](../../developing/events/configuring_gateway_concurrency_levels.html#concept_6C52A037E39E4FD6AE4C6A982A4A1A85).
     -   Determine whether you should conflate events in the queue. See [Conflating Events in a Queue](../../developing/events/conflate_multisite_gateway_queue.html#conflate_multisite_gateway_queue).
     -   Decide whether the gateway sender should start automatically or requires a manual start. This is controlled by the `manual-start` attribute. For example, in gfsh:
@@ -289,18 +284,16 @@ To configure a gateway receiver, you can use gfsh, cache.xml or Java API configu
 
 -   After starting new gateway receivers, you can execute the [load-balance gateway-sender](../../tools_modules/gfsh/command-pages/load-balance.html) command in `gfsh` so that a specific gateway sender will be able to rebalance its connections and connect new remote gateway receivers. Invoking this command redistributes gateway sender connections more evenly among all the gateway receivers.
 
-    **Note:**
     Another option is to use the `GatewaySender.rebalance` Java API.
 
-    As an example, assume the following scenario:
+As an example, assume the following scenario:
 
-    1.  Start 1 receiver in site ny
-    2.  Start 4 senders in site ln
-    3.  Start 3 additional receiver in NY
+1.  start 1 receiver in site ny
+2.  start 4 senders in site ln
+3.  start 3 additional receiver in NY
 
-    You can then execute the following in gfsh to see the effects of rebalancing:
+You can then execute the following in gfsh to see the effects of rebalancing:
 
-    ``` pre
     gfsh -e "connect --locator=localhost[10331]" -e "list gateways"
     ...
     (2) Executing - list gateways
@@ -324,11 +317,10 @@ To configure a gateway receiver, you can use gfsh, cache.xml or Java API configu
     boglesbymac(ny-2:88705)<v3>:29329 | 5082 | 0            | []
     boglesbymac(ny-3:88715)<v4>:36808 | 5371 | 0            | []
     boglesbymac(ny-4:88724)<v5>:52993 | 5247 | 0            | []
-    ```
 
-    Execute the load-balance command:
 
-    ``` pre
+Execute the load-balance command:
+
     gfsh -e "connect --locator=localhost[10441]" -e "load-balance gateway-sender --id=ny"...
 
     (2) Executing - load-balance gateway-sender --id=ny
@@ -339,11 +331,10 @@ To configure a gateway receiver, you can use gfsh, cache.xml or Java API configu
     boglesbymac(ln-4:88681)<v5>:42784 | OK     | GatewaySender ny is rebalanced on member boglesbymac(ln-4:88681)<v5>:42784
     boglesbymac(ln-3:88672)<v4>:43675 | OK     | GatewaySender ny is rebalanced on member boglesbymac(ln-3:88672)<v4>:43675
     boglesbymac(ln-2:88662)<v3>:12796 | OK     | GatewaySender ny is rebalanced on member boglesbymac(ln-2:88662)<v3>:12796
-    ```
 
-    Listing gateways in ny again shows the connections are spread much better among the receivers.
+Listing gateways in ny again shows the connections are spread much better among the receivers.
 
-    ``` pre
+
     gfsh -e "connect --locator=localhost[10331]" -e "list gateways"...
 
     (2) Executing - list gateways
@@ -361,23 +352,22 @@ To configure a gateway receiver, you can use gfsh, cache.xml or Java API configu
 
     GatewayReceiver
 
-                 Member               | Port | Sender Count | Sender's Connected
+             Member                   | Port | Sender Count | Sender's Connected
     --------------------------------- | ---- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------
     boglesbymac(ny-1:88641)<v2>:33491 | 5057 | 9            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675","boglesbymac(ln-2:88662)<v3>:12796"]
     boglesbymac(ny-2:88705)<v3>:29329 | 5082 | 4            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675"]
     boglesbymac(ny-3:88715)<v4>:36808 | 5371 | 4            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675"]
     boglesbymac(ny-4:88724)<v5>:52993 | 5247 | 3            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675"]
-    ```
 
-    Running the load balance command in site ln again produces even better balance.
 
-    ``` pre
-                 Member               | Port | Sender Count | Sender's Connected
-    --------------------------------- | ---- | ------------ |-------------------------------------------------------------------------------------------------------------------------------------------------
-    boglesbymac(ny-1:88641)<v2>:33491 | 5057 | 7            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-2:88662)<v3>:12796","boglesbymac(ln-3:88672)<v4>:43675"]
-    boglesbymac(ny-2:88705)<v3>:29329 | 5082 | 3            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-3:88672)<v4>:43675","boglesbymac(ln-2:88662)<v3>:12796"]
-    boglesbymac(ny-3:88715)<v4>:36808 | 5371 | 5            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-2:88662)<v3>:12796","boglesbymac(ln-3:88672)<v4>:43675"]
-    boglesbymac(ny-4:88724)<v5>:52993 | 5247 | 6            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-2:88662)<v3>:12796","boglesbymac(ln-3:88672)<v4>:43675"]
-    ```
+Running the load balance command in site ln again produces even better balance.
 
+``` pre
+         Member                   | Port | Sender Count | Sender's Connected
+--------------------------------- | ---- | ------------ |-------------------------------------------------------------------------------------------------------------------------------------------------
+boglesbymac(ny-1:88641)<v2>:33491 | 5057 | 7            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-2:88662)<v3>:12796","boglesbymac(ln-3:88672)<v4>:43675"]
+boglesbymac(ny-2:88705)<v3>:29329 | 5082 | 3            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-3:88672)<v4>:43675","boglesbymac(ln-2:88662)<v3>:12796"]
+boglesbymac(ny-3:88715)<v4>:36808 | 5371 | 5            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-2:88662)<v3>:12796","boglesbymac(ln-3:88672)<v4>:43675"]
+boglesbymac(ny-4:88724)<v5>:52993 | 5247 | 6            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-2:88662)<v3>:12796","boglesbymac(ln-3:88672)<v4>:43675"]
+```
 

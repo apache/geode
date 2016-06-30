@@ -38,11 +38,9 @@ You configure threads to use dedicated connections by setting `thread-local-conn
 
 If you use thread-local connections, you should release the connection as soon as your thread finishes its server activities.
 
--   Call `releaseThreadLocalConnection` on the `Pool` instance you are using for the region:
+Call `releaseThreadLocalConnection` on the `Pool` instance you are using for the region:
 
-    ``` pre
     Region myRegion ...
     PoolManager.find(myRegion).releaseThreadLocalConnection();
-    ```
 
 
