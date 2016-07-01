@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.cache.query.cq.dunit;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -84,7 +85,9 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
    * Tests the cq performance.
    * @throws Exception
    */
-  public void perf_testCQPerf() throws Exception {
+  @Ignore("perf")
+  @Test
+  public void testCQPerf() throws Exception {
     
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);
@@ -854,7 +857,9 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
    * Performance test for Matching CQ optimization changes.
    * @throws Exception
    */
-  public void perf_testPerformanceForMatchingCQs() throws Exception {
+  @Ignore("perf")
+  @Test
+  public void testPerformanceForMatchingCQs() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
     VM server2 = host.getVM(1);

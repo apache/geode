@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.serial;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -56,7 +57,9 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
    * Test validates whether the listener attached receives all the events.
    * this test hangs after the Darrel's checkin 36685. Need to work with Darrel.Commenting it out so that test suit will not hang 
    */
-  public void __testGatewaySenderEventListenerInvocationWithoutLocator() {
+  @Ignore
+  @Test
+  public void testGatewaySenderEventListenerInvocationWithoutLocator() {
     int mPort = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     vm4.invoke(() -> WANTestBase.createCacheWithoutLocator(mPort ));
     vm5.invoke(() -> WANTestBase.createCacheWithoutLocator(mPort ));
@@ -233,7 +236,9 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
   
   // Test start/stop/resume on listener invocation
   //this test hangs after the Darrel's checkin 36685. Need to work with Darrel.Commenting it out so that test suit will not hang
-  public void __testGatewaySenderEventListener_GatewayOperations() {
+  @Ignore
+  @Test
+  public void testGatewaySenderEventListener_GatewayOperations() {
 
     int mPort = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     vm4.invoke(() -> WANTestBase.createCacheWithoutLocator(mPort ));

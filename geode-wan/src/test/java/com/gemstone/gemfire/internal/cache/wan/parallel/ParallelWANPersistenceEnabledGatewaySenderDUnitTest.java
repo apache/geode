@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -1084,7 +1085,9 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
    * NOTE: This use case is not supported yet. 
    * For ParallelGatewaySender to start, it must be associated with a partitioned region. 
    */
-  public void NotSupported_testPersistentPartitionedRegionWithGatewaySenderPersistenceEnabled_Restart2() {
+  @Ignore("NotSupported")
+  @Test
+  public void testPersistentPartitionedRegionWithGatewaySenderPersistenceEnabled_Restart2() {
     //create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     //create locator on remote site
@@ -1192,7 +1195,9 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
    * NOTE: This use case is not supported for now. For persistent parallel gateway sender,
    * the PR to which it is attached should also be persistent.
    */
-  public void NotSupported_testNonPersistentPartitionedRegionWithGatewaySenderPersistenceEnabled_Restart() {
+  @Ignore("NotSupported")
+  @Test
+  public void testNonPersistentPartitionedRegionWithGatewaySenderPersistenceEnabled_Restart() {
     //create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     //create locator on remote site
@@ -1304,7 +1309,9 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
    * At present, customer is using this configuration and which is not recommended 
    * since it can lead to event loss of GatewaySender events.
    */
-  public void Bug50247_testPersistentPartitionedRegionWithGatewaySender_Restart() {
+  @Ignore("Bug50247")
+  @Test
+  public void testPersistentPartitionedRegionWithGatewaySender_Restart() {
     //create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     //create locator on remote site

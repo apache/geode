@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -118,7 +119,9 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
     4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
      and version prior to 8.0
    */
-  public void DISABLED_test_PGS_Started_DR_CREATED_NO_RECEIVER() throws Exception {
+  @Ignore
+  @Test
+  public void test_PGS_Started_DR_CREATED_NO_RECEIVER() throws Exception {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
       Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -161,7 +164,9 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
     4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
      and version prior to 8.0
    */
-  public void DISABLED_test_DR_CREATED_PGS_STARTED_NO_RECEIVER() throws Exception {
+  @Ignore
+  @Test
+  public void test_DR_CREATED_PGS_STARTED_NO_RECEIVER() throws Exception {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
       Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -198,7 +203,9 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
      and version prior to 8.0*/
-  public void DISABLED_test_DR_PGS_1Node_Put_ValidateQueue_No_Receiver() throws Exception {
+  @Ignore
+  @Test
+  public void test_DR_PGS_1Node_Put_ValidateQueue_No_Receiver() throws Exception {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
       Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -243,7 +250,9 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
      and version prior to 8.0*/
-  public void DISABLED_test_DR_PGS_2Nodes_Put_ValidateQueue_No_Receiver() throws Exception {
+  @Ignore
+  @Test
+  public void test_DR_PGS_2Nodes_Put_ValidateQueue_No_Receiver() throws Exception {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
       Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -329,7 +338,9 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
      and version prior to 8.0*/
-  public void DISABLED_test_DR_PGS_1Nodes_Put_Receiver() throws Exception {
+  @Ignore
+  @Test
+  public void test_DR_PGS_1Nodes_Put_Receiver_2() throws Exception {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
       Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -373,7 +384,9 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
      and version prior to 8.0*/
-  public void DISABLED_test_DR_PGS_2Nodes_Put_Receiver() throws Exception {
+  @Ignore
+  @Test
+  public void test_DR_PGS_2Nodes_Put_Receiver() throws Exception {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
       Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -425,7 +438,9 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
      and version prior to 8.0*/
-  public void DISABLED_test_DR_PGS_2Nodes_EMPTY_Put_Receiver() throws Exception {
+  @Ignore
+  @Test
+  public void test_DR_PGS_2Nodes_EMPTY_Put_Receiver() throws Exception {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
       Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -478,7 +493,9 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
      and version prior to 8.0*/
-  public void DISABLED_test_DR_PR_PGS_4Nodes_Put_Receiver_2Nodes() throws Exception {
+  @Ignore
+  @Test
+  public void test_DR_PR_PGS_4Nodes_Put_Receiver_2Nodes() throws Exception {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
       Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -576,7 +593,9 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
      and version prior to 8.0*/
-  public void DISABLED_test_DR_PGS_NOMANUALSTART_4Nodes_Put_ValidateReceiver() throws Exception {
+  @Ignore
+  @Test
+  public void test_DR_PGS_NOMANUALSTART_4Nodes_Put_ValidateReceiver() throws Exception {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
       Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -650,7 +669,9 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
      and version prior to 8.0*/
-  public void DISABLED_test_DR_PGS_4Nodes_Put_CLOSE4NODESCACHE_RECREATE_PUT_ValidateReceiver()
+  @Ignore
+  @Test
+  public void test_DR_PGS_4Nodes_Put_CLOSE4NODESCACHE_RECREATE_PUT_ValidateReceiver()
       throws Exception {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -772,7 +793,9 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
      and version prior to 8.0*/
-  public void DISABLED_test_DR_NO_ACK_PGS_2Nodes_Put_ValidateQueue_Receiver() throws Exception {
+  @Ignore
+  @Test
+  public void test_DR_NO_ACK_PGS_2Nodes_Put_ValidateQueue_Receiver() throws Exception {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
       Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -824,7 +847,9 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
      and version prior to 8.0*/
-  public void DISABLED_test_DR_PGS_2NODES_1NODESDOWN_Validate_Receiver() throws Exception {
+  @Ignore
+  @Test
+  public void test_DR_PGS_2NODES_1NODESDOWN_Validate_Receiver() throws Exception {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -895,7 +920,9 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
      and version prior to 8.0*/
-  public void DISABLED_test_DR_PGS_4NODES_2NODESDOWN_Validate_Receiver() throws Exception {
+  @Ignore
+  @Test
+  public void test_DR_PGS_4NODES_2NODESDOWN_Validate_Receiver() throws Exception {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));

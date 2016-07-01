@@ -24,6 +24,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -148,11 +149,10 @@ public class Bug51400DUnitTest extends JUnit4DistributedTestCase {
         + (isPrimary ? "primary." : "secondary."), numOfEvents.intValue(), qSize);
   }
 
+
+  @Ignore("ticket51932")
   @Test
-  public void testNothing() {
-    // remove when ticket #51932 is fixed
-  }
-  public void ticket51932_testDeadlock() throws Throwable {
+  public void testDeadlock() throws Throwable {
     int maxQSize = 5;
     // Set infinite ack interval so that the queue will not be drained.
     int ackInterval = Integer.MAX_VALUE;

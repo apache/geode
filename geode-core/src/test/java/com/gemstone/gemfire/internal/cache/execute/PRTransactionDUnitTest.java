@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -432,7 +433,9 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     }
   }
 
-  public void BUG46661DISABLEtestCacheListenerCallbacks() {
+  @Ignore("BUG46661")
+  @Test
+  public void testCacheListenerCallbacks() {
     createPopulateAndVerifyCoLocatedPRs(1);
 
     SerializableCallable registerListeners = new SerializableCallable() {

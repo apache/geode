@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.management;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -193,7 +194,9 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
    */
 
   // renable when bug 46138
-  public void DISABLEDtestBug46049() throws Exception {
+  @Ignore("Bug46049")
+  @Test
+  public void testBug46049() throws Exception {
     final Host host = Host.getHost(0);
     VM locator = host.getVM(0);
     VM server = host.getVM(1);

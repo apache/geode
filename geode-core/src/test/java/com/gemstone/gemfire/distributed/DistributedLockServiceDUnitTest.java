@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -1462,7 +1463,9 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
    * ensures that suspend and regular locks behave as ReadWriteLocks and
    * processing occurs in order.
    */
-  public void notestSuspendLockingBehaves() throws Exception {
+  @Ignore
+  @Test
+  public void testSuspendLockingBehaves() throws Exception {
     try {
       doTestSuspendLockingBehaves();
     }

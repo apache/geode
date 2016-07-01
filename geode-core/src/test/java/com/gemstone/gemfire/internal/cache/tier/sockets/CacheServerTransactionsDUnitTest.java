@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -374,7 +375,9 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
    * Currently it is UnsupportedOperationException hence the test is commented 
    *
    */
-  public void YOGESH_testClientToServerCommits(){
+  @Ignore
+  @Test
+  public void testClientToServerCommits(){
     fail("Invoking bad method");
     int port1 = 0;
 //    Integer port1 = ((Integer)server1.invoke(() -> CacheServerTransactionsDUnitTest.createServerCache()));

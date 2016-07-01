@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -828,8 +829,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 	    });
 	  }
 
-  
-  public void disabled_testGetAllRollbackInServer() throws Exception {
+  @Ignore
+  @Test
+  public void testGetAllRollbackInServer() throws Exception {
     Host host = Host.getHost(0);
     VM server = host.getVM(0);
     createRegionsAndStartServer(server, false);
@@ -859,7 +861,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     });
   }
 
-  public void disabled_testGetAllRollbackInClient() throws Exception {
+  @Ignore
+  @Test
+  public void testGetAllRollbackInClient() throws Exception {
     Host host = Host.getHost(0);
     VM server = host.getVM(0);
     VM client = host.getVM(1);
@@ -1929,7 +1933,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
   }
   
   //Disabled due to bug 47083
-  public void DISABLED_testCallbacks() {
+  @Ignore
+  @Test
+  public void testCallbacks() {
     Host host = Host.getHost(0);
     VM datastore = host.getVM(1);
     VM client = host.getVM(2);
