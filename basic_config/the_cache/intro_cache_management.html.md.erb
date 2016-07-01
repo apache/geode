@@ -9,7 +9,7 @@ You organize your data in the cache into *data regions*, each with its own confi
 
 You generally configure caches using the `gfsh` command-line utility or a combination of XML declarations and API calls. <span class="keyword">Geode</span> loads and processes your XML declarations when you first create the cache.
 
-<span class="keyword">Geode</span> has one cache type for managing server and peer caches and one for one for managing client caches. The cache server process automatically creates its server cache at startup. In your application process, the cache creation returns an instance of the server/peer or client cache. From that point on, you manage the cache through API calls in your application.
+<span class="keyword">Geode</span> has one cache type for managing server and peer caches and one for managing client caches. The cache server process automatically creates its server cache at startup. In your application process, the cache creation returns an instance of the server/peer or client cache. From that point on, you manage the cache through API calls in your application.
 
 <a id="concept_F8BA7F2D3B5A40D78461E78BC5FB31FA__section_20973C59F1C94E35A02CE6582503205A"></a>
 
@@ -85,5 +85,3 @@ For more details on exporting and importing snapshots of a cache, see [Cache and
 ## Cache Management with gfsh and the Cluster Configuration Service
 
 You can use gfsh commands to mange a server cache. There are gfsh commands to create regions, start servers, and to create queues and other objects. As you issue these commands, the Cluster Configuration Service saves cache.xml and gemfire.properties files on the locators and distributes those configurations to any new members that join the cluster. See [Overview of the Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html).
-
-
