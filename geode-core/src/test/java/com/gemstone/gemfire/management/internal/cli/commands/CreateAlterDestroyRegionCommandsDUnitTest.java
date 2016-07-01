@@ -16,7 +16,38 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.jayway.awaitility.Awaitility.*;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.text.MessageFormat;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
@@ -39,29 +70,6 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.text.MessageFormat;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
-
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 
 @Category(DistributedTest.class)
 public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBase {
@@ -202,6 +210,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     }
 
     waitForRegionMBeanCreation("/Customer", 2);
+    waitForRegionMBeanCreation("/Customer-2", 2);
+    waitForRegionMBeanCreation("/Customer_3", 2);
     waitForRegionMBeanCreation("/Order", 2);
 
     // Test failure when region not found
@@ -235,6 +245,22 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     cmdResult = executeCommand(command);
     strr = commandResultToString(cmdResult);
     assertTrue(stringContainsLine(strr, ".*Customer.*destroyed successfully.*"));
+    getLogWriter().info("testDestroyRegion strr=" + strr);
+    assertEquals(Result.Status.OK, cmdResult.getStatus());
+
+    command = "destroy region --name=/Customer-2";
+    getLogWriter().info("testDestroyRegion command=" + command);
+    cmdResult = executeCommand(command);
+    strr = commandResultToString(cmdResult);
+    assertTrue(stringContainsLine(strr, ".*Customer-2.*destroyed successfully.*"));
+    getLogWriter().info("testDestroyRegion strr=" + strr);
+    assertEquals(Result.Status.OK, cmdResult.getStatus());
+
+    command = "destroy region --name=/Customer_3";
+    getLogWriter().info("testDestroyRegion command=" + command);
+    cmdResult = executeCommand(command);
+    strr = commandResultToString(cmdResult);
+    assertTrue(stringContainsLine(strr, ".*Customer_3.*destroyed successfully.*"));
     getLogWriter().info("testDestroyRegion strr=" + strr);
     assertEquals(Result.Status.OK, cmdResult.getStatus());
   }
