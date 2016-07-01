@@ -6,14 +6,14 @@ title:  Using Member Groups
 
 The use of member groups in <span class="keyword">Apache Geode</span> is optional. The benefit of using member groups is the ability to coordinate certain operations on members based on logical group membership. For example, by defining and using member groups you can:
 
--   Alter a subset of configuration properties for a specific member or members. See [alter runtime](../../tools_modules/gfsh/command-pages/alter.html#topic_7E6B7E1B972D4F418CB45354D1089C2B) in gfsh.
+-   Alter a subset of configuration properties for a specific member or members. See [alter runtime](../../tools_modules/gfsh/command-pages/alter.html#topic_7E6B7E1B972D4F418CB45354D1089C2B) in `gfsh`.
 -   Perform certain disk operations like disk-store compaction across a member group. See [Disk Store Commands](../../tools_modules/gfsh/quick_ref_commands_by_area.html#topic_1ACC91B493EE446E89EC7DBFBBAE00EA) for a list of commands.
 -   Manage specific indexes or regions across all members of a group.
 -   Start and stop multi-site (WAN) services such as gateway senders and gateway receivers across a member group.
 -   Deploy or undeploy JAR applications on all members in a group.
 -   Execute functions on all members of a specific group.
 
-You define group names in the `groups` property of your member's `gemfire.properties` file or upon member startup in gfsh.
+You define group names in the `groups` property of your member's `gemfire.properties` file or upon member startup in `gfsh`.
 
 **Note:**
 Any roles defined in the currently existing `roles` property will now be considered a group. If you wish to add membership roles to your distributed system, you should add them as member groups in the `groups` property. The `roles` property has been deprecated in favor of using the `groups` property.

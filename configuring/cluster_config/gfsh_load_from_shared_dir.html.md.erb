@@ -13,7 +13,7 @@ You can use this technique to migrate a single server's configuration into the c
     -   Rename `cache.xml` to `cluster.xml`
     -   Rename `gemfire.properties` to `cluster.properties`
 
-5.  Start the locator in gfsh as follows:
+5.  Start the locator in `gfsh` as follows:
 
     ``` pre
     gfsh>start locator --name=<locator_name> --enable-cluster-configuration=true --load-cluster-configuration-from-dir=true

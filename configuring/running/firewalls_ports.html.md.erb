@@ -20,7 +20,7 @@ There are several different port settings that need to be considered when using 
 
 ## **Limiting Ephemeral Ports for Peer-to-Peer Membership**
 
-By default, <span class="keyword">Geode</span> assigns *ephemeral* ports, that is, temporary ports assigned from a designated range, which can encompass a large number of possible ports. When a firewall is present, the ephemeral port range usually must be limited to a much smaller number, for example six. If you are configuring P2P communications through a firewall, you must also set each the tcp port for each process and ensure that UDP traffic is allowed through the firewall.
+By default, <span class="keyword">Geode</span> assigns *ephemeral* ports, that is, temporary ports assigned from a designated range, which can encompass a large number of possible ports. When a firewall is present, the ephemeral port range usually must be limited to a much smaller number, for example six. If you are configuring P2P communications through a firewall, you must also set the TCP port for each process and ensure that UDP traffic is allowed through the firewall.
 
 ## **Properties for Firewall and Port Configuration**
 
@@ -30,7 +30,7 @@ This table contains properties potentially involved in firewall behavior, with a
 <colgroup>
 <col width="33%" />
 <col width="33%" />
-<col width="33%" />
+<col width="34%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -99,7 +99,7 @@ This table contains properties potentially involved in firewall behavior, with a
 </tr>
 <tr class="odd">
 <td>cache server config</td>
-<td><p><code class="ph codeph">port</code> (cache.xml) or <code class="ph codeph">--port</code> parameter to the gfsh start server command</p></td>
+<td><p><code class="ph codeph">port</code> (cache.xml) or <code class="ph codeph">--port</code> parameter to the <code class="ph codeph">gfsh start server</code> command</p></td>
 <td><p>Port that the server listens on for client communication.</p></td>
 </tr>
 </tbody>
@@ -133,7 +133,7 @@ This table contains properties potentially involved in firewall behavior, with a
 </tr>
 <tr class="odd">
 <td><p>Locator</p></td>
-<td><code class="ph codeph">start-locator</code> (for embedded locators) or <code class="ph codeph">--port</code> parameter to the gfsh start locator command.</td>
+<td><code class="ph codeph">start-locator</code> (for embedded locators) or <code class="ph codeph">--port</code> parameter to the <code class="ph codeph">gfsh start locator</code> command.</td>
 <td><em>if not specified upon startup or in the start-locator property, uses default multicast port 10334</em></td>
 </tr>
 <tr class="even">
@@ -196,7 +196,7 @@ This table contains properties potentially involved in firewall behavior, with a
 </tr>
 <tr class="odd">
 <td>multi-site (WAN) config</td>
-<td><p>[start-port](../../reference/topics/gfe_cache_xml.html#gateway-receiver) and [end-port](../../reference/topics/gfe_cache_xml.html#gateway-receiver) (cache.xml) or <code class="ph codeph">--start-port</code> and <code class="ph codeph">--end-port</code> parameters to the gfsh start gateway receiver command</p></td>
+<td><p>[start-port](../../reference/topics/gfe_cache_xml.html#gateway-receiver) and [end-port](../../reference/topics/gfe_cache_xml.html#gateway-receiver) (cache.xml) or <code class="ph codeph">--start-port</code> and <code class="ph codeph">--end-port</code> parameters to the <code class=" ph codeph">gfsh start gateway receiver</code> command</p></td>
 <td><p>Port range that the gateway receiver can use to listen for gateway sender communication.</p></td>
 </tr>
 </tbody>

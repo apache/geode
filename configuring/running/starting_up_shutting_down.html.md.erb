@@ -6,7 +6,7 @@ Determine the proper startup and shutdown procedures, and write your startup and
 
 Well-designed procedures for starting and stopping your system can speed startup and protect your data. The processes you need to start and stop include server and locator processes and your other <span class="keyword">Geode</span> applications, including clients. The procedures you use depend in part on your system’s configuration and the dependencies between your system processes.
 
-Use the following guidelines to create startup and shutdown procedures and scripts. Some of these instructions use [gfsh (Geode SHell)](../../tools_modules/gfsh/chapter_overview.html).
+Use the following guidelines to create startup and shutdown procedures and scripts. Some of these instructions use [`gfsh` (Geode SHell)](../../tools_modules/gfsh/chapter_overview.html).
 
 <a id="starting_up_shutting_down__section_3D111558326D4A38BE48C17D44BB66DB"></a>
 ## Starting Up Your System
@@ -46,13 +46,13 @@ gfsh>revoke missing-disk-store --id=60399215-532b-406f-b81f-9b5bd8d1b55a
 ```
 
 **Note:**
-This gfsh commands require that you are connected to the distributed system via a JMX Manager node.
+This `gfsh` commands require that you are connected to the distributed system via a JMX Manager node.
 
 <a id="starting_up_shutting_down__section_mnx_4cp_cv"></a>
 
 ## Shutting Down the System
 
-Shut down your <span class="keyword">Geode</span> system by using either `gfsh`'s `shutdown` command or by shutting down individual members one at a time.
+Shut down your <span class="keyword">Geode</span> system by using either the `gfsh` `shutdown` command or by shutting down individual members one at a time.
 
 <a id="starting_up_shutting_down__section_0EB4DDABB6A348BA83B786EEE7C84CF1"></a>
 
