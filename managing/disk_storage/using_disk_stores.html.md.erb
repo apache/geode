@@ -38,64 +38,50 @@ Before you begin, you should understand <span class="keyword">Geode</span> [Basi
 1.  In the locations you have chosen, create all directories you will specify for your disk stores to use. <span class="keyword">Geode</span> throws an exception if the specified directories are not available when a disk store is created. You do not need to populate these directories with anything.
 2.  Open a `gfsh` prompt and connect to the distributed system.
 3.  At the `gfsh` prompt, create and configure a disk store:
-    1.  Specify the name (`--name`) of the disk-store.
+    -  Specify the name (`--name`) of the disk-store.
 
         -   Choose disk store names that reflect how the stores should be used and that work for your operating systems. Disk store names are used in the disk file names:
+
             -   Use disk store names that satisfy the file naming requirements for your operating system. For example, if you store your data to disk in a Windows system, your disk store names could not contain any of these reserved characters, &lt; &gt; : " / \\ | ? \*.
+
             -   Do not use very long disk store names. The full file names must fit within your operating system limits. On Linux, for example, the standard limitation is 255 characters.
 
         ``` pre
         gfsh>create disk-store --name=serverOverflow --dir=c:\overflow_data#20480 
         ```
-
-    2.  Configure the directory locations (`--dir`) and the maximum space to use for the store (specified after the disk directory name by \# and the maximum number in megabytes).
+    -  Configure the directory locations (`--dir`) and the maximum space to use for the store (specified after the disk directory name by \# and the maximum number in megabytes).
 
         ``` pre
         gfsh>create disk-store --name=serverOverflow --dir=c:\overflow_data#20480
         ```
-
-    3.  Optionally, you can configure the store’s file compaction behavior. In conjunction with this, plan and program for any manual compaction.
-
-        Example:
+    -  Optionally, you can configure the store’s file compaction behavior. In conjunction with this, plan and program for any manual compaction.  Example:
 
         ``` pre
         gfsh>create disk-store --name=serverOverflow --dir=c:\overflow_data#20480 \
         --compaction-threshold=40 --auto-compact=false --allow-force-compaction=true
         ```
-
-    4.  If needed, configure the maximum size (in MB) of a single oplog. When the current files reach this size, the system rolls forward to a new file. You get better performance with relatively small maximum file sizes.
-
-        Example:
+    -  If needed, configure the maximum size (in MB) of a single oplog. When the current files reach this size, the system rolls forward to a new file. You get better performance with relatively small maximum file sizes.  Example:
 
         ``` pre
         gfsh>create disk-store --name=serverOverflow --dir=c:\overflow_data#20480 \
         --compaction-threshold=40 --auto-compact=false --allow-force-compaction=true \
         --max-oplog-size=512
         ```
-
-    5.  If needed, modify queue management parameters for asynchronous queueing to the disk store. You can configure any region for synchronous or asynchronous queueing (region attribute `disk-synchronous`). Server queues and gateway sender queues always operate synchronously. When either the `queue-size` (number of operations) or `time-interval` (milliseconds) is reached, enqueued data is flushed to disk. You can also synchronously flush unwritten data to disk through the `DiskStore` `flushToDisk` method.
-
-        Example:
+    -  If needed, modify queue management parameters for asynchronous queueing to the disk store. You can configure any region for synchronous or asynchronous queueing (region attribute `disk-synchronous`). Server queues and gateway sender queues always operate synchronously. When either the `queue-size` (number of operations) or `time-interval` (milliseconds) is reached, enqueued data is flushed to disk. You can also synchronously flush unwritten data to disk through the `DiskStore` `flushToDisk` method.  Example:
 
         ``` pre
         gfsh>create disk-store --name=serverOverflow --dir=c:\overflow_data#20480 \
         --compaction-threshold=40 --auto-compact=false --allow-force-compaction=true \
         --max-oplog-size=512 --queue-size=10000 --time-interval=15
         ```
-
-    6.  If needed, modify the size (specified in bytes) of the buffer used for writing to disk.
-
-        Example:
+    -  If needed, modify the size (specified in bytes) of the buffer used for writing to disk.  Example:
 
         ``` pre
         gfsh>create disk-store --name=serverOverflow --dir=c:\overflow_data#20480 \
         --compaction-threshold=40 --auto-compact=false --allow-force-compaction=true \
         --max-oplog-size=512 --queue-size=10000 --time-interval=15 --write-buffer-size=65536
         ```
-
-    7.  If needed, modify the `disk-usage-warning-percentage` and `disk-usage-critical-percentage` thresholds that determine the percentage (default: 90%) of disk usage that will trigger a warning and the percentage (default: 99%) of disk usage that will generate an error and shut down the member cache.
-
-        Example:
+    -  If needed, modify the `disk-usage-warning-percentage` and `disk-usage-critical-percentage` thresholds that determine the percentage (default: 90%) of disk usage that will trigger a warning and the percentage (default: 99%) of disk usage that will generate an error and shut down the member cache.  Example:
 
         ``` pre
         gfsh>create disk-store --name=serverOverflow --dir=c:\overflow_data#20480 \

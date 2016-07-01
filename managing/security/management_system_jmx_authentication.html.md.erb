@@ -31,6 +31,6 @@ By default, the JMX manager allows clients without credentials to connect. To se
 5.  On each of your JMX Manager-enabled nodes, set the <span class="keyword">Geode</span> property `jmx-manager-access-file` to the name of the file you created in step 4. This will associate MBean permissions to the users who authenticate to the JMX Manager node in <span class="keyword">Geode</span>.
 6.  If desired, enable SSL for your JMX Manager connections. If you enable SSL for <span class="keyword">Geode</span> peer-to-peer connections, then by default the same SSL configuration is applied to the JMX manager. You can override the SSL configuration for JMX clients by configuring JMX manager configuration properties (such as `jmx-manager-ssl`) in the `gfsecurity.properties` file. See [Configuring SSL](implementing_ssl.html).
 
-For more information on the format of the password and access file, see [http://docs.oracle.com/javase/6/docs/technotes/guides/management/agent.html](http://docs.oracle.com/javase/6/docs/technotes/guides/management/agent.html).
+For more information on the format of the password and access file, see [http://docs.oracle.com/javase/8/docs/technotes/guides/management/agent.html](http://docs.oracle.com/javase/8/docs/technotes/guides/management/agent.html).
 
 
