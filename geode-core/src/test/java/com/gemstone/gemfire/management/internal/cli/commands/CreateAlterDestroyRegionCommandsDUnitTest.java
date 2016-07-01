@@ -210,8 +210,6 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     }
 
     waitForRegionMBeanCreation("/Customer", 2);
-    waitForRegionMBeanCreation("/Customer-2", 2);
-    waitForRegionMBeanCreation("/Customer_3", 2);
     waitForRegionMBeanCreation("/Order", 2);
 
     // Test failure when region not found
@@ -245,22 +243,6 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     cmdResult = executeCommand(command);
     strr = commandResultToString(cmdResult);
     assertTrue(stringContainsLine(strr, ".*Customer.*destroyed successfully.*"));
-    getLogWriter().info("testDestroyRegion strr=" + strr);
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-    command = "destroy region --name=/Customer-2";
-    getLogWriter().info("testDestroyRegion command=" + command);
-    cmdResult = executeCommand(command);
-    strr = commandResultToString(cmdResult);
-    assertTrue(stringContainsLine(strr, ".*Customer-2.*destroyed successfully.*"));
-    getLogWriter().info("testDestroyRegion strr=" + strr);
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-    command = "destroy region --name=/Customer_3";
-    getLogWriter().info("testDestroyRegion command=" + command);
-    cmdResult = executeCommand(command);
-    strr = commandResultToString(cmdResult);
-    assertTrue(stringContainsLine(strr, ".*Customer_3.*destroyed successfully.*"));
     getLogWriter().info("testDestroyRegion strr=" + strr);
     assertEquals(Result.Status.OK, cmdResult.getStatus());
   }
@@ -315,6 +297,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
         final Cache cache = getCache();
         RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.PARTITION);
         factory.create("Customer");
+        factory.create("Customer-2");
+        factory.create("Customer_3");
       });
     }
 
@@ -323,6 +307,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
       RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
       factory.setScope(Scope.LOCAL);
       factory.create("Customer");
+      factory.create("Customer-2");
+      factory.create("Customer_3");
     });
 
     waitForRegionMBeanCreation("/Customer", 3);
@@ -344,10 +330,28 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     getLogWriter().info("testDestroyRegion strr=" + strr);
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
+    command = "destroy region --name=/Customer_3";
+    getLogWriter().info("testDestroyRegion command=" + command);
+    cmdResult = executeCommand(command);
+    strr = commandResultToString(cmdResult);
+    assertTrue(stringContainsLine(strr, ".*Customer_3.*destroyed successfully.*"));
+    getLogWriter().info("testDestroyRegion strr=" + strr);
+    assertEquals(Result.Status.OK, cmdResult.getStatus());
+
+    command = "destroy region --name=/Customer-2";
+    getLogWriter().info("testDestroyRegion command=" + command);
+    cmdResult = executeCommand(command);
+    strr = commandResultToString(cmdResult);
+    assertTrue(stringContainsLine(strr, ".*Customer-2.*destroyed successfully.*"));
+    getLogWriter().info("testDestroyRegion strr=" + strr);
+    assertEquals(Result.Status.OK, cmdResult.getStatus());
+
     for (int i = 1; i <= 3; i++) {
       final int x = i;
       Host.getHost(0).getVM(i).invoke(() -> {
         assertNull("Region still exists in VM " + x, getCache().getRegion("Customer"));
+        assertNull("Region still exists in VM " + x, getCache().getRegion("Customer-2"));
+        assertNull("Region still exists in VM " + x, getCache().getRegion("Customer_3"));
       });
     }
   }
