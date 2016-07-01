@@ -19,6 +19,9 @@ package com.gemstone.gemfire.cache.lucene;
 import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,15 +37,22 @@ import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.core.LowerCaseFilter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.util.CharTokenizer;
+import org.apache.lucene.document.IntPoint;
+import org.apache.lucene.search.Query;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
+import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.lucene.test.TestObject;
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.cache.PartitionAttributesImpl;
 import com.gemstone.gemfire.pdx.JSONFormatter;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.internal.AutoSerializableManager.ObjectArrayField;
@@ -117,6 +127,51 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     // with double quote
     // query will be--field2:one@three
     verifyQuery("field2:one@three", DEFAULT_FIELD, "C");
+  }
+
+  @Test()
+  public void shouldQueryUsingIntRangeQueryProvider() throws Exception {
+    // Note: range query on numeric field has some limitations. But IntRangeQueryProvider
+    // provided basic functionality
+    luceneService.createIndex(INDEX_NAME, REGION_NAME, LuceneService.REGION_VALUE_FIELD);
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION)
+      .create(REGION_NAME);
+    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    
+    region.put("primitiveInt0", 122);
+    region.put("primitiveInt1", 123);
+    region.put("primitiveInt2", 223);
+    region.put("primitiveInt3", 224);
+
+    index.waitUntilFlushed(60000);
+    verifyQueryUsingCustomizedProvider(LuceneService.REGION_VALUE_FIELD, 123, 223, "primitiveInt1", "primitiveInt2");
+  }
+
+  @Ignore
+  @Test()
+  public void queryParserCannotQueryByRange() throws Exception {
+    // Note: range query on numeric field has some limitations. But IntRangeQueryProvider
+    // provided basic functionality
+    luceneService.createIndex(INDEX_NAME, REGION_NAME, LuceneService.REGION_VALUE_FIELD);
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION)
+      .create(REGION_NAME);
+    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    
+    region.put("primitiveInt0", 122);
+    region.put("primitiveInt1", 123);
+    region.put("primitiveInt2", 223);
+    region.put("primitiveInt3", 224);
+
+    index.waitUntilFlushed(60000);
+
+    // Note: current QueryParser cannot query by range. It's a known issue in lucene
+    verifyQuery(LuceneService.REGION_VALUE_FIELD+":[123 TO 223]", LuceneService.REGION_VALUE_FIELD);
+    
+    region.put("primitiveDouble1", 123.0);
+    index.waitUntilFlushed(60000);
+    
+    thrown.expectMessage("java.lang.IllegalArgumentException");
+    verifyQueryUsingCustomizedProvider(LuceneService.REGION_VALUE_FIELD, 123, 223, "primitiveInt1", "primitiveInt2");
   }
 
   @Test()
@@ -396,6 +451,13 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     return pdx;
   }
 
+  private void verifyQueryUsingCustomizedProvider(String fieldName, int lowerValue, int upperValue, String... expectedKeys) throws Exception {
+    IntRangeQueryProvider provider = new IntRangeQueryProvider(fieldName, lowerValue, upperValue);
+    LuceneQuery<String, Object> queryWithCustomizedProvider = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, provider);
+
+    verifyQueryKeys(queryWithCustomizedProvider, expectedKeys);
+  }
+
   private void verifyQuery(String query, String defaultField, String ... expectedKeys) throws Exception {
     final LuceneQuery<String, Object> queryWithStandardAnalyzer = luceneService.createLuceneQueryFactory().create(
       INDEX_NAME, REGION_NAME, query, defaultField);
@@ -426,4 +488,51 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     }
   }
 
+  public static class IntRangeQueryProvider implements LuceneQueryProvider, DataSerializableFixedID {
+    public static final short LUCENE_INT_RANGE_QUERY_PROVIDER = 2177;
+    String fieldName;
+    int lowerValue;
+    int upperValue;
+    
+    private transient Query luceneQuery;
+
+    public IntRangeQueryProvider(String fieldName, int lowerValue, int upperValue) {
+      this.fieldName = fieldName;
+      this.lowerValue = lowerValue;
+      this.upperValue = upperValue;
+    }
+
+    @Override
+    public Version[] getSerializationVersions() {
+      return null;
+    }
+
+    @Override
+    public int getDSFID() {
+      return LUCENE_INT_RANGE_QUERY_PROVIDER;
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeString(fieldName, out);
+      out.writeInt(lowerValue);
+      out.writeInt(upperValue);
+    }
+
+    @Override
+    public void fromData(DataInput in)
+        throws IOException, ClassNotFoundException {
+      fieldName = DataSerializer.readString(in);
+      lowerValue = in.readInt();
+      upperValue = in.readInt();
+    }
+
+    @Override
+    public Query getQuery(LuceneIndex index) throws LuceneQueryException {
+      if (luceneQuery == null) {
+        luceneQuery = IntPoint.newRangeQuery(fieldName, lowerValue, upperValue);
+      }
+      return luceneQuery;
+    }
+  }
 }
