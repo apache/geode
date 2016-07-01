@@ -77,13 +77,13 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
       final String fileRegionName = createFileRegionName();
       PartitionAttributes partitionAttributes = dataRegion.getPartitionAttributes();
       if (!fileRegionExists(fileRegionName)) {
-        fileRegion = createFileRegion(regionShortCut, fileRegionName, partitionAttributes);
+        fileRegion = createFileRegion(regionShortCut, fileRegionName, partitionAttributes, ra);
       }
 
       // create PR chunkRegion, but not to create its buckets for now
       final String chunkRegionName = createChunkRegionName();
       if (!chunkRegionExists(chunkRegionName)) {
-        chunkRegion = createChunkRegion(regionShortCut, fileRegionName, partitionAttributes, chunkRegionName);
+        chunkRegion = createChunkRegion(regionShortCut, fileRegionName, partitionAttributes, chunkRegionName, ra);
       }
       fileSystemStats.setFileSupplier(() -> (int) getFileRegion().getLocalSize());
       fileSystemStats.setChunkSupplier(() -> (int) getChunkRegion().getLocalSize());
@@ -123,6 +123,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     if(dataRegion.getAttributes().getDataPolicy().withPersistence()) {
       factory.setPersistent(true);
     }
+    factory.setDiskStoreName(dataRegion.getAttributes().getDiskStoreName());
     factory.setDiskSynchronous(dataRegion.getAttributes().isDiskSynchronous());
     factory.setForwardExpirationDestroy(true);
     return factory;
@@ -145,8 +146,9 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
   Region createFileRegion(final RegionShortcut regionShortCut,
                                 final String fileRegionName,
-                                final PartitionAttributes partitionAttributes) {
-    return createRegion(fileRegionName, regionShortCut, this.regionPath, partitionAttributes);
+                                final PartitionAttributes partitionAttributes,
+                                final RegionAttributes regionAttributes) {
+    return createRegion(fileRegionName, regionShortCut, this.regionPath, partitionAttributes, regionAttributes);
   }
 
   public String createFileRegionName() {
@@ -159,8 +161,8 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
   Region<ChunkKey, byte[]> createChunkRegion(final RegionShortcut regionShortCut,
                            final String fileRegionName,
-                           final PartitionAttributes partitionAttributes, final String chunkRegionName) {
-    return createRegion(chunkRegionName, regionShortCut, fileRegionName, partitionAttributes);
+                           final PartitionAttributes partitionAttributes, final String chunkRegionName, final RegionAttributes regionAttributes) {
+    return createRegion(chunkRegionName, regionShortCut, fileRegionName, partitionAttributes, regionAttributes);
   }
 
   public String createChunkRegionName() {
@@ -173,8 +175,12 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     return attributesFactory;
   }
 
-  protected <K, V> Region<K, V> createRegion(final String regionName, final RegionShortcut regionShortCut,
-      final String colocatedWithRegionName, final PartitionAttributes partitionAttributes) {
+  protected <K, V> Region<K, V> createRegion(final String regionName,
+                                             final RegionShortcut regionShortCut,
+                                             final String colocatedWithRegionName,
+                                             final PartitionAttributes partitionAttributes,
+                                             final RegionAttributes regionAttributes)
+  {
     PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory<String, File>();
     partitionAttributesFactory.setColocatedWith(colocatedWithRegionName);
     configureLuceneRegionAttributesFactory(partitionAttributesFactory, partitionAttributes);
@@ -183,6 +189,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     RegionAttributes baseAttributes = this.cache.getRegionAttributes(regionShortCut.toString());
     AttributesFactory factory = new AttributesFactory(baseAttributes);
     factory.setPartitionAttributes(partitionAttributesFactory.create());
+    factory.setDiskStoreName(regionAttributes.getDiskStoreName());
     RegionAttributes<K, V> attributes = factory.create();
 
     return createRegion(regionName, attributes);
