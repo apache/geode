@@ -30,9 +30,14 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
@@ -80,10 +85,6 @@ import com.gemstone.gemfire.management.internal.cli.util.RegionPath;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
 
 /**
  *
@@ -1082,17 +1083,25 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     return result;
   }
 
-  private Set<DistributedMember> findMembersForRegion(Cache cache, ManagementService managementService, String regionPath) {
+  private Set<DistributedMember> findMembersForRegion(Cache cache,
+                                                      ManagementService managementService,
+                                                      String regionPath) {
     Set<DistributedMember> membersList = new HashSet<>();
-    Set<String> regionMemberIds = Collections.emptySet();
+    Set<String> regionMemberIds = new HashSet<>();
     MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
-    String queryExp = MessageFormat.format(MBeanJMXAdapter.OBJECTNAME__REGION_MXBEAN, new Object[] {regionPath, "*"});
+
+    // needs to be escaped with quotes if it contains a hyphen
+    if (regionPath.contains("-")) {
+      regionPath = "\"" + regionPath + "\"";
+    }
+
+    String queryExp = MessageFormat.format(MBeanJMXAdapter.OBJECTNAME__REGION_MXBEAN, regionPath, "*");
 
     try {
       ObjectName queryExpON = new ObjectName(queryExp);
       Set<ObjectName> queryNames = mbeanServer.queryNames(null, queryExpON);
-      if (queryNames != null && queryNames.size() != 0) {
-        regionMemberIds      = new HashSet<>();
+      if (queryNames == null || queryNames.isEmpty()) {
+        return membersList; // protects against null pointer exception below
       }
 
       boolean addedOneRemote = false;
@@ -1117,7 +1126,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
         } catch (ClassCastException e) {
           LogWriter logger = cache.getLogger();
           if (logger.finerEnabled()) {
-            logger.finer(regionMBeanObjectName+" is not a "+RegionMXBean.class.getSimpleName(), e);
+            logger.finer(regionMBeanObjectName + " is not a " + RegionMXBean.class.getSimpleName(), e);
           }
         }
       }
@@ -1125,9 +1134,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       if (!regionMemberIds.isEmpty()) {
         membersList = getMembersByIds(cache, regionMemberIds);
       }
-    } catch (MalformedObjectNameException e) {
-      LogWrapper.getInstance().info(e.getMessage(), e);
-    } catch (NullPointerException e) {
+    } catch (MalformedObjectNameException | NullPointerException e) {
       LogWrapper.getInstance().info(e.getMessage(), e);
     }
 
