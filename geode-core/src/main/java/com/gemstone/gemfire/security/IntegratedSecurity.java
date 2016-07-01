@@ -20,7 +20,7 @@ package com.gemstone.gemfire.security;
 import java.security.Principal;
 import java.util.Properties;
 
-public interface CustomSecurity {
+public interface IntegratedSecurity {
 
   void init(Properties securityProps);
 

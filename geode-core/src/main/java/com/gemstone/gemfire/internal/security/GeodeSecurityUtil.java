@@ -49,7 +49,7 @@ import com.gemstone.gemfire.internal.security.shiro.ShiroPrincipal;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
-import com.gemstone.gemfire.security.CustomSecurity;
+import com.gemstone.gemfire.security.IntegratedSecurity;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.security.GeodePermission;
 import com.gemstone.gemfire.security.GeodePermission.Operation;
@@ -313,9 +313,9 @@ public class GeodeSecurityUtil {
       SecurityUtils.setSecurityManager(securityManager);
     }
 
-    // only set up shiro realm if user has implemented CustomSecurity
-    else if (authenticatorObject != null && authenticatorObject instanceof CustomSecurity) {
-      CustomSecurity authenticator = (CustomSecurity) authenticatorObject;
+    // only set up shiro realm if user has implemented IntegratedSecurity
+    else if (authenticatorObject != null && authenticatorObject instanceof IntegratedSecurity) {
+      IntegratedSecurity authenticator = (IntegratedSecurity) authenticatorObject;
       authenticator.init(securityProps);
       Realm realm = new CustomAuthRealm(authenticator);
       SecurityManager securityManager = new DefaultSecurityManager(realm);
@@ -366,7 +366,7 @@ public class GeodeSecurityUtil {
 
   public static boolean isIntegratedSecurity(String authenticatorFactoryName) {
     Object auth = getObject(authenticatorFactoryName);
-    return (auth instanceof CustomSecurity);
+    return (auth instanceof IntegratedSecurity);
   }
 
 }
