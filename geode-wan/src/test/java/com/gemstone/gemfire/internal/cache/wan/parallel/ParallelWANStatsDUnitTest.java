@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -273,7 +274,8 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
    * @throws Exception
    */
   @Category(FlakyTest.class) // GEODE-977: random ports, time sensitive, waitForCriterion
-  public void  testParallePropagationWithRemoteRegionDestroy() throws Exception {
+  @Test
+  public void testParallePropagationWithRemoteRegionDestroy() throws Exception {
     addIgnoredException("RegionDestroyedException");
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));

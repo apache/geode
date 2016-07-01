@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -512,7 +513,9 @@ public class LimitClauseJUnitTest {
    * 
    * Tests StructBag behaviour
    */
-  public void xtestLimitQueryForStructBagWithRangeIndex() {
+  @Ignore
+  @Test
+  public void testLimitQueryForStructBagWithRangeIndex() {
     try {
       Query query;
       SelectResults result;

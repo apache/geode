@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -83,7 +84,9 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
    * 
    * @throws Exception
    */
-  public void __test_AllLocatorsinDSShouldHaveDistributedSystemId() throws Exception {
+  @Ignore
+  @Test
+  public void test_AllLocatorsinDSShouldHaveDistributedSystemId() throws Exception {
     try {
       Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
@@ -341,8 +344,10 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites( dsVsPort ));
     vm3.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites( dsVsPort ));
   }
-  
-  public void ___test_3Sites3Locators() {
+
+  @Ignore
+  @Test
+  public void test_3Sites3Locators() {
     final Set<String> site1LocatorsPort = new HashSet<String>();
     int site1Port1 = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     site1LocatorsPort.add("localhost["+site1Port1+"]");

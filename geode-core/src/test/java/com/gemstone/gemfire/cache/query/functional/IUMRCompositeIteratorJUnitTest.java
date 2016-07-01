@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -165,7 +166,9 @@ public class IUMRCompositeIteratorJUnitTest {
 
   }
 
-  public void _testQueryWithCompositeIter2() throws Exception {
+  @Ignore
+  @Test
+  public void testQueryWithCompositeIter2() throws Exception {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     String queries[] = {

@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -752,7 +753,9 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase
   
   // See #50944 before enabling the test.  This ticket has been closed with wontFix
   // for the 2014 8.0 release.
-  public void DISABLED_testReconnectWithRequiredRoleRegained()throws Throwable {
+  @Ignore
+  @Test
+  public void testReconnectWithRequiredRoleRegained()throws Throwable {
 
     final String rr1 = "RoleA";
     //final String rr2 = "RoleB";

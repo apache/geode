@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -111,7 +112,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
    * We are gone support this configuration in upcoming releases
    */
 
-  public void DISABLED_DUETO_BUG51491_testParallelGatewaySenderForDistributedRegion() throws Exception {
+  @Ignore("Bug51491")
+  @Test
+  public void testParallelGatewaySenderForDistributedRegion() throws Exception {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
       Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -239,7 +242,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
    * 
    * @throws Exception
    */
-  public void ___testSameParallelGatewaySenderIdAcrossDifferentPartitionedRegion()
+  @Ignore
+  @Test
+  public void testSameParallelGatewaySenderIdAcrossDifferentPartitionedRegion()
       throws Exception {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -696,32 +701,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
       }
     }
   }
-  
-//  public void ___testGatewaySenderListener() {
-//    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
-//        "createFirstLocatorWithDSId", new Object[] { 1 });
-//
-//    vm1.invoke(() -> WANTestBase.createCache( lnPort ));
-//    vm2.invoke(() -> WANTestBase.createCache( lnPort ));
-//
-//    vm1.invoke(() -> WANTestBase.createSenderWithListener(
-//        "ln", 2, false, 100, 10, false, false, null,
-//        true, true ));
-//    
-//   try {
-//      vm2.invoke(() -> WANTestBase.createSenderWithListener(
-//        "ln", 2, false, 100, 10, false, false, null,
-//        false, true ));
-//      fail("Expected IllegateStateException : GatewayEventFileters Should match");
-//    }
-//    catch (Exception e) {
-//      if (!(e.getCause() instanceof IllegalStateException)
-//          || !(e.getCause().getMessage()
-//              .contains("because another cache has the same Gateway Sender defined with GatewaySenderEventListener"))) {
-//        fail("Expected IllegalStateException", e);
-//      }
-//    }
-//  }
+
   
   @Test
   public void testIsDiskSynchronous() {
@@ -799,8 +779,10 @@ public class WanValidationsDUnitTest extends WANTestBase {
   /*
    * We are allowing number of dispatcher threads for parallel sender to differ
    * on number of machines
-   */ 
-  public void DISABLED_testDispatcherThreadsForParallelGatewaySender() {
+   */
+  @Ignore
+  @Test
+  public void testDispatcherThreadsForParallelGatewaySender() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
     createCacheInVMs(lnPort, vm1, vm2);
@@ -829,7 +811,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
    * time of sender creation. policy KEY and Partition are same for PGS. Hence
    * disabling the tests
    */
-  public void DISABLED_testOrderPolicyForParallelGatewaySender() {
+  @Ignore
+  @Test
+  public void testOrderPolicyForParallelGatewaySender() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
     createCacheInVMs(lnPort, vm1, vm2);

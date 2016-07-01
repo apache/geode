@@ -80,8 +80,9 @@ public class ExceptionHandlingJUnitTest {
     }
   }
 
+  @Ignore
   @Test
-  public void _testNullPointerWithGet() {
+  public void testNullPointerWithGet() {
     boolean caught = false;
     try {
       testRegion.get(null);
@@ -108,8 +109,9 @@ public class ExceptionHandlingJUnitTest {
     }
   }
 
+  @Ignore
   @Test
-  public void _testNullPointerWithPut() {
+  public void testNullPointerWithPut() {
     boolean caught = false;
     try {
       testRegion.put(null,null);

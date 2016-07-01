@@ -74,14 +74,11 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
   public IndexTrackingQueryObserverDUnitTest() {
     super();
   }
-  
-  @Test
-  public void testNothing() {
-    
-  }
+
   
   @Ignore("Disabled for bug 52321")
-  public void DISABLED_testIndexInfoOnRemotePartitionedRegion() throws Exception {
+  @Test
+  public void testIndexInfoOnRemotePartitionedRegion() throws Exception {
     final Host host = Host.getHost(0);
     VM ds0 = host.getVM(0);
     VM ds1 = host.getVM(1);

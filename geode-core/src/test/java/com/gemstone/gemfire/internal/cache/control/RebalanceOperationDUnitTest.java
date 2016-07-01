@@ -40,6 +40,7 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -237,7 +238,9 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
   }
   
   /** Manual test.*/
-  public void z_testRedundancyLoop() {
+  @Ignore
+  @Test
+  public void testRedundancyLoop() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);

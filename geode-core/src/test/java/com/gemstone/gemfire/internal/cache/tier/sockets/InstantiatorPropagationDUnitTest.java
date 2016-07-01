@@ -769,7 +769,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
    */
   @Ignore("TODO: disabled - the eventID received does not match the sender's eventID.  Why is this a requirement anyway?")
   @Test
-  public void _testInstantiatorsEventIdVerificationClientsAndServers() throws Exception {
+  public void testInstantiatorsEventIdVerificationClientsAndServers() throws Exception {
     PORT1 = initServerCache(server1, 1);
     PORT2 = initServerCache(server2, 2);
 

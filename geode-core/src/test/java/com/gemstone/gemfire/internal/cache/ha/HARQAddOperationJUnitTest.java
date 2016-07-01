@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -1054,7 +1055,9 @@ public class HARQAddOperationJUnitTest {
    * Behaviour of take() has been changed for relaible messaging feature. Region queue take()
    * operation will no longer add to the Dispatch Message Map. Hence disabling the test - SUYOG
    */
-  public void _testDispatchedMsgsMapUpdateOnTakes() throws Exception {
+  @Ignore
+  @Test
+  public void testDispatchedMsgsMapUpdateOnTakes() throws Exception {
     this.logWriter
         .info("HARQAddOperationJUnitTest : testDispatchedEventsMapUpdateOnTakes BEGIN");
 

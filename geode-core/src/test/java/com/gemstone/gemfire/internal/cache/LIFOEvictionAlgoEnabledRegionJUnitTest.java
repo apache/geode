@@ -23,6 +23,7 @@ import com.gemstone.gemfire.internal.cache.lru.NewLRUClockHand;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -300,7 +301,9 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
    * 1)Verify Entry value after faultin should be byte []<br>
    */
   // not using it. added as may needed if functionality gets added
-   public void _testFaultInEntryValueShouldbeSerialized() {
+  @Ignore
+  @Test
+  public void testFaultInEntryValueShouldbeSerialized() {
      try {
        assertNotNull(cache);
        LocalRegion rgn = (LocalRegion)cache.getRegion(Region.SEPARATOR + regionName);

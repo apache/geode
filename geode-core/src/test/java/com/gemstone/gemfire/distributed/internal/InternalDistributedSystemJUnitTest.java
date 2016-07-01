@@ -26,6 +26,7 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -277,7 +278,9 @@ public class InternalDistributedSystemJUnitTest
    *
    * @deprecated This test creates a "loner" distributed system
    */
-  public void _testEmptyLocators() {
+  @Ignore
+  @Test
+  public void testEmptyLocators() {
     Properties props = new Properties();
     props.put(MCAST_PORT, String.valueOf(0));
     props.put(LOCATORS, "");
@@ -386,7 +389,9 @@ public class InternalDistributedSystemJUnitTest
    * gemfire.ack-wait-threshold system property is set on this VM,
    * thus overriding the value passed into the API.
    */
-  public void _testGetAckWaitThreshold() {
+  @Ignore
+  @Test
+  public void testGetAckWaitThreshold() {
     String time = String.valueOf(DistributionConfig.MIN_ACK_WAIT_THRESHOLD);
     Properties props = new Properties();
     // a loner is all this test needs
@@ -402,7 +407,9 @@ public class InternalDistributedSystemJUnitTest
    * gemfire.ack-wait-threshold system property is set on this VM,
    * thus overriding the value passed into the API.
    */
-  public void _testInvalidAckWaitThreshold() {
+  @Ignore
+  @Test
+  public void testInvalidAckWaitThreshold() {
     Properties props = new Properties();
     props.put(ACK_WAIT_THRESHOLD, "blah");
     try {

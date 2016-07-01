@@ -28,6 +28,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
@@ -132,7 +133,7 @@ public class HibernateJUnitTest {
   }
 
   @Test
-  public void testNothing() throws Exception {
+  public void testSomething() throws Exception {
     java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.ALL);
     log.info("SWAP:creating session factory In hibernateTestCase");
 
@@ -197,7 +198,9 @@ public class HibernateJUnitTest {
 
   }
 
-  public void _testInvalidation() {
+  @Ignore
+  @Test
+  public void testInvalidation() {
     Session s = getSessionFactory(null).openSession();
   }
 
@@ -278,7 +281,9 @@ public class HibernateJUnitTest {
     //    log.info(aPerson.getEvents()+"");
   }
 
-  public void _testQueryCache() throws Exception {
+  @Ignore
+  @Test
+  public void testQueryCache() throws Exception {
     Session session = getSessionFactory(null).openSession();
     Query q = session.createQuery("from Event");
     q.setCacheable(true);

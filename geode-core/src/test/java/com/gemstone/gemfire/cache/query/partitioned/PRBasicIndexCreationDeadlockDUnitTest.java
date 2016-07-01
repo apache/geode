@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.cache.query.partitioned;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -83,12 +84,9 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends
 
   public static volatile boolean hook_vm1, hook_vm2;
 
-  //Dummy test method to be removed when test is fixed
+  @Ignore
   @Test
   public void testIndexCreationMessageDiskRecoveryDeadLock() {
-  }
-
-  public void DISABLE_testIndexCreationMessageDiskRecoveryDeadLock() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);

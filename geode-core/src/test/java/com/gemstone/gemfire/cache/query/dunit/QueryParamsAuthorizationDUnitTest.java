@@ -60,12 +60,9 @@ public class QueryParamsAuthorizationDUnitTest extends JUnit4CacheTestCase {
     super();
   }
 
-  @Test
-  public void testNothing() {
-    // remove when Bug #51079 is fixed
-  }
   @Ignore("Bug 51079")
-  public void DISABLED_testQueryParamsInAuthCallback() throws Exception {
+  @Test
+  public void testQueryParamsInAuthCallback() throws Exception {
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
     final VM client = host.getVM(1);

@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -239,13 +240,17 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
   
   // DISABLED due to high failure rate due, apparently, to problems
   // with the flow-control statistics.  See internal ticket #52221
-  public void disabledtestCloseReceiverCacheNoHang() throws Throwable {
+  @Ignore
+  @Test
+  public void testCloseReceiverCacheNoHang() throws Throwable {
     doCloseTest(false);
   }
   
   // DISABLED due to high failure rate due, apparently, to problems
   // with the flow-control statistics.  See internal ticket #52221
-  public void disabledtestDisconnectReceiverNoHang() throws Throwable {
+  @Ignore
+  @Test
+  public void testDisconnectReceiverNoHang() throws Throwable {
     doCloseTest(true);
   }
   
