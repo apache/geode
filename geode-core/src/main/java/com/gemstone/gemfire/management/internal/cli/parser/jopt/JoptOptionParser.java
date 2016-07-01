@@ -61,6 +61,7 @@ public class JoptOptionParser implements GfshOptionParser {
    */
   public JoptOptionParser() {
     parser = new OptionParser(true);
+    parser.allowsUnrecognizedOptions();
   }
 
   public void setArguments(LinkedList<Argument> arguments) {

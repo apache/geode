@@ -336,29 +336,10 @@ public class GfshParser implements Parser {
       boolean warningValueRequired = false;
       Option warningOption = null;
 
-      boolean updatedDesiredCursorPosition = false;
-      if (!userOptionSet.areOptionsPresent()) {
-        if (remainingBuffer.contains("-")) {
-          int walkBackwards = remainingBuffer.length() - 1;
-          while (remainingBuffer.charAt(walkBackwards) != '-' && walkBackwards > 0) {
-            walkBackwards--;
-          }
-          while (remainingBuffer.charAt(walkBackwards) == '-' && walkBackwards > 0) {
-            walkBackwards--;
-          }
-          while (remainingBuffer.charAt(walkBackwards) == ' ' && walkBackwards > 0) {
-            walkBackwards--;
-          }
-          if (walkBackwards > 0) {
-            walkBackwards += 2;
-            desiredCursorPosition += walkBackwards;
-          }
-          updatedDesiredCursorPosition = true;
-        }
-      } // gfsh>start server --name=server1 --lo
+
 
       for (Option option : commandTarget.getOptionParser().getOptions()) {
-        if (!updatedDesiredCursorPosition && userOptionSet.hasOption(option)) {
+        if (userOptionSet.hasOption(option)) {
           // We are supporting option synonyms,
           // so we need to check that here
           for (String string : userOptionSet.getSplit()) {
