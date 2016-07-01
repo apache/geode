@@ -12,11 +12,11 @@ These notifications are federated and then emitted by the DistributedSystemMXBea
 When you attach a notification listener to the DistributedSystemMXBean, the DistributedSystemMXBean then acts as the notification hub for the entire distributed system. You do not have to attach a listener to each individual member or cache server MBean in order to listen to all the notifications in the distributed system.
 
 The following is an example of attaching a NotificationListener to an MBean using the JMX MBeanServer API:
-``` pre
-NotificationListener myListener = ...
-ObjectName mbeanName = ... 
-MBeanServer.addNotificationListener(mbeanName, myListener, null, null);  
-```
+
+    NotificationListener myListener = ...
+    ObjectName mbeanName = ... 
+    MBeanServer.addNotificationListener(mbeanName, myListener, null, null);  
+
 
 JMX Managers will emit notifications for all distributed system members with two exceptions:
 
