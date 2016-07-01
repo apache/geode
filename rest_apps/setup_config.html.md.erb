@@ -41,38 +41,35 @@ The following procedure starts up a REST API service-enabled <span class="keywor
 
 1.  Configure PDX for your cluster. You must configure PDX if either or both of the following conditions apply: 
     -   Application peer member caches will access REST-accessible Regions (resources) with the `Region.get(key)`.
-    -   Your deployment has persistent regions that must be available as resources to the REST API.
+    -   Your deployment has persistent regions that must be available as resources to the REST API.  To configure PDX in your cluster, perform the following steps:
+        1.  Start up a locator running the [cluster configuration service](../configuring/cluster_config/gfsh_persist.html) (enabled by default). For example: 
 
-    To configure PDX in your cluster, perform the following steps:
+            ``` pre
+            gfsh>start locator --name=locator1
+            ```
+        2.  If your deployment has application peer member caches (for example, Java clients) that must also access REST-accessible Regions (resources), use the following gfsh command:
 
-    1.  Start up a locator running the [cluster configuration service](../configuring/cluster_config/gfsh_persist.html) (enabled by default). For example: 
-        ``` pre
-        gfsh>start locator --name=locator1
-        ```
-
-    2.  If your deployment has application peer member caches (for example, Java clients) that must also access REST-accessible Regions (resources), use the following gfsh command:
-        ``` pre
-        gfsh>configure pdx --read-serialized=true
-        ```
-
+            ``` pre
+            gfsh>configure pdx --read-serialized=true
+            ```
         **Note:**
         You do not need to configure `--read-serialized=true` if no application peer member caches are accessing the REST-accessible regions (resources) in your deployment.
+        3.  If your deployment contains **persistent regions** that must be REST-accessible, use the following gfsh command:
 
-    3.  If your deployment contains **persistent regions** that must be REST-accessible, use the following gfsh command:
-        ``` pre
-        gfsh>configure pdx --disk-store
-        ```
-
+            ``` pre
+            gfsh>configure pdx --disk-store
+            ```
         This command sets `pdx` `persistent` equal to true and sets the disk-store-name to DEFAULT. If desired, specify an existing disk store name as the value for `--disk-store`.
+        4.  If both of the above cases apply to your deployment, then configure PDX with the following single command:
 
-    4.  If both of the above cases apply to your deployment, then configure PDX with the following single command:
-        ``` pre
-        gfsh>configure pdx --read-serialized=true --disk-store
-        ```
+            ``` pre
+            gfsh>configure pdx --read-serialized=true --disk-store
+            ```
 
     After you have configured PDX for your caches, then proceed with starting up your REST-enabled servers and other data nodes.
 
 2.  Start a server node with the <span class="keyword">Geode</span> property `start-dev-rest-api` set to `true`. For example:
+
     ``` pre
     gfsh>start server --name=server1 --J=-Dgemfire.start-dev-rest-api=true \
     --J=-Dgemfire.http-service-port=8080 --J=-Dgemfire.http-service-bind-address=localhost
@@ -91,6 +88,7 @@ The following procedure starts up a REST API service-enabled <span class="keywor
     Note that when started as a JMX Manager, the server will also host the Pulse web application in the same HTTP service.
 
 3.  You may also need to specify a CLASSPATH to load any functions that need to be made available to your REST services. For example:
+
     ``` pre
     gfsh>start server --name=server1 --J=-Dgemfire.start-dev-rest-api=true \
     --J=-Dgemfire.http-service-port=8080 --J=-Dgemfire.http-service-bind-address=localhost \
@@ -98,12 +96,14 @@ The following procedure starts up a REST API service-enabled <span class="keywor
     ```
 
 4.  You can also specify these properties either upon server startup or in the server’s gemfire.properties configuration file.
+
     ``` pre
     gfsh>start server --name=serverX --server-port=40405 --cache-xml-file=cache-config.xml \
     --properties-file=gemfire.properties --classpath=/myapps/testfunctions.jar
     ```
 
     where gemfire.properties contains:
+
     ``` pre
     http-service-port=8080
     http-service-bind-address=localhost
@@ -112,11 +112,13 @@ The following procedure starts up a REST API service-enabled <span class="keywor
 
 5.  Verify that the <span class="keyword">Geode</span> REST API service is up and running. To validate this, you can perform the following checks:
     1.  Test the list resources endpoint (this step assumes that you have regions defined on your cluster):
+
         ``` pre
         curl -i http://localhost:8080/gemfire-api/v1
         ```
 
     2.  Examine the server logs for the following messages:
+
         ``` pre
         [info 2014/06/12 14:56:52.431 PDT rest-test <localhost-startStop-1> tid=0x4d] 
         (tid=11 msgId=8) Initializing Spring FrameworkServlet 'gemfire-api'[info 2014/06/12 
@@ -125,11 +127,13 @@ The following procedure starts up a REST API service-enabled <span class="keywor
         ```
 
     3.  Open a browser and enter the following URL to browse the Swagger-enabled REST APIs:
+
         ``` pre
         http://<http-service-bind-address>:<http-service-port>/gemfire-api/docs/index.html
         ```
 
         where *http-service-bind-address* is the address and *http-service-port* is the port number that you specified when starting the Development REST API service on the server. For example, based on the server started in step 2, you would enter:
+
         ``` pre
         http://localhost:8080/gemfire-api/docs/index.html
         ```
