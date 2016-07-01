@@ -14,7 +14,7 @@ The <span class="keyword">Geode</span> server is used primarily for hosting long
 
 ## Default Server Configuration and Log Files
 
-The gfsh server commands use a working directory for its configuration files and log files. These are the defaults and configuration options:
+The `gfsh` utility uses a working directory for its configuration files and log files. These are the defaults and configuration options:
 
 -   When you start a standalone server using `gfsh`, `gfsh` will automatically load the required JAR files `$GEMFIRE/lib/server-dependencies.jar` and `$JAVA_HOME/lib/tools.jar` into the CLASSPATH of the JVM process. If you start a standalone server using the ServerLauncher API, you must specify `$GEMFIRE/lib/server-dependencies.jar` inside your command to launch the process. For more information on CLASSPATH settings in <span class="keyword">Geode</span>, see [CLASSPATH Settings for Geode Processes](../../getting_started/setup_gemfire_classpath.html#concept_ivh_glr_l4).
 -   Servers are configured like any other <span class="keyword">Geode</span> process, with `gemfire.properties` and shared cluster configuration files. It is not programmable except through application plug-ins. Typically, you provide the `gemfire.properties` file and the `gfsecurity.properties` file (if you are using a separate, restricted access security settings file). You can also specify a `cache.xml` file in the cache server’s working directory.

@@ -67,7 +67,7 @@ The basic framework for implementing a write-behind event handler involves itera
 ``` pre
 class MyAsyncEventListener implements AsyncEventListener {
     
-  public void processEvents(List<AsyncEvent> events) {
+  public boolean processEvents(List<AsyncEvent> events) {
 
       // Process each AsyncEvent
 

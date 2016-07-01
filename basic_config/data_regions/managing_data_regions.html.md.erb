@@ -47,38 +47,30 @@ Before you start, have your cache configuration defined, along with any cache-wi
 1.  Determine the region attributes requirements and identify the region shortcut setting that most closely matches your needs. See [Region Shortcuts and Custom Named Region Attributes](region_shortcuts.html) and [Region Shortcuts](../../reference/topics/chapter_overview_regionshortcuts.html) for more information.
 2.  Define any region attributes that are not provided in the shortcut you chose.
 3.  Create a region using any of the following methods:
-    -   gfsh. After starting up servers, a JMX manager and connecting to the cluster, execute the following command:
+    -   `gfsh`. After starting up servers, a JMX manager and connecting to the cluster, execute the following command:
 
-        ``` pre
-        gfsh>create region --name=Portfolios --type=REPLICATE
-        ```
-
+            gfsh>create region --name=Portfolios --type=REPLICATE
     -   Declaration in the `cache.xml`:
 
-        ``` pre
-        <?xml version="1.0" encoding="UTF-8"?>
-        <cache
-            xmlns="http://geode.incubator.apache.org/schema/cache"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
-            version="1.0"
-            lock-lease="120"
-            lock-timeout="60"
-            search-timeout="300">
-        <!-- Create a region named Portfolios -->
-          <region name="Portfolios" id="REPLICATE"/>
-        </cache>
-        ```
+            <?xml version="1.0" encoding="UTF-8"?>
+            <cache
+                xmlns="http://geode.incubator.apache.org/schema/cache"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
+                version="1.0"
+                lock-lease="120"
+                lock-timeout="60"
+                search-timeout="300">
+            <!-- Create a region named Portfolios -->
+              <region name="Portfolios" id="REPLICATE"/>
+            </cache>
 
         When the `cache.xml` is loaded at cache creation, the system automatically creates any declared regions.
-
     -   `RegionFactory` API calls:
 
-        ``` pre
-        Cache cache = CacheFactory.create();
-        RegionFactory rf = cache.createRegionFactory(REPLICATE);
-        Region pfloRegion = rf.create("Portfolios");
-        ```
+            Cache cache = CacheFactory.create();
+            RegionFactory rf = cache.createRegionFactory(REPLICATE);
+            Region pfloRegion = rf.create("Portfolios");
 
 Once you have created your regions, you can access them through the `Cache` and `Region` APIs as full region lists or individually.
 

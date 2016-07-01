@@ -18,7 +18,6 @@ Set distributed system properties by any combination of the following. The syste
 1.  `java.lang.System` property setting. Usually set at the command line. For applications, set these in your code or at the command line.
 
     Naming: Specify these properties in the format `gemfire.property-name`, where `property-name` matches the name in the `gemfire.properties` file. To set the gemfire property file name, use `gemfirePropertyFile` by itself
-
     -   In the API, set the `System` properties before the cache creation call. Example:
 
         ``` pre
@@ -27,17 +26,14 @@ Set distributed system properties by any combination of the following. The syste
 
         Cache cache = new CacheFactory().create();
         ```
-
     -   At the `java` command line, pass in `System` properties using the `-D` switch. Example:
 
         ``` pre
         java -DgemfirePropertyFile=gfTest -Dgemfire.mcast-port=10999 test.Program
         ```
-
 2.  Entry in a `Properties` object.
 
     Naming: Specify these properties using the names in the `gemfire.properties` file. To set the gemfire property file name, use `gemfirePropertyFile`.
-
     -   In the API, create a `Properties` object and pass it to the cache create method. Example:
 
         ``` pre
@@ -47,7 +43,6 @@ Set distributed system properties by any combination of the following. The syste
         ClientCache userCache = 
             new ClientCacheFactory(properties).create();
         ```
-
     -   For the cache server, pass the properties files on the `gfsh` command line as command-line options. Example:
 
         ``` pre

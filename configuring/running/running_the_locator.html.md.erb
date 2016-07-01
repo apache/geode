@@ -46,7 +46,7 @@ Locator configuration and log files have the following properties:
 
 ## Locators and the Cluster Configuration Service
 
-Locators use the cluster configuration service to save configurations that apply to all cluster members, or to members of a specified group. The configurations are saved in the Locator's directory and are propagated to all locators in a distributed system. When you start servers using gfsh, the servers receive the group-level and cluster-level configurations from the locators.
+Locators use the cluster configuration service to save configurations that apply to all cluster members, or to members of a specified group. The configurations are saved in the Locator's directory and are propagated to all locators in a distributed system. When you start servers using `gfsh`, the servers receive the group-level and cluster-level configurations from the locators.
 
 See [Overview of the Cluster Configuration Service](../cluster_config/gfsh_persist.html).
 
@@ -57,7 +57,7 @@ See [Overview of the Cluster Configuration Service](../cluster_config/gfsh_persi
 Use the following guidelines to start the locator:
 
 -   **Standalone locator**. Start a standalone locator in one of these ways:
-    -   Use the `gfsh` command-line utility. See [gfsh (Geode SHell)](../../tools_modules/gfsh/chapter_overview.html) for more information on using `gfsh`. For example:
+    -   Use the `gfsh` command-line utility. See [`gfsh` (Geode SHell)](../../tools_modules/gfsh/chapter_overview.html) for more information on using `gfsh`. For example:
 
         ``` pre
         gfsh>start locator --name=locator1
@@ -68,8 +68,10 @@ Use the following guidelines to start the locator:
     -   Start the locator using the `main` method in the `com.gemstone.gemfire.distributed.LocatorLauncher` class and the Java executable. For example:
 
         ``` pre
-        working/directory/of/Locator/process$java -server -classpath "$GEMFIRE/lib/locator-dependencies.jar:/path/to/application/classes.jar" \
-         com.gemstone.gemfire.distributed.LocatorLauncher start Locator1 --port=11235 --redirect-output
+        working/directory/of/Locator/process$java -server \
+         -classpath "$GEMFIRE/lib/locator-dependencies.jar:/path/to/application/classes.jar" \
+         com.gemstone.gemfire.distributed.LocatorLauncher start Locator1 --port=11235 \
+          --redirect-output
         ```
 
         Specifically, you use the `LocatorLauncher` class API to run an embedded Locator service in Java application processes that you have created. The directory where you execute the java command becomes the working directory for the locator process.
@@ -158,7 +160,9 @@ Use the following guidelines to start the locator:
         Then to execute the application, you would run:
 
         ``` pre
-        /working/directory/of/MyApplication$ java -server -classpath "$GEMFIRE/lib/locator-dependencies.jar:/path/to/application/classes.jar" example.MyApplication Locator1 11235
+        /working/directory/of/MyApplication$ java \
+         -server -classpath "$GEMFIRE/lib/locator-dependencies.jar:/path/to/application/classes.jar" \
+         example.MyApplication Locator1 11235
         ```
 
         The directory where you execute the java command becomes the working directory for the locator process.

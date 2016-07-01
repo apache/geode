@@ -15,19 +15,14 @@ Configure your server and client processes and data regions to run your client/s
 1.  
 
     Configure servers to listen for clients by completing one or both of the following tasks. 
-    -   
-
-        Configure each application server as a server by specifying the `<cache-server>` element in the application's `cache.xml` and optionally specifying a non-default port to listen on for client connections.
+    -   Configure each application server as a server by specifying the `<cache-server>` element in the application's `cache.xml` and optionally specifying a non-default port to listen on for client connections.
 
         For example:
 
         ``` pre
         <cache-server port="40404" ... />
         ```
-
-    -   
-
-        Optional. Configure each `cacheserver` process with a non-default port to listen on for client connections.
+    -   Optional. Configure each `cacheserver` process with a non-default port to listen on for client connections.
 
         For example:
 
@@ -35,20 +30,17 @@ Configure your server and client processes and data regions to run your client/s
         prompt> cacheserver start -port="44454"
         ```
 
-2.  
-
-    Configure clients to connect to servers. In the client `cache.xml`, use the server system's locator list to configure your client server pools and configure your client regions to use the pools. 
+2.  Configure clients to connect to servers. In the client `cache.xml`, use the server system's locator list to configure your client server pools and configure your client regions to use the pools. 
     For example:
-    ``` pre
-    <client-cache>
-      <pool name="publisher" subscription-enabled="true">
-        <locator host="lucy" port="41111"/> 
-        <locator host="lucy" port="41111"/> 
-      </pool>
-      ...
-      <region name="clientRegion" ...
-        <region-attributes pool-name="publisher" ...
-    ```
+    
+        <client-cache>
+           <pool name="publisher" subscription-enabled="true">
+              <locator host="lucy" port="41111"/> 
+              <locator host="lucy" port="41111"/> 
+           </pool>
+           ...
+           <region name="clientRegion" ...
+              <region-attributes pool-name="publisher" ...
 
     You do not need to provide the complete list of locators to the clients at startup, but you should provide as complete a list as possible. The locators maintain a dynamic list of locators and servers and provide the information to the clients as needed.
 

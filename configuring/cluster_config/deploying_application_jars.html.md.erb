@@ -4,7 +4,7 @@ title:  Deploying Application JARs to <span class="keyword">Apache Geode</span> 
 
 You can dynamically deploy your application JAR files to specific members or to all members in your distributed system. <span class="keyword">Geode</span> automatically keeps track of JAR file versions; autoloads the deployed JAR files to the CLASSPATH; and auto-registers any functions that the JAR contains.
 
-To deploy and undeploy application JAR files in <span class="keyword">Apache Geode</span>, use the gfsh `deploy` or `undeploy` command. You can deploy a single JAR or multiple JARs (by either specifying the JAR filenames or by specifying a directory that contains the JAR files), and you can also target the deployment to a member group or multiple member group. For example, after connecting to the distributed system where you want to deploy the JARs, you could type at the `gfsh` prompt:
+To deploy and undeploy application JAR files in <span class="keyword">Apache Geode</span>, use the `gfsh` `deploy` or `undeploy` command. You can deploy a single JAR or multiple JARs (by either specifying the JAR filenames or by specifying a directory that contains the JAR files), and you can also target the deployment to a member group or multiple member group. For example, after connecting to the distributed system where you want to deploy the JARs, you could type at the `gfsh` prompt:
 
 ``` pre
 gfsh> deploy --jar=group1_functions.jar
@@ -64,7 +64,7 @@ Sample output:
 
 ``` pre
  
-Member   |     Deployed JAR     |                JAR Location            
+ Member   |     Deployed JAR     |                JAR Location            
 --------- | -------------------- | ---------------------------------------------------
 datanode1 | group1_functions.jar | /usr/local/gemfire/deploy/vf.gf#group1_functions.jar#1
 datanode2 | group1_functions.jar | /usr/local/gemfire/deploy/vf.gf#group1_functions.jar#1
@@ -86,7 +86,7 @@ This deployment location can be local or a shared network resource (such as a mo
 
 ## About Deploying JAR Files and the Cluster Configuration Service
 
-By default, the cluster configuration service distributes deployed JAR files to all locators in the distributed system. When you start a new server using gfsh, the locator supplies configuration files and deployed jar files to the member and writes them to the server's directory.
+By default, the cluster configuration service distributes deployed JAR files to all locators in the distributed system. When you start a new server using `gfsh`, the locator supplies configuration files and deployed jar files to the member and writes them to the server's directory.
 
 See [Overview of the Cluster Configuration Service](gfsh_persist.html).
 

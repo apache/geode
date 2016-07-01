@@ -2,7 +2,7 @@
 title:  Overview of the Cluster Configuration Service
 ---
 
-The <span class="keyword">Apache Geode</span> cluster configuration service persists cluster configurations created by gfsh commands to the locators in a cluster and distributes the configurations to members of the cluster.
+The <span class="keyword">Apache Geode</span> cluster configuration service persists cluster configurations created by `gfsh` commands to the locators in a cluster and distributes the configurations to members of the cluster.
 
 ## Why Use the Cluster Configuration Service
 
@@ -23,23 +23,23 @@ To use the cluster configuration service in <span class="keyword">Geode</span>, 
 The standalone locators distribute configuration to all locators in a cluster. Every locator in the cluster with `--enable-cluster-configuration` set to true keeps a record of all cluster-level and group-level configuration settings.
 
 **Note:**
-The default behavior for gfsh is to create and save cluster configurations. You can disable the cluster configuration service by using the `--enable-cluster-configuration=false` option when starting locators.
+The default behavior for `gfsh` is to create and save cluster configurations. You can disable the cluster configuration service by using the `--enable-cluster-configuration=false` option when starting locators.
 
-Subsequently, any servers that you start with gfsh that have `--use-cluster-configuration` set to `true` will pick up the cluster configuration from the locator as well as any appropriate group-level configurations (for member groups they belong to). To disable the cluster configuration service on a server, you must start the server with the `--use-cluster-configuration` parameter set to `false`. By default, the parameter is set to true.
+Subsequently, any servers that you start with `gfsh` that have `--use-cluster-configuration` set to `true` will pick up the cluster configuration from the locator as well as any appropriate group-level configurations (for member groups they belong to). To disable the cluster configuration service on a server, you must start the server with the `--use-cluster-configuration` parameter set to `false`. By default, the parameter is set to true.
 
 You can also load existing configuration files into the cluster configuration service by starting up a standalone locator with the parameter `--load-cluster-configuration-from-dir` set to true. See [Loading Existing Configuration Files into Cluster Configuration](gfsh_load_from_shared_dir.html).
 
 ## How the Cluster Configuration Service Works
 
-When you use gfsh commands to create <span class="keyword">Apache Geode</span> regions, disk-stores, and other objects, the cluster configuration service saves the configurations on each locator in the cluster (also called a <span class="keyword">Geode</span> distributed system). If you specify a group when issuing these commands, a separate configuration is saved containing only configurations that apply to the group.
+When you use `gfsh` commands to create <span class="keyword">Apache Geode</span> regions, disk-stores, and other objects, the cluster configuration service saves the configurations on each locator in the cluster (also called a <span class="keyword">Geode</span> distributed system). If you specify a group when issuing these commands, a separate configuration is saved containing only configurations that apply to the group.
 
-When you use gfsh to start new <span class="keyword">Apache Geode</span> servers, the locator distributes the persisted configurations to the new server. If you specify a group when starting the server, the server receives the group-level configuration in addition to the cluster-level configuration. Group-level configurations are applied after cluster-wide configurations; therefore you can use group-level to override cluster-level settings.
+When you use `gfsh` to start new <span class="keyword">Apache Geode</span> servers, the locator distributes the persisted configurations to the new server. If you specify a group when starting the server, the server receives the group-level configuration in addition to the cluster-level configuration. Group-level configurations are applied after cluster-wide configurations; therefore you can use group-level to override cluster-level settings.
 
 <img src="../../images_svg/cluster_config_overview.svg" id="concept_r22_hyw_bl__image_jjc_vhb_y4" class="image" />
 
 ## gfsh Commands that Create Cluster Configurations
 
-The following gfsh commands cause the configuration to be written to all locators in the cluster (the locators write the configuration to disk):
+The following `gfsh` commands cause the configuration to be written to all locators in the cluster (the locators write the configuration to disk):
 
 -   `configure pdx`\*
 -   `create region`
@@ -64,7 +64,7 @@ The following gateway-related commands use the cluster configuration service, an
 <a id="concept_r22_hyw_bl__section_bn3_23p_y4"></a>
 ## gfsh Limitations
 
-There are some configurations that you cannot create using gfsh, and that you must configure using cache.xml or the API:
+There are some configurations that you cannot create using `gfsh`, and that you must configure using cache.xml or the API:
 
 -   Client cache configuration
 -   You cannot specify parameters and values for Java classes for the following objects:
@@ -77,6 +77,7 @@ There are some configurations that you cannot create using gfsh, and that you mu
     -   `serializer`
     -   `instantiantor`
     -   `pdx-serializer`
+    
         **Note:**
         The `configure pdx` command always specifies the <span class="keyword apiname">com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer</span> class. You cannot specify a custom PDX serializer in gfsh.
 
@@ -93,7 +94,7 @@ There are some configurations that you cannot create using gfsh, and that you mu
 -   Adding JNDI bindings
 -   Deleting an AsyncEventQueue
 
-In addition, there are some limitations on configuring gateways using gfsh.You must use cache.xml or the Java APIs to configure the following:
+In addition, there are some limitations on configuring gateways using `gfsh`.You must use cache.xml or the Java APIs to configure the following:
 
 -   Configuring a GatewayConflictResolver
 -   You cannot specify parameters and values for Java classes for the following:

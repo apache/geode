@@ -13,7 +13,6 @@ First, retrieve a CommandService instance.
 The CommandService API is currently only available on JMX Manager nodes.
 
 ``` pre
- 
 // Get existing CommandService instance or create new if it doesn't exist
 commandService = CommandService.createLocalCommandService(cache);
 
@@ -24,14 +23,13 @@ CommandService commandService = CommandService.getUsableLocalCommandService();
 Next, process the command and its output:
 
 ``` pre
-     
- // Process the user specified command String
- Result regionListResult = commandService.processCommand("list regions");
+// Process the user specified command String
+Result regionListResult = commandService.processCommand("list regions");
  
 // Iterate through Command Result in String form line by line
 while (regionListResult.hasNextLine()) {
    System.out.println(regionListResult.nextLine());
-  }
+}
       
 ```
 
@@ -40,13 +38,15 @@ Alternatively, instead of processing the command, you can create a CommandStatem
 ``` pre
 // Create a command statement that can be reused multiple times
 CommandStatement showDeadLocksCmdStmt = commandService.createCommandStatement
-("show dead-locks --file=deadlock-info.txt");
+    ("show dead-locks --file=deadlock-info.txt");
 Result showDeadlocksResult = showDeadLocksCmdStmt.process();
 
-// If there is a file as a part of Command Result, it can be saved to a specified directory
+// If there is a file as a part of Command Result, it can be saved 
+// to a specified directory
 if (showDeadlocksResult.hasIncomingFiles()) {
-     showDeadlocksResult.saveIncomingFiles(System.getProperty("user.dir") + "/commandresults");
-    }
+    showDeadlocksResult.saveIncomingFiles(System.getProperty("user.dir") + 
+                  "/commandresults");
+}
 ```
 
 
