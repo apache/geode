@@ -2174,7 +2174,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Sets a GemFire Distributed System Property.
      *
-     * @param propertyName a String indicating the name of the GemFire Distributed System property.
+     * @param propertyName a String indicating the name of the GemFire Distributed System property as described in {@link ConfigurationProperties}
      * @param propertyValue a String value for the GemFire Distributed System property.
      * @return this Builder instance.
      */

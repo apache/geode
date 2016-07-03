@@ -749,35 +749,6 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl
   }
 
 
-  /* return a string with the given locator's distributed system property
-      settings */
-  /*public String getdsPropertiesString(DistributionLocatorConfig locator) {
-    Properties props = locator.getDistributedSystemProperties();
-    if (props != null) {
-      final StringBuffer sb = new StringBuffer(30);
-      OutputStream os = new OutputStream() {
-        @Override
-        public void write(int i) {
-          sb.append((char)i);
-        }
-      };
-      try {
-        props.store(os, "");
-        os.flush();
-      } catch (java.io.IOException io) {
-        getLogWriter().warning(io);
-      } finally {
-        try {
-          os.close();
-        } catch (IOException e) {
-          getLogWriter().warning(e);
-        }
-      }
-      return sb.toString();
-    }
-    return "";
-  }*/
-
   // -------------------------------------------------------------------------
   //   Agent specific properties
   // -------------------------------------------------------------------------

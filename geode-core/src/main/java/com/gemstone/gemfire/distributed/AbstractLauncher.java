@@ -279,7 +279,6 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * @see java.util.Properties
    */
   protected Properties getDistributedSystemProperties(final Properties defaults) {
-    //Properties distributedSystemProperties = new Properties(defaults);
     final Properties distributedSystemProperties = new Properties();
 
     if (defaults != null) {
@@ -289,9 +288,6 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     if (!StringUtils.isBlank(getMemberName())) {
       distributedSystemProperties.setProperty(NAME, getMemberName());
     }
-
-    // Set any other GemFire Distributed System/Distribution Config directory-based properties as necessary
-    //distributedSystemProperties.setProperty(DistributionConfig.LICENSE_WORKING_DIR, getWorkingDirectory());
 
     return distributedSystemProperties;
   }

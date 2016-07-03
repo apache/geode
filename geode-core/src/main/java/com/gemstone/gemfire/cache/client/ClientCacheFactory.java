@@ -36,8 +36,7 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_POR
 /**
  * Factory class used to create the singleton {@link ClientCache client cache} and connect to one or more GemFire Cache Servers. If the application wants to connect to GemFire as a peer it should use {@link com.gemstone.gemfire.cache.CacheFactory} instead.
  * <p> Once the factory has been configured using its set* methods you produce a {@link ClientCache} by calling the {@link #create} method.
- * The
- * <a href="../distribution/DistributedSystem.html#cache-xml-file">"cache-xml-file"</a>
+ * The {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CACHE_XML_FILE}
  * property can be used to specify a cache.xml file to initialize the cache with.
  * The contents of this file must comply with the
  * <code>"doc-files/cache8_0.dtd"</code> file and the top level element must be a <code>client-cache</code> element.
@@ -139,7 +138,7 @@ public class ClientCacheFactory {
    *
    * @param props The initial gemfire properties to be used.
    *              These properties can be overridden using the {@link #set} method
-   *              For a full list of valid gemfire properties see {@link com.gemstone.gemfire.distributed.DistributedSystem}.
+   *              For a full list of valid gemfire properties see {@link com.gemstone.gemfire.distributed.ConfigurationProperties}.
    */
   public ClientCacheFactory(Properties props) {
     if (props == null) {
@@ -150,7 +149,7 @@ public class ClientCacheFactory {
 
   /**
    * Sets a gemfire property that will be used when creating the ClientCache.
-   * For a full list of valid gemfire properties see {@link com.gemstone.gemfire.distributed.DistributedSystem}.
+   * For a full list of valid gemfire properties see {@link com.gemstone.gemfire.distributed.ConfigurationProperties}.
    *
    * @param name  the name of the gemfire property
    * @param value the value of the gemfire property
