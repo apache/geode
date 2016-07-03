@@ -237,9 +237,6 @@ public class ConcurrentParallelGatewaySenderEventProcessor extends AbstractGatew
     if (!this.isAlive()) {
       return;
     }
-
-    setIsStopped(true);
-
     final LoggingThreadGroup loggingThreadGroup = LoggingThreadGroup
         .createThreadGroup("ConcurrentParallelGatewaySenderEventProcessor Logger Group", logger);
 
@@ -251,12 +248,12 @@ public class ConcurrentParallelGatewaySenderEventProcessor extends AbstractGatew
         return thread;
       }
     };
-
+    
     List<SenderStopperCallable> stopperCallables = new ArrayList<SenderStopperCallable>();
     for (ParallelGatewaySenderEventProcessor parallelProcessor : this.processors) {
       stopperCallables.add(new SenderStopperCallable(parallelProcessor));
     }
-
+    
     ExecutorService stopperService = Executors.newFixedThreadPool(processors.length, threadFactory);
     try {
       List<Future<Boolean>> futures = stopperService.invokeAll(stopperCallables);
@@ -278,6 +275,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor extends AbstractGatew
       throw rejectedExecutionEx;
     }
     
+    setIsStopped(true);
     stopperService.shutdown();
     closeProcessor();
     if (logger.isDebugEnabled()) {
