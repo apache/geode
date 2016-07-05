@@ -72,7 +72,7 @@ public class GfshHistoryJUnitTest {
 
     List<String> lines = Files.readAllLines(gfshHistoryFile.toPath());
     assertEquals(2, lines.size());
-    assertEquals(lines.get(1), "// [failed] connect --fake-param=foo");
+    assertEquals(lines.get(1), "connect --fake-param=foo");
   }
 
   @Test
@@ -81,7 +81,7 @@ public class GfshHistoryJUnitTest {
     gfsh.executeScriptLine("connect --password=foo --password = foo --password= goo --password =goo --password-param=blah --other-password-param=    gah");
 
     List<String> lines = Files.readAllLines(gfshHistoryFile.toPath());
-    assertEquals("// [failed] connect --password=***** --password = ***** --password= ***** --password =***** --password-param=***** --other-password-param= *****", lines.get(1));
+    assertEquals("connect --password=***** --password = ***** --password= ***** --password =***** --password-param=***** --other-password-param= *****", lines.get(1));
   }
 
   @Test
