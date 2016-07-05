@@ -26,7 +26,7 @@ For the system properties that relate to high availability, see [Sending Periodi
 <colgroup>
 <col width="33%" />
 <col width="33%" />
-<col width="33%" />
+<col width="34%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -44,7 +44,7 @@ For the system properties that relate to high availability, see [Sending Periodi
 <tr class="even">
 <td>cache-xml-file</td>
 <td>Name and path of the file whose contents are used by default to initialize a cache if one is created. If not specified, the native client starts with an empty cache, which is populated at runtime.
-<p>See [Cache Initialization File](../cache-init-file/chapter-overview.html#chapter-overview) for more information on the cache initialization file.</p></td>
+<p>See <a href="../cache-init-file/chapter-overview.html#chapter-overview">Cache Initialization File</a> for more information on the cache initialization file.</p></td>
 <td>no default</td>
 </tr>
 <tr class="odd">
@@ -139,14 +139,13 @@ For the system properties that relate to high availability, see [Sending Periodi
 </tbody>
 </table>
 
-: <span class="tablecap">Table 1. Attributes in gfcpp.properties—General Properties</span>
 
 <a id="attributes-gfcpp__table_D42627049FD6432494BDE5170AF1BCCF"></a>
 
 <table>
 <caption><span class="tablecap">Table 2. Attributes in gfcpp.properties—Logging Properties</span></caption>
 <colgroup>
-<col width="33%" />
+<col width="34%" />
 <col width="33%" />
 <col width="33%" />
 </colgroup>
@@ -189,7 +188,6 @@ For the system properties that relate to high availability, see [Sending Periodi
 </tbody>
 </table>
 
-: <span class="tablecap">Table 2. Attributes in gfcpp.properties—Logging Properties</span>
 
 <a id="attributes-gfcpp__table_E1A0EDBA67CD41319E1E5FD0A0BB2723"></a>
 
@@ -198,7 +196,7 @@ For the system properties that relate to high availability, see [Sending Periodi
 <colgroup>
 <col width="33%" />
 <col width="33%" />
-<col width="33%" />
+<col width="34%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -237,15 +235,16 @@ For the system properties that relate to high availability, see [Sending Periodi
 </tr>
 <tr class="even">
 <td>enable-time-statistics</td>
-<td>Enables time-based statistics for the distributed system and caching. For performance reasons, time-based statistics are disabled by default. See [System Statistics](../system-statistics/chapter_overview.html#concept_3BE5237AF2D34371883453E6A9474A79).</td>
+<td>Enables time-based statistics for the distributed system and caching. For performance reasons, time-based statistics are disabled by default. See <a href="../system-statistics/chapter_overview.html#concept_3BE5237AF2D34371883453E6A9474A79">System Statistics</a>. </td>
 <td>false</td>
 </tr>
 </tbody>
 </table>
 
-: <span class="tablecap">Table 3. Attributes in gfcpp.properties—Statistics Archiving Properties</span>
 
 <a id="attributes-gfcpp__table_BA6DAF27947B4A9488787E6BDCFC15B9"></a>
+
+### Table 4. Attributes in gfcpp.properties—Durable Client Properties
 
 | gfcpp.properties Attribute | Description                                                                                                                                                                                                                                                                    | Default |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
@@ -253,9 +252,10 @@ For the system properties that relate to high availability, see [Sending Periodi
 | durable-client-id          | Identifier to specify if you want the client to be durable.                                                                                                                                                                                                                    | empty   |
 | durable-timeout            | Time, in seconds, a durable client's subscription is maintained when it is not connected to the server before being dropped.                                                                                                                                                   | 300     |
 
-: <span class="tablecap">Table 4. Attributes in gfcpp.properties—Durable Client Properties</span>
 
 <a id="attributes-gfcpp__table_B3A8E9EB44A94557A97BB700E2BA1EF1"></a>
+
+### Table 5. Attributes in gfcpp.properties—Security Properties
 
 | gfcpp.properties Attribute   | Description                                                          | Default |
 |------------------------------|----------------------------------------------------------------------|---------|
@@ -265,6 +265,5 @@ For the system properties that relate to high availability, see [Sending Periodi
 | security-client-auth-library | Path to the client security library for the `AuthInitialize` module. | empty   |
 | ssl-keystore-password        | Keystore password.                                                   | null    |
 
-: <span class="tablecap">Table 5. Attributes in gfcpp.properties—Security Properties</span>
 
 
