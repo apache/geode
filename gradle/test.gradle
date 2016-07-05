@@ -145,7 +145,19 @@ subprojects {
     reports.junitXml.destination = file "$buildDir/test-reports-flaky"
     
   }
+  task securityTest(type:Test) {
+    useJUnit {
+      includeCategories 'com.gemstone.gemfire.test.junit.categories.SecurityTest'
+    }
 
+    forkEvery 1
+    doFirst {
+      writeTestProperties(buildDir, name)
+    }
+
+    reports.junitXml.destination = file "$buildDir/test-reports-security"
+
+  }
   // By proving a file with an arbitrary list of test classes, we can select only those
   // tests to run. Activated using -Dcustom.tests=<file> customTest
   def customTestList = []

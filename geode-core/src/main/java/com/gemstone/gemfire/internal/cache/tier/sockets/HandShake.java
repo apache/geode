@@ -280,8 +280,6 @@ public class HandShake implements ClientHandShake
           this.id = ClientProxyMembershipID.readCanonicalized(dis);
           // Note: credentials should always be the last piece in handshake for
           // Diffie-Hellman key exchange to work
-          String authenticator = this.system.getProperties().getProperty(
-              SECURITY_CLIENT_AUTHENTICATOR);
           if (clientVersion.compareTo(Version.GFE_603) >= 0) {
             setOverrides(new byte[] { dis.readByte() });
           } else {
@@ -290,10 +288,9 @@ public class HandShake implements ClientHandShake
           //Hitesh
           if (this.clientVersion.compareTo(Version.GFE_65) < 0
               || communicationMode == Acceptor.GATEWAY_TO_GATEWAY) {
-            this.credentials = readCredentials(dis, dos, authenticator, sys);
+            this.credentials = readCredentials(dis, dos, sys);
           } else {
-            this.credentials = this
-                .readCredential(dis, dos, authenticator, sys);
+            this.credentials = this.readCredential(dis, dos, sys);
           }
         } catch(IOException ioe) {
           this.code = -2;
@@ -898,13 +895,11 @@ public class HandShake implements ClientHandShake
   }
   
 //This assumes that authentication is the last piece of info in handshake
-  public Properties readCredential(DataInputStream dis,
-      DataOutputStream dos, String authenticator, DistributedSystem system)
+  public Properties readCredential(DataInputStream dis, DataOutputStream dos, DistributedSystem system)
       throws GemFireSecurityException, IOException {
 
     Properties credentials = null;
-    boolean requireAuthentication = (authenticator != null && authenticator
-        .length() > 0);
+    boolean requireAuthentication = GeodeSecurityUtil.isSecurityRequired(system.getSecurityProperties());
     try {
       byte secureMode = dis.readByte();
       if (secureMode == CREDENTIALS_NONE) {
@@ -1641,12 +1636,11 @@ public class HandShake implements ClientHandShake
 
   // This assumes that authentication is the last piece of info in handshake
   public static Properties readCredentials(DataInputStream dis,
-      DataOutputStream dos, String authenticator, DistributedSystem system)
+      DataOutputStream dos, DistributedSystem system)
       throws GemFireSecurityException, IOException {
 
+    boolean requireAuthentication = GeodeSecurityUtil.isSecurityRequired(system.getSecurityProperties());
     Properties credentials = null;
-    boolean requireAuthentication = (authenticator != null && authenticator
-        .length() > 0);
     try {
       byte secureMode = dis.readByte();
       if (secureMode == CREDENTIALS_NONE) {
@@ -1806,7 +1800,7 @@ public class HandShake implements ClientHandShake
       InternalLogWriter securityLogWriter, DistributedMember member)
       throws AuthenticationRequiredException, AuthenticationFailedException {
 
-    if (authenticatorMethod == null || authenticatorMethod.length() == 0) {
+    if (!AcceptorImpl.isAuthenticationRequired()) {
       return null;
     }
 
@@ -1870,8 +1864,7 @@ public class HandShake implements ClientHandShake
     }
     String authenticator = this.system.getProperties().getProperty(
         SECURITY_CLIENT_AUTHENTICATOR);
-    Properties peerWanProps = readCredentials(dis, dos, authenticator,
-        this.system);
+    Properties peerWanProps = readCredentials(dis, dos, this.system);
     verifyCredentials(authenticator, peerWanProps, this.system
         .getSecurityProperties(), (InternalLogWriter)this.system.getLogWriter(), (InternalLogWriter)this.system
         .getSecurityLogWriter(), member);

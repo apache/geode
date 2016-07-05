@@ -17,6 +17,23 @@
 
 package com.gemstone.gemfire.distributed.internal;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -25,16 +42,6 @@ import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.*;
-
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that
@@ -205,6 +212,9 @@ public class DistributionConfigImpl
 
   /** The client authenticating method name*/
   private String securityClientAuthenticator = DEFAULT_SECURITY_CLIENT_AUTHENTICATOR;
+
+  /** The security manager method name*/
+  private String securityManager = DEFAULT_SECURITY_MANAGER;
 
   /** The client Diffie-Hellman method name*/
   private String securityClientDHAlgo = DEFAULT_SECURITY_CLIENT_DHALGO;
@@ -571,6 +581,7 @@ public class DistributionConfigImpl
     this.lockMemory = other.getLockMemory();
     this.distributedTransactions = other.getDistributedTransactions();
     this.shiroInit = other.getShiroInit();
+    this.securityManager = other.getSecurityManager();
   }
 
   /**
@@ -1907,6 +1918,10 @@ public class DistributionConfigImpl
     return securityClientAuthenticator;
   }
 
+  public String getSecurityManager() {
+    return securityManager;
+  }
+
   public boolean getEnableNetworkPartitionDetection() {
     return this.enableNetworkPartitionDetection;
   }
@@ -1923,6 +1938,10 @@ public class DistributionConfigImpl
 
   public void setSecurityClientAuthenticator(String value) {
     securityClientAuthenticator = (String)checkAttribute(SECURITY_CLIENT_AUTHENTICATOR, value);
+  }
+
+  public void setSecurityManager(String value){
+    securityManager = (String)checkAttribute(SECURITY_MANAGER, value);
   }
 
   public String getSecurityClientDHAlgo() {
@@ -2649,6 +2668,18 @@ public class DistributionConfigImpl
     } else if (!securityClientAuthenticator
         .equals(other.securityClientAuthenticator))
       return false;
+    if (securityManager == null) {
+      if (other.securityManager != null)
+        return false;
+    } else if (!securityManager
+      .equals(other.securityManager))
+      return false;
+    if (shiroInit == null) {
+      if (other.shiroInit != null)
+        return false;
+    } else if (!shiroInit
+      .equals(other.shiroInit))
+      return false;
     if (securityClientDHAlgo == null) {
       if (other.securityClientDHAlgo != null)
         return false;
@@ -2991,6 +3022,14 @@ public class DistributionConfigImpl
         * result
         + ((securityClientAuthenticator == null) ? 0
             : securityClientAuthenticator.hashCode());
+    result = prime
+             * result
+             + ((securityManager == null) ? 0
+                  : securityManager.hashCode());
+    result = prime
+             * result
+             + ((shiroInit == null) ? 0
+                  : shiroInit.hashCode());
     result = prime
         * result
         + ((securityClientDHAlgo == null) ? 0 : securityClientDHAlgo.hashCode());

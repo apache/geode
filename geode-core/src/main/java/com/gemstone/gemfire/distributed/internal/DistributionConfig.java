@@ -17,6 +17,19 @@
 
 package com.gemstone.gemfire.distributed.internal;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
+import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.Config;
@@ -25,14 +38,6 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogConfig;
 import com.gemstone.gemfire.internal.tcp.Connection;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
-
-import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.util.*;
-
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Provides accessor (and in some cases mutator) methods for the
@@ -2088,6 +2093,32 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this is fully qualified <code>"method name"</code>.
    */
   String DEFAULT_SECURITY_CLIENT_AUTHENTICATOR = "";
+
+  /**
+   * Returns user module name authenticating client credentials in {@link ConfigurationProperties#SECURITY_MANAGER}
+   */
+  @ConfigAttributeGetter(name = SECURITY_MANAGER)
+  String getSecurityManager();
+
+  /**
+   * Sets the user defined method name in {@link ConfigurationProperties#SECURITY_MANAGER}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SECURITY_MANAGER)
+  void setSecurityManager(String attValue);
+
+  /**
+   * The name of factory method for {@link ConfigurationProperties#SECURITY_MANAGER} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SECURITY_MANAGER_NAME = SECURITY_MANAGER;
+
+  /**
+   * The default {@link ConfigurationProperties#SECURITY_MANAGER} method name.
+   * <p> Actual value of this is fully qualified <code>"method name"</code>.
+   */
+  String DEFAULT_SECURITY_MANAGER = "";
+
 
   /**
    * Returns name of algorithm to use for Diffie-Hellman key exchange {@link ConfigurationProperties#SECURITY_CLIENT_DHALGO}

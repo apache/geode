@@ -56,9 +56,6 @@ public class IntegratedClientAuthDUnitTest extends AbstractIntegratedClientAuthD
       catchException(new ClientCacheFactory(createClientProperties("super-user", "wrong")).setPoolSubscriptionEnabled(true)
                                                                                           .addPoolServer("localhost", serverPort))
         .create();
-
-      //throw caughtException(); // TODO: gemfire-mm review as team
-
       assertThat((Throwable) caughtException()).hasCause(expected);
     });
   }

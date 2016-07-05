@@ -17,11 +17,13 @@
 
 package com.gemstone.gemfire.management.internal.security;
 
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * this test and ShiroUtilWithIniFileJunitTest uses the same test body, but initialize the SecurityUtils differently.
@@ -32,8 +34,7 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 public class GeodeSecurityUtilCustomRealmJUnitTest extends GeodeSecurityUtilWithIniFileJUnitTest {
   @BeforeClass
   public static void beforeClass() throws Exception{
-    props.put(SECURITY_CLIENT_AUTHENTICATOR, JSONAuthorization.class.getName() + ".create");
-    props.put(SECURITY_CLIENT_ACCESSOR, JSONAuthorization.class.getName() + ".create");
+    props.put(SECURITY_MANAGER, JSONAuthorization.class.getName() + ".create");
     JSONAuthorization.setUpWithJsonFile("shiro-ini.json");
     GeodeSecurityUtil.initSecurity(props);
   }

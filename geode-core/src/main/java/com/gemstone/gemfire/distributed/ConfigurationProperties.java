@@ -1175,6 +1175,12 @@ public interface ConfigurationProperties {
    */
   String SECURITY_CLIENT_AUTH_INIT = SECURITY_PREFIX + "client-auth-init";
   /**
+   * The static String definition of the <i>"security-manager"</i>
+   * property
+   * @since Geode 1.0
+   */
+  String SECURITY_MANAGER = SECURITY_PREFIX + "manager";
+  /**
    * The static String definition of the <i>"security-client-authenticator"</i>
    * property
    */

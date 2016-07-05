@@ -400,8 +400,7 @@ public class CacheClientNotifier {
         clientVersion, acceptorId, notifyBySubscription);
       
       //TODO:hitesh
-      Properties credentials = HandShake.readCredentials(dis, dos,
-          authenticator, system);
+      Properties credentials = HandShake.readCredentials(dis, dos, system);
       if (credentials != null && proxy!=null) {
         if (securityLogWriter.fineEnabled()) {
           securityLogWriter.fine("CacheClientNotifier: verifying credentials for proxyID: " + proxyID);

@@ -56,7 +56,10 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.net.ssl.SSLException;
+
+import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.SystemFailure;
@@ -90,8 +93,6 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
 import com.gemstone.gemfire.internal.util.ArrayUtils;
-
-import org.apache.logging.log4j.Logger;
 
 /**
  * Implements the acceptor thread on the bridge server. Accepts connections from
@@ -637,12 +638,9 @@ public class AcceptorImpl extends Acceptor implements Runnable
       this.hsPool = tmp_hsPool;
     }
 
-    String authenticator = this.cache.getDistributedSystem().getProperties()
-        .getProperty(SECURITY_CLIENT_AUTHENTICATOR);
-    isAuthenticationRequired = (authenticator != null && authenticator.length() > 0) ? true
-        : false;
+    isAuthenticationRequired = GeodeSecurityUtil.isSecurityRequired(this.cache.getDistributedSystem().getSecurityProperties());
 
-    isIntegratedSecurity = GeodeSecurityUtil.isIntegratedSecurity(authenticator);
+    isIntegratedSecurity = GeodeSecurityUtil.isIntegratedSecurity(this.cache.getDistributedSystem().getSecurityProperties());
 
     String postAuthzFactoryName = this.cache.getDistributedSystem()
         .getProperties().getProperty(SECURITY_CLIENT_ACCESSOR_PP);

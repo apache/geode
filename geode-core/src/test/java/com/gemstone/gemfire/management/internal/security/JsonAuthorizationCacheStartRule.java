@@ -59,7 +59,7 @@ public class JsonAuthorizationCacheStartRule extends ExternalResource {
     properties.put(JMX_MANAGER_START, "true");
     properties.put(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort));
     properties.put(HTTP_SERVICE_PORT, String.valueOf(httpPort));
-    properties.put(SECURITY_CLIENT_AUTHENTICATOR,
+    properties.put(SECURITY_MANAGER,
         JSONAuthorization.class.getName() + ".create");
 
     if(postProcessor!=null){
@@ -70,6 +70,7 @@ public class JsonAuthorizationCacheStartRule extends ExternalResource {
 
     cache = new CacheFactory(properties).create();
     cache.addCacheServer().start();
+    cache.createRegionFactory().create("region1");
   }
 
   public Cache getCache(){

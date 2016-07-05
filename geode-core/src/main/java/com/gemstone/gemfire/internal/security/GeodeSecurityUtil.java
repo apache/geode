@@ -48,13 +48,13 @@ import com.gemstone.gemfire.internal.security.shiro.ShiroPrincipal;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
-import com.gemstone.gemfire.security.SecurityManager;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.security.GeodePermission;
 import com.gemstone.gemfire.security.GeodePermission.Operation;
 import com.gemstone.gemfire.security.GeodePermission.Resource;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 import com.gemstone.gemfire.security.PostProcessor;
+import com.gemstone.gemfire.security.SecurityManager;
 
 public class GeodeSecurityUtil {
 
@@ -295,7 +295,7 @@ public class GeodeSecurityUtil {
     }
 
     String shiroConfig = securityProps.getProperty(SECURITY_SHIRO_INIT);
-    String customAuthenticator = securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
+    String customAuthenticator = securityProps.getProperty(SECURITY_MANAGER);
 
     Object authenticatorObject = getObject(customAuthenticator);
     if (!com.gemstone.gemfire.internal.lang.StringUtils.isBlank(shiroConfig)) {
@@ -363,9 +363,15 @@ public class GeodeSecurityUtil {
     }
   }
 
-  public static boolean isIntegratedSecurity(String authenticatorFactoryName) {
-    Object auth = getObject(authenticatorFactoryName);
-    return (auth instanceof SecurityManager);
+  public static boolean isSecurityRequired(Properties securityProps){
+    String authenticator = securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
+    String securityManager = securityProps.getProperty(SECURITY_MANAGER);
+    return !StringUtils.isEmpty(authenticator) || !StringUtils.isEmpty(securityManager);
+  }
+
+  public static boolean isIntegratedSecurity(Properties securityProps){
+    String securityManager = securityProps.getProperty(SECURITY_MANAGER);
+    return !StringUtils.isEmpty(securityManager);
   }
 
 }
