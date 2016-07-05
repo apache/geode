@@ -301,6 +301,9 @@ public class GatewaySenderEventRemoteDispatcher implements
    * @throws GatewaySenderException
    */
   public Connection getConnection(boolean startAckReaderThread) throws GatewaySenderException{
+    if (this.processor.isStopped()) {
+      return null;
+    }
     // IF the connection is null 
     // OR the connection's ServerLocation doesn't match with the one stored in sender
     // THEN initialize the connection
@@ -343,7 +346,7 @@ public class GatewaySenderEventRemoteDispatcher implements
       if (con != null) {
         if (!con.isDestroyed()) {
           con.destroy();
-         this.sender.getProxy().returnConnection(con);
+          this.sender.getProxy().returnConnection(con);
         }
         
         // Reset the connection so the next time through a new one will be
@@ -625,9 +628,9 @@ public class GatewaySenderEventRemoteDispatcher implements
             }
           } else {
             // If we have received IOException.
-           // if (logger.isDebugEnabled()) {
+            if (logger.isDebugEnabled()) {
               logger.debug("{}: Received null ack from remote site.", processor.getSender());
-            //}
+            }
             processor.handleException();
             try { // This wait is before trying to getting new connection to
                   // receive ack. Without this there will be continuous call to
@@ -723,9 +726,11 @@ public class GatewaySenderEventRemoteDispatcher implements
       // not. No need to take lock as the reader thread may be blocked and we might not
       // get chance to destroy unless that returns.
       if (connection != null) {
-        if (!connection.isDestroyed()) {
-          connection.destroy();
-          sender.getProxy().returnConnection(connection);
+        Connection conn = connection;
+        shutDownAckReaderConnection();
+        if (!conn.isDestroyed()) {
+          conn.destroy();
+          sender.getProxy().returnConnection(conn);
         }
       }
       this.shutdown = true;
@@ -743,12 +748,27 @@ public class GatewaySenderEventRemoteDispatcher implements
         logger.warn(LocalizedMessage.create(LocalizedStrings.GatewaySender_ACKREADERTHREAD_IGNORED_CANCELLATION));
       }
     }
+
+    private void shutDownAckReaderConnection() {
+      Connection conn = connection;
+      //attempt to unblock the ackreader thread by shutting down the inputStream, if it was stuck on a read
+      try {
+        if (conn != null && conn.getInputStream() != null) {
+          conn.getInputStream().close();
+        }
+      } catch (IOException e) {
+        logger.warn("Unable to shutdown AckReaderThread Connection");
+      } catch (ConnectionDestroyedException e) {
+        logger.info("AckReader shutting down and connection already destroyed");
+      }
+
+    }
   }
     
   public void stopAckReaderThread() {
     if (this.ackReaderThread != null) {
       this.ackReaderThread.shutdown();
-    }    
+    }
   }
   
   @Override

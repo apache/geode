@@ -1150,10 +1150,9 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
         }
       }
     }
-   
-    dispatcher.stop();
-    //set isStopped to true
+
     setIsStopped(true);
+    dispatcher.stop();
 
     if (this.isAlive()) {
       this.interrupt();
