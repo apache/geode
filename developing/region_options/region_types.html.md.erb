@@ -10,10 +10,9 @@ Within a <span class="keyword">Geode</span> distributed system, you can define d
 Your choice of region type is governed in part by the type of application you are running. In particular, you need to use specific region types for your servers and clients for effective communication between the two tiers:
 
 -   Server regions are created inside a `Cache` by servers and are accessed by clients that connect to the servers from outside the server's distributed system. Server regions must have region type partitioned or replicated. Server region configuration uses the `RegionShortcut` enum settings.
--   Client regions are created inside a `ClientCache` by clients and are configured to distribute data and events between the client and the server tier. Client regions must have region type local. Client region configuration uses the `ClientRegionShortcut` enum settings.
+-   Client regions are created inside a `ClientCache` by clients and are configured to distribute data and events between the client and the server tier. Client regions must have region type `local`. Client region configuration uses the `ClientRegionShortcut` enum settings.
 -   Peer regions are created inside a `Cache`. Peer regions may be server regions, or they may be regions that are not accessed by clients. Peer regions can have any region type. Peer region configuration uses the `RegionShortcut` enum settings.
 
-**Note:**
 When you configure a server or peer region using `gfsh` or with the `cache.xml` file, you can use *region shortcuts* to define the basic configuration of your region. A region shortcut provides a set of default configuration attributes that are designed for various types of caching architectures. You can then add additional configuration attributes as needed to customize your application. For more information and a complete reference of these region shortcuts, see [Region Shortcuts Reference](../../reference/topics/region_shortcuts_reference.html#reference_lt4_54c_lk).
 
 <a id="region_types__section_A3449B07598C47A881D9219574DE46C5"></a>
@@ -23,7 +22,7 @@ These are the primary configuration choices for each data region.
 <table>
 <colgroup>
 <col width="33%" />
-<col width="33%" />
+<col width="34%" />
 <col width="33%" />
 </colgroup>
 <thead>
@@ -99,10 +98,9 @@ In partitioned regions, you can colocate keys within buckets and across multiple
 
 ## Replicated Regions
 
-**Note:**
-Replication is a good choice for small to medium size server regions.
 
 Replicated regions provide the highest performance in terms of throughput and latency.
+Replication is a good choice for small to medium size server regions.
 
 Use replicated regions for:
 
@@ -115,12 +113,12 @@ Use replicated regions for:
 
 ## Distributed, Non-Replicated Regions
 
-Distributed regions provide the same performance as replicated regions, but each member only stores data it has expressed interest in, either by subscribing to events from other members or by defining the data entries in its cache.
+Distributed regions provide the same performance as replicated regions, but each member stores only  data in which it has expressed an interest, either by subscribing to events from other members or by defining the data entries in its cache.
 
 Use distributed, non-replicated regions for:
 
 -   **Peer regions, but not server regions or client regions**. Server regions must be either replicated or partitioned. Client regions must be local.
--   **Data sets where individual members only need notification and updates for changes to a subset of the data**. In non-replicated regions, each member only receives update events for the data entries it has defined in the local cache.
+-   **Data sets where individual members need only notification and updates for changes to a subset of the data**. In non-replicated regions, each member receives only update events for the data entries it has defined in the local cache.
 -   **Asynchronous distribution**. All distributed regions, replicated and non-replicated, provide the fastest distribution speeds.
 
 <a id="region_types__section_A8150BDBC74E4019B1942481877A4370"></a>
