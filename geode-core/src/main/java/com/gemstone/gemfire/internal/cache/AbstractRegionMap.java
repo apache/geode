@@ -3637,31 +3637,21 @@ public abstract class AbstractRegionMap implements RegionMap {
 
   public boolean isTombstoneNotNeeded(RegionEntry re, int destroyedVersion) {
     // no need for synchronization - stale values are okay here
+    RegionEntry actualRe = getEntry(re.getKey());
     // TODO this looks like a problem for regionEntry pooling
-    if ( getEntry(re.getKey()) != re) {
-      // region entry was either removed (null)
-      // or changed to a different region entry.
-      // In either case the old tombstone is no longer needed.
-      return true;
+    if (actualRe != re) {  // null actualRe is okay here
+      return true; // tombstone was evicted at some point
     }
-    if (!re.isTombstone()) {
-      // if the region entry no longer contains a tombstone
-      // then the old tombstone is no longer needed
-      return true;
-    }
-    VersionStamp<?> vs = re.getVersionStamp();
+    VersionStamp vs = re.getVersionStamp();
     if (vs == null) {
       // if we have no VersionStamp why were we even added as a tombstone?
       // We used to see an NPE here. See bug 52092.
       logger.error("Unexpected RegionEntry scheduled as tombstone: re.getClass {} destroyedVersion {}", re.getClass(), destroyedVersion);
       return true;
     }
-    if (vs.getEntryVersion() != destroyedVersion) {
-      // the version changed so old tombstone no longer needed
-      return true;
-    }
-    // region entry still has the same tombstone so we need to keep it.
-    return false;
+    int entryVersion = vs.getEntryVersion();
+    boolean isSameTombstone = (entryVersion == destroyedVersion && re.isTombstone());
+    return !isSameTombstone;
   }
 
   /** removes a tombstone that has expired locally */
@@ -3672,15 +3662,12 @@ public abstract class AbstractRegionMap implements RegionMap {
     synchronized(this._getOwner().getSizeGuard()) { // do this sync first; see bug 51985
         synchronized (re) {
           int entryVersion = re.getVersionStamp().getEntryVersion();
-          if (!re.isTombstone() || entryVersion > destroyedVersion) {
+          boolean isTombstone = re.isTombstone();
+          boolean isSameTombstone = (entryVersion == destroyedVersion && isTombstone);
+          if (isSameTombstone || (isTombstone && entryVersion < destroyedVersion)) {
             if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT)) {
-              logger.trace(LogMarker.TOMBSTONE_COUNT,
-                  "tombstone for {} was resurrected with v{}; destroyed version was v{}; count is {}; entryMap size is {}",
-                  re.getKey(), re.getVersionStamp().getEntryVersion(), destroyedVersion, this._getOwner().getTombstoneCount(), size());
-            }
-          } else {
-            if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT)) {
-              if (entryVersion == destroyedVersion) {
+              // logs are at info level for TomstoneService.DEBUG_TOMBSTONE_COUNT so customer doesn't have to use fine level
+              if (isSameTombstone) {
                 // logging this can put tremendous pressure on the log writer in tests
                 // that "wait for silence"
                 logger.trace(LogMarker.TOMBSTONE_COUNT,
@@ -3714,6 +3701,12 @@ public abstract class AbstractRegionMap implements RegionMap {
             } catch (RegionDestroyedException e) {
               //if the region has been destroyed, the tombstone is already
               //gone. Catch an exception to avoid an error from the GC thread.
+            }
+          } else {
+            if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT)) {
+              logger.trace(LogMarker.TOMBSTONE_COUNT,
+                  "tombstone for {} was resurrected with v{}; destroyed version was v{}; count is {}; entryMap size is {}",
+                  re.getKey(), re.getVersionStamp().getEntryVersion(), destroyedVersion, this._getOwner().getTombstoneCount(), size());
             }
           }
         }
