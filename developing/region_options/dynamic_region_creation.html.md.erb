@@ -6,7 +6,7 @@ You can dynamically create regions in your application code and automatically in
 
 If your application does not require partitioned regions, you can use the <span class="keyword apiname">com.gemstone.gemfire.cache.DynamicRegionFactory</span> class to dynamically create regions, or you can create them using the `<dynamic-region-factory>` element in the cache.xml file that defines the region. See [&lt;dynamic-region-factory&gt;](../../reference/topics/cache_xml.html#dynamic-region-factory).
 
-Pivotal recommends that you use functions to create regions dynamically in your application, as described in this topic.
+Due to the number of options involved, most developers use functions to create regions dynamically in their applications, as described in this topic. Dynamic regions can also be created from the `gfsh` command line.
 
 For a complete discussion of using <span class="keyword">Geode</span> functions, see [Function Execution](../function_exec/chapter_overview.html). Functions use the <span class="keyword apiname">com.gemstone.gemfire.cache.execute.FunctionService</span> class.
 
