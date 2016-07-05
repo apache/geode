@@ -43,7 +43,7 @@ import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.security.AccessControl;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.Authenticator;
-import com.gemstone.gemfire.security.IntegratedSecurity;
+import com.gemstone.gemfire.security.SecurityManager;
 import com.gemstone.gemfire.security.GeodePermission;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 
@@ -95,7 +95,7 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  * }
  * </pre>
  */
-public class SampleJsonAuthorization implements IntegratedSecurity {
+public class SampleJsonAuthorization implements SecurityManager {
 
   public static class Role {
     List<GeodePermission> permissions = new ArrayList<>();

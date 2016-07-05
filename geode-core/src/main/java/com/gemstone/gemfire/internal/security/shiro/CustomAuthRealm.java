@@ -33,7 +33,7 @@ import org.apache.shiro.subject.PrincipalCollection;
 
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.security.IntegratedSecurity;
+import com.gemstone.gemfire.security.SecurityManager;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.security.GeodePermission;
 
@@ -41,9 +41,9 @@ public class CustomAuthRealm extends AuthorizingRealm{
   public static final String REALM_NAME = "CUSTOMAUTHREALM";
 
   private static final Logger logger = LogManager.getLogger(CustomAuthRealm.class);
-  private IntegratedSecurity externalSecurity = null;
+  private SecurityManager externalSecurity = null;
 
-  public CustomAuthRealm(IntegratedSecurity auth) {
+  public CustomAuthRealm(SecurityManager auth) {
     externalSecurity = auth;
   }
 
@@ -51,10 +51,10 @@ public class CustomAuthRealm extends AuthorizingRealm{
   public CustomAuthRealm (String authenticatorFactory) {
     Object auth = GeodeSecurityUtil.getObject(authenticatorFactory);
 
-    if(!(auth instanceof IntegratedSecurity)){
-      throw new GemFireSecurityException("Integrated Security requires IntegratedSecurity interface.");
+    if(!(auth instanceof SecurityManager)){
+      throw new GemFireSecurityException("Integrated Security requires SecurityManager interface.");
     }
-    externalSecurity = (IntegratedSecurity) auth;
+    externalSecurity = (SecurityManager) auth;
   }
 
   @Override

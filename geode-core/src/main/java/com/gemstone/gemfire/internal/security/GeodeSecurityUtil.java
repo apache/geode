@@ -35,7 +35,6 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.config.Ini.Section;
 import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.support.SubjectThreadState;
@@ -49,7 +48,7 @@ import com.gemstone.gemfire.internal.security.shiro.ShiroPrincipal;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
-import com.gemstone.gemfire.security.IntegratedSecurity;
+import com.gemstone.gemfire.security.SecurityManager;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.security.GeodePermission;
 import com.gemstone.gemfire.security.GeodePermission.Operation;
@@ -309,16 +308,16 @@ public class GeodeSecurityUtil {
         main.put("iniRealm.permissionResolver", "$geodePermissionResolver");
       }
 
-      SecurityManager securityManager = factory.getInstance();
+      org.apache.shiro.mgt.SecurityManager securityManager = factory.getInstance();
       SecurityUtils.setSecurityManager(securityManager);
     }
 
-    // only set up shiro realm if user has implemented IntegratedSecurity
-    else if (authenticatorObject != null && authenticatorObject instanceof IntegratedSecurity) {
-      IntegratedSecurity authenticator = (IntegratedSecurity) authenticatorObject;
+    // only set up shiro realm if user has implemented SecurityManager
+    else if (authenticatorObject != null && authenticatorObject instanceof SecurityManager) {
+      SecurityManager authenticator = (SecurityManager) authenticatorObject;
       authenticator.init(securityProps);
       Realm realm = new CustomAuthRealm(authenticator);
-      SecurityManager securityManager = new DefaultSecurityManager(realm);
+      org.apache.shiro.mgt.SecurityManager securityManager = new DefaultSecurityManager(realm);
       SecurityUtils.setSecurityManager(securityManager);
     }
     else {
@@ -366,7 +365,7 @@ public class GeodeSecurityUtil {
 
   public static boolean isIntegratedSecurity(String authenticatorFactoryName) {
     Object auth = getObject(authenticatorFactoryName);
-    return (auth instanceof IntegratedSecurity);
+    return (auth instanceof SecurityManager);
   }
 
 }
