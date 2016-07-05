@@ -131,13 +131,7 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
   }
   
   protected void createRegion() {
-    Compressor compressor = null;
-    try {
-      compressor = SnappyCompressor.getDefaultInstance();;
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
+    Compressor compressor = new SnappyCompressor();
     createCompressedRegionOnVm(getVM(TEST_VM), REGION_NAME, compressor);
   }
   
@@ -153,13 +147,8 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
     } catch (Exception e) {
       exception = e;
     }
-    
-    try {
-      SnappyCompressor.getDefaultInstance();
-      cleanup(getVM(TEST_VM));
-    } catch (Throwable t) {
-      // Not a supported OS
-    }
+
+    cleanup(getVM(TEST_VM));
     
     if (error != null) {
       throw error;
@@ -194,12 +183,6 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
    * @param vm a test virtual machine.
    */
   private void testGetPutOperationsOnVM(final VM vm) {
-    try {
-      SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
     vm.invoke(new SerializableRunnable() {
       @Override
       public void run() {
@@ -267,12 +250,6 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
    * @param vm a test virtual machine.
    */
   private void testKeysAndValuesOperationsOnVM(final VM vm) {
-    try {
-      SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
     vm.invoke(new SerializableRunnable() {        
       @Override
       public void run() {
@@ -354,12 +331,6 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
    * @param vm a test virtual machine.
    */
   private void testGetPutOperationsWithCachedDeserializableOnVM(final VM vm) {
-    try {
-      SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
     vm.invoke(new SerializableRunnable() {
       @Override
       public void run() {
@@ -424,12 +395,6 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
    * @param vm a test virtual machine.
    */
   private void testGetPutOperationsWithByteArraysOnVM(final VM vm) {
-    try {
-      SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
     vm.invoke(new SerializableRunnable() {
       @Override
       public void run() {

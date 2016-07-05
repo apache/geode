@@ -59,7 +59,7 @@ scala-library
 scala-reflect
 shiro-core
 slf4j-api
-snappy-java
+snappy
 spring-aop
 spring-aspects
 spring-beans

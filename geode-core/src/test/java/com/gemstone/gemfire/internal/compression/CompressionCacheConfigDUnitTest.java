@@ -67,15 +67,9 @@ public class CompressionCacheConfigDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testCreateCacheWithGoodCompressor() throws Exception {
-    try {
-      SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) { // TODO: use junit Assume
-      // Not a supported OS
-      return;
-    }
     File cacheXml = createCacheXml(GOOD_COMPRESSOR);
     assertTrue(createCacheOnVM(getVM(0),cacheXml.getCanonicalPath()));
-    assertCompressorOnVM(getVM(0),SnappyCompressor.getDefaultInstance(),REGION_NAME);
+    assertCompressorOnVM(getVM(0), new SnappyCompressor(), REGION_NAME);
     cleanup(getVM(0));
     cacheXml.delete();
   }

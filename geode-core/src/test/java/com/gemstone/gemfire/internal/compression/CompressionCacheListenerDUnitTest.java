@@ -177,25 +177,13 @@ public class CompressionCacheListenerDUnitTest extends JUnit4CacheTestCase {
   }
   
   protected void createRegion() {
-    try {
-      SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
-    createCompressedRegionOnVm(getVM(TEST_VM), REGION_NAME, SnappyCompressor.getDefaultInstance());
+    createCompressedRegionOnVm(getVM(TEST_VM), REGION_NAME, new SnappyCompressor());
   }
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     preTearDownCompressionCacheListenerDUnitTest();
-    
-    try {
-      SnappyCompressor.getDefaultInstance();
-      cleanup(getVM(TEST_VM));
-    } catch (Throwable t) {
-      // Not a supported OS
-    }
+    cleanup(getVM(TEST_VM));
   }
   
   protected void preTearDownCompressionCacheListenerDUnitTest() throws Exception {
@@ -251,12 +239,6 @@ public class CompressionCacheListenerDUnitTest extends JUnit4CacheTestCase {
    * @param vm a virtual machine to perform the test on.
    */
   private void testCacheListenerAndWriterWithVM(final VM vm) {
-    try {
-      SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
     vm.invoke(new SerializableRunnable() {
       @Override
       public void run() {

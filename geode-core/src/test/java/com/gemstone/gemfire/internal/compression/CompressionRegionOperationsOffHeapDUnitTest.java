@@ -56,13 +56,7 @@ public class CompressionRegionOperationsOffHeapDUnitTest extends CompressionRegi
 
   @Override
   protected void createRegion() {
-    Compressor compressor = null;
-    try {
-      compressor = SnappyCompressor.getDefaultInstance();;
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
+    Compressor compressor = new SnappyCompressor();
     createCompressedRegionOnVm(getVM(TEST_VM), REGION_NAME, compressor, true);
   }
 

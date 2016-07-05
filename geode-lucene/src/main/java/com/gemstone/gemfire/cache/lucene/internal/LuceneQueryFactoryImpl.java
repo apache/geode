@@ -52,6 +52,7 @@ public class LuceneQueryFactoryImpl implements LuceneQueryFactory {
     return create(indexName, regionName, new StringQueryProvider(queryString, defaultField));
   }
   
+  @Override
   public <K, V> LuceneQuery<K, V> create(String indexName, String regionName, LuceneQueryProvider provider) {
     Region<K, V> region = cache.getRegion(regionName);
     if(region == null) {

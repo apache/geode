@@ -17,76 +17,44 @@
 
 package com.gemstone.gemfire.compression;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.concurrent.atomic.AtomicReference;
 
-import org.xerial.snappy.Snappy;
-import org.xerial.snappy.SnappyError;
-
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.iq80.snappy.CorruptionException;
+import org.iq80.snappy.Snappy;
 
 /**
  * An implementation of {@link Compressor} for Google's Snappy compression
- * codec. Utilizes the xerial java-snappy wrapper.
+ * codec. Utilizes the java-snappy wrapper.
  * 
  * @since GemFire 8.0
  */
 public final class SnappyCompressor implements Compressor, Serializable {
   private static final long serialVersionUID = 496609875302446099L;
   
-  // It's possible to create more than one, but there only needs to be a single
-  // instance in the VM.
-  private static final AtomicReference<SnappyCompressor> defaultInstance = new AtomicReference<SnappyCompressor>();
-  
-  // Set to true when we've loaded the Snappy native library.
-  private static boolean nativeLibraryLoaded = false;
-  
   /**
    * Create a new instance of the SnappyCompressor.
-   * @throws IllegalStateException when the Snappy native library is unavailable
    */
   public SnappyCompressor() {
-    synchronized (defaultInstance) {
-      if (!nativeLibraryLoaded) {
-        try {
-          String s = Snappy.getNativeLibraryVersion();
-          System.out.println(s);
-        } catch (SnappyError se) {
-          throw new IllegalStateException(LocalizedStrings.SnappyCompressor_UNABLE_TO_LOAD_NATIVE_SNAPPY_LIBRARY.toLocalizedString(), se);
-        }
-        nativeLibraryLoaded = true;
-      }
-    }
   }
   
   /**
    * Get the single, default instance of the SnappyCompressor.
+   * @deprecated As of Geode 1.0, getDefaultInstance is deprecated. Use constructor instead.
    */
   public static final SnappyCompressor getDefaultInstance() {
-    SnappyCompressor instance = defaultInstance.get();
-    if (instance != null) {
-      return instance;
-    }
-
-    defaultInstance.compareAndSet(null, new SnappyCompressor());
-    return defaultInstance.get();
+    return new SnappyCompressor();
   }
 
   @Override
   public byte[] compress(byte[] input) {
-    try {
       return Snappy.compress(input);
-    } catch (IOException e) {
-      throw new CompressionException(e);
-    }
   }
 
   @Override
   public byte[] decompress(byte[] input) {
     try {
-      return Snappy.uncompress(input);
-    } catch (IOException e) {
+      return Snappy.uncompress(input, 0, input.length);
+    } catch (CorruptionException e) {
       throw new CompressionException(e);
     }
   }

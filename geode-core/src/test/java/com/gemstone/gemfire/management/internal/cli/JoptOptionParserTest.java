@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import com.gemstone.gemfire.management.internal.cli.exceptions.CliCommandOptionException;
 import com.gemstone.gemfire.management.internal.cli.exceptions.CliCommandOptionMissingException;
 import com.gemstone.gemfire.management.internal.cli.exceptions.CliCommandOptionNotApplicableException;
 import com.gemstone.gemfire.management.internal.cli.parser.Argument;
@@ -239,7 +240,7 @@ public class JoptOptionParserTest {
 
   @Test
   public void parseInputWithUndefinedOptionShouldThrow() throws Exception {
-    assertThatThrownBy(() -> this.simpleOptionParser.parse("command1 argument1_value argument2_value --undefinedOption")).isExactlyInstanceOf(CliCommandOptionNotApplicableException.class);
+    assertThatThrownBy(() -> this.simpleOptionParser.parse("command1 argument1_value argument2_value --undefinedOption")).isExactlyInstanceOf(CliCommandOptionException.class);
   }
 
   @Test

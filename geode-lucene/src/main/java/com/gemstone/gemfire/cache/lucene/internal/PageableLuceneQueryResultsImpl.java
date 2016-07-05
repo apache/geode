@@ -20,6 +20,7 @@
 package com.gemstone.gemfire.cache.lucene.internal;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -42,7 +43,11 @@ public class PageableLuceneQueryResultsImpl<K,V> implements PageableLuceneQueryR
    *  list of docs matching search query
    */
   private final List<EntryScore<K>> hits;
-  
+
+  /**
+   * * Current page of results
+   */
+  private List<LuceneResultStruct<K,V>> currentPage;
   /**
    * The maximum score. Lazily evaluated
    */
@@ -69,38 +74,59 @@ public class PageableLuceneQueryResultsImpl<K,V> implements PageableLuceneQueryR
     this.pageSize = pageSize == 0 ? Integer.MAX_VALUE : pageSize;
   }
 
+
+  public List<LuceneResultStruct<K,V>> getHitEntries(int fromIndex, int toIndex) {
+    List<EntryScore<K>> scores = hits.subList(fromIndex, toIndex);
+    ArrayList<K> keys = new ArrayList<K>(scores.size());
+    for(EntryScore<K> score : scores) {
+      keys.add(score.getKey());
+    }
+
+    Map<K,V> values = userRegion.getAll(keys);
+
+    ArrayList<LuceneResultStruct<K,V>> results = new ArrayList<LuceneResultStruct<K,V>>(scores.size());
+    for(EntryScore<K> score : scores) {
+      V value = values.get(score.getKey());
+      if (value!=null)
+        results.add(new LuceneResultStructImpl(score.getKey(), value, score.getScore()));
+    }
+    return results;
+  }
+
   @Override
   public List<LuceneResultStruct<K,V>> next() {
     if(!hasNext()) {
       throw new NoSuchElementException();
     }
-    
-    int end = currentHit + pageSize;
-    end = end > hits.size() ? hits.size() : end;
-    List<EntryScore<K>> scores = hits.subList(currentHit, end);
-    
-    ArrayList<K> keys = new ArrayList<K>(hits.size());
-    for(EntryScore<K> score : scores) {
-      keys.add(score.getKey());
-    }
-    
-    Map<K,V> values = userRegion.getAll(keys);
+    List<LuceneResultStruct<K,V>> result = advancePage();
+    currentPage = null;
+    return result;
+  }
 
-    ArrayList<LuceneResultStruct<K,V>> results = new ArrayList<LuceneResultStruct<K,V>>(hits.size());
-    for(EntryScore<K> score : scores) {
-      V value = values.get(score.getKey());
-      results.add(new LuceneResultStructImpl(score.getKey(), value, score.getScore()));
+  private List<LuceneResultStruct<K, V>> advancePage() {
+    if(currentPage != null) {
+      return currentPage;
     }
-    
 
-    currentHit = end;
-    
-    return results;
+    int resultSize = (pageSize != Integer.MAX_VALUE) ? pageSize : hits.size();
+    currentPage = new ArrayList<LuceneResultStruct<K,V>>(resultSize);
+    while (currentPage.size()<pageSize && currentHit < hits.size()) {
+      int end = currentHit + pageSize - currentPage.size();
+      end = end > hits.size() ? hits.size() : end;
+      currentPage.addAll(getHitEntries(currentHit, end));
+      currentHit = end;
+    }
+    return currentPage;
   }
 
   @Override
   public boolean hasNext() {
-    return hits.size() > currentHit;
+
+    advancePage();
+    if ( currentPage.isEmpty() ) {
+      return false;
+    }
+    return true;
   }
 
   @Override

@@ -79,7 +79,7 @@ public class LauncherLifecycleCommandsIntegrationTest {
     assertTrue(coreDependenciesJar + " is not a file", coreDependenciesJar.isFile());
 
     Collection<String> expectedJarDependencies = Arrays.asList("antlr", "commons-io", "commons-lang", "commons-logging",
-            "geode", "jackson-annotations", "jackson-core", "jackson-databind", "jansi", "jline", "snappy-java",
+            "geode", "jackson-annotations", "jackson-core", "jackson-databind", "jansi", "jline", "snappy",
             "spring-core", "spring-shell", "jetty-server", "jetty-servlet", "jetty-webapp", "jetty-util", "jetty-http",
             "servlet-api", "jetty-io", "jetty-security", "jetty-xml"
 

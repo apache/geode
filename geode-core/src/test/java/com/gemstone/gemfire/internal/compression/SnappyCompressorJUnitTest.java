@@ -18,13 +18,8 @@ package com.gemstone.gemfire.internal.compression;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.xerial.snappy.SnappyLoader;
 
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.compression.SnappyCompressor;
@@ -42,34 +37,9 @@ public class SnappyCompressorJUnitTest {
   @Test
   public void testCompressByteArray() throws Exception {
     String compressMe = "Hello, how are you?";
-    byte[] compressMeData = SnappyCompressor.getDefaultInstance().compress(compressMe.getBytes());
+    byte[] compressMeData = new SnappyCompressor().compress(compressMe.getBytes());
     String uncompressedMe = new String(SnappyCompressor.getDefaultInstance().decompress(compressMeData));
 
     assertEquals(compressMe, uncompressedMe);
-  }
-  
-  /**
-   * Tests {@link SnappyCompressor#SnappyCompressor()} constructor.
-   */
-  @Test
-  public void testConstructor() throws Exception {
-    SnappyCompressor.getDefaultInstance();
-
-    // repeat findNativeLibrary and make sure it's pointing at a file in tmpdir
-    Method findNativeLibraryMethod = SnappyLoader.class.getDeclaredMethod("findNativeLibrary", new Class[0]);
-    findNativeLibraryMethod.setAccessible(true);
-    File nativeLibrary = (File) findNativeLibraryMethod.invoke(null);
-
-    System.out.println(nativeLibrary);
-
-    assertNotNull(nativeLibrary);
-    assertTrue(nativeLibrary + " does not exist", nativeLibrary.exists());
-
-    File tmpDir = new File(System.getProperty("java.io.tmpdir"));
-    assertTrue(tmpDir.exists());
-
-    File parent = nativeLibrary.getParentFile();
-    assertNotNull(parent);
-    assertEquals(tmpDir, parent);
   }
 }
