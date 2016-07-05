@@ -1325,6 +1325,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     checkData(vm0, 226, 227, "a");
   }
   
+  @Category(FlakyTest.class) // GEODE-1582: race in async region creation causing GII when not expected
   @Test
   public void testCleanStop() throws Throwable {
     Host host = Host.getHost(0);
