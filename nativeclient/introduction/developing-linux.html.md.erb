@@ -12,6 +12,7 @@ This section describes how to build and run a native client application on Linux
 Set the native client environment variables on each Linux host. For each case, *&lt;productDir&gt;* is the path to the native client product directory.
 
 **For Bourne and Korn shells (sh, ksh, bash)**
+
 ``` pre
 GFCPP=<productDir>;export GFCPP
 PATH=$GFCPP/bin:$PATH;export PATH
@@ -32,7 +33,6 @@ On Linux, the `g++` compiler is supported. To build and link a C++ client to Gem
 | `-m32` or `-m64`   | Enables 32-bit or 64-bit compilation.                    |
 | `-I$GFCPP/include` | Specifies the native client `include` directory.         |
 
-: <span class="tablecap">Table 1. Compiler Arguments (Linux)</span>
 
 The following table lists the linker switches that must be present on the command line when dynamically linking to the GemFire library.
 
@@ -45,7 +45,6 @@ The following table lists the linker switches that must be present on the comman
 | `-o durableclient`  | Tells the linker to output an object file named 'durableclient'.                                   |
 | `-lgfcppcache`      | Links the native client C++ cache library to the compiled executable.                              |
 
-: <span class="tablecap">Table 2. Linker Switches (Dynamically Linking on Linux)</span>
 
 The following examples compile and link the `$GFCPP/SampleCode/quickstart/cpp/DurableClient.cpp` client to the `durableclient` output file.
 
