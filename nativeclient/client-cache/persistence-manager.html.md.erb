@@ -20,11 +20,6 @@ Persistence manager declaration:
 
 The optional properties set parameters for the plug-in.
 
--   [Using SQLite as a Persistence Manager](persistence-manager.html#persistence-manager__section_9FC7089FDF8044868F17A2659397402A)
--   [SQLite Persistence Manager Region Attributes](persistence-manager.html#persistence-manager__section_3C6991A39C5F4FB8A945EF15FB089287)
--   [Configuring the SQLite Persistence Manager Plug-In for C++ Applications](persistence-manager.html#persistence-manager__section_A9583FBEB5D74B92AD61CB6158AE2B4C)
--   [Configuring the SQLite Persistence Manager Plug-In for .NET Applications](persistence-manager.html#persistence-manager__section_7410F68E0BB144A584A9AFE7E8CDBE22)
--   [Implementing a PersistenceManager with the IPersistenceManager Interface](persistence-manager.html#persistence-manager__section_9D038C438E01415EA4D32000D5CB5596)
 
 <a id="persistence-manager__section_9FC7089FDF8044868F17A2659397402A"></a>
 ## Using SQLite as a Persistence Manager
@@ -49,7 +44,7 @@ The following table describes the region attributes that can be configured for t
 | Property             | Description                                                                                                                                                                                                                                                                                                | Default Setting                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 |----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | PersistenceDirectory | Directory where each region's database files are stored. This setting must be different for each region including regions in different processes. This directory is created by the persistence manager. The persistence manager fails to initialize if this directory already exists or cannot be created. | Default is to create a subdirectory named GemFireRegionData in the directory where the process using the region was started.                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| PageSize             | Maximum page size of the SQLite database. SQLite can limit the size of a database file to prevent the database file from growing too large and consuming too much disk space.                                                                                                                              | Ordinarily, if no value is explicitly provided, SQLite creates a database with the page size set to SQLITE\_DEFAULT\_PAGE\_SIZE (default is 1024). However, based on certain device characteristics (for example, sector-size and atomic write() support) SQLite may choose a larger value. PageSize specifies the maximum value that SQLite will be able to choose on its own. See [http://www.sqlite.org/compile.html#default_page_size](http://www.sqlite.org/compile.html#default_page_size) for more details on SQLITE\_DEFAULT\_PAGE\_SIZE. |
+| PageSize             | Maximum page size of the SQLite database. SQLite can limit the size of a database file to prevent the database file from growing too large and consuming too much disk space.                                                                                                                              | Ordinarily, if no value is explicitly provided, SQLite creates a database with the page size set to SQLITE\_DEFAULT\_PAGE\_SIZE (default is 1024). However, based on certain device characteristics (for example, sector-size and atomic write() support) SQLite may choose a larger value. PageSize specifies the maximum value that SQLite will be able to choose on its own. See <a href="http://www.sqlite.org/compile.html#default_page_size">http://www.sqlite.org/compile.html#default_page_size</a>. for more details on SQLITE\_DEFAULT\_PAGE\_SIZE. |
 | MaxPageCount         | Maximum number of pages in one database file.                                                                                                                                                                                                                                                              | SQLite default, which is 1073741823.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 <a id="persistence-manager__section_A9583FBEB5D74B92AD61CB6158AE2B4C"></a>
@@ -78,10 +73,11 @@ To use the native client C++ API, set SQLite persistence manager attributes prog
 
 ``` pre
 PropertiesPtr sqliteProperties = Properties::create();
-sqliteProperties->insert("MaxPagecount""5");
-sqliteProperties->insert("PageSize","1024");
-sqliteProperties->insert("PersistenceDirectory","SqLite-Test779");
-regionFactory->setPersistenceManager("SqLiteImpl","createSqLiteInstance",sqliteProperties);
+sqliteProperties->insert("MaxPagecount", "5");
+sqliteProperties->insert("PageSize", "1024");
+sqliteProperties->insert("PersistenceDirectory", "SqLite-Test779");
+regionFactory->setPersistenceManager("SqLiteImpl","createSqLiteInstance",
+          sqliteProperties);
 ```
 
 <a id="persistence-manager__section_7410F68E0BB144A584A9AFE7E8CDBE22"></a>

@@ -12,8 +12,8 @@ A native client may have many pointers that reference an object. Regardless of h
 This is a very simple example:
 
 ``` pre
-CacheableStringPtr p = CacheableString::create ("string");
-region.put ("key", p) ;
+CacheableStringPtr p = CacheableString::create("string");
+region.put("key", p) ;
 ```
 
 In the example:
@@ -25,10 +25,10 @@ In the example:
 The client can make use of an object after you have initialized the object. For example, another `SharedPtr` might issue a `get` to retrieve the object from the cache:
 
 ``` pre
-CacheableStringPtr p2 = region.get ("key") ;
+CacheableStringPtr p2 = region.get("key");
 ```
 
-Because `p` (the original `SharedPtr` ) and `p2` point to the same object in memory, it is possible under some circumstances for multiple `SharedPtr` types to work on the same object in data storage.
+Because `p` (the original `SharedPtr`) and `p2` point to the same object in memory, it is possible under some circumstances for multiple `SharedPtr` types to work on the same object in data storage.
 
 **Note:**
 Once you have put an object into the cache, do not delete it explicitly. Attempting to do so can produce undesirable results.

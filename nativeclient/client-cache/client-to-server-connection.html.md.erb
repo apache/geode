@@ -5,6 +5,7 @@ title:  Client-to-Server Connection Process
 It is important to understand the sequence of events that occur when the native client connects with a <span class="keyword">Geode</span> cache server.
 
 <a id="client-to-server-connection__section_C1E805D842FD44B984041C2ED1D4C2EF"></a>
+
 1.  A native client region is configured in `cache.xml` or programmatically with a set of server connection endpoints. Server endpoints identify each cache server by specifying the server's name and port number.
 
     Client threads obtain, use, and release a connection to a connection pool that maintains new connections. The number of connections that a client can establish is governed by the pool's `min-connections` and `max-connections` settings, either using client XML configuration or programmatically through the `CacheFactory::setMinConnections()` and `CacheFactory::setMaxConnections()` APIs. The defaults for `min-connections` is 1 and `max-connections` is -1 meaning the connection count can grow to accommodate the number of active threads performing region operations.
@@ -20,12 +21,12 @@ It is important to understand the sequence of events that occur when the native 
         <region-attributes pool-name="examplePool"/>
     </region>
     ```
-
     TCP connections on the native client are specified at the cache level, or by overriding endpoints for specific regions. The connections are created as the regions are created. In addition, connections can also get created for querying without having any created regions. In this case, when endpoints are defined at the cache level no regions are yet created and a query is fired.
 
     You can configure client-server connections in two ways. Use either the region/cache endpoints or the Pool API. For more information about the pool API, see [Using Connection Pools](../connection-pools/connection-pools.html#using-connection-pools).
 
 2.  The client announces to the server which entries it wishes to have updated by programmatically registering interest in those entries. See [Registering Interest for Entries](registering-interest-for-entries.html#registering-interest-for-entries) for more information.
+
 3.  The client `cache.xml` file should have the following parameters configured so the client can update the server and the client can receive updates from the server:
     -   Caching enabled in the client region, by using the `CACHING_PROXY RegionShortcut` setting in the region attribute `refid`. A listener could also be defined so event notification occurs. You can use both, but at least one of the two methods must be used by the client to receive event notifications.
     -   Set `subscription-enabled` to `true` so the client receives update notifications from the server for entries to which it has registered interest.
@@ -36,5 +37,3 @@ It is important to understand the sequence of events that occur when the native 
 
 **Note:**
 You may be able to improve system performance by making adjustments to the cache server.
-
-**
