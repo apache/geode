@@ -22,7 +22,7 @@ Every logged message contains:
 -   The message itself, which can be a string and/or an exception with the exception stack trace
 
 ``` pre
-[config 2005/11/08 15:46:08.710 PST PushConsumer main nid=0x1] 
+[config 2005/11/08 15:46:08.710 PST PushConsumer main nid=0x1]
 Cache initialized using "file:/Samples/quickstart/xml/PushConsumer.xml".
 ```
 
@@ -63,10 +63,10 @@ To figure out the member's most recent activities, look at the `meta-` log file 
 The log file that you specify is the base name used for all logging and logging archives. If a log file with the specified name already exists at startup, the distributed system automatically renames it before creating the current log file. This is a typical directory listing after a few runs with `log-file=system.log`:
 
 ``` pre
-bash-2.05$ ls -tlra system* 
--rw-rw-r-- 1 jpearson users 11106 Nov 3 11:07 system-01-00.log 
--rw-rw-r-- 1 jpearson users 11308 Nov 3 11:08 system-02-00.log 
--rw-rw-r-- 1 jpearson users 11308 Nov 3 11:09 system.log 
+bash-2.05$ ls -tlra system*
+-rw-rw-r-- 1 jpearson users 11106 Nov 3 11:07 system-01-00.log
+-rw-rw-r-- 1 jpearson users 11308 Nov 3 11:08 system-02-00.log
+-rw-rw-r-- 1 jpearson users 11308 Nov 3 11:09 system.log
 bash-2.05$
 ```
 
@@ -75,28 +75,28 @@ The first run created `system.log` with a timestamp of Nov 3 11:07. The second r
 When the distributed system renames the log file, it assigns the next available number to the new file, as XX of `filename-XX-YY.extension`. This next available number depends on existing old log files and also on any old statistics archives. The system assigns the next number that is higher than any in use for statistics or logging. This keeps current log files and statistics archives paired up regardless of the state of the older files in the directory. Thus, if an application is archiving statistics and logging to `system.log` and `statArchive.gfs`, and it runs in a Unix directory with these files:
 
 ``` pre
-bash-2.05$ ls -tlr stat* system* 
--rw-rw-r-- 1 jpearson users 56143 Nov 3 11:07 statArchive-01-00.gfs 
--rw-rw-r-- 1 jpearson users 56556 Nov 3 11:08 statArchive-02-00.gfs 
--rw-rw-r-- 1 jpearson users 56965 Nov 3 11:09 statArchive-03-00.gfs 
--rw-rw-r-- 1 jpearson users 11308 Nov 3 11:27 system-01-00.log 
--rw-rw-r-- 1 jpearson users 59650 Nov 3 11:34 statArchive.gfs 
+bash-2.05$ ls -tlr stat* system*
+-rw-rw-r-- 1 jpearson users 56143 Nov 3 11:07 statArchive-01-00.gfs
+-rw-rw-r-- 1 jpearson users 56556 Nov 3 11:08 statArchive-02-00.gfs
+-rw-rw-r-- 1 jpearson users 56965 Nov 3 11:09 statArchive-03-00.gfs
+-rw-rw-r-- 1 jpearson users 11308 Nov 3 11:27 system-01-00.log
+-rw-rw-r-- 1 jpearson users 59650 Nov 3 11:34 statArchive.gfs
 -rw-rw-r-- 1 jpearson users 18178 Nov 3 11:34 system.log
 ```
 
 the directory contents after the run look like this (changed files in **bold**):
 
 ``` pre
-bash-2.05$ ls -ltr stat* system* 
--rw-rw-r-- 1 jpearson users 56143 Nov 3 11:07 statArchive-01-00.gfs 
--rw-rw-r-- 1 jpearson users 56556 Nov 3 11:08 statArchive-02-00.gfs 
--rw-rw-r-- 1 jpearson users 56965 Nov 3 11:09 statArchive-03-00.gfs 
--rw-rw-r-- 1 jpearson users 11308 Nov 3 11:27 system-01-00.log 
--rw-rw-r-- 1 jpearson users 59650 Nov 3 11:34 statArchive-04-00.gfs 
--rw-rw-r-- 1 jpearson users 18178 Nov 3 11:34 system-04-00.log 
--rw-rw-r-- 1 jpearson users 55774 Nov 4 10:08 statArchive.gfs 
+bash-2.05$ ls -ltr stat* system*
+-rw-rw-r-- 1 jpearson users 56143 Nov 3 11:07 statArchive-01-00.gfs
+-rw-rw-r-- 1 jpearson users 56556 Nov 3 11:08 statArchive-02-00.gfs
+-rw-rw-r-- 1 jpearson users 56965 Nov 3 11:09 statArchive-03-00.gfs
+-rw-rw-r-- 1 jpearson users 11308 Nov 3 11:27 system-01-00.log
+-rw-rw-r-- 1 jpearson users 59650 Nov 3 11:34 statArchive-04-00.gfs
+-rw-rw-r-- 1 jpearson users 18178 Nov 3 11:34 system-04-00.log
+-rw-rw-r-- 1 jpearson users 55774 Nov 4 10:08 statArchive.gfs
 -rw-rw-r-- 1 jpearson users 17681 Nov 4 10:08 system.log
-                
+
 ```
 
 The statistics and the log file are renamed using the next integer that is available to both, so the log file sequence jumps past the gap in this case.
@@ -114,9 +114,9 @@ These are the levels, in descending order, with sample output:
     This severe error was produced by configuring a system member to connect to a non-existent locator:
 
     ``` pre
-    [severe 2005/10/24 11:21:02.908 PDT nameFromGemfireProperties 
-    DownHandler (FD_SOCK) nid=0xf] GossipClient.getInfo(): 
-    exception connecting to host localhost:30303: 
+    [severe 2005/10/24 11:21:02.908 PDT nameFromGemfireProperties
+    DownHandler (FD_SOCK) nid=0xf] GossipClient.getInfo():
+    exception connecting to host localhost:30303:
     java.net.ConnectException: Connection refused
     ```
 
@@ -126,8 +126,8 @@ These are the levels, in descending order, with sample output:
 
     ``` pre
     [error 2007/09/05 11:45:30.542 PDT gemfire1_newton_18222
-    <vm_2_thr_5_client1_newton_18222-0x472e> nid=0x6d443bb0] 
-    Exception occurred in CacheListener 
+    <vm_2_thr_5_client1_newton_18222-0x472e> nid=0x6d443bb0]
+    Exception occurred in CacheListener
     ```
 
 -   **warning**. This level indicates a potential problem. In general, warning messages describe events that are of interest to end users or system managers, or that indicate potential problems in the program or system.
@@ -135,7 +135,7 @@ These are the levels, in descending order, with sample output:
     This message was obtained by starting a client with a Pool configured with queueing enabled when there was no server running to create the client’s queue:
 
     ``` pre
-    [warning 2008/06/09 13:09:28.163 PDT <queueTimer-client> tid=0xe] 
+    [warning 2008/06/09 13:09:28.163 PDT <queueTimer-client> tid=0xe]
     QueueManager - Could not create a queue. No queue servers available
     ```
 
@@ -158,7 +158,7 @@ These are the levels, in descending order, with sample output:
 
     ``` pre
     [info 2005/10/24 11:51:35.963 PDT CacheRunner main nid=0x1]
-    DistributionManager straw(7368):41714 started on 224.0.0.250[10333] 
+    DistributionManager straw(7368):41714 started on 192.0.2.0[10333]
     with id straw(7368):41714 (along with 0 other DMs)
     ```
 
@@ -235,5 +235,3 @@ These are the levels, in descending order, with sample output:
 
 **Note:**
 <span class="keyword">Geode</span> no longer supports setting system properties for VERBOSE logging. To enable VERBOSE logging, see [Advanced Users—Configuring Log4j 2 for Geode](configuring_log4j2.html)
-
-

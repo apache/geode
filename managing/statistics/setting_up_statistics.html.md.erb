@@ -85,7 +85,7 @@ In this procedure it is assumed that you understand [Basic Configuration and Pro
             "\n\tLastAccessedTime is " + stats.getLastAccessedTime() +
             "\n\tLastModifiedTime is " + stats.getLastModifiedTime());
     }
-                            
+
     ```
 
 5.  Create and manage any custom statistics that you need through the `cache.xml` and the API. Example:
@@ -94,8 +94,8 @@ In this procedure it is assumed that you understand [Basic Configuration and Pro
     // Create custom statistics
     <?xml version="1.0" encoding="UTF-8"?>
       <!DOCTYPE statistics PUBLIC
-        "-//GemStone Systems, Inc.//GemFire Statistics Type//EN"
-        "http://www.gemstone.com/dtd/statisticsType.dtd">
+        "-//Example Systems, Inc.//Example Statistics Type//EN"
+        "http://www.example.com/dtd/statisticsType.dtd">
       <statistics>
         <type name="StatSampler">
           <description>Stats on the statistic sampler.</description>
@@ -135,5 +135,3 @@ You can specify limits on the archive files for statistics using `alter         
 -   **Maximum Size of All Archive Files**. The `--archive-disk-space-limit` parameter controls the maximum size of all inactive archive files combined. By default, the limit is set to 0, meaning that archive space is unlimited. Whenever an archive becomes inactive or when the archive file is renamed, the combined size of the inactive files is calculated. If the size exceeds the `--archive-disk-space-limit`, the inactive archive with the oldest modification time is deleted. This continues until the combined size is less than the limit. If `--archive-disk-space-limit` is less than or equal to `--archive-file-size-limit`, when the active archive is made inactive due to its size, it is immediately deleted.
     **Note:**
     If you modify the value of `--archive-disk-space-limit` while the distributed system is running, the new value does not take effect until the current archive becomes inactive.
-
-

@@ -158,7 +158,7 @@ See [Browsing Geode MBeans through JConsole](../../../managing/management/mbeans
 **Syntax:**
 
 ``` pre
-start jconsole [--interval=<seconds>] [--notile] [--version] 
+start jconsole [--interval=<seconds>] [--notile] [--version]
 [--J<jconsole JVM options>]
 ```
 
@@ -206,10 +206,10 @@ Connecting by the Geode member's name or ID is not currently supported.
 Please specify the member as '<hostname|IP>[PORT].
 
 An IO error occurred while launching JConsole.
-Please ensure that JAVA_HOME is set to the JDK installation 
+Please ensure that JAVA_HOME is set to the JDK installation
 or the JDK bin directory is in the system PATH.
 
-JConsole could not be found.\nPlease ensure that JAVA_HOME is set to the 
+JConsole could not be found.\nPlease ensure that JAVA_HOME is set to the
 JDK installation or the JDK bin directory is in the system PATH.
 ```
 
@@ -263,10 +263,10 @@ In addition, if gfsh is not already connected to a JMX Manager, the gfsh console
 
 ``` pre
 start locator --name=value [--bind-address=value] [--force(=value)] [--group=value] [--hostname-for-clients=value]
- [--locators=value] [--log-level=value] [--mcast-address=value] [--mcast-port=value] [--port=value] [--dir=value] 
- [--properties-file=value] [--security-properties-file=value] [--initial-heap=value] [--max-heap=value] 
+ [--locators=value] [--log-level=value] [--mcast-address=value] [--mcast-port=value] [--port=value] [--dir=value]
+ [--properties-file=value] [--security-properties-file=value] [--initial-heap=value] [--max-heap=value]
  [--connect(=value)] [--enable-cluster-configuration(=value)] [--load-from-cluster-configuration-dir(=value)]
- [--cluster-config-dir=value] [--J=value(,value)*] 
+ [--cluster-config-dir=value] [--J=value(,value)*]
 ```
 
 <a id="topic_591260CF25D64562A0EDD7260D2AC6D4__table_hly_vvg_2w"></a>
@@ -394,7 +394,7 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
 **Note:**
 <p>If the argument you are passing contains spaces or commas, enclose the option in single quotes. For example:</p>
 <pre class="pre codeblock"><code>start locator --name=locator1 --port=9009 --mcast-port=0\
---J=&#39;-Dgemfire.remote-locators=10.116.34.222[9009],10.116.35.225[9009]&#39;</code></pre>
+--J=&#39;-Dgemfire.remote-locators=192.0.2.0[9009],192.0.2.1[9009]&#39;</code></pre>
 </div></td>
 <td>none</td>
 </tr>
@@ -421,9 +421,9 @@ Uptime: 19 seconds
 GemFire Version: 8.0.0
 Java Version: 1.7.0_65
 Log File: /home/stymon/locator3/locator3.log
-JVM Arguments: -Dgemfire.default.locators=192.168.129.145[40402] 
--Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false 
--Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true 
+JVM Arguments: -Dgemfire.default.locators=192.0.2.3[40402]
+-Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
+-Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
 -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
 Class-Path: /home/stymon/Pivotal_GemFire_800_b48258_Linux/lib/locator-dependencies.jar:
 /usr/local/java/lib/tools.jar
@@ -459,7 +459,7 @@ start pulse [--url=value]
 
 ``` pre
 start pulse
-start pulse --url=http://gemfire.mycompany.com:7070/pulse
+start pulse --url=http://gemfire.example.com:7070/pulse
 ```
 
 **Sample Output:** See [Geode Pulse](../../pulse/chapter_overview.html) for examples of Pulse.
@@ -488,11 +488,11 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
     [--server-port=value] [--spring-xml-location=value]
     [--statistic-archive-file=value] [--dir=value] [--initial-heap=value]
     [--max-heap=value] [--use-cluster-configuration(=value)] [--J=value(,value)*]
-    [--critical-heap-percentage=value] [--critical-off-heap-percentage=value] 
+    [--critical-heap-percentage=value] [--critical-off-heap-percentage=value]
     [--eviction-heap-percentage=value] [--eviction-off-heap-percentage=value]
     [--hostname-for-clients=value] [--max-connections=value]
     [--message-time-to-live=value] [--max-message-count=value] [--max-threads=value]
-    [--socket-buffer-size=value] [--lock-memory=value] [--off-heap-memory-size=value] 
+    [--socket-buffer-size=value] [--lock-memory=value] [--off-heap-memory-size=value]
 ```
 
 <a id="topic_3764EE2DB18B4AE4A625E0354471738A__table_at5_bwg_2w"></a>
@@ -762,10 +762,8 @@ Uptime: 47 seconds
 GemFire Version: 8.0.0
 Java Version: 1.7.0_65
 Log File: /home/stymon/server1/server1.log
-JVM Arguments: -Dgemfire.default.locators=192.168.129.145[40402] -Dgemfire.use-cluster-configuration=true 
--XX:OnOutOfMemoryError="kill -9 %p" -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true 
+JVM Arguments: -Dgemfire.default.locators=192.0.2.4[40402] -Dgemfire.use-cluster-configuration=true
+-XX:OnOutOfMemoryError="kill -9 %p" -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
 -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
 Class-Path: /home/stymon/Pivotal_GemFire_800_b48258_Linux/lib/server-dependencies.jar:/usr/local/java/lib/tools.jar
 ```
-
-

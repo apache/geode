@@ -72,7 +72,7 @@ Date: Sat, 18 Jan 2014 21:39:04 GMT
             "orderDate": "02/10/2014",
             "deliveryDate": "02/20/2014",
             "contact": "John Doe",
-            "email": "john.doe@mycompany.com",
+            "email": "john.doe@example.com",
             "phone": "01-2048096",
             "totalPrice": 350,
             "items": [
@@ -139,7 +139,7 @@ Content-Location: http://localhost:8080/gemfire-api/v1/orders/3,1
 Content-Type: application/json
 Transfer-Encoding: chunked
 Date: Sat, 18 Jan 2014 21:39:04 GMT
- 
+
 {
   "orders" : [ {
     "purchaseOrderNo" : 1112,
@@ -148,7 +148,7 @@ Date: Sat, 18 Jan 2014 21:39:04 GMT
     "orderDate" : "02/10/2014",
     "deliveryDate" : "02/20/2014",
     "contact" : "John Doe",
-    "email" : "john.doe@mycompany.com",
+    "email" : "john.doe@example.com",
     "phone" : "01-2048096",
     "items" : [ {
       "itemNo" : 1,
@@ -212,12 +212,10 @@ Content-Type: application/json
 Content-Length: 51
 Date: Wed, 21 May 2014 11:24:00 GMT
 Connection: close
- 
+
 "Requested keys [13,4,5] not exist in region [orders]"
 ```
 
 ## Implementation Notes
 
 The response body sets the region name as key to the array of values. For example "orders" : &lt;VALUE\_ARRAY&gt;.
-
-

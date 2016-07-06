@@ -19,7 +19,7 @@ These are the `gemfire.properties` file (or `gfsecurity.properties` file if you 
 
 ``` pre
 security-client-accessor=templates.security.XmlAuthorization.create
-security-authz-xml-uri=<URI of XML file> 
+security-authz-xml-uri=<URI of XML file>
 ```
 
 <a id="authorization_example__section_85F79DD53FD7453D87DF915A91595218"></a>
@@ -46,9 +46,9 @@ The listing below is a sample XML file:
 
 ``` pre
 <!DOCTYPE acl PUBLIC
-"-//GemStone Systems, Inc.//GemFire XML Authorization 1.0//EN"
-"http://www.gemstone.com/dtd/authz6_0.dtd">
- 
+"-//Example Systems, Inc.//Example XML Authorization 1.0//EN"
+"http://www.example.com/dtd/authz6_0.dtd">
+
 <acl>
 <role name="reader">
   <user>reader</user>
@@ -94,7 +94,7 @@ The listing below is a sample XML file:
   <operation>CLOSE_CQ</operation>
 </permission>
 <permission role="onRegionFunctionExecutor" regions="secureRegion,Positions">
-  <operation functionIds="SecureFunction,OptimizationFunction" 
+  <operation functionIds="SecureFunction,OptimizationFunction"
     optimizeForWrite="false" keySet="KEY-0,KEY-1">EXECUTE_FUNCTION</operation>
 </permission>
 </acl>

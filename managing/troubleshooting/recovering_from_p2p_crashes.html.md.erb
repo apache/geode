@@ -29,8 +29,8 @@ If the file contains any other scope setting, it is configuring a distributed re
 If the file includes either of the following lines, it is configuring a partitioned region.
 
 ``` pre
-<partition-attributes... 
-<region-attributes data-policy="partition"/> 
+<partition-attributes...
+<region-attributes data-policy="partition"/>
 <region-attributes data-policy="persistent-partition"/>
 ```
 
@@ -76,14 +76,14 @@ The following alert \[ALERT-1\] (warning) is generated when redundancy for a par
 Alert:
 
 ``` pre
-[warning 2008/08/26 17:57:01.679 PDT dataStoregemfire5_jade1d_6424 
-<PartitionedRegion Message Processor2> tid=0x5c] Redundancy has dropped below 3 
+[warning 2008/08/26 17:57:01.679 PDT dataStoregemfire5_jade1d_6424
+<PartitionedRegion Message Processor2> tid=0x5c] Redundancy has dropped below 3
 configured copies to 2 actual copies for /partitionedRegion
 ```
 
 ``` pre
-[warning 2008/08/26 18:13:09.059 PDT dataStoregemfire5_jade1d_6424 
-<DM-MemberEventInvoker> tid=0x1d5] Redundancy has dropped below 3 
+[warning 2008/08/26 18:13:09.059 PDT dataStoregemfire5_jade1d_6424
+<DM-MemberEventInvoker> tid=0x1d5] Redundancy has dropped below 3
 configured copies to 1 actual copy for /partitionedRegion
 ```
 
@@ -92,11 +92,11 @@ The following alert \[ALERT-2\] (warning) is generated when, after creation of a
 Alert:
 
 ``` pre
-[warning 2008/08/27 17:39:28.876 PDT gemfire_2_4 <RMI TCP Connection(67)-10.80.250.201> 
-tid=0x1786] Unable to find sufficient members to host a bucket in the partitioned region. 
-Region name = /partitionedregion Current number of available data stores: 1 number 
-successfully allocated = 1 number needed = 2 Data stores available: 
-[pippin(21944):41927/42712] Data stores successfully allocated: 
+[warning 2008/08/27 17:39:28.876 PDT gemfire_2_4 <RMI TCP Connection(67)-192.0.2.0>
+tid=0x1786] Unable to find sufficient members to host a bucket in the partitioned region.
+Region name = /partitionedregion Current number of available data stores: 1 number
+successfully allocated = 1 number needed = 2 Data stores available:
+[pippin(21944):41927/42712] Data stores successfully allocated:
 [pippin(21944):41927/42712] Consider starting another member
 ```
 
@@ -105,17 +105,17 @@ The following alert \[EXCEPTION-1\] (warning) and exception is generated when, a
 Alert:
 
 ``` pre
-[warning 2008/08/27 17:39:23.628 PDT gemfire_2_4 <RMI TCP Connection(66)-10.80.250.201> 
-tid=0x1888] Unable to find any members to host a bucket in the partitioned region. 
-Region name = /partitionedregion Current number of available data stores: 0 number 
-successfully allocated = 0 number needed = 2 Data stores available: 
+[warning 2008/08/27 17:39:23.628 PDT gemfire_2_4 <RMI TCP Connection(66)-192.0.2.0> 
+tid=0x1888] Unable to find any members to host a bucket in the partitioned region.
+Region name = /partitionedregion Current number of available data stores: 0 number
+successfully allocated = 0 number needed = 2 Data stores available:
 [] Data stores successfully allocated: [] Consider starting another member
 ```
 
 Exception:
 
 ``` pre
-com.gemstone.gemfire.cache.PartitionedRegionStorageException: Unable to find any members to 
+com.gemstone.gemfire.cache.PartitionedRegionStorageException: Unable to find any members to
                     host a bucket in the partitioned region.
 ```
 
@@ -161,7 +161,7 @@ Some general considerations for disk data recovery:
 Alert 1:
 
 ``` pre
-DiskAccessException has occured while writing to the disk for region <Region_Name>. 
+DiskAccessException has occured while writing to the disk for region <Region_Name>.
 Attempt will be made to destroy the region locally.
 ```
 

@@ -8,7 +8,7 @@ The `gfsh` command-line tool allows you to configure and start a <span class="ke
 
 This section provides a walk-through example of configuring a simple <span class="keyword">Apache Geode</span> cluster and then re-using that configuration in a new context.
 
-1.  Create a working directory (For example:`/home/username/my_gemfire`) and switch to the new directory. This directory will contain the configurations for your cluster. 
+1.  Create a working directory (For example:`/home/username/my_gemfire`) and switch to the new directory. This directory will contain the configurations for your cluster.
 
 2.  Start the `gfsh` command-line tool. For example:
 
@@ -21,8 +21,8 @@ This section provides a walk-through example of configuring a simple <span class
     ``` pre
         _________________________     __
        / _____/ ______/ ______/ /____/ /
-      / /  __/ /___  /_____  / _____  / 
-     / /__/ / ____/  _____/ / /    / /  
+      / /  __/ /___  /_____  / _____  /
+     / /__/ / ____/  _____/ / /    / /
     /______/_/      /______/_/    /_/    1.0.0
 
     Monitor and Manage Apache Geode
@@ -36,20 +36,20 @@ This section provides a walk-through example of configuring a simple <span class
     gfsh>start locator --name=locator1
     Starting a GemFire Locator in /Users/username/my_gemfire/locator1...
     .............................
-    Locator in /Users/username/my_gemfire/locator1 on 10.0.0.13[10334] as locator1 is currently online.
+    Locator in /Users/username/my_gemfire/locator1 on 192.0.2.0[10334] as locator1 is currently online.
     Process ID: 5203
     Uptime: 15 seconds
     GemFire Version: 8.1.0
     Java Version: 1.7.0_71
     Log File: /Users/username/my_gemfire/locator1/locator1.log
-    JVM Arguments: -Dgemfire.enable-cluster-configuration=true 
-    -Dgemfire.load-cluster-configuration-from-dir=false 
-    -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true 
+    JVM Arguments: -Dgemfire.enable-cluster-configuration=true
+    -Dgemfire.load-cluster-configuration-from-dir=false
+    -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
     Class-Path: /Users/username/Pivotal_GemFire_810_b50582_Linux/lib/gemfire.jar
     :/Users/username/Pivotal_GemFire_810_b50582_Linux/lib/locator-dependencies.jar
 
-    Successfully connected to: [host=10.0.0.13, port=1099]
+    Successfully connected to: [host=192.0.2.0, port=1099]
 
     Cluster configuration service is up and running.
     ```
@@ -62,15 +62,15 @@ This section provides a walk-through example of configuring a simple <span class
     gfsh>start server --name=server1 --group=group1
     Starting a GemFire Server in /Users/username/my_gemfire/server1...
     .....
-    Server in /Users/username/my_gemfire/server1 on 10.0.0.13[40404] as server1 is currently online.
+    Server in /Users/username/my_gemfire/server1 on 192.0.2.0[40404] as server1 is currently online.
     Process ID: 5627
     Uptime: 2 seconds
     GemFire Version: 8.1.0
     Java Version: 1.7.0_71
     Log File: /Users/username/my_gemfire/server1/server1.log
-    JVM Arguments: -Dgemfire.default.locators=10.0.0.13[10334] -Dgemfire.groups=group1 
-    -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p 
-    -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true 
+    JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334] -Dgemfire.groups=group1
+    -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p
+    -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
     Class-Path: /Users/username/Pivotal_GemFire_810_b50582_Linux/lib/gemfire.jar
     :/Users/username/Pivotal_GemFire_810_b50582_Linux/lib/server-dependencies.jar
@@ -78,15 +78,15 @@ This section provides a walk-through example of configuring a simple <span class
     gfsh>start server --name=server2 --group=group1 --server-port=40405
     Starting a GemFire Server in /Users/username/my_gemfire/server2...
     .....
-    Server in /Users/username/my_gemfire/server2 on 10.0.0.13[40405] as server2 is currently online.
+    Server in /Users/username/my_gemfire/server2 on 192.0.2.0[40405] as server2 is currently online.
     Process ID: 5634
     Uptime: 2 seconds
     GemFire Version: 8.1.0
     Java Version: 1.7.0_71
     Log File: /Users/username/my_gemfire/server2/server2.log
-    JVM Arguments: -Dgemfire.default.locators=10.0.0.13[10334] -Dgemfire.groups=group1 
-    -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p 
-    -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true 
+    JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334] -Dgemfire.groups=group1
+    -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p
+    -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
     Class-Path: /Users/username/Pivotal_GemFire_810_b50582_Linux/lib/gemfire.jar
     :/Users/username/Pivotal_GemFire_810_b50582_Linux/lib/server-dependencies.jar
@@ -94,15 +94,15 @@ This section provides a walk-through example of configuring a simple <span class
     gfsh>start server --name=server3 --server-port=40406
     Starting a GemFire Server in /Users/username/my_gemfire/server3...
     .....
-    Server in /Users/username/my_gemfire/server3 on 10.0.0.13[40406] as server3 is currently online.
+    Server in /Users/username/my_gemfire/server3 on 192.0.2.0[40406] as server3 is currently online.
     Process ID: 5637
     Uptime: 2 seconds
     GemFire Version: 8.1.0
     Java Version: 1.7.0_71
     Log File: /Users/username/my_gemfire/server3/server3.log
-    JVM Arguments: -Dgemfire.default.locators=10.0.0.13[10334] 
-    -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p 
-    -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true 
+    JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334]
+    -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p
+    -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
     Class-Path: /Users/username/Pivotal_GemFire_810_b50582_Linux/lib/gemfire.jar
     :/Users/username/Pivotal_GemFire_810_b50582_Linux/lib/server-dependencies.jar
@@ -150,31 +150,31 @@ This section provides a walk-through example of configuring a simple <span class
 
     Note that the `mail.jar` file was deployed only to the members of `group1` and the `mx4j.jar` was deployed to all members.
 
-7.  Export the cluster configuration. 
+7.  Export the cluster configuration.
     You can use the `gfsh export cluster-configuration` command to create a zip file that contains the cluster's persisted configuration. The zip file contains a copy of the contents of the `cluster_config` directory. For example:
-    
+
     ``` pre
     gfsh>export cluster-configuration --zip-file-name=myClusterConfig.zip --dir=/Users/username
     ```
 
     <span class="keyword">Apache Geode</span> writes the cluster configuration to the specified zip file.
-    
+
     ``` pre
     Downloading cluster configuration : /Users/username/myClusterConfig.zip
     ```
 
     The remaining steps demonstrate how to use the cluster configuration you just created.
 
-8.  Shut down the cluster using the following commands: 
+8.  Shut down the cluster using the following commands:
 
     ``` pre
     gfsh>shutdown --include-locators=true
-    As a lot of data in memory will be lost, including possibly events in queues, do you 
+    As a lot of data in memory will be lost, including possibly events in queues, do you
     really want to shutdown the entire distributed system? (Y/n): Y
     Shutdown is triggered
 
     gfsh>
-    No longer connected to 10.0.0.13[1099].
+    No longer connected to 192.0.2.0[1099].
     gfsh>
     ```
 
@@ -185,8 +185,8 @@ This section provides a walk-through example of configuring a simple <span class
     Exiting...
     ```
 
-10. Create a new working directory (for example: `new_gemfire`) and switch to the new directory. 
-11. Start the `gfsh` command shell: 
+10. Create a new working directory (for example: `new_gemfire`) and switch to the new directory.
+11. Start the `gfsh` command shell:
 
     ``` pre
     $ gfsh
@@ -198,25 +198,25 @@ This section provides a walk-through example of configuring a simple <span class
     gfsh>start locator --name=locator2 --port=10335
     Starting a GemFire Locator in /Users/username/new_gemfire/locator2...
     .............................
-    Locator in /Users/username/new_gemfire/locator2 on 10.0.0.13[10335] as locator2 is currently online.
+    Locator in /Users/username/new_gemfire/locator2 on 192.0.2.0[10335] as locator2 is currently online.
     Process ID: 5749
     Uptime: 15 seconds
     GemFire Version: 8.1.0
     Java Version: 1.7.0_71
     Log File: /Users/username/new_gemfire/locator2/locator2.log
-    JVM Arguments: -Dgemfire.enable-cluster-configuration=true 
-    -Dgemfire.load-cluster-configuration-from-dir=false 
-    -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true 
+    JVM Arguments: -Dgemfire.enable-cluster-configuration=true
+    -Dgemfire.load-cluster-configuration-from-dir=false
+    -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
     Class-Path: /Users/username/Pivotal_GemFire_810_b50582_Linux/lib/gemfire.jar
     :/Users/username/Pivotal_GemFire_810_b50582_Linux/lib/locator-dependencies.jar
 
-    Successfully connected to: [host=10.0.0.13, port=1099]
+    Successfully connected to: [host=192.0.2.0, port=1099]
 
     Cluster configuration service is up and running.
     ```
 
-13. Import the cluster configuration using the `import cluster-configuration` command. For example: 
+13. Import the cluster configuration using the `import cluster-configuration` command. For example:
 
     ``` pre
     gfsh>import cluster-configuration --zip-file-name=/Users/username/myClusterConfig.zip
@@ -231,13 +231,13 @@ This section provides a walk-through example of configuring a simple <span class
     gfsh>start server --name=server4 --server-port=40414
     Starting a GemFire Server in /Users/username/new_gemfire/server4...
     ........
-    Server in /Users/username/new_gemfire/server4 on 10.0.0.13[40414] as server4 is currently online.
+    Server in /Users/username/new_gemfire/server4 on 192.0.2.0[40414] as server4 is currently online.
     Process ID: 5813
     Uptime: 4 seconds
     GemFire Version: 8.1.0
     Java Version: 1.7.0_71
     Log File: /Users/username/new_gemfire/server4/server4.log
-    JVM Arguments: -Dgemfire.default.locators=10.0.0.13[10335]
+    JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10335]
     -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p
     -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
@@ -251,15 +251,15 @@ This section provides a walk-through example of configuring a simple <span class
     gfsh>start server --name=server5 --group=group1 --server-port=40415
     Starting a GemFire Server in /Users/username/new_gemfire/server5...
     .....
-    Server in /Users/username/new_gemfire/server2 on 10.0.0.13[40415] as server5 is currently online.
+    Server in /Users/username/new_gemfire/server2 on 192.0.2.0[40415] as server5 is currently online.
     Process ID: 5954
     Uptime: 2 seconds
     GemFire Version: 8.1.0
     Java Version: 1.7.0_71
     Log File: /Users/username/new_gemfire/server5/server5.log
-    JVM Arguments: -Dgemfire.default.locators=10.0.0.13[10335] -Dgemfire.groups=group1 
-    -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p 
-    -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true 
+    JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10335] -Dgemfire.groups=group1
+    -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p
+    -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
     Class-Path: /Users/username/Pivotal_GemFire_810_b50582_Linux/lib/gemfire.jar
     :/Users/username/Pivotal_GemFire_810_b50582_Linux/lib/server-dependencies.jar
@@ -284,7 +284,7 @@ This section provides a walk-through example of configuring a simple <span class
     Data Policy     : replicate
     Hosting Members : server5
 
-    Non-Default Attributes Shared By Hosting Members  
+    Non-Default Attributes Shared By Hosting Members
 
      Type  | Name | Value
     ------ | ---- | -----
@@ -298,7 +298,7 @@ This section provides a walk-through example of configuring a simple <span class
     Hosting Members : server5
                       server4
 
-    Non-Default Attributes Shared By Hosting Members  
+    Non-Default Attributes Shared By Hosting Members
 
      Type  | Name | Value
     ------ | ---- | -----
@@ -316,7 +316,5 @@ This section provides a walk-through example of configuring a simple <span class
     Shutdown is triggered
 
     gfsh>
-    No longer connected to 10.0.0.13[1099].
+    No longer connected to 192.0.2.0[1099].
     ```
-
-

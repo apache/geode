@@ -98,16 +98,13 @@ show log --member=locator1 --lines=5
 ``` pre
 gfsh>show log --member=locator1 --lines=5
 SystemLog:
-[info 2012/09/25 14:04:51.340 PDT locator1 <RMI TCP Connection(14)-192.168.129.1
-29> tid=0x57] (tid=12 msgId=4) Parent region for "region1/subregion1" doesnt exi
+[info 2012/09/25 14:04:51.340 PDT locator1 <RMI TCP Connection(14)-192.0.2.0> tid=0x57] (tid=12 msgId=4) Parent region for "region1/subregion1" doesnt exi
 st.
 
-[info 2012/09/25 14:04:51.372 PDT locator1 <RMI TCP Connection(14)-192.168.129.1
-29> tid=0x57] (tid=12 msgId=5) Error occurred while executing "create region --n
+[info 2012/09/25 14:04:51.372 PDT locator1 <RMI TCP Connection(14)-192.0.2.0> tid=0x57] (tid=12 msgId=5) Error occurred while executing "create region --n
 ame=region1/subregion1 --type=LOCAL".
 
-[info 2012/09/25 15:14:34.314 PDT locator1 <RMI TCP Connection(159)-192.168.129.
-129> tid=0x68] (tid=13 msgId=6) Error occurred while executing "show log --membe
+[info 2012/09/25 15:14:34.314 PDT locator1 <RMI TCP Connection(159)-192.0.2.0> tid=0x68] (tid=13 msgId=6) Error occurred while executing "show log --membe
 r=server1 --lines=5".
 ```
 
@@ -122,7 +119,7 @@ Display or export metrics for the entire distributed system, a member or a regio
 **Syntax:**
 
 ``` pre
-show metrics [--member=value] [--region=value] [--file=value] 
+show metrics [--member=value] [--region=value] [--file=value]
 [--port=value] [--categories=value(,value)*]
 ```
 
@@ -176,7 +173,7 @@ show metrics [--member=value] [--region=value] [--file=value]
 
 ``` pre
 // Metrics for the entire system
-show metrics 
+show metrics
 // Metrics for a region:
 show metrics --region=region1
 // Metrics for a given member
@@ -210,7 +207,7 @@ diskstore | totalBytesOnDisk      | 0
           | flushTimeAvgLatency   | 0
           | totalBackupInProgress | 0
 query     | queryRequestRate      | 0
-          
+
 ```
 
 <a id="topic_7B3D624D5B4F41D1A0F8A9C3C8B2E780"></a>
@@ -238,7 +235,7 @@ show missing-disk-stores
 ``` pre
 gfsh> show missing-disk-stores
 
-           Disk Store ID             |   Host    |               Directory                                           
+           Disk Store ID             |   Host    |               Directory
 ------------------------------------ | --------- | -------------------------------------
 60399215-532b-406f-b81f-9b5bd8d1b55a | excalibur | /usr/local/gemfire/deploy/disk_store1
 ```
@@ -256,7 +253,7 @@ If a CQ name is provided, it counts the number of events in the subscription que
 **Syntax:**
 
 ``` pre
-show subscription-queue-size --durable-client-Id=value 
+show subscription-queue-size --durable-client-Id=value
  [--member=value] [--group=value]
 ```
 
@@ -298,5 +295,3 @@ Occurred on members
 2.server1
 3.server3
 ```
-
-

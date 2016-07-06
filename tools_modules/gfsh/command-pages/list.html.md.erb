@@ -95,8 +95,8 @@ ClientList
 
             Client Name / ID              | Server Name / ID
 ----------------------------------------- | -----------------------------------------------------
-172.16.196.144(4987:loner):58922:7b3398cf | member=server2,port=53508;  member=server1,port=56806
-172.16.196.144(5065:loner):39906:a6f598cf | member=server2,port=53508;  member=server1,port=56806
+192.0.2.0(4987:loner):58922:7b3398cf | member=server2,port=53508;  member=server1,port=56806
+192.0.2.0(5065:loner):39906:a6f598cf | member=server2,port=53508;  member=server1,port=56806
 ```
 
 <a id="topic_59DF60DE71AD4097B281749425254BFF"></a>
@@ -133,7 +133,7 @@ list deployed --group=Group2
 ``` pre
 gfsh> list deployed  --group=Group2
 
- Member   |     Deployed JAR     |                JAR Location            
+ Member   |     Deployed JAR     |                JAR Location
 --------- | -------------------- | ---------------------------------------------------
 datanode1 | group1_functions.jar | /usr/local/gemfire/deploy/vf.gf#group1_functions.jar#1
 datanode2 | group1_functions.jar | /usr/local/gemfire/deploy/vf.gf#group1_functions.jar#1
@@ -172,19 +172,19 @@ list disk-stores
 ``` pre
 gfsh> list disk-stores
 
-   Member Name   |                   Member Id                   | Disk Store Name |            Disk Store ID            
+   Member Name   |                   Member Id                   | Disk Store Name |            Disk Store ID
   -------------- | --------------------------------------------- | --------------- | ------------------------------------
-  consumerServer | 10.237.177.10(consumerServer:13825)<v5>:3545  | consumerData    | 4029af26-fd82-4997-bd6c-33382cdbb5e9
-  consumerServer | 10.237.177.10(consumerServer:13825)<v5>:3545  | observerData    | 7e0316ad-963c-49b0-9b01-8f59b8d9e29e
-  producerServer | 10.237.177.10(producerServer:13826)<v3>:53764 | producerData    | 4670e4eb-1c50-4465-b418-08ede3d5dbed
+  consumerServer | 192.0.2.0(consumerServer:13825)<v5>:3545  | consumerData    | 4029af26-fd82-4997-bd6c-33382cdbb5e9
+  consumerServer | 192.0.2.0(consumerServer:13825)<v5>:3545  | observerData    | 7e0316ad-963c-49b0-9b01-8f59b8d9e29e
+  producerServer | 192.0.2.0(producerServer:13826)<v3>:53764 | producerData    | 4670e4eb-1c50-4465-b418-08ede3d5dbed
 ```
 
 **Error Messages:**
 
 ``` pre
 gfsh> list disk-stores
-No Disk Stores Found 
-        
+No Disk Stores Found
+
 ```
 
 <a id="topic_66016A698C334F4EBA19B99F51B0204B"></a>
@@ -255,7 +255,7 @@ Display a list of registered functions. The default is to display functions for 
 **Syntax:**
 
 ``` pre
-list functions [--matches=value] [--group=value(,value)*] 
+list functions [--matches=value] [--group=value(,value)*]
 [--member=value(,value)*]
 ```
 
@@ -281,7 +281,7 @@ gfsh> list functions --matches=reconcile.*
 ``` pre
 list functions
 
-   Member   |          Function   
+   Member   |          Function
   --------- | --------------------------
   camelot   | loadDataFromExternalSource
   camelot   | reconcileWeeklyExpenses
@@ -293,7 +293,7 @@ Example of 'list function' with a "matches" filter:
 
 gfsh> list functions --matches=reconcile.*
 
-   Member   |        Function   
+   Member   |        Function
   --------- | -----------------------
   camelot   | reconcileWeeklyExpenses
   excalibur | reconcileDailyExpenses
@@ -370,9 +370,9 @@ list indexes --with-stats
 gfsh>list indexes
 Member Name    |                   Member ID                   | Region Path |   Name   | Type  | Indexed Expression | From Clause
 -------------- | --------------------------------------------- | ----------- | -------- | ----- | ------------------ | -----------
-consumerServer | 10.237.177.10(consumerServer:13873):6317      | /consumers  | cidIdx   | KEY   | id                 | /consumers  
-consumerServer | 10.237.177.10(consumerServer:13873):6317      | /consumers  | cnameIdx | RANGE | name               | /consumers
-producerServer | 10.237.177.10(producerServer:13874):19198     | /producers  | pidIdx   | RANGE | id                 | /producers
+consumerServer | 192.0.2.0(consumerServer:13873):6317      | /consumers  | cidIdx   | KEY   | id                 | /consumers
+consumerServer | 192.0.2.0(consumerServer:13873):6317      | /consumers  | cnameIdx | RANGE | name               | /consumers
+producerServer | 192.0.2.0(producerServer:13874):19198     | /producers  | pidIdx   | RANGE | id                 | /producers
 
 Example of 'list indexes' with stats printed:
 
@@ -380,9 +380,9 @@ gfsh>list indexes --with-stats
 
 Member Name  | Member ID | Region Path |   Name   | Type  | Indexed Expression | From Clause | Uses | Updates | Update Time | Keys | Values
 ------------ | --------- | ----------- | -------- | ----- | ------------------ | ----------- | ---- | ------- | ----------- | ---- | ------
-cs...        | 10...     | /consumers  | cidIdx   | KEY   | id                 | /consumers  | 2512 | 0       | 0           | 5020 | 5020  
-cs...        | 10...     | /consumers  | cnameIdx | RANGE | name               | /consumers  | 0    | 5020    | 421224000   | 0    | 5020  
-ps...        | 10...     | /producers  | pidIdx   | RANGE | id                 | /producers  | 0    | 5031    | 497872000   | 5031 | 5031  
+cs...        | 192...    | /consumers  | cidIdx   | KEY   | id                 | /consumers  | 2512 | 0       | 0           | 5020 | 5020  
+cs...        | 192...    | /consumers  | cnameIdx | RANGE | name               | /consumers  | 0    | 5020    | 421224000   | 0    | 5020
+ps...        | 192...    | /producers  | pidIdx   | RANGE | id                 | /producers  | 0    | 5031    | 497872000   | 5031 | 5031
 ```
 
 **Error Messages:**
@@ -472,5 +472,3 @@ List of regions
 region1
 region2
 ```
-
-

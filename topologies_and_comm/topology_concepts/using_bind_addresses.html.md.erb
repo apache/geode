@@ -34,15 +34,15 @@ For example, a member started with these configurations in its `gemfire.properti
 
 ``` pre
 // gemfire.properties setting for peer communication
-bind-address=194.124.0.104
+bind-address=192.0.2.0
 ```
 
 ``` pre
-//cache.xml settings 
+//cache.xml settings
 <cache>
 
 // Server communication
-  <cache-server bind-address="194.124.0.106" ...
+  <cache-server bind-address="192.0.2.1" ...
 
   <region ...
 ```
@@ -65,17 +65,17 @@ For example, a member started with these configurations in its `gemfire.properti
 
 ``` pre
 // gemfire.properties setting for peer communication
-bind-address=194.124.0.104
+bind-address=192.0.2.0
 ```
 
 ``` pre
-//cache.xml settings 
+//cache.xml settings
 <cache>
 // Gateway receiver configuration
-  <gateway-receiver start-port="1530" end-port="1551" bind-address="194.124.0.105"/>
+  <gateway-receiver start-port="1530" end-port="1551" bind-address="192.0.2.2"/>
 
 // Server communication
-  <cache-server bind-address="194.124.0.106" ...
+  <cache-server bind-address="192.0.2.1" ...
 
   <region ...
 ```
@@ -97,5 +97,3 @@ Set the locator bind address using one of these methods:
     -   Use `com.gemstone.gemfire.distributed.LocatorLauncher` API to start the locator inside your code. Use the `LocatorLauncher.Builder` class to construct an instance of the `LocatorLauncher`, use the `setBindAddress` method to specify the IP address to use and then use the start() method to start a Locator service embedded in your Java application process.
 
 If your locator uses a bind address, make sure every process that accesses the locator has the address as well. For peer-to-peer access to the locator, use the locator's bind address and the locator's port in your `gemfire.properties` `locators` list. For server discovery in a client/server installation, use the locator's bind address and the locator's port in the locator list you provide to in the client’s server pool configuration.
-
-

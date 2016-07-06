@@ -18,7 +18,7 @@ None.
 
 ``` pre
 GET /gemfire-api/v1/orders/1
-  
+
 Request Payload: null
 Accept: application/json
 ```
@@ -42,7 +42,7 @@ Date: Sat, 18 Jan 2014 21:27:59 GMT
    "orderDate" :  "01/10/2014",
    "deliveryDate" :  "01/20/2014",
    "contact" :  "Jane Doe",
-   "email" :  "Jane.Doe@mycompany.com",
+   "email" :  "Jane.Doe@example.com",
    "phone" :  "020-2048096",
    "items" : [ {
      "itemNo" : 1,
@@ -68,5 +68,3 @@ Date: Sat, 18 Jan 2014 21:27:59 GMT
 | 400 BAD REQUEST           | Returned if the supplied key is not found in the region.                                                                         |
 | 404 NOT FOUND             | Returned if key does not exist for the region.                                                                                   |
 | 500 INTERNAL SERVER ERROR | Error encountered at <span class="keyword">Geode</span> server. Check the HTTP response body for a stack trace of the exception. |
-
-

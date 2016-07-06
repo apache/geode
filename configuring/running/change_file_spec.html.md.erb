@@ -11,16 +11,16 @@ This invocation of the application, `testApplication.TestApp1`, provides non-def
 
 ``` pre
 java -Dgemfire.cache-xml-file=
-/gemfireSamples/examples/dist/cacheRunner/queryPortfolios.xml 
+/gemfireSamples/examples/dist/cacheRunner/queryPortfolios.xml
 -DgemfirePropertyFile=defaultConfigs/gemfire.properties
-testApplication.TestApp1 
+testApplication.TestApp1
 ```
 
 The gfsh start server command can use the same specifications:
 
 ``` pre
 gfsh>start server
--J-Dgemfire.cache-xml-file=/gemfireSamples/examples/dist/cacheRunner/queryPortfolios.xml 
+-J-Dgemfire.cache-xml-file=/gemfireSamples/examples/dist/cacheRunner/queryPortfolios.xml
 -J-DgemfirePropertyFile=defaultConfigs/gemfire.properties
 ```
 
@@ -33,10 +33,8 @@ Example `gemfire.properties` file with non-default `cache.xml` specification:
 
 ``` pre
 #Tue May 09 17:53:54 PDT 2006
-mcast-address=224.0.0.250
+mcast-address=192.0.2.0
 mcast-port=10333
 locators=
 cache-xml-file=/gemfireSamples/examples/dist/cacheRunner/queryPortfolios.xml
 ```
-
-

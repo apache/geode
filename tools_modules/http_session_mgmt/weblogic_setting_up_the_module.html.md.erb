@@ -186,14 +186,14 @@ Once the application server is started, the <span class="keyword">Geode</span> c
 You can verify that <span class="keyword">Geode</span> has successfully started by inspecting the application server log file. For example:
 
 ``` pre
-info 2016/04/18 10:04:18.685 PDT <localhost-startStop-2> tid=0x1a] 
+info 2016/04/18 10:04:18.685 PDT <localhost-startStop-2> tid=0x1a]
 Initializing Geode Modules
 Java version:   1.0.0-incubating.M3-SNAPSHOT user1 041816 2016-04-18 08:46:17 -0700
 javac 1.8.0_77
 Native version: native code unavailable
 Source revision: 19dd8eb1907e0beb2aa3e0a17d5f12c6cbec6968
 Source repository: develop
-Running on: /10.118.33.250, 8 cpu(s), x86_64 Mac OS X 10.11.4
+Running on: /192.0.2.0, 8 cpu(s), x86_64 Mac OS X 10.11.4
 ```
 
 Information is also logged within the <span class="keyword">Geode</span> log file, which by default is named `gemfire_modules.<date>.log`.
@@ -214,5 +214,3 @@ For client-server topologies, the local client cache must be empty. Ensure that 
 
 **Note:**
 Non-sticky sessions affect performance because sessions need to be re-created every time a request hits a different server. This may not be noticeable when the session attributes are small, but may become more evident as the session attributes increase in size and/or number.
-
-
