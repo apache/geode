@@ -34,15 +34,15 @@ A List is a `Collection`, so you can access it directly or through its `toArray`
 
 For each object type accessed in your `FROM` clause, use the method that returns a `Collection` for that object.
 
-Each expression in the `FROM` clause can be any expression that evaluates to a `Collection`. An expression in the `FROM `clause is typically a path expression that resolves to a region in the cache so that the values in the region become the collection of objects to filter.
+Each expression in the `FROM` clause can be any expression that evaluates to a `Collection`. An expression in the `FROM` clause is typically a path expression that resolves to a region in the cache so that the values in the region become the collection of objects to filter.
 
-For example, this is a simple `SELECT` statement that evaluates to a set of all the entry value objects of the `region /portfolios` with active status. The collection of entry values provided by the `FROM` clause is traversed by the `WHERE` clause, which accesses each element’s status attribute for comparison.
+For example, this is a simple `SELECT` statement that evaluates to a set of all the entry value objects of the region `/portfolios` with active status. The collection of entry values provided by the `FROM` clause is traversed by the `WHERE` clause, which accesses each element’s status attribute for comparison.
 
 ``` pre
 SELECT DISTINCT * FROM /portfolios WHERE status = 'active'
 ```
 
-If the `FROM` clause has only one expression in it, the result of the clause is the single collection that the expression evaluates to. If the clause has more than one expression in it, the result is a collection of structs that contain a member for each of those collection expressions. For example, if the `FROM` clause contains three expressions that evaluate to collections `C1, C2,` and `C3`, the `FROM` clause generates a set of `struct(x1, x2, x3)` where `x1, x2`, and `x3` represent nested iterations over the collections specified.
+If the `FROM` clause has only one expression in it, the result of the clause is the single collection that the expression evaluates to. If the clause has more than one expression in it, the result is a collection of structs that contain a member for each of those collection expressions. For example, if the `FROM` clause contains three expressions that evaluate to collections `C1`, `C2,` and `C3`, the `FROM` clause generates a set of `struct(x1, x2, x3)` where `x1`, `x2`, and `x3` represent nested iterations over the collections specified.
 
 If the collections are independent of each other, this `struct` represents their cartesian product.
 
@@ -55,13 +55,4 @@ WHERE qty > 1000.00
 ```
 
 To understand the effects of `FROM` expressions on query scope, see [Drilling Down for Modifying Query Scope](../92-querylanguage/22-drilldown-modify-query-scope.html#security).
-
--   **[Using Iterator Variables](../../../nativeclient/remote-querying/93-querystrings/3a-iterator-variables.html)**
-
--   **[Importing and Using Object Classes](../../../nativeclient/remote-querying/93-querystrings/3b-importing-using-object-classes.html)**
-
--   **[Predefined Class Types](../../../nativeclient/remote-querying/93-querystrings/3c-predefined-class-types.html)**
-
--   **[Specifying the Object Types of FROM Clause Collections](../../../nativeclient/remote-querying/93-querystrings/3d-specify-object-types.html)**
-
 

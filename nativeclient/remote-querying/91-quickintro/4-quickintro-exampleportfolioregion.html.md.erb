@@ -2,7 +2,7 @@
 title:  Examples Data and Class Definitions
 ---
 
-Examples show C++ and corresponding Java class definitions and sample data for the example `/portfolios` region. The region's keys are the portfolio ID.
+Examples show C++ and corresponding Java class definitions and sample data for the example `portfolios` region. The region's keys are the portfolio ID.
 
 User-defined data types must implement the `Serializable` interface on the native client side, while corresponding Java classes must implement the `DataSerializable` interface. The C++ objects for the native client must correspond to the Java objects for the <span class="keyword">Geode</span> cache server. This means that an object on one side should deserialize correctly at the other side.
 
@@ -38,7 +38,7 @@ class Position implements DataSerializable {
 }
 ```
 
-The following table lists the sample data in the /portfolios region.
+The following table lists the sample data in the portfolios region.
 
 <a id="running-native-client-xact__table_92A6A66523764199A19BCD66BA189921"></a>
 
@@ -54,7 +54,6 @@ The following table lists the sample data in the /portfolios region.
 | 444    | abc      | inactive      | bbb                 | 50.41                  | 100.00            |
 | 444    | abc      | inactive      | bbc                 | 55.00                  | 90.00             |
 
-: <span class="tablecap">Table 1. Entry values in /portfolios</span>
 
 Because the client cache waits during transaction execution, and client regions are not distributed, the only activities that interact with a client transaction are those that occur on the server.
 

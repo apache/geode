@@ -8,7 +8,7 @@ API examples demonstrate methods for returning `ResultSet` for both built-in and
 
 ``` pre
 QueryServicePtr qrySvcPtr = cachePtr->getQueryService("examplePool");
-QueryPtr query = qrySvcPtr->newQuery("select distinct pkid from /Portfolios");
+QueryPtr query = qrySvcPtr->newQuery("select distinct pkid from /portfolios");
 //specify 10 seconds for the query timeout period
 SelectResultsPtr results = query->execute(10);
 if (results == NULLPTR)
@@ -38,7 +38,7 @@ for (int32_t row=0; row < rs->size(); row++)
 
 ``` pre
 QueryServicePtr qrySvcPtr = cachePtr->getQueryService("examplePool");
-const char * querystring = "select distinct * from /Portfolios";
+const char * querystring = "select distinct * from /portfolios";
 QueryPtr query = qrySvcPtr->newQuery(querystring);
 //specify 10 seconds for the query timeout period
 SelectResultsPtr results = query->execute(10);

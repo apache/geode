@@ -5,7 +5,7 @@ title:  Executing a Query from the Native Client
 C\#/.NET and C++ examples show how to execute a query from the native client.
 
 **Note:**
-In all queries that use the example data, it is assumed that the `/portfolios` region has `javaobject.Portfolio` objects on the cache server.
+In all queries that use the example data, it is assumed that the `portfolios` region has `javaobject.Portfolio` objects on the cache server.
 
 1.  If you are using the C++ native client, get a pointer to the `QueryService` method.
 2.  Create a `QueryPtr` to a query (C++) or create a query instance (C\# .NET) that is compatible with the OQL specification.
@@ -16,11 +16,12 @@ In all queries that use the example data, it is assumed that the `/portfolios` r
 ## C\#/.NET Example
 
 ``` pre
-Query<Portfolio> qry = qrySvc.NewQuery("SELECT DISTINCT * FROM /Portfolios");
+Query<Portfolio> qry = qrySvc.NewQuery("SELECT DISTINCT * FROM /portfolios");
 ISelectResults<Portfolio> results = qry.Execute();
 SelectResultsIterator<Portfolio> iter = results.GetIterator(); 
 while (iter.MoveNext()) {
-    Console.WriteLine( iter.Current.ToString()); }
+    Console.WriteLine( iter.Current.ToString());
+}
 ```
 
 <a id="security__section_79FEE9FE8530496A8FD984C6D6D03894"></a>

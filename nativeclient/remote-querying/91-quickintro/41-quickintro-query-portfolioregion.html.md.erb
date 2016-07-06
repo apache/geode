@@ -2,14 +2,14 @@
 title:  Querying the Portfolios Region
 ---
 
-Examples show a sampling of specific queries that you can run against `/portfolios` on the server.
+Examples show a sampling of specific queries that you can run against `portfolios` on the server.
 
 The query results for the data are listed in the table. For the first several, the coding examples are included as well to show how you can execute the queries using the API.
 
 <a id="running-native-client-xact__section_2EA54E860ACB48259484B555CA065E98"></a>
 ## Get distinct positions from portfolios with at least a $25.00 market value
 
-This query assigns iterator variable names to the collections in the FROM clause. For example, the variable `qryP` is the iterator for the entry values in the `/portfolios` region. This variable is used in the second part of the FROM clause to access the values of the positions map for each entry value.
+This query assigns iterator variable names to the collections in the FROM clause. For example, the variable `qryP` is the iterator for the entry values in the `portfolios` region. This variable is used in the second part of the FROM clause to access the values of the positions map for each entry value.
 
 ``` pre
 Query string: 
@@ -38,7 +38,7 @@ A collection of Portfolio objects for IDs 111, 222, and 333
 Code: 
 QueryServicePtr qrySvcPtr = cachePtr->getQueryService("examplePool");
 QueryPtr qry = qrySvcPtr->newQuery(
-               "SELECT DISTINCT * FROM /Portfolios WHERE status = ‘active’");
+               "SELECT DISTINCT * FROM /portfolios WHERE status = ‘active’");
 SelectResultsPtr resultsPtr = qry->execute(10);
 SelectResultsIterator iter = resultsPtr->getIterator();
 while (iter.hasNext()) {
@@ -63,7 +63,7 @@ A collection of Portfolio objects for IDs 111 and 222
 Code: 
 QueryServicePtr qrySvcPtr = cachePtr->getQueryService("examplePool");
 QueryPtr qry = qrySvcPtr->newQuery("SELECT DISTINCT * FROM
-               /Portfolios WHERE status = 'active' and \"type\"='xyz'");
+               /portfolios WHERE status = 'active' and \"type\"='xyz'");
 SelectResultsPtr results = qry->execute(10);
 SelectResultsIterator iter = results->getIterator();
 while (iter.hasNext()) {
@@ -91,7 +91,7 @@ Code:
 QueryServicePtr qrySrvPtr = cachePtr->getQueryService("examplePool");
 QueryPtr qry = qrySvcPtr->newQuery(
    "import javaobject.Position; SELECT DISTINCT ID, status FROM "
-   "/Portfolios WHERE NOT (SELECT DISTINCT * FROM positions.values"
+   "/portfolios WHERE NOT (SELECT DISTINCT * FROM positions.values"
    "posnVal TYPE Position WHERE posnVal.secId='DELL').isEmpty");
 SelectResultsPtr results = qry->execute(10);
 SelectResultsIterator iter = results->getIterator();
