@@ -11,8 +11,10 @@ For example, consider this code fragment for a client with only the default pool
 ``` pre
 Pool pool = PoolManager.Find("PoolName");
 int pendingEvents = pool.PendingEventCount;
-if (pendingEvents < 0) {
-   // handle possible data loss
+if (pendingEvents == -2) { // client connected for the first time
+  … // continue
+} else if (pendingEvents == -1) { // client reconnected but after the timeout period
+  … // handle possible data loss
 } else { // pendingEvents >= 0
    // decide to invoke readyForEvents() or Cache.close(false)/Pool.destroy()
 }

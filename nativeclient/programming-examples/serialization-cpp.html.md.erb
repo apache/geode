@@ -34,6 +34,7 @@ class User : public Serializable
       std::string sValue(strfmt);
       std::string::size_type pos1 = sValue.find_first_of(delimeter);
       std::string::size_type pos2;
+      if (pos1 == std::string::npos) {
         userId_str = sValue;
         name = sValue;
       } else {
@@ -41,6 +42,7 @@ class User : public Serializable
         pos2 = sValue.find(delimeter, pos1+1);
         int len;
           len = sValue.length()-pos1;
+        if (pos2==std::string::npos) {
         } else {
           len = pos2-pos1;
         }
@@ -224,7 +226,9 @@ class ExampleObject
     return 0x2e; // 46
   }
   
+  bool operator== ( const Serializable& other ) const {
     const ExampleObject& otherEO = static_cast<const ExampleObject&>( other );
+    return ( 0 == strcmp( otherEO.toString()->asChar(), toString()->asChar() ) );
   }
   
   uint32_t hashcode( ) const {

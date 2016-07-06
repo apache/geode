@@ -13,11 +13,13 @@ const char * querystring =
 QueryPtr query = qrySvcPtr->newQuery(querystring);
 //specify 10 seconds for the query timeout period
 SelectResultsPtr results = query->execute(10);
+if (results == NULLPTR)
 {
    printf( "\nNo results returned from the server");
 }
 //obtaining a handle to resultset
 StructSetPtr ss(dynamic_cast<StructSet*> (results.ptr()));
+if (ss == NULLPTR)
 {
    printf ("\nStructSet is not obtained \n");
    return;
@@ -26,6 +28,7 @@ StructSetPtr ss(dynamic_cast<StructSet*> (results.ptr()));
 for ( int32_t row=0; row < ss->size(); row++)
 {
    Struct * siptr = (Struct*) dynamic_cast<Struct*> ( ((*ss)[row]).ptr() );
+   if (siptr == NULL)
    {
       printf("\nstruct is empty \n");
       continue;
@@ -35,11 +38,13 @@ for ( int32_t row=0; row < ss->size(); row++)
     for( int32_t field=0; field < siptr->length(); field++)
     {
        SerializablePtr fieldptr((*siptr)[field]);
+       if(fieldptr == NULLPTR )
        {
           printf("\nnull data received\n");
        }
        CacheableStringPtr
           str(dynamic_cast<CacheableString*>(fieldptr.ptr()));
+       if (str == NULLPTR)
        {
           printf("\n field is of some other type \n");
        }
@@ -63,11 +68,13 @@ const char * querystring =
 QueryPtr query = qrySvcPtr->newQuery(querystring);
 //specify 10 seconds for the query timeout period
 SelectResultsPtr results = query->execute(10);
+if (results == NULLPTR)
 {
    printf( "\nNo results returned from the server");
 }
 //obtaining a handle to resultset
 StructSetPtr ss(dynamic_cast<StructSet*> (results.ptr()));
+if (ss == NULLPTR)
 {
    printf ("\nStructSet is not obtained \n");
    return;
@@ -76,9 +83,11 @@ StructSetPtr ss(dynamic_cast<StructSet*> (results.ptr()));
 for (int32_t row=0; row < ss->size(); row++)
 {
    Struct * siptr = (Struct*) dynamic_cast<Struct*> ( ((*ss)[row]).ptr() );
+   if (siptr == NULL) { printf("\nstruct is empty \n"); }
    //iterate through fields now
    for (int32_t field=0; field < siptr->length(); field++) {
        SerializablePtr fieldptr((*siptr)[field]);
+       if (fieldptr == NULLPTR )
        {
           printf("\nnull data received\n");
        }
@@ -91,6 +100,7 @@ for (int32_t row=0; row < ss->size(); row++)
        else
        {
           StructPtr simpl(dynamic_cast<Struct*> (fieldptr.ptr()));
+          if (simpl == NULLPTR)
           {
               printf("\n field is of some other type \n"); continue;
           }
@@ -98,6 +108,7 @@ for (int32_t row=0; row < ss->size(); row++)
           for (int32_t inner_field=0; inner_field < simpl->length(); inner_field++)
           {
               SerializablePtr innerfieldptr((*simpl)[inner_field]);
+              if (innerfieldptr == NULLPTR)
               {
                   printf("\nfield of struct is NULL\n");
               }
@@ -125,10 +136,12 @@ QueryServicePtr qrySvcPtr = cachePtr->getQueryService("examplePool");
 const char * querystring = "select distinct ID, names from /Portfolios";
 QueryPtr query = qrySvcPtr->newQuery(querystring);
 SelectResultsPtr results = query->execute(10);
+if (results == NULLPTR) {
    printf( "\nNo results returned from the server");
 }
 //obtain a handle to resultset
 StructSetPtr ss(dynamic_cast<StructSet*> (results.ptr()));
+if (ss == NULLPTR) {
    printf ("\nStructSet is not obtained \n");
    return;
 }
@@ -136,6 +149,7 @@ StructSetPtr ss(dynamic_cast<StructSet*> (results.ptr()));
 for (int32_t row=0; row < ss->size(); row++)
 {
    Struct * siptr = dynamic_cast<Struct*> ( ((*ss)[row]).ptr() );
+   if (siptr == NULL)
    {
       printf("\nstruct is empty \n");
       continue;
@@ -144,6 +158,7 @@ for (int32_t row=0; row < ss->size(); row++)
     for (int32_t field=0; field < siptr->length(); field++)
     {
        SerializablePtr fieldptr((*siptr)[field]);
+       if (fieldptr == NULLPTR)
        {
           printf("\nnull data received\n");
        }
@@ -158,6 +173,7 @@ for (int32_t row=0; row < ss->size(); row++)
        {
           CacheableObjectArrayPtr
               coa(dynamic_cast<CacheableObjectArray*>(fieldptr.ptr()));
+         if (coa == NULLPTR)
           {
               printf("\n field is of some other type\n"); continue;
           }

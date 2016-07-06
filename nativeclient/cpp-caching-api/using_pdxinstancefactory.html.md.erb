@@ -92,6 +92,8 @@ int main(int argc, char ** argv)
     char* name = NULL;
     retPdxInstance->getField("m_name", &name);
 
+    if (id == p->getID()&& age == p->getAge() && strcmp(name, p->getName()) == 0
+      && retPdxInstance->isIdentityField("m_id") == true)
       LOGINFO("PdxInstance returns all fields value expected");
     else
       LOGINFO("PdxInstance doesn't returns all fields value expected");

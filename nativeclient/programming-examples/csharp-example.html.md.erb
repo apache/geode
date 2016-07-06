@@ -43,6 +43,7 @@ namespace GemStone.GemFire.Cache.QuickStart {
  
           Console.WriteLine("Put the second Entry into the Region");
  
+          if (IntPtr.Size == 8) { // Are we a 64 bit process?
               Char ch = 'A';
               string text = new string(ch, 1024 * 1024);
               for (int item = 0; item < (5 * 1024 /* 5 GB */); item++) {

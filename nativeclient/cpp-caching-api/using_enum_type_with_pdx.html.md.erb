@@ -102,10 +102,12 @@ try {
 
 RegionPtr rptr = getHelper()->getRegion( "DistRegionAck" );
 SelectResultsPtr results = rptr->query("m_enumid.name = 'id2'");  
+ASSERT(results->size()== 1 , "query result should have one item");
 ResultSetPtr rsptr = dynCast<ResultSetPtr>(results);
 SelectResultsIterator iter = rsptr->getIterator();  
 while (iter.moveNext()) {
     PdxEnumTestClassPtr re = dynCast<PdxEnumTestClassPtr>(iter.current());
+    ASSERT(re->getID()== 1 , "query should have returned id 1");
 }    
 ```
 

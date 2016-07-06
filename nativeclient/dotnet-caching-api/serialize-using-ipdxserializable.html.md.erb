@@ -71,14 +71,17 @@ Use this procedure to program your domain object for PDX serialization using the
      
           bool isIdentity = reader.IsIdentityField("id");
      
+          if (isIdentity == false)
              throw new IllegalStateException("Portfolio id is identity field");
      
           bool isId = reader.HasField("id");
      
+          if (isId == false)
              throw new IllegalStateException("Portfolio id field not found");
      
           bool isNotId = reader.HasField("ID");
      
+          if (isNotId == true)
              throw new IllegalStateException("Portfolio isNotId field found");
      
           m_pkid = reader.ReadString("pkid");

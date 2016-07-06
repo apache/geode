@@ -69,13 +69,10 @@ class PdxInstance
         Console.WriteLine("Connected to the Distributed System");
         // Create a Cache with the "clientPdxRemoteQuery.xml" Cache XML file.
         // Set SetPdxReadSerialized to true to access PdxInstance
-        Cache cache = cacheFactory.Set("cache-xml-file",
-"XMLs/clientPdxInstance.xml").Create();
+        Cache cache = cacheFactory.Set("cache-xml-file", "XMLs/clientPdxInstance.xml").Create();
         Console.WriteLine("Created the Cache");
-        // Get the example Region from the Cache which is declared in the
-Cache XML file.
-        IRegion<string, IPdxInstance> region = cache.GetRegion<string,
-IPdxInstance>("Person");
+        // Get the example Region from the Cache which is declared in the Cache XML file.
+        IRegion<string, IPdxInstance> region = cache.GetRegion<string, IPdxInstance>("Person");
         Console.WriteLine("Obtained the Region from the Cache");
         Person p = new Person("Jack", 7, 21);
         //PdxInstanceFactory for Person class
@@ -89,11 +86,13 @@ IPdxInstance>("Person");
         region["Key1"] = pdxInstance;
         Console.WriteLine("Populated PdxInstance Object");
         IPdxInstance retPdxInstance = region["Key1"];
-           Console.WriteLine("PdxInstance returns all fields value
-expected");
+        if((int)retPdxInstance.GetField("id") == p.ID
+             && (int)retPdxInstance.GetField("age") == p.Age
+               && (string)retPdxInstance.GetField("name") == p.Name
+                 && retPdxInstance.IsIdentityField("id") == true)
+           Console.WriteLine("PdxInstance returns all fields value expected");
         else
-           Console.WriteLine("PdxInstance doesn't returns all fields value
-expected");
+           Console.WriteLine("PdxInstance doesn't returns all fields value expected");
         // Close the Cache.
         cache.Close();
         Console.WriteLine("Closed the Cache");

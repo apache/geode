@@ -61,6 +61,7 @@ class AccountHistory : IGFSerializable
          {
             UInt32 objectSize = 0;
             foreach (string hist in m_history) {
+              objectSize += (UInt32)(hist == null ? 0 : sizeof(char) * hist.Length);
             }
             return objectSize;
          }

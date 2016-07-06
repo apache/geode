@@ -11,12 +11,14 @@ QueryServicePtr qrySvcPtr = cachePtr->getQueryService("examplePool");
 QueryPtr query = qrySvcPtr->newQuery("select distinct pkid from /Portfolios");
 //specify 10 seconds for the query timeout period
 SelectResultsPtr results = query->execute(10);
+if (results == NULLPTR)
 {
    printf( "\nNo results returned from the server");
 }
 
 //obtaining a handle to resultset
 ResultSetPtr rs(dynamic_cast<ResultSet*> (results.ptr()));
+if (rs == NULLPTR)
 {
    printf ("\nResultSet is not obtained \n"); return;
 }
@@ -40,11 +42,13 @@ const char * querystring = "select distinct * from /Portfolios";
 QueryPtr query = qrySvcPtr->newQuery(querystring);
 //specify 10 seconds for the query timeout period
 SelectResultsPtr results = query->execute(10);
+if (results == NULLPTR)
 {
    printf( "\nNo results returned from the server");
 }
 //obtaining a handle to resultset
 ResultSetPtr rs(dynamic_cast<ResultSet*> (results.ptr()));
+if (rs == NULLPTR)
 {
    printf ("\nResultSet is not obtained \n"); return;
 }

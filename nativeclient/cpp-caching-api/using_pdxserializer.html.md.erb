@@ -33,6 +33,7 @@ public:
 
   static void deallocate(void * object, char * className)
   {
+    if (strcmp(className, "com.example.UserClass") == 0) {
       UserClass * userObject = reinterpret_cast<UserClass*>(object);
       delete userObject;
     }
@@ -73,6 +74,7 @@ public:
 
   UserDeallocator getDeallocator(char * className)
   {
+    if (strcmp(className, "com.example.UserClass") == 0) {
       return UserClass::deallocate;
     } else {
       return NULL;
