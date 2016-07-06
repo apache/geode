@@ -594,19 +594,7 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
 
     // Publish some entries
     final int numberOfEntries = 1;
-    this.publisherClientVM.invoke(new CacheSerializableRunnable("Publish entries") {
-      public void run2() throws CacheException {
-        // Get the region
-        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
-        assertNotNull(region);
-
-        // Publish some entries
-        for (int i=0; i<numberOfEntries; i++) {
-          String keyAndValue = String.valueOf(i);
-          region.put(keyAndValue, keyAndValue);
-        }
-      }
-    });
+    publishEntries(numberOfEntries);
     
     // Verify the durable client received the updates
     this.verifyListenerUpdates(numberOfEntries);
@@ -639,20 +627,8 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
     });
 
     // Publish some more entries
-    this.publisherClientVM.invoke(new CacheSerializableRunnable("Register interest") {
-      public void run2() throws CacheException {
-        // Get the region
-        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
-        assertNotNull(region);
+    publishEntries(numberOfEntries);
 
-        // Publish some entries
-        for (int i=0; i<numberOfEntries; i++) {
-          String keyAndValue = String.valueOf(i);
-          region.put(keyAndValue, keyAndValue);
-        }
-      }
-    });
-    
     try {
       Thread.sleep(1000);
     } catch (InterruptedException ex) {
@@ -722,7 +698,23 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
     // Stop the server
     this.server1VM.invoke(() -> CacheServerTestUtil.closeCache());
   }
-  
+
+  protected void publishEntries(final int numberOfEntries) {
+    this.publisherClientVM.invoke(new CacheSerializableRunnable("Publish entries") {
+      public void run2() throws CacheException {
+        // Get the region
+        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
+        assertNotNull(region);
+
+        // Publish some entries
+        for (int i=0; i<numberOfEntries; i++) {
+          String keyAndValue = String.valueOf(i);
+          region.put(keyAndValue, keyAndValue);
+        }
+      }
+    });
+  }
+
   /**
    * Test that a durable client correctly receives updates after it reconnects.
    */
@@ -763,19 +755,7 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
 
     // Publish some entries
     final int numberOfEntries = 1;
-    this.publisherClientVM.invoke(new CacheSerializableRunnable("Publish entries") {
-      public void run2() throws CacheException {
-        // Get the region
-        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
-        assertNotNull(region);
-
-        // Publish some entries
-        for (int i=0; i<numberOfEntries; i++) {
-          String keyAndValue = String.valueOf(i);
-          region.put(keyAndValue, keyAndValue);
-        }
-      }
-    });
+    publishEntries(numberOfEntries);
     
     // Verify the durable client received the updates
     this.verifyListenerUpdates(numberOfEntries);
@@ -1034,19 +1014,7 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
     });
     
     // Verify the durable client received the updates
-    this.durableClientVM.invoke(new CacheSerializableRunnable("Verify updates") {
-      public void run2() throws CacheException {
-        // Get the region
-        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
-        assertNotNull(region);
-
-        // Get the listener and wait for the appropriate number of events
-        CacheServerTestUtil.ControlListener listener = (CacheServerTestUtil.ControlListener) region
-                .getAttributes().getCacheListeners()[0];
-        listener.waitWhileNotEnoughEvents(30000, numberOfEntries);
-        assertEquals(numberOfEntries, listener.events.size());
-      }
-    });
+    verifyDurableClientEvents(this.durableClientVM, numberOfEntries);
 
     // Stop the durable client
     this.durableClientVM.invoke(() -> CacheServerTestUtil.closeCache());
@@ -1056,6 +1024,34 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
     
     // Stop the server
     this.server1VM.invoke(() -> CacheServerTestUtil.closeCache());
+  }
+
+  protected void verifyDurableClientEvents(VM durableClientVm, final int numberOfEntries) {
+    verifyDurableClientEvents(durableClientVm, numberOfEntries, -1);
+  }
+
+  protected void verifyDurableClientEvents(VM durableClientVm, final int numberOfEntries, final int eventType) {
+    verifyDurableClientEvents(durableClientVm, numberOfEntries, eventType, numberOfEntries);
+  }
+
+  protected void verifyNoDurableClientEvents(VM durableClientVm, final int numberOfEntries, final int eventType) {
+    verifyDurableClientEvents(durableClientVm, numberOfEntries, eventType, 0);
+  }
+
+  private void verifyDurableClientEvents(VM durableClientVm, final int numberOfEntries, final int eventType, final int expectedNumberOfEvents) {
+    durableClientVm.invoke(new CacheSerializableRunnable("Verify updates") {
+      public void run2() throws CacheException {
+        // Get the region
+        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
+        assertNotNull(region);
+
+        // Get the listener and wait for the appropriate number of events
+        CacheServerTestUtil.ControlListener listener = (CacheServerTestUtil.ControlListener) region
+            .getAttributes().getCacheListeners()[0];
+        listener.waitWhileNotEnoughEvents(30000, numberOfEntries, eventType);
+        assertEquals(expectedNumberOfEvents, listener.getEvents(eventType).size());
+      }
+    });
   }
 
   @Ignore("TODO: This test is failing inconsistently, see bug 51258")
@@ -1135,19 +1131,7 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
 
     // Publish some entries
     final int numberOfEntries = 1;
-    this.publisherClientVM.invoke(new CacheSerializableRunnable("Publish entries") {
-      public void run2() throws CacheException {
-        // Get the region
-        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
-        assertNotNull(region);
-
-        // Publish some entries
-        for (int i=0; i<numberOfEntries; i++) {
-          String keyAndValue = String.valueOf(i);
-          region.put(keyAndValue, keyAndValue);
-        }
-      }
-    });
+    publishEntries(numberOfEntries);
 
     // Verify the durable client received the updates
     this.verifyListenerUpdates(numberOfEntries);
@@ -1164,19 +1148,7 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
     this.disconnectDurableClient(true);
     
     // Publish updates during client downtime
-    this.publisherClientVM.invoke(new CacheSerializableRunnable("Publish entries") {
-      public void run2() throws CacheException {
-        // Get the region
-        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
-        assertNotNull(region);
-
-        // Publish some entries
-        for (int i=0; i<numberOfEntries; i++) {
-          String keyAndValue = String.valueOf(i);
-          region.put(keyAndValue, keyAndValue);
-        }
-      }
-    });
+    publishEntries(numberOfEntries);
 
     
     // Re-start the durable client that is kept alive on the server
@@ -1322,19 +1294,7 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
 
     // Publish some entries
     final int numberOfEntries = 1;
-    this.publisherClientVM.invoke(new CacheSerializableRunnable("Publish entries") {
-      public void run2() throws CacheException {
-        // Get the region
-        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
-        assertNotNull(region);
-
-        // Publish some entries
-        for (int i=0; i<numberOfEntries; i++) {
-          String keyAndValue = String.valueOf(i);
-          region.put(keyAndValue, keyAndValue);
-        }
-      }
-    });
+    publishEntries(numberOfEntries);
 
     try {
       java.lang.Thread.sleep(10000);
@@ -1365,19 +1325,7 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
     this.server1VM.invoke(() -> CacheServerTestUtil.closeCache());
 
     // Publish updates during client downtime
-    this.publisherClientVM.invoke(new CacheSerializableRunnable("Publish entries") {
-      public void run2() throws CacheException {
-        // Get the region
-        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
-        assertNotNull(region);
-
-        // Publish some entries
-        for (int i=0; i<numberOfEntries; i++) {
-          String keyAndValue = String.valueOf(i);
-          region.put(keyAndValue, keyAndValue);
-        }
-      }
-    });
+    publishEntries(numberOfEntries);
 
     // Re-start the durable client that is kept alive on the server
     this.restartDurableClient(new Object[] {

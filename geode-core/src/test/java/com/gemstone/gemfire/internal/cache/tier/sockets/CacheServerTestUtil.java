@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -505,14 +506,19 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
       this.arg = ee.getCallbackArgument();
       this.type = type;
     }
-    @Override
+    public boolean isCreate() {
+      return this.type == TYPE_CREATE;
+    }
     public String toString() {
       return "EventWrapper: event=" + event + ", type=" + type;
     }
   }
 
   public static class ControlListener extends CacheListenerAdapter implements Declarable {
-    public final LinkedList events = new LinkedList();
+    public final LinkedList<EventWrapper> events = new LinkedList();
+    public final LinkedList<EntryEvent> createEvents = new LinkedList();
+    public final LinkedList<EntryEvent> updateEvents = new LinkedList();
+    public final LinkedList<EntryEvent> destroyEvents = new LinkedList();
     public final Object CONTROL_LOCK = new Object();
 
     //added to test creation of cache from xml
@@ -521,10 +527,18 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     }
 
     public boolean waitWhileNotEnoughEvents(long sleepMs, int eventCount) {
+      return waitWhileNotEnoughEvents(sleepMs, eventCount, -1);
+    }
+
+    public boolean waitWhileNotEnoughEvents(long sleepMs, int eventCount, int eventType) {
+      return waitWhileNotEnoughEvents(sleepMs, eventCount, getEvents(eventType));
+    }
+
+    public boolean waitWhileNotEnoughEvents(long sleepMs, int eventCount, List eventsToCheck) {
       long maxMillis = System.currentTimeMillis() + sleepMs;
       synchronized(this.CONTROL_LOCK) {
         try {
-          while (this.events.size() < eventCount) {
+          while (eventsToCheck.size() < eventCount) {
             long waitMillis = maxMillis - System.currentTimeMillis();
             if (waitMillis < 10) {
               break;
@@ -534,14 +548,33 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
         } catch (InterruptedException abort) {
           fail("interrupted");
         }
-        return !this.events.isEmpty();
+        return !eventsToCheck.isEmpty();
       } // synchronized
+    }
+
+    public List getEvents(int eventType) {
+      List eventsToCheck = null;
+      switch (eventType) {
+      case TYPE_CREATE:
+        eventsToCheck = this.createEvents;
+        break;
+      case TYPE_UPDATE:
+        eventsToCheck = this.updateEvents;
+        break;
+      case TYPE_DESTROY:
+        eventsToCheck = this.destroyEvents;
+        break;
+      default:
+        eventsToCheck = this.events;
+      }
+      return eventsToCheck;
     }
 
     @Override
     public void afterCreate(EntryEvent e) {
       synchronized(this.CONTROL_LOCK) {
         this.events.add(new EventWrapper(e, TYPE_CREATE));
+        this.createEvents.add(e);
         this.CONTROL_LOCK.notifyAll();
       }
     }
@@ -550,6 +583,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     public void afterUpdate(EntryEvent e) {
       synchronized(this.CONTROL_LOCK) {
         this.events.add(new EventWrapper(e, TYPE_UPDATE));
+        this.updateEvents.add(e);
         this.CONTROL_LOCK.notifyAll();
       }
     }
@@ -566,6 +600,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     public void afterDestroy(EntryEvent e) {
       synchronized(this.CONTROL_LOCK) {
         this.events.add(new EventWrapper(e, TYPE_DESTROY));
+        this.destroyEvents.add(e);
         this.CONTROL_LOCK.notifyAll();
       }
     }

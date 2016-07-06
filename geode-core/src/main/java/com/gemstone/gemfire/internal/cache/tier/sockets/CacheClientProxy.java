@@ -1084,27 +1084,7 @@ public class CacheClientProxy implements ClientSession {
         
         // Enqueue the initial value message for the client if necessary
         if (policy == InterestResultPolicy.KEYS_VALUES) {
-          Get70 request = (Get70)Get70.getCommand();
-          LocalRegion lr = (LocalRegion) this._cache.getRegion(regionName);
-          Get70.Entry entry = request.getValueAndIsObject(lr, keyOfInterest, null,
-              null);
-          boolean isObject = entry.isObject;
-          byte[] value = null;
-          if (entry.value instanceof byte[]) {
-            value = (byte[])entry.value;
-          } else {
-            try {
-              value = CacheServerHelper.serialize(entry.value);
-            } catch (IOException e) {
-              logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_THE_FOLLOWING_EXCEPTION_OCCURRED_0, entry.value), e);
-            }
-          }
-          VersionTag tag = entry.versionTag;
-          ClientUpdateMessage updateMessage = new ClientUpdateMessageImpl(
-              EnumListenerEvent.AFTER_CREATE, lr, keyOfInterest, value, null,
-              (isObject ? (byte) 0x01 : (byte) 0x00), null, this.proxyID,
-              new EventID(this._cache.getDistributedSystem()), tag);
-          CacheClientNotifier.routeSingleClientMessage(updateMessage, this.proxyID);
+          enqueueInitialValue(null, regionName, keyOfInterest);
         }
         // Add the client to the region's filters
         //addFilterRegisteredClients(regionName, keyOfInterest);
@@ -1136,16 +1116,58 @@ public class CacheClientProxy implements ClientSession {
     }
 
     // Enqueue the interest registration message for the client.
+    enqueueInterestRegistrationMessage(message);
+  }
+
+  private void enqueueInitialValue(ClientInterestMessageImpl clientInterestMessage, String regionName, Object keyOfInterest) {
+    // Get the initial value
+    Get70 request = (Get70)Get70.getCommand();
+    LocalRegion lr = (LocalRegion) this._cache.getRegion(regionName);
+    Get70.Entry entry = request.getValueAndIsObject(lr, keyOfInterest, null, null);
+    boolean isObject = entry.isObject;
+    byte[] value = null;
+
+    // If the initial value is not null, add it to the client's queue
+    if (entry.value != null) {
+      if (entry.value instanceof byte[]) {
+        value = (byte[])entry.value;
+      } else {
+        try {
+          value = CacheServerHelper.serialize(entry.value);
+        } catch (IOException e) {
+          logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_THE_FOLLOWING_EXCEPTION_OCCURRED_0, entry.value), e);
+        }
+      }
+      VersionTag tag = entry.versionTag;
+
+      // Initialize the event id.
+      EventID eventId = null;
+      if (clientInterestMessage == null) {
+        // If the clientInterestMessage is null, create a new event id
+        eventId = new EventID(this._cache.getDistributedSystem());
+      } else {
+        // If the clientInterestMessage is not null, base the event id off its event id to fix GEM-794.
+        // This will cause the updateMessage created below to have the same event id as the one created
+        // in the primary.
+        eventId = new EventID(clientInterestMessage.getEventId(), 1);
+      }
+      ClientUpdateMessage updateMessage = new ClientUpdateMessageImpl(
+          EnumListenerEvent.AFTER_CREATE, lr, keyOfInterest, value, null,
+          (isObject ? (byte) 0x01 : (byte) 0x00), null, this.proxyID,
+          eventId, tag);
+      CacheClientNotifier.routeSingleClientMessage(updateMessage, this.proxyID);
+    }
+  }
+  
+  private void enqueueInterestRegistrationMessage(ClientInterestMessageImpl message) {
+    // Enqueue the interest registration message for the client.
     // If the client is not 7.0.1 or greater and the key of interest is a list,
     // then create an individual message for each entry in the list since the
     // client doesn't support a ClientInterestMessageImpl containing a list.
     if (Version.GFE_701.compareTo(this.clientVersion) > 0
-        && keyOfInterest instanceof List) {
-      for (Iterator i = ((List) keyOfInterest).iterator(); i.hasNext();) {
-        this._messageDispatcher.enqueueMessage(new ClientInterestMessageImpl(
-            new EventID(this._cache.getDistributedSystem()), regionName,
-            i.next(), interestType, policy.getOrdinal(), isDurable, !receiveValues,
-            ClientInterestMessageImpl.REGISTER));
+        && message.getKeyOfInterest() instanceof List) {
+      for (Iterator i = ((List) message.getKeyOfInterest()).iterator(); i.hasNext();) {
+        this._messageDispatcher.enqueueMessage(new ClientInterestMessageImpl(message, i.next()));
      }
     } else {
       this._messageDispatcher.enqueueMessage(message);
@@ -1205,20 +1227,7 @@ public class CacheClientProxy implements ClientSession {
     }
  
     // Enqueue the interest unregistration message for the client.
-    // If the client is not 7.0.1 or greater and the key of interest is a list,
-    // then create an individual message for each entry in the list since the
-    // client doesn't support a ClientInterestMessageImpl containing a list.
-    if (Version.GFE_701.compareTo(this.clientVersion) > 0
-        && keyOfInterest instanceof List) {
-      for (Iterator i = ((List) keyOfInterest).iterator(); i.hasNext();) {
-        this._messageDispatcher.enqueueMessage(new ClientInterestMessageImpl(
-            new EventID(this._cache.getDistributedSystem()), regionName,
-            i.next(), interestType, (byte) 0, isDurable, !receiveValues,
-            ClientInterestMessageImpl.UNREGISTER));
-      }
-    } else {
-      this._messageDispatcher.enqueueMessage(message);
-    }
+    enqueueInterestRegistrationMessage(message);
   }
   
   protected void notifySecondariesOfInterestChange(ClientInterestMessageImpl message) {
@@ -1410,6 +1419,7 @@ public class CacheClientProxy implements ClientSession {
 
   /** sent by the cache client notifier when there is an interest registration change */
   protected void processInterestMessage(ClientInterestMessageImpl message) { 
+    // Register or unregister interest depending on the interest type
     int interestType = message.getInterestType(); 
     String regionName = message.getRegionName(); 
     Object key = message.getKeyOfInterest(); 
@@ -1460,7 +1470,18 @@ public class CacheClientProxy implements ClientSession {
           .append(InterestType.getString(message.getInterestType()));
         logger.debug(buffer.toString()); 
       } 
-    } 
+    }
+    
+    // Enqueue the interest message in this secondary proxy (fix for bug #52088)
+    enqueueInterestRegistrationMessage(message);
+    
+    // Enqueue the initial value if the message is register on a key that is not a list (fix for bug #52088)
+    if (message.isRegister()
+        && message.getInterestType() == InterestType.KEY
+        && !(key instanceof List)
+        && InterestResultPolicy.fromOrdinal(message.getInterestResultPolicy()) == InterestResultPolicy.KEYS_VALUES) {
+      enqueueInitialValue(message, regionName, key);
+    }
   } 
 
   private boolean postDeliverAuthCheckPassed(ClientUpdateMessage clientMessage) {
