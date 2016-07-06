@@ -72,7 +72,7 @@ dependencies {
   testCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
 
   testRuntime files("${System.getProperty('java.home')}/../lib/tools.jar")
-  testRuntime files("$buildDir/install/apache-geode/lib/geode-dependencies.jar")
+  testRuntime files("$buildDir/install/${distributions.main.baseName}/lib/geode-dependencies.jar")
 
 
   gfshDependencies ('org.springframework:spring-web:' + project.'springframework.version'){
@@ -90,7 +90,7 @@ test {
   // test from the actual classpath not the gradle classpath
   dependsOn installDist
   // @TODO: this doesn't seem to be working need to get basename first.
-  classpath += files "$buildDir/install/apache-geode/lib/geode-dependencies.jar"
+  classpath += files "$buildDir/install/${distributions.main.baseName}/lib/geode-dependencies.jar"
 }
 
 tasks.withType(Test){

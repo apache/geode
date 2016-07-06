@@ -283,7 +283,7 @@ public class FreeListManager {
   /**
    * Number of free lists to keep for tiny allocations.
    */
-  public final static int TINY_FREE_LIST_COUNT = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_FREE_LIST_COUNT", 16384);
+  public final static int TINY_FREE_LIST_COUNT = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_FREE_LIST_COUNT", 65536);
   static {
     verifyOffHeapFreeListCount(TINY_FREE_LIST_COUNT);
   }
