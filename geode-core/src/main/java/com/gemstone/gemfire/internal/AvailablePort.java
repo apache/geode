@@ -33,7 +33,8 @@ public class AvailablePort {
 
   /** Is the port available for a Socket (TCP) connection? */
   public static final int SOCKET = 0;
-
+  public static final int AVAILABLE_PORTS_LOWER_BOUND = 20001;// 20000/udp is securid
+  public static final int AVAILABLE_PORTS_UPPER_BOUND = 29999;//30000/tcp is spoolfax
   /** Is the port available for a JGroups (UDP) multicast connection */
   public static final int MULTICAST = 1;
 
@@ -434,8 +435,8 @@ public class AvailablePort {
 //       rangeBase=1024;
 //       rangeTop=5000;
 //     }
-    rangeBase = 20001; // 20000/udp is securid
-    rangeTop =  29999; // 30000/tcp is spoolfax
+    rangeBase = AVAILABLE_PORTS_LOWER_BOUND; // 20000/udp is securid
+    rangeTop =  AVAILABLE_PORTS_UPPER_BOUND; // 30000/tcp is spoolfax
 
     return rand.nextInt(rangeTop-rangeBase) + rangeBase;
   }
