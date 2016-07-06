@@ -6,14 +6,15 @@ You can configure the durable native client to obtain an approximate count of pe
 
 Use the `getPendingEventCount` (C++ API) and the `PendingEventCount` (C\# .NET API) property to detect whether the previously registered subscription queue is available upon durable client reconnection and the count of pending events in the queue. Based on the returned results, you can then decide whether to receive the remaining events or close the cache if the number is too large.
 
-For example, for a client with only the default pool created:
+For example, consider this code fragment for a client with only the default pool created:
 
 ``` pre
 Pool pool = PoolManager.Find("PoolName");
 int pendingEvents = pool.PendingEventCount;
-  … // handle possible data loss
+if (pendingEvents < 0) {
+   // handle possible data loss
 } else { // pendingEvents >= 0
-  … // decide to invoke readyForEvents() or Cache.close(false)/Pool.destroy()
+   // decide to invoke readyForEvents() or Cache.close(false)/Pool.destroy()
 }
 ```
 
@@ -25,7 +26,7 @@ int pendingEvents1 = PoolManager.Find(“pool1”).PendingEventCount;
 pendingEvents += (pendingEvents1 > 0) ? pendingEvents1 : 0;
 int pendingEvents2 = PoolManager.Find(“pool2”).PendingEventCount;
 pendingEvents += (pendingEvents2 > 0) ? pendingEvents2 : 0;
-// process individual pool counts separately.
+// process individual pool counts separately
 ```
 
 The `getPendingEventCount` method and PendingEventCount property can return the following possible values:
