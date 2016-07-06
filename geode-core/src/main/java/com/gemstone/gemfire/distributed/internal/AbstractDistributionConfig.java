@@ -16,6 +16,19 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.InvalidValueException;
 import com.gemstone.gemfire.UnmodifiableException;
@@ -26,13 +39,6 @@ import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
-
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.*;
-
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that
@@ -1125,6 +1131,7 @@ public abstract class AbstractDistributionConfig
     m.put(DISTRIBUTED_TRANSACTIONS, "Flag to indicate whether all transactions including JTA should be distributed transactions.  Default is false, meaning colocated transactions.");
 
     m.put(SECURITY_SHIRO_INIT, "The name of the shiro configuration file in the classpath, e.g. shiro.ini");
+    m.put(SECURITY_MANAGER, "User defined fully qualified method name implementing SecurityManager interface for integrated security. Defaults to \"{0}\". Legal values can be any \"method name\" of a static method that is present in the classpath.");
 
     dcAttDescriptions = Collections.unmodifiableMap(m);
 

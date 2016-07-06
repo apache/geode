@@ -24,13 +24,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
+@Category({ DistributedTest.class, SecurityTest.class })
 public class IntegratedSecurityNoShowValue1PostProcessorDUnitTest extends AbstractIntegratedClientAuthDistributedTest {
 
   public IntegratedSecurityNoShowValue1PostProcessorDUnitTest(){

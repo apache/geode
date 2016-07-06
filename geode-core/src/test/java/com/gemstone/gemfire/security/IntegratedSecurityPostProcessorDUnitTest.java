@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Region;
@@ -36,7 +37,10 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.security.templates.SamplePostProcessor;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
+@Category({ DistributedTest.class, SecurityTest.class })
 public class IntegratedSecurityPostProcessorDUnitTest extends AbstractIntegratedClientAuthDistributedTest {
 
   public IntegratedSecurityPostProcessorDUnitTest(){
