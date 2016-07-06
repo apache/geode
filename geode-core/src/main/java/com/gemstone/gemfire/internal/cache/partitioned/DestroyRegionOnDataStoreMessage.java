@@ -84,7 +84,8 @@ public final class DestroyRegionOnDataStoreMessage extends PartitionMessage
     	return true;
     }
     
-    org.apache.logging.log4j.Logger logger = LogService.getLogger();
+    
+    org.apache.logging.log4j.Logger logger = pr.getLogger();
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.trace("DestroyRegionOnDataStore operateOnRegion: " + pr.getFullPath());
     }
