@@ -7,16 +7,12 @@ The `OperationContext` object that is passed to the `authorizeOperation` method 
 For example:
 
 ``` pre
-bool authorizeOperation(Region region, OperationContext context)
-{
-If(context.isPostOperation())
-{
-    //It's a post-operation
-}
-else
-{
-    //It's a pre-operation
-}
+bool authorizeOperation(Region region, OperationContext context) {
+    if (context.isPostOperation()) {
+        //it's a post-operation
+    } else {
+        //it's a pre-operation
+    }
 }
 ```
 

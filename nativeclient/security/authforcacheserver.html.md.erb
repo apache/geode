@@ -6,7 +6,9 @@ When the cache server receives client credentials during the handshake operation
 
 Here is an example of how you could configure `security-client-authenticator` in the `gfcpp.properties` file:
 
-`security-client-authenticator=templates.security.PKCSAuthenticator.create`
+``` pre
+security-client-authenticator=templates.security.PKCSAuthenticator.create
+```
 
 In the preceding configuration sample, `PKCSAuthenticator` is the callback class implementing the `Authenticator` interface and `create` is its factory method.
 

@@ -2,27 +2,9 @@
 title:  SSL Client/Server Communication
 ---
 
-This section describes how to configure OpenSSL; implement SSL-based communication between your clients and servers; and run clients and servers with SSL enabled.
+This section describes how to configure OpenSSL, implement SSL-based communication between your clients and servers, and run clients and servers with SSL enabled.
 
--   **[Step 1. Download and install OpenSSL](../../nativeclient/security/1downloadinstallopenssl.html)**
-
-    The open-source OpenSSL toolkit provides a full-strength general purpose cryptography library to operate along with the PKCS sample implementation for encrypted authentication of native client credentials.
-
--   **[Step 2. Create keystores](../../nativeclient/security/3createkeystores.html)**
-
-    The <span class="keyword">Geode</span> server requires keys and keystores in the Java Key Store (JKS) format while the native client requires them in the clear PEM format. Thus you need to be able to generate private/public keypairs in either format and convert between the two using the `keytool` utility and the `openssl` command.
-
--   **[Step 3. Configure environment variables](../../nativeclient/security/4configenvvariables.html)**
-
-    Configure your system environment to build and run OpenSSL. Follow the environment setup that applies to your operating system.
-
--   **[Step 4. Configure SSL properties in gfcpp.properties and gemfire.properties](../../nativeclient/security/5configsslprops.html)**
-
-    Configure SSL properties.
-
--   **[Step 5. Start and stop the client and server](../../nativeclient/security/6startstopclientserver.html)**
-
-    Before you start and stop the client and server, make sure you configure the native client with the SSL properties as described and with the servers or locators specified as usual.
+-   **[Set Up OpenSSL](../../nativeclient/security/ssl-setup.html)**
 
 -   **[Limitations](../../nativeclient/security/limitations.html)**
 
