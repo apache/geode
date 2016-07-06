@@ -25,6 +25,7 @@ import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.management.ManagementService;
@@ -230,12 +231,11 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     InternalDistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    fact.setStartPort(port);
-    fact.setEndPort(port);
+    fact.setStartPort(AvailablePort.AVAILABLE_PORTS_LOWER_BOUND);
+    fact.setEndPort(AvailablePort.AVAILABLE_PORTS_UPPER_BOUND);
     fact.setManualStart(true);
     GatewayReceiver receiver = fact.create();
-    return port;
+    return receiver.getPort();
   }
 
   public int createReceiverWithGroup(int locPort, String groups) {
@@ -248,12 +248,12 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     InternalDistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    fact.setStartPort(port);
-    fact.setEndPort(port);
+    fact.setStartPort(AvailablePort.AVAILABLE_PORTS_LOWER_BOUND);
+    fact.setEndPort(AvailablePort.AVAILABLE_PORTS_UPPER_BOUND);
     fact.setManualStart(true);
     GatewayReceiver receiver = fact.create();
-    return port;
+    return receiver.getPort();
+
   }
 
   public void startReceiver() {
