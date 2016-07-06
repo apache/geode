@@ -76,9 +76,9 @@ $ gfsh start server --name=server1 --locators=localhost[10334] \
 Once you've created a tc Server instance, you are ready to start the instance.
 
 ``` pre
-In Unix: 
+In Unix:
   $ ./tcruntime-ctl.sh my_instance_name start
-  
+
 In Windows:
   $ ./tcruntime-ctl.bat my_instance_name start
 ```
@@ -100,7 +100,7 @@ javac 1.8.0_66
 Native version: native code unavailable
 Source revision: c36591b73243c7ee3a0186710338453d12efe364
 Source repository: develop
-Running on: /10.118.33.250, 8 cpu(s), x86_64 Mac OS X 10.11.4
+Running on: /192.0.2.0, 8 cpu(s), x86_64 Mac OS X 10.11.4
 ```
 
 Information is also logged within the <span class="keyword">Geode</span> log file, which by default is named `gemfire_modules.log`.
@@ -124,5 +124,3 @@ For client-server topologies, only the Java system property `gemfire.loadClassOn
 
 **Note:**
 Non-sticky sessions cause a performance impact because sessions need to be re-created every time a request hits a different server. This may not be noticeable when the session attributes are small, but may become more evident as the session attributes increase in size and/or number.
-
-

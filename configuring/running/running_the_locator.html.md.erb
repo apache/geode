@@ -62,7 +62,7 @@ Use the following guidelines to start the locator:
         ``` pre
         gfsh>start locator --name=locator1
 
-        gfsh> start locator --name=locator2 --bind-address=192.168.129.205 --port=13489
+        gfsh> start locator --name=locator2 --bind-address=192.0.2.0 --port=13489
         ```
 
     -   Start the locator using the `main` method in the `com.gemstone.gemfire.distributed.LocatorLauncher` class and the Java executable. For example:
@@ -106,7 +106,7 @@ Use the following guidelines to start the locator:
                   .setPort(13489)
                   .build();
 
-                  locatorLauncher.start();  
+                  locatorLauncher.start();
 
                   System.out.println("Locator successfully started");
                 }
@@ -123,7 +123,7 @@ Use the following guidelines to start the locator:
         class MyApplication implements Runnable {
 
           private final LocatorLauncher locatorLauncher;
-          
+
           public MyApplication(final String... args) {
             validateArgs(args);
 
@@ -246,7 +246,5 @@ To connect a new locator process to a remote locator in a WAN configuration, spe
 
 ``` pre
 gfsh> start locator --name=locator1 --port=9009 --mcast-port=0 \
---J='-Dgemfire.remote-locators=10.117.33.214[9009],10.117.33.220[9009]'
+--J='-Dgemfire.remote-locators=192.0.2.0[9009],198.51.100.0[9009]'
 ```
-
-

@@ -127,7 +127,7 @@ Display the status of the specified gateway sender.
 **Syntax:**
 
 ``` pre
-status gateway-sender --id=value [--group=value(,value)*] 
+status gateway-sender --id=value [--group=value(,value)*]
 [--member=value]
 ```
 
@@ -201,7 +201,7 @@ The status will be one of the following:
 **Syntax:**
 
 ``` pre
-status locator [--name=value] [--host=value] [--port=value] 
+status locator [--name=value] [--host=value] [--port=value]
 [--pid=value] [--dir=value]
 ```
 
@@ -234,7 +234,7 @@ Uptime: 12 minutes 3 seconds
 GemFire Version: 8.0.0
 Java Version: 1.7.0_65
 Log File: /home/stymon/gemfire/locator1/locator1.log
-JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false 
+JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
 -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
 Class-Path: /home/stymon/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependencies.jar:/usr/local/java/lib/tools.jar
 
@@ -282,10 +282,8 @@ Uptime: 1 minute 3 seconds
 GemFire Version: 8.0.0
 Java Version: 1.7.0_65
 Log File: /home/stymon/gemfire/server1/server1.log
-JVM Arguments: -Dgemfire.default.locators=192.168.129.145[10334] -Dgemfire.use-cluster-configuration=true
- -XX:OnOutOfMemoryError="kill -9 %p" -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true 
+JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334] -Dgemfire.use-cluster-configuration=true
+ -XX:OnOutOfMemoryError="kill -9 %p" -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
 -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
 Class-Path: /home/stymon/Pivotal_GemFire_800_b48319_Linux/lib/server-dependencies.jar:/usr/local/java/lib/tools.jar
 ```
-
-

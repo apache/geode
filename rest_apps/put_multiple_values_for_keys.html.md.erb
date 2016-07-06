@@ -32,7 +32,7 @@ Content-Type: application/json
          "orderDate":  "01/15/2014",
          "deliveryDate":  "02/20/2014",
          "contact":  "Jane Doe",
-         "email":  "jane.doe@123corp.com",
+         "email":  "jane.doe@example.com",
          "phone":  "01-2048096",
          "items": [
             {
@@ -53,7 +53,7 @@ Content-Type: application/json
          "orderDate":  "02/10/2014",
          "deliveryDate":  "02/20/2014",
          "contact":  "Trent Jones",
-         "email":  "trent.jones@1corp.com",
+         "email":  "trent.jones@example.com",
          "phone":  "503-555-1221",
          "items": [
             {
@@ -84,5 +84,3 @@ Response-payload: null
 | 400 BAD REQUEST           | Returned if one or more of the supplied keys is an invalid format.                                                               |
 | 404 NOT FOUND             | Returned if the region is not found.                                                                                             |
 | 500 INTERNAL SERVER ERROR | Error encountered at <span class="keyword">Geode</span> server. Check the HTTP response body for a stack trace of the exception. |
-
-

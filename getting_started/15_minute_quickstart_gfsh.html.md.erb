@@ -44,8 +44,8 @@ The *locator* is a <span class="keyword">Geode</span> process that tells new, co
     GemFire Version: 8.2.0
     Java Version: 1.8.0_60
     Log File: /home/username/my_gemfire/locator1/locator1.log
-    JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false 
-    -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true 
+    JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
+    -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
     Class-Path: /home/username/Pivotal_GemFire_820_b17919_Linux/lib/gemfire.jar:
     /home/username/Pivotal_GemFire_820_b17919_Linux/lib/locator-dependencies.jar
@@ -81,7 +81,7 @@ Start the cache server:
 
 ``` pre
 gfsh>start server --name=server1 --server-port=40411
-                    
+
 ```
 
 This commands starts a cache server named "server1" on the specified port of 40411.
@@ -132,8 +132,8 @@ In this step you create a region with the `gfsh` command line utility. Regions a
     Name            : regionA
     Data Policy     : persistent replicate
     Hosting Members : server1
-                      
-    Non-Default Attributes Shared By Hosting Members  
+
+    Non-Default Attributes Shared By Hosting Members
 
      Type  | Name | Value
     ------ | ---- | -----
@@ -247,7 +247,7 @@ See [Data Regions](../basic_config/data_regions/chapter_overview.html#data_regio
     Hosting Members : server1
                       server2
 
-    Non-Default Attributes Shared By Hosting Members  
+    Non-Default Attributes Shared By Hosting Members
 
      Type  | Name | Value
     ------ | ---- | -----
@@ -317,7 +317,7 @@ See [Data Regions](../basic_config/data_regions/chapter_overview.html#data_regio
     Data Policy     : persistent replicate
     Hosting Members : server2
 
-    Non-Default Attributes Shared By Hosting Members  
+    Non-Default Attributes Shared By Hosting Members
 
      Type  | Name | Value
     ------ | ---- | -----
@@ -353,18 +353,18 @@ In this step you restart the cache servers in parallel. Because the data is pers
     [info 2015/01/14 09:08:13.610 PST server1 <main> tid=0x1] Region /regionA has pot
     entially stale data. It is waiting for another member to recover the latest data.
       My persistent id:
-      
+
         DiskStore ID: 8e2d99a9-4725-47e6-800d-28a26e1d59b1
         Name: server1
-        Location: /192.168.129.145:/home/username/my_gemfire/server1/.
-      
+        Location: /192.0.2.0:/home/username/my_gemfire/server1/.
+
       Members with potentially new data:
       [
         DiskStore ID: 2e91b003-8954-43f9-8ba9-3c5b0cdd4dfa
         Name: server2
-        Location: /192.168.129.145:/home/username/my_gemfire/server2/.
+        Location: /192.0.2.0:/home/username/my_gemfire/server2/.
       ]
-      Use the "gemfire list-missing-disk-stores" command to see all disk stores that 
+      Use the "gemfire list-missing-disk-stores" command to see all disk stores that
     are being waited on by other members.
     ```
 
@@ -374,8 +374,8 @@ In this step you restart the cache servers in parallel. Because the data is pers
     [username@localhost ~/my_gemfire]$ gfsh
         _________________________     __
        / _____/ ______/ ______/ /____/ /
-      / /  __/ /___  /_____  / _____  / 
-     / /__/ / ____/  _____/ / /    / /  
+      / /  __/ /___  /_____  / _____  /
+     / /__/ / ____/  _____/ / /    / /
     /______/_/      /______/_/    /_/    v8.2.0
 
     Monitor and Manage GemFire
@@ -405,8 +405,8 @@ In this step you restart the cache servers in parallel. Because the data is pers
     GemFire Version: 8.2.0
     Java Version: 1.8.0_60
     Log File: /home/username/my_gemfire/server1/server1.log
-    JVM Arguments: -Dgemfire.default.locators=192.168.129.145[10334] -Dgemfire.use-cluster-configuration=true 
-    -XX:OnOutOfMemoryError=kill -KILL %p -Dgemfire.launcher.registerSignalHandlers=true 
+    JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334] -Dgemfire.use-cluster-configuration=true
+    -XX:OnOutOfMemoryError=kill -KILL %p -Dgemfire.launcher.registerSignalHandlers=true
     -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
     Class-Path: /home/username/Pivotal_GemFire_820_b17919_Linux/lib/gemfire.jar:
     /home/username/Pivotal_GemFire_820_b17919_Linux/lib/server-dependencies.jar
@@ -447,7 +447,7 @@ In this step you restart the cache servers in parallel. Because the data is pers
 
     ``` pre
     gfsh>stop server --dir=server2
-    Stopping Cache Server running in /home/username/my_gemfire/server2 on 192.168.129.145[40412] as server2...
+    Stopping Cache Server running in /home/username/my_gemfire/server2 on 192.0.2.0[40412] as server2...
     Process ID: 3992
     Log File: /home/username/my_gemfire/server2/server2.log
     ....
@@ -490,7 +490,7 @@ To shut down your cluster, do the following:
 2.  When prompted, type 'Y' to confirm the shutdown of the cluster.
 
     ``` pre
-    As a lot of data in memory will be lost, including possibly events in queues, 
+    As a lot of data in memory will be lost, including possibly events in queues,
     do you really want to shutdown the entire distributed system? (Y/n): Y
     Shutdown is triggered
 
@@ -510,4 +510,3 @@ Here are some suggestions on what to explore next with <span class="keyword">Apa
 -   Continue reading the next section to learn more about the components and concepts that were just introduced.
 -   To get more practice using `gfsh`, see [Tutorial—Performing Common Tasks with gfsh](../tools_modules/gfsh/tour_of_gfsh.html#concept_0B7DE9DEC1524ED0897C144EE1B83A34).
 -   To learn about the cluster configuration service, see [Tutorial—Creating and Using a Cluster Configuration](../configuring/cluster_config/persisting_configurations.html#task_bt3_z1v_dl).
-

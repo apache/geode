@@ -6,13 +6,13 @@ You can connect `gfsh` via HTTP or HTTPS to a remote cluster and manage the clus
 
 To connect `gfsh` using the HTTP protocol to a remote GemFire cluster:
 
-1.  Launch `gfsh`. See [Starting gfsh](../../tools_modules/gfsh/starting_gfsh.html#concept_DB959734350B488BBFF91A120890FE61). 
+1.  Launch `gfsh`. See [Starting gfsh](../../tools_modules/gfsh/starting_gfsh.html#concept_DB959734350B488BBFF91A120890FE61).
 2.  When starting the remote cluster on the remote host, you can optionally specify `--http-bind-address` and `--http-service-port` as GemFire properties when starting up your JMX manager (server or locator). These properties can be then used in the URL used when connecting from your local system to the HTTP service in the remote cluster. For example:
 
     ``` pre
     gfsh>start server --name=server1 --J=-Dgemfire.jmx-manager=true \
     --J=-Dgemfire.jmx-manager-start=true -J=-Dgemfire.http-service-port=8080 \
-    --J=-Dgemfire.http-service-bind-address=my.remote.cluster
+    --J=-Dgemfire.http-service-bind-address=myremotecluster.example.com
     ```
 
     This command must be executed directly on the host machine that will ultimately act as the remote GemFire server that hosts the HTTP service for remote administration. (You cannot launch a GemFire server remotely.)
@@ -20,9 +20,9 @@ To connect `gfsh` using the HTTP protocol to a remote GemFire cluster:
 3.  On your local system, run the `gfsh` `connect` command to connect to the remote system. Include the `--use-http` and `--url` parameters. For example:
 
     ``` pre
-    gfsh>connect --use-http=true --url="http://my.remote.cluster:8080/gemfire/v1"
+    gfsh>connect --use-http=true --url="http://myremotecluster.example.com:8080/gemfire/v1"
 
-    Successfully connected to: GemFire Manager's HTTP service @ http://my.remote.cluster:8080/gemfire/v1
+    Successfully connected to: GemFire Manager's HTTP service @ http://myremotecluster.example.com:8080/gemfire/v1
     ```
 
     See [connect](../../tools_modules/gfsh/command-pages/connect.html).
@@ -67,5 +67,3 @@ The above parameters also apply to all HTTP services hosted on the configured JM
 
 -   Developer REST API service
 -   Pulse monitoring tool
-
-

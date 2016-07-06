@@ -48,7 +48,7 @@ package com.gemstone.gemfire.restclient;
 @SuppressWarnings( "unused")
  public class RestClientApp  {
    private static final String PEOPLE_REGION =  "/People";
-  
+
    private static final String PERSON1_AS_JSON =  "{"
           +  "\"@type\ ": \"com.gemstone.gemfire.domain.Person\ "," +  "\"id\ ": 1,"
        +  " \"firstName\ ": \"Jane\ "," +  " \"middleName\ ": \"H\ ","
@@ -57,27 +57,27 @@ package com.gemstone.gemfire.restclient;
 
    public static void main( final String... args)  throws Exception {
     doCreate(PEOPLE_REGION,  "1");
-     System.out.println( "Programme has run successfully...!");    
+     System.out.println( "Programme has run successfully...!");
   }
-  
+
    private static  HttpHeaders setAcceptAndContentTypeHeaders(){
     List<MediaType> acceptableMediaTypes =  new ArrayList<MediaType>();
     acceptableMediaTypes.add(MediaType.APPLICATION_JSON);
-        
+
     HttpHeaders headers =  new HttpHeaders();
     headers.setAccept(acceptableMediaTypes);
     headers.setContentType(MediaType.APPLICATION_JSON);
      return headers;
   }
-  
+
    private static void doCreate( final String regionNamePath,  final String key) {
     HttpHeaders headers =  setAcceptAndContentTypeHeaders();
     HttpEntity< String> entity =  new HttpEntity< String>(PERSON1_AS_JSON, headers);
-     try { 
+     try {
       ResponseEntity< String> result = RestClientUtils.getRestTemplate().exchange(
              "http://localhost:8080/gemfire-api/v1/People?key=1" , HttpMethod.POST,
             entity,  String.class);
-        
+
        System.out.println( "STATUS_CODE = " + result.getStatusCode().value());
        System.out.println( "HAS_BODY = " + result.hasBody());
        System.out.println( "LOCATION_HEADER = " + result.getHeaders().getLocation().toString());
@@ -117,9 +117,9 @@ package com.gemstone.gemfire.javaclient;
     ClientCacheFactory cf =  new ClientCacheFactory().addPoolServer( "localhost", 40405);
     ClientCache cache = cf.setPdxReadSerialized( true).create();
     ClientRegionFactory rf = cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
-                    
+
     Region region = rf.create( "People");
-                    
+
      //Get data on key "1" , update it and put it again in cache
     Person actualObj =  null;
      Object obj = region.get( "1");
@@ -135,20 +135,20 @@ package com.gemstone.gemfire.javaclient;
       }
     } else {
        System.out.println( "Error: obj is expected to be of type PdxInstance");
-    } 
-                
+    }
+
      //update the received object and put it in cache
  if(actualObj !=  null){
       actualObj.setFirstName( "Jane_updated");
       actualObj.setLastName( "Doe_updated");
       region.put( "1", actualObj);
     }
-                
+
      //Add/putAll set of person objects
  final Person person2 =  new Person(102L,  "Sachin",  "Ramesh",  "Tendulkar", DateTimeUtils.createDate(1975, Calendar.DECEMBER, 14), Gender.MALE);
      final Person person3 =  new Person(103L,  "Saurabh",  "Baburav",  "Ganguly", DateTimeUtils.createDate(1972, Calendar.AUGUST, 29), Gender.MALE);
      final Person person4 =  new Person(104L,  "Rahul",  "subrymanyam",  "Dravid", DateTimeUtils.createDate(1979, Calendar.MARCH, 17), Gender.MALE);
-     final Person person5 =  new Person(105L,  "Jhulan",  "Chidambaram",  "Goswami", DateTimeUtils.createDate(1983, Calendar.NOVEMBER, 25), Gender.FEMALE);             
+     final Person person5 =  new Person(105L,  "Jhulan",  "Chidambaram",  "Goswami", DateTimeUtils.createDate(1983, Calendar.NOVEMBER, 25), Gender.FEMALE);
      final Person person6 =  new Person(101L,  "Rahul",  "Rajiv",  "Gndhi", DateTimeUtils.createDate(1970, Calendar.MAY, 14), Gender.MALE);
      final Person person7 =  new Person(102L,  "Narendra",  "Damodar",  "Modi", DateTimeUtils.createDate(1945, Calendar.DECEMBER, 24), Gender.MALE);
      final Person person8 =  new Person(103L,  "Atal",  "Bihari",  "Vajpayee", DateTimeUtils.createDate(1920, Calendar.AUGUST, 9), Gender.MALE);
@@ -157,10 +157,10 @@ package com.gemstone.gemfire.javaclient;
      final Person person11 =  new Person(104L,  "Murali",  "Manohar",  "Joshi", DateTimeUtils.createDate(1923, Calendar.APRIL, 25), Gender.MALE);
      final Person person12 =  new Person(104L,  "Lalkrishna",  "Parmhansh",  "Advani", DateTimeUtils.createDate(1910, Calendar.JANUARY, 01), Gender.MALE);
      final Person person13 =  new Person(104L,  "Shushma",  "kumari",  "Swaraj", DateTimeUtils.createDate(1943, Calendar.AUGUST, 10), Gender.FEMALE);
-     final Person person14 =  new Person(104L,  "Arun",  "raman",  "jetly", DateTimeUtils.createDate(1942, Calendar.OCTOBER, 27), Gender.MALE);  
+     final Person person14 =  new Person(104L,  "Arun",  "raman",  "jetly", DateTimeUtils.createDate(1942, Calendar.OCTOBER, 27), Gender.MALE);
      final Person person15 =  new Person(104L,  "Amit",  "kumar",  "shah", DateTimeUtils.createDate(1958, Calendar.DECEMBER, 21), Gender.MALE);
      final Person person16 =  new Person(104L,  "Shila",  "kumari",  "Dixit", DateTimeUtils.createDate(1927, Calendar.FEBRUARY, 15), Gender.FEMALE);
-                
+
     Map< String,  Object> userMap =  new HashMap< String,  Object>();
     userMap.put( "2", person6);
     userMap.put( "3", person6);
@@ -177,10 +177,10 @@ package com.gemstone.gemfire.javaclient;
     userMap.put( "14", person14);
     userMap.put( "15", person15);
     userMap.put( "16", person16);
-        
-     //putAll all person               
+
+     //putAll all person
     region.putAll(userMap);
-                
+
      System.out.println( "successfully Put set of Person objects into the cache");
   }
 
@@ -208,7 +208,7 @@ package com.gemstone.gemfire.util;
 
  public class RestClientUtils {
 
-   public static final String BASE_URL =  "http://10.112.204.2:8080" ;
+   public static final String BASE_URL =  "http://192.0.2.0:8080" ;
  public static final String GEMFIRE_REST_API_CONTEXT =  "/gemfire-api";
    public static final String GEMFIRE_REST_API_VERSION =  "/v1";
    public static final URI GEMFIRE_REST_API_WEB_SERVICE_URL = URI
@@ -249,7 +249,7 @@ package com.gemstone.gemfire.util;
     httpMessageConverter.setObjectMapper(objectMapperFactoryBean.getObject());
      return httpMessageConverter;
   }
-          
+
    public static URI toUri( final String... pathSegments) {
      return toUri(GEMFIRE_REST_API_WEB_SERVICE_URL, pathSegments);
   }
@@ -257,7 +257,7 @@ package com.gemstone.gemfire.util;
    public static URI toUri( final URI baseUrl,  final String... pathSegments) {
      return UriComponentsBuilder.fromUri(baseUrl).pathSegment(pathSegments)
         .build().toUri();
-  } 
+  }
 }
 ```
 
@@ -343,7 +343,7 @@ package com.gemstone.gemfire.domain;
      this.firstName = firstName;
      this.lastName = lastName;
   }
-  
+
    public Person( final Long id,  final String firstName,  final String middleName,  final String lastName, Date date, Gender gender) {
      this.id = id;
      this.firstName = firstName;
@@ -445,7 +445,7 @@ package com.gemstone.gemfire.domain;
 
   @Override
    public void fromData(PdxReader pr) {
-    
+
     id = pr.readLong( "id");
     firstName = pr.readString( "firstName");
     middleName = pr.readString( "middleName");
@@ -461,7 +461,7 @@ package com.gemstone.gemfire.domain;
     pw.writeString( "middleName", middleName);
     pw.writeString( "lastName", lastName);
     pw.writeDate( "birthDate", birthDate);
-    pw.writeObject( "gender", gender); 
+    pw.writeObject( "gender", gender);
   }
 
 }
@@ -570,7 +570,7 @@ if __FILE__ == $0
   puts "Person modified is...\n #{p}"
 
   puts "JSON sent to Server for Person with ID 1...\n #{p.to_json}"
-  
+
   Net::HTTP.start(uri.hostname, uri.port) do |http|
     putRequest = Net::HTTP::Put.new uri.path, { "Content-Type" => "application/json" }
     putRequest.body = p.to_json
@@ -689,5 +689,3 @@ print("  GET - %s" % resource_uri(res=keys[0]))
 r = requests.get(resource_uri(res=keys[0]))
 print(r.text)
 ```
-
-

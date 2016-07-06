@@ -57,16 +57,16 @@ describe client --clientID=value
 **Example Commands:**
 
 ``` pre
-describe client --clientID=172.16.196.144(4987:loner):58922:7b3398cf
+describe client --clientID=192.0.2.0(4987:loner):58922:7b3398cf
 ```
 
 **Sample Output:**
 
 ``` pre
-gfsh>describe client --clientID=172.16.196.144(4987:loner):58922:7b3398cf
+gfsh>describe client --clientID=192.0.2.0(4987:loner):58922:7b3398cf
 -------------------------------------------------------------------
-Primary Servers                : 172.16.196.144(server1:5764)<v1>:15189
-Secondary Servers              : 172.16.196.144(server2:5891)<v2>:39082
+Primary Servers                : 192.0.2.0(server1:5764)<v1>:15189
+Secondary Servers              : 192.0.2.0(server2:5891)<v2>:39082
 CPU                            : 0
 Number of Cache Listner Calls  : 0
 Number of Gets                 : 0
@@ -219,7 +219,7 @@ PDX Serialization Meta-Data Stored : No
         Disk Directory          | Size
 ------------------------------- | ----------
 /home/stymon/server1/DiskStore1 | 2147483647
-    
+
 ```
 
 <a id="topic_D62F3D42B1D84CF68F03D54D5122806A"></a>
@@ -256,7 +256,7 @@ describe member --name=server1
 gfsh>describe member --name=server1
 Name        : server1
 Id          : GemFireStymon(server1:240)<v1>:64871
-Host        : 192.168.129.129
+Host        : 192.0.2.0
 Regions     : region4
 region5
 region3
@@ -402,5 +402,3 @@ Non-Default Attributes Shared By Hosting Members
 Region | data-policy | NORMAL
        | size        | 0
 ```
-
-

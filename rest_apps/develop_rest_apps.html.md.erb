@@ -48,7 +48,7 @@ Response Payload: application/json
 Server: Apache-Coyote/1.1
 Location: http://localhost:7070/gemfire-api/v1
 Content-Type: application/json
-Transfer-Encoding: chunked 
+Transfer-Encoding: chunked
 Date: Sat, 18 Jan 2014 20:05:47 GMT
 {
     "regions": [
@@ -222,7 +222,7 @@ Content-Type: application/json
      "orderDate":  "02/10/2014",
      "deliveryDate":  "02/20/2014",
      "contact":  "John Doe",
-     "email":  "John.Doe@myCopmany.com",
+     "email":  "John.Doe@example.com",
      "phone":  "01-2048096",
      "totalPrice": 225,
      "items": [
@@ -272,7 +272,7 @@ Accept: application/json
      "orderDate":  "02/10/2014",
      "deliveryDate":  "02/20/2014",
      "contact":  "Pie Doe",
-     "email":  "pie.doe@myCompany.com",
+     "email":  "pie.doe@example.com",
      "phone":  "01-2048096",
      "totalPrice": 225,
      "items": [
@@ -331,7 +331,7 @@ Content-Type: application/json
          "orderDate":  "02/10/2014",
          "deliveryDate":  "02/20/2014",
          "contact":  "Jelly Bean",
-         "email":  "jelly.bean@vmware.com",
+         "email":  "jelly.bean@example.com",
          "phone":  "01-2048096",
          "items": [
             {
@@ -352,7 +352,7 @@ Content-Type: application/json
          "orderDate":  "02/10/2014",
          "deliveryDate":  "02/25/2014",
          "contact":  "Vanilla Bean",
-         "email":  "vanillabean@newcorp.com",
+         "email":  "vanillabean@example.com",
          "phone":  "01-2048096",
          "items": [
             {
@@ -503,7 +503,7 @@ Content-Type: application/json
         "customerId": 102,
         "deliveryDate": "Thu Feb 20 00:00:00 IST 2014",
         "contact": "John Doe",
-        "email": "jDoe@mycompany.com",
+        "email": "jDoe@example.com",
         "phone": "01-2048096",
         "items": [
             {
@@ -676,5 +676,3 @@ Content-Type: application/json
 ```
 
 In the above example, the `Item` domain object must be in the CLASSPATH of all members receiving the function. If the object is not defined, the function will fail with an `Internal Server` error. Look for `ClassNotFoundException`s in the stack trace.
-
-

@@ -22,7 +22,7 @@ encrypt password              exit
 help                          hint
 history                       run
 set variable                  sh
-sleep                         start jconsole              
+sleep                         start jconsole
 start jvisualvm               start locator
 start pulse                   start server
 status locator                status server
@@ -136,8 +136,8 @@ PARAMETERS
 The file must have an extension of ".gfd".
                 Required:true
         member
-                Name/Id of a member which hosts the region. 
-The data will be exported to the specified file on the host 
+                Name/Id of a member which hosts the region.
+The data will be exported to the specified file on the host
 where the member is running.
                 Required:true
 ```
@@ -146,14 +146,14 @@ where the member is running.
 
 Use the Tab key after entering a partial command to trigger auto-completion of the command or a list of possible command completions. For example, hitting Tab after typing `hint` displays all available topics:
 ``` pre
-gfsh>hint 
+gfsh>hint
 
-Configuration           Data                    Debug-Utility           
-Disk Store              Function Execution      GFSH                    
-GemFire                 Help                    JMX                     
-Lifecycle               Locator                 Management-Monitoring   
-Manager                 Region                  Server                  
-Statistics                           
+Configuration           Data                    Debug-Utility
+Disk Store              Function Execution      GFSH
+GemFire                 Help                    JMX
+Lifecycle               Locator                 Management-Monitoring
+Manager                 Region                  Server
+Statistics
 ```
 
 Hitting tab after typing `hint d` displays the topics available that begin with 'd':
@@ -203,7 +203,7 @@ gfsh>start locator --name='locator 1'
 
 ``` pre
 start locator --name=locator1 --port=9009 --mcast-port=0\
- --J='-Dgemfire.remote-locators=10.117.33.214[9009],10.117.33.220[9009]'
+ --J='-Dgemfire.remote-locators=192.0.2.0[9009],192.0.2.1[9009]'
 ```
 
 When you execute multiple gfsh commands in a single line from the operating system shell, enclose the gfsh commands in double quotes. Within the double quotes, enclose any strings that contain spaces or commas with single quotes. For example:
@@ -211,5 +211,3 @@ When you execute multiple gfsh commands in a single line from the operating syst
 ``` pre
 $ gfsh -e "start locator --name='locator 1'" -e "start server --name=server1"
 ```
-
-

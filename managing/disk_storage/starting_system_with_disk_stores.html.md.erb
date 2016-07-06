@@ -11,21 +11,21 @@ When you start a member with a persistent region, the data is retrieved from dis
 With a log level of info or below, the system provides messaging about the wait. Here, the disk store for server2 has the most recent data for the region, and server1 is waiting for server2.
 
 ``` pre
-Region /people has potentially stale data. 
+Region /people has potentially stale data.
 It is waiting for another member to recover the latest data.
 My persistent id:
 
   DiskStore ID: 6893751ee74d4fbd-b4780d844e6d5ce7
   Name: server1
-  Location: /10.118.32.49:/home/dsmith/server1/.
+  Location: /192.0.2.0:/home/dsmith/server1/.
 
 Members with potentially new data:
 [
   DiskStore ID: 160d415538c44ab0-9f7d97bae0a2f8de
   Name: server2
-  Location: /10.118.32.49:/home/dsmith/server2/.
+  Location: /192.0.2.0:/home/dsmith/server2/.
 ]
-Use the "gfsh show missing-disk-stores" command to see all disk stores 
+Use the "gfsh show missing-disk-stores" command to see all disk stores
 that are being waited on by other members.
 ```
 
@@ -112,5 +112,3 @@ To shut down all members, including locators:
 ``` pre
 gfsh>shutdown --include-locators=true
 ```
-
-

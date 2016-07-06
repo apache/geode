@@ -41,8 +41,8 @@ If you do not specify any parameters, all member configuration will be exported.
 **Syntax:**
 
 ``` pre
-export config [--member=value(,value)*] [--group=value(,value)*] 
-[--dir=value] 
+export config [--member=value(,value)*] [--group=value(,value)*]
+[--dir=value]
 ```
 
 <a id="topic_C7C69306F93743459E65D46537F4A1EE__table_u5w_2bh_2w"></a>
@@ -119,7 +119,7 @@ Export user data from a region to a file.
 **Syntax:**
 
 ``` pre
-export data --region=value --file=value --member=value 
+export data --region=value --file=value --member=value
 ```
 
 <a id="topic_263B70069BFC4A7185F86B3272011734__table_lds_lbh_2w"></a>
@@ -136,7 +136,7 @@ export data --region=value --file=value --member=value
 
 ``` pre
 export data --region=region2 --file=region2_20121001.gfd --member=server2
- 
+
 ```
 
 **Sample Output:**
@@ -144,8 +144,8 @@ export data --region=region2 --file=region2_20121001.gfd --member=server2
 ``` pre
  gfsh>export data --region=region2 --file=region2_20121001.gfd --member=server1
 Data succesfully exported from region : region2 to file : C:\PivotalGemFire70\
-Latest\server1\region2_20121001.gfd on host : 192.168.129.129
- 
+Latest\server1\region2_20121001.gfd on host : 192.0.2.0
+
 ```
 
 <a id="topic_B80978CC659244AE91E2B8CE56EBDFE3"></a>
@@ -222,7 +222,7 @@ export offline-disk-store --name=value --disk-dirs=value(,value)* --dir=value
 
 ``` pre
  export offline-disk-store --name= DiskStore1 \
---disk-dirs=/home/username/gemfire/mydiskStore1Dir --dir=/home/username/gemfire/export 
+--disk-dirs=/home/username/gemfire/mydiskStore1Dir --dir=/home/username/gemfire/export
 ```
 
 <a id="topic_195D27B8B2B64A4E84CF2256636D54BD"></a>
@@ -262,5 +262,3 @@ gfsh>export stack-traces --file=stack.txt
 stack-trace(s) exported to file: C:\PivotalGemFire70\Latest\locator1\stack.txt
 On host : GemFireStymon
 ```
-
-

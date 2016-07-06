@@ -40,8 +40,8 @@ Starting a GemFire Locator in C:\devel\gfcache\locator\locator
 The Locator process terminated unexpectedly with exit status 1. Please refer to the log
         file in C:\devel\gfcache\locator\locator for full details.
 Exception in thread "main" java.lang.RuntimeException: An IO error occurred while
-        starting a Locator in C:\devel\gfcache\locator\locator on 10.84.192.33[10999]: Network is
-        unreachable; port (10999) is not available on 10.84.192.33.
+        starting a Locator in C:\devel\gfcache\locator\locator on 192.0.2.0[10999]: Network is
+        unreachable; port (10999) is not available on 192.0.2.0.
 at
 com.gemstone.gemfire.distributed.LocatorLauncher.start(LocatorLauncher.java:622)
 at
@@ -49,7 +49,7 @@ com.gemstone.gemfire.distributed.LocatorLauncher.run(LocatorLauncher.java:513)
 at
 com.gemstone.gemfire.distributed.LocatorLauncher.main(LocatorLauncher.java:188)
 Caused by: java.net.BindException: Network is unreachable; port (10999) is not available on
-        10.84.192.33.
+        192.0.2.0.
 at
 com.gemstone.gemfire.distributed.AbstractLauncher.assertPortAvailable(AbstractLauncher.java:136)
 at
@@ -126,16 +126,16 @@ Response:
 System member startup fails with an error like one of these:
 
 ``` pre
-Exception in thread "main" com.gemstone.gemfire.cache.CacheXmlException: 
-While reading Cache XML file:/C:/gemfire/client_cache.xml. 
-Error while parsing XML, caused by org.xml.sax.SAXParseException: 
+Exception in thread "main" com.gemstone.gemfire.cache.CacheXmlException:
+While reading Cache XML file:/C:/gemfire/client_cache.xml.
+Error while parsing XML, caused by org.xml.sax.SAXParseException:
 Document root element "client-cache", must match DOCTYPE root "cache".
 ```
 
 ``` pre
-Exception in thread "main" com.gemstone.gemfire.cache.CacheXmlException: 
-While reading Cache XML file:/C:/gemfire/cache.xml. 
-Error while parsing XML, caused by org.xml.sax.SAXParseException: 
+Exception in thread "main" com.gemstone.gemfire.cache.CacheXmlException:
+While reading Cache XML file:/C:/gemfire/cache.xml.
+Error while parsing XML, caused by org.xml.sax.SAXParseException:
 Document root element "cache", must match DOCTYPE root "client-cache".
 ```
 
@@ -216,10 +216,10 @@ Response: Use a partitioned or replicate data-policy for your server regions. Th
 In partitioned regions that are persisted to disk, if you have any members offline, the partitioned region will still be available but may have some buckets represented only in offline disk stores. In this case, methods that access the bucket entries return a PartitionOfflineException, similar to this:
 
 ``` pre
-com.gemstone.gemfire.cache.persistence.PartitionOfflineException: 
-Region /__PR/_B__root_partitioned__region_7 has persistent data that is no 
-longer online stored at these locations: 
-[/10.80.10.64:/export/straw3/users/jpearson/bugfix_Apr10/testCL/hostB/backupDirectory 
+com.gemstone.gemfire.cache.persistence.PartitionOfflineException:
+Region /__PR/_B__root_partitioned__region_7 has persistent data that is no
+longer online stored at these locations:
+[/192.0.2.1:/export/straw3/users/jpearson/bugfix_Apr10/testCL/hostB/backupDirectory 
 created at timestamp 1270834766733 version 0]
 ```
 
@@ -341,7 +341,7 @@ Increase the default socket timeout setting for the member. This timeout is set 
 A distributed system member’s Cache and DistributedSystem are forcibly closed by the system membership coordinator if it becomes sick or too slow to respond to heartbeat requests. When this happens, listeners receive RegionDestroyed notification with an opcode of FORCED\_DISCONNECT. The <span class="keyword">Geode</span> log file for the member shows a ForcedDisconnectException with the message
 
 ``` pre
-This member has been forced out of the distributed system because it did not respond 
+This member has been forced out of the distributed system because it did not respond
 within member-timeout milliseconds
 ```
 

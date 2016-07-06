@@ -18,8 +18,8 @@ $ cd gfsh_tutorial
 :~/gfsh_tutorial$ gfsh
     _________________________     __
    / _____/ ______/ ______/ /____/ /
-  / /  __/ /___  /_____  / _____  / 
- / /__/ / ____/  _____/ / /    / /  
+  / /  __/ /___  /_____  / _____  /
+ / /__/ / ____/  _____/ / /    / /
 /______/_/      /______/_/    /_/    v8.1.0
 
 Monitor and Manage GemFire
@@ -180,9 +180,9 @@ gfsh>describe member --name=server1
 Name        : server1
 Id          : ubuntu(server1:5931)<v1>:35285
 Host        : ubuntu.local
-Regions     : 
+Regions     :
 PID         : 5931
-Groups      : 
+Groups      :
 Used Heap   : 12M
 Max Heap    : 239M
 Working Dir : /home/username/gfsh_tutorial/server1
@@ -190,7 +190,7 @@ Log file    : /home/username/gfsh_tutorial/server1/server1.log
 Locators    : localhost[10334]
 
 Cache Server Information
-Server Bind              : 
+Server Bind              :
 Server Port              : 40404
 Running                  : true
 Client Connections       : 0
@@ -259,7 +259,7 @@ Uptime: 8 seconds
 GemFire Version: 8.1.0
 Java Version: 1.7.0_72
 Log File: /home/username/gfsh_tutorial/server2/server2.log
-JVM Arguments: -Dgemfire.default.locators=192.168.129.145[10334] -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
+JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334] -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
 Class-Path: /home/username/Pivotal_GemFire_810_b50582_Linux/lib/gemfire.jar:/home/username/Pivotal_GemFire_810_b50582_Linux/lib/server-dependencies.jar
 ```
 
@@ -316,7 +316,7 @@ Regions     : region4
               region2
               region1
 PID         : 5931
-Groups      : 
+Groups      :
 Used Heap   : 14M
 Max Heap    : 239M
 Working Dir : /home/username/gfsh_tutorial/server1
@@ -324,7 +324,7 @@ Log file    : /home/username/gfsh_tutorial/server1/server1.log
 Locators    : localhost[10334]
 
 Cache Server Information
-Server Bind              : 
+Server Bind              :
 Server Port              : 40404
 Running                  : true
 Client Connections       : 0
@@ -341,15 +341,15 @@ Regions     : region4
               region2
               region1
 PID         : 6092
-Groups      : 
+Groups      :
 Used Heap   : 14M
 Max Heap    : 239M
 Working Dir : /home/username/gfsh_tutorial/server2
 Log file    : /home/username/gfsh_tutorial/server2/server2.log
-Locators    : 192.168.129.145[10334]
+Locators    : 192.0.2.0[10334]
 
 Cache Server Information
-Server Bind              : 
+Server Bind              :
 Server Port              : 40405
 Running                  : true
 Client Connections       : 0
