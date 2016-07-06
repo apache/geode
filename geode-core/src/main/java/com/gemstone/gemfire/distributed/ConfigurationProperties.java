@@ -17,6 +17,8 @@
 
 package com.gemstone.gemfire.distributed;
 
+import org.apache.geode.redis.GeodeRedisServer;
+
 /**
  * This interface defines all the configuration properties that can be used.
  * <U>Since</U>: Geode 1.0
@@ -1495,9 +1497,9 @@ public interface ConfigurationProperties {
   /**
    * The static String definition of the <i>"redis-port"</i> property
    * <a name="redis-port"/a></p>
-   * <U>Description</U>: Specifies the port used by {@link com.gemstone.gemfire.redis.GemFireRedisServer}
+   * <U>Description</U>: Specifies the port used by {@link GeodeRedisServer}
    * which enables redis clients to connect and store data in GemFire distributed system.
-   * see {@link com.gemstone.gemfire.redis.GemFireRedisServer} for other configuration options.</p>
+   * see {@link GeodeRedisServer} for other configuration options.</p>
    * <U>Default</U>: "0" disables GemFireMemcachedServer</p>
    * <U>Allowed values</U>: 0..65535
    */
@@ -1505,14 +1507,14 @@ public interface ConfigurationProperties {
   /**
    * The static String definition of the <i>"redis-bind-address"</i> property
    * <a name="redis-bind-address"/a></p>
-   * <U>Description</U>: Specifies the bind address used by {@link com.gemstone.gemfire.redis.GemFireRedisServer}</p>
+   * <U>Description</U>: Specifies the bind address used by {@link GeodeRedisServer}</p>
    * <U>Default</U>: ""
    */
   String REDIS_BIND_ADDRESS = "redis-bind-address";
   /**
    * The static String definition of the <i>"redis-password"</i> property
    * <a name="redis-password"/a></p>
-   * <U>Description</U>: Specifies the password to authenticate a client of {@link com.gemstone.gemfire.redis.GemFireRedisServer}</p>
+   * <U>Description</U>: Specifies the password to authenticate a client of {@link GeodeRedisServer}</p>
    * <U>Default</U>: ""
    */
   String REDIS_PASSWORD = "redis-password";

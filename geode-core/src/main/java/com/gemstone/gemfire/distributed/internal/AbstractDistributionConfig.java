@@ -1022,9 +1022,9 @@ public abstract class AbstractDistributionConfig
     m.put(MEMCACHED_PORT, "The port GemFireMemcachedServer will listen on. Default is 0. Set to zero to disable GemFireMemcachedServer.");
     m.put(MEMCACHED_PROTOCOL, "The protocol that GemFireMemcachedServer understands. Default is ASCII. Values may be ASCII or BINARY");
     m.put(MEMCACHED_BIND_ADDRESS, "The address the GemFireMemcachedServer will listen on for remote connections. Default is \"\" which causes the GemFireMemcachedServer to listen on the host's default address. This property is ignored if memcached-port is \"0\".");
-    m.put(REDIS_PORT, "The port GemFireRedisServer will listen on. Default is 0. Set to zero to disable GemFireRedisServer.");
-    m.put(REDIS_BIND_ADDRESS, "The address the GemFireRedisServer will listen on for remote connections. Default is \"\" which causes the GemFireRedisServer to listen on the host's default address. This property is ignored if redis-port is \"0\".");
-    m.put(REDIS_PASSWORD, "The password which client of GemFireRedisServer must use to authenticate themselves. The default is none and no authentication will be required.");
+    m.put(REDIS_PORT, "The port GeodeRedisServer will listen on. Default is 0. Set to zero to disable GeodeRedisServer.");
+    m.put(REDIS_BIND_ADDRESS, "The address the GeodeRedisServer will listen on for remote connections. Default is \"\" which causes the GeodeRedisServer to listen on the host's default address. This property is ignored if redis-port is \"0\".");
+    m.put(REDIS_PASSWORD, "The password which client of GeodeRedisServer must use to authenticate themselves. The default is none and no authentication will be required.");
     m.put(ENABLE_CLUSTER_CONFIGURATION, LocalizedStrings.AbstractDistributionConfig_ENABLE_SHARED_CONFIGURATION.toLocalizedString());
     m.put(USE_CLUSTER_CONFIGURATION, LocalizedStrings.AbstractDistributionConfig_USE_SHARED_CONFIGURATION.toLocalizedString());
     m.put(LOAD_CLUSTER_CONFIGURATION_FROM_DIR, LocalizedStrings.AbstractDistributionConfig_LOAD_SHARED_CONFIGURATION_FROM_DIR.toLocalizedString(SharedConfiguration.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME));

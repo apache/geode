@@ -25,6 +25,7 @@ import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
+import org.apache.geode.redis.GeodeRedisServer;
 
 import java.io.File;
 import java.io.IOException;
@@ -308,12 +309,12 @@ public class DistributionConfigImpl
 
   
   /**
-   * port on which {@link com.gemstone.gemfire.redis.GemFireRedisServer} is started
+   * port on which {@link GeodeRedisServer} is started
    */
   private int redisPort = DEFAULT_REDIS_PORT;
   
   /**
-   * Bind address for GemFireRedisServer
+   * Bind address for GeodeRedisServer
    */
   private String redisBindAddress = DEFAULT_REDIS_BIND_ADDRESS;
   

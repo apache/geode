@@ -166,7 +166,7 @@ import com.gemstone.gemfire.pdx.internal.AutoSerializableManager;
 import com.gemstone.gemfire.pdx.internal.PdxInstanceFactoryImpl;
 import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
 import com.gemstone.gemfire.pdx.internal.TypeRegistry;
-import com.gemstone.gemfire.redis.GemFireRedisServer;
+import org.apache.geode.redis.GeodeRedisServer;
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
 
@@ -495,7 +495,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /**
    * Redis server is started when {@link DistributionConfig#getRedisPort()} is set
    */
-  private GemFireRedisServer redisServer;
+  private GeodeRedisServer redisServer;
   
   /**
    * {@link ExtensionPoint} support.
@@ -1157,7 +1157,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
         getLoggerI18n().info(LocalizedStrings.GemFireCacheImpl_STARTING_GEMFIRE_REDIS_SERVER_ON_BIND_ADDRESS_0_PORT_1,
             new Object[] { bindAddress, port });
       }
-      this.redisServer = new GemFireRedisServer(bindAddress, port);
+      this.redisServer = new GeodeRedisServer(bindAddress, port);
       this.redisServer.start();
     }
   }

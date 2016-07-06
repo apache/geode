@@ -15,7 +15,7 @@
  */
 package com.gemstone.gemfire.internal.hll;
 
-import com.gemstone.gemfire.internal.redis.executor.hll.HllExecutor;
+import org.apache.geode.redis.internal.executor.hll.HllExecutor;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

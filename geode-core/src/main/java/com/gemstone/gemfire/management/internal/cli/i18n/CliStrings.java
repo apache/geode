@@ -1742,7 +1742,7 @@ public class CliStrings {
   public static final String START_SERVER__REDIS_BIND_ADDRESS = ConfigurationProperties.REDIS_BIND_ADDRESS;
   public static final String START_SERVER__REDIS_BIND_ADDRESS__HELP = "Sets the IP address the Geode Redis service listens on for Redis clients. The default is to bind to the first non-loopback address for this machine.";
   public static final String START_SERVER__REDIS_PASSWORD = ConfigurationProperties.REDIS_PASSWORD;
-  public static final String START_SERVER__REDIS_PASSWORD__HELP = "Sets the authentication password for GemFireRedisServer"; // TODO:GEODE-1566: update golden file to GeodeRedisServer
+  public static final String START_SERVER__REDIS_PASSWORD__HELP = "Sets the authentication password for GeodeRedisServer"; // TODO:GEODE-1566: update golden file to GeodeRedisServer
   public static final String START_SERVER__SECURITY_PROPERTIES = "security-properties-file";
   public static final String START_SERVER__SECURITY_PROPERTIES__HELP = "The gfsecurity.properties file for configuring the Server's security configuration in the distributed system. The file's path can be absolute or relative to gfsh directory.";
   public static final String START_SERVER__REBALANCE = "rebalance";
