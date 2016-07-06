@@ -10,16 +10,15 @@ See the [Java to .NET Type Mapping Table](java-to-dotnet-type-mapping.html#conce
 
 ``` pre
 //This demonstrates, how to map .NET type to pdx type or java type
-            public class PdxTypeMapper : IPdxTypeMapper
-            {
-              public string ToPdxTypeName(string localTypeName)
-              {
-                return "pdx_" + localTypeName;
-              }
-              public string FromPdxTypeName(string pdxTypeName)
-              {
-                return pdxTypeName.Substring(4);//need to extract "pdx_"
-              }
+public class PdxTypeMapper : IPdxTypeMapper {
+    
+    public string ToPdxTypeName(string localTypeName) {
+        return "pdx_" + localTypeName;
+    }
+
+    public string FromPdxTypeName(string pdxTypeName) {
+        return pdxTypeName.Substring(4);//need to extract "pdx_"
+    }
 }
 ```
 

@@ -20,12 +20,9 @@ When you register the reflection-based serializer, <span class="keyword">Geode</
 
     This can only be configured in the application code. It cannot be configured declaratively in `cache.xml`.
 
-2.  (Optional) For each object you intend to have autoserialized, customize the serialization as needed.
-    **Note:**
-    If you also use PDX serialization in Java for the object, customize your serialization the same for both languages.
+2.  (Optional) For each object you intend to have autoserialized, customize the serialization as needed.  **Note:** If you also use PDX serialization in Java for the object, customize your serialization the same for both languages.
 
     1.  The following extension methods apply to autoserialization:
-
         -   **WriteTransform**. Controls what field value is written during auto serialization.
         -   **ReadTransform**. Controls what field value is read during auto deserialization.
         -   **GetFieldType**. Defines the specific field names that will be generated during autoserialization.

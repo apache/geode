@@ -14,10 +14,10 @@ This example creates a region using a CACHING\_PROXY RegionShortcut with no furt
 
 ``` pre
 RegionFactory regionFactory =
-cache.CreateRegionFactory(RegionShortcut.CACHING_PROXY);
+    cache.CreateRegionFactory(RegionShortcut.CACHING_PROXY);
  
 IRegion<string, string> region = regionFactory
-.Create<string, string>("exampleRegion");
+    .Create<string, string>("exampleRegion");
 ```
 
 ## Creating a CACHING\_PROXY Region with LRU
@@ -26,12 +26,12 @@ This example creates a region based on the CACHING\_PROXY RegionShortcut with tw
 
 ``` pre
 RegionFactory regionFactory =
-cache.CreateRegionFactory(RegionShortcut.CACHING_PROXY);
+    cache.CreateRegionFactory(RegionShortcut.CACHING_PROXY);
 // Create the example Region programmatically.
 IRegion<string, string> region = regionFactory
-.SetLruEntriesLimit(20000)
-.SetInitialCapacity(20000)
-.Create<string, string>("exampleRegion");
+    .SetLruEntriesLimit(20000)
+    .SetInitialCapacity(20000)
+    .Create<string, string>("exampleRegion");
 ```
 
 
