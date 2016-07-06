@@ -22,6 +22,7 @@ In this figure, the application code on the client makes changes to data entries
 <span class="figtitleprefix">Figure: </span>Transaction Run From a Client
 
 <img src="../common/images/xact-run-from-client.gif" id="how-native-client-xacts-work__image_E9ED33166A994014942ABAD9E6F61755" class="image" />
+
 To maintain cache consistency, the local client cache is not accessible during a transaction as it may reflect information inconsistent with the transaction in progress. When the transaction completes, the local cache is accessible again.
 
 In addition to the failure conditions common to all transactions, client transactions can also fail if the transaction delegate fails. If the delegate performing the transaction fails, the transaction code throws a `TransactionException`.
