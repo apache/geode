@@ -19,7 +19,6 @@ In every client where you want to execute the function and process the results:
     You can run a data dependent function against custom partitioned and colocated partitioned regions. From the client, provide the appropriate key sets to the function call.
 
 2.  Use the `Execution` object as needed for additional function configuration. You can:
-
     -   Provide a set of data keys to `withFilter` to narrow the execution scope. This works only for `onRegion Execution` objects.
     -   Provide function arguments to `withArgs`.
     -   Define a custom `ResultCollector` to `withCollector`. See [Programming to Get Function Results](handling-function-results.html#handling-function-results).
