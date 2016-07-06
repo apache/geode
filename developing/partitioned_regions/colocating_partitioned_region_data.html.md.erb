@@ -44,7 +44,6 @@ Data colocation between partitioned regions generally improves the performance o
                 </region> 
             </cache> 
             ```
-
         -   Java:
 
             ``` pre
@@ -54,7 +53,6 @@ Data colocation between partitioned regions generally improves the performance o
             attrs = new PartitionAttributesFactory().setColocatedWith(trades.getFullPath()).create();
             Region trade_history = new RegionFactory().setPartitionAttributes(attrs).create("trade_history");
             ```
-
         -   gfsh:
 
             ``` pre
@@ -93,7 +91,6 @@ Data colocation between partitioned regions generally improves the performance o
             </region> 
         </cache> 
         ```
-
     -   Java:
 
         ``` pre
@@ -106,7 +103,6 @@ Data colocation between partitioned regions generally improves the performance o
             .setColocatedWith(trades.getFullPath()).setPartitionResolver(resolver).create();
         Region trade_history = new RegionFactory().setPartitionAttributes(attrs).create("trade_history");
         ```
-
     -   gfsh:
 
         You cannot specify a partition resolver using gfsh.

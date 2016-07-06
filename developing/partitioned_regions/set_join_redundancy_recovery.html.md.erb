@@ -18,7 +18,7 @@ Setting this to a value higher than the default of 0 allows multiple new members
 Satisfying redundancy is not the same as adding capacity. If redundancy is satisfied, new members do not take buckets until you invoke a rebalance.
 
 **Note:**
-With parallel recovery introduced in version 8.2, redundancy may be recovered more quickly than in previous versions . For this reason, it is even more important to configure `startup-recovery-delay` to an appropriate value if you intend to restart multiple members at once. Set `startup-recovery-delay` to a value that ensures all members are up and available *before* redundancy recovery kicks in.
+With parallel recovery introduced in version 8.2, redundancy may be recovered more quickly than in previous versions. For this reason, it is even more important to configure `startup-recovery-delay` to an appropriate value if you intend to restart multiple members at once. Set `startup-recovery-delay` to a value that ensures all members are up and available *before* redundancy recovery kicks in.
 
 Set join redundancy recovery using one of the following:
 

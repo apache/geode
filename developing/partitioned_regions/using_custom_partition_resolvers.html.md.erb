@@ -63,7 +63,6 @@ For standard partitioning, use `com.gemstone.gemfire.cache.PartitionResolver`. T
         Buckets for a partition are hosted only by the members that have defined the partition name in their `FixedPartitionAttributes`.
 
         These examples set the partition attributes for a member to be the primary host for the "Q1" partition data and a secondary host for "Q3" partition data.
-
         -   XML:
 
             ``` pre
@@ -81,8 +80,8 @@ For standard partitioning, use `com.gemstone.gemfire.cache.PartitionResolver`. T
                </region>
             </cache>
             ```
-
         -   Java:
+
 
             ``` pre
             FixedPartitionAttribute fpa1 = FixedPartitionAttributes.createFixedPartition("Q1", true);
@@ -101,7 +100,6 @@ For standard partitioning, use `com.gemstone.gemfire.cache.PartitionResolver`. T
                 .setPartitionAttributes(paf.create())
                 .create("Trades");
             ```
-
         -   gfsh:
 
             You cannot specify a partition resolver using gfsh.
@@ -180,8 +178,8 @@ For standard partitioning, use `com.gemstone.gemfire.cache.PartitionResolver`. T
                 </region-attributes>
             </region>
             ```
-
         -   Java:
+
 
             ``` pre
             PartitionResolver resolver = new TradesPartitionResolver();
@@ -195,7 +193,6 @@ For standard partitioning, use `com.gemstone.gemfire.cache.PartitionResolver`. T
                 .setPartitionAttributes(attrs)
                 .create("trades");
             ```
-
         -   gfsh:
 
             You cannot specify a partition resolver using gfsh.

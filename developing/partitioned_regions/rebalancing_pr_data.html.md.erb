@@ -13,7 +13,7 @@ Rebalancing is a member operation. It affects all partitioned regions defined by
 For efficiency, when starting multiple members, trigger the rebalance a single time, after you have added all members.
 
 **Note:**
-If you have transactions running in your system, be careful in planning your rebalancing operations. Rebalancing may move data between members, which could cause a running transaction to fail with a TransactionDataRebalancedException. Fixed custom partitioning prevents rebalancing altogether. All other data partitioning strategies allow rebalancing and can result in this exception unless you run your transactions and your rebalancing operations at different times.
+If you have transactions running in your system, be careful in planning your rebalancing operations. Rebalancing may move data between members, which could cause a running transaction to fail with a `TransactionDataRebalancedException`. Fixed custom partitioning prevents rebalancing altogether. All other data partitioning strategies allow rebalancing and can result in this exception unless you run your transactions and your rebalancing operations at different times.
 
 Kick off a rebalance using one of the following:
 
