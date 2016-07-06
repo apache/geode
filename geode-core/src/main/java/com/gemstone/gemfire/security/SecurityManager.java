@@ -22,11 +22,13 @@ import java.util.Properties;
 
 public interface SecurityManager {
 
-  void init(Properties securityProps);
+  default void init(Properties securityProps) {}
 
   Principal authenticate(Properties props) throws AuthenticationFailedException;
 
   default boolean authorize(Principal principal, GeodePermission permission) {
     return true;
   }
+
+  default void close() {}
 }

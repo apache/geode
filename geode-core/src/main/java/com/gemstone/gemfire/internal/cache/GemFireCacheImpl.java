@@ -147,6 +147,7 @@ import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.offheap.MemoryAllocator;
 import com.gemstone.gemfire.internal.process.ClusterConfigurationNotAvailableException;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.internal.sequencelog.SequenceLoggerImpl;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
 import com.gemstone.gemfire.internal.util.concurrent.FutureResult;
@@ -1898,7 +1899,8 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
       return;
     }
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    
+    GeodeSecurityUtil.close(system.getConfig().getSecurityProps());
+
     synchronized (GemFireCacheImpl.class) {
       // bugfix for bug 36512 "GemFireCache.close is not thread safe"
       // ALL CODE FOR CLOSE SHOULD NOW BE UNDER STATIC SYNCHRONIZATION

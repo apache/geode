@@ -337,6 +337,17 @@ public class GeodeSecurityUtil {
 
   }
 
+  public static void close(Properties securityProps) {
+    if (securityProps != null) {
+      String customAuthenticator = securityProps.getProperty(SECURITY_MANAGER);
+      Object authenticatorObject = getObject(customAuthenticator);
+      if (authenticatorObject != null && authenticatorObject instanceof SecurityManager) {
+        ((SecurityManager) authenticatorObject).close();
+      }
+    }
+    return;
+  }
+
   public static Object postProcess(String regionPath, Object key, Object result){
     if(postProcessor == null)
       return result;
