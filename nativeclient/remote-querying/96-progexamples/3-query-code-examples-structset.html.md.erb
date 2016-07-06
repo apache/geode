@@ -9,7 +9,7 @@ These examples return a `StructSet` for built-in and user-defined data types, `S
 ``` pre
 QueryServicePtr qrySvcPtr = cachePtr->getQueryService("examplePool");
 const char * querystring =
-   "SELECT DISTINCT ID, pkid, status, getType FROM /Portfolios";
+   "SELECT DISTINCT ID, pkid, status, getType FROM /portfolios";
 QueryPtr query = qrySvcPtr->newQuery(querystring);
 //specify 10 seconds for the query timeout period
 SelectResultsPtr results = query->execute(10);
@@ -133,7 +133,7 @@ for (int32_t row=0; row < ss->size(); row++)
 
 ``` pre
 QueryServicePtr qrySvcPtr = cachePtr->getQueryService("examplePool");
-const char * querystring = "select distinct ID, names from /Portfolios";
+const char * querystring = "select distinct ID, names from /portfolios";
 QueryPtr query = qrySvcPtr->newQuery(querystring);
 SelectResultsPtr results = query->execute(10);
 if (results == NULLPTR) {

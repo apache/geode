@@ -8,24 +8,4 @@ Alternatively, if an expression evaluates to a boolean value, you can specify it
 
 If your query requires any `IMPORT` statements, you must include these before the `SELECT` statement in the query string that is passed to the query engine. It should be a fully qualified package name relative to the cache server. The Java class definition must exist and have the exact footprint as the native client C++ class.
 
--   **[FROM Clause](../../../nativeclient/remote-querying/93-querystrings/3-from-clause.html)**
-
-    The `FROM` clause establishes collections of objects that are iterated over by the remainder of the query.
-
--   **[SELECT Projection List](../../../nativeclient/remote-querying/93-querystrings/6-select-projection-list.html)**
-
-    The projections in the SELECT projection list are used to transform the results of the WHERE search operation.
-
--   **[SELECT Statement Query Results](../../../nativeclient/remote-querying/93-querystrings/7-select-statement-query-results.html)**
-
-    The result of a `SELECT` statement is a collection that implements the `SelectResults` interface or it is `UNDEFINED`.
-
--   **[WHERE Clause](../../../nativeclient/remote-querying/93-querystrings/4-where-clause.html)**
-
-    The optional WHERE clause defines the search criteria for the selection, filtering the set of elements specified by the FROM clause.
-
--   **[Joins](../../../nativeclient/remote-querying/93-querystrings/5-joins.html)**
-
-    If collections in the `FROM` clause are not related to each other, you can use the `WHERE` clause to join them.
-
 

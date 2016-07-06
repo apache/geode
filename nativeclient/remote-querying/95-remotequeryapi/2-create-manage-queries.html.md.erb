@@ -25,7 +25,7 @@ QueryPtr newQuery(const char * querystr);
 
 The `Region` interface has several shortcut query methods. All take a `query` predicate which is used in the `WHERE` clause of a standard query. See [WHERE Clause](../93-querystrings/4-where-clause.html#security) for more information. Each of the following examples also set the query response timeout to 10 seconds to allow sufficient time for the operation to succeed.
 
--   The `query` method retrieves a collection of values satisfying the query predicate. This call retrieves active portfolios, which in the sample data are the portfolios with keys `111, 222, and 333`:
+-   The `query` method retrieves a collection of values satisfying the query predicate. This call retrieves active portfolios, which in the sample data are the portfolios with keys `111`, `222`, and `333`:
 
     ``` pre
     SelectResultsPtr

@@ -16,23 +16,23 @@ SELECT DISTINCT * FROM /portfolios
 
 This statement shows the outer scope in bold. The outer scope has all the attributes of a Portfolio in it.
 
-``` pre
+<pre>
 IMPORT javaobject.Position;
-SELECT DISTINCT * FROM /portfolios
-      WHERE NOT
+<b>SELECT DISTINCT * FROM /portfolios</b>
+      <b>WHERE NOT</b>
         (SELECT DISTINCT * FROM positions.values TYPE Position
-            WHERE secId='YYY').isEmpty
-```
+            WHERE secId='YYY')<b>.isEmpty</b>
+</pre>
 
 <a id="security__section_611591AEA6084A5ABB00DE3E19984498"></a>
 Now the statement with the inner scope is shown in bold. The inner scope has all the attributes of a `Portfolio` in it (inherited from the outer scope), and all the attributes of a `Position` as well.
 
-``` pre
+<pre>
 IMPORT javaobject.Position;
 SELECT DISTINCT * FROM /portfolios
    WHERE NOT
-     (SELECT DISTINCT * FROM positions.values TYPE Position
-         WHERE secId='YYY).isEmpty
-```
+     (<b>SELECT DISTINCT * FROM positions.values TYPE Position
+         WHERE secId='YYY</b>).isEmpty
+</pre>
 
 

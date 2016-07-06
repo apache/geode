@@ -28,14 +28,12 @@ The following table summarizes the effects of cache server region scope and data
 |                                           |                    |                                        |
 |-------------------------------------------|--------------------|----------------------------------------|
 | **Region Scope**                          | **Not replicated** | **Replicated**                         |
-| `distributeded-ack or distributed-no-ack` | N/A                | FULL data set (if no race conditions). |
+| `distributed-ack or distributed-no-ack` | N/A                | FULL data set (if no race conditions). |
 | `global`                                  | N/A                | FULL data set.                         |
-
-: <span class="tablecap">Table 1. Effects of Cache Server Region Scope and Data Policy on the Data Available for Querying</span>
 
 <a id="security__section_18C174BB0B2A4F23B9A78F872FA220C4"></a>
 
-## Implementing the equals and haschcode Methods
+## Implementing the equals and hashcode Methods
 
 The `Portfolio` and `Position` query objects for the cache server must have the `equals` and `hashCode` methods implemented, and those methods must provide the properties and behavior mentioned in the online documentation for `Object.equals` and `Object.hashCode`. Inconsistent query results can occur if these methods are absent.
 
