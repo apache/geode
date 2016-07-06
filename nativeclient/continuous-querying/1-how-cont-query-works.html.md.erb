@@ -21,7 +21,7 @@ SELECT * FROM /tradeOrder t WHERE t.price > 100.00
 
 When the CQ is running, the server sends the client all new events that affect the results of the query. On the native client side, listeners programmed by you receive and process incoming events. For the example query on `/tradeOrder`, you might program a listener to push events to a GUI where higher-priced orders are displayed. CQ event delivery uses the client/server subscription framework described in [Client to Server Connection Process](../client-cache/client-to-server-connection.html#client-to-server-connection).
 
-CQs do not update the native client region. This is in contrast to other server-to-client messaging, like the updates sent to satisfy interest registration and responses to get requests from the client. CQs are notification tools for the CQ listeners, which can be programmed in any way your application requires.
+CQs do not update the native client region. This is in contrast to other server-to-client messaging, such as the updates sent to satisfy interest registration and responses to get requests from the client. CQs are notification tools for the CQ listeners, which can be programmed in any way your application requires.
 
 When a CQ is running against a server region, each entry event is evaluated against the CQ query by the thread that updates the server cache. If either the old or the new entry value satisfies the query, the thread puts a `CqEvent` in the client's queue. The `CqEvent` contains information from the original cache event, plus information specific to the CQ's execution. Once received by the client, the `CqEvent` is passed to the `onEvent` method of all `CqListeners` defined for the CQ.
 
@@ -54,7 +54,7 @@ A CQ has three possible states that can be accessed from the client by calling `
 
 -   `STOPPED`. The CQ has been created but not yet executed, or it has been explicitly stopped from executing. The stopped CQ uses system resources. You start or restart the CQ by calling the execute method on `CqQuery`.
 -   `RUNNING`. The CQ is being executed on the server for all events in the region referenced by the query. Results are sent to all client listeners associated with the `CqQuery`.
--   `CLOSED`. The CQ is closed and is not using system resources. Invoking an execute or stop method on closed `CqQuery` throws an exception.
+-   `CLOSED`. The CQ is closed and is not using system resources. Invoking an `execute` or `stop` method on closed `CqQuery` throws an exception.
 
 **Typical CQ life cycle**
 

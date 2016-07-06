@@ -2,7 +2,7 @@
 title:  CQ Execution Options
 ---
 
-CQ execution can be done with or without an initial result set by calling `CqQuery.Execute` or `CqQuery.ExecuteWithInitialResults`. The initial `SelectResults` returned from `ExecuteWithInitialResult`s is the same as the one you would get if you ran the query ad hoc by calling `QueryService.NewQuery.Execute` on the server cache, but with the key added.
+CQ execution can be done with or without an initial result set by calling `CqQuery.Execute` or `CqQuery.ExecuteWithInitialResults`. The initial `SelectResults` returned from `ExecuteWithInitialResults` is the same as the one you would get if you ran the query ad hoc by calling `QueryService.NewQuery.Execute` on the server cache, but with the key added.
 
 Individual CQs are executed using` CqQueryexecute*` methods. You can also execute all CQs for the client or for a region through the client `QueryService`. CQs that are running can be stopped or closed.
 
