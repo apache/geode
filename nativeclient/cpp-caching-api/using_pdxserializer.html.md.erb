@@ -6,14 +6,14 @@ For domain objects that you cannot or do not want to modify, use the `PdxSeriali
 
 You register a `PdxSerializer` implementation for the entire cache, programming it for all of the domain objects that you handle in this way. This way you do not have to implement the `PdxSerializable` interface for each domain class.
 
-The `PdxSerializer` allows domain classes to be serialized and deserialized as PDXs without modification of the domain class. It only requires that the domain class have a constructor accessible to the `PdxSerializer` to create an instance. The domain class will be held in a wrapper class `PdxWrapper`.
+The `PdxSerializer` allows domain classes to be serialized and deserialized as PDXs without modification of the domain class. It requires only that the domain class have a constructor accessible to the `PdxSerializer` to create an instance. The domain class will be held in a wrapper class, `PdxWrapper`.
 
 `PdxSerializer` has the following methods:
 
--   The `toData` method returns true if the PdxSerializer was able to serialize userObject, false if not.
+-   The `toData` method returns true if the PdxSerializer was able to serialize the user object, false if not.
 -   If the PdxSerializer was able to deserialize the object, the `fromData` method returns a void pointer to the user object to be wrapped in a `PdxWrapper`.
 
-When you later reference the user object, use the `PdxWrapper` class. `PdxWrapper` holds a shared reference to the object in the local cache and is used during serialization and deserialization. `PdxWrapper` acts as a container for the user domain object and needs to wrap every instance of the object that uses a registered `PdxSerializer`. The object instance will not be modified. In addition, when using `PdxWrapper`, you will need to provide a function pointer to a "de-allocator" which will delete the user object when the reference is no longer held.
+When you later reference the user object, use the `PdxWrapper` class. `PdxWrapper` holds a shared reference to the object in the local cache and is used during serialization and deserialization. `PdxWrapper` acts as a container for the user domain object and needs to wrap every instance of the object that uses a registered `PdxSerializer`. The object instance will not be modified. In addition, when using `PdxWrapper`, you will need to provide a function pointer to a "de-allocator", which will delete the user object when the reference is no longer held.
 
 The following code example defines a user object and a `PdxSerializer`. It then registers the new `PdxSerializer` and then uses `PdxWrapper` to put the object in a region and retrieve the object from a region.
 

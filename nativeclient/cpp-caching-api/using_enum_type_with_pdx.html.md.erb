@@ -2,9 +2,9 @@
 title:  Using C++ Enum Type with PDX Serialization
 ---
 
-Because there is no "object" base type in C++, enums cannot be directly passed as a parameter to the `writeObject` and `readObject` API.
+Because there is no "object" base type in C++, enums cannot be directly passed as parameters to the `writeObject` and `readObject` API.
 
-To use the C++ enum type with PDX serialization, you will have to wrap the `enum` in the `CacheableEnum` class type by specifying classname, enumname and ordinal.
+To use the C++ enum type with PDX serialization, you have to wrap the `enum` in the `CacheableEnum` class type by specifying classname, enumname and ordinal.
 
 ``` pre
 enum enumQuerytest { id1, id2, id3 };
@@ -69,7 +69,7 @@ enum enumQuerytest { id1, id2, id3 };
 ```
 
 <a id="concept_F38FDBC327204B4EB1E0BC74B4C95409__section_3491F76DB8C0464D89418B89372BBAEA"></a>
-## How Put and Queries Work on Enum
+## How Puts and Queries Work on Enums
 
 The following code sample demonstrates how put and query operations work when using the C++ enum Type with PDX serialization:
 

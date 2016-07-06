@@ -22,13 +22,13 @@ Use this procedure to program your domain object for PDX serialization using the
 
     In your `fromData` implementation, use the same name as you did in `toData` and call the read operations in the same order as you called the write operations in your `toData` implementation.
 
-4.  Optionally, program your domain object's hashCode and equals methods.
+4.  Optionally, program your domain object's hashCode and equality methods.
 
-    Use the `markIdentityField` method to indicate that the given field name should be included in hashCode and equals checks of this object on a server.
+    Use the `markIdentityField` method to indicate that the given field name should be included in hashCode and equality checks of this object on a server.
 
-    The fields that are marked as identity fields are used to generate the hashCode and equals methods of PdxInstance. Because of this, the identity fields should themselves either be primitives, or implement hashCode and equals.
+    The fields that are marked as identity fields are used to generate the hashCode and equality methods of PdxInstance. Because of this, the identity fields should themselves either be primitives, or implement hashCode and equals.
 
-    If no fields are set as identity fields, then all fields will be used in hashCode and equals checks. The identity fields should make marked after they are written using a `write`\* method.
+    If no fields are set as identity fields, then all fields will be used in hashCode and equality checks. The identity fields should make marked after they are written using a `write`\* method.
 
 ## PdxSerializable Example
 

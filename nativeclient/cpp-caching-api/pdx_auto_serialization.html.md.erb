@@ -1,6 +1,6 @@
-<a id="topic_bzj_wnw_dl"></a>
-
-# Using Automatic PDX Serialization
+---
+title: Using Automatic PDX Serialization
+---
 
 You can allow your native client C++ applications to automatically PDX serialize and deserialize domain objects without having to add any extra code by using the `pdxautoserializer` command line tool provided with the native client.
 
@@ -11,7 +11,9 @@ When using the native client C++ API, you can automatically serialize and deseri
 ## How to Use Automatic PDX Serialization
 
 **Prerequisites:**
+
 -   Understand generally how to configure the <span class="keyword">Geode</span> cache.
+
 -   Understand how PDX serialization works and how to configure your application to use PdxSerializer.
 
 The procedure below uses the following sample class:
@@ -39,11 +41,13 @@ class PortfolioPdx
 For each domain class you provide, all fields are considered for serialization except those defined as static or transient and those you explicitly exclude using macros.
 
 1.  Inherit your class from `gemfire::PdxSerializable`.
+
     ``` pre
     class PortfolioPdx : public PdxSerializable
     ```
 
 2.  Add the following method declarations in the public part of the class.
+
     ``` pre
     const char* getClassName() const;
     virtual void toData(gemfire::PdxWriterPtr pw);
@@ -52,6 +56,7 @@ For each domain class you provide, all fields are considered for serialization e
     ```
 
 3.  In your pre-build environment (for example in your **makefiles**), call `pdxautoserializer` as follows:
+
     ``` pre
     <GFCPP>/bin/pdxautoserializer.exe --outDir=<location to generate files> <SOURCE_DIR>/PortfolioPdx.hpp
     ```
@@ -59,6 +64,7 @@ For each domain class you provide, all fields are considered for serialization e
 4.  Include the generated file in your project and compile.
 
 The following is an example of a generated file:
+
 ``` pre
 #include "PortfolioPdx.hpp"
 #include <gfcpp/PdxWriter.hpp>
@@ -100,21 +106,25 @@ namespace testobject
 ## Handling Arrays
 
 1.  Define the following macro in your header file:
+
     ``` pre
     #define GFARRAYSIZE(x)
     ```
 
 2.  Assuming that the following is the class member of type array:
+
     ``` pre
     int8_t* newVal;
     ```
 
     Then define a new variable which sets the length of the array:
+
     ``` pre
     int32_t newValSize;
     ```
 
 3.  Tag the new variable with the `GFARRAYSIZE` macro as follows:
+
     ``` pre
     GFARRAYSIZE(newVal) int32_t newValSize;
     ```
@@ -151,11 +161,13 @@ class ArrayOfSizes?
 ## Excluding Member Variables from Serialization
 
 1.  Define the following macro in your header file:
+
     ``` pre
     #define GFEXCLUDE
     ```
 
 2.  Tag your member variable with this macro:
+
     ``` pre
     GFEXCLUDE char* type;
     ```
@@ -167,23 +179,26 @@ class ArrayOfSizes?
 Identity fields are used when comparing objects using the `hashCode` and `equals` methods.
 
 1.  Define the following macro in your header file.
+
     ``` pre
     #define GFID(x)
     ```
 
 2.  Assuming that the following is the class member you want to use as IdentityField:
+
     ``` pre
     int8_t* newVal;
     ```
 
     Tag the member with the GFID macro as follows:
+
     ``` pre
     GFID(newVal)int8_t* newVal;
     ```
 
 ## Ignoring User Defined Keywords
 
-You might have certain user defined keywords after the class name. Current C++ grammar does not support this. If you have some keywords user will have to ignore them by using GFIGNORE macro.
+You might have certain user defined keywords after the class name. Current C++ grammar does not support this. If you have some keywords user will have to ignore them by using the `GFIGNORE` macro.
 
 For example, consider the following class definition:
 
@@ -203,7 +218,7 @@ namespace PdxAutoTests {
   }
 ```
 
-Currently, the `pdxautoserializer` tool will fail to recognize `TESTOBJECT_EXPORT`. Change your class by adding `GFIGNORE` macro as follows:
+Currently, the `pdxautoserializer` tool will fail to recognize `TESTOBJECT_EXPORT`. Change your class by adding the `GFIGNORE` macro as follows:
 
 ``` pre
 #ifdef _WIN32
@@ -231,9 +246,9 @@ namespace PdxAutoTests {
 
 The `pdxautoserializer` tool takes classes as input and generates code that will serialize the class into the PDX format for you.
 
-The pdxautoserializer tool is located in `$GFCPP/bin` where `$GFCPP` corresponds to the installation location of the native client.
+The `pdxautoserializer` tool is located in `$GFCPP/bin` where `$GFCPP` corresponds to the installation location of the native client.
 
-Some additional notes about using the pdxautoserializer tool:
+Some additional notes about using the `pdxautoserializer` tool:
 
 -   Any const type in the class members are ignored by the `pdxserializer` tool.
 -   Generated files will have namespace in the file name.
@@ -280,7 +295,7 @@ GFIGNORE         for ignoring certain keywords
 For more details refer to documentation on this utility.
 ```
 
-## Generating Automatic Code for Single Class
+## Generating Automatic Code for a Single Class
 
 Many times there are multiple classes in a single header file. For example:
 
@@ -298,11 +313,12 @@ class class3 : public PdxSerializable{
 ```
 
 If you want to generate code for only one of the classes, then use the `--className` option. For example, if you only want to generate code for class3, then you would use the following command:
+
 ``` pre
 pdxautoserializer --outDir=<outDir> --className=class3
 ```
 
-## Choosing Your Own Suffix to identify the generated files.
+## Choosing Your Own Suffix to Identify the Generated Files.
 
 The `pdxserializer` tool also provides the option to choose your own suffix for the generated C++ files. This can help you write less code in your makefiles. Here's an example command:
 

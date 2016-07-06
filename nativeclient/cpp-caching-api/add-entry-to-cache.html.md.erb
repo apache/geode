@@ -28,7 +28,7 @@ The following table lists the client and cache server statistics for `putAll`.
 | Statistic Type     | Chart Name                | Description                                                                                                                                     |
 |--------------------|---------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
 | `CachePerfStats`   | `Putalls`                 | Total number of times a map is added or replaced in the cache as a result of a local operation. Also reports the number of `putAll` operations. |
-| `CacheperfStats`   | `putallTime`              | Total time to replace a map in the cache as a result of a local operation.                                                                      |
+| `CachePerfStats`   | `putallTime`              | Total time to replace a map in the cache as a result of a local operation.                                                                      |
 | `CacheServerStats` | `putAllRequests`          | Number of `putAll` requests.                                                                                                                    |
 | `CacheServerStats` | `putAllResponses`         | Number of `putAll` responses written to the cache client.                                                                                       |
 | `CacheServerStats` | `processPutAllTime`       | Total time to process a cache client `putAll` request, including the time to put all objects into the cache.                                    |
@@ -37,7 +37,7 @@ The following table lists the client and cache server statistics for `putAll`.
 | `CacheClientStats` | `putAll`                  | Number of `putAll` requests sent to the cache server.                                                                                           |
 | `CacheClientStats` | `sendPutAllTime`          | Total time for `sendPutAll` .                                                                                                                   |
 
-: <span class="tablecap">Table 1. PutAll Statistics for Cache Server and Client</span>
+<span class="tablecap">**Table 1.** putAll Statistics for Cache Server and Client</span>
 
 The putAll API also supports providing a callback argument to any cache loaders or cache writers that are invoked in the operation.
 

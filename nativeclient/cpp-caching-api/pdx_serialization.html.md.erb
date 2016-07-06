@@ -2,11 +2,11 @@
 title:  Serializing Data with PDX Serialization
 ---
 
-PDX is a cross-language data format that can reduce the cost of distributing and serializing your objects. PDX stores data in named fields that you can access individually to avoid the cost of deserializing the entire data object. When you use PDX serialization with the native client C++ API, you can register a PdxSerializer for the entire cache, implement PDX serialization for each domain object or use automatic PDX serialization by running the `pdxautoserializer` tool.
+PDX is a cross-language data format that can reduce the cost of distributing and serializing your objects. PDX stores data in named fields that you can access individually to avoid the cost of deserializing the entire data object. When you use PDX serialization with the native client C++ API, you can register a `PdxSerializer` for the entire cache, implement PDX serialization for each domain object or use automatic PDX serialization by running the `pdxautoserializer` tool.
 
-You can also set the object preference of the cache to the PdxInstance type, which allows you to access fields of a PDX object without deserializing the entire object.
+You can also set the object preference of the cache to the `PdxInstance` type, which allows you to access fields of a PDX object without deserializing the entire object.
 
-When using the native client C++ API, you can opt to use PDX autoserialization. The <span class="keyword">Geode</span> native client provides a command line tool called `pdxautoserializer` that will automatically generate C++ code that will PDX serialize the class you want to serialize.
+When using the native client C++ API, you can opt to use PDX autoserialization. The <span class="keyword">Geode</span> native client provides a command line tool called `pdxautoserializer` that will automatically generate C++ code to PDX serialize the class you want to serialize.
 
 -   **[Serialize Your Domain Objects with PdxSerializer and PdxWrapper](../../nativeclient/cpp-caching-api/using_pdxserializer.html)**
 
@@ -30,11 +30,11 @@ When using the native client C++ API, you can opt to use PDX autoserialization. 
 
 -   **[Using PdxInstanceFactory to Create PdxInstances](../../nativeclient/cpp-caching-api/using_pdxinstancefactory.html)**
 
-    You can use the `PdxInstanceFactory` API to create a `PdxInstance` from raw data when the domain class in not available on the server.
+    You can use the `PdxInstanceFactory` API to create a `PdxInstance` from raw data when the domain class is not available on the server.
 
 -   **[Using C++ Enum Type with PDX Serialization](../../nativeclient/cpp-caching-api/using_enum_type_with_pdx.html)**
 
-    Because there is no "object" base type in C++, enums cannot be directly passed as a parameter to the `writeObject` and `readObject` API.
+    Because there is no "object" base type in C++, enums cannot be directly passed as parameters to the `writeObject` and `readObject` API.
 
 -   **[Using PDX Serialization with Delta Propagation](../../nativeclient/cpp-caching-api/pdx_with_delta_propagation.html)**
 

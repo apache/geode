@@ -4,7 +4,7 @@ title:  Removing an Entry
 
 The standard `Region::remove` API removes the entry with specified key and provides a user-defined parameter object to any `CacheWriter` or `CacheListener` invoked in the process.
 
-The `remove` call not only removes the value, but also the key and entry from this region. The remove operation is propagated to the <span class="keyword">Geode</span> cache server that the native client is connected to. If the destroy operation fails due to an exception on the server (for example, a `CacheServerException` or security exception), then the local entry is still removed.
+The `remove` call not only removes the value, but also the key and entry from this region. The remove operation is propagated to the <span class="keyword">Geode</span> cache server to which the native client is connected. If the destroy operation fails due to an exception on the server (for example, a `CacheServerException` or security exception), then the local entry is still removed.
 
 The `remove` operation updates `CacheStatistics::getLastAccessedTime` and `CacheStatistics::getLastModifiedTime` for this region and the entry.
 
@@ -12,7 +12,7 @@ The `remove` API returns true if the entry (key, value) has been removed or fals
 
 ## Bulk Remove Operations Using removeAll
 
-You can use the `Region::removeAll` API to remove all entries for a colleciton of specified keys from the region. The effect of this call is equivalent to that of calling `destroy` on this region once for each key in the specified collection. If an entry does not exist, then that key is skipped. Note that an `EntryNotFoundException` is not thrown.
+You can use the `Region::removeAll` API to remove all entries from the region for a collection of specified keys. The effect of this call is equivalent to that of calling `destroy` on this region once for each key in the specified collection. If an entry does not exist, then that key is skipped. Note that an `EntryNotFoundException` is not thrown.
 
 The `removeAll` API also supports providing a callback argument to any cache loaders or cache writers that are invoked in the operation. See the Region API documentation for more information about using `removeAll`.
 

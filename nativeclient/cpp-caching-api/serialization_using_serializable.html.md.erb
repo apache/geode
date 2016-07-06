@@ -168,6 +168,8 @@ To extend a `Serializable` class to be a `CacheableKey`, you need to modify the 
 
 -   Change the class so that it derives from `CacheableKey` rather than `Serializable`.
 
+-   Implement `operator==` and `hashcode` functions.
+
 The next example demonstrates how to extend a `serializable` class to be a cacheable key.
 
 ## Example 3. Extending a Serializable Class To Be a CacheableKey
@@ -220,9 +222,11 @@ Serializable* fromData( DataInput& input )
 }
 
 // Add the following for the CacheableKey interface
+bool operator == ( const CacheableKey& other ) const
 {
     const BankAccount& otherBA =
     static_cast<const BankAccount&>( other );
+    return (m_ownerId == otherBA.m_ownerId) && (m_accountId == otherBA.m_accountId);
 }
 
 uint32_t hashcode( ) const

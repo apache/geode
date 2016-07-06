@@ -6,11 +6,11 @@ The native client C++ API gives you two serialization options: the `GemFire::Ser
 
 <span class="keyword">Geode</span> Portable Data eXchange (PDX) serialization is the recommended option. PDX serialization provides portability for PDX serializable objects so that clients can share data with Java servers and other non-C++ clients. PDX is a cross-language data format that can reduce the cost of distributing and serializing your objects. PDX stores data in named fields that you can access individually in order to avoid the cost of deserializing the entire data object. PDX also allows you to mix versions of objects where you have added or removed fields.
 
-When using PDX serialization, you can either use the `PdxSerializer` (for all your domain objects) or `PdxSerializable` (for a specific domain object).
+When using PDX serialization, you can use either `PdxSerializer` (for all your domain objects) or `PdxSerializable` (for a specific domain object).
 
 `PdxSerializer` is used when a user has registered a domain class for serialization in the cache using the `registerPdxSerializer` API.
 
-`PdxSerializable` is used when the domain class that a user wants to serialize/deserialize is inherited from `PdxSerializable` interface, and the user has registered domain class using `registerPdxType(domainClass)` API.
+`PdxSerializable` is used when the domain class that a user wants to serialize/deserialize is inherited from the `PdxSerializable` interface, and the user has registered the domain class using the `registerPdxType(domainClass)` API.
 
 The non-PDX serialization option is to use the `GemFire::Serializable` interface. The `GemFire::Serializable` interface can be a good option performance-wise if the size of your objects is small. The `GemFire::Serializable` is used whenever a user domain class is not inherited by `PdxSerializable` but the user has registered his or her class with the `registerType` API. See [Serializing Data with the Serializable Interface](serialization_using_serializable.html#concept_696AB5206C3E45898CC1A24CDD93D003) for more information.
 
@@ -19,9 +19,9 @@ The non-PDX serialization option is to use the `GemFire::Serializable` interface
 <table>
 <caption><span class="tablecap">Table 1. Serialization Options—Comparison of Features</span></caption>
 <colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
+<col width="50%" />
+<col width="25%" />
+<col width="25%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -49,14 +49,16 @@ The non-PDX serialization option is to use the `GemFire::Serializable` interface
 <tr class="even">
 <td><p>Works with GemFire delta propagation</p></td>
 <td>X</td>
-<td>X (See [Using PDX Serialization with Delta Propagation](pdx_with_delta_propagation.html#concept_F33AC930A8F14F0A9EE07AC31FFD8C8F) for requirements.)</td>
+<td>X**</td>
 </tr>
 </tbody>
 </table>
 
-: <span class="tablecap">Table 1. Serialization Options—Comparison of Features</span>
+<span class="tablecap">**Table 1.** Serialization Options—Comparison of Features</span>
 
-\*You can mix domain object versions where the differences between versions are the addition and removal of object fields.
+\* You can mix domain object versions where the differences between versions are the addition and removal of object fields.
+
+\*\* See [Using PDX Serialization with Delta Propagation](pdx_with_delta_propagation.html#concept_F33AC930A8F14F0A9EE07AC31FFD8C8F) for requirements.
 
 For detailed information on the interfaces, see the API documentation.
 

@@ -2,7 +2,7 @@
 title:  Using PdxInstanceFactory to Create PdxInstances
 ---
 
-You can use the `PdxInstanceFactory` API to create a `PdxInstance` from raw data when the domain class in not available on the server.
+You can use the `PdxInstanceFactory` API to create a `PdxInstance` from raw data when the domain class is not available on the server.
 
 Creating a `PdxInstance` can be particularly useful when you need an instance of a domain class for plug-in code such as a function or a loader. If you have raw data for the domain object (the class name and each field's type and data), then you can explicitly create a `PdxInstance`. The `PdxInstanceFactory` API is very similar to the `PdxWriter` API except that after writing each field, you need to call the create method which returns the created `PdxInstance`.
 
