@@ -36,17 +36,20 @@ public class AutoSerializerEx : ReflectionBasedAutoSerializer
    }
 
    public override bool IsIdentityField(FieldInfo fi, Type type) {
+      if (fi.Name == "_identityField")
         return true;
       return base.IsIdentityField(fi, type);
    }
 
    public override string GetFieldName(FieldInfo fi, Type type) {
+      if (fi.Name == "_nameChange")
         return fi.Name + "NewName";
       return fi.Name;
     }
  
    public override bool IsFieldIncluded(FieldInfo fi, Type type)
    {
+      if (fi.Name == "_notInclude")
         return false;
       return base.IsFieldIncluded(fi, type);
     }

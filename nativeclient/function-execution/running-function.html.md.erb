@@ -90,6 +90,7 @@ object[] routingObj = new object[17];
 int j = 0;
 for (int i = 0; i < 34; i++)
 {
+  if (i % 2 == 0) continue;
   routingObj[j] = "KEY--" + i;
   j++;
 }

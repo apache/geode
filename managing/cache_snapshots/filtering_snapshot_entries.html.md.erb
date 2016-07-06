@@ -15,6 +15,7 @@ Region<Integer, MyObject> region = ...
 SnapshotFilter<Integer, MyObject> even = new SnapshotFilter<Integer, MyObject>() {
   @Override
   public boolean accept(Entry<Integer, MyObject> entry) {
+    return entry.getKey() % 2 == 0;
   }
 };
 

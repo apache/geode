@@ -85,7 +85,9 @@ Program your durable client to be durable-messaging aware when it disconnects, r
         ``` pre
         int pendingEvents = cache.getDefaultPool().getPendingEventCount();
 
+        if (pendingEvents == -2) { // client connected for the first time  … // continue
         } 
+        else if (pendingEvents == -1) { // client reconnected but after the timeout period  
         … // handle possible data loss
         } 
         else { // pendingEvents >= 0  

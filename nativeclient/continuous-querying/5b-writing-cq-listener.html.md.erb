@@ -22,12 +22,15 @@ class TradeEventListener : public CqListener {
     // key and new value from the event
     CacheableKeyPtr key = cqEvent.getKey();
     TradeOrderPtr tradeOrder = dynCast<TradeOrderPtr>(cqEvent.getNewValue());
+    if (queryOperation==CqOperation::OP_TYPE_UPDATE) {
       // update data on the screen for the trade order
       . . .
     }
+    else if (queryOperation==CqOperation::OP_TYPE_CREATE) {
      // add the trade order to the screen
       . . .
     }
+    else if (queryOperation==CqOperation::OP_TYPE_DESTROY) {
     // remove the trade order from the screen
       . . .
    }
@@ -55,12 +58,15 @@ public class TradeEventListener : ICqListener {
      CacheableString keyStr = key as CacheableString;
      IGFSerializable val = cqEvent.getNewValue();
      TradeOrder tradeOrder = val as TradeOrder;
+     if (queryOperation==CqOperationType.OP_TYPE_UPDATE) {
         // update data on the screen for the trade order
         // . . .
         }
+     else if (queryOperation== CqOperationType.OP_TYPE_CREATE) {
         // add the trade order to the screen
         // . . .
      }
+     else if (queryOperation== CqOperationType.OP_TYPE_DESTROY) {
         // remove the trade order from the screen
         // . . .
      }
@@ -237,12 +243,14 @@ class MyCqStatusListener : public CqStatusListener {
 
     public virtual void OnEvent(CqEvent<TKey, TResult> ev)
     {
+      if (m_failedOver == true)
         m_eventCountAfter++;
       else
         m_eventCountBefore++;      
     }
     public virtual void OnError(CqEvent<TKey, TResult> ev)
     {
+      if (m_failedOver == true)
         m_errorCountAfter++;
       else
         m_errorCountBefore++;

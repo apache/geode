@@ -20,7 +20,8 @@ PoolFactoryPtr poolFacPtr = PoolManager::createFactory();
 //pool with locator, adding to pool factory
 poolFacPtr->addLocator("localhost", 34756 /*port number*/);
 PoolPtr pptr = NULLPTR;
-  // Pool does not exist with the same name.
+if ((PoolManager::find("examplePool")) == NULLPTR) {
+  // Pool with this name does not exist
   pptr = poolFacPtr->create("examplePool");
 }
 RegionFactoryPtr regionFactory =
@@ -45,6 +46,7 @@ poolFact.AddServer("localhost", 40404 /*port number*/);
 //pool with locator, adding to pool factory
 //poolFact.AddLocator("hostname", 15000 /*port number*/);
 Pool pool = null;
+if (PoolManager.Find("poolName") == null) {
   pool = poolFact.Create("poolName");
 }
 int loadConditInterval = pool.LoadConditioningInterval;

@@ -25,11 +25,15 @@ WritablePdxInstancePtr wpiPtr( pIPtr->createWriter());
 ASSERT(pIPtr != NULLPTR, "pIPtr != NULLPTR expected");   
 int val = 0;
 int newVal = 0;
+ASSERT(pIPtr->hasField("m_int32") == true, "m_id1 = true expected");
 pIPtr->getField("m_int32", val);
 wpiPtr->setField("m_int32", val + 1);
 rptr->put(keyport, wpiPtr);  
 PdxInstancePtr newPiPtr = dynCast<PdxInstancePtr>(rptr->get(keyport));  
+ASSERT(newPiPtr->hasField("m_int32") == true, "m_int32 = true expected");
 newPiPtr->getField("m_int32", newVal);  
+ASSERT(val + 1 == newVal, "val + 1 == newVal expected");  
+ASSERT((*pIPtr.ptr() == *newPiPtr.ptr()) == false, 
        "PdxInstance should not be equal");
 ```
 

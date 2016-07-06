@@ -63,12 +63,14 @@ public class CreateRegionFunction implements Function, Declarable {
                                         RegionAttributes attributes) {
     Status status = Status.SUCCESSFUL;
     Region region = this.cache.getRegion(regionName);
+    if (region == null) {
       // Put the attributes into the metadata region. The afterCreate call will
       // actually create the region.
       this.regionAttributesMetadataRegion.put(regionName, attributes);
       
       // Retrieve the region after creating it
       region = this.cache.getRegion(regionName);
+      if (region == null) {
         status = Status.UNSUCCESSFUL;
       }
     } else {
@@ -81,6 +83,7 @@ public class CreateRegionFunction implements Function, Declarable {
   createRegionAttributesMetadataRegion() {
     Region<String, RegionAttributes> metaRegion = 
                          this.cache.getRegion(REGION_ATTRIBUTES_METADATA_REGION);
+    if (metaRegion == null) {
       RegionFactory<String, RegionAttributes> factory =
                               this.cache.createRegionFactory();
       factory.setDataPolicy(DataPolicy.REPLICATE);

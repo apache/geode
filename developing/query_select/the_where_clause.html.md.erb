@@ -48,6 +48,7 @@ ID=1
 otherValue=2
 ```
 
+If you have implemented the equals method to simply match on the ID field (ID == ID), queries will produce unpredictable results.
 
 The following query:
 
@@ -320,6 +321,7 @@ One problem is that you cannot create indexes on Set or List types (collection t
 
 The comparison behavior of Double.NaN and Float.NaN within <span class="keyword">Geode</span> queries follow the semantics of the JDK methods Float.compareTo and Double.compareTo.
 
+In summary, the comparisons differ in the following ways from those performed by the Java language numerical comparison operators (<, <=, ==, >= >) when applied to primitive double [float] values:
 
 -   Double.NaN \[Float.NaN\] is considered to be equal to itself and greater than all other double \[float\] values (including Double.POSITIVE\_INFINITY \[Float.POSITIVE\_INFINITY\]).
 -   0.0d \[0.0f\] is considered by this method to be greater than -0.0d \[-0.0f\].

@@ -1,6 +1,9 @@
+---
+title: Sample REST Applications
+---
+
 <a id="topic_lvp_cd5_m4"></a>
 
-# Sample REST Applications
 
 This section provides examples that illustrate how multiple clients, both REST and native, can access the same <span class="keyword">Geode</span> region data.
 
@@ -213,6 +216,7 @@ package com.gemstone.gemfire.util;
 
    public static RestTemplate restTemplate;
    public static RestTemplate getRestTemplate() {
+     if (restTemplate ==  null) {
       restTemplate =  new RestTemplate();
        final List<HttpMessageConverter<?>> messageConverters =  new ArrayList<HttpMessageConverter<?>>();
 
@@ -399,6 +403,7 @@ package com.gemstone.gemfire.domain;
 
   @Override
    public boolean equals( final Object obj) {
+     if (obj ==  this) {
        return true;
     }
 
@@ -537,6 +542,7 @@ class Person < JsonSerializable
 
 end
 
+if __FILE__ == $0
   #p = Person.new(1, "Jon", "T", "Doe")
   #puts p
   #puts p.inspect
