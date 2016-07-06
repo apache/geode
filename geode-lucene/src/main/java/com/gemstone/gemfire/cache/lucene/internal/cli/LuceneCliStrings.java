@@ -19,9 +19,8 @@
 package com.gemstone.gemfire.cache.lucene.internal.cli;
 
 public class LuceneCliStrings {
-  public static final String LIST_INDEX = "list lucene indexes";
-  public static final String LIST_INDEX__HELP = "Display the list of lucene indexes created for all members.";
-  public static final String LIST_INDEX__ERROR_MESSAGE = "An error occurred while collecting all lucene index information across the Geode cluster: %1$s";
-  public static final String LIST_INDEX__INDEXES_NOT_FOUND_MESSAGE = "No lucene indexes Found";
-
-}
+  public static final String LUCENE_LIST_INDEX = "lucene list indexes";
+  public static final String LUCENE_LIST_INDEX__HELP = "Display the list of lucene indexes created for all members.";
+  public static final String LUCENE_LIST_INDEX__ERROR_MESSAGE = "An error occurred while collecting all lucene Index information across the Geode cluster: %1$s";
+  public static final String LUCENE_LIST_INDEX__INDEXES_NOT_FOUND_MESSAGE = "No Lucene Indexes Found";
+  }
