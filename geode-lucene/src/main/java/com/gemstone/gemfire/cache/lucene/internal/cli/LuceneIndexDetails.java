@@ -26,6 +26,13 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
 
   private String indexName;
   private String regionPath;
+
+  public LuceneIndexDetails(final String indexName, final String regionPath, final String[] searchableFieldNames) {
+    this.indexName = indexName;
+    this.regionPath = regionPath;
+    this.searchableFieldNames = searchableFieldNames;
+  }
+
   private String[] searchableFieldNames;
   protected Class<?> analyzer;
   private Map<String, Class<?>> fieldAnalyzers= new HashMap<String, Class<?>>();
