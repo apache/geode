@@ -1899,7 +1899,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
       return;
     }
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    GeodeSecurityUtil.close(system.getConfig().getSecurityProps());
+    GeodeSecurityUtil.close();
 
     synchronized (GemFireCacheImpl.class) {
       // bugfix for bug 36512 "GemFireCache.close is not thread safe"

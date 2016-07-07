@@ -60,6 +60,7 @@ public class GeodeSecurityUtil {
 
   private static Logger logger = LogService.getLogger();
 
+
   /**
    * It first looks the shiro subject in AccessControlContext since JMX will use multiple threads to process operations from the same client.
    * then it looks into Shiro's thead context.
@@ -284,6 +285,7 @@ public class GeodeSecurityUtil {
   }
 
   private static PostProcessor postProcessor;
+  private static SecurityManager securityManager;
 
   /**
    * initialize Shiro's Security Manager and Security Utilities
@@ -314,9 +316,9 @@ public class GeodeSecurityUtil {
 
     // only set up shiro realm if user has implemented SecurityManager
     else if (authenticatorObject != null && authenticatorObject instanceof SecurityManager) {
-      SecurityManager authenticator = (SecurityManager) authenticatorObject;
-      authenticator.init(securityProps);
-      Realm realm = new CustomAuthRealm(authenticator);
+      securityManager = (SecurityManager) authenticatorObject;
+      securityManager.init(securityProps);
+      Realm realm = new CustomAuthRealm(securityManager);
       org.apache.shiro.mgt.SecurityManager securityManager = new DefaultSecurityManager(realm);
       SecurityUtils.setSecurityManager(securityManager);
     }
@@ -337,15 +339,12 @@ public class GeodeSecurityUtil {
 
   }
 
-  public static void close(Properties securityProps) {
-    if (securityProps != null) {
-      String customAuthenticator = securityProps.getProperty(SECURITY_MANAGER);
-      Object authenticatorObject = getObject(customAuthenticator);
-      if (authenticatorObject != null && authenticatorObject instanceof SecurityManager) {
-        ((SecurityManager) authenticatorObject).close();
+  public static void close() {
+      if (securityManager != null) {
+        securityManager.close();
+        securityManager = null;
       }
-    }
-    return;
+
   }
 
   public static Object postProcess(String regionPath, Object key, Object result){

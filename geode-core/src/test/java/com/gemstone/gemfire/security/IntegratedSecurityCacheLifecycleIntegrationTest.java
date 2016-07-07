@@ -26,13 +26,14 @@ import java.util.Properties;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, SecurityTest.class})
 public class IntegratedSecurityCacheLifecycleIntegrationTest {
 
   private static SpySecurityManager spySecurityManager;
