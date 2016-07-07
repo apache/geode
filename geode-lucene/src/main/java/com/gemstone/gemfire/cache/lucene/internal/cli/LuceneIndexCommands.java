@@ -20,25 +20,45 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
+import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
+import com.gemstone.gemfire.internal.lang.StringUtils;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.management.cli.CliMetaData;
+import com.gemstone.gemfire.management.cli.ConverterHint;
 import com.gemstone.gemfire.management.cli.Result;
+import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.commands.AbstractCommandsSupport;
 import com.gemstone.gemfire.management.internal.cli.domain.IndexDetails;
 
+import com.gemstone.gemfire.management.internal.cli.domain.IndexInfo;
+import com.gemstone.gemfire.management.internal.cli.functions.CliFunctionResult;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+import com.gemstone.gemfire.management.internal.cli.result.CommandResultException;
+import com.gemstone.gemfire.management.internal.cli.result.ErrorResultData;
+import com.gemstone.gemfire.management.internal.cli.result.InfoResultData;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
+import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
+import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
 
 /**
  * The LuceneIndexCommands class encapsulates all Geode shell (Gfsh) commands related to lucene indexes defined in Geode.
@@ -81,17 +101,13 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       ((AbstractExecution) functionExecutor).setIgnoreDepartedMembers(true);
     }
 
-    final ResultCollector<?, ?> resultsCollector = functionExecutor.execute(new LuceneListIndexFunction());
-    final List<?> results = (List<?>) resultsCollector.getResult();
-    final List<LuceneIndexDetails> indexDetailsList = new ArrayList<>(results.size());
+    final ResultCollector resultsCollector = functionExecutor.execute(new LuceneListIndexFunction());
+    final List<Set<LuceneIndexDetails>> results = (List<Set<LuceneIndexDetails>>) resultsCollector.getResult();
 
-    for (Object result : results) {
-      if (result instanceof Set) { // ignore FunctionInvocationTargetExceptions and other Exceptions
-        indexDetailsList.addAll((Set<LuceneIndexDetails>) result);
-      }
-    }
-    Collections.sort(indexDetailsList);
-    return indexDetailsList;
+    return results.stream()
+      .flatMap(set -> set.stream())
+      .sorted()
+      .collect(Collectors.toList());
   }
 
   protected Result toTabularResult(final List<LuceneIndexDetails> indexDetailsList) {
@@ -101,7 +117,6 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       for (final LuceneIndexDetails indexDetails : indexDetailsList) {
         indexData.accumulate("Index Name", indexDetails.getIndexName());
         indexData.accumulate("Region Path", indexDetails.getRegionPath());
-        indexData.accumulate("Analyzer", indexDetails.getAnalyzer());
         indexData.accumulate("Indexed Fields", indexDetails.getSearchableFieldNamesString());
         indexData.accumulate("Field Analyzer", indexDetails.getFieldAnalyzersString());
       }

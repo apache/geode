@@ -17,12 +17,20 @@
 package com.gemstone.gemfire.cache.lucene.internal.cli;
 import static com.gemstone.gemfire.internal.lang.StringUtils.trim;
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
@@ -31,6 +39,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.execute.Execution;
@@ -40,7 +49,10 @@ import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneListIndexF
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
 import com.gemstone.gemfire.internal.util.CollectionUtils;
+import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.functions.ListIndexFunction;
+import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
+import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
@@ -79,20 +91,26 @@ public class LuceneIndexCommandsJUnitTest {
     return new LuceneTestIndexCommands(cache, functionExecutor);
   }
 
-  private LuceneIndexDetails createIndexDetails(final String indexName, final String regionPath, final String[] searchableFields) {
-    return new LuceneIndexDetails(indexName, regionPath, searchableFields);
+  private LuceneIndexDetails createIndexDetails(final String indexName, final String regionPath, final String[] searchableFields, final Map<String, Analyzer> fieldAnalyzers) {
+    return new LuceneIndexDetails(indexName, regionPath, searchableFields, fieldAnalyzers);
   }
 
   @Test
-  public void testGetIndexListing() {
+  public void testListIndex() {
 
-    final Cache mockCache = mockContext.mock(Cache.class, "Cache");
-    final AbstractExecution mockFunctionExecutor = mockContext.mock(AbstractExecution.class, "Function Executor");
-    final ResultCollector mockResultCollector = mockContext.mock(ResultCollector.class, "ResultCollector");
+    final Cache mockCache = mock(Cache.class, "Cache");
+    final AbstractExecution mockFunctionExecutor = mock(AbstractExecution.class, "Function Executor");
+    final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
+
     String[] searchableFields={"field1","field2","field3"};
-    final LuceneIndexDetails indexDetails1 = createIndexDetails("memberFive", "/Employees", searchableFields);
-    final LuceneIndexDetails indexDetails2 = createIndexDetails("memberSix", "/Employees", searchableFields);
-    final LuceneIndexDetails indexDetails3 = createIndexDetails("memberTen", "/Employees", searchableFields);
+    Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
+    fieldAnalyzers.put("field1", new StandardAnalyzer());
+    fieldAnalyzers.put("field2", new KeywordAnalyzer());
+    fieldAnalyzers.put("field3", null);
+    final LuceneIndexDetails indexDetails1 = createIndexDetails("memberFive", "/Employees", searchableFields, fieldAnalyzers);
+    final LuceneIndexDetails indexDetails2 = createIndexDetails("memberSix", "/Employees", searchableFields, fieldAnalyzers);
+    final LuceneIndexDetails indexDetails3 = createIndexDetails("memberTen", "/Employees", searchableFields, fieldAnalyzers);
+
 
     final List<LuceneIndexDetails> expectedIndexDetails = new ArrayList<>(3);
     expectedIndexDetails.add(indexDetails1);
@@ -103,77 +121,22 @@ public class LuceneIndexCommandsJUnitTest {
 
     results.add(CollectionUtils.asSet(indexDetails2, indexDetails1,indexDetails3));
 
-    mockContext.checking(new Expectations() {{
-      oneOf(mockFunctionExecutor).setIgnoreDepartedMembers(with(equal(true)));
-      oneOf(mockFunctionExecutor).execute(with(aNonNull(LuceneListIndexFunction.class)));
-      will(returnValue(mockResultCollector));
-      oneOf(mockResultCollector).getResult();
-      will(returnValue(results));
-    }});
+
+    when(mockFunctionExecutor.execute(isA(LuceneListIndexFunction.class)))
+      .thenReturn(mockResultCollector);
+    when(mockResultCollector.getResult())
+      .thenReturn(results);
 
     final LuceneIndexCommands commands = createIndexCommands(mockCache, mockFunctionExecutor);
 
-    final List<LuceneIndexDetails> actualIndexDetails = commands.getIndexListing();
-
-    assertNotNull(actualIndexDetails);
-    assertEquals(expectedIndexDetails, actualIndexDetails);
+    CommandResult result = (CommandResult) commands.listIndex();
+    TabularResultData data = (TabularResultData) result.getResultData();
+    assertEquals(Arrays.asList("memberFive", "memberSix", "memberTen"), data.retrieveAllValues("Index Name"));
+    assertEquals(Arrays.asList("/Employees", "/Employees", "/Employees"), data.retrieveAllValues("Region Path"));
+    assertEquals(Arrays.asList("[field1, field2, field3]", "[field1, field2, field3]", "[field1, field2, field3]"), data.retrieveAllValues("Indexed Fields"));
+    assertEquals(Arrays.asList("{field1=StandardAnalyzer, field2=KeywordAnalyzer}", "{field1=StandardAnalyzer, field2=KeywordAnalyzer}", "{field1=StandardAnalyzer, field2=KeywordAnalyzer}"), data.retrieveAllValues("Field Analyzer"));
   }
 
-  @Test(expected = RuntimeException.class)
-  public void testGetIndexListingThrowsRuntimeException() {
-    final Cache mockCache = mockContext.mock(Cache.class, "Cache");
-
-    final Execution mockFunctionExecutor = mockContext.mock(Execution.class, "Function Executor");
-
-    mockContext.checking(new Expectations() {{
-      oneOf(mockFunctionExecutor).execute(with(aNonNull(LuceneListIndexFunction.class)));
-      will(throwException(new RuntimeException("expected")));
-    }});
-
-    final LuceneIndexCommands commands = createIndexCommands(mockCache, mockFunctionExecutor);
-
-    try {
-      commands.getIndexListing();
-    }
-    catch (RuntimeException expected) {
-      assertEquals("expected", expected.getMessage());
-      throw expected;
-    }
-  }
-
-  @Test
-  public void testGetIndexListingReturnsFunctionInvocationTargetExceptionInResults() {
-    final Cache mockCache = mockContext.mock(Cache.class, "Cache");
-
-    final AbstractExecution mockFunctionExecutor = mockContext.mock(AbstractExecution.class, "Function Executor");
-
-    final ResultCollector mockResultCollector = mockContext.mock(ResultCollector.class, "ResultCollector");
-    String[] searchableFields={"field1","field2","field3"};
-    final LuceneIndexDetails indexDetails = createIndexDetails("memberOne", "/Employees",searchableFields );
-
-    final List<LuceneIndexDetails> expectedIndexDetails = new ArrayList<>();
-    expectedIndexDetails.add(indexDetails);
-
-    final List<Object> results = new ArrayList<Object>(2);
-
-    results.add(CollectionUtils.asSet(indexDetails));
-    results.add(new FunctionInvocationTargetException("expected"));
-
-    mockContext.checking(new Expectations() {{
-      oneOf(mockFunctionExecutor).setIgnoreDepartedMembers(with(equal(true)));
-      oneOf(mockFunctionExecutor).execute(with(aNonNull(LuceneListIndexFunction.class)));
-      will(returnValue(mockResultCollector));
-      oneOf(mockResultCollector).getResult();
-      will(returnValue(results));
-    }});
-
-    final LuceneIndexCommands commands = createIndexCommands(mockCache, mockFunctionExecutor);
-
-    final List<LuceneIndexDetails> actualIndexDetails = commands.getIndexListing();
-
-    assertNotNull(actualIndexDetails);
-    assertEquals(expectedIndexDetails, actualIndexDetails);
-  }
 
   private static class LuceneTestIndexCommands extends LuceneIndexCommands {
 

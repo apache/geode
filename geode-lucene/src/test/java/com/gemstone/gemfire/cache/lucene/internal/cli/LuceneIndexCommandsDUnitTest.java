@@ -27,11 +27,17 @@ import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.dunit.*;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Category(DistributedTest.class)
 public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
@@ -70,7 +76,11 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
+      Map<String, Analyzer> fieldAnalyzers = new HashMap();
+      fieldAnalyzers.put("field1", new StandardAnalyzer());
+      fieldAnalyzers.put("field2", new KeywordAnalyzer());
+      fieldAnalyzers.put("field3", null);
+      luceneService.createIndex(INDEX_NAME, REGION_NAME, fieldAnalyzers);
     };
     vm1.invoke(()->initDataStore(createIndex));
   }

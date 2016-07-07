@@ -54,18 +54,13 @@ public class LuceneListIndexFunction extends FunctionAdapter implements Internal
   }
 
   public void execute(final FunctionContext context) {
-    try {
-      final Set<LuceneIndexDetails> indexDetailsSet = new HashSet<>();
-      final Cache cache = getCache();
-      LuceneService service = LuceneServiceProvider.get(cache);
-      for (LuceneIndex index:service.getAllIndexes()) {
-        indexDetailsSet.add(new LuceneIndexDetails((LuceneIndexImpl) index));
-      }
-      context.getResultSender().lastResult(indexDetailsSet);
+    final Set<LuceneIndexDetails> indexDetailsSet = new HashSet<>();
+    final Cache cache = getCache();
+    LuceneService service = LuceneServiceProvider.get(cache);
+    for (LuceneIndex index : service.getAllIndexes()) {
+      indexDetailsSet.add(new LuceneIndexDetails((LuceneIndexImpl) index));
     }
-    catch (Exception e) {
-      context.getResultSender().sendException(e);
-    }
+    context.getResultSender().lastResult(indexDetailsSet);
   }
 
 }

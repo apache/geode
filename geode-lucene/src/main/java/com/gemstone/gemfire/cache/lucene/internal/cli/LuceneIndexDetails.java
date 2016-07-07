@@ -17,63 +17,56 @@
 package com.gemstone.gemfire.cache.lucene.internal.cli;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
 
+import org.apache.lucene.analysis.Analyzer;
+
 public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Serializable {
 
-  private String indexName;
-  private String regionPath;
+  private final String indexName;
+  private final String regionPath;
+  private final String[] searchableFieldNames;
+  private final Map<String, String> fieldAnalyzers;
 
-  public LuceneIndexDetails(final String indexName, final String regionPath, final String[] searchableFieldNames) {
+  public LuceneIndexDetails(final String indexName, final String regionPath, final String[] searchableFieldNames, Map<String, Analyzer> fieldAnalyzers) {
     this.indexName = indexName;
     this.regionPath = regionPath;
     this.searchableFieldNames = searchableFieldNames;
+    this.fieldAnalyzers = getAnalyzerStrings(fieldAnalyzers);
   }
-
-  private String[] searchableFieldNames;
-  protected Class<?> analyzer;
-  private Map<String, Class<?>> fieldAnalyzers= new HashMap<String, Class<?>>();
 
   public LuceneIndexDetails(LuceneIndexImpl index) {
-    indexName = index.getName();
-    regionPath = index.getRegionPath();
-    searchableFieldNames = index.getFieldNames();
-    analyzer = index.getAnalyzer().getClass();
-    setFieldAnalyzers(index);
+    this(index.getName(), index.getRegionPath(), index.getFieldNames(), index.getFieldAnalyzers());
   }
 
-  private void setFieldAnalyzers(final LuceneIndexImpl index) {
-    if (index.getFieldAnalyzers() != null) {
-      for (Entry entry : index.getFieldAnalyzers().entrySet()) {
-        fieldAnalyzers.put(entry.getKey().toString(), entry.getValue().getClass());
+  private Map<String, String> getAnalyzerStrings(Map<String, Analyzer> fieldAnalyzers) {
+    if(fieldAnalyzers == null) {
+      return Collections.emptyMap();
+    }
+
+    Map<String, String> results = new HashMap<>();
+
+    for (Entry<String, Analyzer> entry : fieldAnalyzers.entrySet()) {
+      final Analyzer analyzer = entry.getValue();
+      if(analyzer != null) {
+        results.put(entry.getKey(), analyzer.getClass().getSimpleName());
       }
     }
+    return results;
   }
 
   public String getSearchableFieldNamesString() {
-    StringBuffer stringBuffer=new StringBuffer("[");
-    if (searchableFieldNames !=null) {
-      for (String field : searchableFieldNames) {
-        stringBuffer.append(field + ",");
-      }
-      stringBuffer.deleteCharAt(stringBuffer.length()-1);
-    }
-    return stringBuffer.append("]").toString();
+    return Arrays.asList(searchableFieldNames).toString();
   }
 
 
   public String getFieldAnalyzersString() {
-    StringBuffer stringBuffer=new StringBuffer("[");
-    if (!fieldAnalyzers.isEmpty()) {
-      for(Entry entry: fieldAnalyzers.entrySet()) {
-        stringBuffer.append("<"+entry.getKey()+","+entry.getValue()+">,");
-      }
-      stringBuffer.deleteCharAt(stringBuffer.length()-1);
-    }
-    return stringBuffer.append("]").toString();
+    return fieldAnalyzers.toString();
   }
 
   @Override
@@ -81,7 +74,6 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
     final StringBuffer buffer = new StringBuffer();
     buffer.append("{\n\tIndex Name = "+indexName);
     buffer.append(",\tRegion Path = "+regionPath);
-    buffer.append(",\tAnalyzer = "+analyzer);
     buffer.append(",\tIndexed Fields = "+getSearchableFieldNamesString());
     buffer.append(",\tField Analyzer = "+getFieldAnalyzersString());
     buffer.append("\n}\n");
@@ -95,14 +87,6 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
 
   public String getRegionPath() {
     return regionPath;
-  }
-
-  public Map<String, Class<?>> getFieldAnalyzers() {
-    return fieldAnalyzers;
-  }
-
-  public Class<?> getAnalyzer() {
-    return analyzer;
   }
 
   public String[] getSearchableFieldNames() {
