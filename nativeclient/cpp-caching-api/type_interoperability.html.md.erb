@@ -21,29 +21,26 @@ In addition, the table lists which PdxReader and PdxWriter C++ APIs to use when 
 | int16\_t                          | short                                                            | short                   | readShort/writeShort                         |
 | int32\_t                          | Int32/int                                                        | int                     | readInt/writeInt                             |
 | int64\_t                          | Int64/long                                                       | long                    | readLong/writeLong                           |
-| int8\_t\*                         | System.Byte\[\](System.SByte\[\]??)                              | Byte\[\]<sup>2</sup>    | readByteArray/writeByteArray                 |
-| double\*                          | System.Double\[\]                                                | Double\[\]              | readDoubleArray/writeDoubleArray             |
-| float\*                           | System.float\[\]                                                 | Float\[\]               | readFloatArray/writeFloatArray               |
+| int8\_t\*                         | System.Byte\[ \]/System.SByte\[  \]                              | Byte\[  \]<sup>2</sup>    | readByteArray/writeByteArray                 |
+| double\*                          | System.Double\[  \]                                                | Double\[  \]              | readDoubleArray/writeDoubleArray             |
+| float\*                           | System.float\[  \]                                                 | Float\[  \]               | readFloatArray/writeFloatArray               |
 | CacheableHashSet                  | CacheableHashSet                                                 | java.util.HashSet       | readObject/writeObject                       |
 | CacheableLinkedHashSet            | CacheableLinkedHashSet                                           | java.util.LinkedHashSet | readObject/writeObject                       |
-| int16\_t\*                        | System.Int16\[\]                                                 | Short\[\]               | readShortArray/writeShortArray               |
-| int32\_t\*                        | System.Int32\[\]                                                 | Int\[\]                 | readIntArray/writeIntArray                   |
-| int64\_t\*                        | System.Int64\[\]                                                 | Long\[\]                | readLongArray/writeLongArray                 |
-| bool\*                            | System.Boolean\[\]                                               | Boolean\[\]             | readBooleanArray/writeBooleanArray           |
-| wchar\_t\*/char\*<sup>1</sup>     | System.Char\[\]                                                  | char\[\]                | readCharArray/writeCharArray                 |
+| int16\_t\*                        | System.Int16\[  \]                                                 | Short\[  \]               | readShortArray/writeShortArray               |
+| int32\_t\*                        | System.Int32\[  \]                                                 | Int\[  \]                 | readIntArray/writeIntArray                   |
+| int64\_t\*                        | System.Int64\[  \]                                                 | Long\[  \]                | readLongArray/writeLongArray                 |
+| bool\*                            | System.Boolean\[  \]                                               | Boolean\[  \]             | readBooleanArray/writeBooleanArray           |
+| wchar\_t\*/char\*<sup>1</sup>     | System.Char\[  \]                                                  | char\[  \]                | readCharArray/writeCharArray                 |
 | enum<sup>3</sup>                  | enum                                                             | Enum                    | readObject/writeObject                       |
-| int8\_t\*\*                       | byte\[\]\[\]/Sbyte\[\]\[\]                                       | Byte\[\]\[\]            | readArrayOfByteArrays/writeArrayOfByteArrays |
-| wchar\_t\*\*/char\*\*<sup>1</sup> | System.String\[\]                                                | String\[\]              | readStringArray/writeStringArray             |
-| CacheableDate                     | System.DateTime<sup>4</sup>                                      | Java.util.date          | readDate/writeDate                           |
-| CacheableObjectArray              | object\[\]/System.Object\[\]                                     | Object\[\]              | readObjectArray/writeObjectArray             |
+| int8\_t\*\*                       | byte\[  \]\[  \]/Sbyte\[  \]\[  \]                                       | Byte\[  \]\[  \]            | readArrayOfByteArrays/writeArrayOfByteArrays |
+| wchar\_t\*\*/char\*\*<sup>1</sup> | System.String\[  \]                                                | String\[  \]              | readStringArray/writeStringArray             |
+| CacheableDate                     | System.DateTime (UTC)                                      | Java.util.date          | readDate/writeDate                           |
+| CacheableObjectArray              | object\[  \]/System.Object\[  \]                                     | Object\[  \]              | readObjectArray/writeObjectArray             |
 | Cacheable/Serializable            | object/System.Object                                             | Object                  | readObject/writeObject                       |
 
 <sup>1</sup>C++ allows unicode and non-unicode characters, so C++ PDX will support both wchar\_t/char and wchar\_t\*/char\*.
 
-<sup>2</sup> Using Pdx we use sByte only as java byte is signed. But for DataSerializable we have kept Byte\[\] array only as this is use as data container.
+<sup>2</sup> For Pdx, only SByte is used, as Java Byte is signed. But for DataSerializable, Byte\[  \] array is used as a data container.
 
-<sup>3</sup>C++ allows explicit setting of ordinal number, but it is up to the user to map java enumName with that of C++ enumName. See [Using C++ Enum Type with PDX Serialization](using_enum_type_with_pdx.html#concept_F38FDBC327204B4EB1E0BC74B4C95409).
-
-<sup>4</sup>Now we put UTC time from .NET .
-
+<sup>3</sup>C++ allows explicit setting of ordinal numbers, but it is up to the developer to map the Java enumNames with C++ enumNames. See [Using C++ Enum Type with PDX Serialization](using_enum_type_with_pdx.html#concept_F38FDBC327204B4EB1E0BC74B4C95409).
 
