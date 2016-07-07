@@ -18,6 +18,7 @@
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
 import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.EventID;
@@ -112,6 +113,17 @@ public class ClientInterestMessageImpl implements ClientMessage {
     this.action = action;
   }
 
+  public ClientInterestMessageImpl(ClientInterestMessageImpl message, Object keyOfInterest) {
+    this.eventId = new EventID(CacheFactory.getAnyInstance().getDistributedSystem());
+    this.regionName = message.regionName;
+    this.keyOfInterest = keyOfInterest;
+    this.interestType = message.interestType;
+    this.interestResultPolicy = message.interestResultPolicy;
+    this.isDurable = message.isDurable;
+    this.forUpdatesAsInvalidates = message.forUpdatesAsInvalidates;
+    this.action = message.action;
+  }
+  
   /**
    * Default constructor.
    */
@@ -231,6 +243,10 @@ public class ClientInterestMessageImpl implements ClientMessage {
     return this.interestType;
   }
   
+  public byte getInterestResultPolicy() {
+    return this.interestResultPolicy;
+  }
+  
   public boolean getIsDurable() {
     return this.isDurable;
   }
@@ -264,6 +280,30 @@ public class ClientInterestMessageImpl implements ClientMessage {
   }
 
   public void setLatestValue(Object value){
+  }
+  
+  public String toString() {
+    return new StringBuilder()
+      .append(getClass().getSimpleName())
+      .append("[")
+      .append("eventId=")
+      .append(this.eventId)
+      .append("; regionName=")
+      .append(this.regionName)
+      .append("; keyOfInterest=")
+      .append(this.keyOfInterest)
+      .append("; isDurable=")
+      .append(this.isDurable)
+      .append("; forUpdatesAsInvalidates=")
+      .append(this.forUpdatesAsInvalidates)
+      .append("; interestType=")
+      .append(this.interestType)
+      .append("; interestResultPolicy=")
+      .append(this.interestResultPolicy)
+      .append("; action=")
+      .append(this.action)
+      .append("]")
+      .toString();
   }
 
   @Override

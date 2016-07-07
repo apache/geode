@@ -718,13 +718,6 @@ final class ProxyRegionMap implements RegionMap {
     throw new IllegalStateException("removeTombstone should never be called on a proxy");
   }
 
-
-  /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.RegionMap#unscheduleTombstone(com.gemstone.gemfire.internal.cache.RegionEntry)
-   */
-  public void unscheduleTombstone(RegionEntry re) {
-  }
-
   public void setEntryFactory(RegionEntryFactory f) {
     throw new IllegalStateException("Should not be called on a ProxyRegionMap");
   }

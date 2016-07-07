@@ -935,16 +935,17 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
             dataResult.setInputQuery(query);
 
             // post process, iterate through the result for post processing
-            List<SelectResultRow> rows = dataResult.getSelectResult();
-            for(Iterator<SelectResultRow> itr = rows.iterator(); itr.hasNext();){
-              SelectResultRow row = itr.next();
-              Object newValue = GeodeSecurityUtil.postProcess(null, null, row.getValue());
-              // user is not supposed to see this row
-              if(newValue==null){
-                itr.remove();
-              }
-              else{
-                row.setValue(newValue);
+            if(GeodeSecurityUtil.needPostProcess()) {
+              List<SelectResultRow> rows = dataResult.getSelectResult();
+              for (Iterator<SelectResultRow> itr = rows.iterator(); itr.hasNext(); ) {
+                SelectResultRow row = itr.next();
+                Object newValue = GeodeSecurityUtil.postProcess(null, null, row.getValue());
+                // user is not supposed to see this row
+                if (newValue == null) {
+                  itr.remove();
+                } else {
+                  row.setValue(newValue);
+                }
               }
             }
 

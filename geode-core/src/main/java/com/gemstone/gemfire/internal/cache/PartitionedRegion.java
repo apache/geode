@@ -10620,5 +10620,9 @@ public class PartitionedRegion extends LocalRegion implements
     }
     return br.getEntryExpiryTask(key);
   }
+  
+  public Logger getLogger() {
+	return logger;
+  }
 }
 

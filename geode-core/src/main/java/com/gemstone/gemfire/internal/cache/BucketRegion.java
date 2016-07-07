@@ -320,6 +320,22 @@ implements Bucket
   }
 
   @Override
+  protected boolean needsTombstoneGCKeysForClients(EventID eventID, FilterInfo clientRouting) {
+    if (eventID == null) {
+      return false;
+    }
+    if (CacheClientNotifier.getInstance() == null) {
+      return false;
+    }
+    if (clientRouting != null) {
+      return true;
+    }
+    if (getFilterProfile() != null) {
+      return true;
+    }
+    return false;
+  }
+  @Override
   protected void notifyClientsOfTombstoneGC(Map<VersionSource, Long> regionGCVersions, Set<Object>removedKeys, EventID eventID, FilterInfo routing) {
     if (CacheClientNotifier.getInstance() != null) {
       // Only route the event to clients interested in the partitioned region.
@@ -327,7 +343,7 @@ implements Bucket
       // have the filter profile ferret out all of the clients that have interest
       // in this region
       FilterProfile fp = getFilterProfile();
-      if ((removedKeys != null && removedKeys.size() > 0) // bug #51877 - NPE in clients
+      if ((removedKeys != null && !removedKeys.isEmpty()) // bug #51877 - NPE in clients
           && (routing != null || fp != null)) { // fix for bug #46309 - don't send null/empty key set to clients
         RegionEventImpl regionEvent = new RegionEventImpl(getPartitionedRegion(), Operation.REGION_DESTROY, null, true, getMyId()); 
         FilterInfo clientRouting = routing;

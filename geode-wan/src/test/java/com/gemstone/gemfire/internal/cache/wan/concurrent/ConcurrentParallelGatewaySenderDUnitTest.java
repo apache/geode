@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.concurrent;
 
+import com.jayway.awaitility.Awaitility;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -40,6 +41,7 @@ import com.gemstone.gemfire.test.dunit.Wait;
 
 import java.net.SocketException;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test the functionality of ParallelGatewaySender with multiple dispatchers.
@@ -621,29 +623,33 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
         getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
 
     AsyncInvocation inv1 = vm7.invokeAsync(() -> WANTestBase.doPuts( getTestMethodName() + "_PR", 5000 ));
-    Wait.pause(500);
+    vm2.invoke(() -> Awaitility.await().atMost(30000, TimeUnit.MILLISECONDS).until(() ->
+      assertEquals("Failure in waiting for at least 10 events to be received by the receiver",
+        true, (getRegionSize(getTestMethodName() + "_PR") > 10 ))));
     AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
     AsyncInvocation inv3 = vm6.invokeAsync(() -> WANTestBase.doPuts( getTestMethodName() + "_PR", 10000 ));
-    Wait.pause(1500);
+    vm2.invoke(() -> Awaitility.await().atMost(30000, TimeUnit.MILLISECONDS).until(() ->
+      assertEquals("Failure in waiting for additional 2000 events to be received by the receiver ",
+        true,getRegionSize(getTestMethodName() + "_PR") > 7000 )));
     AsyncInvocation inv4 = vm5.invokeAsync(() -> WANTestBase.killSender());
     inv1.join();
     inv2.join();
     inv3.join();
     inv4.join();
-    
+
     vm6.invoke(() -> WANTestBase.validateRegionSize(
       getTestMethodName() + "_PR", 10000 ));
     vm7.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_PR", 10000 ));
+
+    vm2.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_PR", 10000 ));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(
       getTestMethodName() + "_PR", 10000 ));
     
     //verify all buckets drained on the sender nodes that up and running.
     vm6.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
     vm7.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
-
-    vm2.invoke(() -> WANTestBase.validateRegionSize(
-        getTestMethodName() + "_PR", 10000 ));
-    vm3.invoke(() -> WANTestBase.validateRegionSize(
-        getTestMethodName() + "_PR", 10000 ));
   }
   
   @Test

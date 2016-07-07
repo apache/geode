@@ -154,6 +154,7 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
     });
   }
   
+  @Category(FlakyTest.class) // GEODE-1580 uses asyncs with pauses
   @Test
   public void testDistributedDeadlockWithDLock() throws Throwable {
     Host host = Host.getHost(0);

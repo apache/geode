@@ -1157,12 +1157,11 @@ public class HandShake implements ClientHandShake
     dhSKAlgo = config.getSecurityClientDHAlgo();
     dhPrivateKey = null;
     dhPublicKey = null;
-    String authenticator = config.getSecurityClientAuthenticator();
     // Initialize the keys when either the host is a client that has
     // non-blank setting for DH symmetric algo, or this is a server
     // that has authenticator defined.
     if ((dhSKAlgo != null && dhSKAlgo.length() > 0)
-        || (authenticator != null && authenticator.length() > 0)) {
+        || GeodeSecurityUtil.isSecurityRequired(config.getSecurityProps())) {
       KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH");
       DHParameterSpec dhSpec = new DHParameterSpec(dhP, dhG, dhL);
       keyGen.initialize(dhSpec);

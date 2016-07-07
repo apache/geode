@@ -347,6 +347,16 @@ public class GeodeSecurityUtil {
 
   }
 
+  /**
+   * postProcess call already has this logic built in, you don't need to call this everytime you call postProcess.
+   * But if your postProcess is pretty involved with preparations and you need to bypass it entirely, call this first.
+   * @return
+   */
+  public static boolean needPostProcess(){
+    Subject subject = getSubject();
+    return (subject != null && postProcessor != null);
+  }
+
   public static Object postProcess(String regionPath, Object key, Object result){
     if(postProcessor == null)
       return result;
@@ -359,6 +369,7 @@ public class GeodeSecurityUtil {
     String regionName = StringUtils.stripStart(regionPath, "/");
     return postProcessor.processRegionValue((Principal)subject.getPrincipal(), regionName, key,  result);
   }
+
 
   public static Object getObject(String factoryName) {
     if (StringUtils.isBlank(factoryName)) {

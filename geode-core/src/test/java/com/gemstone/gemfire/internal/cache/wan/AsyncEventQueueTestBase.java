@@ -258,12 +258,25 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
   }
 
   public static void createAsyncEventQueue(String asyncChannelId,
-      boolean isParallel, Integer maxMemory, Integer batchSize,
-      boolean isConflation, boolean isPersistent, String diskStoreName,
-      boolean isDiskSynchronous) {
-    createDiskStore(asyncChannelId, diskStoreName);
+                                           boolean isParallel, Integer maxMemory, Integer batchSize,
+                                           boolean isConflation, boolean isPersistent, String diskStoreName,
+                                           boolean isDiskSynchronous)
+  {
+    createAsyncEventQueue(asyncChannelId, isParallel, maxMemory, batchSize, isConflation, isPersistent, diskStoreName,
+      isDiskSynchronous, new MyAsyncEventListener());
+  }
 
-    AsyncEventListener asyncEventListener = new MyAsyncEventListener();
+  public static void createAsyncEventQueue(
+    String asyncChannelId,
+    boolean isParallel,
+    Integer maxMemory,
+    Integer batchSize,
+    boolean isConflation,
+    boolean isPersistent,
+    String diskStoreName,
+    boolean isDiskSynchronous,
+    final AsyncEventListener asyncEventListener) {
+    createDiskStore(asyncChannelId, diskStoreName);
 
     AsyncEventQueueFactory factory = getInitialAsyncEventQueueFactory(isParallel, maxMemory, batchSize, isPersistent, diskStoreName);
     factory.setDiskSynchronous(isDiskSynchronous);
@@ -1387,15 +1400,20 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     assertEquals(expectedToDataInvoations, filter.getNumToDataInvocations());
   }
 
-  public static int getAsyncEventListenerMapSize(String asyncEventQueueId) {
+  public static AsyncEventListener getAsyncEventListener(String asyncEventQueueId) {
     AsyncEventListener theListener = null;
 
     Set<AsyncEventQueue> asyncEventQueues = cache.getAsyncEventQueues();
     for (AsyncEventQueue asyncQueue : asyncEventQueues) {
       if (asyncEventQueueId.equals(asyncQueue.getId())) {
-        theListener = asyncQueue.getAsyncEventListener();
+        return asyncQueue.getAsyncEventListener();
       }
     }
+    return null;
+  }
+
+  public static int getAsyncEventListenerMapSize(String asyncEventQueueId) {
+    AsyncEventListener theListener = getAsyncEventListener(asyncEventQueueId);
 
     final Map eventsMap = ((MyAsyncEventListener)theListener).getEventsMap();
     assertNotNull(eventsMap);

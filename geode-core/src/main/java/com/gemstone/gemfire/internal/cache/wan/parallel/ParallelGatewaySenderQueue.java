@@ -1277,7 +1277,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     
     PartitionedRegion prQ = getRandomShadowPR();
-    List batch = new ArrayList();
+    List<GatewaySenderEventImpl> batch = new ArrayList<>();
     if (prQ == null || prQ.getLocalMaxMemory() == 0) {
       try {
         Thread.sleep(50);
@@ -1370,8 +1370,20 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return batch;
   }
 
-  private void addPeekedEvents(List batch, int batchSize) {
+  private void addPeekedEvents(List<GatewaySenderEventImpl> batch, int batchSize) {
     if (this.resetLastPeeked) {
+
+      //Remove all entries from peekedEvents for buckets that are not longer primary
+      //This will prevent repeatedly trying to dispatch non-primary events
+      for(Iterator<GatewaySenderEventImpl> iterator = peekedEvents.iterator(); iterator.hasNext(); ) {
+        GatewaySenderEventImpl event = iterator.next();
+        final int bucketId = event.getBucketId();
+        final PartitionedRegion region = (PartitionedRegion) event.getRegion();
+        if(!region.getRegionAdvisor().isPrimaryForBucket(bucketId)) {
+          iterator.remove();
+        }
+      }
+
       if (this.peekedEventsProcessingInProgress) {
         // Peeked event processing is in progress. This means that the original peekedEvents
         // contained > batch size events due to a reduction in the batch size. Create a batch
@@ -1400,7 +1412,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
   }
 
-  private void addPreviouslyPeekedEvents(List batch, int batchSize) {
+  private void addPreviouslyPeekedEvents(List<GatewaySenderEventImpl> batch, int batchSize) {
     for (int i=0; i<batchSize; i++) {
       batch.add(this.peekedEventsProcessing.remove());
       if (this.peekedEventsProcessing.isEmpty()) {

@@ -329,7 +329,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
         RegionEntry entry = CCRegion.getRegionEntry("cckey0");
         VersionTag tag = entry.getVersionStamp().asVersionTag();
         assertTrue(tag.getEntryVersion() > 1);
-        tag.setVersionTimeStamp(System.currentTimeMillis() - TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT - 1000);
+        tag.setVersionTimeStamp(System.currentTimeMillis() - TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT - 1000);
         entry.getVersionStamp().setVersionTimeStamp(tag.getVersionTimeStamp());
         try {
           entry.makeTombstone(CCRegion, tag);
@@ -368,10 +368,10 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     final String name = this.getUniqueName() + "-CC";
 
 
-    final long saveExpiredTombstoneLimit = TombstoneService.EXPIRED_TOMBSTONE_LIMIT;
-    final long saveTombstoneTimeout = TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT;
+    final int saveExpiredTombstoneLimit = TombstoneService.EXPIRED_TOMBSTONE_LIMIT;
+    final long saveTombstoneTimeout = TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT;
     TombstoneService.EXPIRED_TOMBSTONE_LIMIT = 50;
-    TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT = 500;
+    TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT = 500;
     try {
       // create some destroyed entries so the GC service is populated
       RegionFactory f = getCache().createRegionFactory(getRegionAttributes());
@@ -400,7 +400,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     } finally {
       TombstoneService.EXPIRED_TOMBSTONE_LIMIT = saveExpiredTombstoneLimit;
       TombstoneService.FORCE_GC_MEMORY_EVENTS = false;
-      TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT = saveTombstoneTimeout;
+      TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT = saveTombstoneTimeout;
     }
   }
 

@@ -158,26 +158,24 @@ public abstract class BaseCommandQuery extends BaseCommand {
         SelectResults selectResults = (SelectResults)result;
 
         // post process, iterate through the result for post processing
-        List list = selectResults.asList();
-        for(Iterator<Object> valItr = list.iterator(); valItr.hasNext();){
-          Object value = valItr.next();
-          Object newValue = value;
-          if(value instanceof CqEntry){
-            CqEntry cqEntry = (CqEntry)value;
-            Object cqNewValue = GeodeSecurityUtil.postProcess(null, cqEntry.getKey(), cqEntry.getValue());
-            if(!cqEntry.getValue().equals(cqNewValue)){
-              selectResults.remove(value);
-              if(cqNewValue!=null){
+        if(GeodeSecurityUtil.needPostProcess()) {
+          List list = selectResults.asList();
+          for (Iterator<Object> valItr = list.iterator(); valItr.hasNext(); ) {
+            Object value = valItr.next();
+            if (value == null)
+              continue;
+
+            if (value instanceof CqEntry) {
+              CqEntry cqEntry = (CqEntry) value;
+              Object cqNewValue = GeodeSecurityUtil.postProcess(null, cqEntry.getKey(), cqEntry.getValue());
+              if (!cqEntry.getValue().equals(cqNewValue)) {
+                selectResults.remove(value);
                 selectResults.add(new CqEntry(cqEntry.getKey(), cqNewValue));
               }
-            }
-          }
-          else {
-            newValue = GeodeSecurityUtil.postProcess(null, null, value);
-            if(!value.equals(newValue)){
-              selectResults.remove(value);
-              // only add the newValue back if it's not null
-              if(newValue!=null){
+            } else {
+              Object newValue = GeodeSecurityUtil.postProcess(null, null, value);
+              if (!value.equals(newValue)) {
+                selectResults.remove(value);
                 selectResults.add(newValue);
               }
             }

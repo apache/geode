@@ -17,24 +17,28 @@
 package com.gemstone.gemfire.distributed.internal;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
+
+import java.io.File;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.UnmodifiableException;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.lang.reflect.Method;
-import java.util.*;
-
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @Category(UnitTest.class)
 public class DistributionConfigJUnitTest {
@@ -73,7 +77,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testGetAttributeNames() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    assertEquals(attNames.length, 141);
+    assertEquals(attNames.length, 142);
 
     List boolList = new ArrayList();
     List intList = new ArrayList();
@@ -107,7 +111,7 @@ public class DistributionConfigJUnitTest {
 
     assertEquals(boolList.size(), 30);
     assertEquals(intList.size(), 33);
-    assertEquals(stringList.size(), 70);
+    assertEquals(stringList.size(), 71);
     assertEquals(fileList.size(), 5);
     assertEquals(otherList.size(), 3);
   }

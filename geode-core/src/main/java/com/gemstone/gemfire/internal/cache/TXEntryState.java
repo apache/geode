@@ -1759,8 +1759,8 @@ public class TXEntryState implements Releasable
   
   void applyChanges(LocalRegion r, Object key, TXState txState)
   {
-    if (LogService.getLogger().isDebugEnabled()) {
-      LogService.getLogger().debug(
+    if (logger.isDebugEnabled()) {
+      logger.debug(
           "applyChanges txState=" + txState + " ,key=" + key + " ,r="
               + r.getDisplayName() + " ,op=" + this.op + " ,isDirty="
               + isDirty());

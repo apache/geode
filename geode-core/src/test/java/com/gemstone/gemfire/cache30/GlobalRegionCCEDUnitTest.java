@@ -200,7 +200,7 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
         VersionTag tag = entry.getVersionStamp().asVersionTag();
         assertTrue(tag.getEntryVersion() > 1);
         tag.setVersionTimeStamp(System.currentTimeMillis()
-            - TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT - 1000);
+            - TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT - 1000);
         entry.getVersionStamp().setVersionTimeStamp(tag.getVersionTimeStamp());
         try {
           entry.makeTombstone(CCRegion, tag);
