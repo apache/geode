@@ -203,7 +203,7 @@ public class ManagementAgent {
           logger.debug(message);
         }
       }
-      else if (isCustomAuthenticator()){
+      else if (isIntegratedSecurity()){
         System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
       }
 
@@ -448,7 +448,7 @@ public class ManagementAgent {
     };
 
     String shiroConfig = this.config.getShiroInit();
-    if (! StringUtils.isBlank(shiroConfig) || isCustomAuthenticator()) {
+    if (! StringUtils.isBlank(shiroConfig) || isIntegratedSecurity()) {
       shiroAuthenticator = new JMXShiroAuthenticator();
       env.put(JMXConnectorServer.AUTHENTICATOR, shiroAuthenticator);
       cs.addNotificationListener(shiroAuthenticator, null, cs.getAttributes());
@@ -508,7 +508,7 @@ public class ManagementAgent {
   }
 
 
-  private boolean isCustomAuthenticator() {
+  private boolean isIntegratedSecurity() {
     String factoryName = config.getSecurityManager();
     return factoryName != null && !factoryName.isEmpty();
   }
