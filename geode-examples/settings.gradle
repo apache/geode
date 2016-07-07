@@ -17,3 +17,5 @@
 rootProject.name = 'geode-examples'
 
 include 'replicated'
+include 'utils'
+

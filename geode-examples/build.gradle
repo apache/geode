@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-
 subprojects {
 
     apply plugin:'java'
 
     repositories {
+        mavenLocal()
         maven {
             url "https://repository.apache.org/content/repositories/snapshots/"
         }
@@ -28,11 +28,12 @@ subprojects {
     }
 
     dependencies {
+        testCompile project(":utils")
         compile "org.apache.geode:geode-core:$geodeVersion"
-//        testCompile "org.apache.geode:geode-junit:$geodeVersion"
         testCompile "junit:junit:$junitVersion"
         testCompile "org.mockito:mockito-core:$mockitocoreVersion"
-        compile "com.jayway.awaitility:awaitility:1.7.0"
+        compile "org.apache.commons:commons-exec:$commonsExecVersion"
+        compile "com.jayway.awaitility:awaitility:$awaitilityVersion"
     }
 
     task run(type: JavaExec) {
@@ -46,6 +47,7 @@ subprojects {
             args = ["${rootProject.getProperty('args')}"]
         }
     }
+
 
 }
 
