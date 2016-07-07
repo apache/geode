@@ -1676,19 +1676,20 @@ public class CacheClientProxy implements ClientSession {
     this._statistics.incMessagesReceived();
 
     // post process
-    Object oldValue = clientMessage.getValue();
-    if(oldValue instanceof byte[]){
-      Object newValue = GeodeSecurityUtil.postProcess(clientMessage.getRegionName(), clientMessage.getKeyOfInterest(),
-          EntryEventImpl.deserialize((byte[])oldValue));
-      try {
-        clientMessage.setLatestValue(BlobHelper.serializeToBlob(newValue));
-      } catch (IOException e) {
-        throw new GemFireIOException("Exception serializing entry value", e);
+    if(GeodeSecurityUtil.needPostProcess()) {
+      Object oldValue = clientMessage.getValue();
+      if (clientMessage.valueIsObject()) {
+        Object newValue = GeodeSecurityUtil.postProcess(clientMessage.getRegionName(), clientMessage.getKeyOfInterest(), EntryEventImpl
+          .deserialize((byte[]) oldValue));
+        try {
+          clientMessage.setLatestValue(BlobHelper.serializeToBlob(newValue));
+        } catch (IOException e) {
+          throw new GemFireIOException("Exception serializing entry value", e);
+        }
+      } else {
+        Object newValue = GeodeSecurityUtil.postProcess(clientMessage.getRegionName(), clientMessage.getKeyOfInterest(), oldValue);
+        clientMessage.setLatestValue(newValue);
       }
-    }
-    else{
-      Object newValue = GeodeSecurityUtil.postProcess(clientMessage.getRegionName(), clientMessage.getKeyOfInterest(), oldValue);
-      clientMessage.setLatestValue(newValue);
     }
 
     if (clientMessage.needsNoAuthorizationCheck() || postDeliverAuthCheckPassed(clientMessage)) {

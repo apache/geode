@@ -66,7 +66,7 @@ public class IntegratedSecurityNoShowValue1PostProcessorDUnitTest extends Abstra
       String query = "select * from /AuthRegion";
       SelectResults result = region.query(query);
       System.out.println("query result: "+result);
-      assertEquals(4, result.size());
+      assertEquals(5, result.size());
       assertTrue(result.contains("value0"));
       assertFalse(result.contains("value1"));
       assertTrue(result.contains("value2"));

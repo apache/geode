@@ -44,7 +44,6 @@ public class IntegratedClientContainsKeyAuthDistributedTest extends AbstractInte
       final Region region = cache.getRegion(REGION_NAME);
       region.containsKeyOnServer("key3");
       assertTrue(region.containsKeyOnServer("key1"));
-
     });
 
     ai1.join();
