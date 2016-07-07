@@ -862,7 +862,7 @@ public class LocalizedStrings {
   public static final StringId AbstractRegionMap_ATTEMPT_TO_REMOVE_TOMBSTONE = new StringId(2018, "Internal product error: attempt to directly remove a versioned tombstone from region entry map");
   public static final StringId HostStatSampler_STATISTICS_SAMPLING_THREAD_DETECTED_A_WAKEUP_DELAY_OF_0_MS_INDICATING_A_POSSIBLE_RESOURCE_ISSUE = new StringId(2019, "Statistics sampling thread detected a wakeup delay of {0} ms, indicating a possible resource issue. Check the GC, memory, and CPU statistics.");
   public static final StringId ServerConnection_0__UNEXPECTED_EXCEPTION = new StringId(2020, "{0} : Unexpected Exception");
-
+  public static final StringId CacheXmlParser_A_0_IS_NOT_AN_INSTANCE_OF_A_GATEWAYCONFLICTRESOLVER = new StringId(2021, "A {0} is not an instance of a GatewayConflictResolver.");
   public static final StringId GemFireCacheImpl_TOMBSTONE_ERROR = new StringId(2022, "Unexpected exception while processing tombstones");
   public static final StringId FunctionService_NO_MEMBERS_FOUND_IN_GROUPS = new StringId(2023, "No members found in group(s) {0}");
   public static final StringId DistributionManager_Time_Skew_Warning = new StringId(2024, "The clock for this machine may be more than 5 minutes different than the negotiated cache time received from {0}");

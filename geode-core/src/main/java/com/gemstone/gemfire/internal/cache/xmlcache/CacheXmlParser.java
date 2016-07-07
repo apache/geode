@@ -37,6 +37,7 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -886,6 +887,19 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
             !Boolean.valueOf(disableRegisterInterest).booleanValue());
     CacheCreation cache = (CacheCreation)stack.peek();
     cache.setDynamicRegionFactoryConfig(cfg);
+  }
+
+  /**
+   * When a <code>gateway-conflict-resolver</code> element is encountered,
+   * create a new listener for the <code>Cache</code>.
+   */
+  private void endGatewayConflictResolver() {
+    Declarable d = createDeclarable();
+    if (!(d instanceof GatewayConflictResolver)) {
+      throw new CacheXmlException(LocalizedStrings.CacheXmlParser_A_0_IS_NOT_AN_INSTANCE_OF_A_GATEWAYCONFLICTRESOLVER.toLocalizedString(d.getClass().getName()));
+    }
+    CacheCreation c = (CacheCreation)stack.peek();
+    c.setGatewayConflictResolver((GatewayConflictResolver)d);
   }
 
   /**
@@ -3022,6 +3036,9 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       }
       else if (qName.equals(REGION)) {
         endRegion();
+      }
+      else if (qName.equals(GATEWAY_CONFLICT_RESOLVER)) {
+        endGatewayConflictResolver();
       }
       else if (qName.equals(VM_ROOT_REGION)) {
         endRegion();

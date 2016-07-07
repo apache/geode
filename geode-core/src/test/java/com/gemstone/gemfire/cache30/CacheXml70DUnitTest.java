@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import com.gemstone.gemfire.cache.util.GatewayConflictHelper;
+import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
+import com.gemstone.gemfire.cache.util.TimestampedEntryEvent;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -115,6 +118,18 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
   }
 
   @Test
+  public void testGatewayConflictResolver() throws CacheException {
+    CacheCreation cache = new CacheCreation();
+    cache.setGatewayConflictResolver(new MyGatewayConflictResolver());
+    testXml(cache);
+    Cache c = getCache();
+    assertNotNull(c);
+    GatewayConflictResolver gatewayConflictResolver = c.getGatewayConflictResolver();
+    assertNotNull(gatewayConflictResolver);
+    assertTrue(gatewayConflictResolver instanceof MyGatewayConflictResolver);
+  }
+
+    @Test
   public void testAsyncEventQueue() {
     getSystem();
     CacheCreation cache = new CacheCreation();
@@ -231,7 +246,14 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
     public void init(Properties properties) {
     }
   }
-  
+
+  public static class MyGatewayConflictResolver implements GatewayConflictResolver, Declarable {
+
+    public void onEvent(TimestampedEntryEvent event, GatewayConflictHelper helper) {}
+
+    public void init(Properties p) {}
+  }
+
   public static void validateAsyncEventQueue(AsyncEventQueue eventChannelFromXml, AsyncEventQueue channel) {
     assertEquals("AsyncEventQueue id doesn't match", eventChannelFromXml.getId(), channel.getId());
     assertEquals("AsyncEventQueue batchSize doesn't match", eventChannelFromXml.getBatchSize(), channel.getBatchSize());
