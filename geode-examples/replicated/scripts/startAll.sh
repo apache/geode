@@ -18,23 +18,28 @@
 
 set -e
 
+current=`pwd`
+
 cd `dirname $0`
 
 . ./setEnv.sh
 
+cd $current
+
+#export GEODE_LOCATOR_PORT="${GEODE_LOCATOR_PORT:-10334}"
 # start a locator
-gfsh start locator --name=locator1 --mcast-port=0
+gfsh start locator --name=locator1 --mcast-port=0 --port=${GEODE_LOCATOR_PORT}
 
 # start 2 servers on a random available port
 for N in {1..2}
 do
- gfsh start server --locators=localhost[10334] --name=server$N  --server-port=0 --mcast-port=0
+ gfsh start server --locators=localhost[${GEODE_LOCATOR_PORT}] --name=server$N  --server-port=0 --mcast-port=0
 done
 
 # create a region using GFSH
-gfsh -e "connect" -e "create region --name=myRegion --type=REPLICATE"
+gfsh -e "connect --locator=localhost[${GEODE_LOCATOR_PORT}]" -e "create region --name=myRegion --type=REPLICATE"
 
-gfsh -e "connect" -e "list members"
+gfsh -e "connect --locator=localhost[${GEODE_LOCATOR_PORT}]" -e "list members"
 
 exit 0
 

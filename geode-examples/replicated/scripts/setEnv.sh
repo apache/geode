@@ -16,6 +16,9 @@
 #
 #!/bin/bash
 
+## check if locator port has been set otherwise set to default
+export GEODE_LOCATOR_PORT="${GEODE_LOCATOR_PORT:-10334}"
+
 ## check if GEODE_HOME has been set
 : ${GEODE_HOME?"GEODE_HOME enviroment variable needs to be set"}
 
@@ -25,3 +28,6 @@ echo "Geode version: `$GEODE_HOME/bin/gfsh version`"
 
 ## prefer GEODE_HOME for finding gfsh
 export PATH=$GEODE_HOME/bin:$PATH
+
+
+: ${GEODE_LOCATOR_PORT?}

@@ -15,14 +15,22 @@
 # limitations under the License.
 #
 #!/bin/bash
-set -e
+#
+# @brief Script that look for .pid files on a directory and kill those processes. 
+#
 
-current=`pwd`
+export DIR=$1
 
-cd `dirname $0`
+if [ $# -eq 0 ]
+  then
+    echo "No arguments supplied. Script needs directory to look for pid files."
+    exit 1
+fi
 
-. ./setEnv.sh
+for pid in `find $DIR -name "*.pid"`
+do
+ echo "Found: $pid"
+ kill -9 `cat $pid`
+ echo "Killed."
+done
 
-cd $current
-
-gfsh -e "connect --locator=localhost[${GEODE_LOCATOR_PORT}]" -e "shutdown --include-locators=true"

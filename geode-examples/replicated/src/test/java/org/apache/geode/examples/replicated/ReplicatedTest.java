@@ -16,76 +16,149 @@
  */
 package org.apache.geode.examples.replicated;
 
+import static org.hamcrest.core.Is.*;
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 
-import java.io.File;
 import java.io.IOException;
+import java.net.ServerSocket;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecuteResultHandler;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.exec.environment.EnvironmentUtils;
+import org.apache.geode.example.utils.ShellUtil;
 import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
+/**
+ * Tests for the shell scripts of the replicated example
+ */
 public class ReplicatedTest {
 
   //TODO: parameterize
-  private String startScriptFileName = "startAll.sh";
-  private String stopScriptFileName = "stopAll.sh";
+  public static final String GEODE_LOCATOR_PORT = "GEODE_LOCATOR_PORT=";
+  private static final String startScriptFileName = "startAll.sh";
+  private static final String stopScriptFileName = "stopAll.sh";
+  private static final String pidkillerScriptFileName = "pidkiller.sh";
   private boolean processRunning = false;
   private ShellUtil shell = new ShellUtil();
-  private Process process;
+  private final long scriptTimeout = TimeUnit.SECONDS.toMillis(60);
+  private static final Logger logger = Logger.getAnonymousLogger();
 
-  private int waitTimeForScript=60;
+  @Rule
+  public TemporaryFolder testFolder = new TemporaryFolder();
 
-  @Test
-  public void checkIfScriptsExists() throws IOException {
-    ClassLoader classLoader = getClass().getClassLoader();
+  private int locatorPort;
+  private Map environment;
 
-    File file = new File(classLoader.getResource(startScriptFileName).getFile());
-    assertTrue(file.exists());
+  @Before
+  public void setup() throws IOException {
+    // ignores test if running on windows
+    assumeThat(System.getProperty("os.name").startsWith("Windows"), is(false));
 
-    file = new File(classLoader.getResource(stopScriptFileName).getFile());
-    assertTrue(file.exists());
+    locatorPort = getAvailablePort();
+    environment = EnvironmentUtils.getProcEnvironment();
+    EnvironmentUtils.addVariableToEnvironment(environment, GEODE_LOCATOR_PORT + locatorPort);
+    logger.fine("Locator port: " + locatorPort);
   }
 
+  @Test
+  public void checkIfScriptsExistsAndAreExecutable() throws IOException {
+    assertTrue(shell.getFileFromClassLoader(startScriptFileName).map(x -> x.isFile()).orElse(false));
+    assertTrue(shell.getFileFromClassLoader(startScriptFileName).map(x -> x.isFile()).orElse(false));
+  }
 
-  private Process start() {
-    Process p = shell.executeFile(startScriptFileName).get();
+  @Test
+  public void executeStartThenStopScript() throws InterruptedException, IOException {
+    final int exitCodeStart = executeScript(startScriptFileName);
+    assertEquals(0, exitCodeStart);
+
+    final int exitCodeStop = executeScript(stopScriptFileName);
+    assertEquals(0, exitCodeStop);
+  }
+
+  @Test
+  public void failToStopWhenNoServersAreRunning() throws InterruptedException, IOException {
+    final int exitCode;
+
+    exitCode = executeScript(stopScriptFileName);
+    assertEquals(1, exitCode);
+  }
+
+  /**
+   * Execute the kill script that looks for pid files
+   * @throws IOException
+   * @throws InterruptedException
+   */
+  private void runKillScript() throws IOException, InterruptedException {
+    CommandLine cmdLine = CommandLine.parse(shell.getFileFromClassLoader(pidkillerScriptFileName)
+                                                 .map(x -> x.getAbsolutePath())
+                                                 .orElseThrow(IllegalArgumentException::new));
+    cmdLine.addArgument(testFolder.getRoot().getAbsolutePath());
+
+    DefaultExecuteResultHandler resultHandler = shell.execute(cmdLine, scriptTimeout, environment, testFolder
+      .getRoot());
+    resultHandler.waitFor(scriptTimeout);
+  }
+
+  /**
+   * Given a script file name, runs the script and return the exit code.
+   * If exitCode != 0 extract and prints exception.
+   * @param scriptName
+   * @return <code>int</code> with exitCode
+   * @throws IOException
+   * @throws InterruptedException
+   */
+  private int executeScript(String scriptName) throws IOException, InterruptedException {
+    final int exitCode;
+    DefaultExecuteResultHandler resultHandler = shell.execute(scriptName, scriptTimeout, environment, testFolder
+      .getRoot());
     processRunning = true;
-    return p;
-  }
+    resultHandler.waitFor();
 
-  private Process stop() {
-    Process p = shell.executeFile(stopScriptFileName).get();
-    processRunning = false;
-    return p;
-  }
+    logger.finest(String.format("Executing %s...", scriptName));
+    exitCode = resultHandler.getExitValue();
 
-  @Test
-  public void testStartAndStop() throws InterruptedException {
-    boolean status = false;
-    int exitCode = -1;
-
-    process = start();
-    status =  process.waitFor(waitTimeForScript, TimeUnit.SECONDS);
-    exitCode = process.exitValue();
-    verify(status, exitCode);
-
-    process = stop();
-    status = process.waitFor(waitTimeForScript, TimeUnit.SECONDS);
-    exitCode = process.exitValue();
-    verify(status, exitCode);
-  }
-
-  private void verify(boolean status, int exitCode) {
-    assertEquals(exitCode, 0);
-    assertEquals(status, true);
+    // extract and log exception if any happened
+    if (exitCode != 0) {
+      ExecuteException executeException = resultHandler.getException();
+      logger.log(Level.SEVERE, executeException.getMessage(), executeException);
+    }
+    return exitCode;
   }
 
   @After
   public void tearDown() {
     if (processRunning) {
-      stop();
+      try {
+        runKillScript();
+      } catch (IOException | InterruptedException e) {
+        e.printStackTrace();
+      }
     }
+  }
+
+  /**
+   * Get a random available port
+   * @return <code>int</code>  port number
+   */
+  private static int getAvailablePort() {
+    try (ServerSocket socket = new ServerSocket(0)) {
+      int port = socket.getLocalPort();
+      socket.close();
+      return port;
+    } catch (IOException ioex) {
+      logger.log(Level.SEVERE, ioex.getMessage(), ioex);
+    }
+    throw new IllegalStateException("No TCP/IP ports available.");
   }
 
 }
