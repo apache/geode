@@ -2955,6 +2955,9 @@ public class CacheClientProxy implements ClientSession {
       } finally {
         this.socketWriteLock.unlock();
       }
+      if (logger.isTraceEnabled()) {
+        logger.trace("{}: Sent {}", this, message);
+      }
     }
 
     /**

@@ -177,7 +177,7 @@ import com.sun.jna.Platform;
  *
  */
 @SuppressWarnings("deprecation")
-public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePerfStats, DistributionAdvisee {
+public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePerfStats, DistributionAdvisee, CacheTime {
   private static final Logger logger = LogService.getLogger();
   
   // moved *SERIAL_NUMBER stuff to DistributionAdvisor
@@ -2794,6 +2794,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
    * 
    * @return distributed cache time.
    */
+  @Override
   public long cacheTimeMillis() {
     if (this.system != null) {
       return this.system.getClock().cacheTimeMillis();

@@ -175,7 +175,7 @@ public class TombstoneCreationJUnitTest {
     // the entry
     String key = "destroyedKey1";
     VersionedThinRegionEntryHeap entry = new VersionedThinRegionEntryHeapObjectKey(region, key, Token.REMOVED_PHASE1);
-    entry.setLastModified(System.currentTimeMillis() - (2 * TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT));
+    entry.setLastModified(System.currentTimeMillis() - (2 * TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT));
     ((AbstractRegionMap)region.getRegionMap()).putEntryIfAbsentForTest(entry);
     cache.getLogger().info("entry inserted into cache: " + entry);
 
@@ -185,7 +185,7 @@ public class TombstoneCreationJUnitTest {
     tag.setIsRemoteForTesting();
     tag.setEntryVersion(3);
     tag.setRegionVersion(12345);
-    tag.setVersionTimeStamp(System.currentTimeMillis() - TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT);
+    tag.setVersionTimeStamp(System.currentTimeMillis() - TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT);
     tag.setDistributedSystemId(1);
     ev.setVersionTag(tag);
     cache.getLogger().info("trying to destroy the entry: " + region.getRegionEntry(key));
@@ -209,7 +209,7 @@ public class TombstoneCreationJUnitTest {
     tag.setIsRemoteForTesting();
     tag.setEntryVersion(1);
     tag.setRegionVersion(12340);
-    tag.setVersionTimeStamp(System.currentTimeMillis() - TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT - 10000);
+    tag.setVersionTimeStamp(System.currentTimeMillis() - TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT - 10000);
     tag.setDistributedSystemId(1);
     ev.setVersionTag(tag);
     cache.getLogger().info("trying to update the entry with an older event: " + region.getRegionEntry(key));

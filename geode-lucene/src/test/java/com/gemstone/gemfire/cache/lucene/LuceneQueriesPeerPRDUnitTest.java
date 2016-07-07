@@ -17,6 +17,8 @@
 package com.gemstone.gemfire.cache.lucene;
 
 import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
@@ -28,7 +30,11 @@ public class LuceneQueriesPeerPRDUnitTest extends LuceneQueriesPRBase {
 
   @Override protected void initDataStore(final SerializableRunnableIF createIndex) throws Exception {
     createIndex.run();
-    getCache().createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+    PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
+    partitionAttributesFactory.setLocalMaxMemory(100);
+    getCache().createRegionFactory(RegionShortcut.PARTITION)
+      .setPartitionAttributes(partitionAttributesFactory.create())
+      .create(REGION_NAME);
   }
 
   @Override protected void initAccessor(final SerializableRunnableIF createIndex) throws Exception {

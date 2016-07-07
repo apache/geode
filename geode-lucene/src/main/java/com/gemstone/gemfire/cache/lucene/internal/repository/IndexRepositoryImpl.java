@@ -30,6 +30,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
+import org.apache.lucene.store.AlreadyClosedException;
 
 import java.io.IOException;
 import java.util.function.IntSupplier;
@@ -168,7 +169,12 @@ public class IndexRepositoryImpl implements IndexRepository {
         stats.removeDocumentsSupplier(this);
         return 0;
       }
-      return writer.numDocs();
+      try {
+        return writer.numDocs();
+      } catch(AlreadyClosedException e) {
+        //ignore
+        return 0;
+      }
     }
   }
 }
