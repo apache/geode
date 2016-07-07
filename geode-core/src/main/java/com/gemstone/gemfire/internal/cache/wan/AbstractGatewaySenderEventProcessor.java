@@ -1155,7 +1155,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
     dispatcher.stop();
 
     if (this.isAlive()) {
-      this.interrupt();
       if (logger.isDebugEnabled()) {
         logger.debug("{}: Joining with the dispatcher thread upto limit of 5 seconds", this);
       }
