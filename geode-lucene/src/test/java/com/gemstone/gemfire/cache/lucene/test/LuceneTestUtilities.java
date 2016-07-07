@@ -38,6 +38,7 @@ import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexForPartitionedRegion;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.pdx.JSONFormatter;
 import com.gemstone.gemfire.pdx.PdxInstance;
 
@@ -103,13 +104,7 @@ public class LuceneTestUtilities {
       results.next().stream()
         .forEach(struct -> {
           Object value = struct.getValue();
-          if (value instanceof PdxInstance) {
-            PdxInstance pdx = (PdxInstance)value;
-            String jsonString = JSONFormatter.toJSON(pdx);
-            actualResults.put(struct.getKey(), pdx);
-          } else {
             actualResults.put(struct.getKey(), value);
-          }
         });
     }
     assertEquals(expectedResults, actualResults);
@@ -118,6 +113,9 @@ public class LuceneTestUtilities {
   public static void pauseSender(final Cache cache) {
     final AsyncEventQueueImpl queue = (AsyncEventQueueImpl) getIndexQueue(cache);
     queue.getSender().pause();
+
+    AbstractGatewaySender sender = (AbstractGatewaySender) queue.getSender();
+    sender.getEventProcessor().waitForDispatcherToPause();
   }
 
   public static void resumeSender(final Cache cache) {

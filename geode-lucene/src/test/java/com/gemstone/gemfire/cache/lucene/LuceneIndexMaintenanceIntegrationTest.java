@@ -34,8 +34,10 @@ import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexForPartitionedRegion;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
+import com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -158,6 +160,25 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
     // The query should return 0 results.
     assertEquals(0, results.size());
+  }
+
+  @Test
+  public void entriesFlushedToIndexAfterWaitForFlushCalled() {
+    luceneService.createIndex(INDEX_NAME, REGION_NAME, "title", "description");
+
+    Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
+    LuceneTestUtilities.pauseSender(cache);
+
+    region.put("object-1", new TestObject("title 1", "hello world"));
+    region.put("object-2", new TestObject("title 2", "this will not match"));
+    region.put("object-3", new TestObject("title 3", "hello world"));
+    region.put("object-4", new TestObject("hello world", "hello world"));
+
+    LuceneIndexImpl index = (LuceneIndexImpl)luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    assertFalse(index.waitUntilFlushed(500));
+    LuceneTestUtilities.resumeSender(cache);
+    assertTrue(index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME));
+    assertEquals(4, index.getIndexStats().getCommits());
   }
 
   private void populateRegion(Region region) {
