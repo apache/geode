@@ -16,12 +16,12 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import com.gemstone.gemfire.security.templates.SampleJsonAuthorization;
-import com.gemstone.gemfire.util.test.TestUtil;
-
 import java.io.IOException;
 
-public class JSONAuthorization extends SampleJsonAuthorization {
+import com.gemstone.gemfire.security.templates.SampleSecurityManager;
+import com.gemstone.gemfire.util.test.TestUtil;
+
+public class JSONAuthorization extends SampleSecurityManager {
 
   public static JSONAuthorization create() throws IOException {
     return new JSONAuthorization();

@@ -54,8 +54,7 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  * In order to use it, a Geode member must be started with the following properties:
  * <p/>
  * <code>
- *   security-client-authenticator = com.gemstone.gemfire.security.examples.SampleSecurityManager.create
- *   security-client-accessor = com.gemstone.gemfire.security.examples.SampleSecurityManager.create
+ *   security-manager = com.gemstone.gemfire.security.examples.SampleSecurityManager.create
  * </code>
  * <p/>
  * The class is initialized with a JSON file called {@code security.json}. This file must exist on the classpath,
@@ -95,8 +94,7 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  * }
  * </pre>
  */
-public class SampleSecurityManager
-  implements SecurityManager {
+public class SampleSecurityManager implements SecurityManager {
 
   public static class Role {
     List<GeodePermission> permissions = new ArrayList<>();
