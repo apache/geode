@@ -8,8 +8,8 @@ The *`productDir`* directory refers to the path to the native client product dir
 
 The following libraries must be present in the runtime linking path:
 
--   `libSqLiteImpl.so` is provided in `productDir/lib`, so it is already present in the runtime linking path.
--   `libsqlite3.so` is the SQLite Library. You need to create this library and make available in the runtime linking path, or copied to `productDir/lib`, as described below.
+-   `libSqLiteImpl.so` is provided in <code><i>productDir</i>/lib</code>, so it is already present in the runtime linking path.
+-   `libsqlite3.so` is the SQLite Library. You need to create this library and make available in the runtime linking path, or copied to <code><i>productDir</i>/lib</code>, as described below.
 
 The <span class="keyword">Geode</span> Native Client has been tested with SQLite v3.7.14.1.
 
@@ -32,7 +32,6 @@ You create the SQLite database library by downloading the latest .zip file and c
             ``` pre
             CFLAGS="-m32" ./configure --prefix=/desired_binary_location/sqlite-binaries
             ```
-
         -   **64-bit:**
 
             ``` pre
@@ -41,4 +40,4 @@ You create the SQLite database library by downloading the latest .zip file and c
 
     2.  Run `gmake                                     install` as described in the build instructions. The libraries will be available in the `sqlite-binaries` directory that you specified.
 
-4.  Copy `/desired_binary_location/sqlite-binaries/lib/libsqlite3.so` file to `productDir/lib`.
+4.  Copy `/desired_binary_location/sqlite-binaries/lib/libsqlite3.so` file to <code><i>productDir</i>/lib</code>.
