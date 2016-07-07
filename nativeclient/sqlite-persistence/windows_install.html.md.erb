@@ -6,13 +6,13 @@ This topic describes how to install the SQLite Persistence Manager on Windows fo
 
 The <span class="keyword">Geode</span> Native Client has been tested with SQLite v3.7.14.1.
 
-The `productDir` directory refers to the native client product directory path.
+The <code><i>productDir</i></code> directory refers to the native client product directory path.
 
-The following libraries are required. The `productDir\bin` directory containing these libraries must be present in the Windows `PATH` environment variable, and that directory is added to `PATH` during the <span class="keyword">Geode</span> product installation.
+The following libraries are required. The <code><i>productDir</i>/bin</code> directory containing these libraries must be present in the Windows `PATH` environment variable, and that directory is added to `PATH` during the <span class="keyword">Geode</span> product installation.
 
--   The `sqliteimpl.dll` and `GemStone.GemFire.Plugins.SQLite.dll` files are provided in `productDir\bin`.
--   For .NET C\# native client application development, you need to obtain the `System.Data.SQLite.dll` SQLite library, as described below. The library can be copied to `productDir\bin`.
--   For C++ native client application development, you need the `SqLite3.dll` SQLite Library. You create this library and make it available in the runtime linking path, or copied to `productDir\bin`, as described below.
+-   The `sqliteimpl.dll` and `GemStone.GemFire.Plugins.SQLite.dll` files are provided in <code><i>productDir</i>/bin</code>.
+-   For .NET C\# native client application development, you need to obtain the `System.Data.SQLite.dll` SQLite library, as described below. The library can be copied to <code><i>productDir</i>/bin</code>.
+-   For C++ native client application development, you need the `SqLite3.dll` SQLite Library. You create this library and make it available in the runtime linking path, or copied to <code><i>productDir</i>/bin</code>, as described below.
 
 <a id="concept_E097592856274EFABE81426FF7312294__section_270FDD34D5D1460DAF0FD2DD4E8FB31A"></a>
 ## Downloading Pre-built System.Data.SQLite.dll Binaries
@@ -37,4 +37,4 @@ If you are writing native client applications using the C++ caching API, you nee
 3.  Using Visual Studio, build the version-specific SqLite solution either as a release or debug build:
     -   If you are using 64-bit Windows, use the x64 configuration.
 
-4.  From the built files, copy the `SqLite3.dll` file to your <span class="keyword">Geode</span> Native Client distribution at `productDir\bin`.
+4.  From the built files, copy the `SqLite3.dll` file to your <span class="keyword">Geode</span> Native Client distribution at <code><i>productDir</i>/bin</code>.
