@@ -89,17 +89,20 @@ public class DataSerializerRecoveryListener extends EndpointManager.EndpointList
 
     @Override
     public void run2() {
-      if(pool.getCancelCriterion().cancelInProgress() != null) {
+      if (pool.getCancelCriterion().cancelInProgress() != null) {
         return;
       }
+      
       synchronized(recoveryScheduledLock) {
         recoveryScheduled = false;
       }
+      
       logger.debug("DataSerializerRecoveryTask - Attempting to recover dataSerializers");
       SerializerAttributesHolder[] holders= InternalDataSerializer.getSerializersForDistribution();
       if(holders.length == 0) {
         return;
       }
+      
       EventID eventId = InternalDataSerializer.generateEventId();
       //Fix for bug:40930
       if (eventId == null) {
@@ -108,8 +111,9 @@ public class DataSerializerRecoveryListener extends EndpointManager.EndpointList
               TimeUnit.MILLISECONDS);
           recoveryScheduled = true;
         } catch (RejectedExecutionException e) {
-          pool.getCancelCriterion().checkCancelInProgress(e);
-          throw e;
+          if (pool.getCancelCriterion().cancelInProgress() == null) {
+            throw e;
+          }
         }
       }
       else {
@@ -117,15 +121,18 @@ public class DataSerializerRecoveryListener extends EndpointManager.EndpointList
           RegisterDataSerializersOp.execute(pool, holders, eventId);
         } 
         catch (CancelException e) {
-          throw e;
+          return;
         }
         catch (RejectedExecutionException e) {
           // This is probably because we've started to shut down.
-          pool.getCancelCriterion().checkCancelInProgress(e);
-          throw e; // weird
+          if (pool.getCancelCriterion().cancelInProgress() == null) {
+            throw e; // weird
+          }
         }
         catch(Exception e) {
-          pool.getCancelCriterion().checkCancelInProgress(e);
+          if (pool.getCancelCriterion().cancelInProgress() != null) {
+            return;
+          }
           
           // If ClassNotFoundException occurred on server, don't retry
           Throwable cause = e.getCause();
@@ -141,8 +148,16 @@ public class DataSerializerRecoveryListener extends EndpointManager.EndpointList
             logger.warn(LocalizedMessage.create(
               LocalizedStrings.DataSerializerRecoveryListener_ERROR_RECOVERING_DATASERIALIZERS),
               e);
-            background.schedule(new RecoveryTask(), pingInterval, TimeUnit.MILLISECONDS);
-            recoveryScheduled = true;
+            try {
+              background.schedule(new RecoveryTask(), pingInterval, TimeUnit.MILLISECONDS);
+              recoveryScheduled = true;
+            } catch (RejectedExecutionException ex) { // GEODE-1613 - suspect string while shutting down
+              if (!background.isTerminated()
+                  && pool.getCancelCriterion().cancelInProgress() == null) {
+                throw ex;
+              }
+            }
+
           }
         } finally {
           pool.releaseThreadLocalConnection();
