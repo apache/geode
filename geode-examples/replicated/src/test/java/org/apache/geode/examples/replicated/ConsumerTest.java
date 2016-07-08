@@ -17,19 +17,19 @@
 
 package org.apache.geode.examples.replicated;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.NoAvailableLocatorsException;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.util.Set;
-
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.NoAvailableLocatorsException;
 
 public class ConsumerTest {
 
@@ -52,15 +52,20 @@ public class ConsumerTest {
   }
 
   @Test
-  public void countEntriesOnARegion() throws Exception {
-    assertEquals(consumer.NUM_ENTRIES, consumer.countEntries());
+  public void numberOfEntriesOnServerShouldMatchConsumerEntries() throws Exception {
+    assertEquals(consumer.NUM_ENTRIES, consumer.countEntriesOnServer());
   }
 
   @Test
-  public void countEntriesOnARegionWithNoConnection() throws Exception {
+  public void numberOfEntriesShouldBeGreaterThanZero() throws Exception {
+    assertTrue(consumer.NUM_ENTRIES > 0);
+  }
+
+  @Test
+  public void countingEntriesWithoutConnectionShouldThrowNoAvailableLocatorsException() throws Exception {
     consumer = new Consumer();
     expectedException.expect(NoAvailableLocatorsException.class);
-    assertEquals(consumer.NUM_ENTRIES, consumer.countEntries());
+    assertEquals(consumer.NUM_ENTRIES, consumer.countEntriesOnServer());
   }
 
 }

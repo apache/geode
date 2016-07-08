@@ -30,6 +30,8 @@ All examples:
 ### Intermediate
 
 *  PDX & Serialization
+*  Lucene Indexing
+*  OQL Indexing
 *  Functions
 *  CacheLoader & CacheWriter
 *  Listeners
@@ -53,7 +55,7 @@ All examples:
 *  Resource manager
 *  PDX Advanced
 
-### Use cases & integrations
+### Use cases, integrations and external examples
 
 This section has self-contained little projects that illustrate a use case or an integration with other projects.
 

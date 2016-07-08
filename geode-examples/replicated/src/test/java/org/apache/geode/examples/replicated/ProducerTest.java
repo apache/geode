@@ -16,8 +16,10 @@
  */
 package org.apache.geode.examples.replicated;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientCache;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
+
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -25,13 +27,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.util.Set;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.ClientCache;
 
 public class ProducerTest {
 
@@ -51,7 +48,7 @@ public class ProducerTest {
   }
 
   @Test
-  public void populateRegion() throws Exception {
+  public void populateRegionShouldReturnCorrectNumberOfEntries() throws Exception {
     producer = new Producer(clientCache);
     producer.setRegion(region);
 
@@ -60,7 +57,7 @@ public class ProducerTest {
   }
 
   @Test
-  public void populateWhenRegionDoesntExist() throws Exception {
+  public void populateWhenRegionDoesNotExistShouldThrowNullPointer() throws Exception {
     producer = new Producer(clientCache);
     expectedException.expect(NullPointerException.class);
     producer.populateRegion();
