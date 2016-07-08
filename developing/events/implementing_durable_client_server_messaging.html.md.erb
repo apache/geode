@@ -112,7 +112,6 @@ Program your durable client to be durable-messaging aware when it disconnects, r
         ```
 
         The `getPendingEventCount` API can return the following possible values:
-
         -   A value representing a count of events pending at the server. Note that this count is an approximate value based on the time the durable client pool connected or reconnected to the server. Any number of invocations will return the same value.
         -   A zero value if there are no events pending at server for this client pool
         -   A negative value indicates that no queue is available at the server for the client pool.
@@ -121,6 +120,7 @@ Program your durable client to be durable-messaging aware when it disconnects, r
 
     2.  Connect, initialize the client cache, regions, and any cache listeners, and create and execute any durable continuous queries.
     3.  Run all interest registration calls.
+
         **Note:**
         Registering interest with `InterestResultPolicy.KEYS_VALUES` initializes the client cache with the *current* values of specified keys. If concurrency checking is enabled for the region, any earlier (older) region events that are replayed to the client are ignored and are not sent to configured listeners. If your client must process all replayed events for a region, register with `InterestResultPolicy.KEYS` or `InterestResultPolicy.NONE` when reconnecting. Or, disable concurrency checking for the region in the client cache. See [Consistency for Region Updates](../distributed_regions/region_entry_versions.html#topic_CF2798D3E12647F182C2CEC4A46E2045).
 
