@@ -157,6 +157,7 @@ import com.gemstone.gemfire.internal.InternalStatisticsDisabledException;
 import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.ClientHealthMonitoringRegion;
+import com.gemstone.gemfire.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import com.gemstone.gemfire.internal.cache.DiskInitFile.DiskRegionFlag;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo.FilterInfo;
@@ -10198,141 +10199,144 @@ public class LocalRegion extends AbstractRegion
     }
     lockRVVForBulkOp();
     try {
+      try {
 
-      final DistributedPutAllOperation dpao = putAllOp;
-      int size = (proxyResult == null)? map.size() : proxyResult.size();
-      
-      if (isDebugEnabled) {
-        logger.debug( "size of put result is {} maps is {} proxyResult is {}", size, map, proxyResult);
-      }
+        final DistributedPutAllOperation dpao = putAllOp;
+        int size = (proxyResult == null)? map.size() : proxyResult.size();
 
-      final PutAllPartialResult partialKeys = new PutAllPartialResult(size);
-      final Iterator iterator;
-      final boolean isVersionedResults;
-      if (proxyResult != null) {
-        iterator = proxyResult.iterator();
-        isVersionedResults = true;
-      } else {
-        iterator = map.entrySet().iterator();
-        isVersionedResults = false;
-      }
-      Runnable r = new Runnable() {
-        public void run() {
-          int offset = 0;
-          VersionTagHolder tagHolder = new VersionTagHolder();
-          while (iterator.hasNext()) {
-            stopper.checkCancelInProgress(null);
-            Map.Entry mapEntry = (Map.Entry)iterator.next();
-            Object key = mapEntry.getKey();
-            VersionTag versionTag = null;
-            tagHolder.setVersionTag(null);
-            final Object value;
-            boolean overwritten = false;
-            if (isVersionedResults) {
-              versionTag = ((VersionedObjectList.Entry)mapEntry).getVersionTag();
-              value = map.get(key);
-              if (isDebugEnabled) {
-                logger.debug("putAll key {} -> {} version={}", key, value, versionTag);
-              }
-              if (versionTag == null && serverIsVersioned && concurrencyChecksEnabled && dataPolicy.withStorage()) {
-                // server was unable to determine the version for this operation.
-                // I'm not sure this can still happen as described below on a pr.
-                // But it can happen on the server if NORMAL or PRELOADED. See bug 51644.
-                // This can happen in a PR with redundancy if there is a bucket
-                // failure or migration during the operation.  We destroy the
-                // entry since we don't know what its state should be (but the server should)
-                if (isDebugEnabled) {
-                  logger.debug("server returned no version information for {}", key);
-                }
-                localDestroyNoCallbacks(key);
-                // to be consistent we need to fetch the current entry
-                get(key, event.getCallbackArgument(), false, null);
-                overwritten = true;
-              }
-            } else {
-              value = mapEntry.getValue();
-              if (isDebugEnabled) {
-                logger.debug("putAll {} -> {}", key, value);
-              }
-            }
-            try {
-              if (serverIsVersioned) {
-                if (isDebugEnabled) {
-                  logger.debug("associating version tag with {} version={}", key, versionTag);
-                }
-                //If we have received a version tag from a server, add it to the event
-                tagHolder.setVersionTag(versionTag);
-                tagHolder.setFromServer(true);
-              } else if (retryVersions != null && retryVersions.containsKey(key)) {
-                //If this is a retried event, and we have a version tag for the retry,
-                //add it to the event.
-                tagHolder.setVersionTag(retryVersions.get(key));
-              }
-              
-              if (!overwritten) {
-                basicEntryPutAll(key, value, dpao, offset, tagHolder);
-              }
-              // now we must check again since the cache may have closed during
-              // distribution (causing this process to not receive and queue the
-              // event for clients
-              stopper.checkCancelInProgress(null);
-              succeeded.addKeyAndVersion(key, tagHolder.getVersionTag());
-            } 
-            catch (Exception ex) {
-              // TODO ask Gester if this debug logging can be removed
-              if (isDebugEnabled) {
-                logger.debug("PutAll operation encountered exception for key {}", key, ex);
-              }
-              partialKeys.saveFailedKey(key, ex);
-            }
-            offset++;
-          }
-        }
-      };
-      this.syncBulkOp(r, eventId);
-      if (partialKeys.hasFailure()) {
-        // Bug 51725: Now succeeded contains an order key list, may be missing the version tags. 
-        // Save reference of succeeded into partialKeys. The succeeded may be modified by
-        // postPutAll() to fill in the version tags. 
-        partialKeys.setSucceededKeysAndVersions(succeeded);
-        logger.info(LocalizedMessage.create(LocalizedStrings.Region_PutAll_Applied_PartialKeys_0_1,
-                new Object[] {getFullPath(), partialKeys}));
         if (isDebugEnabled) {
-          logger.debug(partialKeys.detailString());
+          logger.debug( "size of put result is {} maps is {} proxyResult is {}", size, map, proxyResult);
         }
-        if (e == null) {
-          // if received exception from server first, ignore local exception
-          if (dpao.isBridgeOperation()) {
-            if (partialKeys.getFailure() instanceof CancelException) {
-              e = (CancelException)partialKeys.getFailure(); 
-            } else if (partialKeys.getFailure() instanceof LowMemoryException) {
-              throw partialKeys.getFailure();  // fix for #43589
-            } else {
-              e = new PutAllPartialResultException(partialKeys);
-              if (isDebugEnabled) {
-                logger.debug("basicPutAll:"+partialKeys.detailString());
+
+        final PutAllPartialResult partialKeys = new PutAllPartialResult(size);
+        final Iterator iterator;
+        final boolean isVersionedResults;
+        if (proxyResult != null) {
+          iterator = proxyResult.iterator();
+          isVersionedResults = true;
+        } else {
+          iterator = map.entrySet().iterator();
+          isVersionedResults = false;
+        }
+        Runnable r = new Runnable() {
+          public void run() {
+            int offset = 0;
+            VersionTagHolder tagHolder = new VersionTagHolder();
+            while (iterator.hasNext()) {
+              stopper.checkCancelInProgress(null);
+              Map.Entry mapEntry = (Map.Entry)iterator.next();
+              Object key = mapEntry.getKey();
+              VersionTag versionTag = null;
+              tagHolder.setVersionTag(null);
+              final Object value;
+              boolean overwritten = false;
+              if (isVersionedResults) {
+                versionTag = ((VersionedObjectList.Entry)mapEntry).getVersionTag();
+                value = map.get(key);
+                if (isDebugEnabled) {
+                  logger.debug("putAll key {} -> {} version={}", key, value, versionTag);
+                }
+                if (versionTag == null && serverIsVersioned && concurrencyChecksEnabled && dataPolicy.withStorage()) {
+                  // server was unable to determine the version for this operation.
+                  // I'm not sure this can still happen as described below on a pr.
+                  // But it can happen on the server if NORMAL or PRELOADED. See bug 51644.
+                  // This can happen in a PR with redundancy if there is a bucket
+                  // failure or migration during the operation.  We destroy the
+                  // entry since we don't know what its state should be (but the server should)
+                  if (isDebugEnabled) {
+                    logger.debug("server returned no version information for {}", key);
+                  }
+                  localDestroyNoCallbacks(key);
+                  // to be consistent we need to fetch the current entry
+                  get(key, event.getCallbackArgument(), false, null);
+                  overwritten = true;
+                }
+              } else {
+                value = mapEntry.getValue();
+                if (isDebugEnabled) {
+                  logger.debug("putAll {} -> {}", key, value);
+                }
               }
+              try {
+                if (serverIsVersioned) {
+                  if (isDebugEnabled) {
+                    logger.debug("associating version tag with {} version={}", key, versionTag);
+                  }
+                  //If we have received a version tag from a server, add it to the event
+                  tagHolder.setVersionTag(versionTag);
+                  tagHolder.setFromServer(true);
+                } else if (retryVersions != null && retryVersions.containsKey(key)) {
+                  //If this is a retried event, and we have a version tag for the retry,
+                  //add it to the event.
+                  tagHolder.setVersionTag(retryVersions.get(key));
+                }
+
+                if (!overwritten) {
+                  basicEntryPutAll(key, value, dpao, offset, tagHolder);
+                }
+                // now we must check again since the cache may have closed during
+                // distribution (causing this process to not receive and queue the
+                // event for clients
+                stopper.checkCancelInProgress(null);
+                succeeded.addKeyAndVersion(key, tagHolder.getVersionTag());
+              } 
+              catch (Exception ex) {
+                // TODO ask Gester if this debug logging can be removed
+                if (isDebugEnabled) {
+                  logger.debug("PutAll operation encountered exception for key {}", key, ex);
+                }
+                partialKeys.saveFailedKey(key, ex);
+              }
+              offset++;
             }
-          } else {
-            throw partialKeys.getFailure();
+          }
+        };
+        this.syncBulkOp(r, eventId);
+        if (partialKeys.hasFailure()) {
+          // Bug 51725: Now succeeded contains an order key list, may be missing the version tags. 
+          // Save reference of succeeded into partialKeys. The succeeded may be modified by
+          // postPutAll() to fill in the version tags. 
+          partialKeys.setSucceededKeysAndVersions(succeeded);
+          logger.info(LocalizedMessage.create(LocalizedStrings.Region_PutAll_Applied_PartialKeys_0_1,
+              new Object[] {getFullPath(), partialKeys}));
+          if (isDebugEnabled) {
+            logger.debug(partialKeys.detailString());
+          }
+          if (e == null) {
+            // if received exception from server first, ignore local exception
+            if (dpao.isBridgeOperation()) {
+              if (partialKeys.getFailure() instanceof CancelException) {
+                e = (CancelException)partialKeys.getFailure(); 
+              } else if (partialKeys.getFailure() instanceof LowMemoryException) {
+                throw partialKeys.getFailure();  // fix for #43589
+              } else {
+                e = new PutAllPartialResultException(partialKeys);
+                if (isDebugEnabled) {
+                  logger.debug("basicPutAll:"+partialKeys.detailString());
+                }
+              }
+            } else {
+              throw partialKeys.getFailure();
+            }
           }
         }
       }
-    }
-    catch (LowMemoryException lme) {
-      throw lme;
-    }
-    catch (RuntimeException ex) {
-      e = ex;
-    }
-    catch (Exception ex) {
-      e = new RuntimeException(ex);
+      catch (LowMemoryException lme) {
+        throw lme;
+      }
+      catch (RuntimeException ex) {
+        e = ex;
+      }
+      catch (Exception ex) {
+        e = new RuntimeException(ex);
+      } finally {
+        putAllOp.getBaseEvent().release();
+        putAllOp.freeOffHeapResources();
+      }
+      getDataView().postPutAll(putAllOp, succeeded, this);
     } finally {
       unlockRVVForBulkOp();
-      putAllOp.getBaseEvent().release();
-      putAllOp.freeOffHeapResources();
     }
-    getDataView().postPutAll(putAllOp, succeeded, this);
     if (e != null) {
       throw e;
     }
@@ -10400,150 +10404,153 @@ public class LocalRegion extends AbstractRegion
     }
     lockRVVForBulkOp();
     try {
+      try {
 
-      final DistributedRemoveAllOperation op = removeAllOp;
-      int size = (proxyResult == null)? keys.size() : proxyResult.size();
-      
-      if (isInternalRegion()) {
-        if (isTraceEnabled) {
-          logger.trace(
-              "size of removeAll result is {} keys are {} proxyResult is {}", size, keys, proxyResult);
+        final DistributedRemoveAllOperation op = removeAllOp;
+        int size = (proxyResult == null)? keys.size() : proxyResult.size();
+
+        if (isInternalRegion()) {
+          if (isTraceEnabled) {
+            logger.trace(
+                "size of removeAll result is {} keys are {} proxyResult is {}", size, keys, proxyResult);
+          } else {
+            if (isTraceEnabled) {
+              logger.trace(
+                  "size of removeAll result is {} keys are {} proxyResult is {}", size, keys, proxyResult);
+            }
+          }
         } else {
           if (isTraceEnabled) {
             logger.trace(
                 "size of removeAll result is {} keys are {} proxyResult is {}", size, keys, proxyResult);
           }
         }
-      } else {
-        if (isTraceEnabled) {
-          logger.trace(
-              "size of removeAll result is {} keys are {} proxyResult is {}", size, keys, proxyResult);
+
+        final PutAllPartialResult partialKeys = new PutAllPartialResult(size);
+        final Iterator iterator;
+        final boolean isVersionedResults;
+        if (proxyResult != null) {
+          iterator = proxyResult.iterator();
+          isVersionedResults = true;
+        } else {
+          iterator = keys.iterator();
+          isVersionedResults = false;
         }
-      }
-
-      final PutAllPartialResult partialKeys = new PutAllPartialResult(size);
-      final Iterator iterator;
-      final boolean isVersionedResults;
-      if (proxyResult != null) {
-        iterator = proxyResult.iterator();
-        isVersionedResults = true;
-      } else {
-        iterator = keys.iterator();
-        isVersionedResults = false;
-      }
-      Runnable r = new Runnable() {
-        public void run() {
-          int offset = 0;
-          VersionTagHolder tagHolder = new VersionTagHolder();
-          while (iterator.hasNext()) {
-            stopper.checkCancelInProgress(null);
-            Object key;
-            VersionTag versionTag = null;
-            tagHolder.setVersionTag(null);
-            if (isVersionedResults) {
-              Map.Entry mapEntry = (Map.Entry)iterator.next();
-              key = mapEntry.getKey();
-              versionTag = ((VersionedObjectList.Entry)mapEntry).getVersionTag();
-              if (isDebugEnabled) {
-                logger.debug("removeAll key {} version={}",key, versionTag);
-              }
-              if (versionTag == null) {
-                if (isDebugEnabled) {
-                  logger.debug("removeAll found invalid version tag, which means the entry is not found at server for key={}.", key);
-                }
-                succeeded.addKeyAndVersion(key, null);
-                continue;
-              }
-              // No need for special handling here in removeAll.
-              // We can just remove this key from the client with versionTag set to null.
-            } else {
-              key = iterator.next();
-              if (isInternalRegion()) {
-                if (isTraceEnabled) {
-                  logger.trace("removeAll {}", key);
-                }
-              } else {
-                if (isTraceEnabled) {
-                  logger.trace("removeAll {}", key);
-                }
-              }
-
-            }
-            try {
-              if (serverIsVersioned) {
-                if (isDebugEnabled) {
-                  logger.debug("associating version tag with {} version={}", key, versionTag);
-                }
-                //If we have received a version tag from a server, add it to the event
-                tagHolder.setVersionTag(versionTag);
-                tagHolder.setFromServer(true);
-              } else if (retryVersions != null) {
-                VersionTag vt = retryVersions.get(offset);
-                if (vt != null) {
-                  //If this is a retried event, and we have a version tag for the retry,
-                  //add it to the event.
-                  tagHolder.setVersionTag(vt);
-                }
-              }
-              
-              basicEntryRemoveAll(key, op, offset, tagHolder);
-              // now we must check again since the cache may have closed during
-              // distribution causing this process to not receive and queue the
-              // event for clients
+        Runnable r = new Runnable() {
+          public void run() {
+            int offset = 0;
+            VersionTagHolder tagHolder = new VersionTagHolder();
+            while (iterator.hasNext()) {
               stopper.checkCancelInProgress(null);
-              succeeded.addKeyAndVersion(key, tagHolder.getVersionTag());
-            } 
-            catch (Exception ex) {
-              partialKeys.saveFailedKey(key, ex);
-            }
-            offset++;
-          }
-        }
-      };
-      syncBulkOp(r, eventId);
-      if (partialKeys.hasFailure()) {
-        // Bug 51725: Now succeeded contains an order key list, may be missing the version tags. 
-        // Save reference of succeeded into partialKeys. The succeeded may be modified by
-        // postRemoveAll() to fill in the version tags.
-        partialKeys.setSucceededKeysAndVersions(succeeded);
-        logger.info(LocalizedMessage.create(LocalizedStrings.Region_RemoveAll_Applied_PartialKeys_0_1,
-                new Object[] {getFullPath(), partialKeys}));
-        if (isDebugEnabled) {
-          logger.debug(partialKeys.detailString());
-        }
-        if (e == null) {
-          // if received exception from server first, ignore local exception
-          if (op.isBridgeOperation()) {
-            if (partialKeys.getFailure() instanceof CancelException) {
-              e = (CancelException)partialKeys.getFailure(); 
-            } else if (partialKeys.getFailure() instanceof LowMemoryException) {
-              throw partialKeys.getFailure();  // fix for #43589
-            } else {
-              e = new PutAllPartialResultException(partialKeys);
-              if (isDebugEnabled) {
-                logger.debug("basicRemoveAll:"+partialKeys.detailString());
+              Object key;
+              VersionTag versionTag = null;
+              tagHolder.setVersionTag(null);
+              if (isVersionedResults) {
+                Map.Entry mapEntry = (Map.Entry)iterator.next();
+                key = mapEntry.getKey();
+                versionTag = ((VersionedObjectList.Entry)mapEntry).getVersionTag();
+                if (isDebugEnabled) {
+                  logger.debug("removeAll key {} version={}",key, versionTag);
+                }
+                if (versionTag == null) {
+                  if (isDebugEnabled) {
+                    logger.debug("removeAll found invalid version tag, which means the entry is not found at server for key={}.", key);
+                  }
+                  succeeded.addKeyAndVersion(key, null);
+                  continue;
+                }
+                // No need for special handling here in removeAll.
+                // We can just remove this key from the client with versionTag set to null.
+              } else {
+                key = iterator.next();
+                if (isInternalRegion()) {
+                  if (isTraceEnabled) {
+                    logger.trace("removeAll {}", key);
+                  }
+                } else {
+                  if (isTraceEnabled) {
+                    logger.trace("removeAll {}", key);
+                  }
+                }
+
               }
+              try {
+                if (serverIsVersioned) {
+                  if (isDebugEnabled) {
+                    logger.debug("associating version tag with {} version={}", key, versionTag);
+                  }
+                  //If we have received a version tag from a server, add it to the event
+                  tagHolder.setVersionTag(versionTag);
+                  tagHolder.setFromServer(true);
+                } else if (retryVersions != null) {
+                  VersionTag vt = retryVersions.get(offset);
+                  if (vt != null) {
+                    //If this is a retried event, and we have a version tag for the retry,
+                    //add it to the event.
+                    tagHolder.setVersionTag(vt);
+                  }
+                }
+
+                basicEntryRemoveAll(key, op, offset, tagHolder);
+                // now we must check again since the cache may have closed during
+                // distribution causing this process to not receive and queue the
+                // event for clients
+                stopper.checkCancelInProgress(null);
+                succeeded.addKeyAndVersion(key, tagHolder.getVersionTag());
+              } 
+              catch (Exception ex) {
+                partialKeys.saveFailedKey(key, ex);
+              }
+              offset++;
             }
-          } else {
-            throw partialKeys.getFailure();
+          }
+        };
+        syncBulkOp(r, eventId);
+        if (partialKeys.hasFailure()) {
+          // Bug 51725: Now succeeded contains an order key list, may be missing the version tags. 
+          // Save reference of succeeded into partialKeys. The succeeded may be modified by
+          // postRemoveAll() to fill in the version tags.
+          partialKeys.setSucceededKeysAndVersions(succeeded);
+          logger.info(LocalizedMessage.create(LocalizedStrings.Region_RemoveAll_Applied_PartialKeys_0_1,
+              new Object[] {getFullPath(), partialKeys}));
+          if (isDebugEnabled) {
+            logger.debug(partialKeys.detailString());
+          }
+          if (e == null) {
+            // if received exception from server first, ignore local exception
+            if (op.isBridgeOperation()) {
+              if (partialKeys.getFailure() instanceof CancelException) {
+                e = (CancelException)partialKeys.getFailure(); 
+              } else if (partialKeys.getFailure() instanceof LowMemoryException) {
+                throw partialKeys.getFailure();  // fix for #43589
+              } else {
+                e = new PutAllPartialResultException(partialKeys);
+                if (isDebugEnabled) {
+                  logger.debug("basicRemoveAll:"+partialKeys.detailString());
+                }
+              }
+            } else {
+              throw partialKeys.getFailure();
+            }
           }
         }
       }
-    }
-    catch (LowMemoryException lme) {
-      throw lme;
-    }
-    catch (RuntimeException ex) {
-      e = ex;
-    }
-    catch (Exception ex) {
-      e = new RuntimeException(ex);
+      catch (LowMemoryException lme) {
+        throw lme;
+      }
+      catch (RuntimeException ex) {
+        e = ex;
+      }
+      catch (Exception ex) {
+        e = new RuntimeException(ex);
+      } finally {
+        removeAllOp.getBaseEvent().release();
+        removeAllOp.freeOffHeapResources();
+      }
+      getDataView().postRemoveAll(removeAllOp, succeeded, this);
     } finally {
       unlockRVVForBulkOp();
-      removeAllOp.getBaseEvent().release();
-      removeAllOp.freeOffHeapResources();
     }
-    getDataView().postRemoveAll(removeAllOp, succeeded, this);
     if (e != null) {
       throw e;
     }
@@ -10558,14 +10565,32 @@ public class LocalRegion extends AbstractRegion
    *  to get a valid version tag.
    */
   private void lockRVVForBulkOp() {
+    ARMLockTestHook alth = getRegionMap().getARMLockTestHook();
+    if(alth!=null) { 
+      alth.beforeBulkLock(this); 
+    }
+    
     if (this.versionVector != null && this.dataPolicy.withReplication()) {
       this.versionVector.lockForCacheModification(this);
+    }
+    
+    if(alth!=null) {
+      alth.afterBulkLock(this);
     }
   }
   
   private void unlockRVVForBulkOp() {
+    ARMLockTestHook alth = getRegionMap().getARMLockTestHook();
+    if(alth!=null) {
+      alth.beforeBulkRelease(this);
+    }
+    
     if (this.versionVector != null && this.dataPolicy.withReplication()) {
       this.versionVector.releaseCacheModificationLock(this);
+    }
+    
+    if(alth!=null) {
+      alth.afterBulkRelease(this);
     }
   }
 

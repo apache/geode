@@ -403,13 +403,22 @@ public abstract class RegionVersionVector<T extends VersionSource<?>> implements
       this.versionLock.readLock().lock();
     }
   }
-
   
   /** release the lock preventing concurrent clear() from happening */
   public void releaseCacheModificationLock(LocalRegion owner) {
     if (owner.getServerProxy() == null) {
       this.versionLock.readLock().unlock();
     }
+  }
+  
+  /** obtain a lock to prevent concurrent clear() from happening */
+  public void lockForCacheModification() {
+    this.versionLock.readLock().lock();
+  }
+
+  /** release the lock preventing concurrent clear() from happening */
+  public void releaseCacheModificationLock() {
+    this.versionLock.readLock().unlock();
   }
     
   private void syncLocalVersion() {
@@ -1461,6 +1470,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>> implements
   public Version[] getSerializationVersions(){
     return null;
   }
+  
 //  /**
 //   * This class will wrap DM member IDs to provide integers that can be stored
 //   * on disk and be timed out in the vector.
