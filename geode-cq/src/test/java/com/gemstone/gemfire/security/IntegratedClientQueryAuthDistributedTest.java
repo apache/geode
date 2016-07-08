@@ -30,8 +30,9 @@ import com.gemstone.gemfire.cache.query.CqListener;
 import com.gemstone.gemfire.cache.query.CqQuery;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class IntegratedClientQueryAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
 
   @Test
