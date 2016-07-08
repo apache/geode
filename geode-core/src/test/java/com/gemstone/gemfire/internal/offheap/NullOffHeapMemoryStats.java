@@ -63,6 +63,10 @@ public class NullOffHeapMemoryStats implements OffHeapMemoryStats {
     return 0;
   }
   @Override
+  public int getDefragmentationsInProgress() {
+    return 0;
+  }
+  @Override
   public void setFragments(long value) {
   }
   @Override

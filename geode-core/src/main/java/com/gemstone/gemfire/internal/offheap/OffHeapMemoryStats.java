@@ -42,6 +42,7 @@ public interface OffHeapMemoryStats {
   public long getReads();
   public int getObjects();
   public int getDefragmentations();
+  public int getDefragmentationsInProgress();
   public long getFragments();
   public int getLargestFragment();
   public int getFragmentation();
