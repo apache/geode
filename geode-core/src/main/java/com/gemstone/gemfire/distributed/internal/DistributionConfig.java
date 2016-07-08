@@ -3039,7 +3039,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#REDIS_PORT} property
    *
-   * @return the port on which GemFireRedisServer should be started
+   * @return the port on which GeodeRedisServer should be started
    * @since GemFire 8.0
    */
   @ConfigAttributeGetter(name = REDIS_PORT)
@@ -3055,7 +3055,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#REDIS_BIND_ADDRESS} property
    *
-   * @return the bind address for GemFireRedisServer
+   * @return the bind address for GeodeRedisServer
    * @since GemFire 8.0
    */
   @ConfigAttributeGetter(name = REDIS_BIND_ADDRESS)
@@ -3071,7 +3071,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#REDIS_PASSWORD} property
    *
-   * @return the authentication password for GemFireRedisServer
+   * @return the authentication password for GeodeRedisServer
    * @since GemFire 8.0
    */
   @ConfigAttributeGetter(name = REDIS_PASSWORD)

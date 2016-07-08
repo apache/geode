@@ -15,7 +15,7 @@
  */
 package com.gemstone.gemfire.internal.hll;
 
-import com.gemstone.gemfire.internal.redis.executor.hll.Varint;
+import org.apache.geode.redis.internal.executor.hll.Varint;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
