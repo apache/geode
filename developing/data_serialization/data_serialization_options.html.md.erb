@@ -6,6 +6,7 @@ title:  Overview of Data Serialization
 
 <a id="data_serialization_options__section_B1BDB0E7F6814DFD8BACD8D8C5CAA81B"></a>
 All data that <span class="keyword">Geode</span> moves out of the local cache must be serializable. However, you do not necessarily need to implement `java.io.Serializable` since other serialization options are available in <span class="keyword">Geode</span>. Region data that must be serializable falls under the following categories:
+
 -   Partitioned regions
 -   Distributed regions
 -   Regions that are persisted or overflowed to disk
@@ -39,7 +40,7 @@ If autoserialization does not meet your needs, you can serialize your objects by
 | Works with .NET clients.                                                                                                         | X                                                    | X                                                   |
 | Works with <span class="keyword">Geode</span> delta propagation.                                                                 | X                                                    | X (See note below.)                                 |
 
-: <span class="tablecap">Table 1. Serialization Options: Comparison of Features</span>
+<span class="tablecap">**Table 1.** Serialization Options: Comparison of Features</span>
 
 **Note:** By default, you can use <span class="keyword">Geode</span> delta propagation with PDX serialization. However, delta propagation will not work if you have set the <span class="keyword">Geode</span> property `read-serialized` to "true". In terms of deserialization, to apply a change delta propagation requires a domain class instance and the `fromDelta `method. If you have set `read-serialized` to true, then you will receive a `PdxInstance` instead of a domain class instance and `PdxInstance` does not have the `fromDelta` method required for delta propagation.
 

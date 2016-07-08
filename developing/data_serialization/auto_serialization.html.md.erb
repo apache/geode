@@ -68,7 +68,6 @@ In your application where you manage data from the cache, provide the following 
         ```
 
 3.  Customize the behavior of the `ReflectionBasedAutoSerializer` using one of the following mechanisms:
-
     -   By using a class pattern string to specify the classes to auto-serialize and customize how the classes are serialized. Class pattern strings can be specified in the API by passing strings to the `ReflectionBasedAutoSerializer` constructor or by specifying them in cache.xml. See [Customizing Serialization with Class Pattern Strings](autoserialization_with_class_pattern_strings.html#concept_9B67BBE94B414B7EA63BD7E8D61D0312) for details.
     -   By creating a subclass of `ReflectionBasedAutoSerializer` and overriding specific methods. See [Extending the ReflectionBasedAutoSerializer](extending_the_autoserializer.html#concept_9E020566EE794A81A48A90BA798EC279) for details.
 
@@ -80,7 +79,6 @@ In your application where you manage data from the cache, provide the following 
         ```
 
         By using gfsh, this configuration can propagated across the cluster through the [Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html).
-
     -   In cache.xml:
 
         ``` pre
@@ -102,7 +100,6 @@ In your application where you manage data from the cache, provide the following 
           ...
         </cache>
         ```
-
     -   Using the Java API:
 
         ``` pre
