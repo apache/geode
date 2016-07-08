@@ -626,41 +626,19 @@ If you know the data you need to query, you can target particular nodes in your 
 
 ## Which query language elements are supported in <span class="keyword">Geode</span>?
 
-<table>
-<colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
-</colgroup>
-<tbody>
-<tr class="odd">
-<td><p>AND</p>
-<p>AS</p>
-<p>COUNT</p>
-<p>DISTINCT</p>
-<p>ELEMENT</p>
-<p>FROM</p>
-&lt;HINT&gt;
-<p>IMPORT</p>
-<p>IN</p>
-<p>IS_DEFINED</p>
-<p>IS_UNDEFINED</p></td>
-<td><p>LIMIT</p>
-<p>LIKE</p>
-<p>NOT</p>
-<p>NVL</p>
-<p>OR</p>
-<p>ORDER BY</p>
-<p>SELECT</p>
-<p>SET</p>
-<p>&lt;TRACE&gt;</p>
-<p>TRUE</p></td>
-<td><p>TO_DATE</p>
-<p>TYPE</p>
-<p>WHERE</p></td>
-</tr>
-</tbody>
-</table>
+| Supported elements ||          |
+|----------|----------|----------|
+| AND      | LIMIT    | TO_DATE  |
+| AS       | LIKE     | TYPE     |
+| COUNT    | NOT      | WHERE    |
+| DISTINCT | NVL      | |
+| ELEMENT  | OR       | |
+| FROM     | ORDER BY | |
+| \<HINT\> | SELECT   | |
+| IMPORT   | SET      | |
+| IN       | \<TRACE\>| |
+| IS_DEFINED| TRUE    | |
+| IS_UNDEFINED        | |
 
 For more information and examples on using each supported keyword, see [Supported Keywords](../developing/query_additional/supported_keywords.html#reference_07214B0F8DC94659B0F2D68B67195BD8).
 

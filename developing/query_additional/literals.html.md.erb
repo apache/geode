@@ -7,17 +7,29 @@ title:  Supported Literals
 
 <span class="keyword">Geode</span> supports the following literal types:
 
--   **boolean**. A boolean value, either TRUE or FALSE
--   **int and long**. An integer literal is of type `long` if has a suffix of the ASCII letter L. Otherwise it is of type `int`.
--   **floating point**. A floating-point literal is of type `float` if it has a suffix of an ASCII letter F. Otherwise its type is `double`. Optionally, it can have a suffix of an ASCII letter D. A double or floating point literal can optionally include an exponent suffix of E or e, followed by a signed or unsigned number.
--   **string**. String literals are delimited by single quotation marks. Embedded single-quotation marks are doubled. For example, the character string `'Hello'` evaluates to the value `Hello`, while the character string `'He said,                         ''Hello'''` evaluates to `He said, 'Hello'`. Embedded newlines are kept as part of the string literal.
--   **char**. A literal is of type `char` if it is a string literal prefixed by the keyword CHAR, otherwise it is of type string. The CHAR literal for the single-quotation mark character is CHAR '''' (four single quotation marks).
--   **date**. A `java.sql.Date` object that uses the JDBC format prefixed with the DATE keyword: `DATE yyyy-mm-dd`. In the `Date`, `yyyy` represents the year, `mm` represents the month, and `dd` represents the day. The year must be represented by four digits; a two-digit shorthand for the year is not allowed.
--   **time**. A `java.sql.Time` object that uses the JDBC format (based on a 24-hour clock) prefixed with the TIME keyword: `TIME                             hh:mm:ss`. In the `Time`, `hh` represents the hours, `mm` represents the minutes, and `ss` represents the seconds.
--   **timestamp**. A `java.sql.Timestamp` object that uses the JDBC format with a TIMESTAMP prefix: `TIMESTAMP yyyy-mm-dd                             hh:mm:ss.fffffffff` In the `Timestamp`, `yyyy-mm-dd` represents the `date`, `hh:mm:ss` represents the `time`, and `fffffffff` represents the fractional seconds (up to nine digits).
--   **NIL**. Equivalent alternative of `NULL`.
--   **NULL**. The same as `null` in Java.
--   **UNDEFINED**. A special literal that is a valid value for any data type. An `UNDEFINED` value is the result of accessing an attribute of a null-valued attribute. Note that if you access an attribute that has an explicit value of null, then it is not undefined. For example if a query accesses the attribute address.city and address is null, the result is undefined. If the query accesses address, then the result is not undefined, it is `NULL`.
+<dt>**boolean**</dt>
+<dd>A `boolean` value, either TRUE or FALSE</dd>
+<dt>**int** and **long**</dt>
+<dd>An integer literal is of type `long` if has a suffix of the ASCII letter L. Otherwise it is of type `int`.</dd>
+<dt>**floating point**</dt>
+<dd>A floating-point literal is of type `float` if it has a suffix of an ASCII letter `F`. Otherwise its type is `double`. Optionally, it can have a suffix of an ASCII letter `D`. A double or floating point literal can optionally include an exponent suffix of `E` or `e`, followed by a signed or unsigned number.</dd>
+
+<dt>**string**</dt>
+<dd>String literals are delimited by single quotation marks. Embedded single-quotation marks are doubled. For example, the character string `'Hello'` evaluates to the value `Hello`, while the character string `'He said, ''Hello'''` evaluates to `He said, 'Hello'`. Embedded newlines are kept as part of the string literal.</dd>
+<dt>**char**</dt>
+<dd>A literal is of type char if it is a string literal prefixed by the keyword `CHAR`, otherwise it is of type `string`. The `CHAR` literal for the single-quotation mark character is `CHAR` `''''` (four single quotation marks).</dd>
+<dt>**date**</dt>
+<dd>A `java.sql.Date` object that uses the JDBC format prefixed with the DATE keyword: `DATE yyyy-mm-dd`. In the `Date`, `yyyy` represents the year, `mm` represents the month, and `dd` represents the day. The year must be represented by four digits; a two-digit shorthand for the year is not allowed.</dd>
+<dt>**time**</dt>
+<dd>A `java.sql.Time` object that uses the JDBC format (based on a 24-hour clock) prefixed with the TIME keyword: `TIME hh:mm:ss`. In the `Time`, `hh` represents the hours, `mm` represents the minutes, and `ss` represents the seconds.</dd>
+<dt>**timestamp**</dt>
+<dd>A `java.sql.Timestamp` object that uses the JDBC format with a TIMESTAMP prefix: `TIMESTAMP yyyy-mm-dd hh:mm:ss.fffffffff` In the `Timestamp`, `yyyy-mm-dd` represents the `date`, `hh:mm:ss` represents the `time`, and `fffffffff` represents the fractional seconds (up to nine digits).</dd>
+<dt>**NIL**</dt>
+<dd>Equivalent alternative of `NULL`.</dd>
+<dt>**NULL**</dt>
+<dd>The same as `null` in Java.</dd>
+<dt>**UNDEFINED**</dt>
+<dd>A special literal that is a valid value for any data type. An `UNDEFINED` value is the result of accessing an attribute of a null-valued attribute. Note that if you access an attribute that has an explicit value of null, then it is not undefined. For example if a query accesses the attribute address.city and address is null, the result is undefined. If the query accesses address, then the result is not undefined, it is `NULL`.</dd>
 
 You can compare temporal literal values `DATE`, `TIME`, and `TIMESTAMP` with `java.util.Date` values. There is no literal for `java.util.Date` in the query language.
 
