@@ -318,6 +318,7 @@ public class ServerHandShakeProcessor {
       else {
         //this sets principal in map as well....
         uniqueId = getUniqueId(connection, (Principal)principal);
+        connection.setPrincipal((Principal)principal);//TODO:hitesh is this require now ???
       }
       return uniqueId;
     }catch(Exception ex) {
