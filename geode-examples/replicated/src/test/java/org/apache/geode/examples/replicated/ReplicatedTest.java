@@ -73,7 +73,7 @@ public class ReplicatedTest {
   @Test
   public void checkIfScriptsExistsAndAreExecutable() throws IOException {
     assertTrue(shell.getFileFromClassLoader(startScriptFileName).map(x -> x.isFile()).orElse(false));
-    assertTrue(shell.getFileFromClassLoader(startScriptFileName).map(x -> x.isFile()).orElse(false));
+    assertTrue(shell.getFileFromClassLoader(stopScriptFileName).map(x -> x.isFile()).orElse(false));
   }
 
   @Test

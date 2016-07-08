@@ -18,14 +18,10 @@ package org.apache.geode.examples.replicated;
 
 import com.gemstone.gemfire.cache.client.ClientCache;
 
-/**
- * @author wmarkito
- * @date 5/31/16.
- */
 public class Consumer extends BaseClient {
 
   public static void main(String[] args) {
-    new Consumer().countEntries();
+    new Consumer().countEntriesOnServer();
   }
 
   public Consumer() {
@@ -35,7 +31,7 @@ public class Consumer extends BaseClient {
     this.clientCache = clientCache;
   }
 
-  public int countEntries() {
+  public int countEntriesOnServer() {
     int size = getRegion().keySetOnServer().size();
     logger.info(String.format("Done. %d entries available on the server(s).", size));
     return size;

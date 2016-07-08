@@ -16,12 +16,12 @@
  */
 package org.apache.geode.examples.replicated;
 
+import java.util.logging.Logger;
+
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-
-import java.util.logging.Logger;
 
 
 public abstract class BaseClient {
@@ -34,8 +34,8 @@ public abstract class BaseClient {
   }
 
   private Region region;
-  private final String locatorHost = System.getProperty("locatorHost", "localhost");
-  private final int locatorPort = Integer.getInteger("locatorPort", 10334);
+  private final String locatorHost = System.getProperty("GEODE_LOCATOR_HOST", "localhost");
+  private final int locatorPort = Integer.getInteger("GEODE_LOCATOR_PORT", 10334);
   protected static final String REGION_NAME = "myRegion";
   static final int NUM_ENTRIES = 50;
 
