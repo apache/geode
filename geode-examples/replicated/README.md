@@ -43,5 +43,3 @@ The producer puts 50 entries into the replicated region. The consumer prints the
         $ scripts/stopAll.sh
 
 This example is a simple demonstration on basic APIs of Geode, as well how to write tests using mocks for Geode applications.
-
-TODO: assume jUnit4
