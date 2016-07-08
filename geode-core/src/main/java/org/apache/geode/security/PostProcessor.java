@@ -15,30 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.security.templates;
+package org.apache.geode.security;
 
 import java.security.Principal;
 import java.util.Properties;
 
-import com.gemstone.gemfire.security.PostProcessor;
-
-public class SamplePostProcessor implements PostProcessor{
-  public static String MASK = "****";
-
-  public static SamplePostProcessor create(){
-    return new SamplePostProcessor();
-  }
-
-  @Override
-  public void init(final Properties securityProps) {
-
-  }
-
-  @Override
-  public Object processRegionValue(Principal principal,
-                                   String regionName,
-                                   Object key,
-                                   Object value) {
-    return principal.getName()+"/"+regionName+"/"+key+"/"+value;
-  }
+public interface PostProcessor {
+  void init(Properties securityProps);
+  Object processRegionValue(Principal principal, String regionName, Object key,  Object value);
 }

@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.security;
+package org.apache.geode.security;
 
 import java.security.Principal;
 import java.util.Properties;
+
+import com.gemstone.gemfire.security.AuthenticationFailedException;
 
 public interface SecurityManager {
 

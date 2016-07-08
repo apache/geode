@@ -20,7 +20,7 @@ package com.gemstone.gemfire.management.internal.security;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gemstone.gemfire.security.GeodePermission;
+import org.apache.geode.security.GeodePermission;
 
 import org.apache.shiro.authz.Permission;
 

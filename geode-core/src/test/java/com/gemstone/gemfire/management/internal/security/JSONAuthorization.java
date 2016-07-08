@@ -18,7 +18,7 @@ package com.gemstone.gemfire.management.internal.security;
 
 import java.io.IOException;
 
-import com.gemstone.gemfire.security.templates.SampleSecurityManager;
+import org.apache.geode.security.templates.SampleSecurityManager;
 import com.gemstone.gemfire.util.test.TestUtil;
 
 public class JSONAuthorization extends SampleSecurityManager {

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.security.templates;
+package org.apache.geode.security.templates;
 
 import java.io.File;
 import java.io.FileReader;
@@ -43,8 +43,8 @@ import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.security.AccessControl;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.Authenticator;
-import com.gemstone.gemfire.security.SecurityManager;
-import com.gemstone.gemfire.security.GeodePermission;
+import org.apache.geode.security.SecurityManager;
+import org.apache.geode.security.GeodePermission;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 
 /**

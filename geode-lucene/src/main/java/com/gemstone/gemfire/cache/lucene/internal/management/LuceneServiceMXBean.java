@@ -16,10 +16,9 @@
  */
 package com.gemstone.gemfire.cache.lucene.internal.management;
 
-import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-import com.gemstone.gemfire.security.GeodePermission.Operation;
-import com.gemstone.gemfire.security.GeodePermission.Resource;
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
 
 /**
  * MBean that provides access to the {@link com.gemstone.gemfire.cache.lucene.LuceneService}.

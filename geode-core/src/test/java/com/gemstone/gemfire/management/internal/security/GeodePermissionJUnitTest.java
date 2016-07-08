@@ -19,9 +19,9 @@ package com.gemstone.gemfire.management.internal.security;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.security.GeodePermission;
-import com.gemstone.gemfire.security.GeodePermission.Operation;
-import com.gemstone.gemfire.security.GeodePermission.Resource;
+import org.apache.geode.security.GeodePermission;
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.apache.shiro.authz.permission.WildcardPermission;
