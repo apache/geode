@@ -61,7 +61,6 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     final VM vm1 = Host.getHost(0).getVM(1);
 
     createIndex(vm1);
-
     CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);

@@ -57,7 +57,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 /**
- * The LuceneIndexCommands class encapsulates all Geode shell (Gfsh) commands related to lucene indexes defined in Geode.
+ * The LuceneIndexCommands class encapsulates all Geode shell (Gfsh) commands related to Lucene indexes defined in Geode.
  * </p>
  * @see AbstractCommandsSupport
  * @see LuceneIndexDetails
@@ -124,8 +124,6 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       return ResultBuilder.createInfoResult(LuceneCliStrings.LUCENE_LIST_INDEX__INDEXES_NOT_FOUND_MESSAGE);
     }
   }
-  //gfsh create lucene index --field=a,b,c
-  //gfsh create lucene index --field=a,b,c --analyzer=Standard,Keyword
 
   @CliCommand(value = LuceneCliStrings.LUCENE_CREATE_INDEX, help = LuceneCliStrings.LUCENE_CREATE_INDEX__HELP)
   @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA }, writesToSharedConfiguration=true)
@@ -162,11 +160,11 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
 
     GeodeSecurityUtil.authorizeRegionManage(regionPath);
     try {
-      final Cache cache = CacheFactory.getAnyInstance();
-      final Set<DistributedMember> targetMembers = CliUtil.findAllMatchingMembers(groups, null);
+      final Cache cache = getCache();
       LuceneIndexInfo indexInfo = new LuceneIndexInfo(indexName, regionPath, fields, analyzers);
-      final ResultCollector<?, ?> rc = CliUtil.executeFunction(createIndexFunction, indexInfo, targetMembers);
+      final ResultCollector<?, ?> rc = this.createIndexOnGroups(groups, indexInfo);
       final List<CliFunctionResult> funcResults = (List<CliFunctionResult>) rc.getResult();
+
       final Set<String> successfulMembers = new TreeSet<String>();
       final Map<String, Set<String>> indexOpFailMap = new HashMap<String, Set<String>>();
 
@@ -207,6 +205,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
         }
         result = ResultBuilder.buildResult(infoResult);
 
+
       } else {
         //Group members by the exception thrown.
         final ErrorResultData erd = ResultBuilder.createErrorResultData();
@@ -232,12 +231,16 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     } catch (Exception e) {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     }
-
-    //TODO - store in cluster config
+//    TODO - store in cluster config
 //    if (xmlEntity != null) {
 //      result.setCommandPersisted((new SharedConfigurationWriter()).addXmlEntity(xmlEntity, groups));
 //    }
 
     return result;
+  }
+
+  protected ResultCollector<?, ?> createIndexOnGroups( String[] groups, final LuceneIndexInfo indexInfo) throws CommandResultException {
+    final Set<DistributedMember> targetMembers = CliUtil.findAllMatchingMembers(groups, null);
+    return CliUtil.executeFunction(createIndexFunction, indexInfo, targetMembers);
   }
 }

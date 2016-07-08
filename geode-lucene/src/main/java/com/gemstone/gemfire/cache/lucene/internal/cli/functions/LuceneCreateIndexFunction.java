@@ -43,8 +43,7 @@ import org.apache.lucene.analysis.Analyzer;
 
 
 /**
- * The LuceneListIndexFunction class is a function used to collect the information on all lucene indexes in
- * the entire Cache.
+ * The LuceneCreateIndexFunction class is a function used to create Lucene indexes.
  * </p>
  * @see Cache
  * @see com.gemstone.gemfire.cache.execute.Function

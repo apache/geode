@@ -31,27 +31,25 @@ import java.util.Set;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.Mockito;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.execute.Execution;
-import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
 import com.gemstone.gemfire.internal.util.CollectionUtils;
 import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.cli.functions.ListIndexFunction;
+import com.gemstone.gemfire.management.cli.Result.Status;
+import com.gemstone.gemfire.management.internal.cli.functions.CliFunctionResult;
+import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
+import com.gemstone.gemfire.management.internal.cli.result.CommandResultException;
+import com.gemstone.gemfire.management.internal.cli.result.InfoResultData;
+import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
@@ -71,21 +69,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  */
 @Category(UnitTest.class)
 public class LuceneIndexCommandsJUnitTest {
-
-  private Mockery mockContext;
-
-  @Before
-  public void setup() {
-    mockContext = new Mockery() {{
-      setImposteriser(ClassImposteriser.INSTANCE);
-    }};
-  }
-
-  @After
-  public void tearDown() {
-    mockContext.assertIsSatisfied();
-    mockContext = null;
-  }
 
   private LuceneIndexCommands createIndexCommands(final Cache cache, final Execution functionExecutor) {
     return new LuceneTestIndexCommands(cache, functionExecutor);
@@ -137,6 +120,38 @@ public class LuceneIndexCommandsJUnitTest {
     assertEquals(Arrays.asList("{field1=StandardAnalyzer, field2=KeywordAnalyzer}", "{field1=StandardAnalyzer, field2=KeywordAnalyzer}", "{field1=StandardAnalyzer, field2=KeywordAnalyzer}"), data.retrieveAllValues("Field Analyzer"));
   }
 
+  @Test
+  public void testCreateIndex() throws CommandResultException {
+    final Cache mockCache=mock(Cache.class);
+    final ResultCollector mockResultCollector = mock(ResultCollector.class);
+    final LuceneIndexCommands commands=spy(createIndexCommands(mockCache,null));
+    final String memberId="member1";
+    final List<CliFunctionResult> cliFunctionResults=new ArrayList<>();
+    cliFunctionResults.add(new CliFunctionResult(memberId,true,"Index Created"));
+
+    doReturn(mockResultCollector).when(commands).createIndexOnGroups(any(),any(LuceneIndexInfo.class));
+    doReturn(cliFunctionResults).when(mockResultCollector).getResult();
+
+    String indexName ="index";
+    String regionPath="regionPath";
+    String[] searchableFields={"field1","field2","field3"};
+    String[] fieldAnalyzers = { StandardAnalyzer.class.getCanonicalName(), KeywordAnalyzer.class.getCanonicalName(), StandardAnalyzer.class.getCanonicalName()};
+
+    Result actualResult=commands.createIndex(indexName,regionPath,searchableFields,fieldAnalyzers,null);
+    Result expectedResult = buildResult(indexName, regionPath, memberId);
+    assertEquals(Status.OK,actualResult.getStatus());
+    assertEquals(expectedResult,actualResult);
+  }
+
+  private Result buildResult(final String indexName, final String regionPath, final String memberId) {
+    final InfoResultData infoResult = ResultBuilder.createInfoResultData();
+    infoResult.addLine(LuceneCliStrings.CREATE_INDEX__SUCCESS__MSG);
+    infoResult.addLine(CliStrings.format(LuceneCliStrings.CREATE_INDEX__NAME__MSG, indexName));
+    infoResult.addLine(CliStrings.format(LuceneCliStrings.CREATE_INDEX__REGIONPATH__MSG, regionPath));
+    infoResult.addLine(LuceneCliStrings.CREATE_INDEX__MEMBER__MSG);
+    infoResult.addLine(CliStrings.format(LuceneCliStrings.CREATE_INDEX__NUMBER__AND__MEMBER, 1 , memberId));
+    return ResultBuilder.buildResult(infoResult);
+  }
 
   private static class LuceneTestIndexCommands extends LuceneIndexCommands {
 
@@ -145,7 +160,6 @@ public class LuceneIndexCommandsJUnitTest {
 
     protected LuceneTestIndexCommands(final Cache cache, final Execution functionExecutor) {
       assert cache != null : "The Cache cannot be null!";
-      assert functionExecutor != null : "The function executor cannot be null!";
       this.cache = cache;
       this.functionExecutor = functionExecutor;
     }
