@@ -28,7 +28,7 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.security.GeodePermission;
+import org.apache.geode.security.GeodePermission;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 

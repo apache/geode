@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.gemstone.gemfire.security;
+package org.apache.geode.security;
 
 import java.security.Principal;
 import java.util.Properties;
 
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.security.AuthenticationFailedException;
 
 /**
  * User implementation of a authentication/authorization logic for Integrated Security.

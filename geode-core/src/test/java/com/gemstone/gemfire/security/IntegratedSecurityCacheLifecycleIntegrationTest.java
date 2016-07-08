@@ -28,6 +28,8 @@ import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
+import org.apache.geode.security.GeodePermission;
+import org.apache.geode.security.SecurityManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

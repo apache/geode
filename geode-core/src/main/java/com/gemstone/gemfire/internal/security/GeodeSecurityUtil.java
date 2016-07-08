@@ -49,12 +49,12 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.security.GeodePermission;
-import com.gemstone.gemfire.security.GeodePermission.Operation;
-import com.gemstone.gemfire.security.GeodePermission.Resource;
+import org.apache.geode.security.GeodePermission;
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
 import com.gemstone.gemfire.security.NotAuthorizedException;
-import com.gemstone.gemfire.security.PostProcessor;
-import com.gemstone.gemfire.security.SecurityManager;
+import org.apache.geode.security.PostProcessor;
+import org.apache.geode.security.SecurityManager;
 
 public class GeodeSecurityUtil {
 

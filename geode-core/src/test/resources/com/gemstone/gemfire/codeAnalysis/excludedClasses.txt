@@ -113,6 +113,7 @@ com/gemstone/gemfire/internal/cache/tier/sockets/ClientUpdateMessageImpl$ClientC
 com/gemstone/gemfire/internal/cache/tier/sockets/ClientUpdateMessageImpl$CqNameToOpHashMap
 com/gemstone/gemfire/internal/datasource/FacetsJCAConnectionManagerImpl
 com/gemstone/gemfire/internal/process/ClusterConfigurationNotAvailableException
+com/gemstone/gemfire/internal/security/GeodeSecurityUtil
 com/gemstone/org/apache/logging/log4j/core/config/xml/GemFireXmlConfiguration
 com/gemstone/org/apache/logging/log4j/core/config/xml/GemFireXmlConfiguration$ErrorType
 com/gemstone/gemfire/internal/ra/GFConnectionFactoryImpl
@@ -144,6 +145,6 @@ com/gemstone/gemfire/cache/operations/StopCQOperationContext
 com/gemstone/gemfire/cache/operations/UnregisterInterestOperationContext
 com/gemstone/gemfire/cache/operations/internal/GetOperationContextImpl
 com/gemstone/gemfire/internal/cache/operations/ContainsKeyOperationContext
-com/gemstone/gemfire/security/GeodePermission
-com/gemstone/gemfire/security/GeodePermission$Operation
-com/gemstone/gemfire/security/GeodePermission$Resource
+org/apache/geode/security/GeodePermission
+org/apache/geode/security/GeodePermission$Operation
+org/apache/geode/security/GeodePermission$Resource

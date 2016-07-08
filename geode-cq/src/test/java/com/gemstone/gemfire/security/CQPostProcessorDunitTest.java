@@ -33,7 +33,7 @@ import com.gemstone.gemfire.cache.query.CqQuery;
 import com.gemstone.gemfire.cache.query.CqResults;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.internal.cq.CqListenerImpl;
-import com.gemstone.gemfire.security.templates.SamplePostProcessor;
+import org.apache.geode.security.templates.SamplePostProcessor;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 

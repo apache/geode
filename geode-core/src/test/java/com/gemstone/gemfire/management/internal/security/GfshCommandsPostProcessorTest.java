@@ -27,7 +27,7 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
-import com.gemstone.gemfire.security.templates.SamplePostProcessor;
+import org.apache.geode.security.templates.SamplePostProcessor;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
