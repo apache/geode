@@ -23,8 +23,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import javax.management.DescriptorKey;
 
-import com.gemstone.gemfire.security.GeodePermission.Operation;
-import com.gemstone.gemfire.security.GeodePermission.Resource;
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
 
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

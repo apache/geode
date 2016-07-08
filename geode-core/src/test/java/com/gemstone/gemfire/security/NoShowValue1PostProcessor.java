@@ -20,6 +20,8 @@ package com.gemstone.gemfire.security;
 import java.security.Principal;
 import java.util.Properties;
 
+import org.apache.geode.security.PostProcessor;
+
 public class NoShowValue1PostProcessor implements PostProcessor {
 
   public static NoShowValue1PostProcessor create(){

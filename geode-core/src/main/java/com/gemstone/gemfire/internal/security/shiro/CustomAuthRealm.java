@@ -33,9 +33,9 @@ import org.apache.shiro.subject.PrincipalCollection;
 
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.security.SecurityManager;
+import org.apache.geode.security.SecurityManager;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.security.GeodePermission;
+import org.apache.geode.security.GeodePermission;
 
 public class CustomAuthRealm extends AuthorizingRealm{
   public static final String REALM_NAME = "CUSTOMAUTHREALM";
