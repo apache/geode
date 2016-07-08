@@ -2125,10 +2125,12 @@ public class DistributedRegion extends LocalRegion implements
       //we don't continue a clear if the region has been destroyed.
       checkReadiness();
       // wait for current operations to 
+/* saj      
       if (!locker.equals(dm.getDistributionManagerId())) {
         Set<InternalDistributedMember> mbrs = getDistributionAdvisor().adviseCacheOp();
         StateFlushOperation.flushTo(mbrs, this);
       }
+saj */      
     }
   }
 

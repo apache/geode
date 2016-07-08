@@ -1025,7 +1025,7 @@ public abstract class AbstractRegionMap implements RegionMap {
       // potential deadlocks.  The outer try/finally ensures that the lock will be
       // released without fail.  I'm avoiding indenting just to preserve the ability
       // to track diffs since the code is fairly complex.
-      boolean doUnlock = true;
+// saj      boolean doUnlock = true;
       lockForCacheModification(owner, event);
       try {
 
@@ -1481,8 +1481,8 @@ public abstract class AbstractRegionMap implements RegionMap {
           return opCompleted;
         }
         finally {
-          releaseCacheModificationLock(owner, event);
-          doUnlock = false;
+// saj          releaseCacheModificationLock(owner, event);
+// saj          doUnlock = false;
 
           try {
             // If concurrency conflict is there and event contains gateway version tag then
@@ -1507,9 +1507,9 @@ public abstract class AbstractRegionMap implements RegionMap {
         }
 
       } finally { // failsafe on the read lock...see comment above
-        if (doUnlock) {
+// saj        if (doUnlock) {
           releaseCacheModificationLock(owner, event);
-        }
+// saj        }
       }
     } // retry loop
     return false;
@@ -2185,23 +2185,26 @@ public abstract class AbstractRegionMap implements RegionMap {
       this._getOwner().handleDiskAccessException(dae);
       throw dae;
     } finally {
-      releaseCacheModificationLock(owner, event);
-      if (oqlIndexManager != null) {
-        oqlIndexManager.countDownIndexUpdaters();
-      }
-      if (invalidatedRe != null) {
-        owner.basicInvalidatePart3(invalidatedRe, event, invokeCallbacks);
-      }
-      if (didInvalidate && !clearOccured) {
-        try {
-          lruUpdateCallback();
-        } catch( DiskAccessException dae) {
-          this._getOwner().handleDiskAccessException(dae);
-          throw dae;
+      try {
+        if (oqlIndexManager != null) {
+          oqlIndexManager.countDownIndexUpdaters();
         }
-      }
-      else if (!didInvalidate){
-        resetThreadLocals();
+        if (invalidatedRe != null) {
+          owner.basicInvalidatePart3(invalidatedRe, event, invokeCallbacks);
+        }
+        if (didInvalidate && !clearOccured) {
+          try {
+            lruUpdateCallback();
+          } catch( DiskAccessException dae) {
+            this._getOwner().handleDiskAccessException(dae);
+            throw dae;
+          }
+        }
+        else if (!didInvalidate){
+          resetThreadLocals();
+        }
+      } finally {
+        releaseCacheModificationLock(owner, event);
       }
     }
     return didInvalidate;
@@ -2683,8 +2686,8 @@ public abstract class AbstractRegionMap implements RegionMap {
         RegionEntry re = null;
         boolean eventRecorded = false;
         boolean onlyExisting = ifOld && !replaceOnClient;
-		re = getOrCreateRegionEntry(owner, event, 
-		    Token.REMOVED_PHASE1, null, onlyExisting, false);
+    re = getOrCreateRegionEntry(owner, event, 
+        Token.REMOVED_PHASE1, null, onlyExisting, false);
         if (re == null) {
           return null;
         }
@@ -2795,7 +2798,7 @@ public abstract class AbstractRegionMap implements RegionMap {
       this._getOwner().handleDiskAccessException(dae);
       throw dae;
     } finally {
-        releaseCacheModificationLock(owner, event);
+      try {
         if (oqlIndexManager != null) {
           oqlIndexManager.countDownIndexUpdaters();
         }
@@ -2823,6 +2826,9 @@ public abstract class AbstractRegionMap implements RegionMap {
         } else {
           resetThreadLocals();
         }
+      } finally {
+        releaseCacheModificationLock(owner, event);
+      }
     } // finally
     
     return result;
