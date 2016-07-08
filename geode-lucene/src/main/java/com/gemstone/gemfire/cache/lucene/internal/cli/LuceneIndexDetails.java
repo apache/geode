@@ -27,6 +27,7 @@ import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.lucene.analysis.Analyzer;
 
 public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Serializable {
+  private static final long serialVersionUID = 1L;
 
   private final String indexName;
   private final String regionPath;

@@ -37,7 +37,6 @@ import com.gemstone.gemfire.cache.execute.FunctionAdapter;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.ResultSender;
 import com.gemstone.gemfire.compression.Compressor;
-import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.InternalEntity;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -205,12 +204,12 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
     final String keyConstraint = regionCreateArgs.getKeyConstraint();
     final String valueConstraint = regionCreateArgs.getValueConstraint();
     if (keyConstraint != null && !keyConstraint.isEmpty()) {
-      Class<K> keyConstraintClass = forName(keyConstraint, CliStrings.CREATE_REGION__KEYCONSTRAINT);
+      Class<K> keyConstraintClass = CliUtil.forName(keyConstraint, CliStrings.CREATE_REGION__KEYCONSTRAINT);
       factory.setKeyConstraint(keyConstraintClass);
     }
 
     if (valueConstraint != null && !valueConstraint.isEmpty()) {
-      Class<V> valueConstraintClass = forName(valueConstraint, CliStrings.CREATE_REGION__VALUECONSTRAINT);
+      Class<V> valueConstraintClass = CliUtil.forName(valueConstraint, CliStrings.CREATE_REGION__VALUECONSTRAINT);
       factory.setValueConstraint(valueConstraintClass);
     }
 
@@ -296,27 +295,27 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
     final Set<String> cacheListeners = regionCreateArgs.getCacheListeners();
     if (cacheListeners != null && !cacheListeners.isEmpty()) {
       for (String cacheListener : cacheListeners) {
-        Class<CacheListener<K, V>> cacheListenerKlass = forName(cacheListener, CliStrings.CREATE_REGION__CACHELISTENER);
-        factory.addCacheListener(newInstance(cacheListenerKlass, CliStrings.CREATE_REGION__CACHELISTENER));
+        Class<CacheListener<K, V>> cacheListenerKlass = CliUtil.forName(cacheListener, CliStrings.CREATE_REGION__CACHELISTENER);
+        factory.addCacheListener(CliUtil.newInstance(cacheListenerKlass, CliStrings.CREATE_REGION__CACHELISTENER));
       }
     }
 
     // Compression provider
     if(regionCreateArgs.isSetCompressor()) {
-      Class<Compressor> compressorKlass = forName(regionCreateArgs.getCompressor(), CliStrings.CREATE_REGION__COMPRESSOR);
-      factory.setCompressor(newInstance(compressorKlass, CliStrings.CREATE_REGION__COMPRESSOR));
+      Class<Compressor> compressorKlass = CliUtil.forName(regionCreateArgs.getCompressor(), CliStrings.CREATE_REGION__COMPRESSOR);
+      factory.setCompressor(CliUtil.newInstance(compressorKlass, CliStrings.CREATE_REGION__COMPRESSOR));
     }
     
     final String cacheLoader = regionCreateArgs.getCacheLoader();
     if (cacheLoader != null) {
-      Class<CacheLoader<K, V>> cacheLoaderKlass = forName(cacheLoader, CliStrings.CREATE_REGION__CACHELOADER);
-      factory.setCacheLoader(newInstance(cacheLoaderKlass, CliStrings.CREATE_REGION__CACHELOADER));
+      Class<CacheLoader<K, V>> cacheLoaderKlass = CliUtil.forName(cacheLoader, CliStrings.CREATE_REGION__CACHELOADER);
+      factory.setCacheLoader(CliUtil.newInstance(cacheLoaderKlass, CliStrings.CREATE_REGION__CACHELOADER));
     }
 
     final String cacheWriter = regionCreateArgs.getCacheWriter();
     if (cacheWriter != null) {
-      Class<CacheWriter<K, V>> cacheWriterKlass = forName(cacheWriter, CliStrings.CREATE_REGION__CACHEWRITER);
-      factory.setCacheWriter(newInstance(cacheWriterKlass, CliStrings.CREATE_REGION__CACHEWRITER));
+      Class<CacheWriter<K, V>> cacheWriterKlass = CliUtil.forName(cacheWriter, CliStrings.CREATE_REGION__CACHEWRITER);
+      factory.setCacheWriter(CliUtil.newInstance(cacheWriterKlass, CliStrings.CREATE_REGION__CACHEWRITER));
     }
     
     String regionName = regionPathData.getName();
@@ -374,38 +373,6 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
     }
 
     return prAttrFactory.create();
-  }
-
-  @SuppressWarnings("unchecked")
-  private static <K> Class<K> forName(String classToLoadName, String neededFor) {
-    Class<K> loadedClass = null;
-    try {
-      // Set Constraints
-      ClassPathLoader classPathLoader = ClassPathLoader.getLatest();
-      if (classToLoadName != null && !classToLoadName.isEmpty()) {
-        loadedClass = (Class<K>) classPathLoader.forName(classToLoadName);
-      }
-    } catch (ClassNotFoundException | NoClassDefFoundError e) {
-      throw new RuntimeException(CliStrings.format(CliStrings.CREATE_REGION__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1, new Object[] {classToLoadName, neededFor}), e);
-    }
-    catch (ClassCastException e) {
-      throw new RuntimeException(CliStrings.format(CliStrings.CREATE_REGION__MSG__CLASS_SPECIFIED_FOR_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE, new Object[] {classToLoadName, neededFor}), e);
-    }
-
-    return loadedClass;
-  }
-
-  private static <K> K newInstance(Class<K> klass, String neededFor) {
-    K instance = null;
-    try {
-      instance = klass.newInstance();
-    } catch (InstantiationException e) {
-      throw new RuntimeException(CliStrings.format(CliStrings.CREATE_REGION__MSG__COULDNOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1, new Object[] {klass, neededFor}), e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(CliStrings.format(CliStrings.CREATE_REGION__MSG__COULDNOT_ACCESS_CLASS_0_SPECIFIED_FOR_1, new Object[] {klass, neededFor}), e);
-    }
-
-    return instance;
   }
 
   @Override
