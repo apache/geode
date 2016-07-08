@@ -22,8 +22,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Properties;
 
-import org.apache.shiro.util.ThreadContext;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -45,11 +43,6 @@ public class GeodeSecurityUtilWithIniFileJUnitTest {
   public static void beforeClass() throws Exception{
     props.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
     GeodeSecurityUtil.initSecurity(props);
-  }
-
-  @AfterClass
-  public static void afterClass(){
-    ThreadContext.remove();
   }
 
   @Test

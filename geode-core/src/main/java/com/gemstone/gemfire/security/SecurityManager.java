@@ -20,8 +20,18 @@ package com.gemstone.gemfire.security;
 import java.security.Principal;
 import java.util.Properties;
 
+/**
+ * User implementation of a authentication/authorization logic for Integrated Security.
+ * The implementation will guard client/server, jmx, pulse, gfsh commands
+ *
+ * @since Geode1.0
+ */
 public interface SecurityManager {
 
+  /**
+   * called at cache start up to initialize it.
+   * @param securityProps
+   */
   default void init(Properties securityProps) {}
 
   Principal authenticate(Properties props) throws AuthenticationFailedException;
@@ -30,5 +40,8 @@ public interface SecurityManager {
     return true;
   }
 
+  /**
+   * called at cache close
+   */
   default void close() {}
 }

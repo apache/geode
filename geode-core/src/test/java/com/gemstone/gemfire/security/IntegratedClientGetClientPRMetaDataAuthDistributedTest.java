@@ -36,7 +36,7 @@ public class IntegratedClientGetClientPRMetaDataAuthDistributedTest
 
   @Test
   @Ignore("This is not a supported client message")
-  // this would fail sporatically because ServerConnection.isInternalMessage would return true for this message,
+  // this would fail sporadically because ServerConnection.isInternalMessage would return true for this message,
   // and it won't bind the correct subject on the executing thread.
   public void testGetClientPartitionAttrCmd() {
     client1.invoke("logging in stranger", () -> {

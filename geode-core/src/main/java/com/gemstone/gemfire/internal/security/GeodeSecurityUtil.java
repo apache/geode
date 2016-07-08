@@ -340,11 +340,16 @@ public class GeodeSecurityUtil {
   }
 
   public static void close() {
-      if (securityManager != null) {
-        securityManager.close();
-        securityManager = null;
-      }
+    if (securityManager != null) {
+      securityManager.close();
+      securityManager = null;
+    }
 
+    if (postProcessor != null) {
+      postProcessor.close();
+      postProcessor = null;
+    }
+    ThreadContext.remove();
   }
 
   /**

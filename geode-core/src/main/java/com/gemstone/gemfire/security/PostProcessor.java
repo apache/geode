@@ -20,7 +20,32 @@ package com.gemstone.gemfire.security;
 import java.security.Principal;
 import java.util.Properties;
 
+/**
+ *
+ * @since Geode 1.0
+ */
 public interface PostProcessor {
-  void init(Properties securityProps);
+
+  /**
+   * Given the security props of the server, properly initialize the post processor for the server.
+   * Initialized at server startup.
+   * @param securityProps
+   */
+  default void init(Properties securityProps) {}
+
+  /**
+   *
+   * @param principal
+   * @param regionName
+   * @param key
+   * @param value
+   * @return
+   */
   Object processRegionValue(Principal principal, String regionName, Object key,  Object value);
+
+  /**
+   * Give the implementation a chance to close the resources used.
+   * Called when cache is closed.
+   */
+  default void close() {}
 }

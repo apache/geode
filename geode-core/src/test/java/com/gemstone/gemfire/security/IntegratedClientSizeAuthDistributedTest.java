@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.security;
 
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -31,6 +32,9 @@ import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 public class IntegratedClientSizeAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
 
   @Test
+  @Ignore("This is not a supported client message")
+  // this would fail sporadically because ServerConnection.isInternalMessage would return true for this message,
+  // and it won't bind the correct subject on the executing thread.
   public void testSize() throws InterruptedException {
 
     AsyncInvocation ai1 = client1.invokeAsync(() -> {

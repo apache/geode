@@ -40,16 +40,13 @@ import org.apache.commons.io.IOUtils;
 import org.apache.shiro.authz.Permission;
 
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.security.AccessControl;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.Authenticator;
-import com.gemstone.gemfire.security.SecurityManager;
 import com.gemstone.gemfire.security.GeodePermission;
 import com.gemstone.gemfire.security.NotAuthorizedException;
+import com.gemstone.gemfire.security.SecurityManager;
 
 /**
- * This class provides a sample implementation for authentication and authorization via the {@link AccessControl}
- * and {@link Authenticator} interfaces.
+ * This class provides a sample implementation for authentication and authorization via the {@link SecurityManager}
  *
  * In order to use it, a Geode member must be started with the following properties:
  * <p/>

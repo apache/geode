@@ -23,16 +23,12 @@ import static org.assertj.core.api.Assertions.*;
 import java.security.Principal;
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
-import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
@@ -40,11 +36,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
-
-import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.Spy;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4CacheTestCase {
@@ -80,6 +71,9 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
     properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName()+".create");
     properties.setProperty(LOCATORS, locators);
+    properties.setProperty(JMX_MANAGER, "false");
+    properties.setProperty(JMX_MANAGER_PORT, "0");
+    properties.setProperty(JMX_MANAGER_START, "false");
     properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
     getSystem(properties);
 
@@ -92,15 +86,10 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
 
   @Test
   public void initAndCloseTest () {
+    verifyInitCloseInvoked();
+
     locator.invoke(() -> {
-      verifyInitInvoked();
-    });
-    verifyInitInvoked();
-    getCache().close();
-    verifyCloseInvoked();
-    locator.invoke(() -> {
-      getCache().close();
-      verifyCloseInvoked();
+      verifyInitCloseInvoked();
     });
   }
 
@@ -109,14 +98,11 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
     closeAllCache();
   }
 
-  private static void verifyInitInvoked() {
+  private void verifyInitCloseInvoked() {
     assertThat(spySecurityManager.initInvoked).isEqualTo(1);
-  }
-
-  private static void verifyCloseInvoked() {
+    getCache().close();
     assertThat(spySecurityManager.closeInvoked).isEqualTo(1);
   }
-
 
   public static class SpySecurityManager extends JSONAuthorization {
 
@@ -130,7 +116,6 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
     @Override
     public void init(final Properties securityProps) {
       initInvoked++;
-      super.init(securityProps);
     }
 
     @Override

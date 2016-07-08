@@ -38,6 +38,8 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * <code>authorizeOperation</code> method invoked before/after each operation.
  * 
  * @since GemFire 5.5
+ *
+ * @deprecated since Geode 1.0, use {@link SecurityManager} instead
  */
 public interface AccessControl extends CacheCallback {
 
