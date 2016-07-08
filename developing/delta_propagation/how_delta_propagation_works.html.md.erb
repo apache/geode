@@ -14,6 +14,7 @@ In most distributed data management systems, the data stored in the system tends
 This figure shows delta propagation for a change to an entry with key, k, and value object, v.
 
 <img src="../../images/DeltaPropagation-1.gif" id="how_delta_propagation_works__image_06A25185C31548669423DDA3136B1851" class="image" />
+
 1.  **`get` operation**. The `get` works as usual: the cache returns the full entry object from the local cache or, if it isn't available there, from a remote cache or from a loader.
 2.  **update methods**. You need to add code to the object's update methods so that they save delta information for object updates, in addition to the work they were already doing.
 3.  **`put` operation**. The `put` works as usual in the local cache, using the full value, then calls `hasDelta` to see if there are deltas and `toDelta` to serialize the information. Distribution is the same as for full values, according to member and region configuration.
@@ -33,6 +34,7 @@ Sometimes `fromDelta` cannot be invoked because there is no object to apply the 
 2.  In less obvious cases, such as when an entry has been locally deleted, first the delta is sent, then the receiver requests a full value and that is sent. Whenever the full value is received, any further distributions to the receiver's peers or clients uses the full value.
 
 <span class="keyword">Geode</span> also does not propagate deltas for:
+
 -   Transactional commit
 -   The `putAll` operation
 -   JVMs running <span class="keyword">Geode</span> versions that do not support delta propagation (6.0 and earlier)
