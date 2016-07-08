@@ -778,6 +778,7 @@ public class TXState implements TXStateInterface {
   }
   
   protected void cleanup() {
+    IllegalArgumentException iae = null;
     try {
       this.closed = true;
       this.seenEvents.clear();
@@ -785,7 +786,11 @@ public class TXState implements TXStateInterface {
       freePendingCallbacks();
       if (this.locks!=null) {
         final long conflictStart = CachePerfStats.getStatTime();
-        this.locks.cleanup();
+        try {
+          this.locks.cleanup();
+        } catch (IllegalArgumentException e) {
+          iae = e;
+        }
         if (CachePerfStats.enableClockStats)
           this.proxy.getTxMgr().getCachePerfStats().incTxConflictCheckTime(CachePerfStats.getStatTime()-conflictStart);
       }
@@ -822,6 +827,9 @@ public class TXState implements TXStateInterface {
     } finally {
       synchronized(this.completionGuard) {
         this.completionGuard.notifyAll();
+      }
+      if (iae != null && !this.proxy.getCache().isClosed()) {
+        throw iae;
       }
     }
   }
