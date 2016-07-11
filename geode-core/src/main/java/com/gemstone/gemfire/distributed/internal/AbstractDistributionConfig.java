@@ -322,7 +322,10 @@ public abstract class AbstractDistributionConfig
       int portVal = 0;
       try {
         portVal = Integer.parseInt(port);
-        if (portVal < 1 || portVal > 65535) {
+        if(0 == portVal){
+          return "";
+        }
+        else if (portVal < 1 || portVal > 65535) {
           throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_INVALID_LOCATOR_0_THE_PORT_1_WAS_NOT_GREATER_THAN_ZERO_AND_LESS_THAN_65536.toLocalizedString(new Object[] {value, Integer.valueOf(portVal)}));
         }
       } catch (NumberFormatException ex) {
