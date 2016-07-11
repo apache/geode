@@ -297,10 +297,9 @@ public class GeodeSecurityUtil {
     }
 
     String shiroConfig = securityProps.getProperty(SECURITY_SHIRO_INIT);
-    String customAuthenticator = securityProps.getProperty(SECURITY_MANAGER);
+    String securityConfig = securityProps.getProperty(SECURITY_MANAGER);
 
-    Object authenticatorObject = getObject(customAuthenticator);
-    if (!com.gemstone.gemfire.internal.lang.StringUtils.isBlank(shiroConfig)) {
+    if (!StringUtils.isBlank(shiroConfig)) {
       IniSecurityManagerFactory factory = new IniSecurityManagerFactory("classpath:" + shiroConfig);
 
       // we will need to make sure that shiro uses a case sensitive permission resolver
@@ -315,10 +314,8 @@ public class GeodeSecurityUtil {
     }
 
     // only set up shiro realm if user has implemented SecurityManager
-    else if (authenticatorObject != null && authenticatorObject instanceof SecurityManager) {
-      securityManager = (SecurityManager) authenticatorObject;
-      securityManager.init(securityProps);
-      Realm realm = new CustomAuthRealm(securityManager);
+    else if (!StringUtils.isBlank(securityConfig)) {
+      Realm realm = new CustomAuthRealm(securityProps);
       org.apache.shiro.mgt.SecurityManager securityManager = new DefaultSecurityManager(realm);
       SecurityUtils.setSecurityManager(securityManager);
     }

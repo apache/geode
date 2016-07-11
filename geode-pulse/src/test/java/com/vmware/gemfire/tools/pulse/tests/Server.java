@@ -18,6 +18,8 @@
  */
 package com.vmware.gemfire.tools.pulse.tests;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.Inet4Address;
@@ -26,6 +28,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
@@ -36,18 +40,18 @@ import javax.management.remote.JMXConnectorServer;
 import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
 
+import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.realm.Realm;
+
 import com.gemstone.gemfire.internal.security.shiro.CustomAuthRealm;
 import com.gemstone.gemfire.internal.security.shiro.JMXShiroAuthenticator;
 import com.gemstone.gemfire.management.internal.security.AccessControlMBean;
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
-
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.realm.Realm;
 
 public class Server {
   private static final String DEFAULT_HOST = "127.0.0.1"; //"localhost"
@@ -71,7 +75,9 @@ public class Server {
       Map<String, Object> env = new HashMap<String, Object>();
 
       // set up Shiro Security Manager
-      Realm realm = new CustomAuthRealm(JSONAuthorization.class.getName() + ".create");
+      Properties securityProps = new Properties();
+      securityProps.put(SECURITY_MANAGER, JSONAuthorization.class.getName() + ".create");
+      Realm realm = new CustomAuthRealm(securityProps);
       SecurityManager securityManager = new DefaultSecurityManager(realm);
       SecurityUtils.setSecurityManager(securityManager);
 

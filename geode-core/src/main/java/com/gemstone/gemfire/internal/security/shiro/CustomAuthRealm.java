@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.security.shiro;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.SECURITY_MANAGER;
+
 import java.security.Principal;
 import java.util.Properties;
 
@@ -41,20 +43,16 @@ public class CustomAuthRealm extends AuthorizingRealm{
   public static final String REALM_NAME = "CUSTOMAUTHREALM";
 
   private static final Logger logger = LogManager.getLogger(CustomAuthRealm.class);
-  private SecurityManager externalSecurity = null;
+  private SecurityManager securityManager = null;
 
-  public CustomAuthRealm(SecurityManager auth) {
-    externalSecurity = auth;
-  }
+  public CustomAuthRealm (Properties securityProps) {
+    Object manager = GeodeSecurityUtil.getObject(securityProps.getProperty(SECURITY_MANAGER));
 
-
-  public CustomAuthRealm (String authenticatorFactory) {
-    Object auth = GeodeSecurityUtil.getObject(authenticatorFactory);
-
-    if(!(auth instanceof SecurityManager)){
+    if(!(manager instanceof SecurityManager)){
       throw new GemFireSecurityException("Integrated Security requires SecurityManager interface.");
     }
-    externalSecurity = (SecurityManager) auth;
+    securityManager = (SecurityManager) manager;
+    securityManager.init(securityProps);
   }
 
   @Override
@@ -67,7 +65,7 @@ public class CustomAuthRealm extends AuthorizingRealm{
     credentialProps.put(ResourceConstants.USER_NAME, username);
     credentialProps.put(ResourceConstants.PASSWORD, password);
 
-    Principal principal  = externalSecurity.authenticate(credentialProps);
+    Principal principal  = securityManager.authenticate(credentialProps);
 
     return new SimpleAuthenticationInfo(principal, authToken.getPassword(), REALM_NAME);
   }
@@ -83,7 +81,7 @@ public class CustomAuthRealm extends AuthorizingRealm{
   public boolean isPermitted(PrincipalCollection principals, Permission permission) {
     GeodePermission context = (GeodePermission) permission;
     Principal principal = (Principal) principals.getPrimaryPrincipal();
-    return externalSecurity.authorize(principal, context);
+    return securityManager.authorize(principal, context);
   }
 
 
