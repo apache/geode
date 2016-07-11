@@ -8,17 +8,15 @@ CQs are only run by a client on its servers.
 
 Before you begin, you should be familiar with [Querying](../querying_basics/chapter_overview.html) and have your client/server system configured.
 
-1.
+1. Configure the client pools you will use for CQs with `subscription-enabled` set to true.
 
-    Configure the client pools you will use for CQs with `subscription-enabled` set to true.
     To have CQ and interest subscription events arrive as closely together as possible, use a single pool for everything. Different pools might use different servers, which can lead to greater differences in event delivery time.
 
-2.
+2. Write your OQL query to retrieve the data you need from the server.
 
-    Write your OQL query to retrieve the data you need from the server.
     The query must satisfy these CQ requirements in addition to the standard GemFire querying specifications:
     -   The FROM clause must contain only a single region specification, with optional iterator variable.
-    -   The query must be a SELECT expression only, preceded by zero or more IMPORT statements. This means the query cannot be a statement like "/tradeOrder.name" or "(SELECT \* from /tradeOrder).size".
+    -   The query must be a SELECT expression only, preceded by zero or more IMPORT statements. This means the query cannot be a statement such as <code>"/tradeOrder.name"</code> or <code>"(SELECT \* from /tradeOrder).size".</code>
     -   The CQ query cannot use:
         -   Cross region joins
         -   Drill-downs into nested collections
@@ -27,19 +25,19 @@ Before you begin, you should be familiar with [Querying](../querying_basics/chap
         -   Bind parameters
     -   The CQ query must be created on a partitioned or replicated region. See [Region Type Restrictions for CQs](how_continuous_querying_works.html#how_continuous_querying_works__section_bfs_llr_gr).
 
-    This is the basic syntax for the CQ query:
+    The basic syntax for the CQ query is:
+
     ``` pre
     SELECT * FROM /fullRegionPath [iterator] [WHERE clause]
     ```
 
     This example query could be used to get all trade orders where the price is over $100:
+
     ``` pre
     SELECT * FROM /tradeOrder t WHERE t.price > 100.00
     ```
 
-3.
-
-    Write your CQ listeners to handle CQ events from the server.
+3. Write your CQ listeners to handle CQ events from the server.
     Implement `com.gemstone.gemfire.cache.query.CqListener` in each event handler you need. In addition to your main CQ listeners, you might have listeners that you use for all CQs to track statistics or other general information.
 
     **Note:**
@@ -84,9 +82,7 @@ Before you begin, you should be familiar with [Querying](../querying_basics/chap
 
     When you install the listener and run the query, your listener will handle all of the CQ results.
 
-4.
-
-    If you need your CQs to detect whether they are connected to any of the servers that host its subscription queues, implement a `CqStatusListener` instead of a `CqListener`.
+4. If you need your CQs to detect whether they are connected to any of the servers that host its subscription queues, implement a `CqStatusListener` instead of a `CqListener`.
     `CqStatusListener` extends the current `CqListener`, allowing a client to detect when a CQ is connected and/or disconnected from the server(s). The `onCqConnected()` method will be invoked when the CQ is connected, and when the CQ has been reconnected after being disconnected. The `onCqDisconnected()` method will be invoked when the CQ is no longer connected to any servers.
 
     Taking the example from step 3, we can instead implement a `CqStatusListener`:
@@ -135,23 +131,12 @@ Before you begin, you should be familiar with [Querying](../querying_basics/chap
 
     When you install the `CqStatusListener`, your listener will be able to detect its connection status to the servers that it is querying.
 
-5.
-
-    Program your client to run the CQ:
-    1.
-
-        Create a `CqAttributesFactory` and use it to set your `CqListener`s and `CqStatusListener`.
-    2.
-
-        Pass the attributes factory and the CQ query and its unique name to the `QueryService` to create a new `CqQuery`.
-    3.
-
-        Start the query running by calling one of the execute methods on the `CqQuery` object.
+5. Program your client to run the CQ:
+    1. Create a `CqAttributesFactory` and use it to set your `CqListener`s and `CqStatusListener`.
+    2. Pass the attributes factory and the CQ query and its unique name to the `QueryService` to create a new `CqQuery`.
+    3. Start the query running by calling one of the execute methods on the `CqQuery` object.
         You can execute with or without an initial result set.
-
-    4.
-
-        When you are done with the CQ, close it.
+    4. When you are done with the CQ, close it.
 
 ## Continuous Query Implementation
 
