@@ -47,6 +47,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import com.gemstone.gemfire.management.internal.JettyHelper;
 import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
 
+@SuppressWarnings("deprecated")
 public abstract class PulseAbstractTest extends PulseBaseTest {
 
   private static String jmxPropertiesFile;

@@ -165,9 +165,6 @@ public class GeodeSecurityUtil {
    *   if(state!=null)
    *      state.clear();
    * }
-   *
-   * @param subject
-   * @return
    */
   public static ThreadState bindSubject(Subject subject){
     if (subject == null) {
@@ -354,7 +351,6 @@ public class GeodeSecurityUtil {
   /**
    * postProcess call already has this logic built in, you don't need to call this everytime you call postProcess.
    * But if your postProcess is pretty involved with preparations and you need to bypass it entirely, call this first.
-   * @return
    */
   public static boolean needPostProcess(){
     Subject subject = getSubject();

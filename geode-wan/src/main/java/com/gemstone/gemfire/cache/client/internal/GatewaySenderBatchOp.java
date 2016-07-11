@@ -37,6 +37,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
+@SuppressWarnings("unchecked")
 public class GatewaySenderBatchOp {
   
   private static final Logger logger = LogService.getLogger();

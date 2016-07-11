@@ -55,6 +55,7 @@ import static org.junit.Assert.*;
  */
 @Category(IntegrationTest.class)
 @RunWith(PerTestClassLoaderRunner.class)
+@SuppressWarnings("unchecked")
 public class SessionReplicationIntegrationJUnitTest {
 
   private MyServletTester tester;

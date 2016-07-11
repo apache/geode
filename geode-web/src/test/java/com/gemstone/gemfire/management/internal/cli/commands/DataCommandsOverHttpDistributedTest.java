@@ -40,6 +40,7 @@ import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
+@SuppressWarnings("deprecated")
 public class DataCommandsOverHttpDistributedTest extends CliCommandTestBase {
 
   private static final String REBALANCE_REGION_NAME = DataCommandsOverHttpDistributedTest.class.getSimpleName() + "Region";
