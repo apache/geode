@@ -16,27 +16,33 @@
 */
 package com.gemstone.gemfire.modules.util;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Properties;
+
+import com.gemstone.gemfire.InternalGemFireError;
+import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Declarable;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.distributed.DistributedLockService;
 import com.gemstone.gemfire.distributed.internal.locks.DistributedMemberLock;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Properties;
 
 public class CreateRegionFunction implements Function, Declarable {
 
@@ -195,7 +201,7 @@ public class CreateRegionFunction implements Function, Declarable {
       // Unlock the distributed lock
       try {
         dml.unlock();
-      } catch (Exception e) {
+      } catch (Exception ignore) {
       }
     }
     return status;
@@ -214,7 +220,18 @@ public class CreateRegionFunction implements Function, Declarable {
     }
     RegionFactory<String, RegionConfiguration> factory = this.cache.createRegionFactory(RegionShortcut.REPLICATE);
     factory.addCacheListener(new RegionConfigurationCacheListener());
-    return factory.create(REGION_CONFIGURATION_METADATA_REGION);
+    GemFireCacheImpl gemFireCache = (GemFireCacheImpl) cache;
+    InternalRegionArguments ira = new InternalRegionArguments().setInternalRegion(true);
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+    RegionAttributes ra = af.create();
+    try {
+      return gemFireCache.createVMRegion(REGION_CONFIGURATION_METADATA_REGION, ra, ira);
+    } catch (IOException | ClassNotFoundException e) {
+      InternalGemFireError assErr = new InternalGemFireError(LocalizedStrings.GemFireCache_UNEXPECTED_EXCEPTION.toLocalizedString());
+      assErr.initCause(e);
+      throw assErr;
+    }
   }
 
   private void writeCacheXml() {

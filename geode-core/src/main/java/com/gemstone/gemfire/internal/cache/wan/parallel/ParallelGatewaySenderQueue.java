@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,6 +36,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.CancelException;
@@ -557,7 +556,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         try {
           prQ = (PartitionedRegion)cache
               .createVMRegion(prQName, ra, new InternalRegionArguments()
-                  .setInternalMetaRegion(meta).setDestroyLockFlag(true)
+                  .setInternalMetaRegion(meta).setDestroyLockFlag(true).setInternalRegion(true)
                   .setSnapshotInputStream(null).setImageTarget(null));
           // at this point we should be able to assert prQ == meta; 
           
@@ -570,12 +569,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           //Wait for buckets to be recovered.
           prQ.shadowPRWaitForBucketRecovery();
 
-        } catch (IOException veryUnLikely) {
+        } catch (IOException | ClassNotFoundException veryUnLikely) {
           logger.fatal(LocalizedMessage.create(LocalizedStrings.SingleWriteSingleReadRegionQueue_UNEXPECTED_EXCEPTION_DURING_INIT_OF_0,
                   this.getClass()), veryUnLikely);
-        } catch (ClassNotFoundException alsoUnlikely) {
-          logger.fatal(LocalizedMessage.create(LocalizedStrings.SingleWriteSingleReadRegionQueue_UNEXPECTED_EXCEPTION_DURING_INIT_OF_0,
-                  this.getClass()), alsoUnlikely);
         }
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, prQ);

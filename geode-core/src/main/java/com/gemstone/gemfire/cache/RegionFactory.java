@@ -822,6 +822,7 @@ public class RegionFactory<K,V>
     RegionAttributes<K,V> ra = this.attrsFactory.create();
     return getCache().createRegion(name, ra);
   }
+
   /**
    * Creates a sub-region in the {@link Cache} using
    * the configuration contained in this RegionFactory. Validation of the
