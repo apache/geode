@@ -141,8 +141,6 @@ public class DUnitLauncher {
     DUNIT_SUSPECT_FILE.delete();
     DUNIT_SUSPECT_FILE.deleteOnExit();
     
-    locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
-     
     //create an RMI registry and add an object to share our tests config
     int namingPort = AvailablePortHelper.getRandomAvailableTCPPort();
     Registry registry = LocateRegistry.createRegistry(namingPort);
@@ -184,27 +182,35 @@ public class DUnitLauncher {
         processManager.killVMs();
       }
     });
-    
+
+
     //Create a VM for the locator
     processManager.launchVM(LOCATOR_VM_NUM);
-    
+
+    //wait for the VM to start up
+    if(!processManager.waitForVMs(STARTUP_TIMEOUT)) {
+      throw new RuntimeException("VMs did not start up with 30 seconds");
+    }
+
+    locatorPort = startLocator(registry);
+
+    init(master);
+
+
     //Launch an initial set of VMs
     for(int i=0; i < NUM_VMS; i++) {
       processManager.launchVM(i);
     }
-    
+
     //wait for the VMS to start up
     if(!processManager.waitForVMs(STARTUP_TIMEOUT)) {
       throw new RuntimeException("VMs did not start up with 30 seconds");
     }
-    
+
     //populate the Host class with our stubs. The tests use this host class
     DUnitHost host = new DUnitHost(InetAddress.getLocalHost().getCanonicalHostName(), processManager);
     host.init(registry, NUM_VMS);
 
-    init(master);
-    
-    startLocator(registry);
   }
   
   public static Properties getDistributedSystemProperties() {
@@ -241,7 +247,7 @@ public class DUnitLauncher {
     loggerConfig.addAppender(fileAppender, Level.INFO, null);
   }
   
-  private static void startLocator(Registry registry) throws IOException, NotBoundException {
+  private static int startLocator(Registry registry) throws IOException, NotBoundException {
     RemoteDUnitVMIF remote = (RemoteDUnitVMIF) registry.lookup("vm" + LOCATOR_VM_NUM);
     final File locatorLogFile =
         LOCATOR_LOG_TO_DISK ? new File("locator-" + locatorPort + ".log") : new File(""); 
@@ -262,12 +268,15 @@ public class DUnitLauncher {
         p.setProperty(DISABLE_AUTO_RECONNECT, "true");
         
         try {
-          Locator.startLocatorAndDS(locatorPort, locatorLogFile, p);
+          Locator.startLocatorAndDS(0, locatorLogFile, p);
+          InternalLocator internalLocator = (InternalLocator) Locator.getLocator();
+          locatorPort = internalLocator.getPort();
+          internalLocator.resetInternalLocatorFileNamesWithCorrectPortNumber(locatorPort);
         } finally {
           System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
         }
-        
-        return null;
+
+        return locatorPort;
       }
     }, "call");
     if(result.getException() != null) {
@@ -275,6 +284,7 @@ public class DUnitLauncher {
       ex.printStackTrace();
       throw ex;
     }
+    return (Integer) result.getResult();
   }
 
   public static void init(MasterRemote master) {
