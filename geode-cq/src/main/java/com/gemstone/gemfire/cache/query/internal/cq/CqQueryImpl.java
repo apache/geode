@@ -48,10 +48,11 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.i18n.StringId;
 
 /**
+ * Represents the CqQuery object. Implements CqQuery API and CqAttributeMutator.
+ *
  * @since GemFire 5.5
- * Represents the CqQuery object. Implements CqQuery API and CqAttributeMutator. 
- *  
  */
+@SuppressWarnings("deprecation")
 public abstract class CqQueryImpl implements InternalCqQuery {
   private static final Logger logger = LogService.getLogger();
   
