@@ -1,6 +1,8 @@
+---
+title: Transactions by Region Type
+---
 <a id="topic_nlq_sk1_wk"></a>
 
-# Transactions by Region Type
 
 A transaction is managed on a per-cache basis, so multiple regions in the cache can participate in a single transaction. The data scope of a <span class="keyword">Geode</span> cache transaction is the cache that hosts the transactional data. For partitioned regions, this may be a remote host to the one running the transaction application. Any transaction that includes one or more partitioned regions is run on the member storing the primary copy of the partitioned region data. Otherwise, the transaction host is the same one running the application.
 
@@ -22,6 +24,7 @@ If you have consistency checking enabled in your region, the transaction will ge
 -   **[Transactions and Persistent Regions](../../developing/transactions/cache_transactions_by_region_type.html#concept_omy_341_wk)**
 
 ## Transactions and Partitioned Regions
+<a id="concept_ysk_xj1_wk">
 
 In partitioned regions, transaction operations are done first on the primary data store then distributed to other members from there, regardless of which member initiates the cache operation. This is the same as is done for normal cache operations on partitioned regions.
 
@@ -50,6 +53,7 @@ For a transaction to work, the first operation must be on one of the partitioned
 <img src="../../images_svg/transactions_partitioned_2.svg" id="concept_ysk_xj1_wk__image_34496249618F46F8B8F7E2D4F342E1E6" class="image" />
 
 ## Transactions and Replicated Regions
+<a id="concept_nl5_pk1_wk">
 
 <a id="concept_nl5_pk1_wk__section_C55E80C7136D4A9A8327563E4B89356D"></a>
 For replicated regions, the transaction and its operations are applied to the local member and the resulting transaction state is distributed to other members according to the attributes of each region.
@@ -114,12 +118,13 @@ When encountering conflicts with local scope, the first transaction to start the
 <img src="../../images_svg/transactions_replicate_local_1.svg" id="concept_nl5_pk1_wk__image_A37172C328404796AE1F318068C18F43" class="image" />
 
 ## Transactions and Persistent Regions
+<a id="concept_omy_341_wk">
 
 By default, <span class="keyword">Geode</span> does not allow transactions on persistent regions. You can enable the use of transactions on persistent regions by setting the property `gemfire.ALLOW_PERSISTENT_TRANSACTIONS` to true. This may also be accomplished at server startup using gfsh:
 
 ``` pre
 gfsh start server --name=server1 --dir=server1_dir \
---J=-Dgemfire.ALLOW_PERSISTENT_TRANSACTIONS=true \
+--J=-Dgemfire.ALLOW_PERSISTENT_TRANSACTIONS=true 
 ```
 
 Since <span class="keyword">Geode</span> does not provide atomic disk persistence guarantees, the default behavior is to disallow disk-persistent regions from participating in transactions. However, when choosing to enable transactions on persistent regions, consider the following:
