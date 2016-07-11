@@ -1,6 +1,8 @@
+---
+title: Developing REST Applications
+---
 <a id="topic_lvp_cd5_m4"></a>
 
-# Developing REST Applications
 
 This section provides guidelines on writing REST client applications for <span class="keyword">Geode</span>.
 
@@ -135,6 +137,7 @@ Setting the limit parameter is optional. If you do not specify a limit, the requ
 **Reading Keys**
 
 To list all keys in a region, use the following endpoint:
+
 ``` pre
 /gemfire-api/v1/{region}/keys
 ```
@@ -173,7 +176,7 @@ http://localhost:7070/gemfire-api/v1/items/1,3,5
 
 If one or more of the keys you provide in the list of keys is missing from the region, you will receive a 400 BAD STATUS error response.
 
-If you are providing multiple keys, you can also use the `?ignoreMissingKey=true` parameter to prevent 400 errors . Any non-existing keys will instead return a null response. For example:
+If you are providing multiple keys, you can also use the `ignoreMissingKey=true` parameter to prevent 400 errors. Any non-existing keys will instead return a null response. For example:
 
 ``` pre
 http://localhost:7070/gemfire-api/v1/items/1,3,5?ignoreMissingKey=true

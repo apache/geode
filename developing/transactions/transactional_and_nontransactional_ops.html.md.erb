@@ -1,6 +1,7 @@
-<a id="transactional_and_nontransactional_ops"></a>
+---
+title: Comparing Transactional and Non-Transactional Operations
+---
 
-# Comparing Transactional and Non-Transactional Operations
 
 Between the begin operation and the commit or rollback operation are a series of ordinary <span class="keyword">Geode</span> operations. When they are launched from within a transaction, the <span class="keyword">Geode</span> operations can be classified into two types:
 
@@ -9,17 +10,19 @@ Between the begin operation and the commit or rollback operation are a series of
 
 An operation that acts directly on the cache does not usually act on the transactional view.
 
--   **[Transactional Operations](../../developing/transactions/transactional_and_nontransactional_ops.html#transactional_operations)**
+-   **[Transactional Operations](#transactional_operations)**
 
--   **[Non-Transactional Operations](../../developing/transactions/transactional_and_nontransactional_ops.html#non_transactional_operations)**
+-   **[Non-Transactional Operations](#non_transactional_operations)**
 
--   **[Entry Operations](../../developing/transactions/transactional_and_nontransactional_ops.html#entry_operations)**
+-   **[Entry Operations](#entry_operations)**
 
--   **[Region Operations](../../developing/transactions/transactional_and_nontransactional_ops.html#region_operations)**
+-   **[Region Operations](#region_operations)**
 
--   **[Cache Operations](../../developing/transactions/transactional_and_nontransactional_ops.html#cache_operations)**
+-   **[Cache Operations](#cache_operations)**
 
--   **[No-Ops](../../developing/transactions/transactional_and_nontransactional_ops.html#no-ops)**
+-   **[No-Ops](#no-ops)**
+
+<a id="transactional_operations"></a>
 
 ## Transactional Operations
 
@@ -31,9 +34,13 @@ Transactional operations that can cause write conflicts are those that modify an
 
 Transactional read operations do not cause conflicts directly, but they can modify the transactional view. Read operations look for the entry in the transaction view first and then, if necessary, go to the cache. If the entry is returned by a cache read, it is stored as part of the transactional view. At commit time, the transaction uses the initial snapshot of the entry in the view to discover write conflicts.
 
+<a id="non_transactional_operations"></a>
+
 ## Non-Transactional Operations
 
 A few methods, when invoked within a transaction, have no effect on the transactional view, but they have an immediate effect on the cache. They are considered non-transactional operations. Often, non-transactional operations are administrative, such as `Region.destroy` and `Region.invalidate`. These operations are not supported within a transaction. If you call them, the system throws an exception of type `UnsupportedOperationInTransactionException`.
+
+<a id="entry_operations"></a>
 
 ## Entry Operations
 
@@ -63,6 +70,8 @@ These operations can add a snapshot of an entry to the transaction’s view even
 | destroy: local and distributed    | `Region.localDestroy, destroy`       | when it throws an `EntryNotFoundException`                                |
 | invalidate: local and distributed | `Region.localInvalidate, invalidate` | when it throws an `EntryNotFoundException`or the entry is already invalid |
 
+<a id="region_operations"></a>
+
 ## Region Operations
 
 When you create a region in a transaction, any data from the getInitialImage operation goes directly into the cache, rather than waiting for the transaction to commit.
@@ -76,6 +85,8 @@ When you create a region in a transaction, any data from the getInitialImage ope
 | mutate attribute                  | `Region.getAttributesMutator` methods            | cache                 | no             |
 | set user attribute                | `Region.setUserAttribute`                        | cache                 | no             |
 
+<a id="cache_operations"></a>
+
 ## Cache Operations
 
 When you create a region in a transaction, any data from the getInitialImage operation goes directly into the cache, rather than waiting for the transaction to commit.
@@ -84,6 +95,8 @@ When you create a region in a transaction, any data from the getInitialImage ope
 |------------|----------------------------------|----------------|----------------|
 | create     | `createRegionFactory().create()` | committed      | no             |
 | close      | `close`                          | committed      | yes            |
+
+<a id="no-ops"></a>
 
 ## No-Ops
 
