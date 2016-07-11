@@ -103,9 +103,10 @@ public class JoptOptionParser implements GfshOptionParser {
       argumentSpecs = optionBuilder.withOptionalArg();
     }
 
-    if (option.isRequired()) {
-      argumentSpecs.required();
-    }
+    // TODO: temporarily commented out as workaround for GEODE-1598
+    // if (option.isRequired()) {
+    //   argumentSpecs.required();
+    // }
     if (option.getValueSeparator() != null) {
       argumentSpecs.withValuesSeparatedBy(option.getValueSeparator());
     }
