@@ -143,18 +143,19 @@ The following procedure starts up a REST API service-enabled <span class="keywor
 ## Programmatic Startup
 
 You can also start up and configure <span class="keyword">Geode</span> REST services programmatically. For example:
+
 ``` pre
-import com.gemstone.gemfire.distributed.ServerLauncher;
+    import com.gemstone.gemfire.distributed.ServerLauncher;
 
- public class MyEmbeddedRestServer {
+     public class MyEmbeddedRestServer {
 
-    public static void main(String[] args){
-        ServerLauncher serverLauncher  = new ServerLauncher.Builder()
-          .set("start-dev-rest-api", "true")
-          .set("http-service-port", "8080")
-          .set("http-service-bind-address", "localhost")
-          .setPdxReadSerialized(true)
-          .build();
+     public static void main(String[] args){
+         ServerLauncher serverLauncher  = new ServerLauncher.Builder()
+           .set("start-dev-rest-api", "true")
+           .set("http-service-port", "8080")
+           .set("http-service-bind-address", "localhost")
+           .setPdxReadSerialized(true)
+           .build();
 
           serverLauncher.start();  
 
@@ -162,7 +163,6 @@ import com.gemstone.gemfire.distributed.ServerLauncher;
         }
     }
 ```
-
 You can then verify that the developer REST API service has been started programmatically by visiting the following URL:
 
 ``` pre
