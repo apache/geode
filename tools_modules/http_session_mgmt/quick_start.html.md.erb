@@ -23,6 +23,7 @@ In this section you download, install, and set up the HTTP Session Management mo
     The generic HTTP Session Management Module for AppServers is implemented as a servlet filter and should work on any application server platform that supports the Java Servlet 2.4 specification.
 
 2.  The HTTP Session Management Modules installation .zip files are located in the `tools/Modules` directory of the <span class="keyword">Geode</span> product installation directory. Locate the .zip file for the HTTP Session Management Module that you wish to install. Unzip the appropriate HTTP Session Management Module into the specified directory for your application server:
+
     | Supported Application Server | Version                     | Module                                                   | Target Location for Module                                                       |
     |------------------------------|-----------------------------|----------------------------------------------------------|----------------------------------------------------------------------------------|
     | tc Server                    | 2.5, 2.6, 2.7, 2.8, and 2.9 | HTTP Session Management Module for Pivotal tc Server     | `<tc Server root                                                 dir>/templates` |
@@ -90,6 +91,7 @@ These steps provide a basic starting point for using the Tomcat module. For more
 These steps provide a basic starting point for using the AppServers module with WebLogic, WebSphere or JBoss. For more configuration options, see [HTTP Session Management Module for AppServers](session_mgmt_weblogic.html).
 
 **Note:**
+
 -   The `modify_war` script relies upon a GEODE environment variable. Set the GEODE environment variable to the <span class="keyword">Geode</span> product directory; this is the parent directory of `bin`.
 -   The `modify_war` script, described below, relies on files within the distribution tree and should not be run outside of a complete distribution.
 -   The `modify_war` script is a `bash` script and does not run on Windows.

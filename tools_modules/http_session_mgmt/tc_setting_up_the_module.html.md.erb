@@ -51,6 +51,7 @@ $ gfsh start locator --name=locator1
 ```
 
 With a similar environment to this example that is for a client/server set up,
+
 ``` pre
 TC_VER=tomcat-8.0.30.C.RELEASE
 INSTANCE=geode-cs
@@ -62,7 +63,7 @@ $PWD/$TC_VER/lib/tomcat-util.jar:\
 $PWD/$TC_VER/bin/tomcat-juli.jar
 ```
 
-start the server using `gfsh`:
+Start the server using `gfsh`:
 
 ``` pre
 $ gfsh start server --name=server1 --locators=localhost[10334] \

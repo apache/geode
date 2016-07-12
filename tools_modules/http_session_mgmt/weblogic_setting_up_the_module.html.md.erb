@@ -96,12 +96,7 @@ If you are deploying an ear file:
 <img src="../../images_svg/http_module_p2p_with_locator.svg" id="weblogic_setting_up_the_module__image_86E949E0F1AD4E9EB67605EFA4E97E13" class="image" />
 
 To run <span class="keyword">Geode</span> in a peer-to-peer configuration, use the `modify_war` script with options
-
-``` pre
--t peer-to-peer  -p gemfire.property.locators=localhost[10334]
-    -p gemfire.propery.cache-xml-file=<moduleDir>/conf/cache-peer.xml
-```
-
+`-t peer-to-peer`,  `-p gemfire.property.locators=localhost[10334]`, and `-p gemfire.propery.cache-xml-file=<moduleDir>/conf/cache-peer.xml`
 to result in the following `web.xml` content:
 
 ``` pre
@@ -130,11 +125,7 @@ to result in the following `web.xml` content:
 To run <span class="keyword">Geode</span> in a client/server configuration, you make the application server operate as a <span class="keyword">Geode</span> client. Use the `-t client-server` option to the `modify_war` script. This adds the following filter to application server's `web.xml` file:
 
 To run <span class="keyword">Geode</span> in a client/server configuration, you make the application server operate as a <span class="keyword">Geode</span> client. Use the `modify_war` script with options
-
-``` pre
--t client-server -p gemfire.property.cache-xml-file=<module dir>/conf/cache-client.xml
-```
-
+`-t client-server` and `-p gemfire.property.cache-xml-file=<module dir>/conf/cache-client.xml`
 to result in the following `web.xml` content:
 
 ``` pre
