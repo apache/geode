@@ -57,7 +57,21 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
-  public void listIndexShouldReturnExistingIndex() throws Exception {
+  public void listIndexShouldReturnExistingIndexWithStats() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(1);
+
+    createIndex(vm1);
+    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
+
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE_LIST_INDEX__STATS,"true");
+    String resultAsString = executeCommandAndLogResult(csb);
+    assertTrue(resultAsString.contains(INDEX_NAME));
+    assertTrue(resultAsString.contains("Documents"));
+  }
+
+  @Test
+  public void listIndexShouldReturnExistingIndexWithoutStats() throws Exception {
     final VM vm1 = Host.getHost(0).getVM(1);
 
     createIndex(vm1);
@@ -66,6 +80,18 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
     String resultAsString = executeCommandAndLogResult(csb);
     assertTrue(resultAsString.contains(INDEX_NAME));
+    assertFalse(resultAsString.contains("Documents"));
+  }
+
+  @Test
+  public void listIndexWhenNoExistingIndexShouldReturnNoIndex() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(1);
+
+    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
+
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
+    String resultAsString = executeCommandAndLogResult(csb);
+    assertTrue(resultAsString.contains("No lucene indexes found"));
   }
 
   @Test
