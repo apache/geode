@@ -16,6 +16,10 @@
  */
 package com.gemstone.gemfire.cache.lucene.internal.cli;
 
+import static com.gemstone.gemfire.cache.operations.OperationContext.*;
+
+import java.util.ArrayList;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,9 +35,11 @@ import org.springframework.shell.core.annotation.CliOption;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.execute.Execution;
+import com.gemstone.gemfire.cache.execute.FunctionAdapter;
 import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneCreateIndexFunction;
+import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
@@ -62,15 +68,21 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperation;
  */
 @SuppressWarnings("unused")
 public class LuceneIndexCommands extends AbstractCommandsSupport {
-
   private static final LuceneCreateIndexFunction createIndexFunction = new LuceneCreateIndexFunction();
+  private static final LuceneDescribeIndexFunction describeIndexFunction = new LuceneDescribeIndexFunction();
 
   @CliCommand(value = LuceneCliStrings.LUCENE_LIST_INDEX, help = LuceneCliStrings.LUCENE_LIST_INDEX__HELP)
   @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA })
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result listIndex() {
+  public Result listIndex(
+    @CliOption(key = LuceneCliStrings.LUCENE_LIST_INDEX__STATS,
+      mandatory=false,
+      specifiedDefaultValue = "true",
+      unspecifiedDefaultValue = "false",
+      help = LuceneCliStrings.LUCENE_LIST_INDEX__STATS__HELP) final boolean stats) {
+
     try {
-      return toTabularResult(getIndexListing());
+      return toTabularResult(getIndexListing(),stats);
     }
     catch (FunctionInvocationTargetException ignore) {
       return ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN,
@@ -105,7 +117,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       .collect(Collectors.toList());
   }
 
-  protected Result toTabularResult(final List<LuceneIndexDetails> indexDetailsList) {
+  protected Result toTabularResult(final List<LuceneIndexDetails> indexDetailsList, boolean stats) {
     if (!indexDetailsList.isEmpty()) {
       final TabularResultData indexData = ResultBuilder.createTabularResultData();
 
@@ -114,6 +126,13 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
         indexData.accumulate("Region Path", indexDetails.getRegionPath());
         indexData.accumulate("Indexed Fields", indexDetails.getSearchableFieldNamesString());
         indexData.accumulate("Field Analyzer", indexDetails.getFieldAnalyzersString());
+
+        if (stats==true) {
+          indexData.accumulate("Query Executions",indexDetails.getIndexStats().get("queryExecutions"));
+          indexData.accumulate("Updates",indexDetails.getIndexStats().get("updates"));
+          indexData.accumulate("Commits",indexDetails.getIndexStats().get("commits"));
+          indexData.accumulate("Documents",indexDetails.getIndexStats().get("documents"));
+        }
       }
       return ResultBuilder.buildResult(indexData);
     }
@@ -126,11 +145,11 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
   @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA }, writesToSharedConfiguration=true)
   //TODO : Add optionContext for indexName
   public Result createIndex(
-    @CliOption(key = LuceneCliStrings.LUCENE_CREATE_INDEX__NAME,
+    @CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME,
       mandatory=true,
       help = LuceneCliStrings.LUCENE_CREATE_INDEX__NAME__HELP) final String indexName,
 
-    @CliOption (key = LuceneCliStrings.LUCENE_CREATE_INDEX__REGION,
+    @CliOption (key = LuceneCliStrings.LUCENE__REGION_PATH,
       mandatory = true,
       optionContext = ConverterHint.REGIONPATH,
       help = LuceneCliStrings.LUCENE_CREATE_INDEX__REGION_HELP) final String regionPath,
@@ -159,7 +178,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     try {
       final Cache cache = getCache();
       LuceneIndexInfo indexInfo = new LuceneIndexInfo(indexName, regionPath, fields, analyzers);
-      final ResultCollector<?, ?> rc = this.createIndexOnGroups(groups, indexInfo);
+      final ResultCollector<?, ?> rc = this.executeFunctionOnGroups(createIndexFunction, groups, indexInfo);
       final List<CliFunctionResult> funcResults = (List<CliFunctionResult>) rc.getResult();
 
       final Set<String> successfulMembers = new TreeSet<String>();
@@ -236,8 +255,49 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     return result;
   }
 
-  protected ResultCollector<?, ?> createIndexOnGroups( String[] groups, final LuceneIndexInfo indexInfo) throws CommandResultException {
+  @CliCommand(value = LuceneCliStrings.LUCENE_DESCRIBE_INDEX, help = LuceneCliStrings.LUCENE_DESCRIBE_INDEX__HELP)
+  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA })
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
+  public Result describeIndex(
+    @CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME,
+      mandatory=true,
+      help = LuceneCliStrings.LUCENE_DESCRIBE_INDEX__NAME__HELP) final String indexName,
+
+    @CliOption (key = LuceneCliStrings.LUCENE__REGION_PATH,
+      mandatory = true,
+      optionContext = ConverterHint.REGIONPATH,
+      help = LuceneCliStrings.LUCENE_DESCRIBE_INDEX__REGION_HELP) final String regionPath) {
+    try {
+      LuceneIndexInfo indexInfo = new LuceneIndexInfo(indexName, regionPath);
+      return toTabularResult(getIndexDetails(indexInfo),true);
+    }
+    catch (FunctionInvocationTargetException ignore) {
+      return ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN,
+        LuceneCliStrings.LUCENE_DESCRIBE_INDEX));
+    }
+    catch (VirtualMachineError e) {
+      SystemFailure.initiateFailure(e);
+      throw e;
+    }
+    catch (Throwable t) {
+      SystemFailure.checkFailure();
+      getCache().getLogger().error(t);
+      return ResultBuilder.createGemFireErrorResult(String.format(LuceneCliStrings.LUCENE_DESCRIBE_INDEX__ERROR_MESSAGE,
+        toString(t, isDebugging())));
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  protected List<LuceneIndexDetails> getIndexDetails(LuceneIndexInfo indexInfo) throws Exception {
+    GeodeSecurityUtil.authorizeRegionManage(indexInfo.getRegionPath());
+    final String[] groups = {};
+    final ResultCollector<?, ?> rc = this.executeFunctionOnGroups(describeIndexFunction, groups, indexInfo);
+    final List<LuceneIndexDetails> funcResults = (List<LuceneIndexDetails>) rc.getResult();
+    return funcResults.stream().filter(indexDetails -> indexDetails != null).collect(Collectors.toList());
+  }
+
+  protected ResultCollector<?, ?> executeFunctionOnGroups(FunctionAdapter function, String[]groups, final LuceneIndexInfo indexInfo) throws CommandResultException {
     final Set<DistributedMember> targetMembers = CliUtil.findAllMatchingMembers(groups, null);
-    return CliUtil.executeFunction(createIndexFunction, indexInfo, targetMembers);
+    return CliUtil.executeFunction(function, indexInfo, targetMembers);
   }
 }

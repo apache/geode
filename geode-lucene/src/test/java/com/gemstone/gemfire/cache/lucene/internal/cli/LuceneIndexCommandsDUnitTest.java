@@ -28,7 +28,6 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.dunit.*;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.sun.org.apache.regexp.internal.RE;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
@@ -45,7 +44,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 @Category(DistributedTest.class)
 public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
@@ -57,7 +55,21 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
-  public void listIndexShouldReturnExistingIndex() throws Exception {
+  public void listIndexShouldReturnExistingIndexWithStats() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(1);
+
+    createIndex(vm1);
+    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
+
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE_LIST_INDEX__STATS,"true");
+    String resultAsString = executeCommandAndLogResult(csb);
+    assertTrue(resultAsString.contains(INDEX_NAME));
+    assertTrue(resultAsString.contains("Documents"));
+  }
+
+  @Test
+  public void listIndexShouldReturnExistingIndexWithoutStats() throws Exception {
     final VM vm1 = Host.getHost(0).getVM(1);
 
     createIndex(vm1);
@@ -66,6 +78,18 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
     String resultAsString = executeCommandAndLogResult(csb);
     assertTrue(resultAsString.contains(INDEX_NAME));
+    assertFalse(resultAsString.contains("Documents"));
+  }
+
+  @Test
+  public void listIndexWhenNoExistingIndexShouldReturnNoIndex() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(1);
+
+    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
+
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
+    String resultAsString = executeCommandAndLogResult(csb);
+    assertTrue(resultAsString.contains("No lucene indexes found"));
   }
 
   @Test
@@ -76,8 +100,8 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
-    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__NAME,INDEX_NAME);
-    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__REGION,REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME,INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH,REGION_NAME);
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD,"field1,field2,field3");
 
     String resultAsString = executeCommandAndLogResult(csb);
@@ -104,8 +128,8 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
-    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__NAME,INDEX_NAME);
-    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__REGION,REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME,INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH,REGION_NAME);
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD,"field1,field2,field3");
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER,String.join(",",analyzerNames));
 
@@ -136,12 +160,11 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
       getCache();
     });
 
-
     CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
-    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__NAME,INDEX_NAME);
-    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__REGION,REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME,INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH,REGION_NAME);
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD,"field1,field2,field3");
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__GROUP,"group1");
     String resultAsString = executeCommandAndLogResult(csb);
@@ -162,6 +185,35 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
       }
     });
+  }
+
+  @Test
+  public void describeIndexShouldReturnExistingIndex() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(1);
+
+    createIndex(vm1);
+    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
+
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_DESCRIBE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME,INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH,REGION_NAME);
+    String resultAsString = executeCommandAndLogResult(csb);
+    assertTrue(resultAsString.contains(INDEX_NAME));
+  }
+
+  @Test
+  public void describeIndexShouldNotReturnResultWhenIndexNotFound() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(1);
+
+    createIndex(vm1);
+    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
+
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_DESCRIBE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME,"notAnIndex");
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH,REGION_NAME);
+    String resultAsString = executeCommandAndLogResult(csb);
+
+    assertTrue(resultAsString.contains("No lucene indexes found"));
   }
 
   private void createRegion() {
