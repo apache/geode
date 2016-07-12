@@ -1268,26 +1268,32 @@ implements Bucket
     Assert.assertTrue(!isTX());
     Assert.assertTrue(event.getOperation().isDistributed());
 
-    beginLocalWrite(event);
+    LocalRegion lr = event.getLocalRegion();
+    AbstractRegionMap arm = ((AbstractRegionMap) lr.getRegionMap());
     try {
-      
-      if (!hasSeenEvent(event)) {
-        this.entries.updateEntryVersion(event);
-      } else {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "BR.basicUpdateEntryVersion: this cache has already seen this event {}", event);
+      arm.lockForCacheModification(lr, event);
+      beginLocalWrite(event);
+      try {      
+        if (!hasSeenEvent(event)) {
+          this.entries.updateEntryVersion(event);
+        } else {
+          if (logger.isTraceEnabled(LogMarker.DM)) {
+            logger.trace(LogMarker.DM, "BR.basicUpdateEntryVersion: this cache has already seen this event {}", event);
+          }
         }
+        if (!event.isOriginRemote() && getBucketAdvisor().isPrimary()) {
+          // This cache has processed the event, forward operation
+          // and event messages to backup buckets
+          if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
+            distributeUpdateEntryVersionOperation(event);
+          }
+        }
+        return;
+      } finally {
+        endLocalWrite(event);
       }
-      if (!event.isOriginRemote() && getBucketAdvisor().isPrimary()) {
-        // This cache has processed the event, forward operation
-        // and event messages to backup buckets
-    	if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
-          distributeUpdateEntryVersionOperation(event);
-    	}
-      }
-      return;
     } finally {
-      endLocalWrite(event);
+      arm.releaseCacheModificationLock(event.getLocalRegion(), event);
     }
   }
 

@@ -34,6 +34,7 @@ import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.ByteArrayDataInput;
 import com.gemstone.gemfire.internal.InternalStatisticsDisabledException;
+import com.gemstone.gemfire.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import com.gemstone.gemfire.internal.cache.lru.LRUEntry;
 import com.gemstone.gemfire.internal.cache.lru.NewLRUClockHand;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -744,5 +745,10 @@ final class ProxyRegionMap implements RegionMap {
 
   @Override
   public void close() {
+  }
+
+  @Override
+  public ARMLockTestHook getARMLockTestHook() {
+    return null;
   }
 }

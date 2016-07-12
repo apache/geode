@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy.TestHook;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
@@ -141,8 +140,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>> implements
   
   private transient final Object clearLockSync = new Object(); // sync for coordinating thread startup and lockOwner setting
 
-  public LocalRegion ownerRegion;
-  
   /** create a live version vector for a region */
   public RegionVersionVector(T ownerId) {
     this(ownerId, null);
@@ -150,7 +147,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>> implements
   
   /** create a live version vector for a region */
   public RegionVersionVector(T ownerId, LocalRegion owner) {
-    ownerRegion = owner;
     this.myId = ownerId;
     this.isLiveVector = true;
     this.regionName = owner == null? "" : "region " + owner.getFullPath();
@@ -404,23 +400,25 @@ public abstract class RegionVersionVector<T extends VersionSource<?>> implements
   /** obtain a lock to prevent concurrent clear() from happening */
   public void lockForCacheModification(LocalRegion owner) {
     if (owner.getServerProxy() == null) {
-      if(!(rvvLockTestHook==null)) {
-        logger.info("Invoking RVV.beforeLock");
-        rvvLockTestHook.beforeLock(this);
-      }
       this.versionLock.readLock().lock();
-      if(!(rvvLockTestHook==null)) {rvvLockTestHook.afterLock(this);}
     }
   }
-
   
   /** release the lock preventing concurrent clear() from happening */
   public void releaseCacheModificationLock(LocalRegion owner) {
     if (owner.getServerProxy() == null) {
-      if(!(rvvLockTestHook==null)) {rvvLockTestHook.beforeRelease(this);}
       this.versionLock.readLock().unlock();
-      if(!(rvvLockTestHook==null)) {rvvLockTestHook.afterRelease(this);}
     }
+  }
+  
+  /** obtain a lock to prevent concurrent clear() from happening */
+  public void lockForCacheModification() {
+    this.versionLock.readLock().lock();
+  }
+
+  /** release the lock preventing concurrent clear() from happening */
+  public void releaseCacheModificationLock() {
+    this.versionLock.readLock().unlock();
   }
     
   private void syncLocalVersion() {
@@ -1473,19 +1471,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>> implements
     return null;
   }
   
-  public interface RvvLockTestHook {
-    public void beforeLock(RegionVersionVector rvv);
-    public void afterLock(RegionVersionVector rvv);
-    public void beforeRelease(RegionVersionVector rvv);
-    public void afterRelease(RegionVersionVector rvv);
-  }
-  
-  private RvvLockTestHook rvvLockTestHook;
-  
-  public void setRvvLockTestHook(RvvLockTestHook theHook) {
-    rvvLockTestHook = theHook;
-  }
-
 //  /**
 //   * This class will wrap DM member IDs to provide integers that can be stored
 //   * on disk and be timed out in the vector.

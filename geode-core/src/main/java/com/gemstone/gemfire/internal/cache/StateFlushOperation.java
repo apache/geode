@@ -140,6 +140,11 @@ public class StateFlushOperation  {
       dm.putOutgoing(gr);
       processors.add(processor);
     }
+
+    if(r.getRegionMap().getARMLockTestHook()!=null) {
+      r.getRegionMap().getARMLockTestHook().beforeStateFlushWait();
+    }
+
     for (ReplyProcessor21 processor: processors) {
       try {
         processor.waitForReplies();

@@ -157,6 +157,7 @@ import com.gemstone.gemfire.internal.InternalStatisticsDisabledException;
 import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.ClientHealthMonitoringRegion;
+import com.gemstone.gemfire.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import com.gemstone.gemfire.internal.cache.DiskInitFile.DiskRegionFlag;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo.FilterInfo;
@@ -10564,14 +10565,32 @@ public class LocalRegion extends AbstractRegion
    *  to get a valid version tag.
    */
   private void lockRVVForBulkOp() {
+    ARMLockTestHook alth = getRegionMap().getARMLockTestHook();
+    if(alth!=null) { 
+      alth.beforeBulkLock(this); 
+    }
+    
     if (this.versionVector != null && this.dataPolicy.withReplication()) {
       this.versionVector.lockForCacheModification(this);
+    }
+    
+    if(alth!=null) {
+      alth.afterBulkLock(this);
     }
   }
   
   private void unlockRVVForBulkOp() {
+    ARMLockTestHook alth = getRegionMap().getARMLockTestHook();
+    if(alth!=null) {
+      alth.beforeBulkRelease(this);
+    }
+    
     if (this.versionVector != null && this.dataPolicy.withReplication()) {
       this.versionVector.releaseCacheModificationLock(this);
+    }
+    
+    if(alth!=null) {
+      alth.afterBulkRelease(this);
     }
   }
 
