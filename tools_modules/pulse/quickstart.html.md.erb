@@ -1,6 +1,8 @@
+---
+title: Pulse Quick Start (Embedded Mode)
+---
 <a id="topic_523F6DE33FE54307BBE8F83BB7D9355D"></a>
 
-# Pulse Quick Start (Embedded Mode)
 
 Use Pulse in embedded mode to monitor a <span class="keyword">Geode</span> deployment directly from a <span class="keyword">Geode</span> JMX Manager. By default, the embedded Pulse application connects to the local JMX Manager that hosts the Pulse application. Optionally, configure Pulse to connect to a <span class="keyword">Geode</span> system of your choice.
 
@@ -84,7 +86,7 @@ To host Pulse on a Web application server:
     **Note:**
     <p>The JMX account that Pulse uses must have both read and write privileges.</p>
     </div>
-    <p>See [Configuring a JMX Manager](../../managing/management/jmx_manager_operations.html#topic_263072624B8D4CDBAD18B82E07AA44B6) for information about configuring authentication for JMX Manager nodes.</p></td>
+    <p>See <a href="../../managing/management/jmx_manager_operations.html#topic_263072624B8D4CDBAD18B82E07AA44B6">Configuring a JMX Manager</a> for information about configuring authentication for JMX Manager nodes.</p></td>
     </tr>
     <tr class="odd">
     <td><code class="ph codeph">pulse.jmxUserPassword</code></td>
@@ -415,14 +417,10 @@ Use these basic controls while in Cluster view:
     For example, the following shows <span class="keyword">Geode</span> Members displayed in table view:
 
     <img src="../../images/member_view_list.png" id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__image_npw_sq3_wn" class="image" />
-
     -   While in block view or table view, click the name of a <span class="keyword">Geode</span> member to display additional information in the [Member View](quickstart.html#topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_3629814A3DF64D31A190495782DB0DBF).
     -   Click Topology, Server Groups, or Redundancy Zones to filter the view based on all members in the topology, configured server groups, or configured redundancy zones.
-
     The following shows <span class="keyword">Geode</span> Regions displayed in table view:
-
     <img src="../../images/pulse-region-detail.png" id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__image_glp_1jr_54" class="image" />
-
     -   While in block view or table view, click the name of a <span class="keyword">Geode</span> region to display additional information in the [Region View](quickstart.html#topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_D151776BAC8B4704A71F37F8B5CE063D).
 
 3.  While in icon view, click a host machine icon to display the <span class="keyword">Geode</span> members on that machine.
@@ -820,7 +818,7 @@ Use these basic controls while in Data Browser view:
 
 The Alerts Widget appears in the right portion of the screen and displays a list of alerts.
 
-The alerts displayed for the cluster appear based on the alertLevel field set in the DistributedSystemMXBean. By default, log messages with the level of SEVERE are shown as alerts. You can modify the level by using the `DistributedMXBean.changeAlertLevel` method. See [System Alert Notifications](../../managing/management/notification_federation_and_alerts.html#topic_212EE5A2ABAB4E8E8EF71807C9ECEF1A__section_7463D13112D54406953416356835E290) ofr more information.
+The alerts displayed for the cluster appear based on the alertLevel field set in the DistributedSystemMXBean. By default, log messages with the level of SEVERE are shown as alerts. You can modify the level by using the `DistributedMXBean.changeAlertLevel` method. See [System Alert Notifications](../../managing/management/notification_federation_and_alerts.html#topic_212EE5A2ABAB4E8E8EF71807C9ECEF1A__section_7463D13112D54406953416356835E290) for more information.
 
 <img src="../../images/pulse_alerts_widget.png" id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__image_jrc_smt_qn" class="image" />
 
