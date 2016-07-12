@@ -15,9 +15,9 @@ Unless otherwise indicated, these settings only affect activities within this di
 
 <table>
 <colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
+<col width="35%" />
+<col width="45%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -96,17 +96,20 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="odd">
 <td>cluster-ssl-ciphers</td>
-<td>Used for SSL security. A space-separated list of the valid SSL ciphers for peer-to-peer connections in the cluster. A setting of 'any' uses any ciphers that are enabled by default in the configured JSSE provider. This attribute must be consistent across all members of the distributed system. <span class="keyword">Geode</span> applies this peer-to-peer connection property setting to client/server, JMX manager, WAN gateway and HTTP service connections unless the corresponding SSL property (<code class="ph codeph">server-ssl-ciphers</code>, <code class="ph codeph">jmx-manager-ssl-ciphers</code>, <code class="ph codeph">gateway-ssl-ciphers</code>, or <code class="ph codeph">http-service-ssl-ciphers</code>) is defined. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>Used for SSL security. A space-separated list of the valid SSL ciphers for peer-to-peer connections in the cluster. A setting of 'any' uses any ciphers that are enabled by default in the configured JSSE provider. This attribute must be consistent across all members of the distributed system. <span class="keyword">Geode</span> applies this peer-to-peer connection property setting to client/server, JMX manager, WAN gateway and HTTP service connections unless the corresponding SSL property (<code class="ph codeph">server-ssl-ciphers</code>, <code class="ph codeph">jmx-manager-ssl-ciphers</code>, <code class="ph codeph">gateway-ssl-ciphers</code>, or <code class="ph codeph">http-service-ssl-ciphers</code>) is defined. 
+See <a href="../../managing/security/implementing_ssl.html">Configuring SSL</a>.</td>
 <td>any</td>
 </tr>
 <tr class="even">
 <td>cluster-ssl-enabled</td>
-<td>Used for SSL security. Boolean indicating whether to use SSL for peer-to-peer communications. A true setting requires the use of locators. This attribute must be consistent across all members of the distributed system. <span class="keyword">Geode</span> applies this peer-to-peer connection property setting to client/server, JMX manager, WAN gateway, and HTTP service connections unless the corresponding SSL property (<code class="ph codeph">server-ssl-enabled</code>, <code class="ph codeph">jmx-manager-ssl-enabled</code>, <code class="ph codeph">gateway-ssl-enabled</code>, or <code class="ph codeph">http-service-ssl-enabled</code>) is defined. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>Used for SSL security. Boolean indicating whether to use SSL for peer-to-peer communications. A true setting requires the use of locators. This attribute must be consistent across all members of the distributed system. <span class="keyword">Geode</span> applies this peer-to-peer connection property setting to client/server, JMX manager, WAN gateway, and HTTP service connections unless the corresponding SSL property (<code class="ph codeph">server-ssl-enabled</code>, <code class="ph codeph">jmx-manager-ssl-enabled</code>, <code class="ph codeph">gateway-ssl-enabled</code>, or <code class="ph codeph">http-service-ssl-enabled</code>) is defined. 
+See <a href="../../managing/security/implementing_ssl.html">Configuring SSL</a>.</td>
 <td>false</td>
 </tr>
 <tr class="odd">
 <td>cluster-ssl-keystore, gateway-ssl-keystore, http-service-ssl-keystore, jmx-manager-ssl-keystore, server-ssl-keystore</td>
-<td>Properties that dentify the keystores to use for SSL connections.<code class="ph codeph">cluster-ssl-keystore</code> defines the keystore for <span class="keyword">Geode</span> peer-to-peer connections. If you specify only <code class="ph codeph">cluster-ssl-keystore</code>, then the same keystore is also used for client/server, JMX manager, WAN gateway and HTTP service connections. Specify the gateway, jmx-manager, server- or http-service- prefix with this property to use a different keystore for the respective SSL connection type. See [Configuring SSL](../../managing/security/implementing_ssl.html).
+<td>Properties that dentify the keystores to use for SSL connections.<code class="ph codeph">cluster-ssl-keystore</code> defines the keystore for <span class="keyword">Geode</span> peer-to-peer connections. If you specify only <code class="ph codeph">cluster-ssl-keystore</code>, then the same keystore is also used for client/server, JMX manager, WAN gateway and HTTP service connections. Specify the gateway, jmx-manager, server- or http-service- prefix with this property to use a different keystore for the respective SSL connection type. 
+See <a href="../../managing/security/implementing_ssl.html">Configuring SSL</a>.
 <div class="note note">
 **Note:**
 <p>javax.net.ssl.keyStore is deprecated. Use <code class="ph codeph">cluster-ssl-keystore</code> instead.</p>
@@ -115,7 +118,8 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="even">
 <td>cluster-ssl-keystore-password, gateway-ssl-keystore-password, http-service-ssl-keystore-password, jmx-manager-ssl-keystore-password, server-ssl-keystore-password</td>
-<td>Properties that identify the passwords for the keystores used with SSL connections. See [Configuring SSL](../../managing/security/implementing_ssl.html).
+<td>Properties that identify the passwords for the keystores used with SSL connections. 
+See <a href="../../managing/security/implementing_ssl.html">Configuring SSL</a>.
 <div class="note note">
 **Note:**
 <p>javax.net.ssl.keyStorePassword is deprecated. Use cluster-ssl-keystore-password instead.</p>
@@ -124,7 +128,8 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="odd">
 <td>cluster-ssl-keystore-type, gateway-ssl-keystore-type, http-service-ssl-keystore-type, jmx-manager-ssl-keystore-type, server-ssl-keystore-type</td>
-<td>System properties that identify the types of keystores used with SSL connections. See [Configuring SSL](../../managing/security/implementing_ssl.html).
+<td>System properties that identify the types of keystores used with SSL connections. 
+See <a href="../../managing/security/implementing_ssl.html">Configuring SSL</a>.
 <div class="note note">
 **Note:**
 <p>javax.net.ssl.keyStoreType is deprecated. Use cluster-ssl-keystore-type instead.</p>
@@ -133,17 +138,19 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="even">
 <td>cluster-ssl-protocols</td>
-<td>Used for SSL security. A space-separated list of the valid SSL protocols for peer-to-peer connections in the cluster. A setting of 'any' uses any protocol that is enabled by default in the configured JSSE provider. <span class="keyword">Geode</span> applies this peer-to-peer connection property setting to client/server, JMX manager, WAN gateway and HTTP service connections unless the corresponding SSL property (<code class="ph codeph">server-ssl-protocols</code>, <code class="ph codeph">jmx-manager-ssl-protocols</code>, <code class="ph codeph">gateway-ssl-protocols</code>, or <code class="ph codeph">http-service-ssl-protocols</code>) is defined. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>Used for SSL security. A space-separated list of the valid SSL protocols for peer-to-peer connections in the cluster. A setting of 'any' uses any protocol that is enabled by default in the configured JSSE provider. <span class="keyword">Geode</span> applies this peer-to-peer connection property setting to client/server, JMX manager, WAN gateway and HTTP service connections unless the corresponding SSL property (<code class="ph codeph">server-ssl-protocols</code>, <code class="ph codeph">jmx-manager-ssl-protocols</code>, <code class="ph codeph">gateway-ssl-protocols</code>, or <code class="ph codeph">http-service-ssl-protocols</code>) is defined. 
+See <a href="../../managing/security/implementing_ssl.html">Configuring SSL</a>.</td>
 <td>any</td>
 </tr>
 <tr class="odd">
 <td>cluster-ssl-require-authentication</td>
-<td>Used for SSL security. Boolean indicating whether to require authentication for member communication. <span class="keyword">Geode</span> applies this peer-to-peer connection property setting to client/server, JMX manager, WAN gateway and HTTP service connections unless the corresponding SSL property (<code class="ph codeph">server-ssl-require-authentication</code>, <code class="ph codeph">jmx-manager-ssl-require-authentication</code>, <code class="ph codeph">gateway-ssl-require-authentication</code>, or <code class="ph codeph">http-service-ssl-require-authentication</code>) is defined. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>Used for SSL security. Boolean indicating whether to require authentication for member communication. <span class="keyword">Geode</span> applies this peer-to-peer connection property setting to client/server, JMX manager, WAN gateway and HTTP service connections unless the corresponding SSL property (<code class="ph codeph">server-ssl-require-authentication</code>, <code class="ph codeph">jmx-manager-ssl-require-authentication</code>, <code class="ph codeph">gateway-ssl-require-authentication</code>, or <code class="ph codeph">http-service-ssl-require-authentication</code>) is defined. 
+See <a href="../../managing/security/implementing_ssl.html">Configuring SSL</a>.</td>
 <td>true</td>
 </tr>
 <tr class="even">
 <td>cluster-ssl-truststore, gateway-ssl-truststore, http-service-ssl-truststore, jmx-manager-ssl-truststore, server-ssl-truststore</td>
-<td>Properties that identify the truststores to use for SSL connections. <code class="ph codeph">cluster-ssl-truststore</code> defines the truststore for <span class="keyword">Geode</span> peer-to-peer connections. If you specify only <code class="ph codeph">cluster-ssl-truststore</code>, then the same truststore is also used for client/server, JMX manager, WAN gateway and HTTP service connections. Specify the gateway-, jmx-manager, server-, or http-service- prefix with this property to use a different truststore for the respective SSL connection type. See [Configuring SSL](../../managing/security/implementing_ssl.html).
+<td>Properties that identify the truststores to use for SSL connections. <code class="ph codeph">cluster-ssl-truststore</code> defines the truststore for <span class="keyword">Geode</span> peer-to-peer connections. If you specify only <code class="ph codeph">cluster-ssl-truststore</code>, then the same truststore is also used for client/server, JMX manager, WAN gateway and HTTP service connections. Specify the gateway-, jmx-manager, server-, or http-service- prefix with this property to use a different truststore for the respective SSL connection type. See <a href="../../managing/security/implementing_ssl.html">Configuring SSL</a>.
 <div class="note note">
 **Note:**
 <p>javax.net.ssl.trustStore is deprecated. Use <code class="ph codeph">cluster-ssl-truststore</code> instead.</p>
@@ -152,7 +159,7 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="odd">
 <td>cluster-ssl-truststore-password, gateway-ssl-truststore-password, http-service-ssl-truststore-password, jmx-manager-ssl-truststore-password, server-ssl-truststore-password</td>
-<td>Properties that identifies the passwords for the truststores used with SSL connections. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>Properties that identifies the passwords for the truststores used with SSL connections. See <a href="../../managing/security/implementing_ssl.html">Configuring SSL</a>.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
@@ -172,12 +179,14 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="odd">
 <td>deploy-working-dir</td>
-<td>Working directory used when deploying JAR application files to distributed system members. This directory can be local and unique to the member or a shared resource. See [Deploying Application JARs to Apache Geode Members](../../configuring/cluster_config/deploying_application_jars.html) for more information.</td>
+<td>Working directory used when deploying JAR application files to distributed system members. This directory can be local and unique to the member or a shared resource. 
+See <a href="../../configuring/cluster_config/deploying_application_jars.html">Deploying Application JARs to Apache Geode Members</a> for more information.</td>
 <td>. (current directory)</td>
 </tr>
 <tr class="even">
 <td>disable-auto-reconnect</td>
-<td>By default, a <span class="keyword">Geode</span> member (both locators and servers) will attempt to reconnect and reinitialize the cache after it has been forced out of the distributed system by a network partition event or has otherwise been shunned by other members. Use this property to turn off the autoreconnect behavior. See [Handling Forced Cache Disconnection Using Autoreconnect](../../managing/autoreconnect/member-reconnect.html) for more details.</td>
+<td>By default, a <span class="keyword">Geode</span> member (both locators and servers) will attempt to reconnect and reinitialize the cache after it has been forced out of the distributed system by a network partition event or has otherwise been shunned by other members. Use this property to turn off the autoreconnect behavior. 
+See <a href="../../managing/autoreconnect/member-reconnect.html">Handling Forced Cache Disconnection Using Autoreconnect</a> for more details.</td>
 <td>false</td>
 </tr>
 <tr class="odd">
@@ -222,27 +231,32 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="odd">
 <td>gateway-ssl-ciphers</td>
-<td>A space-separated list of the valid SSL ciphers for WAN gateway connections. A setting of 'any' uses any ciphers that are enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-ciphers</code> to determine which SSL ciphers are used for WAN connections. See [Multi-Site (WAN) Deployment Security](../../managing/security/security_multisite.html).</td>
+<td>A space-separated list of the valid SSL ciphers for WAN gateway connections. A setting of 'any' uses any ciphers that are enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-ciphers</code> to determine which SSL ciphers are used for WAN connections. 
+See <a href="../../managing/security/security_multisite.html">Multi-Site (WAN) Deployment Security</a>.</td>
 <td>value of <code class="ph codeph">ssl-ciphers</code></td>
 </tr>
 <tr class="even">
 <td>gateway-ssl-enabled</td>
-<td>Enables or disables SSL for WAN gateway connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-enabled</code> to determine whether JMX connections use SSL. See [Multi-Site (WAN) Deployment Security](../../managing/security/security_multisite.html).</td>
+<td>Enables or disables SSL for WAN gateway connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-enabled</code> to determine whether JMX connections use SSL. 
+See <a href="../../managing/security/security_multisite.html">Multi-Site (WAN) Deployment Security</a>.</td>
 <td>value of <code class="ph codeph">ssl-enabled</code></td>
 </tr>
 <tr class="odd">
 <td>gateway-ssl-protocols</td>
-<td>A space-separated list of the valid SSL protocols for WAN gateway connections. A setting of 'any' uses any protocol that is enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-protocols</code> to determine which SSL protocols are used by WAN connections. See [Multi-Site (WAN) Deployment Security](../../managing/security/security_multisite.html).</td>
+<td>A space-separated list of the valid SSL protocols for WAN gateway connections. A setting of 'any' uses any protocol that is enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-protocols</code> to determine which SSL protocols are used by WAN connections. 
+See <a href="../../managing/security/security_multisite.html">Multi-Site (WAN) Deployment Security</a>.</td>
 <td>value of <code class="ph codeph">ssl-protocols</code></td>
 </tr>
 <tr class="even">
 <td>gateway-ssl-require-authentication</td>
-<td>Boolean indicating whether to require authentication for WAN gateway connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-require-authentication</code> to determine whether WAN connections require authentication. See [Multi-Site (WAN) Deployment Security](../../managing/security/security_multisite.html).</td>
+<td>Boolean indicating whether to require authentication for WAN gateway connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-require-authentication</code> to determine whether WAN connections require authentication. 
+See <a href="../../managing/security/security_multisite.html">Multi-Site (WAN) Deployment Security</a>.</td>
 <td>value of <code class="ph codeph">ssl-require-authentication</code></td>
 </tr>
 <tr class="odd">
 <td>groups</td>
-<td>Defines the list of groups that this member belongs to. Use commas to separate group names. Note that anything defined by the roles gemfire property will also be considered a group. See [Using Member Groups](../../configuring/cluster_config/using_member_groups.html) for more information.</td>
+<td>Defines the list of groups that this member belongs to. Use commas to separate group names. Note that anything defined by the roles gemfire property will also be considered a group. 
+See <a href="../../configuring/cluster_config/using_member_groups.html">Using Member Groups</a> for more information.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
@@ -312,22 +326,26 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="odd">
 <td>jmx-manager-ssl-enabled</td>
-<td>Enables or disables SSL for connections to the JMX Manager. If true and <code class="ph codeph">jmx-manager-port</code> is not zero, then the JMX Manager will only accept SSL connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-enabled</code> to determine whether JMX connections should use SSL. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>Enables or disables SSL for connections to the JMX Manager. If true and <code class="ph codeph">jmx-manager-port</code> is not zero, then the JMX Manager will only accept SSL connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-enabled</code> to determine whether JMX connections should use SSL. 
+See <a href="../../managing/security/implementing_ssl.html">Configuring SSL</a>.</td>
 <td>value of <code class="ph codeph">cluster-ssl-enabled</code></td>
 </tr>
 <tr class="even">
 <td>jmx-manager-ssl-ciphers</td>
-<td>A space-separated list of the valid SSL ciphers for JMX manager connections. A setting of 'any' uses any ciphers that are enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-ciphers</code> to determine which SSL ciphers are used for JMX connections. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>A space-separated list of the valid SSL ciphers for JMX manager connections. A setting of 'any' uses any ciphers that are enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-ciphers</code> to determine which SSL ciphers are used for JMX connections. 
+See <a href="../../managing/security/implementing_ssl.html">Configuring SSL</a>.</td>
 <td>value of <code class="ph codeph">cluster-ssl-ciphers</code></td>
 </tr>
 <tr class="odd">
 <td>jmx-manager-ssl-protocols</td>
-<td>A space-separated list of the valid SSL protocols for JMX manager connections. A setting of 'any' uses any protocol that is enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-protocols</code> to determine which SSL protocols are used for JMX connections. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>A space-separated list of the valid SSL protocols for JMX manager connections. A setting of 'any' uses any protocol that is enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-protocols</code> to determine which SSL protocols are used for JMX connections. 
+See <a href="../../managing/security/implementing_ssl.html">Configuring SSL</a>.</td>
 <td>value of <code class="ph codeph">cluster-ssl-ciphers</code></td>
 </tr>
 <tr class="even">
 <td>jmx-manager-ssl-require-authentication</td>
-<td>Boolean indicating whether to require authentication for JMX Manager connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-require-authentication</code> to determine whether JMX connections require authentication. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>Boolean indicating whether to require authentication for JMX Manager connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-require-authentication</code> to determine whether JMX connections require authentication. 
+See <a href="../../managing/security/implementing_ssl.html">Configuring SSL</a>.</td>
 <td>value of <code class="ph codeph">cluster-ssl-require-authentication</code></td>
 </tr>
 <tr class="odd">
@@ -408,7 +426,8 @@ Valid values are in the range 0...2147483647</td>
 <tr class="even">
 <td>mcast-address</td>
 <td>Address used to discover other members of the distributed system. Only used if mcast-port is non-zero. This attribute must be consistent across the distributed system. Select different multicast addresses and different ports for different distributed systems. Do not just use different addresses. Some operating systems may not keep communication separate between systems that use unique addresses but the same port number.
-<p>This default multicast address was assigned by IANA ([http://www.iana.org/assignments/multicast-addresses](http://www.iana.org/assignments/multicast-addresses)). Consult the IANA chart when selecting another multicast address to use with <span class="keyword">Geode</span>.</p>
+<p>This default multicast address was assigned by IANA
+(<a href="http://www.iana.org/assignments/multicast-addresses">http://www.iana.org/assignments/multicast-addresses</a>). Consult the IANA chart when selecting another multicast address to use with <span class="keyword">Geode</span>.</p>
 <div class="note note">
 **Note:**
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication. If multicast is enabled, distributed regions use it for most communication. Partitioned regions only use multicast for a few purposes, and mainly use either TCP or UDP unicast.</p>
@@ -513,7 +532,8 @@ off-heap-memory-size=120g</code></pre></td>
 </tr>
 <tr class="even">
 <td>redundancy-zone</td>
-<td>Defines this member's redundancy zone. Used to separate member's into different groups for satisfying partitioned region redundancy. If this property is set, <span class="keyword">Geode</span> will not put redundant copies of data in members with the same redundancy zone setting. See [Configure High Availability for a Partitioned Region](../../developing/partitioned_regions/configuring_ha_for_pr.html) for more details.</td>
+<td>Defines this member's redundancy zone. Used to separate member's into different groups for satisfying partitioned region redundancy. If this property is set, <span class="keyword">Geode</span> will not put redundant copies of data in members with the same redundancy zone setting. 
+See <a href="../../developing/partitioned_regions/configuring_ha_for_pr.html">Configure High Availability for a Partitioned Region</a> for more details.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
@@ -600,22 +620,26 @@ off-heap-memory-size=120g</code></pre></td>
 </tr>
 <tr class="odd">
 <td>server-ssl-ciphers</td>
-<td>A space-separated list of the valid SSL ciphers for client/server connections. A setting of 'any' uses any ciphers that are enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-ciphers</code> to determine which ciphers are used for client connections. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>A space-separated list of the valid SSL ciphers for client/server connections. A setting of 'any' uses any ciphers that are enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-ciphers</code> to determine which ciphers are used for client connections. 
+See <a href="../../managing/security/implementing_ssl.html">Configuring SSL</a>.</td>
 <td>value of <code class="ph codeph">cluster-ssl-ciphers</code></td>
 </tr>
 <tr class="even">
 <td>server-ssl-enabled</td>
-<td>Enables or disables SSL for client/server connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-enabled</code> to determine whether client connections use SSL. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>Enables or disables SSL for client/server connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-enabled</code> to determine whether client connections use SSL. 
+See <a href="../../managing/security/implementing_ssl.html">Configuring SSL</a>.</td>
 <td>value of <code class="ph codeph">cluster-ssl-enabled</code></td>
 </tr>
 <tr class="odd">
 <td>server-ssl-protocols</td>
-<td>A space-separated list of the valid SSL protocols for client/server connections. A setting of 'any' uses any protocol that is enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-protocols</code> to determine which SSL protocols are used for client connections. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>A space-separated list of the valid SSL protocols for client/server connections. A setting of 'any' uses any protocol that is enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-protocols</code> to determine which SSL protocols are used for client connections. 
+See <a href="../../managing/security/implementing_ssl.html">Configuring SSL</a>.</td>
 <td>value of <code class="ph codeph">cluster-ssl-protocols</code></td>
 </tr>
 <tr class="even">
 <td>server-ssl-require-authentication</td>
-<td>Boolean indicating whether to require authentication for client/server connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-require-authentication</code> to determine whether client connections require authentication. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>Boolean indicating whether to require authentication for client/server connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-require-authentication</code> to determine whether client connections require authentication 
+See <a href="../../managing/security/implementing_ssl.html">Configuring SSL</a>.</td>
 <td>value of <code class="ph codeph">cluster-ssl-require-authentication</code></td>
 </tr>
 <tr class="odd">
@@ -678,7 +702,8 @@ If you only specify the port, the address assigned to the member is used for the
 </tr>
 <tr class="even">
 <td>tombstone-gc-threshold</td>
-<td>The number of tombstones that can accumulate before the <span class="keyword">Geode</span> member triggers garbage collection for tombstones. See [How Destroy and Clear Operations Are Resolved](../../developing/distributed_regions/how_region_versioning_works.html#topic_321B05044B6641FCAEFABBF5066BD399).</td>
+<td>The number of tombstones that can accumulate before the <span class="keyword">Geode</span> member triggers garbage collection for tombstones. 
+See <a href="../../developing/distributed_regions/how_region_versioning_works.html#topic_321B05044B6641FCAEFABBF5066BD399">How Destroy and Clear Operations Are Resolved</a>.</td>
 <td>100000</td>
 </tr>
 <tr class="odd">
