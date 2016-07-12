@@ -2095,30 +2095,54 @@ public interface DistributionConfig extends Config, LogConfig {
   String DEFAULT_SECURITY_CLIENT_AUTHENTICATOR = "";
 
   /**
-   * Returns user module name authenticating client credentials in {@link ConfigurationProperties#SECURITY_MANAGER}
+   * Returns user defined class name authenticating client credentials in {@link ConfigurationProperties#SECURITY_MANAGER}
    */
   @ConfigAttributeGetter(name = SECURITY_MANAGER)
   String getSecurityManager();
 
   /**
-   * Sets the user defined method name in {@link ConfigurationProperties#SECURITY_MANAGER}
+   * Sets the user defined class name in {@link ConfigurationProperties#SECURITY_MANAGER}
    * property.
    */
   @ConfigAttributeSetter(name = SECURITY_MANAGER)
   void setSecurityManager(String attValue);
 
   /**
-   * The name of factory method for {@link ConfigurationProperties#SECURITY_MANAGER} property
+   * The name of class for {@link ConfigurationProperties#SECURITY_MANAGER} property
    */
   @ConfigAttribute(type = String.class)
   String SECURITY_MANAGER_NAME = SECURITY_MANAGER;
 
   /**
-   * The default {@link ConfigurationProperties#SECURITY_MANAGER} method name.
-   * <p> Actual value of this is fully qualified <code>"method name"</code>.
+   * The default {@link ConfigurationProperties#SECURITY_MANAGER} class name.
+   * <p> Actual value of this is fully qualified <code>"class name"</code>.
    */
   String DEFAULT_SECURITY_MANAGER = "";
 
+  /**
+   * Returns user defined post processor name in {@link ConfigurationProperties#SECURITY_POST_PROCESSOR}
+   */
+  @ConfigAttributeGetter(name = SECURITY_POST_PROCESSOR)
+  String getPostProcessor();
+
+  /**
+   * Sets the user defined class name in {@link ConfigurationProperties#SECURITY_POST_PROCESSOR}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SECURITY_POST_PROCESSOR)
+  void setPostProcessor(String attValue);
+
+  /**
+   * The name of class for {@link ConfigurationProperties#SECURITY_POST_PROCESSOR} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SECURITY_POST_PROCESSOR_NAME = SECURITY_POST_PROCESSOR;
+
+  /**
+   * The default {@link ConfigurationProperties#SECURITY_POST_PROCESSOR} class name.
+   * <p> Actual value of this is fully qualified <code>"class name"</code>.
+   */
+  String DEFAULT_SECURITY_POST_PROCESSOR = "";
 
   /**
    * Returns name of algorithm to use for Diffie-Hellman key exchange {@link ConfigurationProperties#SECURITY_CLIENT_DHALGO}

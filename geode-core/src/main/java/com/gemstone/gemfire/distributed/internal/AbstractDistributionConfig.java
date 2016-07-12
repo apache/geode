@@ -1131,7 +1131,8 @@ public abstract class AbstractDistributionConfig
     m.put(DISTRIBUTED_TRANSACTIONS, "Flag to indicate whether all transactions including JTA should be distributed transactions.  Default is false, meaning colocated transactions.");
 
     m.put(SECURITY_SHIRO_INIT, "The name of the shiro configuration file in the classpath, e.g. shiro.ini");
-    m.put(SECURITY_MANAGER, "User defined fully qualified method name implementing SecurityManager interface for integrated security. Defaults to \"{0}\". Legal values can be any \"method name\" of a static method that is present in the classpath.");
+    m.put(SECURITY_MANAGER, "User defined fully qualified class name implementing SecurityManager interface for integrated security. Defaults to \"{0}\". Legal values can be any \"class name\" implementing SecurityManager that is present in the classpath.");
+    m.put(SECURITY_POST_PROCESSOR, "User defined fully qualified class name implementing PostProcessor interface for integrated security. Defaults to \"{0}\". Legal values can be any \"class name\" implementing PostProcessor that is present in the classpath.");
 
     dcAttDescriptions = Collections.unmodifiableMap(m);
 

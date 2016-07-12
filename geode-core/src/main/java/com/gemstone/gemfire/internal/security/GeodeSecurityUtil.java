@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.security;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
-import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.Principal;
 import java.util.Properties;
@@ -47,7 +46,6 @@ import com.gemstone.gemfire.internal.security.shiro.CustomAuthRealm;
 import com.gemstone.gemfire.internal.security.shiro.ShiroPrincipal;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.AuthenticationRequiredException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 import org.apache.geode.security.GeodePermission;
 import org.apache.geode.security.GeodePermission.Operation;
@@ -315,7 +313,7 @@ public class GeodeSecurityUtil {
 
     // only set up shiro realm if user has implemented SecurityManager
     else if (!StringUtils.isBlank(securityConfig)) {
-      securityManager = getObject(securityConfig, SecurityManager.class);
+      securityManager = getObjectOfType(securityConfig, SecurityManager.class);
       securityManager.init(securityProps);
       Realm realm = new CustomAuthRealm(securityManager);
       org.apache.shiro.mgt.SecurityManager shiroManager = new DefaultSecurityManager(realm);
@@ -326,16 +324,14 @@ public class GeodeSecurityUtil {
     }
 
     // this initializes the post processor
-    String customPostProcessor = securityProps.getProperty(SECURITY_CLIENT_ACCESSOR_PP);
-    Object postProcessObject = getObject(customPostProcessor);
-    if(postProcessObject instanceof PostProcessor){
-      postProcessor = (PostProcessor) postProcessObject;
+    String customPostProcessor = securityProps.getProperty(SECURITY_POST_PROCESSOR);
+    if( !StringUtils.isBlank(customPostProcessor)) {
+      postProcessor = getObjectOfType(customPostProcessor, PostProcessor.class);
       postProcessor.init(securityProps);
     }
     else{
       postProcessor = null;
     }
-
   }
 
   public static void close() {
@@ -375,39 +371,31 @@ public class GeodeSecurityUtil {
   }
 
 
-  public static <T> T getObject(String factoryName, Class<T> clazz) {
-    Object object = null;
-
-    if (StringUtils.isBlank(factoryName)) {
-      return null;
-    }
+  public static <T> T getObjectOfType(String className, Class<T> expectedClazz) {
+    Class actualClass = null;
     try {
-      Method instanceGetter = ClassLoadUtil.methodFromName(factoryName);
-      object = instanceGetter.invoke(null, (Object[]) null);
+      actualClass = ClassLoadUtil.classFromName(className);
     }
     catch (Exception ex) {
-      throw new AuthenticationRequiredException(ex.toString(), ex);
+      throw new GemFireSecurityException(ex.toString(), ex);
     }
 
-    if(!clazz.isAssignableFrom(object.getClass())){
-      throw new GemFireSecurityException("Expecting a "+clazz.getName()+" interface.");
+    if(!expectedClazz.isAssignableFrom(actualClass)){
+      throw new GemFireSecurityException("Expecting a "+expectedClazz.getName()+" class.");
     }
-    return (T)object;
-  }
 
-  public static Object getObject(String factoryName) {
-    if (StringUtils.isBlank(factoryName)) {
-      return null;
-    }
+    T actualObject = null;
     try {
-      Method instanceGetter = ClassLoadUtil.methodFromName(factoryName);
-      return instanceGetter.invoke(null, (Object[]) null);
+      actualObject =  (T)actualClass.newInstance();
+    } catch (Exception e) {
+      throw new GemFireSecurityException("Error instantiating "+actualClass.getName(), e);
     }
-    catch (Exception ex) {
-      throw new AuthenticationRequiredException(ex.toString(), ex);
-    }
+    return actualObject;
   }
 
+  public static SecurityManager getSecurityManager(){
+    return securityManager;
+  }
 
 
   public static boolean isSecurityRequired(Properties securityProps){

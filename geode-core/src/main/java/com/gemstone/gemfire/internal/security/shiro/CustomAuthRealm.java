@@ -45,7 +45,7 @@ public class CustomAuthRealm extends AuthorizingRealm{
   }
 
   public CustomAuthRealm (String authenticatorFactory) {
-    this.securityManager = GeodeSecurityUtil.getObject(authenticatorFactory, SecurityManager.class);
+    this.securityManager = GeodeSecurityUtil.getObjectOfType(authenticatorFactory, SecurityManager.class);
   }
 
   @Override

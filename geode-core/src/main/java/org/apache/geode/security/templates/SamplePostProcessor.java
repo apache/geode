@@ -25,10 +25,6 @@ import org.apache.geode.security.PostProcessor;
 public class SamplePostProcessor implements PostProcessor{
   public static String MASK = "****";
 
-  public static SamplePostProcessor create(){
-    return new SamplePostProcessor();
-  }
-
   @Override
   public void init(final Properties securityProps) {
 

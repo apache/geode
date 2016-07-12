@@ -59,11 +59,10 @@ public class JsonAuthorizationCacheStartRule extends ExternalResource {
     properties.put(JMX_MANAGER_START, "true");
     properties.put(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort));
     properties.put(HTTP_SERVICE_PORT, String.valueOf(httpPort));
-    properties.put(SECURITY_MANAGER,
-        JSONAuthorization.class.getName() + ".create");
+    properties.put(SECURITY_MANAGER, JSONAuthorization.class.getName());
 
     if(postProcessor!=null){
-      properties.put(SECURITY_CLIENT_ACCESSOR_PP, postProcessor.getName()+".create");
+      properties.put(SECURITY_POST_PROCESSOR, postProcessor.getName());
     }
 
     JSONAuthorization.setUpWithJsonFile(jsonFile);

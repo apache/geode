@@ -19,16 +19,6 @@ package com.gemstone.gemfire.distributed.internal;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.ConfigSource;
-import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
-import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
-import org.apache.geode.redis.GeodeRedisServer;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -43,6 +33,17 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import org.apache.geode.redis.GeodeRedisServer;
+
+import com.gemstone.gemfire.GemFireConfigException;
+import com.gemstone.gemfire.GemFireIOException;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.internal.ConfigSource;
+import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
+import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that
@@ -214,8 +215,11 @@ public class DistributionConfigImpl
   /** The client authenticating method name*/
   private String securityClientAuthenticator = DEFAULT_SECURITY_CLIENT_AUTHENTICATOR;
 
-  /** The security manager method name*/
+  /** The security manager class name*/
   private String securityManager = DEFAULT_SECURITY_MANAGER;
+
+  /** The post processor class name*/
+  private String postProcessor = DEFAULT_SECURITY_POST_PROCESSOR;
 
   /** The client Diffie-Hellman method name*/
   private String securityClientDHAlgo = DEFAULT_SECURITY_CLIENT_DHALGO;
@@ -583,6 +587,7 @@ public class DistributionConfigImpl
     this.distributedTransactions = other.getDistributedTransactions();
     this.shiroInit = other.getShiroInit();
     this.securityManager = other.getSecurityManager();
+    this.postProcessor = other.getPostProcessor();
   }
 
   /**
@@ -1923,6 +1928,10 @@ public class DistributionConfigImpl
     return securityManager;
   }
 
+  public String getPostProcessor() {
+    return postProcessor;
+  }
+
   public boolean getEnableNetworkPartitionDetection() {
     return this.enableNetworkPartitionDetection;
   }
@@ -1943,6 +1952,10 @@ public class DistributionConfigImpl
 
   public void setSecurityManager(String value){
     securityManager = (String)checkAttribute(SECURITY_MANAGER, value);
+  }
+
+  public void setPostProcessor(String value) {
+    postProcessor = (String) checkAttribute(SECURITY_POST_PROCESSOR, value);
   }
 
   public String getSecurityClientDHAlgo() {
@@ -2675,6 +2688,12 @@ public class DistributionConfigImpl
     } else if (!securityManager
       .equals(other.securityManager))
       return false;
+    if (postProcessor == null) {
+      if (other.postProcessor != null)
+        return false;
+    } else if (!postProcessor
+      .equals(other.postProcessor))
+      return false;
     if (shiroInit == null) {
       if (other.shiroInit != null)
         return false;
@@ -3027,6 +3046,10 @@ public class DistributionConfigImpl
              * result
              + ((securityManager == null) ? 0
                   : securityManager.hashCode());
+    result = prime
+             * result
+             + ((postProcessor == null) ? 0
+                  : postProcessor.hashCode());
     result = prime
              * result
              + ((shiroInit == null) ? 0

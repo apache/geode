@@ -1182,6 +1182,14 @@ public interface ConfigurationProperties {
    * @since Geode 1.0
    */
   String SECURITY_MANAGER = SECURITY_PREFIX + "manager";
+
+  /**
+   * The static String definition of the <i>"security-post-processor"</i>
+   * property
+   * @since Geode 1.0
+   */
+  String SECURITY_POST_PROCESSOR = SECURITY_PREFIX + "post-processor";
+
   /**
    * The static String definition of the <i>"security-client-authenticator"</i>
    * property

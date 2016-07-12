@@ -25,6 +25,7 @@ import java.util.Properties;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
@@ -37,18 +38,13 @@ import org.junit.experimental.categories.Category;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class IntegratedSecurityCacheLifecycleIntegrationTest {
-
-  private static SpySecurityManager spySecurityManager;
-
   private Properties securityProps;
   private Cache cache;
 
   @Before
   public void before() {
     securityProps = new Properties();
-    securityProps.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName()+".create");
-
-    spySecurityManager = new SpySecurityManager();
+    securityProps.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName());
 
     Properties props = new Properties();
     props.putAll(securityProps);
@@ -56,6 +52,7 @@ public class IntegratedSecurityCacheLifecycleIntegrationTest {
     props.setProperty(LOCATORS, "");
 
     cache = new CacheFactory(props).create();
+
   }
 
   @After
@@ -67,36 +64,25 @@ public class IntegratedSecurityCacheLifecycleIntegrationTest {
 
   @Test
   public void initAndCloseTest () {
-    assertThat(spySecurityManager.initInvoked).isEqualTo(1);
-    assertThat(spySecurityManager.securityPropsInvoked).isEqualTo(securityProps);
+    SpySecurityManager ssm = (SpySecurityManager)GeodeSecurityUtil.getSecurityManager();
+    assertThat(ssm.initInvoked).isEqualTo(1);
     cache.close();
-    assertThat(spySecurityManager.closeInvoked).isEqualTo(1);
+    assertThat(ssm.closeInvoked).isEqualTo(1);
   }
 
   public static class SpySecurityManager implements SecurityManager {
 
-    private int initInvoked = 0;
-    private int closeInvoked = 0;
-    private Properties securityPropsInvoked;
-
-    public static SecurityManager create() {
-      return spySecurityManager;
-    }
+    public int initInvoked = 0;
+    public int closeInvoked = 0;
 
     @Override
     public void init(final Properties securityProps) {
       initInvoked++;
-      this.securityPropsInvoked = securityProps;
     }
 
     @Override
     public Principal authenticate(final Properties props) throws AuthenticationFailedException {
       return null;
-    }
-
-    @Override
-    public boolean authorize(final Principal principal, final GeodePermission permission) {
-      return false;
     }
 
     @Override
