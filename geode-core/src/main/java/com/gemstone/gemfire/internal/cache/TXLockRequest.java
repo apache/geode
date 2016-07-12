@@ -94,8 +94,8 @@ public class TXLockRequest {
    * Release any distributed locks obtained by this request
    */
   public void releaseDistributed() {
-    TXLockService txls = TXLockService.createDTLS();
     if (this.distLockId != null) {
+      TXLockService txls = TXLockService.createDTLS();
       txls.release(this.distLockId);
       this.distLockId = null;
     }
