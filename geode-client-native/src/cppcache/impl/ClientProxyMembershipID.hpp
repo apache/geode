@@ -16,6 +16,7 @@
 #include "DSMemberForVersionStamp.hpp"
 #include <ace/OS.h>
 #include <string>
+#include <stdint.h> //Copyright: Amdocs Software Systems Limited, 2016
 
 namespace gemfire
 {

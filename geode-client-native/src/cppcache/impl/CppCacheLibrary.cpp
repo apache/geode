@@ -5,6 +5,10 @@
  * one or more patents listed at http://www.pivotal.io/patents.
  *=========================================================================
  */
+ /*=========================================================================
+ * Copyright: Amdocs Software Systems Limited, 2016
+ *=========================================================================
+ */
 
 #include "CppCacheLibrary.hpp"
 
@@ -30,6 +34,7 @@
 
 #include <string>
 
+#include <unistd.h>  
 
 using namespace gemfire;
 
@@ -79,7 +84,6 @@ typedef ACE_Singleton<CppCacheLibrary,ACE_Recursive_Thread_Mutex> TheLibrary;
 // internals are prepared. fw_helper framework will handle this.
 CppCacheLibrary* CppCacheLibrary::initLib( void )
 {
-  ACE::init();
   return TheLibrary::instance();
 }
 

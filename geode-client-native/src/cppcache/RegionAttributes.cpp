@@ -432,7 +432,8 @@ uint8_t RegionAttributes::getConcurrencyLevel() const
    return m_concurrencyLevel;
 }
 
-const ExpirationAction::Action RegionAttributes::getLruEvictionAction( ) const
+//Copyright: Amdocs Software Systems Limited, 2016
+ExpirationAction::Action RegionAttributes::getLruEvictionAction( ) const
 {
   return m_lruEvictionAction;
 }

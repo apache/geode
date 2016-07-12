@@ -41,6 +41,8 @@ namespace gemfire {
     protected:
 
       ACE_INET_Addr m_addr;
+	  //Copyright: Amdocs Software Systems Limited, 2016
+      uint8 m_suffixFiller[32]; // Protection from the ACE bug
       uint32_t m_waitSeconds;
 
       int32_t m_maxBuffSizePool;

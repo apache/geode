@@ -8,8 +8,10 @@
 #ifndef __BUCKET_SERVER_LOCATION__
 #define __BUCKET_SERVER_LOCATION__
 
+#include "gf_base.hpp" //Copyright: Amdocs Software Systems Limited, 2016
 #include "ServerLocation.hpp"
 #include <string>
+#include <stdint.h> //Copyright: Amdocs Software Systems Limited, 2016
 
 namespace gemfire
 {
