@@ -1,14 +1,16 @@
+---
+title: Java Visual Statistics Display (JVSD)
+---
 <a id="topic_523F6DE33FE54307BBE8F83BB7D9355D"></a>
 
-# Java Visual Statistics Display (JVSD)
 
 The Java Visual Statistics Display utility reads <span class="keyword">Geode</span> statistics and produces graphical displays for analysis.
 
--   **[JVSD Overview](../tools_modules/jvsd.html#jvsd-overview)**
+-   **[JVSD Overview](#jvsd-overview)**
 
--   **[Installing and Running JVSD](../tools_modules/jvsd.html#installing-jvsd)**
+-   **[Installing and Running JVSD](#installing-jvsd)**
 
--   **[Configure Statistics Sampling in Geode](../tools_modules/jvsd.html#configure-statistics)**
+-   **[Configure Statistics Sampling in Geode](#configure-statistics)**
 
 ## JVSD Overview
 
@@ -20,70 +22,70 @@ JVSD is available as a feature branch of the <span class="keyword">Geode</span> 
 
 1. Make sure that you have a recent checkout of <span class="keyword">Geode</span> and that you are on the JVSD branch, `feature/GEODE-78`.
 
-``` pre
-$ git status 
-On branch feature/GEODE-78
-Your branch is up-to-date with 'origin/feature/GEODE-78'.
-nothing to commit, working directory clean
-```
+    ``` pre
+    $ git status 
+    On branch feature/GEODE-78
+    Your branch is up-to-date with 'origin/feature/GEODE-78'.
+    nothing to commit, working directory clean
+    ```
 
 2. Build the MultiAxisChart:
 
-``` pre
-$ ./gradlew geode-jvsd:clean geode-jvsd:MultiAxisChart
-:geode-jvsd:clean
-:clean UP-TO-DATE
-:geode-jvsd:MultiAxisChartFX
-Cloning MultiAxisChartFX... 
-Cloning MultiAxisChartFX... Done! 
-Installing MultiAxisChartFX into local maven repository... 
-Installing MultiAxisChartFX into local maven repository... Done!  
+    ``` pre
+    $ ./gradlew geode-jvsd:clean geode-jvsd:MultiAxisChart
+    :geode-jvsd:clean
+    :clean UP-TO-DATE
+    :geode-jvsd:MultiAxisChartFX
+    Cloning MultiAxisChartFX... 
+    Cloning MultiAxisChartFX... Done! 
+    Installing MultiAxisChartFX into local maven repository... 
+    Installing MultiAxisChartFX into local maven repository... Done!  
 
-BUILD SUCCESSFUL 
-```
+    BUILD SUCCESSFUL 
+    ```
 
-At this point you should have the MultiAxisChart JAR file:
+    At this point you should have the MultiAxisChart JAR file:
 
-``` pre
-$ ls -la geode-jvsd/build/MultiAxisChartFX/target/MultiAxisChart-1.0-SNAPSHOT.jar  
--rw-r--r-- 1 jvuser staff 69979 Apr 1 07:21 geode-jvsd/build/MultiAxisChartFX/target/MultiAxisChart-1.0-SNAPSHOT.jar 
-```
+    ``` pre
+    $ ls -la geode-jvsd/build/MultiAxisChartFX/target/MultiAxisChart-1.0-SNAPSHOT.jar  
+    -rw-r--r-- 1 jvuser staff 69979 Apr 1 07:21 geode-jvsd/build/MultiAxisChartFX/target/MultiAxisChart-1.0-SNAPSHOT.jar 
+    ```
 
-This JAR file should also now be installed in your local maven repository:
+    This JAR file should also now be installed in your local maven repository:
 
-``` pre
- $ ls -la ~/.m2/repository/com/pivotal/javafx/MultiAxisChart/1.0-SNAPSHOT
-total 168 
-drwxr-xr-x 6 jvuser staff   204   Apr 1 07:14 . 
-drwxr-xr-x 4 jvuser staff   136   Apr 1 07:14 .. 
--rw-r--r-- 1 jvuser staff 69979 Apr 1 07:21 MultiAxisChart-1.0-SNAPSHOT.jar 
--rw-r--r-- 1 jvuser staff  1751  Apr 1 07:20 MultiAxisChart-1.0-SNAPSHOT.pom 
--rw-r--r-- 1 jvuser staff   201   Apr 1 07:21 _remote.repositories 
--rw-r--r-- 1 jvuser staff   712   Apr 1 07:21 maven-metadata-local.xml
-```
+    ``` pre
+    $ ls -la ~/.m2/repository/com/pivotal/javafx/MultiAxisChart/1.0-SNAPSHOT
+    total 168 
+    drwxr-xr-x 6 jvuser staff   204   Apr 1 07:14 . 
+    drwxr-xr-x 4 jvuser staff   136   Apr 1 07:14 .. 
+    -rw-r--r-- 1 jvuser staff 69979 Apr 1 07:21 MultiAxisChart-1.0-SNAPSHOT.jar 
+    -rw-r--r-- 1 jvuser staff  1751  Apr 1 07:20 MultiAxisChart-1.0-SNAPSHOT.pom 
+    -rw-r--r-- 1 jvuser staff   201   Apr 1 07:21 _remote.repositories 
+    -rw-r--r-- 1 jvuser staff   712   Apr 1 07:21 maven-metadata-local.xml
+    ```
 
 3. Build JVSD:
 
-``` pre
-$ ./gradlew -x test geode-jvsd:installDist 
-:geode-jvsd:MultiAxisChartFX SKIPPED 
-:geode-jvsd:compileJava 
-Note: Some input files use unchecked or unsafe operations. 
-Note: Recompile with -Xlint:unchecked for details. 
-:geode-jvsd:processResources 
-:geode-jvsd:classes 
-:geode-jvsd:jar 
-:geode-jvsd:startScripts 
-:geode-jvsd:installDist 
+    ``` pre
+    $ ./gradlew -x test geode-jvsd:installDist 
+    :geode-jvsd:MultiAxisChartFX SKIPPED 
+    :geode-jvsd:compileJava 
+    Note: Some input files use unchecked or unsafe operations. 
+    Note: Recompile with -Xlint:unchecked for details. 
+    :geode-jvsd:processResources 
+    :geode-jvsd:classes 
+    :geode-jvsd:jar 
+    :geode-jvsd:startScripts 
+    :geode-jvsd:installDist 
 
-BUILD SUCCESSFUL
-```
+    BUILD SUCCESSFUL
+    ```
 
 4. Invoke JVSD from the command line:
 
-``` pre
-$ ./geode-jvsd/build/install/geode-jvsd/bin/geode-jvsd
-```
+    ``` pre
+    $ ./geode-jvsd/build/install/geode-jvsd/bin/geode-jvsd
+    ```
 
 <img src="../images/jVSD-startup.png" class="image" />
 
