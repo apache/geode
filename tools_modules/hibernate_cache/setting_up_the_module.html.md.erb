@@ -39,7 +39,6 @@ Edit the `hibernate.cfg.xml` file to use the Hibernate Cache module.
 4.  **Set Cache Usage Mode**
 
     The usage mode can either be set using the hibernate-mapping file or through Java annotations.
-
     -   To set the mode with the hibernate-mapping file, refer to this example:
 
         ``` pre
@@ -54,7 +53,6 @@ Edit the `hibernate.cfg.xml` file to use the Hibernate Cache module.
         ```
 
         In this example, `PACKAGE` is the name of the entity package, `ENTITY_NAME` is the name of your entity, and `USAGE_MODE` is the chosen usage mode from the table given above. Refer to the [Hibernate documentation](http://hibernate.org/docs) for further information.
-
     -   To set the mode using annotations, your class definition should look something like this example which specifies the `read-only` usage mode:
 
         ``` pre
