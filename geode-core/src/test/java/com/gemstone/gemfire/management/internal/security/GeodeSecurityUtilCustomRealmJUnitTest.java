@@ -34,7 +34,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 public class GeodeSecurityUtilCustomRealmJUnitTest extends GeodeSecurityUtilWithIniFileJUnitTest {
   @BeforeClass
   public static void beforeClass() throws Exception{
-    props.put(SECURITY_MANAGER, JSONAuthorization.class.getName() + ".create");
+    props.put(SECURITY_MANAGER, JSONAuthorization.class.getName());
     JSONAuthorization.setUpWithJsonFile("shiro-ini.json");
     GeodeSecurityUtil.initSecurity(props);
   }

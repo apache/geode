@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 
 import com.gemstone.gemfire.security.templates.SampleSecurityManager;
@@ -23,13 +25,19 @@ import com.gemstone.gemfire.util.test.TestUtil;
 
 public class JSONAuthorization extends SampleSecurityManager {
 
-  public static JSONAuthorization create() throws IOException {
-    return new JSONAuthorization();
-  }
-
   public static void setUpWithJsonFile(String jsonFileName) throws IOException {
     String json = readFile(TestUtil.getResourcePath(JSONAuthorization.class, jsonFileName));
     readSecurityDescriptor(json);
+  }
+
+  protected static String readFile(String name) throws IOException {
+    File file = new File(name);
+    FileReader reader = new FileReader(file);
+    char[] buffer = new char[(int) file.length()];
+    reader.read(buffer);
+    String json = new String(buffer);
+    reader.close();
+    return json;
   }
 
 }

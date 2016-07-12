@@ -28,7 +28,9 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
+import com.gemstone.gemfire.security.IntegratedSecurityCacheLifecycleIntegrationTest.SpySecurityManager;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
@@ -39,9 +41,6 @@ import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4CacheTestCase {
-
-  private static SpySecurityManager spySecurityManager;
-
   private VM locator;
 
   @Override
@@ -52,16 +51,13 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
     int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     String locators =  NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]";
 
-    spySecurityManager = new SpySecurityManager();
-
     locator.invoke(() -> {
-      spySecurityManager = new SpySecurityManager();
       DistributedTestUtils.deleteLocatorStateFile(locatorPort);
 
       final Properties properties = new Properties();
       properties.setProperty(MCAST_PORT, "0");
       properties.setProperty(START_LOCATOR, locators);
-      properties.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName()+".create");
+      properties.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName());
       properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
       getSystem(properties);
       getCache();
@@ -69,7 +65,7 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
 
     final Properties properties = new Properties();
     properties.setProperty(MCAST_PORT, "0");
-    properties.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName()+".create");
+    properties.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName());
     properties.setProperty(LOCATORS, locators);
     properties.setProperty(JMX_MANAGER, "false");
     properties.setProperty(JMX_MANAGER_PORT, "0");
@@ -99,33 +95,10 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
   }
 
   private void verifyInitCloseInvoked() {
-    assertThat(spySecurityManager.initInvoked).isEqualTo(1);
+    SpySecurityManager ssm = (SpySecurityManager) GeodeSecurityUtil
+      .getSecurityManager();
+    assertThat(ssm.initInvoked).isEqualTo(1);
     getCache().close();
-    assertThat(spySecurityManager.closeInvoked).isEqualTo(1);
-  }
-
-  public static class SpySecurityManager extends JSONAuthorization {
-
-    private static int initInvoked = 0;
-    private static int closeInvoked = 0;
-
-    public static SpySecurityManager create() {
-      return spySecurityManager;
-    }
-
-    @Override
-    public void init(final Properties securityProps) {
-      initInvoked++;
-    }
-
-    @Override
-    public Principal authenticate(final Properties props) throws AuthenticationFailedException {
-      return null;
-    }
-
-    @Override
-    public void close() {
-      closeInvoked++;
-    }
+    assertThat(ssm.closeInvoked).isEqualTo(1);
   }
 }
