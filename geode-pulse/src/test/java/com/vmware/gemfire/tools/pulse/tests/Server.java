@@ -18,8 +18,6 @@
  */
 package com.vmware.gemfire.tools.pulse.tests;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.Inet4Address;
@@ -28,7 +26,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -75,9 +72,7 @@ public class Server {
       Map<String, Object> env = new HashMap<String, Object>();
 
       // set up Shiro Security Manager
-      Properties securityProps = new Properties();
-      securityProps.put(SECURITY_MANAGER, JSONAuthorization.class.getName() + ".create");
-      Realm realm = new CustomAuthRealm(securityProps);
+      Realm realm = new CustomAuthRealm(JSONAuthorization.class.getName() + ".create");
       SecurityManager securityManager = new DefaultSecurityManager(realm);
       SecurityUtils.setSecurityManager(securityManager);
 

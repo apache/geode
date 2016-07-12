@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.internal.security.shiro;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.SECURITY_MANAGER;
-
 import java.security.Principal;
 import java.util.Properties;
 
@@ -35,9 +33,8 @@ import org.apache.shiro.subject.PrincipalCollection;
 
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.security.SecurityManager;
-import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.security.GeodePermission;
+import com.gemstone.gemfire.security.SecurityManager;
 
 public class CustomAuthRealm extends AuthorizingRealm{
   public static final String REALM_NAME = "CUSTOMAUTHREALM";
@@ -45,14 +42,12 @@ public class CustomAuthRealm extends AuthorizingRealm{
   private static final Logger logger = LogManager.getLogger(CustomAuthRealm.class);
   private SecurityManager securityManager = null;
 
-  public CustomAuthRealm (Properties securityProps) {
-    Object manager = GeodeSecurityUtil.getObject(securityProps.getProperty(SECURITY_MANAGER));
+  public CustomAuthRealm(SecurityManager securityManager) {
+    this.securityManager = securityManager;
+  }
 
-    if(!(manager instanceof SecurityManager)){
-      throw new GemFireSecurityException("Integrated Security requires SecurityManager interface.");
-    }
-    securityManager = (SecurityManager) manager;
-    securityManager.init(securityProps);
+  public CustomAuthRealm (String authenticatorFactory) {
+    this.securityManager = GeodeSecurityUtil.getObject(authenticatorFactory, SecurityManager.class);
   }
 
   @Override
