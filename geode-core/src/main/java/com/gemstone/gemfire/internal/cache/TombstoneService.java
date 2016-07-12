@@ -828,7 +828,7 @@ public class TombstoneService {
       if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
         logger.trace(LogMarker.TOMBSTONE, "Destroyed entries sweeper starting with sleep interval of {} milliseconds", EXPIRY_TIME);
       }
-      while (!isStopped && cancelCriterion.cancelInProgress() == null) {
+      while (!isStopped && !cancelCriterion.isCancelInProgress()) {
         try {
           updateStatistics();
           SystemFailure.checkFailure();

@@ -246,7 +246,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
     synchronized (JUnit4CacheTestCase.class) {
       final GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
       if (gemFireCache != null && !gemFireCache.isClosed()
-              && gemFireCache.getCancelCriterion().cancelInProgress() != null) {
+              && gemFireCache.getCancelCriterion().isCancelInProgress()) {
         Wait.waitForCriterion(new WaitCriterion() { // TODO: replace with Awaitility
           @Override
           public boolean done() {
@@ -278,7 +278,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
     synchronized (JUnit4CacheTestCase.class) {
       final GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
       if (gemFireCache != null && !gemFireCache.isClosed()
-              && gemFireCache.getCancelCriterion().cancelInProgress() != null) {
+              && gemFireCache.getCancelCriterion().isCancelInProgress()) {
         Wait.waitForCriterion(new WaitCriterion() { // TODO: replace with Awaitility
           @Override
           public boolean done() {

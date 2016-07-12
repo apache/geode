@@ -2787,7 +2787,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor  {
      * is not met
      */
     private void handleException(Exception e, boolean loggit) {
-      boolean safe = isClosed() || getAdvisee().getCancelCriterion().cancelInProgress() != null;
+      boolean safe = isClosed() || getAdvisee().getCancelCriterion().isCancelInProgress();
       if (!safe) {
         if (ENFORCE_SAFE_CLOSE) {
           Assert.assertTrue(safe, LocalizedStrings.BucketAdvisor_BUCKETADVISOR_WAS_NOT_CLOSED_PROPERLY.toLocalizedString());

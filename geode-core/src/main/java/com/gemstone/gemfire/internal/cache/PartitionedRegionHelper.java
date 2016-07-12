@@ -324,7 +324,7 @@ public class PartitionedRegionHelper
   {
     try {
       final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-      if(cache == null || cache.getCancelCriterion().cancelInProgress() != null) {
+      if(cache == null || cache.getCancelCriterion().isCancelInProgress()) {
         return;
       }
 
@@ -387,7 +387,7 @@ public class PartitionedRegionHelper
     }
 
     for (final Node node1 : nodeList) {
-      if (cache.getCancelCriterion().cancelInProgress() != null) {
+      if (cache.getCancelCriterion().isCancelInProgress()) {
         return;
       }
       if (node1.getMemberId().equals(failedMemId)) {

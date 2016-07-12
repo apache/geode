@@ -796,7 +796,7 @@ public class InternalDistributedSystem
     if (this.dm == null) {
       return false;
     }
-    if (this.dm.getCancelCriterion().cancelInProgress() != null) {
+    if (this.dm.getCancelCriterion().isCancelInProgress()) {
       return false;
     }
     if (this.isDisconnecting) {
@@ -841,7 +841,7 @@ public class InternalDistributedSystem
     if (this.dm == null) {
       return true;
     }
-    if (this.dm.getCancelCriterion().cancelInProgress() != null) {
+    if (this.dm.getCancelCriterion().isCancelInProgress()) {
       return true;
     }
     if (!this.isConnected) {

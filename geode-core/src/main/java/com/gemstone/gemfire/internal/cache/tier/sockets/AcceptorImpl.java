@@ -1007,7 +1007,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
           if (((GemFireCacheImpl)this.cache).isClosed()) { // bug 38834
             break; // TODO should just ask cache's CancelCriterion
           }
-          if (this.cache.getCancelCriterion().cancelInProgress() != null) {
+          if (this.cache.getCancelCriterion().isCancelInProgress()) {
             break;
           }
           ServerConnection sc;
@@ -1044,7 +1044,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
         }
         int events = this.selector.select();
         // select() could have returned due to wakeup() during close of cache
-        if (this.cache.getCancelCriterion().cancelInProgress() != null) {
+        if (this.cache.getCancelCriterion().isCancelInProgress()) {
           break;
         }
         if (events == 0) {

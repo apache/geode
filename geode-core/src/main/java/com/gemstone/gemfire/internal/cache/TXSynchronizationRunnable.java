@@ -76,7 +76,7 @@ public class TXSynchronizationRunnable implements Runnable {
         }
         if (this.secondRunnable == null) {
           GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-          if (cache == null || cache.getCancelCriterion().cancelInProgress() != null) {
+          if (cache == null || cache.getCancelCriterion().isCancelInProgress()) {
             return;
           }
         }

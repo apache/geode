@@ -315,7 +315,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
     if (this.isStopped) {
       return true;
     }
-    if (sender.getStopper().cancelInProgress() != null) {
+    if (sender.getStopper().isCancelInProgress()) {
       return true;
     }
     return false;

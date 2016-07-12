@@ -403,7 +403,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     
     // Let's inspect the distributed system.  It should also
     // be connected.
-    if (basicGetSystem().getCancelCriterion().cancelInProgress() != null) {
+    if (basicGetSystem().getCancelCriterion().isCancelInProgress()) {
       fail("distributed system cancel in progress");
       return Boolean.FALSE;
     }
@@ -463,7 +463,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
       if (dm == null) {
         return Boolean.TRUE;
       }
-      return new Boolean(dm.getCancelCriterion().cancelInProgress() != null);
+      return new Boolean(dm.getCancelCriterion().isCancelInProgress());
     }
     catch (CancelException e) {
       // TODO -- it would be nice to avoid the checkConnected() call above

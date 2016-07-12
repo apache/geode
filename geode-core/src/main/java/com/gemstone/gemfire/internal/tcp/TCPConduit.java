@@ -570,7 +570,7 @@ public class TCPConduit implements Runnable {
     }
     for(;;) {
       SystemFailure.checkFailure();
-      if (stopper.cancelInProgress() != null) {
+      if (stopper.isCancelInProgress()) {
         break;
       }
       if (stopped) {
@@ -579,7 +579,7 @@ public class TCPConduit implements Runnable {
       if (Thread.currentThread().isInterrupted()) {
         break;
       }
-      if (stopper.cancelInProgress() != null) {
+      if (stopper.isCancelInProgress()) {
         break; // part of bug 37271
       }
 

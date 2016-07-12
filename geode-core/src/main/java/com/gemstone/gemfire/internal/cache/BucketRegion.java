@@ -2271,7 +2271,7 @@ implements Bucket
         return;
       }
 
-      if (bSize < 0 && getCancelCriterion().cancelInProgress() == null) {
+      if (bSize < 0 && !getCancelCriterion().isCancelInProgress()) {
         throw new InternalGemFireError("Bucket " + this + " size (" +
             bSize + ") negative after applying delta of " + memoryDelta);
       }

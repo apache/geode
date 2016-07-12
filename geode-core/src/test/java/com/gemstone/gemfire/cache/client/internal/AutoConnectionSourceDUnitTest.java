@@ -546,8 +546,8 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
           while (listener.crashes == 0) {
             try {
               long remaining = end - System.currentTimeMillis();
-              if (remaining < 0) {
-                break;
+              if (remaining <= 0) {
+                return;
               }
               listener.wait(remaining);
             } catch (InterruptedException e) {
@@ -582,9 +582,9 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
   }
 
   public static class MyListener extends ClientMembershipListenerAdapter implements Serializable {
-    protected int crashes = 0;
-    protected int joins = 0;
-    protected int departures = 0;
+    protected volatile int crashes = 0;
+    protected volatile int joins = 0;
+    protected volatile int departures = 0;
 
     @Override
     public synchronized void memberCrashed(ClientMembershipEvent event) {

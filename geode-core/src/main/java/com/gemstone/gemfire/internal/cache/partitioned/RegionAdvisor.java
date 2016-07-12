@@ -198,7 +198,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor
         this.preInitQueue = null;  // prevent further additions to the queue
         this.preInitQueueMonitor.notifyAll();
         if (!finishedInitQueue && 
-            getAdvisee().getCancelCriterion().cancelInProgress() == null) {
+            !getAdvisee().getCancelCriterion().isCancelInProgress()) {
           logger.error(LocalizedMessage.create(LocalizedStrings.RegionAdvisor_FAILED_TO_PROCESS_ALL_QUEUED_BUCKETPROFILES_FOR_0, getAdvisee()));
         }
       }

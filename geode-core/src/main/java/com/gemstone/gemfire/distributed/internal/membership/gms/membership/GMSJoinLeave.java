@@ -852,7 +852,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         return false;
       }
 
-      if (!failedToRespond.isEmpty() && (services.getCancelCriterion().cancelInProgress() == null)) {
+      if (!failedToRespond.isEmpty() && (!services.getCancelCriterion().isCancelInProgress())) {
         logger.warn("these members failed to respond to the view change: " + failedToRespond);
         return false;
       }
@@ -1710,7 +1710,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       Set<InternalDistributedMember> result = null;
       long endOfWait = System.currentTimeMillis() + viewAckTimeout;
       try {
-        while (System.currentTimeMillis() < endOfWait && (services.getCancelCriterion().cancelInProgress() == null)) {
+        while (System.currentTimeMillis() < endOfWait && (!services.getCancelCriterion().isCancelInProgress())) {
           try {
             synchronized (this) {
               if (!waiting || this.notRepliedYet.isEmpty() || this.conflictingView != null) {

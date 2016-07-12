@@ -2371,7 +2371,7 @@ public class DistributionManager
       return;
     }
     synchronized(this.membershipViewIdGuard) { 
-      while (this.membershipViewIdAcknowledged < id && this.stopper.cancelInProgress() == null) {
+      while (this.membershipViewIdAcknowledged < id && !this.stopper.isCancelInProgress()) {
         if (logger.isDebugEnabled()) {
           logger.debug("waiting for view {}.  Current DM view processed by all listeners is {}", id, this.membershipViewIdAcknowledged);
         }
@@ -2402,7 +2402,7 @@ public class DistributionManager
         // bug 41539 - member events need to be delivered during shutdown
         //             or reply processors may hang waiting for replies from
         //             departed members
-//        if (getCancelCriterion().cancelInProgress() != null) {
+//        if (getCancelCriterion().isCancelInProgress()) {
 //          break; // no message, just quit
 //        }
         if (!DistributionManager.this.system.isConnected &&

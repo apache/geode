@@ -3537,7 +3537,7 @@ public class DLockGrantor {
       boolean recalcTimeToWait = false;
       while (!this.shutdown) {
 //        SystemFailure.checkFailure(); stopper checks this
-        if (stopper.cancelInProgress() != null) {
+        if (stopper.isCancelInProgress()) {
           break; // done
         }
         try {
@@ -3734,7 +3734,7 @@ public class DLockGrantor {
       // if the VM is being forcibly disconnected, we shouldn't release locks as it
       // will take longer than the time allowed by the InternalDistributedSystem
       // shutdown mechanism.
-      if (distMgr.getCancelCriterion().cancelInProgress() != null) {
+      if (distMgr.getCancelCriterion().isCancelInProgress()) {
         return;
       }
       final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);

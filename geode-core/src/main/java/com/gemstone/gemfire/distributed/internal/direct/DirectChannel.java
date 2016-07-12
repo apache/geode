@@ -733,7 +733,7 @@ public class DirectChannel {
     }
     catch (Exception ex) {
       // Don't freak out if the DM is shutting down
-      if (this.conduit.getCancelCriterion().cancelInProgress() == null) {
+      if (!conduit.getCancelCriterion().isCancelInProgress()) {
         logger.fatal(LocalizedMessage.create(LocalizedStrings.DirectChannel_WHILE_PULLING_A_MESSAGE), ex);
       }
     }

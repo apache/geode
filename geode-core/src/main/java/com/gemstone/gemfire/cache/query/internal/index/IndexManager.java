@@ -1420,7 +1420,7 @@ public class IndexManager  {
         while (!this.shutdownRequested) {
           // Termination checks
           SystemFailure.checkFailure();
-          if (stopper.cancelInProgress() != null) {
+          if (stopper.isCancelInProgress()) {
             break;
           }
           try {

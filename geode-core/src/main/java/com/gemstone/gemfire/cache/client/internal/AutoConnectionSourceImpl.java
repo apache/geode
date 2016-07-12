@@ -370,7 +370,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   protected class UpdateLocatorListTask extends PoolTask {
     @Override
     public void run2() {
-      if(pool.getCancelCriterion().cancelInProgress() != null) {
+      if(pool.getCancelCriterion().isCancelInProgress()) {
         return;
       }
       LocatorListResponse response = (LocatorListResponse) queryLocators(LOCATOR_LIST_REQUEST);

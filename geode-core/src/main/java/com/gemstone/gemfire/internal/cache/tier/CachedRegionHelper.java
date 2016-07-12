@@ -81,7 +81,7 @@ public class CachedRegionHelper {
 
   public boolean isShutdown() {
     return shutdown 
-        || cache.getCancelCriterion().cancelInProgress() != null;
+        || cache.getCancelCriterion().isCancelInProgress();
   }
 
   public void close() {

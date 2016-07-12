@@ -83,7 +83,7 @@ public class CallbackSamplerJUnitTest {
   @Test
   public void cancelCriterionShouldStopExecutor() {
     Runnable sampleTask = invokeStartAndGetTask();
-    when(cancelCriterion.cancelInProgress()).thenReturn("cancelled");
+    when(cancelCriterion.isCancelInProgress()).thenReturn(Boolean.TRUE);
     sampleTask.run();
     verify(executorService).shutdown();
   }

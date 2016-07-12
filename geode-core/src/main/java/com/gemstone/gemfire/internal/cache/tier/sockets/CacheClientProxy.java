@@ -2634,7 +2634,7 @@ public class CacheClientProxy implements ClientSession {
       ClientMessage clientMessage = null;
       while (!isStopped()) {
 //        SystemFailure.checkFailure(); DM's stopper does this
-        if (this._proxy._cache.getCancelCriterion().cancelInProgress() != null) {
+        if (this._proxy._cache.getCancelCriterion().isCancelInProgress()) {
           break;
         }
         try {

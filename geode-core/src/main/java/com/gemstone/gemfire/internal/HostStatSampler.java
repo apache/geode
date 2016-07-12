@@ -436,7 +436,7 @@ public abstract class HostStatSampler
   }
   
   protected final boolean stopRequested() {
-    return stopper.cancelInProgress() != null || this.stopRequested;
+    return stopper.isCancelInProgress() || this.stopRequested;
   }
 
   public final SampleCollector getSampleCollector() {

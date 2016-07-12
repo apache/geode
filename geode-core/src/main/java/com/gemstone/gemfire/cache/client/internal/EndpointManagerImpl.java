@@ -276,7 +276,7 @@ public class EndpointManagerImpl implements EndpointManager {
   public class EndpointListenerForBridgeMembership implements EndpointManager.EndpointListener {
     
     public void endpointCrashed(Endpoint endpoint) {
-      if(endpoint.getMemberId()==null || cancelCriterion.cancelInProgress()!=null) {
+      if(endpoint.getMemberId()==null || cancelCriterion.isCancelInProgress()) {
         return;
       }
       //logger.warn("EMANFIRE:CRASH:"+endpoint.getLocation());
@@ -284,7 +284,7 @@ public class EndpointManagerImpl implements EndpointManager {
     }
 
     public void endpointNoLongerInUse(Endpoint endpoint) {
-      if(endpoint.getMemberId()==null || cancelCriterion.cancelInProgress()!=null) {
+      if(endpoint.getMemberId()==null || cancelCriterion.isCancelInProgress()) {
         return;
       }
       //logger.warn("EMANFIRE:LEFT:"+endpoint.getLocation());
@@ -292,7 +292,7 @@ public class EndpointManagerImpl implements EndpointManager {
     }
 
     public void endpointNowInUse(Endpoint endpoint) {
-      if(cancelCriterion.cancelInProgress()!=null) {
+      if(cancelCriterion.isCancelInProgress()) {
         return;
       }
       //logger.warn("EMANFIRE:JOIN:"+endpoint.getLocation()+" mid:"+endpoint.getMemberId(),new Exception());

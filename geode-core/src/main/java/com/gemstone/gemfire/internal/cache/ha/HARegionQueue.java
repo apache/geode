@@ -2913,7 +2913,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
       if (shutdown) {
         return true;
       }
-      if (cache.getCancelCriterion().cancelInProgress() != null) {
+      if (cache.getCancelCriterion().isCancelInProgress()) {
         return true;
       }
       return false;

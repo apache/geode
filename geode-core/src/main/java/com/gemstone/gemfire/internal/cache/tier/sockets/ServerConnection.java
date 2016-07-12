@@ -587,7 +587,7 @@ public class ServerConnection implements Runnable {
   private boolean isFiringMembershipEvents() {
     return this.acceptor.isRunning() 
       && !((GemFireCacheImpl)this.acceptor.getCachedRegionHelper().getCache()).isClosed()
-      && this.acceptor.getCachedRegionHelper().getCache().getCancelCriterion().cancelInProgress() == null;
+      && !acceptor.getCachedRegionHelper().getCache().getCancelCriterion().isCancelInProgress();
   }
 
   protected void refuseHandshake(String msg, byte exception)

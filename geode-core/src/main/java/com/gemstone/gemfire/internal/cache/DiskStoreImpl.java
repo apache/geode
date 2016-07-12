@@ -2949,7 +2949,7 @@ public class DiskStoreImpl implements DiskStore {
         return true;
       }
       CancelCriterion stopper = getCache().getCancelCriterion();
-      if (stopper.cancelInProgress() != null) {
+      if (stopper.isCancelInProgress()) {
         return true;
       }
       return false;
