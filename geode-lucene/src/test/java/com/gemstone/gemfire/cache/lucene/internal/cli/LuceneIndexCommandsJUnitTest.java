@@ -38,6 +38,7 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
@@ -70,16 +71,8 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class LuceneIndexCommandsJUnitTest {
 
-  private LuceneIndexCommands createIndexCommands(final Cache cache, final Execution functionExecutor) {
-    return new LuceneTestIndexCommands(cache, functionExecutor);
-  }
-
-  private LuceneIndexDetails createIndexDetails(final String indexName, final String regionPath, final String[] searchableFields, final Map<String, Analyzer> fieldAnalyzers) {
-    return new LuceneIndexDetails(indexName, regionPath, searchableFields, fieldAnalyzers);
-  }
-
   @Test
-  public void testListIndex() {
+  public void testListIndexWithoutStats() {
 
     final Cache mockCache = mock(Cache.class, "Cache");
     final AbstractExecution mockFunctionExecutor = mock(AbstractExecution.class, "Function Executor");
@@ -112,12 +105,59 @@ public class LuceneIndexCommandsJUnitTest {
 
     final LuceneIndexCommands commands = createIndexCommands(mockCache, mockFunctionExecutor);
 
-    CommandResult result = (CommandResult) commands.listIndex();
+    CommandResult result = (CommandResult) commands.listIndex(false);
     TabularResultData data = (TabularResultData) result.getResultData();
     assertEquals(Arrays.asList("memberFive", "memberSix", "memberTen"), data.retrieveAllValues("Index Name"));
     assertEquals(Arrays.asList("/Employees", "/Employees", "/Employees"), data.retrieveAllValues("Region Path"));
     assertEquals(Arrays.asList("[field1, field2, field3]", "[field1, field2, field3]", "[field1, field2, field3]"), data.retrieveAllValues("Indexed Fields"));
     assertEquals(Arrays.asList("{field1=StandardAnalyzer, field2=KeywordAnalyzer}", "{field1=StandardAnalyzer, field2=KeywordAnalyzer}", "{field1=StandardAnalyzer, field2=KeywordAnalyzer}"), data.retrieveAllValues("Field Analyzer"));
+  }
+
+  @Test
+  public void testListIndexWithStats() {
+
+    final Cache mockCache = mock(Cache.class, "Cache");
+    final AbstractExecution mockFunctionExecutor = mock(AbstractExecution.class, "Function Executor");
+    final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
+    final LuceneIndexStats mockIndexStats1=getMockIndexStats(1,10,5,1);
+    final LuceneIndexStats mockIndexStats2=getMockIndexStats(2,20,10,2);
+    final LuceneIndexStats mockIndexStats3=getMockIndexStats(3,30,15,3);
+    String[] searchableFields={"field1","field2","field3"};
+    Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
+    fieldAnalyzers.put("field1", new StandardAnalyzer());
+    fieldAnalyzers.put("field2", new KeywordAnalyzer());
+    fieldAnalyzers.put("field3", null);
+    final LuceneIndexDetails indexDetails1 = createIndexDetails("memberFive", "/Employees", searchableFields, fieldAnalyzers,mockIndexStats1);
+    final LuceneIndexDetails indexDetails2 = createIndexDetails("memberSix", "/Employees", searchableFields, fieldAnalyzers,mockIndexStats2);
+    final LuceneIndexDetails indexDetails3 = createIndexDetails("memberTen", "/Employees", searchableFields, fieldAnalyzers,mockIndexStats3);
+
+
+    final List<LuceneIndexDetails> expectedIndexDetails = new ArrayList<>(3);
+    expectedIndexDetails.add(indexDetails1);
+    expectedIndexDetails.add(indexDetails2);
+    expectedIndexDetails.add(indexDetails3);
+
+    final List<Set<LuceneIndexDetails>> results = new ArrayList<>();
+
+    results.add(CollectionUtils.asSet(indexDetails2, indexDetails1,indexDetails3));
+
+    when(mockFunctionExecutor.execute(isA(LuceneListIndexFunction.class)))
+      .thenReturn(mockResultCollector);
+    when(mockResultCollector.getResult())
+      .thenReturn(results);
+
+    final LuceneIndexCommands commands = createIndexCommands(mockCache, mockFunctionExecutor);
+
+    CommandResult result = (CommandResult) commands.listIndex(true);
+    TabularResultData data = (TabularResultData) result.getResultData();
+    assertEquals(Arrays.asList("memberFive", "memberSix", "memberTen"), data.retrieveAllValues("Index Name"));
+    assertEquals(Arrays.asList("/Employees", "/Employees", "/Employees"), data.retrieveAllValues("Region Path"));
+    assertEquals(Arrays.asList("[field1, field2, field3]", "[field1, field2, field3]", "[field1, field2, field3]"), data.retrieveAllValues("Indexed Fields"));
+    assertEquals(Arrays.asList("{field1=StandardAnalyzer, field2=KeywordAnalyzer}", "{field1=StandardAnalyzer, field2=KeywordAnalyzer}", "{field1=StandardAnalyzer, field2=KeywordAnalyzer}"), data.retrieveAllValues("Field Analyzer"));
+    assertEquals(Arrays.asList("1","2","3"), data.retrieveAllValues("Query Executions"));
+    assertEquals(Arrays.asList("10","20","30"), data.retrieveAllValues("Commits"));
+    assertEquals(Arrays.asList("5","10","15"), data.retrieveAllValues("Updates"));
+    assertEquals(Arrays.asList("1","2","3"), data.retrieveAllValues("Documents"));
   }
 
   @Test
@@ -151,6 +191,31 @@ public class LuceneIndexCommandsJUnitTest {
     infoResult.addLine(LuceneCliStrings.CREATE_INDEX__MEMBER__MSG);
     infoResult.addLine(CliStrings.format(LuceneCliStrings.CREATE_INDEX__NUMBER__AND__MEMBER, 1 , memberId));
     return ResultBuilder.buildResult(infoResult);
+  }
+
+  private LuceneIndexStats getMockIndexStats(int queries, int commits, int updates, int docs) {
+    LuceneIndexStats mockIndexStats=mock(LuceneIndexStats.class);
+    when(mockIndexStats.getQueryExecutions())
+      .thenReturn(queries);
+    when(mockIndexStats.getCommits())
+      .thenReturn(commits);
+    when(mockIndexStats.getUpdates())
+      .thenReturn(updates);
+    when(mockIndexStats.getDocuments())
+      .thenReturn(docs);
+    return mockIndexStats;
+  }
+
+  private LuceneIndexCommands createIndexCommands(final Cache cache, final Execution functionExecutor) {
+    return new LuceneTestIndexCommands(cache, functionExecutor);
+  }
+
+  private LuceneIndexDetails createIndexDetails(final String indexName, final String regionPath, final String[] searchableFields, final Map<String, Analyzer> fieldAnalyzers, LuceneIndexStats indexStats) {
+    return new LuceneIndexDetails(indexName, regionPath, searchableFields, fieldAnalyzers,indexStats);
+  }
+
+  private LuceneIndexDetails createIndexDetails(final String indexName, final String regionPath, final String[] searchableFields, final Map<String, Analyzer> fieldAnalyzers) {
+    return new LuceneIndexDetails(indexName, regionPath, searchableFields, fieldAnalyzers,null);
   }
 
   private static class LuceneTestIndexCommands extends LuceneIndexCommands {

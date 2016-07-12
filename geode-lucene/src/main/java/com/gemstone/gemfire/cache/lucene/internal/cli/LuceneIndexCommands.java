@@ -62,15 +62,20 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperation;
  */
 @SuppressWarnings("unused")
 public class LuceneIndexCommands extends AbstractCommandsSupport {
-
   private static final LuceneCreateIndexFunction createIndexFunction = new LuceneCreateIndexFunction();
 
   @CliCommand(value = LuceneCliStrings.LUCENE_LIST_INDEX, help = LuceneCliStrings.LUCENE_LIST_INDEX__HELP)
   @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA })
-  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result listIndex() {
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+  public Result listIndex(
+    @CliOption(key = LuceneCliStrings.LUCENE_LIST_INDEX__STATS,
+      mandatory=false,
+      specifiedDefaultValue = "true",
+      unspecifiedDefaultValue = "false",
+      help = LuceneCliStrings.LUCENE_LIST_INDEX__STATS__HELP) final boolean stats) {
+
     try {
-      return toTabularResult(getIndexListing());
+      return toTabularResult(getIndexListing(),stats);
     }
     catch (FunctionInvocationTargetException ignore) {
       return ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN,
@@ -105,7 +110,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       .collect(Collectors.toList());
   }
 
-  protected Result toTabularResult(final List<LuceneIndexDetails> indexDetailsList) {
+  protected Result toTabularResult(final List<LuceneIndexDetails> indexDetailsList, boolean stats) {
     if (!indexDetailsList.isEmpty()) {
       final TabularResultData indexData = ResultBuilder.createTabularResultData();
 
@@ -114,6 +119,13 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
         indexData.accumulate("Region Path", indexDetails.getRegionPath());
         indexData.accumulate("Indexed Fields", indexDetails.getSearchableFieldNamesString());
         indexData.accumulate("Field Analyzer", indexDetails.getFieldAnalyzersString());
+
+        if (stats==true) {
+          indexData.accumulate("Query Executions",indexDetails.getIndexStats().get("queryExecutions"));
+          indexData.accumulate("Updates",indexDetails.getIndexStats().get("updates"));
+          indexData.accumulate("Commits",indexDetails.getIndexStats().get("commits"));
+          indexData.accumulate("Documents",indexDetails.getIndexStats().get("documents"));
+        }
       }
       return ResultBuilder.buildResult(indexData);
     }
