@@ -375,39 +375,30 @@ public class GeodeSecurityUtil {
   }
 
 
-  public static <T> T getObject(String factoryName, Class<T> clazz) {
-    Object object = null;
+  public static <T> T getObject(String className, Class<T> expectedClazz) {
+    Object object = getObject(className);
 
-    if (StringUtils.isBlank(factoryName)) {
-      return null;
-    }
-    try {
-      Method instanceGetter = ClassLoadUtil.methodFromName(factoryName);
-      object = instanceGetter.invoke(null, (Object[]) null);
-    }
-    catch (Exception ex) {
-      throw new AuthenticationRequiredException(ex.toString(), ex);
-    }
-
-    if(!clazz.isAssignableFrom(object.getClass())){
-      throw new GemFireSecurityException("Expecting a "+clazz.getName()+" interface.");
+    if(!expectedClazz.isAssignableFrom(object.getClass())){
+      throw new GemFireSecurityException("Expecting a "+expectedClazz.getName()+" interface.");
     }
     return (T)object;
   }
 
-  public static Object getObject(String factoryName) {
-    if (StringUtils.isBlank(factoryName)) {
+  public static Object getObject(String className) {
+    if (StringUtils.isBlank(className)) {
       return null;
     }
     try {
-      Method instanceGetter = ClassLoadUtil.methodFromName(factoryName);
-      return instanceGetter.invoke(null, (Object[]) null);
+      return ClassLoadUtil.classFromName(className).newInstance();
     }
     catch (Exception ex) {
       throw new AuthenticationRequiredException(ex.toString(), ex);
     }
   }
 
+  public static SecurityManager getSecurityManager(){
+    return securityManager;
+  }
 
 
   public static boolean isSecurityRequired(Properties securityProps){
