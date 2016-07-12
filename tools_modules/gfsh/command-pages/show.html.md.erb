@@ -1,26 +1,28 @@
+---
+title: show
+---
 <a id="topic_7171CA38456645D5B08C16FD73AD0B2A"></a>
 
-# show
 
 Display deadlocks, logs, metrics and missing disk-stores.
 
--   **[show dead-locks](../../../tools_modules/gfsh/command-pages/show.html#topic_1125347FAD6541DF995C9999650165B1)**
+-   **[show dead-locks](#topic_1125347FAD6541DF995C9999650165B1)**
 
     Display any deadlocks in the <span class="keyword">Geode</span> distributed system.
 
--   **[show log](../../../tools_modules/gfsh/command-pages/show.html#topic_45AAEDAC3AFF46EC9BB68B24FC9A32B3)**
+-   **[show log](#topic_45AAEDAC3AFF46EC9BB68B24FC9A32B3)**
 
     Display the log for a member.
 
--   **[show metrics](../../../tools_modules/gfsh/command-pages/show.html#topic_6EB786C63AEB46179EEE8FA18624295A)**
+-   **[show metrics](#topic_6EB786C63AEB46179EEE8FA18624295A)**
 
     Display or export metrics for the entire distributed system, a member or a region.
 
--   **[show missing-disk-stores](../../../tools_modules/gfsh/command-pages/show.html#topic_7B3D624D5B4F41D1A0F8A9C3C8B2E780)**
+-   **[show missing-disk-stores](#topic_7B3D624D5B4F41D1A0F8A9C3C8B2E780)**
 
     Display a summary of the disk stores that are currently missing from a distributed system.
 
--   **[show subscription-queue-size](../../../tools_modules/gfsh/command-pages/show.html#topic_395C96B500AD430CBF3D3C8886A4CD2E)**
+-   **[show subscription-queue-size](#topic_395C96B500AD430CBF3D3C8886A4CD2E)**
 
     Shows the number of events in the subscription queue.
 
@@ -42,9 +44,9 @@ show dead-locks --file=value
 
 | Name                                         | Description                                                                         |
 |----------------------------------------------|-------------------------------------------------------------------------------------|
-| <span class="keyword parmname">--file</span> | *Required.* Name of the file to which dependencies between members will be written. |
+| <span class="keyword parmname">\\-\\-file</span> | *Required.* Name of the file to which dependencies between members will be written. |
 
-: <span class="tablecap">Table 1. Parameters</span>
+<span class="tablecap">Table 1. Show Dead-Locks Parameters</span>
 
 **Example Commands:**
 
@@ -77,15 +79,11 @@ show log --member=value [--lines=value]
 
 <a id="topic_45AAEDAC3AFF46EC9BB68B24FC9A32B3__table_mwp_qjf_2w"></a>
 
-<span class="tablecap">Table 2. Parameters</span>
-Name
-Description
-<span class="keyword parmname">--member</span>
-*Required.* Name/ID of the member whose log file will be displayed.
- 
-<span class="keyword parmname">--lines</span>
-Number of lines from the log file to display. The maximum is 100.
-0
+| Name                                                       | Description                                | Default Value                                 |
+|------------------------------------------------------------|--------------------------------------------|---------------------------------|
+| <span class="keyword parmname">\\-\\-member</span> |          *Required.* Name/ID of the member whose log file will be displayed. |  |
+| <span class="keyword parmname">\\-\\-lines </span>   | Number of lines from the log file to display. The maximum is 100.          | 0  |
+
 
 **Example Commands:**
 
@@ -126,7 +124,7 @@ show metrics [--member=value] [--region=value] [--file=value]
 <a id="topic_6EB786C63AEB46179EEE8FA18624295A__table_l4n_tjf_2w"></a>
 
 <table>
-<caption><span class="tablecap">Table 3. Parameters</span></caption>
+<caption><span class="tablecap">Table 3. Show Metrics Parameters</span></caption>
 <colgroup>
 <col width="50%" />
 <col width="50%" />
@@ -139,23 +137,23 @@ show metrics [--member=value] [--region=value] [--file=value]
 </thead>
 <tbody>
 <tr class="odd">
-<td><span class="keyword parmname">--member</span></td>
+<td><span class="keyword parmname">\-\-member</span></td>
 <td>Name/ID of the member whose metrics will be displayed/exported.</td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">--region</span></td>
+<td><span class="keyword parmname">\-\-region</span></td>
 <td>Name/Path of the region whose metrics will be displayed/exported.</td>
 </tr>
 <tr class="odd">
-<td><span class="keyword parmname">--file</span></td>
+<td><span class="keyword parmname">\-\-file</span></td>
 <td>Name of the file to which metrics will be written.</td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">--port</span></td>
+<td><span class="keyword parmname">\-\-port</span></td>
 <td>Port number of the Cache Server whose metrics are to be displayed/exported. This can only be used along with the <code class="ph codeph">--member</code> parameter.</td>
 </tr>
 <tr class="odd">
-<td><span class="keyword parmname">--categories</span></td>
+<td><span class="keyword parmname">\-\-categories</span></td>
 <td>Categories available based upon the parameters specified (listed above) are:
 <ul>
 <li><strong>no parameters specified</strong>: cluster, cache, diskstore, query</li>
@@ -167,7 +165,7 @@ show metrics [--member=value] [--region=value] [--file=value]
 </tbody>
 </table>
 
-: <span class="tablecap">Table 3. Parameters</span>
+<span class="tablecap">Table 3. Show Metrics Parameters</span>
 
 **Example Commands:**
 
@@ -261,12 +259,12 @@ show subscription-queue-size --durable-client-Id=value
 
 | Name                                                       | Description                                                                  |
 |------------------------------------------------------------|------------------------------------------------------------------------------|
-| <span class="keyword parmname">--durable-client-id </span> | *Required.* The ID used to identify the durable client.                      |
-| <span class="keyword parmname">--durable-cq-name </span>   | The name that identifies the CQ.                                             |
-| <span class="keyword parmname">--member </span>            | Name/Id of the member for which subscription queue events are to be counted. |
-| <span class="keyword parmname">--group</span>              | Group of members for which subscription queue events are to be counted.      |
+| <span class="keyword parmname">\\-\\-durable-client-id </span> | *Required.* The ID used to identify the durable client.                      |
+| <span class="keyword parmname">\\-\\-durable-cq-name </span>   | The name that identifies the CQ.                                             |
+| <span class="keyword parmname">\\-\\-member </span>            | Name/Id of the member for which subscription queue events are to be counted. |
+| <span class="keyword parmname">\\-\\-group</span>              | Group of members for which subscription queue events are to be counted.      |
 
-: <span class="tablecap">Table 4. Parameters</span>
+<span class="tablecap">Table 4. Show Subscription-Queue-Size Parameters</span>
 
 **Example Commands:**
 

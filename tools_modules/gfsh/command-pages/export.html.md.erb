@@ -1,6 +1,8 @@
+---
+title: export
+---
 <a id="concept_B8A3E21674294C65AE9F9A60F37A284E"></a>
 
-# export
 
 Export configurations, data, logs and stack-traces.
 
@@ -28,6 +30,44 @@ Export configurations, data, logs and stack-traces.
 
     Export the stack trace for a member or members.
 
+<a id="topic_mdv_jgz_ck"></a>
+
+## export cluster-configuration
+
+Exports a cluster configuration zip file that contains the `cache.xml` files, `gemfire.properties` files, and application jar files needed to configure and operate a <span class="keyword">Geode</span> distributed system.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+See [Overview of the Cluster Configuration Service](../../../configuring/cluster_config/gfsh_persist.html#concept_r22_hyw_bl).
+
+**Syntax:**
+
+``` pre
+export cluster-configuration --zip-file-name=value [--dir=value]
+```
+
+<a id="topic_mdv_jgz_ck__table_qyw_hbh_2w"></a>
+
+| Name                                                  | Description                                                                          | Default Value     |
+|-------------------------------------------------------|--------------------------------------------------------------------------------------|-------------------|
+| <span class="keyword parmname">\\-\\-zip-file-name</span> | *Required.* File name of the zip file to contain the exported cluster configuration. |                   |
+| <span class="keyword parmname">\\-\\-dir</span>           | Directory where the cluster configuration zip files is saved.                        | Locator directory |
+
+<span class="tablecap">Table 1. Export Cluster-Configuration Parameters</span>
+
+**Example Commands:**
+
+``` pre
+gfsh>export cluster-configuration --zip-file-name=/home/username/gemfire80/myClusterConfig.zip
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>export cluster-configuration --zip-file-name=mySharedConfig.zip
+Downloading cluster configuration : /home/username/gemfire80/myClusterConfig.zip
+```
+
 <a id="topic_C7C69306F93743459E65D46537F4A1EE"></a>
 
 ## export config
@@ -49,11 +89,11 @@ export config [--member=value(,value)*] [--group=value(,value)*]
 
 | Name                                           | Description                                                          |
 |------------------------------------------------|----------------------------------------------------------------------|
-| <span class="keyword parmname">--member</span> | Name/Id of the member(s) whose configuration will be exported.       |
-| <span class="keyword parmname">--group</span>  | Group(s) of members whose configuration will be exported.            |
-| <span class="keyword parmname">--dir</span>    | Directory to which the exported configuration files will be written. |
+| <span class="keyword parmname">\\-\\-member</span> | Name/Id of the member(s) whose configuration will be exported.       |
+| <span class="keyword parmname">\\-\\-group</span>  | Group(s) of members whose configuration will be exported.            |
+| <span class="keyword parmname">\\-\\-dir</span>    | Directory to which the exported configuration files will be written. |
 
-: <span class="tablecap">Table 1. Parameters</span>
+<span class="tablecap">Table 2. Export Config Parameters</span>
 
 **Example Commands:**
 
@@ -68,44 +108,6 @@ export config --member=member1
 gfsh>export config --member=member1
 Downloading Cache XML file: c:\PivotalGemFire70\Latest\.\member1-cache.xml
 Downloading properties file: c:\PivotalGemFire70\Latest\.\member1-gf.properties
-```
-
-<a id="topic_mdv_jgz_ck"></a>
-
-## export cluster-configuration
-
-Exports a cluster configuration zip file that contains the `cache.xml` files, `gemfire.properties` files, and application jar files needed to configure and operate a <span class="keyword">Geode</span> distributed system.
-
-**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
-
-See[Overview of the Cluster Configuration Service](../../../configuring/cluster_config/gfsh_persist.html#concept_r22_hyw_bl).
-
-**Syntax:**
-
-``` pre
-export cluster-configuration --zip-file-name=value [--dir=value]
-```
-
-<a id="topic_mdv_jgz_ck__table_qyw_hbh_2w"></a>
-
-| Name                                                  | Description                                                                          | Default Value     |
-|-------------------------------------------------------|--------------------------------------------------------------------------------------|-------------------|
-| <span class="keyword parmname">--zip-file-name</span> | *Required.* File name of the zip file to contain the exported cluster configuration. |                   |
-| <span class="keyword parmname">--dir</span>           | Directory where the cluster configuration zip files is saved.                        | Locator directory |
-
-: <span class="tablecap">Table 2. Parameters</span>
-
-**Example Commands:**
-
-``` pre
-gfsh>export cluster-configuration --zip-file-name=/home/username/gemfire80/myClusterConfig.zip
-```
-
-**Sample Output:**
-
-``` pre
-gfsh>export cluster-configuration --zip-file-name=mySharedConfig.zip
-Downloading cluster configuration : /home/username/gemfire80/myClusterConfig.zip
 ```
 
 <a id="topic_263B70069BFC4A7185F86B3272011734"></a>
@@ -126,11 +128,11 @@ export data --region=value --file=value --member=value
 
 | Name                                           | Description                                                                                                                                     |
 |------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">--region</span> | *Required.* Region from which data is to be exported.                                                                                           |
-| <span class="keyword parmname">--file</span>   | *Required.* File to which the exported data is to be written. The file must have an extension of `.gfd`.                                        |
-| <span class="keyword parmname">--member</span> | *Required.* Name/Id of a member that hosts the region. The data will be exported to the specified file on the host where the member is running. |
+| <span class="keyword parmname">\\-\\-region</span> | *Required.* Region from which data is to be exported.                                                                                           |
+| <span class="keyword parmname">\\-\\-file</span>   | *Required.* File to which the exported data is to be written. The file must have an extension of `.gfd`.                                        |
+| <span class="keyword parmname">&#8209;&#8209;member</span> | *Required.* Name/Id of a member that hosts the region. The data will be exported to the specified file on the host where the member is running. |
 
-: <span class="tablecap">Table 3. Parameters</span>
+<span class="tablecap">Table 3. Export Data Parameters</span>
 
 **Example Commands:**
 
@@ -170,16 +172,16 @@ export logs --dir=value [--group=value(,value)*] [--member=value] [--log
 
 | Name                                                   | Description                                                                                                                | Default Value |
 |--------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|---------------|
-| <span class="keyword parmname">--dir</span>            | *Required.* Directory to which log files will be written.                                                                  |               |
-| <span class="keyword parmname">--group</span>          | Group of members whose log files will be exported.                                                                         |               |
-| <span class="keyword parmname">--member</span>         | Name/ID of the member whose log files will be exported.                                                                    |               |
-| <span class="keyword parmname">--log-level</span>      | Minimum level of log entries to export. Valid values are: `none`, `error`, `info`, `config`, `fine`, `finer` and `finest`. | `info`        |
-| <span class="keyword parmname">--only-log-level</span> | Whether to only include those entries that exactly match the <span class="keyword parmname">--log-level</span> specified.  | false         |
-| <span class="keyword parmname">--merge-log</span>      | Whether to merge logs after exporting to the target directory.                                                             | false         |
-| <span class="keyword parmname">--start-time</span>     | Log entries that occurred after this time will be exported. Format: yyyy/MM/dd/HH/mm/ss/SSS/z OR yyyy/MM/dd                | no limit      |
-| <span class="keyword parmname">--end-time</span>       | Log entries that occurred before this time will be exported. Format: yyyy/MM/dd/HH/mm/ss/SSS/z OR yyyy/MM/dd               | no limit      |
+| <span class="keyword parmname">\\-\\-dir</span>            | *Required.* Directory to which log files will be written.                                                                  |               |
+| <span class="keyword parmname">\\-\\-group</span>          | Group of members whose log files will be exported.                                                                         |               |
+| <span class="keyword parmname">&#8209;&#8209;member</span>         | Name/ID of the member whose log files will be exported.                                                                    |               |
+| <span class="keyword parmname">\\-\\-log-level</span>      | Minimum level of log entries to export. Valid values are: `none`, `error`, `info`, `config`, `fine`, `finer` and `finest`. | `info`        |
+| <span class="keyword parmname">\\-\\-only-log-level</span> | Whether to only include those entries that exactly match the <span class="keyword parmname">\\-\\-log-level</span> specified.  | false         |
+| <span class="keyword parmname">&#8209;&#8209;merge&#8209;log</span>      | Whether to merge logs after exporting to the target directory.                                                             | false         |
+| <span class="keyword parmname">\\-\\-start-time</span>     | Log entries that occurred after this time will be exported. Format: yyyy/MM/dd/HH/mm/ss/SSS/z OR yyyy/MM/dd                | no limit      |
+| <span class="keyword parmname">\\-\\-end-time</span>       | Log entries that occurred before this time will be exported. Format: yyyy/MM/dd/HH/mm/ss/SSS/z OR yyyy/MM/dd               | no limit      |
 
-: <span class="tablecap">Table 4. Parameters</span>
+<span class="tablecap">Table 4. Export Logs Parameters</span>
 
 **Example Commands:**
 
@@ -212,11 +214,11 @@ export offline-disk-store --name=value --disk-dirs=value(,value)* --dir=value
 
 | Name                                              | Description                                        |
 |---------------------------------------------------|----------------------------------------------------|
-| <span class="keyword parmname">--name</span>      | *Required.* Name of the disk store to be exported. |
-| <span class="keyword parmname">--disk-dirs</span> | Directories which contain the disk store files.    |
-| <span class="keyword parmname">--dir</span>       | Directory to export the snapshot files to.         |
+| <span class="keyword parmname">\\-\\-name</span>      | *Required.* Name of the disk store to be exported. |
+| <span class="keyword parmname">\\-\\-disk-dirs</span> | Directories which contain the disk store files.    |
+| <span class="keyword parmname">\\-\\-dir</span>       | Directory to export the snapshot files to.         |
 
-: <span class="tablecap">Table 5. Parameters</span>
+<span class="tablecap">Table 5. Export Offline-Disk-Store Parameters</span>
 
 **Example Commands:**
 
@@ -243,11 +245,11 @@ export stack-traces --file=value [--member=value] [--group=value]
 
 | Name                                           | Description                                                     |
 |------------------------------------------------|-----------------------------------------------------------------|
-| <span class="keyword parmname">--file</span>   | *Required.* Filename to which the stack-traces will be written. |
-| <span class="keyword parmname">--member</span> | Name or ID of the member whose log files will be exported.      |
-| <span class="keyword parmname">--group</span>  | Group of members whose log files will be exported.              |
+| <span class="keyword parmname">\\-\\-file</span>   | *Required.* Filename to which the stack-traces will be written. |
+| <span class="keyword parmname">\\-\\-member</span> | Name or ID of the member whose log files will be exported.      |
+| <span class="keyword parmname">\\-\\-group</span>  | Group of members whose log files will be exported.              |
 
-: <span class="tablecap">Table 6. Parameters</span>
+<span class="tablecap">Table 6. Export Stack-Traces Parameters</span>
 
 **Example Commands:**
 

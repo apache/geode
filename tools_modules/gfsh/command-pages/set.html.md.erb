@@ -27,10 +27,10 @@ set variable --name=value --value=value
 
 | Name                                          | Description                                                                                                                               |
 |-----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">--name</span>  | *Required.* Name for the variable. Name must only be composed of letters, numbers and the "\_" character and may not start with a number. |
-| <span class="keyword parmname">--value</span> | *Required.* Value that the variable will be set to.                                                                                       |
+| <span class="keyword parmname">&#8209;&#8209;name</span>  | *Required.* Name for the variable. Name must only be composed of letters, numbers and the "\_" character and may not start with a number. |
+| <span class="keyword parmname">&#8209;&#8209;value</span> | *Required.* Value that the variable will be set to.                                                                                       |
 
-: <span class="tablecap">Table 1. Parameters</span>
+<span class="tablecap">Table 1. Set Variable Parameters</span>
 
 **Example Commands:**
 
@@ -41,6 +41,7 @@ set variable --name=BAR --value="bar"
 ```
 
 **Sample Output:**
+
 ``` pre
 gfsh>set variable --name=APP_COLLECTION_LIMIT --value=10
 Value for variable APP_COLLECTION_LIMIT is now: 10.

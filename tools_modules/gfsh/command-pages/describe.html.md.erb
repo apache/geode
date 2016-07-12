@@ -1,6 +1,8 @@
+---
+title: describe
+---
 <a id="concept_B8A3E21674294C65AE9F9A60F37A284E"></a>
 
-# describe
 
 Display details of a member's configuration, shell connection, disk-stores, members, or regions.
 
@@ -50,9 +52,9 @@ describe client --clientID=value
 
 | Name                                             | Description                                                                                                                                     |
 |--------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">--clientID</span> | *Required.* ID of the client. To find a client ID, you can use the `list clients` command to display a list of connected clients and their IDs. |
+| <span class="keyword parmname">&#8209;&#8209;clientID</span> | *Required.* ID of the client. To find a client ID, you can use the `list clients` command to display a list of connected clients and their IDs. |
 
-: <span class="tablecap">Table 1. Parameters</span>
+<span class="tablecap">Table 1. Describe Client Parameters</span>
 
 **Example Commands:**
 
@@ -97,10 +99,10 @@ describe config --member=value [--hide-defaults(=value)?]
 
 | Name                                                  | Description                                                                      | Default Value |
 |-------------------------------------------------------|----------------------------------------------------------------------------------|---------------|
-| <span class="keyword parmname">--member </span>       | Name or ID of a member whose configuration is to be shown.                       |               |
-| <span class="keyword parmname">--hide-defaults</span> | Whether to hide configuration information for properties with the default value. | true          |
+| <span class="keyword parmname">\\-\\-member </span>       | Name or ID of a member whose configuration is to be shown.                       |               |
+| <span class="keyword parmname">\\-\\-hide-defaults</span> | Whether to hide configuration information for properties with the default value. | true          |
 
-: <span class="tablecap">Table 2. Parameters</span>
+<span class="tablecap">Table 2. Describe Config Parameters</span>
 
 **Example Commands:**
 
@@ -185,10 +187,10 @@ describe disk-store --member=value --name=value
 
 | Name                                           | Description                                                            |
 |------------------------------------------------|------------------------------------------------------------------------|
-| <span class="keyword parmname">--member</span> | *Required.* Name/ID of the member with the disk store to be described. |
-| <span class="keyword parmname">--name </span>  | *Required*. Name of the disk store to be described.                    |
+| <span class="keyword parmname">\\-\\-member</span> | *Required.* Name/ID of the member with the disk store to be described. |
+| <span class="keyword parmname">\\-\\-name </span>  | *Required*. Name of the disk store to be described.                    |
 
-: <span class="tablecap">Table 3. Parameters</span>
+<span class="tablecap">Table 3. Describe Disk-Store Parameters</span>
 
 **Example Commands:**
 
@@ -240,9 +242,9 @@ describe member --name=value
 
 | Name                                          | Description                                                                               |
 |-----------------------------------------------|-------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">--name </span> | *Required.* Display information about a member, including name, ID, groups, regions, etc. |
+| <span class="keyword parmname">&#8209;&#8209;name </span> | *Required.* Display information about a member, including name, ID, groups, regions, etc. |
 
-: <span class="tablecap">Table 4. Parameters</span>
+<span class="tablecap">Table 4. Describe Member Parameters</span>
 
 **Example Commands:**
 
@@ -295,12 +297,12 @@ describe offline-disk-store --name=value --disk-dirs=value(,value)* [--pdx=value
 
 | Name                                               | Description                                                                  |
 |----------------------------------------------------|------------------------------------------------------------------------------|
-| <span class="keyword parmname">--name</span>       | *Required.* Name of the disk store to be described.                          |
-| <span class="keyword parmname">--disk-dirs </span> | *Required.* Directory that contains the disk store files.                    |
-| <span class="keyword parmname">--pdx</span>        | If set (or set to true), display all the pdx types stored in the disk store. |
-| <span class="keyword parmname">--region</span>     | Name and path of the region in the disk store to be described.               |
+| <span class="keyword parmname">\\-\\-name</span>       | *Required.* Name of the disk store to be described.                          |
+| <span class="keyword parmname">\\-\\-disk-dirs </span> | *Required.* Directory that contains the disk store files.                    |
+| <span class="keyword parmname">\\-\\-pdx</span>        | If set (or set to true), display all the pdx types stored in the disk store. |
+| <span class="keyword parmname">\\-\\-region</span>     | Name and path of the region in the disk store to be described.               |
 
-: <span class="tablecap">Table 5. Parameters</span>
+<span class="tablecap">Table 5. Describe Offline-Disk-Store Parameters</span>
 
 **Example Commands:**
 
@@ -374,9 +376,9 @@ describe region --name=value
 
 | Name                                          | Description                                          |
 |-----------------------------------------------|------------------------------------------------------|
-| <span class="keyword parmname">--name </span> | *Required.* Name/Path of the region to be described. |
+| <span class="keyword parmname">\\-\\-name </span> | *Required.* Name/Path of the region to be described. |
 
-: <span class="tablecap">Table 6. Parameters</span>
+<span class="tablecap">Table 6. Describe Region Parameters</span>
 
 **Example Commands:**
 

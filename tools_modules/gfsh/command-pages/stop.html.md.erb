@@ -1,22 +1,24 @@
+---
+title: stop
+---
 <a id="topic_45125131A45F4713BBC63E7225AAD91B"></a>
 
-# stop
 
 Stop gateway receivers, gateway senders, locators and servers.
 
--   **[stop gateway-receiver](../../../tools_modules/gfsh/command-pages/stop.html#topic_CD1D526FD6F84A7B80B25C741129ED30)**
+-   **[stop gateway-receiver](#topic_CD1D526FD6F84A7B80B25C741129ED30)**
 
     Stop the gateway receiver on a member or members.
 
--   **[stop gateway-sender](../../../tools_modules/gfsh/command-pages/stop.html#topic_0BBDD4B3B8A44A65A610F766C9E85519)**
+-   **[stop gateway-sender](#topic_0BBDD4B3B8A44A65A610F766C9E85519)**
 
     Stop a gateway sender with a given id on a specified member or members of a specified member group.
 
--   **[stop locator](../../../tools_modules/gfsh/command-pages/stop.html#topic_EF61C54B35BA4AB7B14E58CF911F283E)**
+-   **[stop locator](#topic_EF61C54B35BA4AB7B14E58CF911F283E)**
 
     Stop a locator.
 
--   **[stop server](../../../tools_modules/gfsh/command-pages/stop.html#topic_723EE395A63A40D6819618AFC2902115)**
+-   **[stop server](#topic_723EE395A63A40D6819618AFC2902115)**
 
     Stop a <span class="keyword">Geode</span> cache server.
 
@@ -38,10 +40,10 @@ stop gateway-receiver [--group=value(,value)*] [--member=value]
 
 | Name                                            | Description                                                                                                       |
 |-------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| <span class="keyword parmname"> --group</span>  | Group(s) of members on which to stop the Gateway Receiver. Use a comma-separated list for multiple member groups. |
-| <span class="keyword parmname">--member </span> | Name/Id of the member on which to stop the Gateway Receiver.                                                      |
+| <span class="keyword parmname">\\-\\-group</span>  | Group(s) of members on which to stop the Gateway Receiver. Use a comma-separated list for multiple member groups. |
+| <span class="keyword parmname">&#8209;&#8209;member </span> | Name/Id of the member on which to stop the Gateway Receiver.                                                      |
 
-: <span class="tablecap">Table 1. Parameters</span>
+<span class="tablecap">Table 1. Stop Gateway-Receiver Parameters</span>
 
 **Example Commands:**
 
@@ -78,9 +80,8 @@ pc13(2266)<v22>:4522 | OK     | GatewayReceiver is stopped on member pc13(2266)<
 
 Stop a gateway sender with a given id on a specified member or members of a specified member group.
 
-CAUTION:
-
-Use caution with the `stop                             gateway-sender` command (or equivalent `GatewaySender.stop()` API) on parallel gateway senders. Instead of stopping an individual parallel gateway sender on a member, Pivotal recommends shutting down the entire member to ensure that proper failover of partition region events to other gateway sender members. Using this command on an individual parallel gateway sender can occur in event loss. See [Stopping Gateway Senders](../../../topologies_and_comm/topology_concepts/multisite_overview.html#topic_9AA37B43642D4DE19072CA3367C849BA__section_aqm_2js_bq) for more details.
+**CAUTION:**
+Use caution with the `stop gateway-sender` command (or equivalent `GatewaySender.stop()` API) on parallel gateway senders. Instead of stopping an individual parallel gateway sender on a member, Pivotal recommends shutting down the entire member to ensure that proper failover of partition region events to other gateway sender members. Using this command on an individual parallel gateway sender can occur in event loss. See [Stopping Gateway Senders](../../../topologies_and_comm/topology_concepts/multisite_overview.html#topic_9AA37B43642D4DE19072CA3367C849BA__section_aqm_2js_bq) for more details.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
@@ -94,11 +95,11 @@ stop gateway-sender --id=value [--group=value(,value)*] [--member=value]
 
 | Name                                            | Description                                                |
 |-------------------------------------------------|------------------------------------------------------------|
-| <span class="keyword parmname"> --id </span>    | *Required.* ID of the Gateway Sender.                      |
-| <span class="keyword parmname"> --group</span>  | Group(s) of members on which to stop the Gateway Sender.   |
-| <span class="keyword parmname"> --member</span> | Name/Id of the member on which to stop the Gateway Sender. |
+| <span class="keyword parmname">\\-\\-id </span>    | *Required.* ID of the Gateway Sender.                      |
+| <span class="keyword parmname">\\-\\-group</span>  | Group(s) of members on which to stop the Gateway Sender.   |
+| <span class="keyword parmname">\\-\\-member</span> | Name/Id of the member on which to stop the Gateway Sender. |
 
-: <span class="tablecap">Table 2. Parameters</span>
+<span class="tablecap">Table 2. Stop Gateway-Sender Parameters</span>
 
 **Example Commands:**
 
@@ -147,11 +148,11 @@ stop locator [--name=value] [--host=value] [--port=value] [--pid=value]
 
 | Name                                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                     | Default Value     |
 |----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
-| <span class="keyword parmname">--name</span> | The <span class="keyword">Geode</span> member name or id of the Locator to stop. You must be connected to the JMX Manager to use this option. Can be used to stop remote locators. See [Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS](../../../configuring/cluster_config/gfsh_remote.html). |                   |
-| <span class="keyword parmname">--pid</span>  | The process id (PID) of the running Locator.                                                                                                                                                                                                                                                                                                                                                                                                    |                   |
-| <span class="keyword parmname">--dir</span>  | Directory in which the Locator was started.                                                                                                                                                                                                                                                                                                                                                                                                     | current directory |
+| <span class="keyword parmname">&#8209;&#8209;name</span> | The <span class="keyword">Geode</span> member name or id of the Locator to stop. You must be connected to the JMX Manager to use this option. Can be used to stop remote locators. See [Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS](../../../configuring/cluster_config/gfsh_remote.html). |                   |
+| <span class="keyword parmname">\\-\\-pid</span>  | The process id (PID) of the running Locator.                                                                                                                                                                                                                                                                                                                                                                                                    |                   |
+| <span class="keyword parmname">\\-\\-dir</span>  | Directory in which the Locator was started.                                                                                                                                                                                                                                                                                                                                                                                                     | current directory |
 
-: <span class="tablecap">Table 3. Parameters</span>
+<span class="tablecap">Table 3. Stop Locator Parameters</span>
 
 **Example Commands:**
 
@@ -190,11 +191,11 @@ stop server [--name=value] [--pid=value] [--dir=value]
 
 | Name                                          | Description                                                                                                                                                                                                                                                                                                                                                                                                                           | Default Value     |
 |-----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
-| <span class="keyword parmname">--name </span> | Name/Id of the <span class="keyword">Geode</span> Cache Server to stop. You must be connected to the JMX Manager to use this option. Can be used to stop remote servers. See [Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS](../../../configuring/cluster_config/gfsh_remote.html). |                   |
-| <span class="keyword parmname">--pid </span>  | Process ID (PID) of the running <span class="keyword">Geode</span> Cache Server.                                                                                                                                                                                                                                                                                                                                                      |                   |
-| <span class="keyword parmname">--dir </span>  | Directory in which the <span class="keyword">Geode</span> Cache Server was started.                                                                                                                                                                                                                                                                                                                                                   | current directory |
+| <span class="keyword parmname">&#8209;&#8209;name </span> | Name/Id of the <span class="keyword">Geode</span> Cache Server to stop. You must be connected to the JMX Manager to use this option. Can be used to stop remote servers. See [Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS](../../../configuring/cluster_config/gfsh_remote.html). |                   |
+| <span class="keyword parmname">\\-\\-pid </span>  | Process ID (PID) of the running <span class="keyword">Geode</span> Cache Server.                                                                                                                                                                                                                                                                                                                                                      |                   |
+| <span class="keyword parmname">\\-\\-dir </span>  | Directory in which the <span class="keyword">Geode</span> Cache Server was started.                                                                                                                                                                                                                                                                                                                                                   | current directory |
 
-: <span class="tablecap">Table 4. Parameters</span>
+<span class="tablecap">Table 4. Stop Server Parameters</span>
 
 **Example Commands:**
 

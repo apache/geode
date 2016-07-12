@@ -6,20 +6,20 @@ title:  Running gfsh Commands on the OS Command Line
 You can run some `gfsh` commands directly from your operating system's prompt by preceding the command with `gfsh`. This can be useful for Unix shell or Windows batch scripting. For example:
 
 ``` pre
-stymon@ubuntu:~/gemfire$ gfsh start locator --name=locator2 --port=10335
+$ gfsh start locator --name=locator2 --port=10335
 ```
 
 If the command is successful, the output appears and the operating system prompt reappears:
 
 ``` pre
-stymon@ubuntu:~/gemfire$ gfsh start locator --name=locator2 --port=10335
+$ gfsh start locator --name=locator2 --port=10335
 ...............................
-Locator in /home/stymon/gemfire/locator2 on ubuntu.local[10335] as locator2 is currently online.
+Locator in /home/stymon/geode/locator2 on ubuntu.local[10335] as locator2 is currently online.
 Process ID: 3135
 Uptime: 16 seconds
-GemFire Version: 8.0.0
+Geode Version: 1.0.0
 Java Version: 1.7.0_65
-Log File: /home/stymon/gemfire/locator2/locator2.log
+Log File: /home/stymon/geode/locator2/locator2.log
 JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
 Class-Path: /home/stymon/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependencies.jar:/usr/local/java/lib/tools.jar
 
@@ -36,7 +36,7 @@ The following output appears:
 
 ``` pre
 $ gfsh help
-Pivotal GemFire(TM) v8.0.0 Command Line Shell
+Geode v1.0.0 Command Line Shell
 
 USAGE
 gfsh [ <command> [option]* | <help> [command] | [--help | -h] | [-e "<command> [option]*"]* ]
@@ -61,26 +61,26 @@ run
     additional input will instead use default values.
 start jconsole
     Start the JDK's JConsole tool in a separate process. JConsole will be
-    launched, but connecting to GemFire must be done manually.
+    launched, but connecting to Geode must be done manually.
 start jvisualvm
     Start the JDK's Java VisualVM (jvisualvm) tool in a separate process. Java
-    VisualVM will be launched, but connecting to GemFire must be done manually.
+    VisualVM will be launched, but connecting to Geode must be done manually.
 start locator
     Start a Locator.
 start pulse
     Open a new window in the default Web browser with the URL for the Pulse
     application.
 start server
-    Start a GemFire Cache Server.
+    Start a Geode Cache Server.
 status locator
     Display the status of a Locator. Possible statuses are: started, online,
     offline or not responding.
 status server
-    Display the status of a GemFire Cache Server.
+    Display the status of a Geode Cache Server.
 stop locator
     Stop a Locator.
 stop server
-    Stop a GemFire Cache Server.
+    Stop a Geode Cache Server.
 validate offline-disk-store
     Scan the contents of a disk store to verify that it has no errors.
 version

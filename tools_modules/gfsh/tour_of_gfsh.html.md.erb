@@ -15,14 +15,14 @@ $ cd gfsh_tutorial
 **Step 1: Start a gfsh prompt.**
 
 ``` pre
-:~/gfsh_tutorial$ gfsh
+$ gfsh
     _________________________     __
    / _____/ ______/ ______/ /____/ /
   / /  __/ /___  /_____  / _____  /
  / /__/ / ____/  _____/ / /    / /
-/______/_/      /______/_/    /_/    v8.1.0
+/______/_/      /______/_/    /_/
 
-Monitor and Manage GemFire
+Monitor and Manage Geode
 gfsh>
 ```
 
@@ -306,6 +306,7 @@ region4
 ```
 
 **Step 15: View member details again by executing the `describe member` command.**
+
 ``` pre
 gfsh>describe member --name=server1
 Name        : server1
@@ -331,6 +332,7 @@ Client Connections       : 0
 ```
 
 Notice that all the regions that you created now appear in the "Regions" section of the member description.
+
 ``` pre
 gfsh>describe member --name=server2
 Name        : server2
@@ -355,7 +357,7 @@ Running                  : true
 Client Connections       : 0
 ```
 
-Note that even though you brought up the second server after creating the first region ("region1), the second server still lists region1 because it picked up its configuration from the cluster configuration service.
+Note that even though you brought up the second server after creating the first region (region1), the second server still lists region1 because it picked up its configuration from the cluster configuration service.
 
 **Step 16: Put data in a local region.** Enter the following put command:
 

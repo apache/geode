@@ -25,10 +25,10 @@ connect [--locator=value] [--jmx-manager=value] [--use-http(=value)?] [--url=val
 <a id="concept_C2DCEE6743304549825C9B62E66DBADF__table_B25D38C67FA047EB8F00A521573F1375"></a>
 
 <table>
-<caption><span class="tablecap">Table 1. Parameters</span></caption>
+<caption><span class="tablecap">Table 1. Connect Parameters</span></caption>
 <colgroup>
 <col width="33%" />
-<col width="33%" />
+<col width="34%" />
 <col width="33%" />
 </colgroup>
 <thead>
@@ -40,17 +40,17 @@ connect [--locator=value] [--jmx-manager=value] [--use-http(=value)?] [--url=val
 </thead>
 <tbody>
 <tr class="odd">
-<td><span class="keyword parmname">--locator</span></td>
+<td><span class="keyword parmname">\-\-locator</span></td>
 <td>Network address of the Locator in the form: <code class="ph codeph">host[port]</code>.</td>
 <td><code class="ph codeph">localhost[10334]</code></td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">--jmx-manager </span></td>
+<td><span class="keyword parmname">\-\-jmx-manager </span></td>
 <td>Network address of the jmx-manager in the form: <code class="ph codeph">host[port]</code>.</td>
 <td> </td>
 </tr>
 <tr class="odd">
-<td><span class="keyword parmname">--use-http</span></td>
+<td><span class="keyword parmname">\-\-use-http</span></td>
 <td>Connects to a JMX manager HTTP service using the HTTP protocol.</td>
 <td><ul>
 <li>If the parameter is not specified: <code class="ph codeph">false</code></li>
@@ -58,57 +58,57 @@ connect [--locator=value] [--jmx-manager=value] [--use-http(=value)?] [--url=val
 </ul></td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">--url</span></td>
+<td><span class="keyword parmname">\-\-url</span></td>
 <td>URL used to connect to a JMX manager's HTTP service</td>
 <td><code class="ph codeph">http://localhost:8080/gemfire/v1</code></td>
 </tr>
 <tr class="odd">
-<td><span class="keyword parmname">--user</span></td>
+<td><span class="keyword parmname">\-\-user</span></td>
 <td>User name to securely connect to the jmx-manager. If the <code class="ph codeph">--password</code> parameter is not specified then it will be prompted for.</td>
 <td> </td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">--password</span></td>
+<td><span class="keyword parmname">\-\-password</span></td>
 <td>Password to be used as credential which is required to connect to a jmx-manager securely.</td>
 <td> </td>
 </tr>
 <tr class="odd">
-<td><span class="keyword parmname">--key-store</span></td>
+<td><span class="keyword parmname">\-\-key-store</span></td>
 <td>Java keystore file containing this application's certificate and private key. If the<code class="ph codeph">                                         --key-store-password</code> parameter is not specified, gfsh prompts the operator for the password.</td>
 <td> </td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">--key-store-password</span></td>
+<td><span class="keyword parmname">\-\-key-store-password</span></td>
 <td>Password to access the private key from the keystore file specified by <code class="ph codeph">--key-store</code>.</td>
 <td> </td>
 </tr>
 <tr class="odd">
-<td><span class="keyword parmname">--trust-store</span></td>
+<td><span class="keyword parmname">\-\-trust-store</span></td>
 <td>Java keystore file containing the collection of CA certificates trusted by this application. If the <code class="ph codeph">--trust-store-password</code> parameter is not specified, gfsh prompts the operator for the password.</td>
 <td> </td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">--trust-store-password</span></td>
+<td><span class="keyword parmname">\-\-trust-store-password</span></td>
 <td>Password to unlock the keystore file specified by <code class="ph codeph">--trust-store</code>.</td>
 <td> </td>
 </tr>
 <tr class="odd">
-<td><span class="keyword parmname">--ciphers</span></td>
+<td><span class="keyword parmname">\-\-ciphers</span></td>
 <td>SSL/TLS ciphers used when encrypting the connection. The default is &quot;any&quot;.</td>
 <td> </td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">--protocols</span></td>
+<td><span class="keyword parmname">\-\-protocols</span></td>
 <td>SSL/TLS protocol versions to enable when encrypting the connection. The default is &quot;any&quot;.</td>
 <td> </td>
 </tr>
 <tr class="odd">
-<td><span class="keyword parmname">--security-properties-file</span></td>
+<td><span class="keyword parmname">\-\-security-properties-file</span></td>
 <td>The <code class="ph codeph">gfsecurity.properties</code> file for configuring gfsh to connect to the Locator/Manager. The file path can be absolute or relative to the current gfsh directory.</td>
 <td> </td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">--use-ssl</span></td>
+<td><span class="keyword parmname">\-\-use-ssl</span></td>
 <td>Whether to use SSL for communication with Locator and/or JMX Manager. If set to <code class="ph codeph">true</code>, the connect command also reads <code class="ph codeph">gfsecurity.properties</code>. SSL Options take precedence over values set in the properties file. If none are specified, defaults are used.</td>
 <td><ul>
 <li>If the parameter is not specified: <code class="ph codeph">false</code></li>
@@ -118,7 +118,7 @@ connect [--locator=value] [--jmx-manager=value] [--use-http(=value)?] [--url=val
 </tbody>
 </table>
 
-: <span class="tablecap">Table 1. Parameters</span>
+<span class="tablecap">Table 1. Connect Parameters</span>
 
 **Example Commands:**
 
