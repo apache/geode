@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -42,11 +43,6 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
 
   final String expectedExceptions = null;
 
-  @Test
-  public void testNothing() {
-    
-  }
-  
   /**Below test is disabled intentionally
   1> In this release 8.0, for rolling upgrade support queue name is changed to old style
   2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
@@ -54,7 +50,9 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
      and version prior to 8.0*/
-  public void DISABLED_test_DR_PGSPERSISTENCE_VALIDATEQUEUE_Restart_Validate_Receiver() {
+  @Ignore
+  @Test
+  public void test_DR_PGSPERSISTENCE_VALIDATEQUEUE_Restart_Validate_Receiver() {
     //create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     //create locator on remote site
@@ -192,7 +190,9 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
      and version prior to 8.0*/
-  public void DISABLED_test_DRPERSISTENCE_PGSPERSISTENCE_VALIDATEQUEUE_Restart_Validate_Receiver() {
+  @Ignore
+  @Test
+  public void test_DRPERSISTENCE_PGSPERSISTENCE_VALIDATEQUEUE_Restart_Validate_Receiver() {
     //create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     //create locator on remote site
@@ -343,7 +343,9 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
      and version prior to 8.0*/
-  public void DISABLED_test_DRPERSISTENCE_PRPERSISTENCE_PGSPERSISTENCE_VALIDATEQUEUE_Restart_Validate_Receiver() {
+  @Ignore
+  @Test
+  public void test_DRPERSISTENCE_PRPERSISTENCE_PGSPERSISTENCE_VALIDATEQUEUE_Restart_Validate_Receiver() {
     //create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     //create locator on remote site
@@ -557,7 +559,9 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
      and version prior to 8.0*/
-  public void DISABLED_test_DRPERSISTENCE_PGSPERSISTENCE_4NODES_2NODESDOWN_Validate_Receiver()
+  @Ignore
+  @Test
+  public void test_DRPERSISTENCE_PGSPERSISTENCE_4NODES_2NODESDOWN_Validate_Receiver()
       throws Exception {
 
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));

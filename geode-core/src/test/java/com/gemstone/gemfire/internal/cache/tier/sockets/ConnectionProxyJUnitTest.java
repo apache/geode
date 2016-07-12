@@ -39,6 +39,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -115,20 +116,18 @@ public class ConnectionProxyJUnitTest
    * configured for the client <br>
    *
    */
-  public void DISABLE_testListenerOnServerSitForever()
+  @Ignore
+  @Test
+  public void testListenerOnServerSitForever() throws Exception
   {
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     Region testRegion = null ;
-    try {
-      CacheServer server = this.cache.addCacheServer();
-      server.setMaximumTimeBetweenPings(10000);
-      server.setPort(port3);
-      server.start();
-    }
-    catch (Exception e) {
-      e.printStackTrace();
-      fail("Failed to create server");
-    }
+
+    CacheServer server = this.cache.addCacheServer();
+    server.setMaximumTimeBetweenPings(10000);
+    server.setPort(port3);
+    server.start();
+
     try {
       PoolFactory pf = PoolManager.createFactory();
       pf.addServer("localhost", port3);

@@ -407,8 +407,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
       fact.setOffHeap(offHeap);
       Region r = cache.createRegionFactory(fact.create()).create(regionName);
       assertNotNull(r);
-    }
-    finally {
+    } finally {
       exp.remove();
       exp1.remove();
       exp2.remove();
@@ -463,8 +462,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
       RegionFactory regionFactory = cache.createRegionFactory(fact.create());
       Region r = regionFactory.create(regionName);
       assertNotNull(r);
-    }
-    finally {
+    } finally {
       exp1.remove();
     }
   }
@@ -489,8 +487,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
       regionFactory.addAsyncEventQueueId(asyncChannelId);
       Region r = regionFactory.create(regionName);
       assertNotNull(r);
-    }
-    finally {
+    } finally {
       exp.remove();
     }
   }
@@ -563,8 +560,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
       fact.setOffHeap(offHeap);
       Region r = cache.createRegionFactory(fact.create()).create(regionName);
       assertNotNull(r);
-    }
-    finally {
+    } finally {
       exp.remove();
       exp1.remove();
     }
@@ -594,8 +590,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
       fact.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
       Region r = cache.createRegionFactory(fact.create()).create(regionName);
       assertNotNull(r);
-    }
-    finally {
+    } finally {
       exp.remove();
       exp1.remove();
     }
@@ -623,8 +618,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
 	  fact.setPartitionAttributes(pfact.create());
 	  Region r = cache.createRegionFactory(fact.create()).create(regionName);
 	  assertNotNull(r);
-	}
-	finally {
+	} finally {
 		exp.remove();
 		exp1.remove();
 	}
@@ -718,8 +712,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
       fact.setOffHeap(offHeap);
       Region r = cache.createRegionFactory(fact.create()).create(regionName);
       assertNotNull(r);
-    }
-    finally {
+    } finally {
       exp.remove();
       exp1.remove();
     }
@@ -799,8 +792,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
       LogWriterUtils.getLogWriter().info(
           "Partitioned Region SHIPMENT created Successfully :"
               + shipmentRegion.toString());
-    }
-    finally {
+    } finally {
       exp.remove();
     }
   }
@@ -1578,8 +1570,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
       sender.pause();
       ((AbstractGatewaySender) sender).getEventProcessor().waitForDispatcherToPause();
 
-    }
-    finally {
+    } finally {
       exp.remove();
       exln.remove();
     }
@@ -1599,8 +1590,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
         }
       }
       sender.resume();
-    }
-    finally {
+    } finally {
       exp.remove();
       exln.remove();
     }
@@ -1634,8 +1624,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
           }
         }
       }
-    }
-    finally {
+    } finally {
       exp.remove();
       exln.remove();
     }
@@ -1833,8 +1822,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
         gateway.setDiskSynchronous(isDiskSync);
         gateway.create(dsName, remoteDsId);
       }
-    }
-    finally {
+    } finally {
       exp1.remove();
     }
   }

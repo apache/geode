@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -1301,7 +1302,9 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
    * 1. On primary, the tx op is applied first followed by non-tx
    * 2. On secondary, non-tx op is applied first followed by tx.
    */
-  public void DISABLED_testConcurrentTXAndNonTXOperations() throws Exception {
+  @Ignore
+  @Test
+  public void testConcurrentTXAndNonTXOperations() throws Exception {
     Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
     final VM server2 = host.getVM(1);

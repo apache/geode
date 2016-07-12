@@ -31,6 +31,7 @@ import java.util.TreeMap;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -346,7 +347,9 @@ public class QCompilerJUnitTest {
    * this the Like predicate is not transformed to compiled-junction
    * with > and < operator.
    */
-  public void XtestStringConditioningForLike_2() {
+  @Ignore
+  @Test
+  public void testStringConditioningForLike_2() {
     CompiledValue var = new CompiledPath(new CompiledID("p"), "ID");
     String s1 = "abc%";
     CompiledLiteral literal = new CompiledLiteral(s1);

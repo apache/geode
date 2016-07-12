@@ -268,6 +268,8 @@ public class ConcurrentSerialGatewaySenderEventProcessor extends
       return;
     }
 
+    setIsStopped(true);
+
     final LoggingThreadGroup loggingThreadGroup = LoggingThreadGroup
         .createThreadGroup(
             "ConcurrentSerialGatewaySenderEventProcessor Logger Group",
@@ -312,8 +314,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor extends
     }
     //shutdown the stopperService. This will release all the stopper threads
     stopperService.shutdown();
-    setIsStopped(true);
-    
+
     closeProcessor();
     
     if (logger.isDebugEnabled()) {

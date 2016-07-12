@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.concurrent;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -504,7 +505,9 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    * stopped state, puts are simultaneously happening on the region by another thread.
    * @throws Exception
    */
-  public void Bug47553_testParallelPropagationSenderStartAfterStop_Scenario2() throws Exception {
+  @Ignore("Bug47553")
+  @Test
+  public void testParallelPropagationSenderStartAfterStop_Scenario2() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 

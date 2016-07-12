@@ -17,13 +17,13 @@
 
 package com.gemstone.gemfire.security;
 
+import java.security.Principal;
+import java.util.Properties;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.CacheCallback;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-
-import java.security.Principal;
-import java.util.Properties;
 
 /**
  * Specifies the mechanism to verify credentials for a client or peer.
@@ -41,6 +41,8 @@ import java.util.Properties;
  * a zero argument function.
  * 
  * @since GemFire 5.5
+ *
+ * @deprecated since Geode 1.0, use {@link SecurityManager} instead
  */
 public interface Authenticator extends CacheCallback {
 

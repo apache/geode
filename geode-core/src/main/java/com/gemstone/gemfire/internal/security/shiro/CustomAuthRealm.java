@@ -33,28 +33,21 @@ import org.apache.shiro.subject.PrincipalCollection;
 
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.security.SecurityManager;
-import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.security.GeodePermission;
+import com.gemstone.gemfire.security.SecurityManager;
 
 public class CustomAuthRealm extends AuthorizingRealm{
   public static final String REALM_NAME = "CUSTOMAUTHREALM";
 
   private static final Logger logger = LogManager.getLogger(CustomAuthRealm.class);
-  private SecurityManager externalSecurity = null;
+  private SecurityManager securityManager = null;
 
-  public CustomAuthRealm(SecurityManager auth) {
-    externalSecurity = auth;
+  public CustomAuthRealm(SecurityManager securityManager) {
+    this.securityManager = securityManager;
   }
 
-
   public CustomAuthRealm (String authenticatorFactory) {
-    Object auth = GeodeSecurityUtil.getObject(authenticatorFactory);
-
-    if(!(auth instanceof SecurityManager)){
-      throw new GemFireSecurityException("Integrated Security requires SecurityManager interface.");
-    }
-    externalSecurity = (SecurityManager) auth;
+    this.securityManager = GeodeSecurityUtil.getObject(authenticatorFactory, SecurityManager.class);
   }
 
   @Override
@@ -67,7 +60,7 @@ public class CustomAuthRealm extends AuthorizingRealm{
     credentialProps.put(ResourceConstants.USER_NAME, username);
     credentialProps.put(ResourceConstants.PASSWORD, password);
 
-    Principal principal  = externalSecurity.authenticate(credentialProps);
+    Principal principal  = securityManager.authenticate(credentialProps);
 
     return new SimpleAuthenticationInfo(principal, authToken.getPassword(), REALM_NAME);
   }
@@ -83,7 +76,7 @@ public class CustomAuthRealm extends AuthorizingRealm{
   public boolean isPermitted(PrincipalCollection principals, Permission permission) {
     GeodePermission context = (GeodePermission) permission;
     Principal principal = (Principal) principals.getPrimaryPrincipal();
-    return externalSecurity.authorize(principal, context);
+    return securityManager.authorize(principal, context);
   }
 
 

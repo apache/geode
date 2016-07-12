@@ -40,16 +40,13 @@ import org.apache.commons.io.IOUtils;
 import org.apache.shiro.authz.Permission;
 
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.security.AccessControl;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.Authenticator;
-import com.gemstone.gemfire.security.SecurityManager;
 import com.gemstone.gemfire.security.GeodePermission;
 import com.gemstone.gemfire.security.NotAuthorizedException;
+import com.gemstone.gemfire.security.SecurityManager;
 
 /**
- * This class provides a sample implementation for authentication and authorization via the {@link AccessControl}
- * and {@link Authenticator} interfaces.
+ * This class provides a sample implementation for authentication and authorization via the {@link SecurityManager}
  *
  * In order to use it, a Geode member must be started with the following properties:
  * <p/>
@@ -96,6 +93,15 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  */
 public class SampleSecurityManager implements SecurityManager {
 
+  public SampleSecurityManager() {
+    try {
+      setUpWithJsonFile("security.json");
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
   public static class Role {
     List<GeodePermission> permissions = new ArrayList<>();
     String name;
@@ -110,12 +116,6 @@ public class SampleSecurityManager implements SecurityManager {
 
   private static Map<String, User> acl = null;
 
-  public static SampleSecurityManager create() throws IOException {
-    if (acl == null) {
-      setUpWithJsonFile("security.json");
-    }
-    return new SampleSecurityManager();
-  }
 
   public static void setUpWithJsonFile(String jsonFileName) throws IOException {
     InputStream input = ClassLoader.getSystemResourceAsStream(jsonFileName);
@@ -204,9 +204,6 @@ public class SampleSecurityManager implements SecurityManager {
     return acl;
   }
 
-  private Principal principal = null;
-
-
   @Override
   public boolean authorize(Principal principal, GeodePermission context) {
     if (principal == null) return false;
@@ -245,15 +242,5 @@ public class SampleSecurityManager implements SecurityManager {
     }
 
     return new JMXPrincipal(user);
-  }
-
-  protected static String readFile(String name) throws IOException {
-    File file = new File(name);
-    FileReader reader = new FileReader(file);
-    char[] buffer = new char[(int) file.length()];
-    reader.read(buffer);
-    String json = new String(buffer);
-    reader.close();
-    return json;
   }
 }

@@ -862,7 +862,7 @@ public class LocalizedStrings {
   public static final StringId AbstractRegionMap_ATTEMPT_TO_REMOVE_TOMBSTONE = new StringId(2018, "Internal product error: attempt to directly remove a versioned tombstone from region entry map");
   public static final StringId HostStatSampler_STATISTICS_SAMPLING_THREAD_DETECTED_A_WAKEUP_DELAY_OF_0_MS_INDICATING_A_POSSIBLE_RESOURCE_ISSUE = new StringId(2019, "Statistics sampling thread detected a wakeup delay of {0} ms, indicating a possible resource issue. Check the GC, memory, and CPU statistics.");
   public static final StringId ServerConnection_0__UNEXPECTED_EXCEPTION = new StringId(2020, "{0} : Unexpected Exception");
-
+  public static final StringId CacheXmlParser_A_0_IS_NOT_AN_INSTANCE_OF_A_GATEWAYCONFLICTRESOLVER = new StringId(2021, "A {0} is not an instance of a GatewayConflictResolver.");
   public static final StringId GemFireCacheImpl_TOMBSTONE_ERROR = new StringId(2022, "Unexpected exception while processing tombstones");
   public static final StringId FunctionService_NO_MEMBERS_FOUND_IN_GROUPS = new StringId(2023, "No members found in group(s) {0}");
   public static final StringId DistributionManager_Time_Skew_Warning = new StringId(2024, "The clock for this machine may be more than 5 minutes different than the negotiated cache time received from {0}");
@@ -2852,7 +2852,7 @@ public class LocalizedStrings {
   public static final StringId QueueManagerImpl_QUEUEMANAGERIMPL_FAILED_TO_RECOVER_INTEREST_TO_SERVER_0 = new StringId(4456, "QueueManagerImpl failed to recover interest to server {0}.");
   public static final StringId QueueManagerImpl_ERROR_IN_REDUNDANCY_SATISFIER = new StringId(4457, "Error in redundancy satisfier");
   public static final StringId GroupMembershipService_MEMBERSHIP_EXPIRING_MEMBERSHIP_OF_SURPRISE_MEMBER_0 = new StringId(4458, "Membership: expiring membership of surprise member <{0}>");
-  public static final StringId GemFireCacheImpl_STARTING_GEMFIRE_REDIS_SERVER_ON_PORT_0 = new StringId(4459, "Starting GemFireRedisServer on port {0}");
+  public static final StringId GemFireCacheImpl_STARTING_GEMFIRE_REDIS_SERVER_ON_PORT_0 = new StringId(4459, "Starting GeodeRedisServer on port {0}");
   public static final StringId GroupMembershipService_EXCEPTION_DESERIALIZING_MESSAGE_PAYLOAD_0 = new StringId(4460, "Exception deserializing message payload: {0}");
   public static final StringId GroupMembershipService_MEMBERSHIP_SERVICE_FAILURE_0 = new StringId(4461, "Membership service failure: {0}");
   public static final StringId GroupMembershipService_EXCEPTION_CAUGHT_WHILE_SHUTTING_DOWN = new StringId(4462, "Exception caught while shutting down");
@@ -3149,7 +3149,7 @@ public class LocalizedStrings {
   public static final StringId RemotePutMessage_UNABLE_TO_PERFORM_PUT_BUT_OPERATION_SHOULD_NOT_FAIL_0 = new StringId(4838, "unable to perform put, but operation should not fail {0}");
   public static final StringId TXState_REGION_CLEAR_NOT_SUPPORTED_IN_A_TRANSACTION = new StringId(4839,"clear() is not supported while in a transaction");
   public static final StringId PartitionedRegion_TX_FUNCTION_EXECUTION_NOT_COLOCATED_0_1 = new StringId(4840, "Function execution is not colocated with transaction. The transactional data is hosted on node {0}, but you are trying to target node {1}");
-  public static final StringId GemFireCacheImpl_STARTING_GEMFIRE_REDIS_SERVER_ON_BIND_ADDRESS_0_PORT_1 = new StringId(4841, "Starting GemFireRedisServer on bind address {0} on port {1}"); 
+  public static final StringId GemFireCacheImpl_STARTING_GEMFIRE_REDIS_SERVER_ON_BIND_ADDRESS_0_PORT_1 = new StringId(4841, "Starting GeodeRedisServer on bind address {0} on port {1}");
   public static final StringId RemoteFetchEntryMessage_ENTRY_NOT_FOUND = new StringId(4842, "entry not found");
   public static final StringId RemoteFetchEntryMessage_FAILED_SENDING_0 = new StringId(4843, "Failed sending < {0} >");
   public static final StringId RemoteFetchEntryMessage_FETCHENTRYRESPONSE_GOT_REMOTE_CACHEEXCEPTION_FORCING_REATTEMPT = new StringId(4844, "FetchEntryResponse got remote CacheException; forcing reattempt.");

@@ -257,7 +257,8 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * async writer thread.
    */
   @Ignore("Bug 50376")
-  public void DISABLED_testBadSerializationInAsyncThread() throws Throwable {
+  @Test
+  public void testBadSerializationInAsyncThread() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -1227,7 +1228,9 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * if we restored redundancy while 
    * that bucket was offline.
    */
-  public void z_testThrowAwayUneededBucket() {
+  @Ignore
+  @Test
+  public void testThrowAwayUneededBucket() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);

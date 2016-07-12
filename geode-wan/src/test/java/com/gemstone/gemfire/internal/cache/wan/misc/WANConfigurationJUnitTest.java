@@ -31,6 +31,7 @@ import com.gemstone.gemfire.internal.cache.wan.MyGatewaySenderEventListener;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -151,7 +152,9 @@ public class WANConfigurationJUnitTest {
    * with parallel distribution policy
    * 
    */
-  public void DIABLEB_DUE_TO_BUG51491_test_GatewaySender_Parallel_DistributedRegion() {
+  @Ignore("Bug51491")
+  @Test
+  public void test_GatewaySender_Parallel_DistributedRegion() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewaySenderFactory fact = cache.createGatewaySenderFactory();
     fact.setParallel(true);

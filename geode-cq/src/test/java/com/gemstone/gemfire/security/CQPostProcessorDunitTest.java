@@ -20,6 +20,7 @@ package com.gemstone.gemfire.security;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
@@ -33,7 +34,10 @@ import com.gemstone.gemfire.cache.query.CqResults;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.internal.cq.CqListenerImpl;
 import com.gemstone.gemfire.security.templates.SamplePostProcessor;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
+@Category({ DistributedTest.class, SecurityTest.class })
 public class CQPostProcessorDunitTest extends AbstractIntegratedClientAuthDistributedTest {
 
   public CQPostProcessorDunitTest(){

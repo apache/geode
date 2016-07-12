@@ -43,6 +43,13 @@ rat {
     'geode-spark-connector/**/target/**',
     'geode-spark-connector/sbt',
 
+    // Geode examples
+    'geode-examples/*/scripts/server*/',
+    'geode-examples/*/scripts/locator*/',
+    'geode-examples/.idea/**',
+    'geode-examples/gradlew*/**',
+    'geode-examples/gradle/wrapper/**',
+
     // IDE
     'etc/eclipseFormatterProfile.xml',
     'etc/intellijIdeaCodeStyle.xml',

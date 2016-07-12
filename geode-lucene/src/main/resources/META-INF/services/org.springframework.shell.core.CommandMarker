@@ -1,0 +1,2 @@
+# Lucene Extensions command
+com.gemstone.gemfire.cache.lucene.internal.cli.LuceneIndexCommands

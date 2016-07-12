@@ -20,8 +20,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+
 import javax.management.Notification;
 import javax.management.ObjectName;
+
+import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.cache.Cache;
@@ -53,9 +56,6 @@ import com.gemstone.gemfire.management.RegionMXBean;
 import com.gemstone.gemfire.management.internal.beans.ManagementAdapter;
 import com.gemstone.gemfire.management.membership.MembershipEvent;
 import com.gemstone.gemfire.management.membership.MembershipListener;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.shiro.util.ThreadContext;
 
 /**
  * This is the concrete implementation of ManagementService
@@ -273,7 +273,7 @@ public final class SystemManagementService extends BaseManagementService {
       }
 
       // clean out Shiro's thread local content
-      ThreadContext.remove();
+      GeodeSecurityUtil.close();
 
       getGemFireCacheImpl().getJmxManagerAdvisor().broadcastChange();
       instances.remove(cache);

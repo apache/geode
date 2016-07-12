@@ -95,10 +95,8 @@ public class TXLockRequest {
    */
   public void releaseDistributed() {
     if (this.distLockId != null) {
-      try {
-        TXLockService.createDTLS().release(this.distLockId);
-      } catch (IllegalStateException ignore) {
-      }
+      TXLockService txls = TXLockService.createDTLS();
+      txls.release(this.distLockId);
       this.distLockId = null;
     }
   }

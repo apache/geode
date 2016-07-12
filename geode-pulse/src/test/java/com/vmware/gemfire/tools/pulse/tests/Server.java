@@ -26,6 +26,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
@@ -36,18 +37,18 @@ import javax.management.remote.JMXConnectorServer;
 import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
 
+import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.realm.Realm;
+
 import com.gemstone.gemfire.internal.security.shiro.CustomAuthRealm;
 import com.gemstone.gemfire.internal.security.shiro.JMXShiroAuthenticator;
 import com.gemstone.gemfire.management.internal.security.AccessControlMBean;
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
-
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.realm.Realm;
 
 public class Server {
   private static final String DEFAULT_HOST = "127.0.0.1"; //"localhost"

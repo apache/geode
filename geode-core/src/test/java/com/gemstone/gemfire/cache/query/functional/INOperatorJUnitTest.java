@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -79,7 +80,9 @@ public class INOperatorJUnitTest {
    * Test the decomposition of IN SET(..) that gets decomposed
    * into ORs so an index can be used
    */
-  public void _testInDecompositionWithFunctionalIndex() throws Exception {
+  @Ignore
+  @Test
+  public void testInDecompositionWithFunctionalIndex() throws Exception {
  
   }
   

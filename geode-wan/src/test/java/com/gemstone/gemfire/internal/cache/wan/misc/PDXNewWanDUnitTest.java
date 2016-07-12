@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -708,8 +709,9 @@ public class PDXNewWanDUnitTest extends WANTestBase{
   /**
    * When remote site bounces then we should send pdx event again.
    */
-  
-  public void Bug_testWANPDX_PR_SerialSender_RemoteSite_Bounce() {
+  @Ignore
+  @Test
+  public void testWANPDX_PR_SerialSender_RemoteSite_Bounce() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 

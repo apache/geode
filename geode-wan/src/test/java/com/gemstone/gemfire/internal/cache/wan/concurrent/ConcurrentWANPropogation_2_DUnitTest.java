@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.concurrent;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -92,7 +93,9 @@ public class ConcurrentWANPropogation_2_DUnitTest extends WANTestBase {
         getTestMethodName() + "_RR", 15, 240000 ));
   }
 
-  public void Bug46921_testSerialReplicatedWanWithPersistence() {
+  @Ignore("Bug46921")
+  @Test
+  public void testSerialReplicatedWanWithPersistence() {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));

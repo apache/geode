@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -142,8 +143,10 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     createScenario_SingleConnection();
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.serverSingleKeyExecutionOnRegion_SingleConnection());
   }
-  
-  public void Bug47584_testServerSingleKeyExecution_Bug43513_OnServer() {
+
+  @Ignore("Bug47584")
+  @Test
+  public void testServerSingleKeyExecution_Bug43513_OnServer() {
     createScenario_SingleConnection();
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.serverSingleKeyExecutionOnServer_SingleConnection());
   }

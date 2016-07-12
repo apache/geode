@@ -23,6 +23,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -170,7 +171,9 @@ public class BlockingHARegionQueueJUnitTest extends HARegionQueueJUnitTest
    */
   //fix for 40314 - capacity constraint is checked for primary only and
   //expiry is not applicable on primary so marking this test as invalid.
-  public void _testBlockingPutAndExpiry()
+  @Ignore
+  @Test
+  public void testBlockingPutAndExpiry()
   {
     try {
       HARegionQueueAttributes hrqa = new HARegionQueueAttributes();

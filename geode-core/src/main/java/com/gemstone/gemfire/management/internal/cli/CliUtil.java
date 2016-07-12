@@ -359,6 +359,38 @@ public class CliUtil {
     return stackAsString;
   }
 
+  @SuppressWarnings("unchecked")
+  public static <K> Class<K> forName(String classToLoadName, String neededFor) {
+    Class<K> loadedClass = null;
+    try {
+      // Set Constraints
+      ClassPathLoader classPathLoader = ClassPathLoader.getLatest();
+      if (classToLoadName != null && !classToLoadName.isEmpty()) {
+        loadedClass = (Class<K>) classPathLoader.forName(classToLoadName);
+      }
+    } catch (ClassNotFoundException | NoClassDefFoundError e) {
+      throw new RuntimeException(CliStrings.format(CliStrings.CREATE_REGION__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1, new Object[] {classToLoadName, neededFor}), e);
+    }
+    catch (ClassCastException e) {
+      throw new RuntimeException(CliStrings.format(CliStrings.CREATE_REGION__MSG__CLASS_SPECIFIED_FOR_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE, new Object[] {classToLoadName, neededFor}), e);
+    }
+
+    return loadedClass;
+  }
+
+  public static <K> K newInstance(Class<K> klass, String neededFor) {
+    K instance = null;
+    try {
+      instance = klass.newInstance();
+    } catch (InstantiationException e) {
+      throw new RuntimeException(CliStrings.format(CliStrings.CREATE_REGION__MSG__COULDNOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1, new Object[] {klass, neededFor}), e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(CliStrings.format(CliStrings.CREATE_REGION__MSG__COULDNOT_ACCESS_CLASS_0_SPECIFIED_FOR_1, new Object[] {klass, neededFor}), e);
+    }
+
+    return instance;
+  }
+
   static class CustomFileFilter implements FileFilter {
     private String extensionWithDot;
 

@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -73,7 +74,9 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
    * A is then allowed to start its GII and pulls an image from B.
    * 
    */
-  public void bug50988_testBug48962() throws Exception {
+  @Ignore
+  @Test
+  public void testBug48962() throws Exception {
     VM X = Host.getHost(0).getVM(1);
     VM A = Host.getHost(0).getVM(2);
     VM B = Host.getHost(0).getVM(3);

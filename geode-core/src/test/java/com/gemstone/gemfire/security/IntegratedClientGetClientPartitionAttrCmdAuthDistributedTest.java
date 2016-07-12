@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.security;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -30,6 +31,9 @@ public class IntegratedClientGetClientPartitionAttrCmdAuthDistributedTest
   extends AbstractIntegratedClientAuthDistributedTest {
 
   @Test
+  @Ignore("This is not a supported client message")
+  // this would fail sporatically because ServerConnection.isInternalMessage would return true for this message,
+  // and it won't bind the correct subject on the executing thread.
   public void testGetClientPartitionAttrCmd() {
     client1.invoke("logging in stranger", () -> {
       ClientCache cache = createClientCache("stranger", "1234567", serverPort);

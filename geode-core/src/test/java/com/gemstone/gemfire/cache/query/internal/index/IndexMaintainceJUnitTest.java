@@ -30,6 +30,7 @@ import java.util.Collection;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
@@ -219,7 +220,9 @@ public class IndexMaintainceJUnitTest {
   // !!!:ezoerner:20081030 disabled because modifying an object in place
   // and then putting it back into the cache breaks a CompactRangeIndex.
   // @todo file a ticket on this issue
-  public void _test002UpdateEntry() throws Exception {
+  @Ignore
+  @Test
+  public void test002UpdateEntry() throws Exception {
     IndexStatistics stats = index.getStatistics();
     CacheUtils.log(((CompactRangeIndex) index).dump());
     Portfolio p = (Portfolio) region.get("4");

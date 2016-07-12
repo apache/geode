@@ -224,6 +224,11 @@ public class TXLockServiceImpl extends TXLockService {
   public void release(TXLockId txLockId) {
     synchronized (this.txLockIdList) {
       if (!this.txLockIdList.contains(txLockId)) {
+        //TXLockService.destroyServices can be invoked in cache.close().
+        //Other P2P threads could process message such as TXCommitMessage afterwards,
+        //and invoke TXLockService.createDTLS(). It could create a new TXLockService
+        //which will have a new empty list (txLockIdList) and it will not
+        //contain the originally added txLockId
         throw new IllegalArgumentException(LocalizedStrings.TXLockServiceImpl_INVALID_TXLOCKID_NOT_FOUND_0.toLocalizedString(txLockId));
       }
       // only release w/ dlock if not in middle of recovery...

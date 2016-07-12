@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.persistence;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -258,7 +259,9 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
    * start expiring based on their original time-stamp, NOT the time-stamp
    * assigned during scheduling for expiration after recovery.
    */
-  public void DISABLED_testLotsOfTombstonesExpiration() throws Throwable {
+  @Ignore
+  @Test
+  public void testLotsOfTombstonesExpiration() throws Throwable {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
     

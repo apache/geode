@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -1003,7 +1004,9 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
         getTestMethodName() + "_PR", 3 ));
   }
 
-  public void disable_testParallelGatewaySenderQueueLocalSize() {
+  @Ignore
+  @Test
+  public void testParallelGatewaySenderQueueLocalSize() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 

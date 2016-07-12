@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -106,8 +107,10 @@ public class CustomerOptimizationsJUnitTest
     
     CacheUtils.compareResultsOfWithAndWithoutIndex(sr, this);
   }
-  
-  public void _testProjectionEvaluationDuringIndexResults_UNIMPLEMENTED() throws QueryException {
+
+  @Ignore
+  @Test
+  public void testProjectionEvaluationDuringIndexResults_UNIMPLEMENTED() throws QueryException {
     QueryService qs = CacheUtils.getQueryService();
     String[] queries = new String[] {      
         "select  p.status from /pos p, p.positions pos where p.ID > 0 " ,
@@ -389,8 +392,10 @@ public class CustomerOptimizationsJUnitTest
     
     CacheUtils.compareResultsOfWithAndWithoutIndex(sr, this);
   }
-  
-  public void _testProjectionEvaluationDuringIndexResultsWithComplexWhereClause_UNIMPLEMENTED_1() throws QueryException {
+
+  @Ignore
+  @Test
+  public void testProjectionEvaluationDuringIndexResultsWithComplexWhereClause_UNIMPLEMENTED_1() throws QueryException {
     QueryService qs = CacheUtils.getQueryService();
     Region rgn = CacheUtils.getRegion("/pos");
     for(int i =100; i < 200; ++i) {
@@ -466,8 +471,10 @@ public class CustomerOptimizationsJUnitTest
     
     CacheUtils.compareResultsOfWithAndWithoutIndex(sr, this);
   }
-  
-  public void _testProjectionEvaluationDuringIndexResultsWithComplexWhereClause_UNIMPLEMENTED_2() throws QueryException {
+
+  @Ignore
+  @Test
+  public void testProjectionEvaluationDuringIndexResultsWithComplexWhereClause_UNIMPLEMENTED_2() throws QueryException {
     QueryService qs = CacheUtils.getQueryService();
     Region rgn = CacheUtils.getRegion("/pos");
     for(int i =100; i < 200; ++i) {
@@ -1123,7 +1130,9 @@ public class CustomerOptimizationsJUnitTest
   }
   
   //ideally rojection should have been evaluated while collecting index results
-  public void _testProjectionEvaluationOnORJunction_NOT_IMPLEMENTED() throws Exception{
+  @Ignore
+  @Test
+  public void testProjectionEvaluationOnORJunction_NOT_IMPLEMENTED() throws Exception{
     QueryService qs = CacheUtils.getQueryService();
     Region rgn = CacheUtils.getRegion("/pos");
     for(int i =100; i < 10000; ++i) {
