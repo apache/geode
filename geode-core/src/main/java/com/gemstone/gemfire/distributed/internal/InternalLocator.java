@@ -34,7 +34,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.locator.PeerLoca
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpHandler;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpServer;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.wan.WANServiceProvider;

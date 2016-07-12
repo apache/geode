@@ -14,13 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal;
+package com.gemstone.gemfire.internal.net;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.gemfire.util.test.TestUtil;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.StringReader;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
@@ -36,15 +45,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import java.io.*;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
  * Test creation of server sockets and client sockets with various JSSE
@@ -52,6 +58,7 @@ import static org.junit.Assert.fail;
  */
 @Category(IntegrationTest.class)
 public class JSSESocketJUnitTest {
+
   public
   @Rule
   TestName name = new TestName();
@@ -113,11 +120,13 @@ public class JSSESocketJUnitTest {
         System.setProperty("javax.net.ssl.keyStorePassword", "password");
       }
 
-      assertTrue(SocketCreator.getDefaultInstance().useSSL());
+      assertTrue(SocketCreatorFactory.getClusterSSLSocketCreator().useSSL());
 
-      Thread serverThread = startServer(receiver);
+      final ServerSocket serverSocket = SocketCreatorFactory.getClusterSSLSocketCreator().createServerSocket(randport, 0, InetAddress.getByName("localhost"));
 
-      Socket client = SocketCreator.getDefaultInstance().connectForServer(InetAddress.getByName("localhost"), randport);
+      Thread serverThread = startServer(serverSocket, receiver);
+
+      Socket client = SocketCreatorFactory.getClusterSSLSocketCreator().connectForServer(InetAddress.getByName("localhost"), randport);
 
       ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
       String expected = new String("testing " + name.getMethodName());
@@ -127,6 +136,7 @@ public class JSSESocketJUnitTest {
       ThreadUtils.join(serverThread, 30 * 1000);
 
       client.close();
+      serverSocket.close();
       if (expected.equals(receiver[0])) {
         System.out.println("received " + receiver[0] + " as expected.");
       } else {
@@ -151,6 +161,7 @@ public class JSSESocketJUnitTest {
     } finally {
       // Reset original base log level
       LogService.setBaseLogLevel(originalBaseLevel);
+      SocketCreatorFactory.close();
     }
   }
 
@@ -162,29 +173,27 @@ public class JSSESocketJUnitTest {
    */
   @Test
   public void testClientSocketFactory() {
-    System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + "clientSocketFactory",
-        TSocketFactory.class.getName());
+    System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + "clientSocketFactory", TSocketFactory.class.getName());
     System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + CLUSTER_SSL_ENABLED);
-    SocketCreator.getDefaultInstance(new Properties());
     factoryInvoked = false;
     try {
       try {
-        Socket sock = SocketCreator.getDefaultInstance().connectForClient("localhost", 12345,
-            0);
+        Socket sock = SocketCreatorFactory.getClusterSSLSocketCreator().connectForClient("localhost", 12345, 0);
         sock.close();
-        fail("socket factory was not invoked");
+        fail("socket factory was invoked");
       } catch (IOException e) {
         assertTrue("socket factory was not invoked: " + factoryInvoked, factoryInvoked);
       }
     } finally {
       System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + "clientSocketFactory");
-      SocketCreator.getDefaultInstance().initializeClientSocketFactory();
+      SocketCreatorFactory.getClusterSSLSocketCreator().initializeClientSocketFactory();
     }
   }
 
   static boolean factoryInvoked;
 
   public static class TSocketFactory implements com.gemstone.gemfire.distributed.ClientSocketFactory {
+
     public TSocketFactory() {
     }
 
@@ -196,22 +205,20 @@ public class JSSESocketJUnitTest {
 
   //------------- utilities -----
 
-  private File findTestJKS() {
+  protected File findTestJKS() {
     return new File(TestUtil.getResourcePath(getClass(), "/ssl/trusted.keystore"));
   }
 
-  private Thread startServer(final Object[] receiver) throws Exception {
-    final ServerSocket ss = SocketCreator.getDefaultInstance().createServerSocket(randport, 0, InetAddress.getByName("localhost"));
-
+  private Thread startServer(final ServerSocket serverSocket, final Object[] receiver) throws Exception {
     Thread t = new Thread(new Runnable() {
       public void run() {
         try {
-          Socket s = ss.accept();
-          SocketCreator.getDefaultInstance().configureServerSSLSocket(s);
+          Socket s = serverSocket.accept();
+          SocketCreatorFactory.getClusterSSLSocketCreator().configureServerSSLSocket(s);
           ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
           receiver[0] = ois.readObject();
           server = s;
-          acceptor = ss;
+          acceptor = serverSocket;
         } catch (Exception e) {
           e.printStackTrace();
           receiver[0] = e;
@@ -223,6 +230,7 @@ public class JSSESocketJUnitTest {
   }
 
   public static final class TestAppender extends AbstractAppender {
+
     private static final String APPENDER_NAME = TestAppender.class.getName();
     private final static String SOCKET_CREATOR_CLASSNAME = SocketCreator.class.getName();
 

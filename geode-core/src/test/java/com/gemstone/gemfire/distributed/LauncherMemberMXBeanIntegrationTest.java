@@ -143,6 +143,6 @@ public class LauncherMemberMXBeanIntegrationTest extends AbstractLauncherIntegra
         Set<ObjectName> mbeanNames = mbeanServer.queryNames(pattern, null);
         return !mbeanNames.isEmpty();
       }
-    }, WAIT_FOR_MBEAN_TIMEOUT, INTERVAL);
+    }, WAIT_FOR_MBEAN_TIMEOUT, INTERVAL_MILLISECONDS);
   }
 }

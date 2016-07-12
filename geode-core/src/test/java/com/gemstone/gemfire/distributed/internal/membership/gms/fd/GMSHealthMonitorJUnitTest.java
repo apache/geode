@@ -31,7 +31,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.Heartbe
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectRequest;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.jgroups.util.UUID;

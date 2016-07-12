@@ -61,6 +61,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifierStats
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
+import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
@@ -131,6 +132,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       }
     });
     postTearDownConnectionPoolDUnitTest();
+
   }
   
   protected void postTearDownConnectionPoolDUnitTest() throws Exception {

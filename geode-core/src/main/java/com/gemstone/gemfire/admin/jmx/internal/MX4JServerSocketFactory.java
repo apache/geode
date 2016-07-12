@@ -19,8 +19,10 @@ package com.gemstone.gemfire.admin.jmx.internal;
 import com.gemstone.gemfire.admin.DistributedSystemConfig;
 import com.gemstone.gemfire.admin.internal.InetAddressUtil;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
+
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
@@ -83,7 +85,7 @@ implements mx4j.tools.adaptor.AdaptorServerSocketFactory,
     if (ciphers == null || ciphers.length() == 0) {
       ciphers = DistributionConfig.DEFAULT_CLUSTER_SSL_CIPHERS;
     }
-    this.socketCreator = SocketCreator.createNonDefaultInstance(
+    this.socketCreator = SocketCreatorFactory.createNonDefaultInstance(
         useSSL, needClientAuth, protocols, ciphers, gfsecurityProps);
   }
 

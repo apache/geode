@@ -20,12 +20,14 @@ import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
 import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
 import com.gemstone.gemfire.distributed.LocatorLauncher.LocatorState;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.DistributionLocator;
 import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
+import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
 import com.gemstone.gemfire.internal.process.ProcessStreamReader;
 import com.gemstone.gemfire.internal.process.ProcessType;
@@ -49,6 +51,7 @@ import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
@@ -397,7 +400,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
 
   @Test
   public void testStartUsingPortInUseFails() throws Throwable {
-    this.socket = SocketCreator.getDefaultInstance().createServerSocket(this.locatorPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.getClusterSSLSocketCreator().createServerSocket(this.locatorPort, 50, null, -1);
     this.locatorPort = this.socket.getLocalPort();
 
     final List<String> jvmArguments = getJvmArguments();
@@ -469,7 +472,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
     String expectedString = "java.net.BindException";
     AtomicBoolean outputContainedExpectedString = new AtomicBoolean();
 
-    this.socket = SocketCreator.getDefaultInstance().createServerSocket(this.locatorPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.getClusterSSLSocketCreator().createServerSocket(this.locatorPort, 50, null, -1);
     this.locatorPort = this.socket.getLocalPort();
 
     assertFalse(AvailablePort.isPortAvailable(this.locatorPort, AvailablePort.SOCKET));

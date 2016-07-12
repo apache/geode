@@ -101,24 +101,6 @@ public class SSLConfigJUnitTest {
   }
   
   @Test
-  public void testMCastPortWithSSL() throws Exception {
-    Properties props = new Properties( );
-    // default mcast-port is not 0.
-    props.setProperty(CLUSTER_SSL_ENABLED, "true");
-    
-    try {
-      new DistributionConfigImpl( props );
-    } catch ( IllegalArgumentException e ) {
-      if (! e.toString().matches( ".*Could not set \"ssl-enabled.*" ) ) { // TODO: what if this isn't thrown at all?? Is it expected?
-        throw new Exception( "did not get expected exception, got this instead...", e );
-      }
-    }
-
-    props.setProperty(MCAST_PORT, "0");
-    new DistributionConfigImpl( props );
-  }
-  
-  @Test
   public void testMCastPortWithClusterSSL() throws Exception {
     Properties props = new Properties( );
     // default mcast-port is not 0.

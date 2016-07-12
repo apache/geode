@@ -17,7 +17,7 @@
 package com.gemstone.gemfire.test.dunit;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 
 import java.net.UnknownHostException;
 

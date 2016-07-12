@@ -24,7 +24,7 @@ import java.util.UUID;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.persistence.PersistentID;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 
 /**
  * Implementation of the public PersistentID. It holds the region,

@@ -27,11 +27,12 @@ import com.gemstone.gemfire.distributed.ServerLauncher.ServerState;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.cache.AbstractCacheServer;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
+import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
 import com.gemstone.gemfire.internal.process.ProcessType;
 import com.gemstone.gemfire.internal.process.ProcessUtils;
@@ -349,7 +350,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
     String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
 
     // generate one free port and then use TEST_OVERRIDE_DEFAULT_PORT_PROPERTY
-    this.socket = SocketCreator.getDefaultInstance().createServerSocket(this.serverPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.getClusterSSLSocketCreator().createServerSocket(this.serverPort, 50, null, -1);
     assertFalse(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
     
     // build and start the server
@@ -608,7 +609,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
     String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
 
     // generate one free port and then use TEST_OVERRIDE_DEFAULT_PORT_PROPERTY
-    this.socket = SocketCreator.getDefaultInstance().createServerSocket(this.serverPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.getClusterSSLSocketCreator().createServerSocket(this.serverPort, 50, null, -1);
     assertFalse(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
     
     // build and start the server
@@ -769,7 +770,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
 
     // generate one free port and then use TEST_OVERRIDE_DEFAULT_PORT_PROPERTY
     final int freeTCPPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    this.socket = SocketCreator.getDefaultInstance().createServerSocket(freeTCPPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.getClusterSSLSocketCreator().createServerSocket(freeTCPPort, 50, null, -1);
     
     // build and start the server
     final Builder builder = new Builder()

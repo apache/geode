@@ -33,6 +33,7 @@ import org.junit.rules.TestName;
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsType;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.stats50.VMStats50;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
@@ -105,7 +106,7 @@ public class SimpleStatSamplerJUnitTest extends StatSamplerTestCase {
     
     assertEquals(getStatisticsManager().getId(), statSampler.getSystemId());
     assertTrue(statSampler.getSystemStartTime() <= System.currentTimeMillis());
-    assertEquals(SocketCreator.getHostName(SocketCreator.getLocalHost()), 
+    assertEquals(SocketCreator.getHostName(SocketCreator.getLocalHost()),
                  statSampler.getSystemDirectoryPath());
 
     VMStatsContract vmStats = statSampler.getVMStats();

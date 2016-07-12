@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Properties;
 
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**

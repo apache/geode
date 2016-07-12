@@ -23,6 +23,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.statistics.ResourceInstance;
 import com.gemstone.gemfire.internal.statistics.ResourceType;
 import com.gemstone.gemfire.internal.statistics.SampleHandler;

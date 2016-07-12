@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 
 /**
  * Represents the location of a bridge server. This class is 

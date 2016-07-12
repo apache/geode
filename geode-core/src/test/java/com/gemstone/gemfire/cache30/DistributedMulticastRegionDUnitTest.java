@@ -54,38 +54,36 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
   static int locatorVM = 3;
   static String mcastport = "42786";
   static String mcastttl = "0";
-  
+
   private int locatorPort;
 
   @Override
   public final void preSetUp() throws Exception {
     clean();
   }
-  
+
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     clean();
   }
-  
-  private void clean(){
-    SerializableRunnable cleanVM =
-        new CacheSerializableRunnable("clean VM") {
-            public void run2() throws CacheException {
-              disconnectFromDS();
-            }
-        };
-    Invoke.invokeInEveryVM(cleanVM);    
+
+  private void clean() {
+    SerializableRunnable cleanVM = new CacheSerializableRunnable("clean VM") {
+      public void run2() throws CacheException {
+        disconnectFromDS();
+      }
+    };
+    Invoke.invokeInEveryVM(cleanVM);
   }
-  
+
   @Test
   public void testMulticastEnabled() {
     final String name = "mcastRegion";
-    SerializableRunnable create =
-      new CacheSerializableRunnable("Create Region") {
-          public void run2() throws CacheException {
-            createRegion(name, getRegionAttributes());
-          }
-        };
+    SerializableRunnable create = new CacheSerializableRunnable("Create Region") {
+      public void run2() throws CacheException {
+        createRegion(name, getRegionAttributes());
+      }
+    };
 
     locatorPort = startLocator();
     Host host = Host.getHost(0);
@@ -106,39 +104,37 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(validateMulticastBeforeRegionOps);
     vm1.invoke(validateMulticastBeforeRegionOps);
     */
-    
-    SerializableRunnable doPuts =
-      new CacheSerializableRunnable("do put") {
-          public void run2() throws CacheException {
-            final Region region =
-                getRootRegion().getSubregion(name);
-            for(int i =0 ; i < 5; i++) {
-              region.put(i, i);
-            }
-          }
-      };
-      
+
+    SerializableRunnable doPuts = new CacheSerializableRunnable("do put") {
+      public void run2() throws CacheException {
+        final Region region = getRootRegion().getSubregion(name);
+        for (int i = 0; i < 5; i++) {
+          region.put(i, i);
+        }
+      }
+    };
+
     vm0.invoke(doPuts);
-    
-    SerializableRunnable validateMulticastAfterRegionOps =
-      new CacheSerializableRunnable("validateMulticast after region ops") {
-          public void run2() throws CacheException {
-            validateMulticastOpsAfterRegionOps();
-          }
-      };
-    
-      vm0.invoke(validateMulticastAfterRegionOps);
-      vm1.invoke(validateMulticastAfterRegionOps);
-   
-      closeLocator();      
+
+    SerializableRunnable validateMulticastAfterRegionOps = new CacheSerializableRunnable("validateMulticast after region ops") {
+      public void run2() throws CacheException {
+        validateMulticastOpsAfterRegionOps();
+      }
+    };
+
+    vm0.invoke(validateMulticastAfterRegionOps);
+    vm1.invoke(validateMulticastAfterRegionOps);
+
+    closeLocator();
   }
-  
+
   private static class TestObjectThrowsException implements PdxSerializable {
+
     String name = "TestObjectThrowsException";
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeString("name", name);      
+      writer.writeString("name", name);
     }
 
     @Override
@@ -146,7 +142,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
       throw new RuntimeException("Unable to deserialize message ");
     }
   }
-  
+
   @Test
   public void testMulticastWithRegionOpsException() {
     Host host = Host.getHost(0);
@@ -155,31 +151,21 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
 
     try {
       final String name = "mcastRegion";
-      
-      SerializableRunnable setSysProp = new CacheSerializableRunnable("Create Region") {
-        public void run2() throws CacheException {
-          CachedDeserializableFactory.STORE_ALL_VALUE_FORMS = true;
-        }
-      };
-      
-      
-      SerializableRunnable create =
-        new CacheSerializableRunnable("Create Region") {
-            public void run2() throws CacheException {
-              createRegion(name, getRegionAttributes());
-            }
-          };
-  
+
       locatorPort = startLocator();
-      
-      vm0.invoke(setSysProp);
-      vm1.invoke(setSysProp);
-      
+
+      vm0.invoke("setSysProps", () -> setSysProps());
+      //      vm1.invoke("setSysProps", () -> setSysProps());
+      setSysProps();
       //1. start locator with mcast port
-      vm0.invoke(create);
-      vm1.invoke(create);
-      
-    //There is possibility that you may get this packet from other tests
+      vm0.invoke("createRegion", () -> {
+        createRegion(name, getRegionAttributes());
+        return "";
+      });
+      //      vm1.invoke("createRegion", () -> createRegion(name,getRegionAttributes()));
+      createRegion(name, getRegionAttributes());
+
+      //There is possibility that you may get this packet from other tests
       /*
       SerializableRunnable validateMulticastBeforeRegionOps =
           new CacheSerializableRunnable("validateMulticast before region ops") {
@@ -191,40 +177,37 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
       vm0.invoke(validateMulticastBeforeRegionOps);
       vm1.invoke(validateMulticastBeforeRegionOps);
       */
-      
-      SerializableRunnable doPuts =
-        new CacheSerializableRunnable("do put") {
-            public void run2() throws CacheException {
-              final Region region =
-                  getRootRegion().getSubregion(name);
-              boolean gotReplyException = false;
-              for(int i =0 ; i < 1; i++) {
-                try {
-                  region.put(i, new TestObjectThrowsException());
-                }catch(PdxSerializationException e) {
-                  gotReplyException = true;
-                }catch(Exception e ) {
-                  region.getCache().getLogger().info("Got exception of type " + e.getClass().toString());
-                } 
-              }
-              assertTrue("We should have got ReplyEception ", gotReplyException);
+
+      SerializableRunnable doPuts = new CacheSerializableRunnable("do put") {
+        public void run2() throws CacheException {
+          final Region region = getRootRegion().getSubregion(name);
+          boolean gotReplyException = false;
+          for (int i = 0; i < 1; i++) {
+            try {
+              region.put(i, new TestObjectThrowsException());
+            } catch (PdxSerializationException e) {
+              gotReplyException = true;
+            } catch (Exception e) {
+              region.getCache().getLogger().info("Got exception of type " + e.getClass().toString());
             }
-        };
-        
+          }
+          assertTrue("We should have got ReplyEception ", gotReplyException);
+        }
+      };
+
       vm0.invoke(doPuts);
-      
-      SerializableRunnable validateMulticastAfterRegionOps =
-        new CacheSerializableRunnable("validateMulticast after region ops") {
-            public void run2() throws CacheException {
-              validateMulticastOpsAfterRegionOps();
-            }
-        };
-      
-        vm0.invoke(validateMulticastAfterRegionOps);
-        vm1.invoke(validateMulticastAfterRegionOps);
-     
-        closeLocator();
-    }finally {
+
+      SerializableRunnable validateMulticastAfterRegionOps = new CacheSerializableRunnable("validateMulticast after region ops") {
+        public void run2() throws CacheException {
+          validateMulticastOpsAfterRegionOps();
+        }
+      };
+
+      vm0.invoke(validateMulticastAfterRegionOps);
+      vm1.invoke(validateMulticastAfterRegionOps);
+
+      closeLocator();
+    } finally {
       SerializableRunnable unsetSysProp = new CacheSerializableRunnable("Create Region") {
         public void run2() throws CacheException {
           CachedDeserializableFactory.STORE_ALL_VALUE_FORMS = false;
@@ -234,7 +217,11 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
       vm1.invoke(unsetSysProp);
     }
   }
-  
+
+  private void setSysProps() {
+    CachedDeserializableFactory.STORE_ALL_VALUE_FORMS = true;
+  }
+
   protected RegionAttributes getRegionAttributes() {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -244,7 +231,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
     factory.setMulticastEnabled(true);
     return factory.create();
   }
-  
+
   public Properties getDistributedSystemProperties() {
     Properties p = new Properties();
     p.put(STATISTIC_SAMPLING_ENABLED, "true");
@@ -254,66 +241,66 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
     p.put(LOCATORS, "localhost[" + locatorPort + "]");
     p.put(LOG_LEVEL, "info");
     return p;
-  } 
-  
+  }
+
   private void validateMulticastOpsAfterRegionOps() {
     int writes = getGemfireCache().getDistributionManager().getStats().getMcastWrites();
     int reads = getGemfireCache().getDistributionManager().getStats().getMcastReads();
-    assertTrue("Should have multicast writes or reads. Writes=  " + writes +  " ,read= " + reads, 
-        writes > 0 || reads > 0);
+    assertTrue("Should have multicast writes or reads. Writes=  " + writes + " ,read= " + reads, writes > 0 || reads > 0);
   }
-  
+
   private void validateMulticastOpsBeforeRegionOps() {
     int writes = getGemfireCache().getDistributionManager().getStats().getMcastWrites();
     int reads = getGemfireCache().getDistributionManager().getStats().getMcastReads();
     int total = writes + reads;
-    assertTrue("Should not have any multicast writes or reads before region ops. Writes=  " + writes +  " ,read= " + reads, 
-        total == 0);
+    assertTrue("Should not have any multicast writes or reads before region ops. Writes=  " + writes + " ,read= " + reads, total == 0);
   }
-  
+
   private int startLocator() {
-    final int [] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
     final int locatorPort = ports[0];
 
     VM locator1Vm = Host.getHost(0).getVM(locatorVM);
-      locator1Vm.invoke(new SerializableCallable() {
-        @Override
-        public Object call() {
-          final File locatorLogFile = new File(getTestMethodName() + "-locator-" + locatorPort + ".log");
-          final Properties locatorProps = new Properties();
-          locatorProps.setProperty(NAME, "LocatorWithMcast");
-          locatorProps.setProperty(MCAST_PORT, mcastport);
-          locatorProps.setProperty(MCAST_TTL, mcastttl);
-          locatorProps.setProperty(LOG_LEVEL, "info");
-          //locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
-          try {
-            final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, null, null,
-                locatorProps);
-            System.out.println("test Locator started " + locatorPort);
-             } catch (IOException ioex) {
-            fail("Unable to create a locator with a shared configuration");
-          }
-
-          return null;
+    locator1Vm.invoke(new SerializableCallable() {
+      @Override
+      public Object call() {
+        final File locatorLogFile = new File(getTestMethodName() + "-locator-" + locatorPort + ".log");
+        final Properties locatorProps = new Properties();
+        locatorProps.setProperty(NAME, "LocatorWithMcast");
+        locatorProps.setProperty(MCAST_PORT, mcastport);
+        locatorProps.setProperty(MCAST_TTL, mcastttl);
+        locatorProps.setProperty(LOG_LEVEL, "info");
+        //locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+        try {
+          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, null, null, locatorProps);
+          System.out.println("test Locator started " + locatorPort);
+        } catch (IOException ioex) {
+          fail("Unable to create a locator with a shared configuration");
         }
+
+        return null;
+      }
     });
     return locatorPort;
   }
-  
+
   private void closeLocator() {
-    VM locator1Vm = Host.getHost(0).getVM(locatorVM);;
+    VM locator1Vm = Host.getHost(0).getVM(locatorVM);
+    ;
     SerializableRunnable locatorCleanup = new SerializableRunnable() {
       @Override
       public void run() {
-        System.out.println("test Locator closing " + locatorPort);;
+        System.out.println("test Locator closing " + locatorPort);
+        ;
         InternalLocator locator = InternalLocator.getLocator();
-        if (locator != null ) {
+        if (locator != null) {
           locator.stop();
-          System.out.println("test Locator closed " + locatorPort);;
+          System.out.println("test Locator closed " + locatorPort);
+          ;
         }
       }
     };
     locator1Vm.invoke(locatorCleanup);
   }
-  
+
 }

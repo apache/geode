@@ -16,45 +16,71 @@
  */
 package com.gemstone.gemfire.distributed.internal.tcpserver;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.logging.LogService;
-import org.apache.logging.log4j.Logger;
-
-import javax.net.ssl.SSLException;
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.StreamCorruptedException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.URL;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.net.ssl.SSLException;
+
+import org.apache.logging.log4j.Logger;
+
+import com.gemstone.gemfire.CancelException;
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
+import com.gemstone.gemfire.distributed.internal.DistributionStats;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.PoolStatHelper;
+import com.gemstone.gemfire.distributed.internal.PooledExecutorWithDMStats;
+import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
+import com.gemstone.gemfire.internal.DSFIDFactory;
+import com.gemstone.gemfire.internal.GemFireVersion;
+import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.VersionedDataInputStream;
+import com.gemstone.gemfire.internal.VersionedDataOutputStream;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.net.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 
 /**
  * TCP server which listens on a port and delegates requests to a request
  * handler. The server uses expects messages containing a global version number,
  * followed by a DataSerializable object
- * 
+ * <p>
  * This code was factored out of GossipServer.java to allow multiple handlers to
  * share the same gossip server port.
- * 
  * @since GemFire 5.7
  */
 public class TcpServer {
+
   /**
    * The version of the tcp server protocol
    * <p>
    * This should be incremented if the gossip message structures change
-   * 
+   * <p>
    * 1000 - gemfire 5.5 - using java serialization
    * 1001 - 5.7 - using DataSerializable and supporting server locator messages.
    * 1002 - 7.1 - sending GemFire version along with GOSSIP_VERSION in each request.
-   * 
+   * <p>
    * with the addition of support for all old versions of clients you can no
    * longer change this version number
    */
@@ -63,7 +89,7 @@ public class TcpServer {
   // This GOSSIPVERSION is used in _getVersionForAddress request for getting GemFire version of a GossipServer.
   public final static int OLDGOSSIPVERSION = 1001;
 
-  private static/* GemStoneAddition */final Map GOSSIP_TO_GEMFIRE_VERSION_MAP = new HashMap();
+  private static/* GemStoneAddition */ final Map GOSSIP_TO_GEMFIRE_VERSION_MAP = new HashMap();
 
   // For test purpose only
   public static boolean isTesting = false;
@@ -74,11 +100,11 @@ public class TcpServer {
   public static final long SHUTDOWN_WAIT_TIME = 60 * 1000;
   private static int MAX_POOL_SIZE = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.MAX_POOL_SIZE", 100).intValue();
   private static int POOL_IDLE_TIMEOUT = 60 * 1000;
-  
+
   private static final Logger log = LogService.getLogger();
 
-  protected/*GemStoneAddition*/ final/*GemStoneAddition*/ static int READ_TIMEOUT = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT", 60 * 1000).intValue();
+  protected/*GemStoneAddition*/ final/*GemStoneAddition*/ static int READ_TIMEOUT = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT", 60 * 1000)
+                                                                                           .intValue();
   //This is for backwards compatibility. The p2p.backlog flag used to be the only way to configure the locator backlog.
   private static final int P2P_BACKLOG = Integer.getInteger("p2p.backlog", 1000).intValue();
   private static final int BACKLOG = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.BACKLOG", P2P_BACKLOG).intValue();
@@ -90,11 +116,13 @@ public class TcpServer {
   private volatile boolean shuttingDown = false; // GemStoneAddition
   private final PoolStatHelper poolHelper;
   private/*GemStoneAddition*/ final TcpHandler handler;
-  
+
   private PooledExecutorWithDMStats executor;
   private final ThreadGroup threadGroup;
   private final String threadName;
   private volatile Thread serverThread;
+
+  private SocketCreator socketCreator;
 
   /**
    * GemStoneAddition - Initialize versions map.
@@ -109,8 +137,14 @@ public class TcpServer {
     GOSSIP_TO_GEMFIRE_VERSION_MAP.put(OLDGOSSIPVERSION, Version.GFE_57.ordinal());
   }
 
-  public TcpServer(int port, InetAddress bind_address, Properties sslConfig,
-      DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper, ThreadGroup threadGroup, String threadName) {
+  public TcpServer(int port,
+                   InetAddress bind_address,
+                   Properties sslConfig,
+                   DistributionConfigImpl cfg,
+                   TcpHandler handler,
+                   PoolStatHelper poolHelper,
+                   ThreadGroup threadGroup,
+                   String threadName) {
     this.port = port;
     this.bind_address = bind_address;
     this.handler = handler;
@@ -130,20 +164,22 @@ public class TcpServer {
       }
       cfg = new DistributionConfigImpl(sslConfig);
     }
-    SocketCreator.getDefaultInstance(cfg);
+
+    //TODO Udo: How would I handle this case where the cfg is empty???
+    this.socketCreator = SocketCreatorFactory.getClusterSSLSocketCreator();
   }
 
   private static PooledExecutorWithDMStats createExecutor(PoolStatHelper poolHelper, final ThreadGroup threadGroup) {
     ThreadFactory factory = new ThreadFactory() {
       private final AtomicInteger threadNum = new AtomicInteger();
-      
+
       public Thread newThread(Runnable r) {
         Thread thread = new Thread(threadGroup, r, "locator request thread[" + threadNum.incrementAndGet() + "]");
         thread.setDaemon(true);
         return thread;
       }
     };
-    
+
     return new PooledExecutorWithDMStats(new SynchronousQueue(), MAX_POOL_SIZE, poolHelper, factory, POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy());
   }
 
@@ -152,22 +188,23 @@ public class TcpServer {
     this.handler.restarting(ds, cache, sharedConfig);
     startServerThread();
     this.executor = createExecutor(this.poolHelper, this.threadGroup);
-    this.log.info("TcpServer@"+System.identityHashCode(this)+" restarting: completed.  Server thread="+serverThread+"@"+System.identityHashCode(serverThread)+";alive="+serverThread.isAlive());
+    this.log.info("TcpServer@" + System.identityHashCode(this) + " restarting: completed.  Server thread=" + serverThread + "@" + System.identityHashCode(serverThread) + ";alive=" + serverThread
+      .isAlive());
   }
-  
+
   public void start() throws IOException {
     this.shuttingDown = false;
     startServerThread();
     handler.init(this);
   }
-  
+
   private void startServerThread() throws IOException {
     if (srv_sock == null || srv_sock.isClosed()) {
       if (bind_address == null) {
-        srv_sock = SocketCreator.getDefaultInstance().createServerSocket(port, BACKLOG);
+        srv_sock = socketCreator.createServerSocket(port, BACKLOG);
         bind_address = srv_sock.getInetAddress();
       } else {
-        srv_sock = SocketCreator.getDefaultInstance().createServerSocket(port, BACKLOG, bind_address);
+        srv_sock = socketCreator.createServerSocket(port, BACKLOG, bind_address);
       }
 
       if (log.isInfoEnabled()) {
@@ -187,36 +224,35 @@ public class TcpServer {
       serverThread.start();
     }
   }
-  
+
   public void join(long millis) throws InterruptedException {
-    if(serverThread != null) {
+    if (serverThread != null) {
       serverThread.join(millis);
     }
   }
-  
+
   public void join() throws InterruptedException {
-//    this.log.info("TcpServer@"+System.identityHashCode(this)+" join() invoked.  Server thread="+serverThread+"@"+System.identityHashCode(serverThread)+";alive="+serverThread.isAlive());
-    if(serverThread != null) { 
+    //    this.log.info("TcpServer@"+System.identityHashCode(this)+" join() invoked.  Server thread="+serverThread+"@"+System.identityHashCode(serverThread)+";alive="+serverThread.isAlive());
+    if (serverThread != null) {
       serverThread.join();
     }
   }
-  
+
   public boolean isAlive() {
     return serverThread != null && serverThread.isAlive();
   }
-  
+
   public boolean isShuttingDown() {
     return this.shuttingDown;
   }
-  
+
   public SocketAddress getBindAddress() {
-    return srv_sock.getLocalSocketAddress(); 
+    return srv_sock.getLocalSocketAddress();
   }
 
   /**
    * Returns the value of the bound port. If the server was initialized with a port of 0 indicating that any
    * ephemeral port should be used, this method will return the actual bound port.
-   *
    * @return the port bound to this socket or 0 if the socket is closed or otherwise not connected
    */
   public int getPort() {
@@ -265,8 +301,7 @@ public class TcpServer {
       srv_sock.close();
 
     } catch (java.io.IOException ex) {
-      log.warn(
-          "exception closing server socket during shutdown", ex);
+      log.warn("exception closing server socket during shutdown", ex);
     }
 
     if (shuttingDown) {
@@ -279,7 +314,7 @@ public class TcpServer {
       }
       handler.shutDown();
       synchronized (this) {
-//        this.shutDown = true;
+        //        this.shutDown = true;
         this.notifyAll();
       }
     }
@@ -297,7 +332,7 @@ public class TcpServer {
         DataInputStream input = null;
         Object request, response;
         try {
-          SocketCreator.getDefaultInstance().configureServerSSLSocket(sock);
+          socketCreator.configureServerSSLSocket(sock);
           // if(log.isInfoEnabled()) log.info("accepted connection from " +
           // sock.getInetAddress() +
           // ':' + sock.getPort());
@@ -308,30 +343,25 @@ public class TcpServer {
           } catch (StreamCorruptedException e) {
             // bug 36679: Some garbage can be left on the socket stream
             // if a peer disappears at exactly the wrong moment.
-            log.debug(
-                "Discarding illegal request from "
-                    + (sock.getInetAddress().getHostAddress() + ":" + sock
-                        .getPort()), e);
+            log.debug("Discarding illegal request from " + (sock.getInetAddress().getHostAddress() + ":" + sock.getPort()), e);
             return;
           }
 
           int gossipVersion = input.readInt();
           short versionOrdinal = Version.CURRENT_ORDINAL;
           // Create a versioned stream to remember sender's GemFire version
-          if (gossipVersion <= getCurrentGossipVersion()
-              && GOSSIP_TO_GEMFIRE_VERSION_MAP.containsKey(gossipVersion)) {
-            versionOrdinal = (short) GOSSIP_TO_GEMFIRE_VERSION_MAP
-                .get(gossipVersion);
-//            if (gossipVersion < getCurrentGossipVersion()) {
-//              if (log.isTraceEnabled()) {
-//                log.debug(
-//                    "Received request from "
-//                        + sock.getInetAddress().getHostAddress()
-//                        + " This locator is running: " + getCurrentGossipVersion()
-//                        + ", but request was version: " + gossipVersion
-//                        + ", version ordinal: " + versionOrdinal);
-//              }
-//            }
+          if (gossipVersion <= getCurrentGossipVersion() && GOSSIP_TO_GEMFIRE_VERSION_MAP.containsKey(gossipVersion)) {
+            versionOrdinal = (short) GOSSIP_TO_GEMFIRE_VERSION_MAP.get(gossipVersion);
+            //            if (gossipVersion < getCurrentGossipVersion()) {
+            //              if (log.isTraceEnabled()) {
+            //                log.debug(
+            //                    "Received request from "
+            //                        + sock.getInetAddress().getHostAddress()
+            //                        + " This locator is running: " + getCurrentGossipVersion()
+            //                        + ", but request was version: " + gossipVersion
+            //                        + ", version ordinal: " + versionOrdinal);
+            //              }
+            //            }
           }
           // Close the socket. We can not accept requests from a newer version
           else {
@@ -346,8 +376,7 @@ public class TcpServer {
           if (log.isDebugEnabled() && versionOrdinal != Version.CURRENT_ORDINAL) {
             log.debug("Locator reading request from " + sock.getInetAddress() + " with version " + Version.fromOrdinal(versionOrdinal, false));
           }
-          input = new VersionedDataInputStream(input, Version.fromOrdinal(
-                  versionOrdinal, false));
+          input = new VersionedDataInputStream(input, Version.fromOrdinal(versionOrdinal, false));
           request = DataSerializer.readObject(input);
           if (log.isDebugEnabled()) {
             log.debug("Locator received request " + request + " from " + sock.getInetAddress());
@@ -369,7 +398,7 @@ public class TcpServer {
           }
 
           handler.endRequest(request, startTime);
-          
+
           startTime = DistributionStats.getStatTime();
           if (response != null) {
             DataOutputStream output = new DataOutputStream(sock.getOutputStream());
@@ -381,7 +410,7 @@ public class TcpServer {
             output.flush();
           }
 
-          handler.endResponse(request,startTime);
+          handler.endResponse(request, startTime);
 
         } catch (EOFException ex) {
           // client went away - ignore
@@ -392,24 +421,20 @@ public class TcpServer {
           if (sock != null) {
             sender = sock.getInetAddress().getHostAddress();
           }
-          log.info(
-              "Unable to process request from " + sender + " exception=" + ex.getMessage());
+          log.info("Unable to process request from " + sender + " exception=" + ex.getMessage());
         } catch (Exception ex) {
           String sender = null;
           if (sock != null) {
             sender = sock.getInetAddress().getHostAddress();
           }
-          if(ex instanceof IOException) {
+          if (ex instanceof IOException) {
             //IOException could be caused by a client failure. Don't
             //log with severe.
             if (!sock.isClosed()) {
-              log.info(
-                  "Exception in processing request from " + sender, ex);
+              log.info("Exception in processing request from " + sender, ex);
             }
-          }
-          else {
-            log.fatal("Exception in processing request from " + 
-                sender, ex);
+          } else {
+            log.fatal("Exception in processing request from " + sender, ex);
           }
 
         } catch (VirtualMachineError err) {
@@ -429,8 +454,7 @@ public class TcpServer {
             sender = sock.getInetAddress().getHostAddress();
           }
           try {
-            log.fatal("Exception in processing request from " +
-                sender, ex);
+            log.fatal("Exception in processing request from " + sender, ex);
           } catch (VirtualMachineError err) {
             SystemFailure.initiateFailure(err);
             // If this ever returns, rethrow the error.  We're poisoned
@@ -484,8 +508,8 @@ public class TcpServer {
 
   /**
    * Returns GossipVersion for older Gemfire versions.
-   * 
    * @param ordinal
+   *
    * @return gossip version
    */
   public static int getGossipVersionForOrdinal(short ordinal) {
@@ -498,12 +522,12 @@ public class TcpServer {
       Iterator<Map.Entry> itr = TcpServer.GOSSIP_TO_GEMFIRE_VERSION_MAP.entrySet().iterator();
       while (itr.hasNext()) {
         Map.Entry entry = itr.next();
-        short o = ((Short)entry.getValue()).shortValue();
+        short o = ((Short) entry.getValue()).shortValue();
         if (o == ordinal) {
-          return ((Integer)entry.getKey()).intValue();
-        } else if (o < ordinal && o > closest ) {
+          return ((Integer) entry.getKey()).intValue();
+        } else if (o < ordinal && o > closest) {
           closest = o;
-          closestGV = ((Integer)entry.getKey()).intValue();
+          closestGV = ((Integer) entry.getKey()).intValue();
         }
       }
     }
@@ -512,13 +536,11 @@ public class TcpServer {
   }
 
   public static int getCurrentGossipVersion() {
-    return TcpServer.isTesting ? TcpServer.TESTVERSION
-        : TcpServer.GOSSIPVERSION;
+    return TcpServer.isTesting ? TcpServer.TESTVERSION : TcpServer.GOSSIPVERSION;
   }
 
   public static int getOldGossipVersion() {
-    return TcpServer.isTesting ? TcpServer.OLDTESTVERSION
-        : TcpServer.OLDGOSSIPVERSION;
+    return TcpServer.isTesting ? TcpServer.OLDTESTVERSION : TcpServer.OLDGOSSIPVERSION;
   }
 
   public static Map getGossipVersionMapForTestOnly() {

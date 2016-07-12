@@ -53,11 +53,13 @@ import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.net.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 import com.gemstone.gemfire.internal.security.shiro.JMXShiroAuthenticator;
 import com.gemstone.gemfire.internal.tcp.TCPConduit;
 import com.gemstone.gemfire.management.ManagementException;
@@ -71,14 +73,14 @@ import com.gemstone.gemfire.management.internal.unsafe.ReadOpFileAccessControlle
 /**
  * Agent implementation that controls the JMX server end points for JMX clients
  * to connect, such as an RMI server.
- * 
+ * <p>
  * The ManagementAgent could be used in a loner or GemFire client to define and
  * control JMX server end points for the Platform MBeanServer and the GemFire
  * MBeans hosted within it.
- *
  * @since GemFire 7.0
  */
 public class ManagementAgent {
+
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -122,9 +124,10 @@ public class ManagementAgent {
   }
 
   private boolean isServerNode(GemFireCacheImpl cache) {
-    return (cache.getDistributedSystem().getDistributedMember().getVmKind() != DistributionManager.LOCATOR_DM_TYPE
-        && cache.getDistributedSystem().getDistributedMember().getVmKind() != DistributionManager.ADMIN_ONLY_DM_TYPE && !cache
-          .isClient());
+    return (cache.getDistributedSystem().getDistributedMember().getVmKind() != DistributionManager.LOCATOR_DM_TYPE && cache.getDistributedSystem()
+                                                                                                                           .getDistributedMember()
+                                                                                                                           .getVmKind() != DistributionManager.ADMIN_ONLY_DM_TYPE && !cache
+      .isClient());
   }
 
   public synchronized void startAgent(GemFireCacheImpl cache) {
@@ -135,8 +138,7 @@ public class ManagementAgent {
       startHttpService(isServerNode(cache));
     } else {
       if (logger.isDebugEnabled()) {
-        logger
-            .debug("Developer REST APIs webapp is already running, Not Starting M&M REST and pulse!");
+        logger.debug("Developer REST APIs webapp is already running, Not Starting M&M REST and pulse!");
       }
     }
 
@@ -153,8 +155,9 @@ public class ManagementAgent {
   public synchronized void stopAgent() {
     stopHttpService();
 
-    if (!this.running)
+    if (!this.running) {
       return;
+    }
 
     if (logger.isDebugEnabled()) {
       logger.debug("Stopping jmx manager agent");
@@ -174,15 +177,13 @@ public class ManagementAgent {
   private AgentUtil agentUtil = new AgentUtil(GEMFIRE_VERSION);
 
   private void startHttpService(boolean isServer) {
-    final SystemManagementService managementService = (SystemManagementService) ManagementService
-        .getManagementService(CacheFactory.getAnyInstance());
+    final SystemManagementService managementService = (SystemManagementService) ManagementService.getManagementService(CacheFactory.getAnyInstance());
 
     final ManagerMXBean managerBean = managementService.getManagerMXBean();
 
     if (this.config.getHttpServicePort() != 0) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Attempting to start HTTP service on port ({}) at bind-address ({})...",
-            this.config.getHttpServicePort(), this.config.getHttpServiceBindAddress());
+        logger.debug("Attempting to start HTTP service on port ({}) at bind-address ({})...", this.config.getHttpServicePort(), this.config.getHttpServiceBindAddress());
       }
 
       // Find the Management WAR file
@@ -225,15 +226,11 @@ public class ManagementAgent {
 
           boolean isRestWebAppAdded = false;
 
-          this.httpServer = JettyHelper.initJetty(bindAddress, port,
-              this.config.getHttpServiceSSLEnabled(),
-              this.config.getHttpServiceSSLRequireAuthentication(),
-              this.config.getHttpServiceSSLProtocols(), this.config.getHttpServiceSSLCiphers(),
-              this.config.getHttpServiceSSLProperties());
+          this.httpServer = JettyHelper.initJetty(bindAddress, port, this.config.getHttpServiceSSLEnabled(), this.config.getHttpServiceSSLRequireAuthentication(), this.config
+            .getHttpServiceSSLProtocols(), this.config.getHttpServiceSSLCiphers(), this.config.getHttpServiceSSLProperties());
 
           if (agentUtil.isWebApplicationAvailable(gemfireWar)) {
-            this.httpServer = JettyHelper
-                .addWebApplication(this.httpServer, "/gemfire", gemfireWar);
+            this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/gemfire", gemfireWar);
           }
 
           if (agentUtil.isWebApplicationAvailable(pulseWar)) {
@@ -242,8 +239,7 @@ public class ManagementAgent {
 
           if (isServer && this.config.getStartDevRestApi()) {
             if (agentUtil.isWebApplicationAvailable(gemfireAPIWar)) {
-              this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/gemfire-api",
-                  gemfireAPIWar);
+              this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/gemfire-api", gemfireAPIWar);
               isRestWebAppAdded = true;
             }
           } else {
@@ -255,8 +251,7 @@ public class ManagementAgent {
           }
 
           if (logger.isDebugEnabled()) {
-            logger.debug("Starting HTTP embedded server on port ({}) at bind-address ({})...",
-                ((ServerConnector) this.httpServer.getConnectors()[0]).getPort(), bindAddress);
+            logger.debug("Starting HTTP embedded server on port ({}) at bind-address ({})...", ((ServerConnector) this.httpServer.getConnectors()[0]).getPort(), bindAddress);
           }
 
           System.setProperty(PULSE_EMBEDDED_PROP, "true");
@@ -266,8 +261,7 @@ public class ManagementAgent {
           // now, that Tomcat has been started, we can set the URL used by web
           // clients to connect to Pulse
           if (agentUtil.isWebApplicationAvailable(pulseWar)) {
-            managerBean.setPulseURL("http://".concat(getHost(bindAddress)).concat(":")
-                .concat(String.valueOf(port)).concat("/pulse/"));
+            managerBean.setPulseURL("http://".concat(getHost(bindAddress)).concat(":").concat(String.valueOf(port)).concat("/pulse/"));
           }
 
           // set cache property for developer REST service running
@@ -285,15 +279,13 @@ public class ManagementAgent {
         }
       } catch (Exception e) {
         stopHttpService();// Jetty needs to be stopped even if it has failed to
-                          // start. Some of the threads are left behind even if
-                          // server.start() fails due to an exception
-        setStatusMessage(managerBean, "HTTP service failed to start with "
-            + e.getClass().getSimpleName() + " '" + e.getMessage() + "'");
+        // start. Some of the threads are left behind even if
+        // server.start() fails due to an exception
+        setStatusMessage(managerBean, "HTTP service failed to start with " + e.getClass().getSimpleName() + " '" + e.getMessage() + "'");
         throw new ManagementException("HTTP service failed to start", e);
       }
     } else {
-      setStatusMessage(managerBean,
-          "Embedded HTTP server configured not to start (http-service-port=0) or (jmx-manager-http-port=0)");
+      setStatusMessage(managerBean, "Embedded HTTP server configured not to start (http-service-port=0) or (jmx-manager-http-port=0)");
     }
   }
 
@@ -325,8 +317,7 @@ public class ManagementAgent {
         try {
           this.httpServer.destroy();
         } catch (Exception ignore) {
-          logger.error("Failed to properly release resources held by the HTTP service: {}",
-              ignore.getMessage(), ignore);
+          logger.error("Failed to properly release resources held by the HTTP service: {}", ignore.getMessage(), ignore);
         } finally {
           this.httpServer = null;
           System.clearProperty("catalina.base");
@@ -364,14 +355,10 @@ public class ManagementAgent {
     final boolean ssl = this.config.getJmxManagerSSLEnabled();
 
     if (logger.isDebugEnabled()) {
-      logger.debug("Starting jmx manager agent on port {}{}", port,
-          (bindAddr != null ? (" bound to " + bindAddr) : "") + (ssl ? " using SSL" : ""));
+      logger.debug("Starting jmx manager agent on port {}{}", port, (bindAddr != null ? (" bound to " + bindAddr) : "") + (ssl ? " using SSL" : ""));
     }
 
-    final SocketCreator sc = SocketCreator.createNonDefaultInstance(ssl,
-        this.config.getJmxManagerSSLRequireAuthentication(),
-        this.config.getJmxManagerSSLProtocols(), this.config.getJmxManagerSSLCiphers(),
-        this.config.getJmxSSLProperties());
+    final SocketCreator sc = SocketCreatorFactory.getJMXManagerSSLSocketCreator();
     RMIClientSocketFactory csf = ssl ? new SslRMIClientSocketFactory() : null;// RMISocketFactory.getDefaultSocketFactory();
     // new GemFireRMIClientSocketFactory(sc, getLogger());
     RMIServerSocketFactory ssf = new GemFireRMIServerSocketFactory(sc, bindAddr);
@@ -420,8 +407,7 @@ public class ManagementAgent {
     //
     // We construct a JMXServiceURL corresponding to what we have done
     // for our stub...
-    final JMXServiceURL url = new JMXServiceURL("service:jmx:rmi://" + hostname + ":" + port
-        + "/jndi/rmi://" + hostname + ":" + port + "/jmxrmi");
+    final JMXServiceURL url = new JMXServiceURL("service:jmx:rmi://" + hostname + ":" + port + "/jndi/rmi://" + hostname + ":" + port + "/jmxrmi");
 
     // Create an RMI connector server with the JMXServiceURL
     //
@@ -457,9 +443,7 @@ public class ManagementAgent {
       MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper();
       cs.setMBeanServerForwarder(mBeanServerWrapper);
       registerAccessControlMBean();
-    }
-
-    else {
+    } else {
       /* Disable the old authenticator mechanism */
       String pwFile = this.config.getJmxManagerPasswordFile();
       if (pwFile != null && pwFile.length() > 0) {
@@ -513,11 +497,11 @@ public class ManagementAgent {
     return factoryName != null && !factoryName.isEmpty();
   }
 
-  private static class GemFireRMIClientSocketFactory implements RMIClientSocketFactory,
-      Serializable {
+  private static class GemFireRMIClientSocketFactory implements RMIClientSocketFactory, Serializable {
+
     private static final long serialVersionUID = -7604285019188827617L;
 
-    private/* final hack to prevent serialization */transient SocketCreator sc;
+    private/* final hack to prevent serialization */ transient SocketCreator sc;
 
     public GemFireRMIClientSocketFactory(SocketCreator sc) {
       this.sc = sc;
@@ -527,12 +511,14 @@ public class ManagementAgent {
     public Socket createSocket(String host, int port) throws IOException {
       return this.sc.connectForClient(host, port, 0/* no timeout */);
     }
-  };
+  }
 
-  private static class GemFireRMIServerSocketFactory implements RMIServerSocketFactory,
-      Serializable {
+  ;
+
+  private static class GemFireRMIServerSocketFactory implements RMIServerSocketFactory, Serializable {
+
     private static final long serialVersionUID = -811909050641332716L;
-    private/* final hack to prevent serialization */transient SocketCreator sc;
+    private/* final hack to prevent serialization */ transient SocketCreator sc;
     private final InetAddress bindAddr;
 
     public GemFireRMIServerSocketFactory(SocketCreator sc, InetAddress bindAddr) {
@@ -544,5 +530,7 @@ public class ManagementAgent {
     public ServerSocket createServerSocket(int port) throws IOException {
       return this.sc.createServerSocket(port, TCPConduit.getBackLog(), this.bindAddr);
     }
-  };
+  }
+
+  ;
 }

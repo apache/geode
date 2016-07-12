@@ -48,7 +48,7 @@ import com.gemstone.gemfire.admin.jmx.AgentFactory;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.PureJavaMode;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.util.IOUtils;

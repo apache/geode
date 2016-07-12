@@ -23,6 +23,7 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.GemFireStatSampler.LocalStatListenerImpl;
 import com.gemstone.gemfire.internal.cache.control.HeapMemoryMonitor;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.statistics.SampleCollector;
 import com.gemstone.gemfire.internal.statistics.StatArchiveHandler;
 import com.gemstone.gemfire.internal.statistics.StatArchiveHandlerConfig;

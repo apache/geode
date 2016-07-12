@@ -24,7 +24,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionException;
 import com.gemstone.gemfire.distributed.internal.LocatorStats;
 import com.gemstone.gemfire.distributed.internal.membership.*;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.GMSLocator;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;

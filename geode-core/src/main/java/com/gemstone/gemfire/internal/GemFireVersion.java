@@ -18,6 +18,7 @@ package com.gemstone.gemfire.internal;
 
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 
 import java.io.*;
 import java.net.*;

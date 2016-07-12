@@ -34,7 +34,7 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.Config;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.admin.AdminBridgeServer;
 import com.gemstone.gemfire.internal.admin.CacheInfo;
 import com.gemstone.gemfire.internal.admin.DLockInfo;

@@ -26,8 +26,7 @@ import java.util.StringTokenizer;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 
 public class GMSUtil {
   static Logger logger = Services.getLogger();

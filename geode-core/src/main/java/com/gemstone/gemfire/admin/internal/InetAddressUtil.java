@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 

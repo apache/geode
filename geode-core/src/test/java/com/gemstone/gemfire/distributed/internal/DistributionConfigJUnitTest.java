@@ -113,9 +113,9 @@ public class DistributionConfigJUnitTest {
     //TODO - This makes no sense. One has no idea what the correct expected number of attributes are.
     assertEquals(27, boolList.size());
     assertEquals(33, intList.size());
-    assertEquals(74, stringList.size());
+    assertEquals(73, stringList.size());
     assertEquals(5, fileList.size());
-    assertEquals(3, otherList.size());
+    assertEquals(4, otherList.size());
   }
 
   @Test
@@ -355,5 +355,33 @@ public class DistributionConfigJUnitTest {
 
     DistributionConfig config = new DistributionConfigImpl(props);
     assertEquals(config.getSecurityProps().size(), 4);
+  }
+
+  @Test
+  public void testSSLEnabledComponents() {
+    Properties props = new Properties();
+    props.put(CLUSTER_SSL_ENABLED, "true");
+    props.put(SSL_ENABLED_COMPONENTS, "all");
+
+    DistributionConfig config = new DistributionConfigImpl(props);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testSSLEnabledComponentsLegacyFail() {
+    Properties props = new Properties();
+    props.put(CLUSTER_SSL_ENABLED, "true");
+    props.put(HTTP_SERVICE_SSL_ENABLED, "true");
+    props.put(SSL_ENABLED_COMPONENTS, "all");
+
+    DistributionConfig config = new DistributionConfigImpl(props);
+  }
+  @Test
+  public void testSSLEnabledComponentsLegacyPass() {
+    Properties props = new Properties();
+    props.put(CLUSTER_SSL_ENABLED, "true");
+    props.put(HTTP_SERVICE_SSL_ENABLED, "true");
+    props.put(SSL_ENABLED_COMPONENTS, "");
+
+    DistributionConfig config = new DistributionConfigImpl(props);
   }
 }

@@ -20,8 +20,6 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import java.net.InetAddress;
-
 import com.gemstone.gemfire.StatisticDescriptor;
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsFactory;
@@ -29,9 +27,7 @@ import com.gemstone.gemfire.StatisticsType;
 import com.gemstone.gemfire.cache.server.ServerLoad;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.PoolStatHelper;
-import com.gemstone.gemfire.internal.DummyStatisticsFactory;
-import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.util.ArrayUtils;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 
 public class CacheServerStats implements MessageStats {
   

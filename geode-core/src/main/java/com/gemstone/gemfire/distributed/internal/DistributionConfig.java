@@ -4274,7 +4274,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * @since Geode 1.0
    */
   @ConfigAttributeGetter(name = SSL_ENABLED_COMPONENTS)
-  String getSSLEnabledComponents();
+  String[] getSSLEnabledComponents();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS}
@@ -4282,20 +4282,20 @@ public interface DistributionConfig extends Config, LogConfig {
    * @since Geode 1.0
    */
   @ConfigAttributeSetter(name = SSL_ENABLED_COMPONENTS)
-  void setSSLEnabledComponents(String sslEnabledComponents);
+  void setSSLEnabledComponents(String[] sslEnabledComponents);
 
   /**
    * The name of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS} property
    * @since Geode 1.0
    */
-  @ConfigAttribute(type = String.class)
+  @ConfigAttribute(type = String[].class)
   String SSL_ENABLED_COMPONENTS_NAME = SSL_ENABLED_COMPONENTS;
 
   /**
    * The default ssl enabled components
    * @since Geode 1.0
    */
-  String DEFAULT_SSL_ENABLED_COMPONENTS = "";
+  String[] DEFAULT_SSL_ENABLED_COMPONENTS = new String[]{};
 
   //*************** Initializers to gather all the annotations in this class ************************
 

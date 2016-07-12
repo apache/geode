@@ -69,13 +69,8 @@ import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.LonerDistributionManager;
-import com.gemstone.gemfire.distributed.internal.PooledExecutorWithDMStats;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.distributed.internal.*;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.cache.BucketAdvisor;
 import com.gemstone.gemfire.internal.cache.BucketAdvisor.BucketProfile;
@@ -91,6 +86,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
 import com.gemstone.gemfire.internal.util.ArrayUtils;
 
@@ -291,7 +287,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
    *          The maximum time between client pings. This value is used by the
    *          <code>ClientHealthMonitor</code> to monitor the health of this
    *          server's clients.
-   * @param c
+   * @param internalCache
    *          The GemFire cache whose contents is served to clients
    * @param maxConnections
    *          the maximum number of connections allowed in the server pool
@@ -305,14 +301,14 @@ public class AcceptorImpl extends Acceptor implements Runnable
   public AcceptorImpl(int port,
                       String bindHostName, boolean notifyBySubscription,
                       int socketBufferSize, int maximumTimeBetweenPings,
-                      InternalCache c, int maxConnections, int maxThreads,
+                      InternalCache internalCache, int maxConnections, int maxThreads,
                       int maximumMessageCount, int messageTimeToLive,
                       ConnectionListener listener,List overflowAttributesList, 
                       boolean isGatewayReceiver, List<GatewayTransportFilter> transportFilter,
                       boolean tcpNoDelay)
       throws IOException
   {
-    this.bindHostName = calcBindHostName(c, bindHostName);
+    this.bindHostName = calcBindHostName(internalCache, bindHostName);
     this.connectionListener = listener == null ? new ConnectionListenerAdapter() : listener;
     this.notifyBySubscription = notifyBySubscription;
     this.isGatewayReceiver = isGatewayReceiver;
@@ -373,7 +369,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
         tmp_commQ = new LinkedBlockingQueue();
         tmp_hs = new HashSet(512);
         tmp_timer = new SystemTimer(
-            c.getDistributedSystem(), true);
+            internalCache.getDistributedSystem(), true);
       }
       this.selector = tmp_s;
       //this.tmpSel = tmp2_s;
@@ -385,21 +381,11 @@ public class AcceptorImpl extends Acceptor implements Runnable
     }
 
     {
-      final int backLog = Integer.getInteger(BACKLOG_PROPERTY_NAME, DEFAULT_BACKLOG).intValue();
-      DistributionConfig config = ((InternalDistributedSystem)c.getDistributedSystem()).getConfig();
       if(!isGatewayReceiver) {
         //If configured use SSL properties for cache-server
-        this.socketCreator = SocketCreator.createNonDefaultInstance(config.getServerSSLEnabled(),
-            config.getServerSSLRequireAuthentication(),
-            config.getServerSSLProtocols(),
-            config.getServerSSLCiphers(),
-            config.getServerSSLProperties());
+        this.socketCreator = SocketCreatorFactory.getServerSSLSocketCreator();
       } else {
-        this.socketCreator = SocketCreator.createNonDefaultInstance(config.getGatewaySSLEnabled(),
-            config.getGatewaySSLRequireAuthentication(),
-            config.getGatewaySSLProtocols(),
-            config.getGatewaySSLCiphers(),
-            config.getGatewaySSLProperties());
+        this.socketCreator = SocketCreatorFactory.getGatewaySSLSocketCreator();
       }
       
       final GemFireCacheImpl gc;
@@ -409,6 +395,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
       else {
         gc = null;
       }
+      final int backLog = Integer.getInteger(BACKLOG_PROPERTY_NAME, DEFAULT_BACKLOG).intValue();
       final long tilt = System.currentTimeMillis() + 120 * 1000;
 
       if (isSelector()) {
@@ -429,8 +416,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
         // immediately restarted, which sometimes results in a bind exception
         for (;;) {
           try {
-            this.serverSock.bind(new InetSocketAddress(getBindAddress(), port),
-                             backLog);
+            this.serverSock.bind(new InetSocketAddress(getBindAddress(), port), backLog);
             break;
           }
           catch (SocketException b) {
@@ -519,16 +505,16 @@ public class AcceptorImpl extends Acceptor implements Runnable
       
     }
 
-    this.cache = c;
+    this.cache = internalCache;
     this.crHelper = new CachedRegionHelper(this.cache);
 
     this.clientNotifier = CacheClientNotifier.getInstance(cache, this.stats,
-        maximumMessageCount,messageTimeToLive, 
+        maximumMessageCount,messageTimeToLive,
         connectionListener,overflowAttributesList, isGatewayReceiver);
     this.socketBufferSize = socketBufferSize;
 
     // Create the singleton ClientHealthMonitor
-    this.healthMonitor = ClientHealthMonitor.getInstance(c, maximumTimeBetweenPings,
+    this.healthMonitor = ClientHealthMonitor.getInstance(internalCache, maximumTimeBetweenPings,
         this.clientNotifier.getStats());
 
     {

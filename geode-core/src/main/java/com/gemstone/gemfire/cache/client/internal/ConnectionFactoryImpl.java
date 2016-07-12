@@ -25,7 +25,7 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.cache.tier.Acceptor;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientUpdater;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -33,6 +33,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.HandShake;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 import org.apache.logging.log4j.Logger;
 
@@ -94,21 +95,15 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     this.blackList = new ServerBlackList(pingInterval);
     this.cancelCriterion = cancelCriterion;
     this.pool = pool;
-    DistributionConfig config = InternalDistributedSystem.getConnectedInstance().getConfig();
+    InternalDistributedSystem internalDistributedSystem = InternalDistributedSystem.getConnectedInstance();
     if (this.usedByGateway || (this.gatewaySender != null)) {
-      this.socketCreator = SocketCreator.createNonDefaultInstance(config.getGatewaySSLEnabled(),
-          config.getGatewaySSLRequireAuthentication(), config.getGatewaySSLProtocols(),
-          config.getGatewaySSLCiphers(), config.getGatewaySSLProperties());
+      this.socketCreator = SocketCreatorFactory.getGatewaySSLSocketCreator();
       if (sender!= null && !sender.getGatewayTransportFilters().isEmpty()) {
         this.socketCreator.initializeTransportFilterClientSocketFactory(sender);
       }
     } else {
       //If configured use SSL properties for cache-server
-      this.socketCreator = SocketCreator.createNonDefaultInstance(config.getServerSSLEnabled(),
-          config.getServerSSLRequireAuthentication(),
-          config.getServerSSLProtocols(),
-          config.getServerSSLCiphers(),
-          config.getServerSSLProperties());
+      this.socketCreator = SocketCreatorFactory.getServerSSLSocketCreator();
     }
   }
   

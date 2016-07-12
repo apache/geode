@@ -51,18 +51,17 @@ public abstract class AbstractLauncherIntegrationTestCase {
   
   protected static final int WAIT_FOR_PROCESS_TO_DIE_TIMEOUT = 5 * 60 * 1000; // 5 minutes
   protected static final int TIMEOUT_MILLISECONDS = WAIT_FOR_PROCESS_TO_DIE_TIMEOUT;
-  protected static final int WAIT_FOR_FILE_CREATION_TIMEOUT = 10*1000;
-  protected static final int WAIT_FOR_FILE_DELETION_TIMEOUT = 10*1000;
-  protected static final int WAIT_FOR_MBEAN_TIMEOUT = 10*1000;
-  protected static final int INTERVAL = 100;
-  protected static final int INTERVAL_MILLISECONDS = INTERVAL;
+  protected static final int WAIT_FOR_FILE_CREATION_TIMEOUT = 10*1000; // 10s
+  protected static final int WAIT_FOR_FILE_DELETION_TIMEOUT = 10*1000; // 10s
+  protected static final int WAIT_FOR_MBEAN_TIMEOUT = 10*1000; // 10s
+  protected static final int INTERVAL_MILLISECONDS = 100;
   
   private static final String EXPECTED_EXCEPTION_ADD = "<ExpectedException action=add>{}</ExpectedException>";
   private static final String EXPECTED_EXCEPTION_REMOVE = "<ExpectedException action=remove>{}</ExpectedException>";
   private static final String EXPECTED_EXCEPTION_MBEAN_NOT_REGISTERED = "MBean Not Registered In GemFire Domain";
   
   protected volatile ServerSocket socket;
-  
+
   protected volatile File pidFile;
   protected volatile File stopRequestFile;
   protected volatile File statusRequestFile;
@@ -106,7 +105,7 @@ public abstract class AbstractLauncherIntegrationTestCase {
         }
         return !file.exists();
       }
-    }, WAIT_FOR_FILE_DELETION_TIMEOUT, INTERVAL);
+    }, WAIT_FOR_FILE_DELETION_TIMEOUT, INTERVAL_MILLISECONDS);
   }
   
   protected void waitForPidToStop(final int pid, boolean throwOnTimeout) throws Exception {
@@ -115,7 +114,7 @@ public abstract class AbstractLauncherIntegrationTestCase {
       public Boolean call() throws Exception {
         return ProcessUtils.isProcessAlive(pid);
       }
-    }, WAIT_FOR_PROCESS_TO_DIE_TIMEOUT, INTERVAL);
+    }, WAIT_FOR_PROCESS_TO_DIE_TIMEOUT, INTERVAL_MILLISECONDS);
   }
   
   protected void waitForPidToStop(final int pid) throws Exception {
@@ -131,7 +130,7 @@ public abstract class AbstractLauncherIntegrationTestCase {
       public Boolean call() throws Exception {
         return !file.exists();
       }
-    }, WAIT_FOR_FILE_DELETION_TIMEOUT, INTERVAL);
+    }, WAIT_FOR_FILE_DELETION_TIMEOUT, INTERVAL_MILLISECONDS);
   }
   
   protected void waitForFileToDelete(final File file) throws Exception {
@@ -214,7 +213,7 @@ public abstract class AbstractLauncherIntegrationTestCase {
       public Boolean call() throws Exception {
         return file.exists();
       }
-    }, WAIT_FOR_FILE_CREATION_TIMEOUT, INTERVAL);
+    }, WAIT_FOR_FILE_CREATION_TIMEOUT, INTERVAL_MILLISECONDS);
   }
   
   protected void waitForFileToExist(final File file) throws Exception {

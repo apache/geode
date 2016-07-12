@@ -37,6 +37,7 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
@@ -223,12 +224,14 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
   public static void closeCacheTask(){
     if (instance != null && instance.cache != null) {
       instance.cache.close();
+      SocketCreatorFactory.close();
     }
   }
 
   public static void closeClientCacheTask(){
     if (instance != null && instance.clientCache != null) {
       instance.clientCache.close();
+      SocketCreatorFactory.close();
     }
   }
 
@@ -370,6 +373,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     VM clientVM = host.getVM(2);
     clientVM.invoke(() -> closeClientCacheTask());
     serverVM.invoke(() -> closeCacheTask());
+
   }
 }
 

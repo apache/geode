@@ -19,6 +19,8 @@ package com.gemstone.gemfire.internal;
 import com.gemstone.gemfire.*;
 //import com.gemstone.gemfire.util.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.net.SocketCreator;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 

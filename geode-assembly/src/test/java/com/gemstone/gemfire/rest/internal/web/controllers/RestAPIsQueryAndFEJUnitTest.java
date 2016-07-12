@@ -65,7 +65,7 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.distributed.ServerLauncher;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.management.internal.AgentUtil;
 import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;

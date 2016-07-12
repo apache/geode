@@ -22,7 +22,7 @@ import com.gemstone.gemfire.admin.ManagedEntityConfig;
 import com.gemstone.gemfire.internal.admin.GemFireVM;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 
 import java.io.File;
 import java.net.*;

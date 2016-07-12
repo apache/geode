@@ -38,7 +38,7 @@ import com.gemstone.gemfire.UnmodifiableException;
 import com.gemstone.gemfire.distributed.SSLEnabledComponents;
 import com.gemstone.gemfire.internal.AbstractConfig;
 import com.gemstone.gemfire.internal.ConfigSource;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
@@ -475,10 +475,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
    * This would mean one is mixing the "old" with the "new"
    */
   @ConfigAttributeChecker(name = SSL_ENABLED_COMPONENTS)
-  protected String checkLegacySSLWhenSSLEnabledComponentsSet(String value) {
-    if (value != null && value.length() > 0) {
-      String[] components = value.split(",");
-      for (String component : components) {
+  protected String[] checkLegacySSLWhenSSLEnabledComponentsSet(String[] value) {
+    if (value != null && value.length > 0) {
+      for (String component : value) {
         switch (component) {
           case SSLEnabledComponents.ALL:
           case SSLEnabledComponents.CLUSTER:

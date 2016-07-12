@@ -22,7 +22,6 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URL;
@@ -43,7 +42,7 @@ import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.ConfigSource;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
@@ -493,7 +492,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private String httpServiceSSLAlias = clusterSSLAlias;
 
-  private String sslEnabledComponents = DEFAULT_SSL_ENABLED_COMPONENTS;
+  private String[] sslEnabledComponents = DEFAULT_SSL_ENABLED_COMPONENTS;
 
   private Map<String, ConfigSource> sourceMap = Collections.synchronizedMap(new HashMap<String, ConfigSource>());
 
@@ -2392,12 +2391,12 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public String getSSLEnabledComponents() {
+  public String[] getSSLEnabledComponents() {
     return sslEnabledComponents;
   }
 
   @Override
-  public void setSSLEnabledComponents(final String sslEnabledComponents) {
+  public void setSSLEnabledComponents(final String[] sslEnabledComponents) {
     this.sslEnabledComponents = sslEnabledComponents;
   }
 
