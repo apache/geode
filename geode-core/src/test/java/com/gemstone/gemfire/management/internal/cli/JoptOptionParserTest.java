@@ -239,8 +239,12 @@ public class JoptOptionParserTest {
   }
 
   @Test
-  public void parseInputWithUndefinedOptionShouldThrow() throws Exception {
-    assertThatThrownBy(() -> this.simpleOptionParser.parse("command1 argument1_value argument2_value --undefinedOption")).isExactlyInstanceOf(CliCommandOptionException.class);
+  public void parseInputShouldIgnoreUndefinedOption() throws Exception {
+    // one fix for GEODE-1598 has a side effect of preventing our detection of undefined options
+    OptionSet optionSet = this.simpleOptionParser.parse("command1 argument1_value argument2_value --undefinedOption");
+    assertThat(optionSet.areOptionsPresent()).isFalse();
+    assertThat(optionSet.hasOption(this.requiredOption)).isFalse();
+    assertThat(optionSet.hasOption(this.optionalOption)).isFalse();
   }
 
   @Test

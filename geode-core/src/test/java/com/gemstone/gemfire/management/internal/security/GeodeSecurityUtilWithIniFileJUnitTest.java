@@ -136,5 +136,4 @@ public class GeodeSecurityUtilWithIniFileJUnitTest {
   private void assertNotAuthorized(GeodePermission context){
     assertThatThrownBy(()-> GeodeSecurityUtil.authorize(context)).isInstanceOf(GemFireSecurityException.class).hasMessageContaining(context.toString());
   }
-
 }

@@ -21,6 +21,7 @@ import java.security.Principal;
 import java.util.Properties;
 
 /**
+ * PostProcessor allows the customer to massage the values seen by a particular user.
  *
  * @since Geode 1.0
  */
@@ -28,18 +29,24 @@ public interface PostProcessor {
 
   /**
    * Given the security props of the server, properly initialize the post processor for the server.
-   * Initialized at server startup.
+   * Initialized at cache creation
    * @param securityProps
    */
   default void init(Properties securityProps) {}
 
   /**
+   * Process the value before sending it to the requester
    *
    * @param principal
+   *        The principal that's accessing the value
    * @param regionName
+   *        The region that's been accessed. This could be null.
    * @param key
+   *        the key of the value that's been accessed. This could be null.
    * @param value
+   *        the value, this could be null.
    * @return
+   *        the value that will be returned to the requester
    */
   Object processRegionValue(Principal principal, String regionName, Object key,  Object value);
 

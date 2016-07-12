@@ -297,10 +297,9 @@ public class GeodeSecurityUtil {
     }
 
     String shiroConfig = securityProps.getProperty(SECURITY_SHIRO_INIT);
-    String customAuthenticator = securityProps.getProperty(SECURITY_MANAGER);
+    String securityConfig = securityProps.getProperty(SECURITY_MANAGER);
 
-    Object authenticatorObject = getObject(customAuthenticator);
-    if (!com.gemstone.gemfire.internal.lang.StringUtils.isBlank(shiroConfig)) {
+    if (!StringUtils.isBlank(shiroConfig)) {
       IniSecurityManagerFactory factory = new IniSecurityManagerFactory("classpath:" + shiroConfig);
 
       // we will need to make sure that shiro uses a case sensitive permission resolver
@@ -315,12 +314,12 @@ public class GeodeSecurityUtil {
     }
 
     // only set up shiro realm if user has implemented SecurityManager
-    else if (authenticatorObject != null && authenticatorObject instanceof SecurityManager) {
-      securityManager = (SecurityManager) authenticatorObject;
+    else if (!StringUtils.isBlank(securityConfig)) {
+      securityManager = getObject(securityConfig, SecurityManager.class);
       securityManager.init(securityProps);
       Realm realm = new CustomAuthRealm(securityManager);
-      org.apache.shiro.mgt.SecurityManager securityManager = new DefaultSecurityManager(realm);
-      SecurityUtils.setSecurityManager(securityManager);
+      org.apache.shiro.mgt.SecurityManager shiroManager = new DefaultSecurityManager(realm);
+      SecurityUtils.setSecurityManager(shiroManager);
     }
     else {
       SecurityUtils.setSecurityManager(null);
@@ -376,6 +375,26 @@ public class GeodeSecurityUtil {
   }
 
 
+  public static <T> T getObject(String factoryName, Class<T> clazz) {
+    Object object = null;
+
+    if (StringUtils.isBlank(factoryName)) {
+      return null;
+    }
+    try {
+      Method instanceGetter = ClassLoadUtil.methodFromName(factoryName);
+      object = instanceGetter.invoke(null, (Object[]) null);
+    }
+    catch (Exception ex) {
+      throw new AuthenticationRequiredException(ex.toString(), ex);
+    }
+
+    if(!clazz.isAssignableFrom(object.getClass())){
+      throw new GemFireSecurityException("Expecting a "+clazz.getName()+" interface.");
+    }
+    return (T)object;
+  }
+
   public static Object getObject(String factoryName) {
     if (StringUtils.isBlank(factoryName)) {
       return null;
@@ -388,6 +407,8 @@ public class GeodeSecurityUtil {
       throw new AuthenticationRequiredException(ex.toString(), ex);
     }
   }
+
+
 
   public static boolean isSecurityRequired(Properties securityProps){
     String authenticator = securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
