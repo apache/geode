@@ -17,7 +17,10 @@
 package com.gemstone.gemfire.internal.security;
 
 
+import com.gemstone.gemfire.internal.ClassNotFoundExceptionDUnitTest;
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
+import com.gemstone.gemfire.security.AuthenticationRequiredException;
+import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.security.IntegratedSecurityCacheLifecycleIntegrationTest.SpySecurityManager;
 import com.gemstone.gemfire.security.templates.SampleSecurityManager;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
@@ -42,4 +45,28 @@ public class GeodeSecurityUtilTest {
     assertThat(forTetsing).isExactlyInstanceOf(String.class);
   }
 
+  @Test
+  public void testGetObjectShouldBeNullWithNullClassName(){
+    assertThatThrownBy(() -> GeodeSecurityUtil.getObject( null, String.class)).isExactlyInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  public void testGetObjectShouldBeNullWithNullClassType(){
+    assertThatThrownBy(() -> GeodeSecurityUtil.getObject( String.class.getName(), null)).isExactlyInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  public void testGetObjectShouldFailWithMismatchedType(){
+    assertThatThrownBy(() -> GeodeSecurityUtil.getObject( String.class.getName(), Integer.class)).isExactlyInstanceOf(GemFireSecurityException.class);
+  }
+
+  @Test
+  public void testGetObjectShouldFailWithEmptyString(){
+    assertThatThrownBy(() -> GeodeSecurityUtil.getObject( "", Integer.class)).isExactlyInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  public void testGetObjectShouldFailWithBadClassName(){
+    assertThatThrownBy(() -> GeodeSecurityUtil.getObject( "nonsense", Integer.class)).isExactlyInstanceOf(AuthenticationRequiredException.class);
+  }
 }
