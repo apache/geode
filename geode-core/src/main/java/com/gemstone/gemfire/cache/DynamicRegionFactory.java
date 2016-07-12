@@ -232,6 +232,7 @@ public abstract class DynamicRegionFactory  {
       if (this.dynamicRegionList == null) {
         InternalRegionArguments ira = new InternalRegionArguments()
         .setDestroyLockFlag(true)
+        .setInternalRegion(true)
         .setSnapshotInputStream(null)
         .setImageTarget(null);
         AttributesFactory af = new AttributesFactory ();       

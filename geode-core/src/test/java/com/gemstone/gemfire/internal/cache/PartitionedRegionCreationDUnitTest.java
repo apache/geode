@@ -284,38 +284,7 @@ public class PartitionedRegionCreationDUnitTest extends PartitionedRegionDUnitTe
     vm3.invoke(getCacheSerializableRunnableForPRValidate(regionNamePrefix));
   }
 
-  /**
-   * Test Partitioned Region names that contain spaces
-   * @throws Exception
-   */
-  @Test
-  public void testPartitionedRegionNameWithSpaces() throws Exception 
-  {
-    final String rName = getUniqueName() + " with some spaces";
-    
-    CacheSerializableRunnable csr = new CacheSerializableRunnable("validateNoExceptionWhenUsingNameWithSpaces") {
-      @Override
-      public void run2() throws CacheException
-      {
-        Cache cache = getCache();
-        Region partitionedregion = null;
-        AttributesFactory attr = new AttributesFactory();
-        attr.setPartitionAttributes(new PartitionAttributesFactory()
-            .setRedundantCopies(0).create());
-        partitionedregion = cache.createRegion(rName, attr
-            .create());
-        assertNotNull("Partitioned Region ref null", partitionedregion);
-        assertNotNull("Cache does not contain PR " + rName, cache
-            .getRegion(rName));
-        assertTrue("Partitioned Region ref claims to be destroyed",
-            !partitionedregion.isDestroyed());
-      }
-    };
-    Host.getHost(0).getVM(2).invoke(csr);
-    Host.getHost(0).getVM(3).invoke(csr);
-  }
-
-  /**
+   /**
    * Test whether partition region creation is preveented when
    * an instance is created that has the incorrect redundancy
    */

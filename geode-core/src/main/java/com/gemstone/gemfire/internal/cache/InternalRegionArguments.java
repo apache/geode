@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.LocalRegion.TestCallable;
@@ -39,6 +38,7 @@ public final class InternalRegionArguments
   private boolean isUsedForPartitionedRegionAdmin;
   private boolean isUsedForSerialGatewaySenderQueue;
   private boolean isUsedForParallelGatewaySenderQueue;
+  private boolean isInternalRegion;
   private int bucketRedundancy;
   private boolean isUsedForPartitionedRegionBucket;
   private RegionAdvisor partitionedRegionAdvisor;
@@ -310,5 +310,14 @@ public final class InternalRegionArguments
 
   public Map<String,CacheServiceProfile> getCacheServiceProfiles() {
     return this.cacheServiceProfiles;
+  }
+
+  public boolean isInternalRegion() {
+    return isInternalRegion;
+  }
+
+  public InternalRegionArguments setInternalRegion(final boolean internalRegion) {
+    isInternalRegion = internalRegion;
+    return this;
   }
 }

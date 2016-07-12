@@ -55,7 +55,7 @@ public class Bug36829DUnitTest extends JUnit4DistributedTestCase {
     Host host = Host.getHost(0);
     this.serverVM = host.getVM(0);
     this.ClientVM = host.getVM(1);
-    regionName = Bug36829DUnitTest.class.getName() + "_region";
+    regionName = "Bug36829_region";
     CacheServerTestUtil.disableShufflingOfEndpoints();
   }
 

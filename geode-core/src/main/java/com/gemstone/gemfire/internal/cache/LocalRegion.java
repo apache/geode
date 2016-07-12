@@ -7892,6 +7892,9 @@ public class LocalRegion extends AbstractRegion
     }
 
     // Validate the name of the region only if it isn't an internal region
+    if (internalRegionArgs.isInternalRegion()){
+      return;
+    }
     if (internalRegionArgs.isUsedForMetaRegion()) {
       return;
     }
@@ -7902,14 +7905,20 @@ public class LocalRegion extends AbstractRegion
       return;
     }
 
-    LocalRegion metaRegion = internalRegionArgs.getInternalMetaRegion();
-    if (metaRegion != null
-        && (metaRegion instanceof HARegion)
-        && metaRegion.getName().equals(name)) {
-      return;
-    }
+//    LocalRegion metaRegion = internalRegionArgs.getInternalMetaRegion();
+//    if (metaRegion != null) {
+//      if (metaRegion instanceof HARegion) {
+//        if (metaRegion.getName().equals(name)) {
+//          return;
+//        }
+//      }
+//      if (metaRegion instanceof SerialGatewaySenderQueueMetaRegion) {
+//        return;
+//      }
+//    }
 
-    if (name.startsWith("__") && !name.equals(ClientHealthMonitoringRegion.ADMIN_REGION_NAME)) {
+    if (name.startsWith("__")
+        && !name.equals(ClientHealthMonitoringRegion.ADMIN_REGION_NAME)) {
       throw new IllegalArgumentException("Region names may not begin with a double-underscore: " + name);
     }
 

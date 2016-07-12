@@ -16,27 +16,30 @@
 */
 package com.gemstone.gemfire.modules.util;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Properties;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Declarable;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.distributed.DistributedLockService;
 import com.gemstone.gemfire.distributed.internal.locks.DistributedMemberLock;
+import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Properties;
 
 public class CreateRegionFunction implements Function, Declarable {
 
@@ -195,7 +198,7 @@ public class CreateRegionFunction implements Function, Declarable {
       // Unlock the distributed lock
       try {
         dml.unlock();
-      } catch (Exception e) {
+      } catch (Exception ignore) {
       }
     }
     return status;
@@ -214,7 +217,18 @@ public class CreateRegionFunction implements Function, Declarable {
     }
     RegionFactory<String, RegionConfiguration> factory = this.cache.createRegionFactory(RegionShortcut.REPLICATE);
     factory.addCacheListener(new RegionConfigurationCacheListener());
-    return factory.create(REGION_CONFIGURATION_METADATA_REGION);
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+
+    InternalRegionArguments internalArgs = new InternalRegionArguments();
+    internalArgs.setInternalRegion(true);
+
+    try {
+      return factory.create(REGION_CONFIGURATION_METADATA_REGION, af.create(), internalArgs);
+    } catch (Exception e) {
+      cache.getLogger().error("Failed to create " + REGION_CONFIGURATION_METADATA_REGION, e);
+      return null;
+    }
   }
 
   private void writeCacheXml() {
