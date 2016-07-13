@@ -295,21 +295,19 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   @Test
   public void test_RingTopology() {
 
+    int [] ports = AvailablePortHelper.getRandomAvailableTCPPortsForDUnitSite(4);
+
     final Set<String> site1LocatorsPort = new HashSet<String>();
-    int site1Port1 = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    site1LocatorsPort.add("localhost["+site1Port1+"]");
+    site1LocatorsPort.add("localhost["+ports[0]+"]");
    
     final Set<String> site2LocatorsPort = new HashSet<String>();
-    int site2Port1 = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    site2LocatorsPort.add("localhost["+site2Port1+"]");
+    site2LocatorsPort.add("localhost["+ports[1]+"]");
    
     final Set<String> site3LocatorsPort = new HashSet<String>();
-    int site3Port1 = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    site3LocatorsPort.add("localhost["+site3Port1+"]");
+    site3LocatorsPort.add("localhost["+ports[2]+"]");
    
     final Set<String> site4LocatorsPort = new HashSet<String>();
-    int site4Port1 = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    site4LocatorsPort.add("localhost["+site4Port1+"]");
+    site4LocatorsPort.add("localhost["+ports[3]+"]");
    
     Map<Integer, Set<String>> dsVsPort = new HashMap<Integer, Set<String>>();
     dsVsPort.put(1, site1LocatorsPort);
@@ -320,13 +318,13 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     int AsyncInvocationArrSize = 9;
     AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
    
-    async[0] = vm0.invokeAsync(() -> WANTestBase.createLocator( 1, site1Port1, site1LocatorsPort, site2LocatorsPort));
+    async[0] = vm0.invokeAsync(() -> WANTestBase.createLocator( 1, ports[0], site1LocatorsPort, site2LocatorsPort));
    
-    async[1] = vm1.invokeAsync(() -> WANTestBase.createLocator( 2, site2Port1, site2LocatorsPort, site3LocatorsPort));
+    async[1] = vm1.invokeAsync(() -> WANTestBase.createLocator( 2, ports[1], site2LocatorsPort, site3LocatorsPort));
    
-    async[2] = vm2.invokeAsync(() -> WANTestBase.createLocator( 3, site3Port1, site3LocatorsPort, site4LocatorsPort));
+    async[2] = vm2.invokeAsync(() -> WANTestBase.createLocator( 3, ports[2], site3LocatorsPort, site4LocatorsPort));
    
-    async[3] = vm3.invokeAsync(() -> WANTestBase.createLocator( 4, site4Port1, site4LocatorsPort, site1LocatorsPort));
+    async[3] = vm3.invokeAsync(() -> WANTestBase.createLocator( 4, ports[3], site4LocatorsPort, site1LocatorsPort));
    
    // pause(5000);
     try {
