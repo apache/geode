@@ -35,12 +35,12 @@ import javax.management.remote.JMXPrincipal;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
+import org.apache.geode.security.GeodePermission;
+import org.apache.geode.security.SecurityManager;
 import org.apache.shiro.authz.Permission;
 
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
-import org.apache.geode.security.SecurityManager;
-import org.apache.geode.security.GeodePermission;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 
 /**
@@ -49,7 +49,7 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  * In order to use it, a Geode member must be started with the following properties:
  * <p/>
  * <code>
- *   security-manager = com.gemstone.gemfire.security.examples.SampleSecurityManager.create
+ *   security-manager = com.gemstone.gemfire.security.examples.SampleSecurityManager
  * </code>
  * <p/>
  * The class is initialized with a JSON file called {@code security.json}. This file must exist on the classpath,
