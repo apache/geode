@@ -97,7 +97,7 @@ public class RegionCreateDestroyDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
-  public void testCreateDestroyInvalidRegion() throws InterruptedException {
+  public void testCreateInvalidRegion() throws InterruptedException {
     Cache serverCache = getCache();
     try {
       serverCache.createRegionFactory(RegionShortcut.REPLICATE).create(BAD_REGION_NAME);
