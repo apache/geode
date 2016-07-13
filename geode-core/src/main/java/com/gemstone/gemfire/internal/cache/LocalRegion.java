@@ -17,10 +17,96 @@
 
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.*;
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.*;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.AbstractSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.logging.log4j.Logger;
+
+import com.gemstone.gemfire.CancelCriterion;
+import com.gemstone.gemfire.CancelException;
+import com.gemstone.gemfire.CopyHelper;
+import com.gemstone.gemfire.DataSerializable;
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.DeltaSerializationException;
+import com.gemstone.gemfire.InternalGemFireError;
+import com.gemstone.gemfire.InternalGemFireException;
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.admin.internal.SystemMemberCacheEventProcessor;
-import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.AttributesMutator;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheClosedException;
+import com.gemstone.gemfire.cache.CacheEvent;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.CacheLoader;
+import com.gemstone.gemfire.cache.CacheLoaderException;
+import com.gemstone.gemfire.cache.CacheRuntimeException;
+import com.gemstone.gemfire.cache.CacheStatistics;
+import com.gemstone.gemfire.cache.CacheWriter;
+import com.gemstone.gemfire.cache.CacheWriterException;
+import com.gemstone.gemfire.cache.CustomExpiry;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.DiskAccessException;
+import com.gemstone.gemfire.cache.DiskStoreFactory;
+import com.gemstone.gemfire.cache.DiskWriteAttributes;
+import com.gemstone.gemfire.cache.DiskWriteAttributesFactory;
+import com.gemstone.gemfire.cache.EntryDestroyedException;
+import com.gemstone.gemfire.cache.EntryExistsException;
+import com.gemstone.gemfire.cache.EntryNotFoundException;
+import com.gemstone.gemfire.cache.EvictionAttributes;
+import com.gemstone.gemfire.cache.ExpirationAttributes;
+import com.gemstone.gemfire.cache.FailedSynchronizationException;
+import com.gemstone.gemfire.cache.InterestRegistrationEvent;
+import com.gemstone.gemfire.cache.InterestResultPolicy;
+import com.gemstone.gemfire.cache.LoaderHelper;
+import com.gemstone.gemfire.cache.LowMemoryException;
+import com.gemstone.gemfire.cache.Operation;
+import com.gemstone.gemfire.cache.PartitionedRegionStorageException;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionDestroyedException;
+import com.gemstone.gemfire.cache.RegionEvent;
+import com.gemstone.gemfire.cache.RegionExistsException;
+import com.gemstone.gemfire.cache.RegionMembershipListener;
+import com.gemstone.gemfire.cache.RegionReinitializedException;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.StatisticsDisabledException;
 import com.gemstone.gemfire.cache.TimeoutException;
+import com.gemstone.gemfire.cache.TransactionException;
+import com.gemstone.gemfire.cache.TransactionId;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.cache.client.SubscriptionNotEnabledException;
@@ -32,7 +118,17 @@ import com.gemstone.gemfire.cache.control.ResourceManager;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
-import com.gemstone.gemfire.cache.query.*;
+import com.gemstone.gemfire.cache.query.FunctionDomainException;
+import com.gemstone.gemfire.cache.query.Index;
+import com.gemstone.gemfire.cache.query.IndexMaintenanceException;
+import com.gemstone.gemfire.cache.query.IndexType;
+import com.gemstone.gemfire.cache.query.MultiIndexCreationException;
+import com.gemstone.gemfire.cache.query.NameResolutionException;
+import com.gemstone.gemfire.cache.query.QueryException;
+import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
+import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.TypeMismatchException;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
 import com.gemstone.gemfire.cache.query.internal.ExecutionContext;
@@ -45,11 +141,22 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.*;
+import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionAdvisor;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionStats;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.ResourceEvent;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.i18n.StringId;
-import com.gemstone.gemfire.internal.*;
+import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.ClassLoadUtil;
+import com.gemstone.gemfire.internal.HeapDataOutputStream;
+import com.gemstone.gemfire.internal.InternalStatisticsDisabledException;
+import com.gemstone.gemfire.internal.NanoTimer;
+import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.admin.ClientHealthMonitoringRegion;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import com.gemstone.gemfire.internal.cache.DiskInitFile.DiskRegionFlag;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo.FilterInfo;
@@ -60,7 +167,11 @@ import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.Resou
 import com.gemstone.gemfire.internal.cache.control.MemoryEvent;
 import com.gemstone.gemfire.internal.cache.control.MemoryThresholds;
 import com.gemstone.gemfire.internal.cache.control.ResourceListener;
-import com.gemstone.gemfire.internal.cache.execute.*;
+import com.gemstone.gemfire.internal.cache.execute.DistributedRegionFunctionExecutor;
+import com.gemstone.gemfire.internal.cache.execute.DistributedRegionFunctionResultSender;
+import com.gemstone.gemfire.internal.cache.execute.LocalResultCollector;
+import com.gemstone.gemfire.internal.cache.execute.RegionFunctionContextImpl;
+import com.gemstone.gemfire.internal.cache.execute.ServerToClientFunctionResultSender;
 import com.gemstone.gemfire.internal.cache.ha.ThreadIdentifier;
 import com.gemstone.gemfire.internal.cache.lru.LRUEntry;
 import com.gemstone.gemfire.internal.cache.partitioned.RedundancyAlreadyMetException;
@@ -71,8 +182,19 @@ import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
 import com.gemstone.gemfire.internal.cache.persistence.query.IndexMap;
 import com.gemstone.gemfire.internal.cache.persistence.query.mock.IndexMapImpl;
 import com.gemstone.gemfire.internal.cache.tier.InterestType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.*;
-import com.gemstone.gemfire.internal.cache.versions.*;
+import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ClientHealthMonitor;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ClientTombstoneMessage;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessage;
+import com.gemstone.gemfire.internal.cache.tier.sockets.HandShake;
+import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
+import com.gemstone.gemfire.internal.cache.versions.ConcurrentCacheModificationException;
+import com.gemstone.gemfire.internal.cache.versions.RegionVersionHolder;
+import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
+import com.gemstone.gemfire.internal.cache.versions.VersionSource;
+import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
+import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventCallbackArgument;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -89,18 +211,6 @@ import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 import com.gemstone.gemfire.internal.util.concurrent.FutureResult;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReadWriteLock;
-import org.apache.logging.log4j.Logger;
-
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.Pattern;
-
-import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 
 /**
  * Implementation of a local scoped-region. Note that this class has a different
@@ -809,7 +919,7 @@ public class LocalRegion extends AbstractRegion
           }
           throw new RegionDestroyedException(toString(), getFullPath());
         }
-        validateRegionName(subregionName);
+        validateRegionName(subregionName, internalRegionArgs);
 
         validateSubregionAttributes(regionAttributes);
         String regionPath = calcFullPath(subregionName, this);
@@ -7769,16 +7879,54 @@ public class LocalRegion extends AbstractRegion
     this.entries.removeEntry(event.getKey(), re, false) ;      
   }
 
-  static void validateRegionName(String name)
+  static void validateRegionName(String name, InternalRegionArguments internalRegionArgs)
   {
     if (name == null) {
       throw new IllegalArgumentException(LocalizedStrings.LocalRegion_NAME_CANNOT_BE_NULL.toLocalizedString());
     }
-    if (name.length() == 0) {
+    if (name.isEmpty()) {
       throw new IllegalArgumentException(LocalizedStrings.LocalRegion_NAME_CANNOT_BE_EMPTY.toLocalizedString());
     }
-    if (name.indexOf(SEPARATOR) >= 0) {
+    if (name.contains(SEPARATOR)) {
       throw new IllegalArgumentException(LocalizedStrings.LocalRegion_NAME_CANNOT_CONTAIN_THE_SEPARATOR_0.toLocalizedString(SEPARATOR));
+    }
+
+    // Validate the name of the region only if it isn't an internal region
+    if (internalRegionArgs.isInternalRegion()){
+      return;
+    }
+    if (internalRegionArgs.isUsedForMetaRegion()) {
+      return;
+    }
+    if (internalRegionArgs.isUsedForPartitionedRegionAdmin()) {
+      return;
+    }
+    if (internalRegionArgs.isUsedForPartitionedRegionBucket()) {
+      return;
+    }
+
+//    LocalRegion metaRegion = internalRegionArgs.getInternalMetaRegion();
+//    if (metaRegion != null) {
+//      if (metaRegion instanceof HARegion) {
+//        if (metaRegion.getName().equals(name)) {
+//          return;
+//        }
+//      }
+//      if (metaRegion instanceof SerialGatewaySenderQueueMetaRegion) {
+//        return;
+//      }
+//    }
+
+    if (name.startsWith("__")
+        && !name.equals(ClientHealthMonitoringRegion.ADMIN_REGION_NAME)) {
+      throw new IllegalArgumentException("Region names may not begin with a double-underscore: " + name);
+    }
+
+    // Ensure the region only contains valid characters
+    Pattern pattern = Pattern.compile("[aA-zZ0-9-_]+");
+    Matcher matcher = pattern.matcher(name);
+    if (!matcher.matches()) {
+      throw new IllegalArgumentException("Region names may only be alphanumeric and may contain hyphens or underscores: " + name);
     }
   }
 

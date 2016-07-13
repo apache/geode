@@ -170,24 +170,18 @@ public class RegionJUnitTest{
     String queryStrs[] = new String[] {
         "SELECT * FROM /pos",
         "SELECT * FROM /pos where status='active'",
-        "SELECT * FROM /p:os", // Using ':' in region name.
-        "SELECT * FROM /p@os", // Using '@' in region name.
-        "SELECT * FROM /p-os", // Using '-' in region name.
-        "SELECT * FROM /p#os", // Using '#' in region name.
-        "SELECT * FROM /p+os", // Using '+' in region name.
-    };
+        "SELECT * FROM /p_os"
+  };
     
     CacheUtils.startCache();
     cache = CacheUtils.getCache();
     AttributesFactory attributesFactory = new AttributesFactory();
     attributesFactory.setValueConstraint(Portfolio.class);
     RegionAttributes regionAttributes = attributesFactory.create();
-    
-    cache.createRegion("p:os",regionAttributes);
-    cache.createRegion("p@os",regionAttributes);
+
+    cache.createRegion("p_os",regionAttributes);
     cache.createRegion("p-os",regionAttributes);
-    cache.createRegion("p#os",regionAttributes);
-    cache.createRegion("p+os",regionAttributes);
+    cache.createRegion("pos",regionAttributes);
 
     for(int i=0; i<queryStrs.length;++i) {
        Query q = CacheUtils.getQueryService().newQuery(queryStrs[i]);
