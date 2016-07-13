@@ -9,6 +9,10 @@
  * more patents listed at http://www.pivotal.io/patents.
  *=========================================================================
  */
+ /*=========================================================================
+ * Copyright: Amdocs Software Systems Limited, 2016
+ *=========================================================================
+ */
 
 
 #include "Properties.hpp"
@@ -61,7 +65,7 @@ public:
   /** print all settings to the process log. */
   void logSettings( );
 
-  const uint32_t threadPoolSize() const
+  uint32_t threadPoolSize() const
   { return m_threadPoolSize; }
 
 
@@ -69,7 +73,7 @@ public:
   * Returns the sampling interval of the sampling thread.
   * This would be how often the statistics thread writes to disk in seconds.
   */
-  const uint32_t statisticsSampleInterval() const
+  uint32_t statisticsSampleInterval() const
     { return m_statisticsSampleInterval; }
 
 
@@ -140,7 +144,7 @@ public:
   * memory
   *
   */
-  const bool heapLRULimitEnabled() const
+  bool heapLRULimitEnabled() const
   { return (m_heapLRULimit > 0); }
 
   /**
@@ -150,7 +154,7 @@ public:
     * cache memory usage
     *
     */
-    const size_t heapLRULimit() const
+    size_t heapLRULimit() const
     { return m_heapLRULimit; }
 
 
@@ -159,31 +163,31 @@ public:
     * percentage of entries the system will evict each time it detects that
     * it has exceeded the HeapLRULimit. Defaults to 10%
     */
-      const int32_t heapLRUDelta() const
+      int32_t heapLRUDelta() const
       { return m_heapLRUDelta; }
  /**
   * Returns  the maximum socket buffer size to use
   */
-  const int32_t maxSocketBufferSize() const { return m_maxSocketBufferSize; }
+  int32_t maxSocketBufferSize() const { return m_maxSocketBufferSize; }
 
  /**
   * Returns  the time between two consecutive ping to servers
   */
-  const int32_t pingInterval() const { return m_pingInterval; }
+  int32_t pingInterval() const { return m_pingInterval; }
  /**
   * Returns  the time between two consecutive checks for redundancy for HA
   */
-  const int32_t redundancyMonitorInterval() const { return m_redundancyMonitorInterval; }
+  int32_t redundancyMonitorInterval() const { return m_redundancyMonitorInterval; }
 
   /**
    * Returns the periodic notify ack interval
    */
-  const int32_t notifyAckInterval() const { return m_notifyAckInterval; }
+  int32_t notifyAckInterval() const { return m_notifyAckInterval; }
 
   /**
   * Returns the expiry time of an idle event id map entry for duplicate notification checking
   */
-  const int32_t notifyDupCheckLife() const { return m_notifyDupCheckLife; }
+  int32_t notifyDupCheckLife() const { return m_notifyDupCheckLife; }
 
  /**
   * Returns the durable client ID
@@ -193,24 +197,24 @@ public:
  /**
   * Returns the durable timeout
   */
-  const uint32_t durableTimeout() const { return m_durableTimeout; }
+  uint32_t durableTimeout() const { return m_durableTimeout; }
 
  /**
   * Returns the connect timeout used for server and locator handshakes
   */
-  const uint32_t connectTimeout() const { return m_connectTimeout; }
+  uint32_t connectTimeout() const { return m_connectTimeout; }
 
   /**
   * Returns the connect wait timeout(in millis) used for to connect to server
   * This is only applicable for linux
   */
-  const uint32_t connectWaitTimeout() const { return m_connectWaitTimeout; }
+  uint32_t connectWaitTimeout() const { return m_connectWaitTimeout; }
 
   /**
   * Returns the connect wait timeout(in millis) used for to connect to server
   * This is only applicable for linux
   */
-  const uint32_t bucketWaitTimeout() const { return m_bucketWaitTimeout; }
+  uint32_t bucketWaitTimeout() const { return m_bucketWaitTimeout; }
 
 
  /**
@@ -221,7 +225,7 @@ public:
   /**
   * Returns  true if the stack trace is enabled ,false otherwise
   */
-  const bool debugStackTraceEnabled() const
+  bool debugStackTraceEnabled() const
     { return m_debugStackTraceEnabled; }
 
   /**
@@ -233,7 +237,7 @@ public:
    * The default prefix is "gemfire_cpp".
    * The actual dump file will have timestamp and process ID in the full name.
    */
-  inline const bool crashDumpEnabled() const
+  inline bool crashDumpEnabled() const
   {
     return m_crashDumpEnabled;
   }
@@ -247,31 +251,31 @@ public:
   /**
   * Returns the log-file-size-limit.
   */
-  const uint32_t logFileSizeLimit() const
+  uint32_t logFileSizeLimit() const
      {return m_logFileSizeLimit;}
 
   /**
   * Returns the log-disk-space-limit.
   */
-  const uint32_t logDiskSpaceLimit() const
+  uint32_t logDiskSpaceLimit() const
      {return m_logDiskSpaceLimit;}
 
   /**
   * Returns the stat-file-space-limit.
   */
-  const uint32_t statsFileSizeLimit() const
+  uint32_t statsFileSizeLimit() const
      {return m_statsFileSizeLimit;}
 
   /**
   * Returns the stat-disk-size-limit.
   */
-  const uint32_t statsDiskSpaceLimit() const
+  uint32_t statsDiskSpaceLimit() const
      {return m_statsDiskSpaceLimit;}
 
-  const uint32_t maxQueueSize()
+  uint32_t maxQueueSize()
      {return m_maxQueueSize;}
 
-  const uint32_t javaConnectionPoolSize() const
+  uint32_t javaConnectionPoolSize() const
      { return m_javaConnectionPoolSize;}
   void setjavaConnectionPoolSize(uint32_t size) {
     m_javaConnectionPoolSize = size ;
@@ -423,12 +427,12 @@ public:
   /**
   * Returns the timeout after which suspended transactions are rolled back.
   */
-  const uint32_t suspendedTxTimeout() const { return m_suspendedTxTimeout; }
+  uint32_t suspendedTxTimeout() const { return m_suspendedTxTimeout; }
 
   /**
    * Returns the tombstone timeout .
    */
-  const uint32_t tombstoneTimeoutInMSec() const { return m_tombstoneTimeoutInMSec; }
+  uint32_t tombstoneTimeoutInMSec() const { return m_tombstoneTimeoutInMSec; }
 
 private:
 

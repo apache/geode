@@ -167,7 +167,8 @@ class CPPCACHE_EXPORT RegionAttributes: public Serializable  {
   /**
    * Returns the ExpirationAction used for LRU Eviction, default is LOCAL_DESTROY.
    */
-  const ExpirationAction::Action getLruEvictionAction( ) const;
+  //Copyright: Amdocs Software Systems Limited, 2016
+  ExpirationAction::Action getLruEvictionAction( ) const;
 
   /**
    * Returns the name of the pool attached to the region.
