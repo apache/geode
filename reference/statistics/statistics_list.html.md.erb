@@ -1,6 +1,9 @@
+---
+title: <span class="keyword">Geode</span> Statistics List
+---
+
 <a id="statistics_list"></a>
 
-# <span class="keyword">Geode</span> Statistics List
 
 This section describes the primary statistics gathered by <span class="keyword">Geode</span> when statistics are enabled.
 
@@ -821,7 +824,7 @@ These statistics are for distributed lock services. The primary statistics are:
 | `destroyWriteWaitTimeDesc`                   | Total time spent waiting for a DLockService destroy write lock that was obtained.                           |
 | `grantorsDesc`                               | The current number of lock grantors hosted by this system member.                                           |
 | `grantorThreadExpireAndGrantLocksTimeDesc`   | Total time spent by grantor thread(s) performing expireAndGrantLocks tasks.                                 |
-| `grantorThreadHandleRequestTimeoutsTimeDesc` | Total time spent by grantor thread(s) performing handleRequestTimeouts tasks.";                             |
+| `grantorThreadHandleRequestTimeoutsTimeDesc` | Total time spent by grantor thread(s) performing handleRequestTimeouts tasks.                             |
 | `grantorThreadRemoveUnusedTokensTimeDesc`    | Total time spent by grantor thread(s) performing removeUnusedTokens tasks.                                  |
 | `grantorThreadsCompletedDesc`                | Total number of iterations of work performed by grantor thread(s).                                          |
 | `grantorThreadsInProgressDesc`               | Current iterations of work performed by grantor thread.                                                     |
@@ -1096,7 +1099,7 @@ Operating system statistics on the member’s machine. These can be used to dete
 | `xmitCollisions`  | Total number of network transmit collisions.                                                                                                                                                                                                                                                                                              |
 | `xmitDrops`       | Total number of network transmits (packets) dropped.                                                                                                                                                                                                                                                                                      |
 | `xmitErrors`      | Total number of network transmit errors.                                                                                                                                                                                                                                                                                                  |
-| `xmitPackets`     | Total number of network packets transmitted (excluding loopback.                                                                                                                                                                                                                                                                          |
+| `xmitPackets`     | Total number of network packets transmitted (excluding loopback).                                                                                                                                                                                                                                                                          |
 
 <a id="section_35AC170770C944C3A336D9AEC2D2F7C5"></a>
 
@@ -1197,7 +1200,7 @@ These statistics track status on partitioned region data copies. The primary sta
 <td><code class="ph codeph">actualRedundantCopies</code></td>
 <td>The least current redundant number of copies for any data in this partitioned region (there may be some data that is fully redundant, but some data will have only this number of copies). This value may drop when a data store is lost or rise when a data store is added. This value may drop temporarily during partitioned region creation or destruction and then rise again.
 <div class="note note">
-**Note:**
+<b>Note:</b>
 <p>If this value remains low, then partitioned region data is at risk and may be lost if another data store is lost.</p>
 </div>
 A healthy partitioned region will maintain a value equal to configuredRedundantCopies. The user should add one or more data stores if the value remains low. High-availability may result in a brief fluctuation, but it should return to a value equal to configuredRedundantCopies if there are sufficient data stores present (that is, killing one data store will cause its data to fail over to another data store).</td>
@@ -1210,7 +1213,7 @@ A healthy partitioned region will maintain a value equal to configuredRedundantC
 <td><code class="ph codeph">lowRedundancyBucketCount</code></td>
 <td>The number of buckets in this partitioned region that currently have fewer copies than the configuredRedundantCopies. This value may rise above zero when a data store is lost and return to zero when one or more data stores are added. This value may rise temporarily during partitioned region creation or destruction and then return to zero.
 <div class="note note">
-**Note:**
+<b>Note:</b>
 <p>If this value remains above zero, then partitioned region data is at risk and may be lost if another data store is lost.</p>
 </div>
 This value will be above zero whenever actualRedundantCopies is less than configuredRedundantCopies. A healthy partitioned region will maintain a value of zero. The user should add one or more datstores if this value remains above zero. High-availability may result in a brief fluctuation, but it should return to zero if there are sufficient data stores present (that is, killing one data store will cause its data to fail over to another data store).</td>
