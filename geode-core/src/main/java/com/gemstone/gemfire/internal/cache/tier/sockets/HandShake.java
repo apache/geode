@@ -1599,19 +1599,13 @@ public class HandShake implements ClientHandShake
     Properties credentials = null;
     try {
       if (authInitMethod != null && authInitMethod.length() > 0) {
-        Method instanceGetter = ClassLoadUtil.methodFromName(authInitMethod);
-        AuthInitialize auth = (AuthInitialize)instanceGetter.invoke(null,
-            (Object[])null);
-        if (auth != null) {
-          auth.init(logWriter, 
-                    securityLogWriter);
-          try {
-            credentials = auth.getCredentials(securityProperties, server,
-                isPeer);
-          }
-          finally {
-            auth.close();
-          }
+        AuthInitialize auth = GeodeSecurityUtil.getObjectOfType(authInitMethod, AuthInitialize.class);
+        auth.init(logWriter, securityLogWriter);
+        try {
+          credentials = auth.getCredentials(securityProperties, server, isPeer);
+        }
+        finally {
+          auth.close();
         }
       }
     }

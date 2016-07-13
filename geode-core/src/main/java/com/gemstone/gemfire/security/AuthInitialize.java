@@ -23,6 +23,7 @@ import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.CacheCallback;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 
 // TODO Add example usage of this interface and configuration details
 /**
@@ -49,10 +50,20 @@ public interface AuthInitialize extends CacheCallback {
    * 
    * @throws AuthenticationFailedException
    *                 if some exception occurs during the initialization
+   *
+   *  @deprecated since Geode 1.0, use init()
    */
   public void init(LogWriter systemLogger, LogWriter securityLogger)
       throws AuthenticationFailedException;
 
+  /**
+   * @since Geode 1.0. implement this method instead of init with logwriters.
+   * Implementation should use log4j instead of these loggers.
+   */
+  default public void init(){
+    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    init(cache.getLogger(), cache.getSecurityLogger());
+  }
   /**
    * Initialize with the given set of security properties and return the
    * credentials for the peer/client as properties.
@@ -83,5 +94,4 @@ public interface AuthInitialize extends CacheCallback {
   public Properties getCredentials(Properties securityProps,
       DistributedMember server, boolean isPeer)
       throws AuthenticationFailedException;
-
 }

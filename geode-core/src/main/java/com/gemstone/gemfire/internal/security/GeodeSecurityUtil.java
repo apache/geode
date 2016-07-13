@@ -19,13 +19,20 @@ package com.gemstone.gemfire.internal.security;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
+import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.Principal;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
+import org.apache.geode.security.GeodePermission;
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
+import org.apache.geode.security.PostProcessor;
+import org.apache.geode.security.SecurityManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.ShiroException;
@@ -47,12 +54,7 @@ import com.gemstone.gemfire.internal.security.shiro.ShiroPrincipal;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import org.apache.geode.security.GeodePermission;
-import org.apache.geode.security.GeodePermission.Operation;
-import org.apache.geode.security.GeodePermission.Resource;
 import com.gemstone.gemfire.security.NotAuthorizedException;
-import org.apache.geode.security.PostProcessor;
-import org.apache.geode.security.SecurityManager;
 
 public class GeodeSecurityUtil {
 
@@ -310,7 +312,7 @@ public class GeodeSecurityUtil {
 
     // only set up shiro realm if user has implemented SecurityManager
     else if (!StringUtils.isBlank(securityConfig)) {
-      securityManager = getObjectOfType(securityConfig, SecurityManager.class);
+      securityManager = getObjectOfTypeFromClassName(securityConfig, SecurityManager.class);
       securityManager.init(securityProps);
       Realm realm = new CustomAuthRealm(securityManager);
       org.apache.shiro.mgt.SecurityManager shiroManager = new DefaultSecurityManager(realm);
@@ -323,7 +325,7 @@ public class GeodeSecurityUtil {
     // this initializes the post processor
     String customPostProcessor = securityProps.getProperty(SECURITY_POST_PROCESSOR);
     if( !StringUtils.isBlank(customPostProcessor)) {
-      postProcessor = getObjectOfType(customPostProcessor, PostProcessor.class);
+      postProcessor = getObjectOfTypeFromClassName(customPostProcessor, PostProcessor.class);
       postProcessor.init(securityProps);
     }
     else{
@@ -367,7 +369,14 @@ public class GeodeSecurityUtil {
   }
 
 
-  public static <T> T getObjectOfType(String className, Class<T> expectedClazz) {
+  /**
+   * this method would never return null, it either throws an exception or returns an object
+   * @param className
+   * @param expectedClazz
+   * @param <T>
+   * @return
+   */
+  public static <T> T getObjectOfTypeFromClassName(String className, Class<T> expectedClazz) {
     Class actualClass = null;
     try {
       actualClass = ClassLoadUtil.classFromName(className);
@@ -387,6 +396,47 @@ public class GeodeSecurityUtil {
       throw new GemFireSecurityException("Error instantiating "+actualClass.getName(), e);
     }
     return actualObject;
+  }
+
+  /**
+   * this method would never return null, it either throws an exception or returns an object
+   * @param factoryMethodName
+   * @param expectedClazz
+   * @param <T>
+   * @return
+   */
+  public static <T> T getObjectOfTypeFromFactoryMethod(String factoryMethodName, Class<T> expectedClazz){
+    try {
+      Method factoryMethod = ClassLoadUtil.methodFromName(factoryMethodName);
+      T actualObject = (T)factoryMethod.invoke(null, (Object[])null);
+
+      if(actualObject == null){
+        throw new NullArgumentException("Factory method "+ factoryMethodName + " should not return null.");
+      }
+
+      return actualObject;
+    } catch (Exception e) {
+      throw new GemFireSecurityException(e.toString(), e);
+    }
+  }
+
+  /**
+   * this method would never return null, it either throws an exception or returns an object
+   * @param classOrMethod
+   * @param expectedClazz
+   * @param <T>
+   * @return an object of type expectedClazz. This method would never return null. It either returns an non-null
+   * object or throws exception.
+   */
+  public static <T> T getObjectOfType(String classOrMethod, Class<T> expectedClazz) {
+    T object = null;
+    try{
+      object = getObjectOfTypeFromClassName(classOrMethod, expectedClazz);
+    }
+    catch (Exception e){
+      object = getObjectOfTypeFromFactoryMethod(classOrMethod, expectedClazz);
+    }
+    return object;
   }
 
   public static SecurityManager getSecurityManager(){

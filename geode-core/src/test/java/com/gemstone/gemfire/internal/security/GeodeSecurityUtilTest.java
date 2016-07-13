@@ -18,22 +18,23 @@ package com.gemstone.gemfire.internal.security;
 
 
 import static org.assertj.core.api.Java6Assertions.*;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-@Category({ UnitTest.class, SecurityTest.class })
+@Category(UnitTest.class)
 public class GeodeSecurityUtilTest {
 
   @Test
-  public void testGetObject(){
+  public void testGetObjectFromConstructor(){
     String string = GeodeSecurityUtil.getObjectOfType(String.class.getName(), String.class);
-
+    assertNotNull(string);
     CharSequence charSequence = GeodeSecurityUtil.getObjectOfType(String.class.getName(), CharSequence.class);
+    assertNotNull(charSequence);
 
     assertThatThrownBy(() -> GeodeSecurityUtil.getObjectOfType("com.abc.testString", String.class)).isInstanceOf(GemFireSecurityException.class);
 
@@ -44,5 +45,37 @@ public class GeodeSecurityUtilTest {
     assertThatThrownBy(() -> GeodeSecurityUtil.getObjectOfType(null, String.class)).isInstanceOf(GemFireSecurityException.class);
 
     assertThatThrownBy(() -> GeodeSecurityUtil.getObjectOfType("  ", String.class)).isInstanceOf(GemFireSecurityException.class);
+  }
+
+  @Test
+  public void testGetObjectFromFactoryMethod(){
+    String string = GeodeSecurityUtil.getObjectOfType(Factories.class.getName()+".getString", String.class);
+    assertNotNull(string);
+    CharSequence charSequence = GeodeSecurityUtil.getObjectOfType(Factories.class.getName()+".getString", String.class);
+    assertNotNull(charSequence);
+
+    assertThatThrownBy(() -> GeodeSecurityUtil.getObjectOfType(Factories.class.getName()+".getStringNonStatic", String.class))
+      .isInstanceOf(GemFireSecurityException.class);
+
+    assertThatThrownBy(() -> GeodeSecurityUtil.getObjectOfType(Factories.class.getName()+".getNullString", String.class))
+      .isInstanceOf(GemFireSecurityException.class);
+  }
+
+  private static class Factories{
+    public static String getString(){
+      return new String();
+    }
+
+    public static String getNullString(){
+      return null;
+    }
+
+    public String getStringNonStatic(){
+      return new String();
+    }
+
+    public static Boolean getBoolean(){
+      return Boolean.TRUE;
+    }
   }
 }

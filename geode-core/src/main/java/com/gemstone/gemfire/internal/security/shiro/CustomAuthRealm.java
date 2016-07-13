@@ -19,6 +19,8 @@ package com.gemstone.gemfire.internal.security.shiro;
 import java.security.Principal;
 import java.util.Properties;
 
+import org.apache.geode.security.GeodePermission;
+import org.apache.geode.security.SecurityManager;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -31,8 +33,6 @@ import org.apache.shiro.subject.PrincipalCollection;
 
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import org.apache.geode.security.SecurityManager;
-import org.apache.geode.security.GeodePermission;
 
 public class CustomAuthRealm extends AuthorizingRealm{
 
@@ -45,7 +45,7 @@ public class CustomAuthRealm extends AuthorizingRealm{
   }
 
   public CustomAuthRealm (String authenticatorFactory) {
-    this.securityManager = GeodeSecurityUtil.getObjectOfType(authenticatorFactory, SecurityManager.class);
+    this.securityManager = GeodeSecurityUtil.getObjectOfTypeFromClassName(authenticatorFactory, SecurityManager.class);
   }
 
   @Override
