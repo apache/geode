@@ -28,7 +28,7 @@ package com.gemstone.gemfire.cache.operations;
  *
  * @since GemFire 5.5
  *
- * @deprecated since Geode1.0, use {@link com.gemstone.gemfire.security.GeodePermission} instead
+ * @deprecated since Geode1.0, use {@link org.apache.geode.security.GeodePermission} instead
  */
 public abstract class OperationContext{
 
