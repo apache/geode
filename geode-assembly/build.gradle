@@ -263,10 +263,10 @@ distributions {
       from writeBuildInfo
       from (rootDir) {
         exclude 'KEYS'
-        exclude 'gradlew'
-        exclude 'gradlew.bat'
-        exclude 'gradle/wrapper/gradle-wrapper.jar'
-        exclude '.gradle'
+        exclude '**/gradlew'
+        exclude '**/gradlew.bat'
+        exclude '**/gradle/wrapper/gradle-wrapper.jar'
+        exclude '**/.gradle'
         exclude '**/build/**'
         exclude 'geode-spark-connector/**/target/**'
         exclude 'geode-spark-connector/project/project'
@@ -274,17 +274,22 @@ distributions {
         exclude '**/.classpath'
         exclude '**/.settings/**'
         exclude '**/build-eclipse/**'
-        exclude '.idea/**'
+        exclude '**/.idea/**'
         exclude '**/*.iml'
         exclude '**/*.ipr'
         exclude '**/*.iws'
+        exclude '**/.travis.yml'
         exclude '**/tags'
 
         //These directories are generated on the jenkins server by gradle
-        exclude 'caches'
-        exclude 'daemon'
-        exclude 'native'
-        exclude 'wrapper'
+        exclude '**/caches'
+        exclude '**/daemon'
+        exclude '**/native'
+        exclude '**/wrapper'
+      }
+
+      into ('geode-examples') {
+        from project.file( 'src/src/dist/gradlew' )
       }
     }
   }
