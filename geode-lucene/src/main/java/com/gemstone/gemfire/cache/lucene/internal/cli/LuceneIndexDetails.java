@@ -62,7 +62,7 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
     return statsMap;
   }
 
-  private String getIndexStatsString() {
+  public String getIndexStatsString() {
     return indexStats.toString();
   }
 
