@@ -16,28 +16,6 @@
 */
 package com.gemstone.gemfire.modules.session.catalina;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.Delta;
-import com.gemstone.gemfire.InvalidDeltaException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.cache.lru.Sizeable;
-import com.gemstone.gemfire.internal.util.BlobHelper;
-import com.gemstone.gemfire.modules.gatewaydelta.GatewayDelta;
-import com.gemstone.gemfire.modules.gatewaydelta.GatewayDeltaEvent;
-import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionAttributeEvent;
-import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionAttributeEventBatch;
-import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionDestroyAttributeEvent;
-import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionUpdateAttributeEvent;
-import org.apache.catalina.Manager;
-import org.apache.catalina.ha.session.SerializablePrincipal;
-import org.apache.catalina.realm.GenericPrincipal;
-import org.apache.catalina.security.SecurityUtil;
-import org.apache.catalina.session.StandardSession;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
-
-import javax.servlet.http.HttpSession;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -52,9 +30,34 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import javax.servlet.http.HttpSession;
+
+import org.apache.catalina.Manager;
+import org.apache.catalina.realm.GenericPrincipal;
+import org.apache.catalina.security.SecurityUtil;
+import org.apache.catalina.session.StandardSession;
+import org.apache.juli.logging.Log;
+import org.apache.juli.logging.LogFactory;
+
+import com.gemstone.gemfire.DataSerializable;
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.Delta;
+import com.gemstone.gemfire.InvalidDeltaException;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.internal.cache.lru.Sizeable;
+import com.gemstone.gemfire.internal.util.BlobHelper;
+import com.gemstone.gemfire.modules.gatewaydelta.GatewayDelta;
+import com.gemstone.gemfire.modules.gatewaydelta.GatewayDeltaEvent;
+import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionAttributeEvent;
+import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionAttributeEventBatch;
+import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionDestroyAttributeEvent;
+import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionUpdateAttributeEvent;
+
 
 @SuppressWarnings("serial")
-public class DeltaSession extends StandardSession implements DataSerializable, Delta, GatewayDelta, Sizeable, DeltaSessionInterface {
+public class DeltaSession8 extends StandardSession implements DataSerializable, Delta, GatewayDelta, Sizeable, DeltaSessionInterface {
 
   private transient Region<String, HttpSession> operatingRegion;
 
@@ -81,18 +84,11 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
   private byte[] serializedPrincipal;
 
   private final Log LOG = LogFactory.getLog(DeltaSession.class.getName());
-
-  /**
-   * The string manager for this package.
-   */
-//  protected static StringManager STRING_MANAGER =
-//    StringManager.getManager("com.gemstone.gemfire.modules.session.catalina");
-
   /**
    * Construct a new <code>Session</code> associated with no <code>Manager</code>. The <code>Manager</code> will be
    * assigned later using {@link #setOwner(Object)}.
    */
-  public DeltaSession() {
+  public DeltaSession8() {
     super(null);
   }
 
@@ -101,7 +97,7 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
    *
    * @param manager The manager with which this Session is associated
    */
-  public DeltaSession(Manager manager) {
+  public DeltaSession8(Manager manager) {
     super(manager);
     setOwner(manager);
   }
@@ -113,7 +109,7 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
   public HttpSession getSession() {
     if (facade == null) {
       if (SecurityUtil.isPackageProtectionEnabled()) {
-        final DeltaSession fsession = this;
+        final DeltaSession8 fsession = this;
         facade = (DeltaSessionFacade) AccessController.doPrivileged(new PrivilegedAction() {
           public Object run() {
             return new DeltaSessionFacade(fsession);
@@ -128,23 +124,23 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
 
   public Principal getPrincipal() {
     if (this.principal == null && this.serializedPrincipal != null) {
-      SerializablePrincipal sp = null;
+
+      Principal sp = null;
       try {
-        sp = (SerializablePrincipal) BlobHelper.deserializeBlob(this.serializedPrincipal);
+        sp = (Principal)BlobHelper.deserializeBlob(this.serializedPrincipal);
       } catch (Exception e) {
         StringBuilder builder = new StringBuilder();
         builder.append(this)
-            .append(
-                ": Serialized principal contains a byte[] that cannot be deserialized due to the following exception");
+               .append(
+                 ": Serialized principal contains a byte[] that cannot be deserialized due to the following exception");
         ((DeltaSessionManager) getManager()).getLogger().warn(builder.toString(), e);
         return null;
       }
-      this.principal = sp.getPrincipal(((DeltaSessionManager)this.manager).getTheContext().getRealm());
+      this.principal = sp;
       if (getManager() != null) {
         DeltaSessionManager mgr = (DeltaSessionManager) getManager();
         if (mgr.getLogger().isDebugEnabled()) {
           mgr.getLogger().debug(this + ": Deserialized principal: " + this.principal);
-          //mgr.logCurrentStack();
         }
       }
     }
@@ -156,12 +152,10 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
 
     // Put the session into the region to serialize the principal
     if (getManager() != null) {
-      // TODO convert this to a delta
       getManager().add(this);
       DeltaSessionManager mgr = (DeltaSessionManager) getManager();
       if (mgr.getLogger().isDebugEnabled()) {
         mgr.getLogger().debug(this + ": Cached principal: " + principal);
-        //mgr.logCurrentStack();
       }
     }
   }
@@ -170,13 +164,11 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
     if (this.serializedPrincipal == null) {
       if (this.principal != null && this.principal instanceof GenericPrincipal) {
         GenericPrincipal gp = (GenericPrincipal) this.principal;
-        SerializablePrincipal sp = SerializablePrincipal.createPrincipal(gp);
-        this.serializedPrincipal = serialize(sp);
+        this.serializedPrincipal = serialize(gp);
         if (manager != null) {
           DeltaSessionManager mgr = (DeltaSessionManager) getManager();
           if (mgr.getLogger().isDebugEnabled()) {
-            mgr.getLogger().debug(this + ": Serialized principal: " + sp);
-            //mgr.logCurrentStack();
+            mgr.getLogger().debug(this + ": Serialized principal: " + gp);
           }
         }
       }
@@ -292,9 +284,9 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
       } catch (Exception e) {
         StringBuilder builder = new StringBuilder();
         builder.append(this)
-            .append(": Attribute named ")
-            .append(name)
-            .append(" contains a byte[] that cannot be deserialized due to the following exception");
+               .append(": Attribute named ")
+               .append(name)
+               .append(" contains a byte[] that cannot be deserialized due to the following exception");
         ((DeltaSessionManager) getManager()).getLogger().warn(builder.toString(), e);
       }
       if (this.preferDeserializedForm) {
@@ -400,8 +392,8 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
 
   public void commit() {
     if (!isValidInternal()) throw new IllegalStateException("commit: Session " + getId() +
-        " already invalidated");
-//          (STRING_MANAGER.getString("deltaSession.commit.ise", getId()));
+                                                            " already invalidated");
+    //          (STRING_MANAGER.getString("deltaSession.commit.ise", getId()));
 
     synchronized (this.changeLock) {
       // Jens - there used to be a check to only perform this if the queue is
@@ -410,7 +402,7 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
       DeltaSessionManager mgr = (DeltaSessionManager) this.manager;
       if (this.enableGatewayDeltaReplication && mgr.isPeerToPeer()) {
         setCurrentGatewayDeltaEvent(
-            new DeltaSessionAttributeEventBatch(this.sessionRegionName, this.id, this.eventQueue));
+          new DeltaSessionAttributeEventBatch(this.sessionRegionName, this.id, this.eventQueue));
       }
       this.hasDelta = true;
       this.applyRemotely = true;
@@ -506,6 +498,7 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     // Read the StandardSession state
     this.id = DataSerializer.readString(in);
@@ -537,10 +530,6 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
     }
   }
 
-  protected Map readInAttributes(final DataInput in) throws IOException, ClassNotFoundException {
-    return DataSerializer.readObject(in);
-  }
-
   @Override
   public int getSizeInBytes() {
     int size = 0;
@@ -556,10 +545,40 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
     return size;
   }
 
+  protected byte[] serialize(Object obj) {
+    byte[] serializedValue = null;
+    try {
+      serializedValue = BlobHelper.serializeToBlob(obj);
+    } catch (IOException e) {
+      StringBuilder builder = new StringBuilder();
+      builder.append(this)
+             .append(": Object ")
+             .append(obj)
+             .append(" cannot be serialized due to the following exception");
+      ((DeltaSessionManager) getManager()).getLogger().warn(builder.toString(), e);
+    }
+    return serializedValue;
+  }
+
+  @Override
+  public String toString() {
+    return new StringBuilder().append("DeltaSession[")
+                              .append("id=")
+                              .append(getId())
+                              .append("; context=")
+                              .append(this.contextName)
+                              .append("; sessionRegionName=")
+                              .append(this.sessionRegionName)
+                              .append("; operatingRegionName=")
+                              .append(getOperatingRegion() == null ? "unset" : getOperatingRegion().getFullPath())
+                              .append("]")
+                              .toString();
+  }
+
   @SuppressWarnings({"unchecked", "rawtypes"})
-  protected Map<String, byte[]> getSerializedAttributes() {
+  protected ConcurrentMap<String, byte[]> getSerializedAttributes() {
     // Iterate the values and serialize them if necessary before sending them to the server. This makes the application classes unnecessary on the server.
-    Map<String, byte[]> serializedAttributes = new ConcurrentHashMap<String, byte[]>();
+    ConcurrentMap<String, byte[]> serializedAttributes = new ConcurrentHashMap<String, byte[]>();
     for (Iterator i = this.attributes.entrySet().iterator(); i.hasNext(); ) {
       Map.Entry<String, Object> entry = (Map.Entry<String, Object>) i.next();
       Object value = entry.getValue();
@@ -569,33 +588,8 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
     return serializedAttributes;
   }
 
-  protected byte[] serialize(Object obj) {
-    byte[] serializedValue = null;
-    try {
-      serializedValue = BlobHelper.serializeToBlob(obj);
-    } catch (IOException e) {
-      StringBuilder builder = new StringBuilder();
-      builder.append(this)
-          .append(": Object ")
-          .append(obj)
-          .append(" cannot be serialized due to the following exception");
-      ((DeltaSessionManager) getManager()).getLogger().warn(builder.toString(), e);
-    }
-    return serializedValue;
+  protected ConcurrentMap readInAttributes(final DataInput in) throws IOException, ClassNotFoundException {
+    return DataSerializer.readObject(in);
   }
 
-  @Override
-  public String toString() {
-    return new StringBuilder().append("DeltaSession[")
-        .append("id=")
-        .append(getId())
-        .append("; context=")
-        .append(this.contextName)
-        .append("; sessionRegionName=")
-        .append(this.sessionRegionName)
-        .append("; operatingRegionName=")
-        .append(getOperatingRegion() == null ? "unset" : getOperatingRegion().getFullPath())
-        .append("]")
-        .toString();
-  }
 }

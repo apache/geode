@@ -14,36 +14,19 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session.catalina;
+package com.gemstone.gemfire.modules.session;
 
-import org.apache.catalina.session.StandardSessionFacade;
+import com.gemstone.gemfire.modules.session.catalina.Tomcat8DeltaSessionManager;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.junit.BeforeClass;
+import org.junit.experimental.categories.Category;
 
-import javax.servlet.http.HttpSession;
+@Category(UnitTest.class)
+public class Tomcat8SessionsJUnitTest extends TestSessionsTomcat8Base {
 
-public class DeltaSessionFacade extends StandardSessionFacade {
-
-  private DeltaSessionInterface session;
-
-  /**
-   * Construct a new session facade.
-   */
-  public DeltaSessionFacade(DeltaSessionInterface session) {
-    super((HttpSession) session);
-    // Store session locally since the super session is private and provides no accessor.
-    this.session = session;
-  }
-
-  // ----------- DeltaSession Methods
-
-  public void commit() {
-    this.session.commit();
-  }
-
-  public void abort() {
-    this.session.abort();
-  }
-
-  boolean isValid() {
-    return this.session.isValid();
+  // Set up the session manager we need
+  @BeforeClass
+  public static void setupClass() throws Exception {
+    setupServer(new Tomcat8DeltaSessionManager());
   }
 }

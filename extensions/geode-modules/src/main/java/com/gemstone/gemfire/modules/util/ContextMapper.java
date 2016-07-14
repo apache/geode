@@ -21,6 +21,8 @@ import com.gemstone.gemfire.modules.session.catalina.DeltaSessionManager;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.catalina.session.ManagerBase;
+
 /**
  * This basic singleton class maps context paths to manager instances.
  * <p>
@@ -33,21 +35,21 @@ import java.util.Map;
 
 public class ContextMapper {
 
-  private static Map<String, DeltaSessionManager> managers = new HashMap<String, DeltaSessionManager>();
+  private static Map<String, ManagerBase> managers = new HashMap<String, ManagerBase>();
 
   private ContextMapper() {
     // This is a singleton
   }
 
-  public static void addContext(String path, DeltaSessionManager manager) {
+  public static void addContext(String path, ManagerBase manager) {
     managers.put(path, manager);
   }
 
-  public static DeltaSessionManager getContext(String path) {
+  public static ManagerBase getContext(String path) {
     return managers.get(path);
   }
 
-  public static DeltaSessionManager removeContext(String path) {
+  public static ManagerBase removeContext(String path) {
     return managers.remove(path);
   }
 }

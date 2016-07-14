@@ -16,19 +16,15 @@
 */
 package com.gemstone.gemfire.modules.session.catalina;
 
+import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
-import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.LifecycleState;
-import org.apache.catalina.util.LifecycleSupport;
+import org.apache.catalina.Pipeline;
+import org.apache.catalina.session.StandardSession;
 
 import java.io.IOException;
 
-public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
-
-  /**
-   * The <code>LifecycleSupport</code> for this component.
-   */
-  protected LifecycleSupport lifecycle = new LifecycleSupport(this);
+public class Tomcat8DeltaSessionManager extends DeltaSessionManager {
 
   /**
    * Prepare for the beginning of active use of the public methods of this component.  This method should be called
@@ -46,7 +42,7 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
       return;
     }
 
-    this.lifecycle.fireLifecycleEvent(START_EVENT, null);
+    fireLifecycleEvent(START_EVENT, null);
 
     // Register our various valves
     registerJvmRouteBinderValve();
@@ -93,7 +89,7 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
     }
 
     this.started.set(false);
-    this.lifecycle.fireLifecycleEvent(STOP_EVENT, null);
+    fireLifecycleEvent(STOP_EVENT, null);
 
     // StandardManager expires all Sessions here.
     // All Sessions are not known by this Manager.
@@ -114,34 +110,31 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
     }
 
     this.setState(LifecycleState.STOPPING);
+
   }
 
-  /**
-   * Add a lifecycle event listener to this component.
-   *
-   * @param listener The listener to add
-   */
   @Override
-  public void addLifecycleListener(LifecycleListener listener) {
-    this.lifecycle.addLifecycleListener(listener);
+  public int getMaxInactiveInterval() {
+    return getContext().getSessionTimeout();
   }
 
-  /**
-   * Get the lifecycle listeners associated with this lifecycle. If this Lifecycle has no listeners registered, a
-   * zero-length array is returned.
-   */
   @Override
-  public LifecycleListener[] findLifecycleListeners() {
-    return this.lifecycle.findLifecycleListeners();
+  protected Pipeline getPipeline() {
+    return getTheContext().getPipeline();
   }
 
-  /**
-   * Remove a lifecycle event listener from this component.
-   *
-   * @param listener The listener to remove
-   */
   @Override
-  public void removeLifecycleListener(LifecycleListener listener) {
-    this.lifecycle.removeLifecycleListener(listener);
+  public Context getTheContext() {
+    return getContext();
+  }
+
+  @Override
+  public void setMaxInactiveInterval(final int interval) {
+    getContext().setSessionTimeout(interval);
+  }
+
+  @Override
+  protected StandardSession getNewSession() {
+    return new DeltaSession8(this);
   }
 }
