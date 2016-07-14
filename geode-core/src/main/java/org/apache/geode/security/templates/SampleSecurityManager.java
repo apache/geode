@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -154,6 +155,10 @@ public class SampleSecurityManager implements SecurityManager {
   }
 
   private static Map<String, Role> readRoles(JsonNode jsonNode) {
+    if (jsonNode.get("roles") == null) {
+      return Collections.EMPTY_MAP;
+    }
+
     Map<String, Role> roleMap = new HashMap<>();
     for (JsonNode r : jsonNode.get("roles")) {
       Role role = new Role();

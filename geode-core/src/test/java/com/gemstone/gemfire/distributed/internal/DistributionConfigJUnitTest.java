@@ -37,7 +37,7 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.UnmodifiableException;
 import com.gemstone.gemfire.internal.ConfigSource;
-import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
+import com.gemstone.gemfire.security.JSONAuthorization;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)

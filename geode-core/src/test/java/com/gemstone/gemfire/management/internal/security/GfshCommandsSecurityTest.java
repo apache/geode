@@ -18,6 +18,7 @@
 package com.gemstone.gemfire.management.internal.security;
 
 import static org.junit.Assert.*;
+import static com.gemstone.gemfire.security.JSONAuthorization.*;
 
 import java.util.List;
 
@@ -47,7 +48,7 @@ public class GfshCommandsSecurityTest {
 
   @ClassRule
   public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxPort, httpPort, "cacheServer.json");
+      jmxPort, httpPort, CACHE_SERVER_JSON);
 
   @Rule
   public GfshShellConnectionRule gfshConnection;

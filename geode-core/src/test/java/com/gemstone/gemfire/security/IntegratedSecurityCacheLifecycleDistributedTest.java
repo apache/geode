@@ -16,8 +16,8 @@
  */
 package com.gemstone.gemfire.security;
 
-
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.security.JSONAuthorization.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.security.Principal;
@@ -28,7 +28,6 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
@@ -48,7 +47,7 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
   public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     locator = host.getVM(0);
-    JSONAuthorization.setUpWithJsonFile("clientServer.json");
+    JSONAuthorization.setUpWithJsonFile(CLIENT_SERVER_JSON);
     int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     String locators =  NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]";
 

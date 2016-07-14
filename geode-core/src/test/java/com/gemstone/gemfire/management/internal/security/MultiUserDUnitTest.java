@@ -19,12 +19,14 @@ package com.gemstone.gemfire.management.internal.security;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
+import static com.gemstone.gemfire.security.JSONAuthorization.*;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import com.gemstone.gemfire.security.JSONAuthorization;
 import com.jayway.awaitility.Awaitility;
 import org.json.JSONException;
 import org.junit.Test;
@@ -54,7 +56,7 @@ public class MultiUserDUnitTest extends CliCommandTestBase {
     properties.put(SECURITY_MANAGER, JSONAuthorization.class.getName() + ".create");
 
     // set up vm_0 the secure jmx manager
-    Object[] results = setUpJMXManagerOnVM(0, properties, "cacheServer.json");
+    Object[] results = setUpJMXManagerOnVM(0, properties, CACHE_SERVER_JSON);
     String gfshDir = this.gfshDir;
 
     // set up vm_1 as a gfsh vm, data-reader will login and log out constantly in this vm until the test is done.

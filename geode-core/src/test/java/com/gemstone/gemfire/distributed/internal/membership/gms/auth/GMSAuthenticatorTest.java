@@ -18,9 +18,11 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.auth;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Properties;
 
+import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
@@ -28,26 +30,26 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 /**
- * Unit tests GMSAuthenticator using old security.
+ * Unit tests GMSAuthenticator using new integrated security.
  */
 @Category({ UnitTest.class, SecurityTest.class })
-public class GMSAuthenticatorJUnitTest extends AbstractGMSAuthenticatorTestCase {
+public class GMSAuthenticatorTest extends AbstractGMSAuthenticatorTestCase {
 
   @Override
   protected boolean isIntegratedSecurity() {
-    return false;
+    return true;
   }
 
   @Test
-  public void nullAuthenticatorShouldReturnNull() throws Exception {
-    assertThat(securityProps).doesNotContainKey(SECURITY_PEER_AUTHENTICATOR);
+  public void nullManagerShouldReturnNull() throws Exception {
+    assertThat(securityProps).doesNotContainKey(SECURITY_MANAGER);
     String result = authenticator.authenticate(member, securityProps, securityProps, member);
     assertThat(result).isNull();
   }
 
   @Test
   public void emptyAuthenticatorShouldReturnNull() throws Exception {
-    securityProps.setProperty(SECURITY_PEER_AUTHENTICATOR, "");
+    securityProps.setProperty(SECURITY_MANAGER, "");
     String result = authenticator.authenticate(member, securityProps, securityProps, member);
     assertThat(result).isNull();
   }
@@ -55,18 +57,19 @@ public class GMSAuthenticatorJUnitTest extends AbstractGMSAuthenticatorTestCase 
   @Test
   public void shouldGetSecurityPropsFromDistributionConfig() throws Exception {
     securityProps.setProperty(SECURITY_PEER_AUTH_INIT, "dummy1");
-    securityProps.setProperty(SECURITY_PEER_AUTHENTICATOR, "dummy2");
+    securityProps.setProperty(SECURITY_MANAGER, "dummy2");
 
     Properties secProps = authenticator.getSecurityProps();
 
     assertThat(secProps.size()).isEqualTo(2);
     assertThat(secProps.getProperty(SECURITY_PEER_AUTH_INIT)).isEqualTo("dummy1");
-    assertThat(secProps.getProperty(SECURITY_PEER_AUTHENTICATOR)).isEqualTo("dummy2");
+    assertThat(secProps.getProperty(SECURITY_MANAGER)).isEqualTo("dummy2");
   }
 
   @Test
   public void usesPeerAuthInitToGetCredentials() throws Exception {
     props.setProperty(SECURITY_PEER_AUTH_INIT, SpyAuthInit.class.getName() + ".create");
+    props.setProperty(SECURITY_MANAGER, "dummy");
 
     SpyAuthInit auth = new SpyAuthInit();
     assertThat(auth.isClosed()).isFalse();
@@ -119,64 +122,31 @@ public class GMSAuthenticatorJUnitTest extends AbstractGMSAuthenticatorTestCase 
 
   @Test
   public void authenticateShouldReturnNullIfSuccessful() throws Exception {
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR, SpyAuthenticator.class.getName() + ".create");
-
-    SpyAuthenticator auth = new SpyAuthenticator();
-    assertThat(auth.isClosed()).isFalse();
-
-    SpyAuthenticator.setAuthenticator(auth);
-    String result = authenticator.authenticate(member, props, props, member);
-
-    assertThat(result).isNull();
-    assertThat(auth.isClosed()).isTrue();
-    assertThat(SpyAuthenticator.getCreateCount() == 1).isTrue();
-  }
-
-  @Test
-  public void authenticateShouldReturnNullIfPeerAuthenticatorIsNull() throws Exception {
+    props.setProperty(SECURITY_MANAGER, "dummy");
     String result = authenticator.authenticate(member, props, props, member);
     assertThat(result).isNull();
   }
 
   @Test
-  public void authenticateShouldReturnNullIfPeerAuthenticatorIsEmpty() throws Exception {
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR, "");
+  public void authenticateShouldReturnNullIfNoSecurityManager() throws Exception {
     String result = authenticator.authenticate(member, props, props, member);
     assertThat(result).isNull();
   }
 
   @Test
-  public void authenticateShouldReturnFailureMessageIfPeerAuthenticatorDoesNotExist() throws Exception {
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR, getClass().getName() + "$NotExistAuth.create");
-    String result = authenticator.authenticate(member, props, props, member);
-    assertThat(result).startsWith("Authentication failed. See coordinator");
-  }
-
-  @Test
-  public void authenticateShouldReturnFailureMessageIfAuthenticateReturnsNull() throws Exception {
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR, AuthenticatorReturnsNulls.class.getName() + ".create");
+  public void authenticateShouldReturnFailureMessageIfLoginThrows() throws Exception {
+    when(securityService.login(anyString(), anyString())).thenThrow(new GemFireSecurityException("dummy"));
+    props.setProperty(SECURITY_MANAGER, "dummy");
     String result = authenticator.authenticate(member, props, props, member);
     assertThat(result).startsWith("Authentication failed. See coordinator");
   }
 
   @Test
   public void authenticateShouldReturnFailureMessageIfNullCredentials() throws Exception {
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR, AuthenticatorReturnsNulls.class.getName() + ".create");
+    props.setProperty(SECURITY_MANAGER, "dummy");
     String result = authenticator.authenticate(member, null, props, member);
     assertThat(result).startsWith("Failed to find credentials from");
   }
 
-  @Test
-  public void authenticateShouldReturnFailureMessageIfAuthenticateInitThrows() throws Exception {
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR, AuthenticatorInitThrows.class.getName() + ".create");
-    String result = authenticator.authenticate(member, props, props, member);
-    assertThat(result).startsWith("Authentication failed. See coordinator");
-  }
-
-  @Test
-  public void authenticateShouldReturnFailureMessageIfAuthenticateThrows() throws Exception {
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR, AuthenticatorAuthenticateThrows.class.getName() + ".create");
-    String result = authenticator.authenticate(member, props, props, member);
-    assertThat(result).startsWith("Authentication failed. See coordinator");
-  }
 }
+

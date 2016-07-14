@@ -42,7 +42,7 @@ import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
+import com.gemstone.gemfire.security.JSONAuthorization;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;

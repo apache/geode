@@ -18,11 +18,13 @@
 package com.gemstone.gemfire.management.internal.security;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.security.JSONAuthorization.*;
 
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.security.JSONAuthorization;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
@@ -35,7 +37,7 @@ public class GeodeSecurityUtilCustomRealmJUnitTest extends GeodeSecurityUtilWith
   @BeforeClass
   public static void beforeClass() throws Exception{
     props.put(SECURITY_MANAGER, JSONAuthorization.class.getName() + ".create");
-    JSONAuthorization.setUpWithJsonFile("shiro-ini.json");
+    JSONAuthorization.setUpWithJsonFile(SHIRO_INI_JSON);
     GeodeSecurityUtil.initSecurity(props);
   }
 
