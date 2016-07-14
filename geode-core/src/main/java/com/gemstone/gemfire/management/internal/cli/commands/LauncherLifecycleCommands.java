@@ -45,12 +45,17 @@ import java.util.Stack;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.Query;
 import javax.management.QueryExp;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
+
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
 
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.SystemFailure;
@@ -111,10 +116,6 @@ import com.gemstone.gemfire.management.internal.configuration.domain.SharedConfi
 import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
-
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
 
 /**
  * The LauncherLifecycleCommands class encapsulates all GemFire launcher commands for GemFire tools (like starting
@@ -428,7 +429,14 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       } else {
         infoResultData.addLine(locatorState.toString());
 
-        String locatorHostName = StringUtils.defaultIfBlank(locatorLauncher.getHostnameForClients(), getLocalHost());
+        String locatorHostName;
+        InetAddress bindAddr = locatorLauncher.getBindAddress();
+        if (bindAddr != null){
+          locatorHostName = bindAddr.getCanonicalHostName();
+        } else {
+          locatorHostName = StringUtils.defaultIfBlank(locatorLauncher.getHostnameForClients(), getLocalHost());
+        }
+
         int locatorPort = Integer.parseInt(locatorState.getPort());
 
         // AUTO-CONNECT
@@ -569,7 +577,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
         getGfsh().setOperationInvoker(new JmxOperationInvoker(memberEndpoint.getHost(), memberEndpoint.getPort(),
             null, null, configurationProperties, null));
 
-        String shellAndLogMessage = CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, memberEndpoint.toString(false));
+        String shellAndLogMessage = CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, "JMX Manager " + memberEndpoint.toString(false));
 
         infoResultData.addLine("\n");
         infoResultData.addLine(shellAndLogMessage);
@@ -624,6 +632,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       final boolean jmxManagerAuthEnabled,
       final boolean jmxManagerSslEnabled,
       final InfoResultData infoResultData) {
+
     infoResultData.addLine("\n");
     infoResultData.addLine(CliStrings.format(CliStrings.START_LOCATOR__USE__0__TO__CONNECT,
         new CommandStringBuilder(CliStrings.CONNECT).addOption(CliStrings.CONNECT__LOCATOR,
