@@ -27,6 +27,7 @@ import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
+import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
@@ -53,10 +54,13 @@ import com.gemstone.gemfire.internal.size.SingleObjectSizer;
  */
 public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
 
+  private final AbstractGatewaySender sender;
+
   private final ParallelGatewaySenderEventProcessor processors[];
   
-  public ConcurrentParallelGatewaySenderQueue(
+  public ConcurrentParallelGatewaySenderQueue(AbstractGatewaySender sender,
 		  ParallelGatewaySenderEventProcessor pro[]) {
+    this.sender = sender;
     this.processors = pro;
   }
   
@@ -168,9 +172,20 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   }
   
   public void addShadowPartitionedRegionForUserPR(PartitionedRegion pr) {
-	for(int i =0; i< processors.length; i++){
-	  processors[i].addShadowPartitionedRegionForUserPR(pr);
-	 }
+    // Reset enqueuedAllTempQueueEvents if the sender is running
+    // This is done so that any events received while the shadow PR is added are queued in the tmpQueuedEvents
+    // instead of blocking the distribute call which could cause a deadlock. See GEM-801.
+    if (this.sender.isRunning()) {
+      this.sender.setEnqueuedAllTempQueueEvents(false);
+    }
+    this.sender.getLifeCycleLock().writeLock().lock();
+    try {
+      for (int i = 0; i < processors.length; i++) {
+        processors[i].addShadowPartitionedRegionForUserPR(pr);
+      }
+    } finally {
+      this.sender.getLifeCycleLock().writeLock().unlock();
+    }
   }
   
   private ParallelGatewaySenderEventProcessor getPGSProcessor(int bucketId) {

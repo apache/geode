@@ -107,7 +107,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor extends AbstractGatew
     createProcessors(sender.getDispatcherThreads(), targetRs);
     
 //    this.queue = parallelQueue;
-    this.queue = new ConcurrentParallelGatewaySenderQueue(this.processors);
+    this.queue = new ConcurrentParallelGatewaySenderQueue(sender, this.processors);
     setDaemon(true);
   }
   
