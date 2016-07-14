@@ -797,6 +797,7 @@ Public Domain
 Apache Geode bundles the following files, which are available in the public
 domain:
 
+  - AOP Alliance v1.0 (http://aopalliance.sourceforge.net)
   - CompactConcurrentHashSet2, derived from JSR-166 ConcurrentHashMap v1.43
     (http://gee.cs.oswego.edu/dl/concurrency-interest).
   - Reset CSS (http://meyerweb.com/eric/tools/css/reset/)
