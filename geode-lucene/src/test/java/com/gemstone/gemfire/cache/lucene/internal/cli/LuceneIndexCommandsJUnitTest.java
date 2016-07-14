@@ -39,6 +39,8 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
+import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneCreateIndexFunction;
+import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
@@ -46,6 +48,7 @@ import com.gemstone.gemfire.internal.util.CollectionUtils;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.functions.CliFunctionResult;
+import com.gemstone.gemfire.management.internal.cli.functions.CreateIndexFunction;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResultException;
@@ -169,7 +172,7 @@ public class LuceneIndexCommandsJUnitTest {
     final List<CliFunctionResult> cliFunctionResults=new ArrayList<>();
     cliFunctionResults.add(new CliFunctionResult(memberId,true,"Index Created"));
 
-    doReturn(mockResultCollector).when(commands).createIndexOnGroups(any(),any(LuceneIndexInfo.class));
+    doReturn(mockResultCollector).when(commands).executeFunctionOnGroups(isA(LuceneCreateIndexFunction.class),any(),any(LuceneIndexInfo.class));
     doReturn(cliFunctionResults).when(mockResultCollector).getResult();
 
     String indexName ="index";
@@ -192,6 +195,40 @@ public class LuceneIndexCommandsJUnitTest {
     infoResult.addLine(CliStrings.format(LuceneCliStrings.CREATE_INDEX__NUMBER__AND__MEMBER, 1 , memberId));
     return ResultBuilder.buildResult(infoResult);
   }
+
+  @Test
+  public void testDescribeIndex() throws CommandResultException {
+
+    final Cache mockCache = mock(Cache.class, "Cache");
+    final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
+    final LuceneIndexCommands commands=spy(createIndexCommands(mockCache,null));
+
+    String[] searchableFields={"field1","field2","field3"};
+    Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
+    fieldAnalyzers.put("field1", new StandardAnalyzer());
+    fieldAnalyzers.put("field2", new KeywordAnalyzer());
+    fieldAnalyzers.put("field3", null);
+    final LuceneIndexStats mockIndexStats=getMockIndexStats(1,10,5,1);
+    final List<LuceneIndexDetails> indexDetails = new ArrayList<>();
+    indexDetails.add(createIndexDetails("memberFive", "/Employees", searchableFields, fieldAnalyzers,mockIndexStats));
+
+    doReturn(mockResultCollector).when(commands).executeFunctionOnGroups(isA(LuceneDescribeIndexFunction.class),any(),any(LuceneIndexInfo.class));
+    doReturn(indexDetails).when(mockResultCollector).getResult();
+
+    CommandResult result = (CommandResult) commands.describeIndex("memberFive","/Employees");
+
+    TabularResultData data = (TabularResultData) result.getResultData();
+    assertEquals(Arrays.asList("memberFive"), data.retrieveAllValues("Index Name"));
+    assertEquals(Arrays.asList("/Employees"), data.retrieveAllValues("Region Path"));
+    assertEquals(Arrays.asList("[field1, field2, field3]"), data.retrieveAllValues("Indexed Fields"));
+    assertEquals(Arrays.asList("{field1=StandardAnalyzer, field2=KeywordAnalyzer}"), data.retrieveAllValues("Field Analyzer"));
+    assertEquals(Arrays.asList("1"), data.retrieveAllValues("Query Executions"));
+    assertEquals(Arrays.asList("10"), data.retrieveAllValues("Commits"));
+    assertEquals(Arrays.asList("5"), data.retrieveAllValues("Updates"));
+    assertEquals(Arrays.asList("1"), data.retrieveAllValues("Documents"));
+
+  }
+
 
   private LuceneIndexStats getMockIndexStats(int queries, int commits, int updates, int docs) {
     LuceneIndexStats mockIndexStats=mock(LuceneIndexStats.class);
