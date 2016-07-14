@@ -1,6 +1,6 @@
-<a id="resource_manager"></a>
-
-# Managing Heap and Off-heap Memory
+---
+title: Managing Heap and Off-heap Memory
+---
 
 By default, <span class="keyword">Apache Geode</span> uses the JVM heap. <span class="keyword">Apache Geode</span> also offers an option to store data off heap. This section describes how to manage heap and off-heap memory to best support your application.
 
@@ -172,13 +172,13 @@ If your application spikes above the critical threshold on a regular basis, try 
 
 The settings that will work well for your system depend on a number of factors, including these:
 
- - The size of the data objects you store in the cache  
+ - The size of the data objects you store in the cache
 Very large data objects can be evicted and garbage collected relatively quickly. The same amount of space in use by many small objects takes more processing effort to clear and might require lower thresholds to allow eviction and GC activities to keep up.
 
- - Application behavior  
+ - Application behavior
 Applications that quickly put a lot of data into the cache can more easily overrun the eviction and GC capabilities. Applications that operate more slowly may be more easily offset by eviction and GC efforts, possibly allowing you to set your thresholds higher than in the more volatile system.
 
- - Your choice of JVM  
+ - Your choice of JVM
 Each JVM has its own GC behavior, which affects how efficiently the collector can operate, how quickly it kicks in when needed, and other factors.
 
 ## Resource Manager Example Configurations
@@ -202,7 +202,7 @@ These examples set the critical threshold to 85 percent of the tenured heap and 
     ``` pre
     <cache>
     <region name="bigDataStore" refid="PARTITION_HEAP_LRU"/>
-    ... 
+    ...
     <resource-manager critical-heap-percentage="85" eviction-heap-percentage="75"/>
     </cache>
     ```
@@ -213,12 +213,12 @@ These examples set the critical threshold to 85 percent of the tenured heap and 
 
     ``` pre
     Cache cache = CacheFactory.create();
-                                    
+
     ResourceManager rm = cache.getResourceManager();
     rm.setCriticalHeapPercentage(85);
     rm.setEvictionHeapPercentage(75);
-                                    
-    RegionFactory rf = 
+
+    RegionFactory rf =
       cache.createRegionFactory(RegionShortcut.PARTITION_HEAP_LRU);
       Region region = rf.create("bigDataStore");
     ```
@@ -232,5 +232,3 @@ This is one possible scenario for the configuration used in the examples:
 -   The member hosting the region also runs an application that may take up to 1 Gb of the heap.
 -   The application must never run out of heap space and has been crafted such that data loss in the region is acceptable if the heap space becomes limited due to application issues, so the default `lru-heap-percentage` action destroy is suitable.
 -   The application's service guarantee makes it very intolerant of `OutOfMemoryException`s. Testing has shown that leaving 15% head room above the critical threshold when adding data to the region gives 99.5% uptime with no `OutOfMemoryException`s, when configured with the CMS garbage collector using `-XX:CMSInitiatingOccupancyFraction=70`.
-
-
