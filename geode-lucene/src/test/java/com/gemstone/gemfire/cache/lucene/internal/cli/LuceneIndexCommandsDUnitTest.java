@@ -17,17 +17,22 @@
 package com.gemstone.gemfire.cache.lucene.internal.cli;
 
 import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
+import com.gemstone.gemfire.cache.lucene.LuceneQuery;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
 import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.CommandManager;
 import com.gemstone.gemfire.management.internal.cli.commands.CliCommandTestBase;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
+import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.dunit.*;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.jayway.awaitility.Awaitility;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
@@ -39,11 +44,16 @@ import org.junit.experimental.categories.Category;
 import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Category(DistributedTest.class)
 public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
@@ -216,6 +226,31 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(resultAsString.contains("No lucene indexes found"));
   }
 
+  @Test
+  public void listIndexWithStatsShouldReturnCorrectStats() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(1);
+
+    createIndex(vm1);
+    Map<String,TestObject> entries=new HashMap<>();
+    entries.put("A",new TestObject("field1:value1","field2:value2","field3:value3"));
+    entries.put("B",new TestObject("ABC","EFG","HIJ"));
+
+    putEntries(vm1,entries);
+    queryAndVerify(vm1, "field1:value1", "field1", Collections.singletonList("A"));
+
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE_LIST_INDEX__STATS,"true");
+    TabularResultData data = (TabularResultData) executeCommandAndGetResult(csb).getResultData();
+
+    assertEquals(Collections.singletonList(INDEX_NAME), data.retrieveAllValues("Index Name"));
+    assertEquals(Collections.singletonList("/region"), data.retrieveAllValues("Region Path"));
+    assertEquals(Collections.singletonList("113"), data.retrieveAllValues("Query Executions"));
+    assertEquals(Collections.singletonList("2"), data.retrieveAllValues("Commits"));
+    assertEquals(Collections.singletonList("2"), data.retrieveAllValues("Updates"));
+    assertEquals(Collections.singletonList("2"), data.retrieveAllValues("Documents"));
+  }
+
+
   private void createRegion() {
     getCache().createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
   }
@@ -228,6 +263,16 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     writeToLog("Result String :\n ", resultAsString);
     assertEquals("Command failed\n" + resultAsString, Status.OK, commandResult.getStatus());
     return resultAsString;
+  }
+
+  private CommandResult executeCommandAndGetResult(final CommandStringBuilder csb) {
+    String commandString = csb.toString();
+    writeToLog("Command String :\n ", commandString);
+    CommandResult commandResult = executeCommand(commandString);
+    String resultAsString = commandResultToString(commandResult);
+    writeToLog("Result String :\n ", resultAsString);
+    assertEquals("Command failed\n" + resultAsString, Status.OK, commandResult.getStatus());
+    return commandResult;
   }
 
   private void createIndex(final VM vm1) {
@@ -245,5 +290,40 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   private void writeToLog(String text, String resultAsString) {
     System.out.println(text + ": " + getTestMethodName() + " : ");
     System.out.println(text + ":" + resultAsString);
+  }
+
+  private void putEntries(final VM vm1, Map<String,TestObject> entries) {
+    Cache cache=getCache();
+    vm1.invoke(()-> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      Region region=getCache().getRegion(REGION_NAME);
+      region.putAll(entries);
+      luceneService.getIndex(INDEX_NAME,REGION_NAME).waitUntilFlushed(60000);
+      LuceneIndexImpl index=(LuceneIndexImpl) luceneService.getIndex(INDEX_NAME,REGION_NAME);
+      Awaitility.await().atMost(65, TimeUnit.SECONDS).until(() ->
+        assertEquals(2,index.getIndexStats().getDocuments()));
+
+    });
+  }
+
+  private void queryAndVerify(VM vm1, String queryString, String defaultField, List<String> expectedKeys) {
+    vm1.invoke(()-> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      final LuceneQuery<String, TestObject> query = luceneService.createLuceneQueryFactory().create(
+        INDEX_NAME, REGION_NAME, queryString, defaultField);
+      assertEquals(Collections.singletonList("A"),query.findKeys());
+    });
+  }
+
+  protected class TestObject implements Serializable{
+    private String field1;
+    private String field2;
+    private String field3;
+
+    protected TestObject(String value1, String value2, String value3) {
+      this.field1=value1;
+      this.field2=value2;
+      this.field3=value3;
+    }
   }
 }
