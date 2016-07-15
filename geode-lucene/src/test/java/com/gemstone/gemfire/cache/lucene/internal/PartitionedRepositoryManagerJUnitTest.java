@@ -48,6 +48,7 @@ import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.Heteroge
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.LuceneSerializer;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.internal.cache.BucketRegion;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion.RetryTimeKeeper;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
@@ -58,41 +59,57 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class PartitionedRepositoryManagerJUnitTest {
 
-  private PartitionedRegion userRegion;
-  private PartitionedRegion fileRegion;
-  private PartitionedRegion chunkRegion;
-  private LuceneSerializer serializer;
-  private PartitionedRegionDataStore userDataStore;
-  private PartitionedRegionDataStore fileDataStore;
-  private PartitionedRegionDataStore chunkDataStore;
+  protected PartitionedRegion userRegion;
+  protected PartitionedRegion fileRegion;
+  protected PartitionedRegion chunkRegion;
+  protected LuceneSerializer serializer;
+  protected PartitionedRegionDataStore userDataStore;
+  protected PartitionedRegionDataStore fileDataStore;
+  protected PartitionedRegionDataStore chunkDataStore;
   
-  private Map<Integer, BucketRegion> fileBuckets = new HashMap<Integer, BucketRegion>();
-  private Map<Integer, BucketRegion> chunkBuckets= new HashMap<Integer, BucketRegion>();
-  private LuceneIndexStats indexStats;
-  private FileSystemStats fileSystemStats;
+  protected Map<Integer, BucketRegion> fileBuckets = new HashMap<Integer, BucketRegion>();
+  protected Map<Integer, BucketRegion> chunkBuckets= new HashMap<Integer, BucketRegion>();
+  protected Map<Integer, BucketRegion> dataBuckets= new HashMap<Integer, BucketRegion>();
+  protected LuceneIndexStats indexStats;
+  protected FileSystemStats fileSystemStats;
+  protected LuceneIndexImpl indexForPR;
+  protected AbstractPartitionedRepositoryManager repoManager;
+  protected GemFireCacheImpl cache;
 
   @Before
   public void setUp() {
+    cache = Fakes.cache();
     userRegion = Mockito.mock(PartitionedRegion.class);
     userDataStore = Mockito.mock(PartitionedRegionDataStore.class);
     when(userRegion.getDataStore()).thenReturn(userDataStore);
+    when(cache.getRegion("/testRegion")).thenReturn(userRegion);
+    serializer = new HeterogeneousLuceneSerializer(new String[] {"a", "b"} );
     
+    createIndexAndRepoManager();
+  }
+
+  protected void createIndexAndRepoManager() {
     fileRegion = Mockito.mock(PartitionedRegion.class);
     fileDataStore = Mockito.mock(PartitionedRegionDataStore.class);
     when(fileRegion.getDataStore()).thenReturn(fileDataStore);
     chunkRegion = Mockito.mock(PartitionedRegion.class);
     chunkDataStore = Mockito.mock(PartitionedRegionDataStore.class);
     when(chunkRegion.getDataStore()).thenReturn(chunkDataStore);
-    serializer = new HeterogeneousLuceneSerializer(new String[] {"a", "b"} );
     indexStats = Mockito.mock(LuceneIndexStats.class);
     fileSystemStats = Mockito.mock(FileSystemStats.class);
+    indexForPR = Mockito.mock(LuceneIndexForPartitionedRegion.class);
+    when(((LuceneIndexForPartitionedRegion)indexForPR).getFileRegion()).thenReturn(fileRegion);
+    when(((LuceneIndexForPartitionedRegion)indexForPR).getChunkRegion()).thenReturn(chunkRegion);
+    when(((LuceneIndexForPartitionedRegion)indexForPR).getFileSystemStats()).thenReturn(fileSystemStats);
+    when(indexForPR.getIndexStats()).thenReturn(indexStats);
+    when(indexForPR.getAnalyzer()).thenReturn(new StandardAnalyzer());
+    when(indexForPR.getCache()).thenReturn(cache);
+    when(indexForPR.getRegionPath()).thenReturn("/testRegion");
+    repoManager = new PartitionedRepositoryManager(indexForPR, serializer);
   }
   
   @Test
   public void getByKey() throws BucketNotFoundException, IOException {
-    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer(),
-      indexStats, fileSystemStats);
-    
     setUpMockBucket(0);
     setUpMockBucket(1);
     
@@ -115,9 +132,6 @@ public class PartitionedRepositoryManagerJUnitTest {
    */
   @Test
   public void destroyBucketShouldCreateNewIndexRepository() throws BucketNotFoundException, IOException {
-    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer(),
-      indexStats, fileSystemStats);
-    
     setUpMockBucket(0);
     
     IndexRepositoryImpl repo0 = (IndexRepositoryImpl) repoManager.getRepository(userRegion, 0, null);
@@ -126,10 +140,11 @@ public class PartitionedRepositoryManagerJUnitTest {
     checkRepository(repo0, 0);
     
     BucketRegion fileBucket0 = fileBuckets.get(0);
+    BucketRegion dataBucket0 = dataBuckets.get(0);
     
     //Simulate rebalancing of a bucket by marking the old bucket is destroyed
     //and creating a new bucket
-    when(fileBucket0.isDestroyed()).thenReturn(true);
+    when(dataBucket0.isDestroyed()).thenReturn(true);
     setUpMockBucket(0);
     
     IndexRepositoryImpl newRepo0 = (IndexRepositoryImpl) repoManager.getRepository(userRegion, 0, null);
@@ -144,15 +159,11 @@ public class PartitionedRepositoryManagerJUnitTest {
    */
   @Test(expected = BucketNotFoundException.class)
   public void getMissingBucketByKey() throws BucketNotFoundException {
-    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer(),
-      indexStats, fileSystemStats);
     repoManager.getRepository(userRegion, 0, null);
   }
   
   @Test
   public void createMissingBucket() throws BucketNotFoundException {
-    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer(),
-      indexStats, fileSystemStats);
     setUpMockBucket(0);
     
     when(fileDataStore.getLocalBucketById(eq(0))).thenReturn(null);
@@ -170,9 +181,6 @@ public class PartitionedRepositoryManagerJUnitTest {
   
   @Test
   public void getByRegion() throws BucketNotFoundException {
-    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer(),
-      indexStats, fileSystemStats);
-    
     setUpMockBucket(0);
     setUpMockBucket(1);
 
@@ -199,9 +207,6 @@ public class PartitionedRepositoryManagerJUnitTest {
    */
   @Test(expected = BucketNotFoundException.class)
   public void getMissingBucketByRegion() throws BucketNotFoundException {
-    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer(),
-      indexStats, fileSystemStats);
-    
     setUpMockBucket(0);
 
     Set<Integer> buckets = new LinkedHashSet<Integer>(Arrays.asList(0, 1));
@@ -211,7 +216,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     repoManager.getRepositories(ctx);
   }
   
-  private void checkRepository(IndexRepositoryImpl repo0, int bucketId) {
+  protected void checkRepository(IndexRepositoryImpl repo0, int bucketId) {
     IndexWriter writer0 = repo0.getWriter();
     RegionDirectory dir0 = (RegionDirectory) writer0.getDirectory();
     assertEquals(fileBuckets.get(bucketId), dir0.getFileSystem().getFileRegion());
@@ -219,7 +224,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     assertEquals(serializer, repo0.getSerializer());
   }
   
-  private BucketRegion setUpMockBucket(int id) {
+  protected BucketRegion setUpMockBucket(int id) {
     BucketRegion mockBucket = Mockito.mock(BucketRegion.class);
     BucketRegion fileBucket = Mockito.mock(BucketRegion.class);
     //Allowing the fileBucket to behave like a map so that the IndexWriter operations don't fail
@@ -235,6 +240,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     
     fileBuckets.put(id, fileBucket);
     chunkBuckets.put(id, chunkBucket);
+    dataBuckets.put(id, mockBucket);
     return mockBucket;
   }
 }

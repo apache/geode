@@ -36,6 +36,11 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.control.RebalanceOperation;
 import com.gemstone.gemfire.cache.control.RebalanceResults;
 import com.gemstone.gemfire.cache.lucene.test.IndexRepositorySpy;
+import com.gemstone.gemfire.cache.lucene.internal.IndexRepositoryFactory;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
+import com.gemstone.gemfire.cache.lucene.internal.PartitionedRepositoryManager;
+import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
+import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.LuceneSerializer;
 import com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -190,6 +195,4 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     });
   }
 
-  ;
-  ;
 }

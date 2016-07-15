@@ -67,6 +67,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * @since GemFire 8.5
  */
 public class LuceneServiceImpl implements InternalLuceneService {
+  public static LuceneIndexFactory luceneIndexFactory = new LuceneIndexFactory();
   private static final Logger logger = LogService.getLogger();
 
   private GemFireCacheImpl cache;
@@ -225,7 +226,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     }
     //Convert the region name into a canonical form
     regionPath = dataregion.getFullPath();
-    return new LuceneIndexForPartitionedRegion(indexName, regionPath, cache);
+    return luceneIndexFactory.create(indexName, regionPath, cache);
   }
 
   private void registerDefinedIndex(final String regionAndIndex, final LuceneIndexCreationProfile luceneIndexCreationProfile) {

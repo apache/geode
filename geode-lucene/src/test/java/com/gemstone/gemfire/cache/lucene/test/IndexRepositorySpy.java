@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.util.function.Consumer;
 
 import com.gemstone.gemfire.cache.lucene.internal.IndexRepositoryFactory;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexForPartitionedRegion;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
 import com.gemstone.gemfire.cache.lucene.internal.PartitionedRepositoryManager;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
@@ -57,19 +59,10 @@ public class IndexRepositorySpy extends IndexRepositoryFactory {
 
   @Override
   public IndexRepository createIndexRepository(final Integer bucketId,
-                                               final PartitionedRegion userRegion,
-                                               final PartitionedRegion fileRegion,
-                                               final PartitionedRegion chunkRegion,
-                                               final LuceneSerializer serializer,
-                                               final Analyzer analyzer,
-                                               final LuceneIndexStats indexStats,
-                                               final FileSystemStats fileSystemStats)
-    throws IOException
-  {
-    final IndexRepository indexRepo = super.createIndexRepository(bucketId, userRegion, fileRegion, chunkRegion,
-      serializer, analyzer,
-      indexStats,
-      fileSystemStats);
+      LuceneSerializer serializer,
+      LuceneIndexImpl index, PartitionedRegion userRegion) throws IOException {
+    LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion)index;
+    final IndexRepository indexRepo = super.createIndexRepository(bucketId, serializer, index, userRegion);
     final IndexRepository spy = Mockito.spy(indexRepo);
 
     Answer invokeBeforeWrite = invocation -> {
@@ -83,6 +76,7 @@ public class IndexRepositorySpy extends IndexRepositoryFactory {
 
     return spy;
   }
+
 
   /**
    * Add a callback that runs before a call to

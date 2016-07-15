@@ -81,7 +81,7 @@ public class IndexRepositoryImplJUnitTest {
     region = Mockito.mock(Region.class);
     stats = Mockito.mock(LuceneIndexStats.class);
     Mockito.when(region.isDestroyed()).thenReturn(false);
-    repo = new IndexRepositoryImpl(region, writer, mapper, stats);
+    repo = new IndexRepositoryImpl(region, writer, mapper, stats, null);
   }
   
   @Test
