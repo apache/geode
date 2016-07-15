@@ -638,9 +638,9 @@ public class AcceptorImpl extends Acceptor implements Runnable
       this.hsPool = tmp_hsPool;
     }
 
-    isAuthenticationRequired = GeodeSecurityUtil.isSecurityRequired(this.cache.getDistributedSystem().getSecurityProperties());
+    isAuthenticationRequired = GeodeSecurityUtil.isSecurityRequired();
 
-    isIntegratedSecurity = GeodeSecurityUtil.isIntegratedSecurity(this.cache.getDistributedSystem().getSecurityProperties());
+    isIntegratedSecurity = GeodeSecurityUtil.isIntegratedSecurity();
 
     String postAuthzFactoryName = this.cache.getDistributedSystem()
         .getProperties().getProperty(SECURITY_CLIENT_ACCESSOR_PP);
