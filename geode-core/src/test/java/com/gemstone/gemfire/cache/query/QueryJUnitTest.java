@@ -40,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -117,6 +118,7 @@ public class QueryJUnitTest {
   }
 
   @Test
+  @Ignore // GEODE-1617 - Regions can be created with a variety of characters that are unsupported
   public void test003UnicodeInRegionNameAndQuery() {
     CacheUtils.log("testUnicodeInQuery");
     try{
@@ -138,6 +140,7 @@ public class QueryJUnitTest {
   }
 
   @Test
+  @Ignore // GEODE-1617 - Regions can be created with a variety of characters that are unsupported
   public void test004UnicodeInRegionNameAndQueryWithIndex() {
     try {
       String unicode = "‰∏≠ÊñáÂ±Á´";
@@ -172,6 +175,7 @@ public class QueryJUnitTest {
 
 
   @Test
+  @Ignore // GEODE-1617 - Regions can be created with a variety of characters that are unsupported
   public void test005UnicodeInRegionNameAndQueryWithIndexUsingQuotesAsDelim() {
     try {
       String unicode = "‰∏≠ÊñáÂ±*+|<?>=. !@#$%^&*()_+,;:Á´[]{}?";

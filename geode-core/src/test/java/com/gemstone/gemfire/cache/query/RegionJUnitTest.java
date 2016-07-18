@@ -169,8 +169,7 @@ public class RegionJUnitTest{
     
     String queryStrs[] = new String[] {
         "SELECT * FROM /pos",
-        "SELECT * FROM /pos where status='active'",
-        "SELECT * FROM /p_os"
+        "SELECT * FROM /pos where status='active'"
   };
     
     CacheUtils.startCache();
@@ -181,7 +180,6 @@ public class RegionJUnitTest{
 
     cache.createRegion("p_os",regionAttributes);
     cache.createRegion("p-os",regionAttributes);
-    cache.createRegion("pos",regionAttributes);
 
     for(int i=0; i<queryStrs.length;++i) {
        Query q = CacheUtils.getQueryService().newQuery(queryStrs[i]);

@@ -46,7 +46,7 @@ public class Bug36829DUnitTest extends JUnit4DistributedTestCase {
 
   private VM ClientVM;
 
-  private String regionName;
+  private static final String REGION_NAME = "Bug36829_region";
 
   private int PORT;
 
@@ -55,7 +55,7 @@ public class Bug36829DUnitTest extends JUnit4DistributedTestCase {
     Host host = Host.getHost(0);
     this.serverVM = host.getVM(0);
     this.ClientVM = host.getVM(1);
-    regionName = "Bug36829_region";
+
     CacheServerTestUtil.disableShufflingOfEndpoints();
   }
 
@@ -70,8 +70,7 @@ public class Bug36829DUnitTest extends JUnit4DistributedTestCase {
           ))).intValue();
 
     this.ClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
-            getClientPool(NetworkUtils.getServerHostName(ClientVM.getHost()), PORT, true, 0),
-            regionName,
+            getClientPool(NetworkUtils.getServerHostName(ClientVM.getHost()), PORT, true, 0), REGION_NAME,
             getClientDistributedSystemProperties(durableClientId,
                 durableClientTimeout), Boolean.TRUE ));
 
@@ -87,7 +86,7 @@ public class Bug36829DUnitTest extends JUnit4DistributedTestCase {
     this.ClientVM.invoke(() -> Bug36829DUnitTest.registerKey( "Key1" ));
 
     // creating Region on the Server
-/*    this.serverVM.invoke(() -> CacheServerTestUtil.createRegion( regionName ));
+/*    this.serverVM.invoke(() -> CacheServerTestUtil.createRegion( REGION_NAME ));
      // should be successful.
     this.ClientVM.invoke(() -> Bug36829DUnitTest.registerKeyAfterRegionCreation( "Key1" ));*/
 
@@ -100,7 +99,7 @@ public class Bug36829DUnitTest extends JUnit4DistributedTestCase {
 
   private static void registerKey(String key) throws Exception {
     // Get the region
-    Region region = CacheServerTestUtil.getCache().getRegion(Bug36829DUnitTest.class.getName() + "_region");
+    Region region = CacheServerTestUtil.getCache().getRegion(REGION_NAME);
     assertNotNull(region);
     try {
       region.registerInterest(key, InterestResultPolicy.NONE);
@@ -112,7 +111,7 @@ public class Bug36829DUnitTest extends JUnit4DistributedTestCase {
 
   private static void registerKeyAfterRegionCreation(String key) throws Exception {
     // Get the region
-    Region region = CacheServerTestUtil.getCache().getRegion(Bug36829DUnitTest.class.getName() + "_region");
+    Region region = CacheServerTestUtil.getCache().getRegion(REGION_NAME);
     assertNotNull(region);
 
     region.registerInterest(key, InterestResultPolicy.NONE);
