@@ -20,6 +20,7 @@ package com.gemstone.gemfire.internal.security;
 import static org.assertj.core.api.Java6Assertions.*;
 import static org.junit.Assert.assertNotNull;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -48,6 +49,7 @@ public class GeodeSecurityUtilTest {
   }
 
   @Test
+  @Ignore
   public void testGetObjectFromFactoryMethod(){
     String string = GeodeSecurityUtil.getObjectOfType(Factories.class.getName()+".getString", String.class);
     assertNotNull(string);
