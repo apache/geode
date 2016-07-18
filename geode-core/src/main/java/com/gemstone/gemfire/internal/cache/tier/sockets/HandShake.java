@@ -899,7 +899,7 @@ public class HandShake implements ClientHandShake
       throws GemFireSecurityException, IOException {
 
     Properties credentials = null;
-    boolean requireAuthentication = GeodeSecurityUtil.isSecurityRequired(system.getSecurityProperties());
+    boolean requireAuthentication = GeodeSecurityUtil.isClientSecurityRequired(system.getSecurityProperties());
     try {
       byte secureMode = dis.readByte();
       if (secureMode == CREDENTIALS_NONE) {
@@ -1161,7 +1161,7 @@ public class HandShake implements ClientHandShake
     // non-blank setting for DH symmetric algo, or this is a server
     // that has authenticator defined.
     if ((dhSKAlgo != null && dhSKAlgo.length() > 0)
-        || GeodeSecurityUtil.isSecurityRequired(config.getSecurityProps())) {
+        || GeodeSecurityUtil.isClientSecurityRequired(config.getSecurityProps())) {
       KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH");
       DHParameterSpec dhSpec = new DHParameterSpec(dhP, dhG, dhL);
       keyGen.initialize(dhSpec);
@@ -1638,7 +1638,7 @@ public class HandShake implements ClientHandShake
       DataOutputStream dos, DistributedSystem system)
       throws GemFireSecurityException, IOException {
 
-    boolean requireAuthentication = GeodeSecurityUtil.isSecurityRequired(system.getSecurityProperties());
+    boolean requireAuthentication = GeodeSecurityUtil.isClientSecurityRequired(system.getSecurityProperties());
     Properties credentials = null;
     try {
       byte secureMode = dis.readByte();

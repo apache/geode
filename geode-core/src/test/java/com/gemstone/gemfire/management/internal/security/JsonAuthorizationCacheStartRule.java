@@ -24,6 +24,7 @@ import org.junit.rules.ExternalResource;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.security.JSONAuthorization;
 
 public class JsonAuthorizationCacheStartRule extends ExternalResource {
   private Cache cache;
