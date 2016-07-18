@@ -899,7 +899,7 @@ public class HandShake implements ClientHandShake
       throws GemFireSecurityException, IOException {
 
     Properties credentials = null;
-    boolean requireAuthentication = GeodeSecurityUtil.isSecurityRequired(system.getSecurityProperties());
+    boolean requireAuthentication = GeodeSecurityUtil.isSecurityRequired();
     try {
       byte secureMode = dis.readByte();
       if (secureMode == CREDENTIALS_NONE) {
@@ -1161,7 +1161,7 @@ public class HandShake implements ClientHandShake
     // non-blank setting for DH symmetric algo, or this is a server
     // that has authenticator defined.
     if ((dhSKAlgo != null && dhSKAlgo.length() > 0)
-        || GeodeSecurityUtil.isSecurityRequired(config.getSecurityProps())) {
+        || GeodeSecurityUtil.isSecurityRequired()) {
       KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH");
       DHParameterSpec dhSpec = new DHParameterSpec(dhP, dhG, dhL);
       keyGen.initialize(dhSpec);
@@ -1599,19 +1599,13 @@ public class HandShake implements ClientHandShake
     Properties credentials = null;
     try {
       if (authInitMethod != null && authInitMethod.length() > 0) {
-        Method instanceGetter = ClassLoadUtil.methodFromName(authInitMethod);
-        AuthInitialize auth = (AuthInitialize)instanceGetter.invoke(null,
-            (Object[])null);
-        if (auth != null) {
-          auth.init(logWriter, 
-                    securityLogWriter);
-          try {
-            credentials = auth.getCredentials(securityProperties, server,
-                isPeer);
-          }
-          finally {
-            auth.close();
-          }
+        AuthInitialize auth = GeodeSecurityUtil.getObjectOfType(authInitMethod, AuthInitialize.class);
+        auth.init(logWriter, securityLogWriter);
+        try {
+          credentials = auth.getCredentials(securityProperties, server, isPeer);
+        }
+        finally {
+          auth.close();
         }
       }
     }
@@ -1638,7 +1632,7 @@ public class HandShake implements ClientHandShake
       DataOutputStream dos, DistributedSystem system)
       throws GemFireSecurityException, IOException {
 
-    boolean requireAuthentication = GeodeSecurityUtil.isSecurityRequired(system.getSecurityProperties());
+    boolean requireAuthentication = GeodeSecurityUtil.isSecurityRequired();
     Properties credentials = null;
     try {
       byte secureMode = dis.readByte();

@@ -103,6 +103,7 @@ public final class SecurityTestUtils {
   protected static final int NOTAUTHZ_EXCEPTION = 4;
   protected static final int OTHER_EXCEPTION = 5;
   protected static final int NO_AVAILABLE_SERVERS = 6;
+  protected static final int SECURITY_EXCEPTION = 7;
   // Indicates that AuthReqException may not necessarily be thrown
   protected static final int NOFORCE_AUTHREQ_EXCEPTION = 16;
 
@@ -467,6 +468,14 @@ public final class SecurityTestUtils {
         fail("Got unexpected exception when starting client", ex);
       }
 
+    }
+    catch (GemFireSecurityException ex){
+      if(expectedResult == SECURITY_EXCEPTION){
+        getLogWriter().info("Got expected exception when starting client: " + ex);
+      }
+      else {
+        fail("Got unexpected exception when starting client", ex);
+      }
     }
     catch (Exception ex) {
       fail("Got unexpected exception when starting client", ex);

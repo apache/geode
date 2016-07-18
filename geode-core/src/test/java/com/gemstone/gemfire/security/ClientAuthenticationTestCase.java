@@ -221,7 +221,7 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     Properties credentials = gen.getValidCredentials(1);
     getLogWriter().info("testInvalidAuthInit: For first client credentials: " + credentials + " : " + javaProps);
 
-    client1.invoke(() -> createCacheClient("com.gemstone.none", credentials, javaProps, new int[] { port1 }, 0, false, multiUser, true, AUTHREQ_EXCEPTION));
+    client1.invoke(() -> createCacheClient("com.gemstone.none", credentials, javaProps, new int[] { port1 }, 0, false, multiUser, true, SECURITY_EXCEPTION));
   }
 
   protected void doTestNoAuthInitWithCredentials(final boolean multiUser) throws Exception {
@@ -477,7 +477,7 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     // Now try to connect client2 with invalid auth-init method
     // Trying to create the region on client with valid credentials should
     // throw a security exception
-    client2.invoke(() -> createCacheClient("com.gemstone.none", credentials1, javaProps1, port1, port2, zeroConns, multiUser, AUTHREQ_EXCEPTION));
+    client2.invoke(() -> createCacheClient("com.gemstone.none", credentials1, javaProps1, port1, port2, zeroConns, multiUser, SECURITY_EXCEPTION));
 
     // Try connection with null auth-init on clients.
     // Skip this test for a scheme which does not have an authInit in the

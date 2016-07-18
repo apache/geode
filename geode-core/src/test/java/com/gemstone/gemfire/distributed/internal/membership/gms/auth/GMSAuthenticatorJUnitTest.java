@@ -16,6 +16,19 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.auth;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
+import java.security.Principal;
+import java.util.Properties;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -27,19 +40,6 @@ import com.gemstone.gemfire.security.Authenticator;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
-
-import java.security.Principal;
-import java.util.Properties;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 @Category({ UnitTest.class, SecurityTest.class })
 public class GMSAuthenticatorJUnitTest {
@@ -108,13 +108,13 @@ public class GMSAuthenticatorJUnitTest {
   @Test
   public void testGetCredentialWithNotExistAuth() throws Exception {
     props.setProperty(SECURITY_PEER_AUTH_INIT, prefix + "NotExistAuth.create");
-    verifyNegativeGetCredential(props, "Failed to acquire AuthInitialize method");
+    verifyNegativeGetCredential(props, "Instance could not be obtained");
   }
 
   @Test
   public void testGetCredentialWithNullAuth() throws Exception {
     props.setProperty(SECURITY_PEER_AUTH_INIT, prefix + "TestAuthInit1.create");
-    verifyNegativeGetCredential(props, "AuthInitialize instance could not be obtained");
+    verifyNegativeGetCredential(props, "Instance could not be obtained");
   }
 
   @Test
@@ -198,7 +198,7 @@ public class GMSAuthenticatorJUnitTest {
     assertTrue(result, result.startsWith(expectedError));
   }
 
-  private static class TestAuthInit1 implements AuthInitialize {
+  public static class TestAuthInit1 implements AuthInitialize {
     public static AuthInitialize create() {
       return null;
     }
@@ -214,7 +214,7 @@ public class GMSAuthenticatorJUnitTest {
     }
   }
 
-  private static class TestAuthInit2 extends TestAuthInit1 {
+  public static class TestAuthInit2 extends TestAuthInit1 {
 
     private static TestAuthInit2 instance = null;
     private static int createCount = 0;
@@ -245,7 +245,7 @@ public class GMSAuthenticatorJUnitTest {
   }
 
   // used by reflection by test
-  private static class TestAuthInit3 extends TestAuthInit1 {
+  public static class TestAuthInit3 extends TestAuthInit1 {
     public static AuthInitialize create() {
       return new TestAuthInit3();
     }
@@ -255,13 +255,13 @@ public class GMSAuthenticatorJUnitTest {
     }
   }
 
-  private static class TestAuthInit4 extends TestAuthInit1 {
+  public static class TestAuthInit4 extends TestAuthInit1 {
     public static AuthInitialize create() {
       return new TestAuthInit4();
     }
   }
 
-  private static class TestAuthenticator1 implements Authenticator {
+  public static class TestAuthenticator1 implements Authenticator {
     public static Authenticator create() {
       return null;
     }
@@ -277,7 +277,7 @@ public class GMSAuthenticatorJUnitTest {
     }
   }
 
-  private static class TestAuthenticator2 extends TestAuthenticator1 {
+  public static class TestAuthenticator2 extends TestAuthenticator1 {
     public static Authenticator create() {
       return new TestAuthenticator2();
     }
@@ -287,7 +287,7 @@ public class GMSAuthenticatorJUnitTest {
     }
   }
 
-  private static class TestAuthenticator3 extends TestAuthenticator1 {
+  public static class TestAuthenticator3 extends TestAuthenticator1 {
     public static Authenticator create() {
       return new TestAuthenticator3();
     }
@@ -297,7 +297,7 @@ public class GMSAuthenticatorJUnitTest {
     }
   }
 
-  private static class TestAuthenticator4 extends TestAuthenticator1 {
+  public static class TestAuthenticator4 extends TestAuthenticator1 {
 
     private static Authenticator instance = null;
     private static int createCount = 0;
