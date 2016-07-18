@@ -32,7 +32,6 @@ import com.gemstone.gemfire.cache.DynamicRegionFactory;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.operations.RegisterInterestOperationContext;
 import com.gemstone.gemfire.i18n.StringId;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,7 +48,7 @@ public class RegisterInterestList61 extends BaseCommand {
     return singleton;
   }
 
-  private RegisterInterestList61() {
+  RegisterInterestList61() {
   }
 
   @Override
@@ -175,9 +174,8 @@ public class RegisterInterestList61 extends BaseCommand {
       return;
     }
 
-    GeodeSecurityUtil.authorizeRegionRead(regionName);
 
-    LocalRegion region = (LocalRegion)crHelper.getRegion(regionName);
+    LocalRegion region = (LocalRegion)servConn.getCache().getRegion(regionName);
     if (region == null) {
       logger.info(LocalizedMessage.create(LocalizedStrings.RegisterInterestList_0_REGION_NAMED_1_WAS_NOT_FOUND_DURING_REGISTER_INTEREST_LIST_REQUEST, new Object[]{servConn.getName(), regionName}));
       // writeChunkedErrorResponse(msg,
@@ -185,6 +183,7 @@ public class RegisterInterestList61 extends BaseCommand {
       // responded = true;
     } // else { // region not null
     try {
+      this.securityService.authorizeRegionRead(regionName);
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {
         // TODO SW: This is a workaround for DynamicRegionFactory

@@ -716,176 +716,176 @@ public class CacheServerStats implements MessageStats {
     loadPerQueueId = this.stats.nameToId("loadPerQueue");
   }
 
-  public final void incAcceptThreadsCreated() {
+  public void incAcceptThreadsCreated() {
     this.stats.incInt(acceptThreadStartsId, 1);
   }
-  public final void incConnectionThreadsCreated() {
+  public void incConnectionThreadsCreated() {
     this.stats.incInt(connectionThreadStartsId, 1);
   }
-  public final void incAcceptsInProgress() {
+  public void incAcceptsInProgress() {
     this.stats.incInt(acceptsInProgressId, 1);
   }
-  public final void decAcceptsInProgress() {
+  public void decAcceptsInProgress() {
     this.stats.incInt(acceptsInProgressId, -1);
   }
-  public final void incConnectionThreads() {
+  public void incConnectionThreads() {
     this.stats.incInt(connectionThreadsId, 1);
   }
-  public final void decConnectionThreads() {
+  public void decConnectionThreads() {
     this.stats.incInt(connectionThreadsId, -1);
   }
 
-  public final void incAbandonedWriteRequests() {
+  public void incAbandonedWriteRequests() {
     this.stats.incInt(abandonedWriteRequestsId, 1);
   }
 
-  public final void incAbandonedReadRequests() {
+  public void incAbandonedReadRequests() {
     this.stats.incInt(abandonedReadRequestsId, 1);
   }
 
-  public final void incFailedConnectionAttempts() {
+  public void incFailedConnectionAttempts() {
     this.stats.incInt(failedConnectionAttemptsId, 1);
   }
 
-  public final void incConnectionsTimedOut() {
+  public void incConnectionsTimedOut() {
     this.stats.incInt(connectionsTimedOutId, 1);
   }
 
-  public final void incCurrentClientConnections()
+  public void incCurrentClientConnections()
   {
     this.stats.incInt(currentClientConnectionsId, 1);
   }
 
-  public final void decCurrentClientConnections()
+  public void decCurrentClientConnections()
   {
     this.stats.incInt(currentClientConnectionsId, -1);
   }
 
-  public final int getCurrentClientConnections()
+  public int getCurrentClientConnections()
   {
     return this.stats.getInt(currentClientConnectionsId);
   }
 
-  public final void incCurrentQueueConnections()
+  public void incCurrentQueueConnections()
   {
     this.stats.incInt(currentQueueConnectionsId, 1);
   }
 
-  public final void decCurrentQueueConnections()
+  public void decCurrentQueueConnections()
   {
     this.stats.incInt(currentQueueConnectionsId, -1);
   }
 
-  public final int getCurrentQueueConnections()
+  public int getCurrentQueueConnections()
   {
     return this.stats.getInt(currentQueueConnectionsId);
   }
 
-  public final void incCurrentClients()
+  public void incCurrentClients()
   {
     this.stats.incInt(currentClientsId, 1);
   }
 
-  public final void decCurrentClients()
+  public void decCurrentClients()
   {
     this.stats.incInt(currentClientsId, -1);
   }
 
-  public final void incThreadQueueSize() {
+  public void incThreadQueueSize() {
     this.stats.incInt(threadQueueSizeId, 1);
   }
-  public final void decThreadQueueSize() {
+  public void decThreadQueueSize() {
     this.stats.incInt(threadQueueSizeId, -1);
   }
 
-  public final void incReadGetRequestTime(long delta)
+  public void incReadGetRequestTime(long delta)
   {
     this.stats.incLong(readGetRequestTimeId, delta);
     this.stats.incInt(getRequestsId, 1);
   }
 
-  public final void incProcessGetTime(long delta)
+  public void incProcessGetTime(long delta)
   {
     this.stats.incLong(processGetTimeId, delta);
   }
 
-  public final void incWriteGetResponseTime(long delta)
+  public void incWriteGetResponseTime(long delta)
   {
     this.stats.incLong(writeGetResponseTimeId, delta);
     this.stats.incInt(getResponsesId, 1);
   }
 
-  public final void incReadPutAllRequestTime(long delta) {
+  public void incReadPutAllRequestTime(long delta) {
     this.stats.incLong(readPutAllRequestTimeId, delta);
     this.stats.incInt(putAllRequestsId, 1);
   }
 
-  public final void incProcessPutAllTime(long delta) {
+  public void incProcessPutAllTime(long delta) {
     this.stats.incLong(processPutAllTimeId, delta);
   }
 
-  public final void incWritePutAllResponseTime(long delta) {
+  public void incWritePutAllResponseTime(long delta) {
     this.stats.incLong(writePutAllResponseTimeId, delta);
     this.stats.incInt(putAllResponsesId, 1);
   }
 
-  public final void incReadRemoveAllRequestTime(long delta) {
+  public void incReadRemoveAllRequestTime(long delta) {
     this.stats.incLong(readRemoveAllRequestTimeId, delta);
     this.stats.incInt(removeAllRequestsId, 1);
   }
 
-  public final void incProcessRemoveAllTime(long delta) {
+  public void incProcessRemoveAllTime(long delta) {
     this.stats.incLong(processRemoveAllTimeId, delta);
   }
 
-  public final void incWriteRemoveAllResponseTime(long delta) {
+  public void incWriteRemoveAllResponseTime(long delta) {
     this.stats.incLong(writeRemoveAllResponseTimeId, delta);
     this.stats.incInt(removeAllResponsesId, 1);
   }
 
-  public final void incReadGetAllRequestTime(long delta) {
+  public void incReadGetAllRequestTime(long delta) {
     this.stats.incLong(readGetAllRequestTimeId, delta);
     this.stats.incInt(getAllRequestsId, 1);
   }
 
-  public final void incProcessGetAllTime(long delta) {
+  public void incProcessGetAllTime(long delta) {
     this.stats.incLong(processGetAllTimeId, delta);
   }
 
-  public final void incWriteGetAllResponseTime(long delta) {
+  public void incWriteGetAllResponseTime(long delta) {
     this.stats.incLong(writeGetAllResponseTimeId, delta);
     this.stats.incInt(getAllResponsesId, 1);
   }
 
-  public final void incReadPutRequestTime(long delta)
+  public void incReadPutRequestTime(long delta)
   {
     this.stats.incLong(readPutRequestTimeId, delta);
     this.stats.incInt(putRequestsId, 1);
   }
 
-  public final void incProcessPutTime(long delta)
+  public void incProcessPutTime(long delta)
   {
     this.stats.incLong(processPutTimeId, delta);
   }
 
-  public final void incWritePutResponseTime(long delta)
+  public void incWritePutResponseTime(long delta)
   {
     this.stats.incLong(writePutResponseTimeId, delta);
     this.stats.incInt(putResponsesId, 1);
   }
 
-  public final void incReadDestroyRequestTime(long delta)
+  public void incReadDestroyRequestTime(long delta)
   {
     this.stats.incLong(readDestroyRequestTimeId, delta);
     this.stats.incInt(destroyRequestsId, 1);
   }
 
-  public final void incProcessDestroyTime(long delta)
+  public void incProcessDestroyTime(long delta)
   {
     this.stats.incLong(processDestroyTimeId, delta);
   }
 
-  public final void incWriteDestroyResponseTime(long delta)
+  public void incWriteDestroyResponseTime(long delta)
   {
     this.stats.incLong(writeDestroyResponseTimeId, delta);
     this.stats.incInt(destroyResponsesId, 1);
@@ -893,18 +893,18 @@ public class CacheServerStats implements MessageStats {
   
   
 
-  public final void incReadInvalidateRequestTime(long delta)
+  public void incReadInvalidateRequestTime(long delta)
   {
 //    this.stats.incLong(readInvalidateRequestTimeId, delta);
 //    this.stats.incInt(invalidateRequestsId, 1);
   }
 
-  public final void incProcessInvalidateTime(long delta)
+  public void incProcessInvalidateTime(long delta)
   {
 //    this.stats.incLong(processInvalidateTimeId, delta);
   }
 
-  public final void incWriteInvalidateResponseTime(long delta)
+  public void incWriteInvalidateResponseTime(long delta)
   {
 //    this.stats.incLong(writeInvalidateResponseTimeId, delta);
 //    this.stats.incInt(invalidateResponsesId, 1);
@@ -912,18 +912,18 @@ public class CacheServerStats implements MessageStats {
 
   
 
-  public final void incReadSizeRequestTime(long delta)
+  public void incReadSizeRequestTime(long delta)
   {
 //    this.stats.incLong(readSizeRequestTimeId, delta);
 //    this.stats.incInt(sizeRequestsId, 1);
   }
 
-  public final void incProcessSizeTime(long delta)
+  public void incProcessSizeTime(long delta)
   {
 //    this.stats.incLong(processSizeTimeId, delta);
   }
 
-  public final void incWriteSizeResponseTime(long delta)
+  public void incWriteSizeResponseTime(long delta)
   {
 //    this.stats.incLong(writeSizeResponseTimeId, delta);
 //    this.stats.incInt(sizeResponsesId, 1);
@@ -931,148 +931,148 @@ public class CacheServerStats implements MessageStats {
 
   
 
-  public final void incReadQueryRequestTime(long delta) {
+  public void incReadQueryRequestTime(long delta) {
     this.stats.incLong(readQueryRequestTimeId, delta);
     this.stats.incInt(queryRequestsId, 1);
   }
 
-  public final void incProcessQueryTime(long delta) {
+  public void incProcessQueryTime(long delta) {
     this.stats.incLong(processQueryTimeId, delta);
   }
 
-  public final void incWriteQueryResponseTime(long delta) {
+  public void incWriteQueryResponseTime(long delta) {
     this.stats.incLong(writeQueryResponseTimeId, delta);
     this.stats.incInt(queryResponsesId, 1);
   }
 
-  public final void incProcessCreateCqTime(long delta) {
+  public void incProcessCreateCqTime(long delta) {
 	    //this.stats.incLong(processCreateCqTimeId, delta);
 	  }
-  public final void incProcessCloseCqTime(long delta) {
+  public void incProcessCloseCqTime(long delta) {
 	    //this.stats.incLong(processCloseCqTimeId, delta);
 	  }
-  public final void incProcessExecuteCqWithIRTime(long delta) {
+  public void incProcessExecuteCqWithIRTime(long delta) {
 	    //this.stats.incLong(processExecuteCqWithIRCqTimeId, delta);
 	  }
-public final void incProcessStopCqTime(long delta) {
+public void incProcessStopCqTime(long delta) {
 	    //this.stats.incLong(processStopCqTimeId, delta);
 	  }
-  public final void incProcessCloseClientCqsTime(long delta) {
+  public void incProcessCloseClientCqsTime(long delta) {
 	    //this.stats.incLong(processCloseClientCqsTimeId, delta);
 	  }
   
-  public final void incProcessGetCqStatsTime(long delta) {
+  public void incProcessGetCqStatsTime(long delta) {
 	    //this.stats.incLong(processGetCqStatsTimeId, delta);
 	  }
 
-  public final void incReadDestroyRegionRequestTime(long delta) {
+  public void incReadDestroyRegionRequestTime(long delta) {
     this.stats.incLong(readDestroyRegionRequestTimeId, delta);
     this.stats.incInt(destroyRegionRequestsId, 1);
   }
 
-  public final void incProcessDestroyRegionTime(long delta) {
+  public void incProcessDestroyRegionTime(long delta) {
     this.stats.incLong(processDestroyRegionTimeId, delta);
   }
 
-  public final void incWriteDestroyRegionResponseTime(long delta) {
+  public void incWriteDestroyRegionResponseTime(long delta) {
     this.stats.incLong(writeDestroyRegionResponseTimeId, delta);
     this.stats.incInt(destroyRegionResponsesId, 1);
   }
 
-  public final void incReadContainsKeyRequestTime(long delta) {
+  public void incReadContainsKeyRequestTime(long delta) {
     this.stats.incLong(readContainsKeyRequestTimeId, delta);
     this.stats.incInt(containsKeyRequestsId, 1);
   }
 
-  public final void incProcessContainsKeyTime(long delta) {
+  public void incProcessContainsKeyTime(long delta) {
     this.stats.incLong(processContainsKeyTimeId, delta);
   }
 
-  public final void incWriteContainsKeyResponseTime(long delta) {
+  public void incWriteContainsKeyResponseTime(long delta) {
     this.stats.incLong(writeContainsKeyResponseTimeId, delta);
     this.stats.incInt(containsKeyResponsesId, 1);
   }
 
-  public final void incReadClearRegionRequestTime(long delta)
+  public void incReadClearRegionRequestTime(long delta)
   {
     this.stats.incLong(readClearRegionRequestTimeId, delta);
     this.stats.incInt(clearRegionRequestsId, 1);
   }
 
-  public final void incProcessClearRegionTime(long delta)
+  public void incProcessClearRegionTime(long delta)
   {
     this.stats.incLong(processClearRegionTimeId, delta);
   }
 
-  public final void incWriteClearRegionResponseTime(long delta)
+  public void incWriteClearRegionResponseTime(long delta)
   {
     this.stats.incLong(writeClearRegionResponseTimeId, delta);
     this.stats.incInt(clearRegionResponsesId, 1);
   }
 
-  public final void incReadProcessBatchRequestTime(long delta) {
+  public void incReadProcessBatchRequestTime(long delta) {
     this.stats.incLong(readProcessBatchRequestTimeId, delta);
     this.stats.incInt(processBatchRequestsId, 1);
   }
 
-  public final void incWriteProcessBatchResponseTime(long delta)
+  public void incWriteProcessBatchResponseTime(long delta)
   {
     this.stats.incLong(writeProcessBatchResponseTimeId, delta);
     this.stats.incInt(processBatchResponsesId, 1);
   }
 
-  public final void incProcessBatchTime(long delta)
+  public void incProcessBatchTime(long delta)
   {
     this.stats.incLong(processBatchTimeId, delta);
   }
 
-  public final void incBatchSize(long size)
+  public void incBatchSize(long size)
   {
     this.stats.incLong(batchSizeId, size);
   }
 
-  public final void incReadClientNotificationRequestTime(long delta)
+  public void incReadClientNotificationRequestTime(long delta)
   {
     this.stats.incLong(readClientNotificationRequestTimeId, delta);
     this.stats.incInt(clientNotificationRequestsId, 1);
   }
 
-  public final void incProcessClientNotificationTime(long delta)
+  public void incProcessClientNotificationTime(long delta)
   {
     this.stats.incLong(processClientNotificationTimeId, delta);
   }
 
-  public final void incReadUpdateClientNotificationRequestTime(long delta)
+  public void incReadUpdateClientNotificationRequestTime(long delta)
   {
     this.stats.incLong(readUpdateClientNotificationRequestTimeId, delta);
     this.stats.incInt(updateClientNotificationRequestsId, 1);
   }
 
-  public final void incProcessUpdateClientNotificationTime(long delta)
+  public void incProcessUpdateClientNotificationTime(long delta)
   {
     this.stats.incLong(processUpdateClientNotificationTimeId, delta);
   }
 
-  public final void incReadCloseConnectionRequestTime(long delta)
+  public void incReadCloseConnectionRequestTime(long delta)
   {
     this.stats.incLong(readCloseConnectionRequestTimeId, delta);
     this.stats.incInt(closeConnectionRequestsId, 1);
   }
 
-  public final void incProcessCloseConnectionTime(long delta)
+  public void incProcessCloseConnectionTime(long delta)
   {
     this.stats.incLong(processCloseConnectionTimeId, delta);
   }
 
-  public final void incOutOfOrderBatchIds()
+  public void incOutOfOrderBatchIds()
   {
     this.stats.incInt(outOfOrderBatchIdsId, 1);
   }
 
-  public final void incReceivedBytes(long v) {
+  public void incReceivedBytes(long v) {
     this.stats.incLong(receivedBytesId, v);
   }
-  public final void incSentBytes(long v) {
+  public void incSentBytes(long v) {
     this.stats.incLong(sentBytesId, v);
   }
   public void incMessagesBeingReceived(int bytes) {
@@ -1088,46 +1088,46 @@ public final void incProcessStopCqTime(long delta) {
     }
   }
 
-  public final void incReadClientReadyRequestTime(long delta) {
+  public void incReadClientReadyRequestTime(long delta) {
     this.stats.incLong(readClientReadyRequestTimeId, delta);
     this.stats.incInt(clientReadyRequestsId, 1);
   }
 
-  public final void incProcessClientReadyTime(long delta) {
+  public void incProcessClientReadyTime(long delta) {
     this.stats.incLong(processClientReadyTimeId, delta);
   }
 
-  public final void incWriteClientReadyResponseTime(long delta)
+  public void incWriteClientReadyResponseTime(long delta)
   {
     this.stats.incLong(writeClientReadyResponseTimeId, delta);
     this.stats.incInt(clientReadyResponsesId, 1);
   }
   
-  public final void setLoad(ServerLoad load) {
+  public void setLoad(ServerLoad load) {
     this.stats.setDouble(connectionLoadId, load.getConnectionLoad());
     this.stats.setDouble(queueLoadId, load.getSubscriptionConnectionLoad());
     this.stats.setDouble(loadPerConnectionId, load.getLoadPerConnection());
     this.stats.setDouble(loadPerQueueId, load.getLoadPerSubscriptionConnection());
   }
 
-  public final double getQueueLoad() {
+  public double getQueueLoad() {
     return this.stats.getDouble(queueLoadId);
   }
-  public final double getLoadPerQueue() {
+  public double getLoadPerQueue() {
     return this.stats.getDouble(loadPerQueueId);
   }
-  public final double getConnectionLoad() {
+  public double getConnectionLoad() {
     return this.stats.getDouble(connectionLoadId);
   }
-  public final double getLoadPerConnection() {
+  public double getLoadPerConnection() {
     return this.stats.getDouble(loadPerConnectionId);
   }
   
- public final int getProcessBatchRequests(){
+ public int getProcessBatchRequests(){
    return this.stats.getInt(processBatchRequestsId);
  }
   
-  public final void close() {
+  public void close() {
     this.stats.close();
   }
 

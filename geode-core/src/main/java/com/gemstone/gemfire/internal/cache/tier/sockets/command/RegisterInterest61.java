@@ -42,7 +42,7 @@ import com.gemstone.gemfire.internal.cache.vmotion.VMotionObserverHolder;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+
 /**
  * @since GemFire 6.1
  */
@@ -59,7 +59,7 @@ public class RegisterInterest61 extends BaseCommand {
     return singleton;
   }
 
-  private RegisterInterest61() {
+  RegisterInterest61() {
   }
 
   @Override
@@ -175,15 +175,8 @@ public class RegisterInterest61 extends BaseCommand {
       return;
     }
 
-    if(interestType == InterestType.REGULAR_EXPRESSION) {
-      GeodeSecurityUtil.authorizeRegionRead(regionName);
-    }
-    else {
-      GeodeSecurityUtil.authorizeRegionRead(regionName, key.toString());
-    }
-
     // input key not null
-    LocalRegion region = (LocalRegion)crHelper.getRegion(regionName);
+    LocalRegion region = (LocalRegion)servConn.getCache().getRegion(regionName);
     if (region == null) {
       logger.info(LocalizedMessage.create(LocalizedStrings.RegisterInterest_0_REGION_NAMED_1_WAS_NOT_FOUND_DURING_REGISTER_INTEREST_REQUEST, new Object[] {servConn.getName(), regionName}));
       // writeChunkedErrorResponse(msg,
@@ -192,6 +185,14 @@ public class RegisterInterest61 extends BaseCommand {
     }
     // Register interest
     try {
+
+      if(interestType == InterestType.REGULAR_EXPRESSION) {
+        this.securityService.authorizeRegionRead(regionName);
+      }
+      else {
+        this.securityService.authorizeRegionRead(regionName, key.toString());
+      }
+
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {
         // TODO SW: This is a workaround for DynamicRegionFactory

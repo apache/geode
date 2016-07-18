@@ -20,6 +20,7 @@ import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.DummyStatisticsImpl;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 
 public class FunctionStats {
@@ -233,14 +234,17 @@ public class FunctionStats {
   private final Statistics _stats;
   
   /** This is an instance of the FunctionStats when the statsDisabled = true;*/
-  private static FunctionStats disabledStats ;
+  private final static FunctionStats dummy = createDummy();
   
   // ///////////////////// Constructors ///////////////////////
 
   private FunctionStats() {
-    InternalDistributedSystem iDS = InternalDistributedSystem.getAnyInstance();
-    this._stats = iDS.createAtomicStatistics(this._type);
-    aggregateStats = iDS.getFunctionServiceStats();
+    this._stats = new DummyStatisticsImpl(this._type, null, 0);
+    this.aggregateStats = FunctionServiceStats.createDummy();
+  }
+
+  static FunctionStats createDummy() {
+    return new FunctionStats();
   }
   
   /**
@@ -256,15 +260,6 @@ public class FunctionStats {
     this._stats = factory.createAtomicStatistics(_type,name);
     aggregateStats = ((InternalDistributedSystem)factory).getFunctionServiceStats();
   }
-  
-
-//  // /////////////////// Instance Methods /////////////////////
-//
-//  public FunctionStats(Statistics statistics) {
-//    this._stats = statistics;
-//  }
-
-
 
   /**
    * Closes the <code>FunctionServiceStats</code>.
@@ -512,22 +507,25 @@ public class FunctionStats {
    *          represents the Distributed System       
    * @return object of the FunctionStats
    */
-  
-  public static FunctionStats getFunctionStats(String functionID,
-      InternalDistributedSystem ds) {
-    boolean statsDisabled = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "statsDisabled");
-    if (statsDisabled) {
-      if(disabledStats == null){
-        disabledStats = new FunctionStats();
-      }
-      return disabledStats;
-    }
-   else {
-      if (ds == null) {
-        ds = InternalDistributedSystem.getAnyInstance();
-      }
+  public static FunctionStats getFunctionStats(String functionID, InternalDistributedSystem ds) {
+    if (isDisabled()) {
+      return dummy;
+    } else {
       return ds.getFunctionStats(functionID);
     }
+  }
+
+  public static FunctionStats getFunctionStats(String functionID) {
+    if (isDisabled()) {
+      return dummy;
+    } else {
+      InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
+      return ds.getFunctionStats(functionID);
+    }
+  }
+
+  private static boolean isDisabled() {
+    return Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "statsDisabled");
   }
 }
 

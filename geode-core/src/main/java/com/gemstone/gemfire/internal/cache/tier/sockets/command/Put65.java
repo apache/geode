@@ -14,9 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- *
- */
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
 import java.io.DataOutput;
@@ -53,7 +50,7 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 
@@ -66,9 +63,6 @@ public class Put65 extends BaseCommand {
 
   public static Command getCommand() {
     return singleton;
-  }
-
-  protected Put65() {
   }
 
   @Override
@@ -189,7 +183,7 @@ public class Put65 extends BaseCommand {
       return;
     }
 
-    LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
+    LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
     if (region == null) {
       String reason = " was not found during put request";
       writeRegionDestroyedEx(msg, regionName, reason, servConn);
@@ -208,8 +202,6 @@ public class Put65 extends BaseCommand {
       servConn.setAsTrue(RESPONDED);
       return;
     }
-
-    GeodeSecurityUtil.authorizeRegionWrite(regionName, key.toString());
 
     ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
     long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
@@ -247,6 +239,9 @@ public class Put65 extends BaseCommand {
       boolean isObject = valuePart.isObject();
       boolean isMetaRegion = region.isUsedForMetaRegion();
       msg.setMetaRegion(isMetaRegion);
+
+      this.securityService.authorizeRegionWrite(regionName, key.toString());
+
       AuthorizeRequest authzRequest = null;
       if (!isMetaRegion) {
         authzRequest = servConn.getAuthzRequest();

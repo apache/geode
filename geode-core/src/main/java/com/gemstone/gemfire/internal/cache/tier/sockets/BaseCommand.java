@@ -41,10 +41,10 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.security.NotAuthorizedException;
 
 import org.apache.logging.log4j.Logger;
 
@@ -53,9 +53,6 @@ import java.util.*;
 import java.util.concurrent.Semaphore;
 import java.util.regex.Pattern;
 
-/**
- *
- */
 public abstract class BaseCommand implements Command {
   protected static final Logger logger = LogService.getLogger();
 
@@ -120,6 +117,8 @@ public abstract class BaseCommand implements Command {
     incomingMsgLimiter = tmp;
 
   }
+
+  protected SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   final public void execute(Message msg, ServerConnection servConn) {
     // Read the request and update the statistics

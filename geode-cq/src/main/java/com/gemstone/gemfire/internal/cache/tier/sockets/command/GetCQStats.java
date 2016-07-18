@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerStats;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 
 public class GetCQStats extends BaseCQCommand {
@@ -71,7 +70,7 @@ public class GetCQStats extends BaseCQCommand {
       return;
     }
 
-    GeodeSecurityUtil.authorizeClusterRead();
+    this.securityService.authorizeClusterRead();
     // Process the cq request
     try {
       // make sure the cqservice has been created

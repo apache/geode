@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 
 public class GetDurableCQs extends BaseCQCommand {
@@ -71,7 +70,7 @@ public class GetDurableCQs extends BaseCQCommand {
       qService = (DefaultQueryService) ((GemFireCacheImpl) crHelper.getCache())
           .getLocalQueryService();
 
-      GeodeSecurityUtil.authorizeClusterRead();
+      this.securityService.authorizeClusterRead();
 
       // Authorization check
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
