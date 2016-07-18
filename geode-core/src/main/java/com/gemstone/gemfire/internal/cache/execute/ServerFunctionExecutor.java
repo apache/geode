@@ -147,7 +147,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
 
   private ResultCollector executeOnServer(Function function,
       ResultCollector rc, byte hasResult) {
-    FunctionStats stats = FunctionStats.getFunctionStats(function.getId(), null);
+    FunctionStats stats = FunctionStats.getFunctionStats(function.getId());
     try {
       validateExecution(function, null);
       long start = stats.startTime();
@@ -174,7 +174,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
   
   private ResultCollector executeOnServer(String functionId,
       ResultCollector rc, byte hasResult, boolean isHA, boolean optimizeForWrite) {
-    FunctionStats stats = FunctionStats.getFunctionStats(functionId, null);
+    FunctionStats stats = FunctionStats.getFunctionStats(functionId);
     try {
       validateExecution(null, null);
       long start = stats.startTime();
@@ -199,7 +199,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
   }
 
   private void executeOnServerNoAck(Function function, byte hasResult) {
-    FunctionStats stats = FunctionStats.getFunctionStats(function.getId(), null);
+    FunctionStats stats = FunctionStats.getFunctionStats(function.getId());
     try {
       validateExecution(function, null);
       long start = stats.startTime();
@@ -223,7 +223,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
 
   private void executeOnServerNoAck(String functionId, byte hasResult,
       boolean isHA, boolean optimizeForWrite) {
-    FunctionStats stats = FunctionStats.getFunctionStats(functionId, null);
+    FunctionStats stats = FunctionStats.getFunctionStats(functionId);
     try {
       validateExecution(null, null);
       long start = stats.startTime();

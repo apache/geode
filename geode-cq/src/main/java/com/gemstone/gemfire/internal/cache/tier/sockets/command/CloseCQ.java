@@ -33,7 +33,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 
 public class CloseCQ extends BaseCQCommand {
@@ -75,7 +74,7 @@ public class CloseCQ extends BaseCQCommand {
       return;
     }
 
-    GeodeSecurityUtil.authorizeDataManage();
+    this.securityService.authorizeDataManage();
 
     // Process CQ close request
     try {

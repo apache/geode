@@ -38,7 +38,8 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.internal.util.ArrayUtils;
 import com.gemstone.gemfire.management.DistributedSystemMXBean;
 import com.gemstone.gemfire.management.ManagementService;
@@ -86,7 +87,7 @@ public abstract class AbstractCommandsController {
 
   private MemberMXBean managingMemberMXBeanProxy;
 
-
+private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   private Class accessControlKlass;
 
@@ -554,7 +555,7 @@ public abstract class AbstractCommandsController {
         return new ResponseEntity<String>(result, HttpStatus.OK);
       }
     };
-    return GeodeSecurityUtil.associateWith(callable);
+    return this.securityService.associateWith(callable);
   }
 
 

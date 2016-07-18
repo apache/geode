@@ -31,17 +31,18 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Authe
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.security.AuthInitialize;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 
-// static messages
-
 public class GMSAuthenticator implements Authenticator {
 
   private Services services;
   private Properties securityProps;
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   @Override
   public void init(Services s) {
@@ -107,7 +108,7 @@ public class GMSAuthenticator implements Authenticator {
    * Method is package protected to be used in testing.
    */
   String authenticate(DistributedMember member, Properties credentials, Properties secProps, DistributedMember localMember) throws AuthenticationFailedException {
-    if(!GeodeSecurityUtil.isPeerSecurityRequired()){
+    if (!this.securityService.isPeerSecurityRequired()) {
       return null;
     }
 
@@ -120,10 +121,10 @@ public class GMSAuthenticator implements Authenticator {
 
     String failMsg = null;
     try {
-      if(GeodeSecurityUtil.isIntegratedSecurity()){
+      if(this.securityService.isIntegratedSecurity()){
         String username = credentials.getProperty("security-username");
         String password = credentials.getProperty("security-password");
-        GeodeSecurityUtil.login(username, password);
+        this.securityService.login(username, password);
       }
       else {
         invokeAuthenticator(secProps, member, credentials);
@@ -145,7 +146,7 @@ public class GMSAuthenticator implements Authenticator {
       String authMethod = securityProps.getProperty(SECURITY_PEER_AUTHENTICATOR);
     com.gemstone.gemfire.security.Authenticator auth = null;
     try {
-      auth = GeodeSecurityUtil.getObjectOfTypeFromFactoryMethod(authMethod, com.gemstone.gemfire.security.Authenticator .class);
+      auth = GeodeSecurityUtil.getObjectOfTypeFromFactoryMethod(authMethod, com.gemstone.gemfire.security.Authenticator.class);
 
       LogWriter logWriter = this.services.getLogWriter();
       LogWriter securityLogWriter = this.services.getSecurityLogWriter();
@@ -193,6 +194,7 @@ public class GMSAuthenticator implements Authenticator {
     try {
       if (authMethod != null && authMethod.length() > 0) {
         AuthInitialize auth = GeodeSecurityUtil.getObjectOfType(authMethod, AuthInitialize.class);
+        assert auth != null;
         try {
           LogWriter logWriter = services.getLogWriter();
           LogWriter securityLogWriter = services.getSecurityLogWriter();

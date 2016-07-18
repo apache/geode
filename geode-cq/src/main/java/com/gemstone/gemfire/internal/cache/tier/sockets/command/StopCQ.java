@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 
 public class StopCQ extends BaseCQCommand {
@@ -89,7 +88,7 @@ public class StopCQ extends BaseCQCommand {
       }
       InternalCqQuery cqQuery = cqService.getCq(serverCqName);
 
-      GeodeSecurityUtil.authorizeDataManage();
+      this.securityService.authorizeDataManage();
 
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {

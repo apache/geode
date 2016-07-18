@@ -551,7 +551,7 @@ public class ExecuteFunctionOp {
                   DistributedMember memberID = (DistributedMember)((ArrayList)resultResponse)
                       .get(1);
                   this.resultCollector.addResult(memberID, cause);
-                  FunctionStats.getFunctionStats(this.functionId, null)
+                  FunctionStats.getFunctionStats(this.functionId)
                       .incResultsReceived();
                   continue;
                 }
@@ -571,7 +571,7 @@ public class ExecuteFunctionOp {
                 synchronized (resultCollector) {
                   resultCollector.addResult(memberID, result);                    
                 }
-                FunctionStats.getFunctionStats(this.functionId, null)
+                FunctionStats.getFunctionStats(this.functionId)
                     .incResultsReceived();
               }
             }while(!executeFunctionResponseMsg.isLastChunk());

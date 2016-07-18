@@ -53,7 +53,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 
  * @since GemFire 7.0
  */
-public final class FunctionServiceManager {
+public class FunctionServiceManager {
   private final static ConcurrentHashMap<String, Function> idToFunctionMap = new ConcurrentHashMap<String, Function>();
 
   /**
