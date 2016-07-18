@@ -19,23 +19,17 @@ package com.gemstone.gemfire.internal.security;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
-import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.Principal;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
-import org.apache.geode.security.GeodePermission;
-import org.apache.geode.security.GeodePermission.Operation;
-import org.apache.geode.security.GeodePermission.Resource;
-import org.apache.geode.security.PostProcessor;
-import org.apache.geode.security.SecurityManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.ShiroException;
+import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.config.Ini.Section;
 import org.apache.shiro.config.IniSecurityManagerFactory;
@@ -53,7 +47,12 @@ import com.gemstone.gemfire.internal.security.shiro.ShiroPrincipal;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
+import org.apache.geode.security.GeodePermission;
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
 import com.gemstone.gemfire.security.NotAuthorizedException;
+import org.apache.geode.security.PostProcessor;
+import org.apache.geode.security.SecurityManager;
 
 public class GeodeSecurityUtil {
 
@@ -66,7 +65,7 @@ public class GeodeSecurityUtil {
    * @return the shiro subject, null if security is not enabled
    */
   public static Subject getSubject() {
-    if (!isIntegratedSecure) {
+    if (!isSecured()) {
       return null;
     }
 
@@ -103,7 +102,7 @@ public class GeodeSecurityUtil {
    * @return null if security is not enabled, otherwise return a shiro subject
    */
   public static Subject login(String username, String password) {
-    if (!isIntegratedSecure) {
+    if (!isSecured()) {
       return null;
     }
 
@@ -270,10 +269,18 @@ public class GeodeSecurityUtil {
     }
   }
 
+  private static boolean isSecured() {
+    try {
+      SecurityUtils.getSecurityManager();
+    }
+    catch (UnavailableSecurityManagerException e) {
+      return false;
+    }
+    return true;
+  }
+
   private static PostProcessor postProcessor;
   private static SecurityManager securityManager;
-  private static boolean isSecure;
-  private static boolean isIntegratedSecure;
 
   /**
    * initialize Shiro's Security Manager and Security Utilities
@@ -286,7 +293,6 @@ public class GeodeSecurityUtil {
 
     String shiroConfig = securityProps.getProperty(SECURITY_SHIRO_INIT);
     String securityConfig = securityProps.getProperty(SECURITY_MANAGER);
-    String clientAuthenticatorConfig = securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
 
     if (!StringUtils.isBlank(shiroConfig)) {
       IniSecurityManagerFactory factory = new IniSecurityManagerFactory("classpath:" + shiroConfig);
@@ -300,33 +306,24 @@ public class GeodeSecurityUtil {
 
       org.apache.shiro.mgt.SecurityManager securityManager = factory.getInstance();
       SecurityUtils.setSecurityManager(securityManager);
-      isSecure = true;
-      isIntegratedSecure = true;
     }
+
     // only set up shiro realm if user has implemented SecurityManager
     else if (!StringUtils.isBlank(securityConfig)) {
-      securityManager = getObjectOfTypeFromClassName(securityConfig, SecurityManager.class);
+      securityManager = getObjectOfType(securityConfig, SecurityManager.class);
       securityManager.init(securityProps);
       Realm realm = new CustomAuthRealm(securityManager);
       org.apache.shiro.mgt.SecurityManager shiroManager = new DefaultSecurityManager(realm);
       SecurityUtils.setSecurityManager(shiroManager);
-      isSecure = true;
-      isIntegratedSecure = true;
-    }
-    else if( !StringUtils.isBlank(clientAuthenticatorConfig)) {
-      isSecure = true;
-      isIntegratedSecure = false;
     }
     else {
       SecurityUtils.setSecurityManager(null);
-      isSecure = false;
-      isIntegratedSecure = false;
     }
 
     // this initializes the post processor
     String customPostProcessor = securityProps.getProperty(SECURITY_POST_PROCESSOR);
     if( !StringUtils.isBlank(customPostProcessor)) {
-      postProcessor = getObjectOfTypeFromClassName(customPostProcessor, PostProcessor.class);
+      postProcessor = getObjectOfType(customPostProcessor, PostProcessor.class);
       postProcessor.init(securityProps);
     }
     else{
@@ -345,8 +342,6 @@ public class GeodeSecurityUtil {
       postProcessor = null;
     }
     ThreadContext.remove();
-    isSecure = false;
-    isIntegratedSecure = false;
   }
 
   /**
@@ -354,7 +349,8 @@ public class GeodeSecurityUtil {
    * But if your postProcess is pretty involved with preparations and you need to bypass it entirely, call this first.
    */
   public static boolean needPostProcess(){
-    return (isIntegratedSecure && postProcessor != null);
+    Subject subject = getSubject();
+    return (subject != null && postProcessor != null);
   }
 
   public static Object postProcess(String regionPath, Object key, Object result){
@@ -371,14 +367,7 @@ public class GeodeSecurityUtil {
   }
 
 
-  /**
-   * this method would never return null, it either throws an exception or returns an object
-   * @param className
-   * @param expectedClazz
-   * @param <T>
-   * @return
-   */
-  public static <T> T getObjectOfTypeFromClassName(String className, Class<T> expectedClazz) {
+  public static <T> T getObjectOfType(String className, Class<T> expectedClazz) {
     Class actualClass = null;
     try {
       actualClass = ClassLoadUtil.classFromName(className);
@@ -400,58 +389,20 @@ public class GeodeSecurityUtil {
     return actualObject;
   }
 
-  /**
-   * this method would never return null, it either throws an exception or returns an object
-   * @param factoryMethodName
-   * @param expectedClazz
-   * @param <T>
-   * @return
-   */
-  public static <T> T getObjectOfTypeFromFactoryMethod(String factoryMethodName, Class<T> expectedClazz){
-    try {
-      Method factoryMethod = ClassLoadUtil.methodFromName(factoryMethodName);
-      T actualObject = (T)factoryMethod.invoke(null, (Object[])null);
-
-      if(actualObject == null){
-        throw new NullArgumentException("Factory method "+ factoryMethodName + " should not return null.");
-      }
-
-      return actualObject;
-    } catch (Exception e) {
-      throw new GemFireSecurityException(e.toString(), e);
-    }
-  }
-
-  /**
-   * this method would never return null, it either throws an exception or returns an object
-   * @param classOrMethod
-   * @param expectedClazz
-   * @param <T>
-   * @return an object of type expectedClazz. This method would never return null. It either returns an non-null
-   * object or throws exception.
-   */
-  public static <T> T getObjectOfType(String classOrMethod, Class<T> expectedClazz) {
-    T object = null;
-    try{
-      object = getObjectOfTypeFromClassName(classOrMethod, expectedClazz);
-    }
-    catch (Exception e){
-      object = getObjectOfTypeFromFactoryMethod(classOrMethod, expectedClazz);
-    }
-    return object;
-  }
-
   public static SecurityManager getSecurityManager(){
     return securityManager;
   }
 
 
-  public static boolean isSecurityRequired(){
-    return isSecure;
+  public static boolean isSecurityRequired(Properties securityProps){
+    String authenticator = securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
+    String securityManager = securityProps.getProperty(SECURITY_MANAGER);
+    return !StringUtils.isEmpty(authenticator) || !StringUtils.isEmpty(securityManager);
   }
 
-  public static boolean isIntegratedSecurity(){
-    return isIntegratedSecure;
+  public static boolean isIntegratedSecurity(Properties securityProps){
+    String securityManager = securityProps.getProperty(SECURITY_MANAGER);
+    return !StringUtils.isEmpty(securityManager);
   }
 
 }

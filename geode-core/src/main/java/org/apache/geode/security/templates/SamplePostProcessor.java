@@ -22,28 +22,14 @@ import java.util.Properties;
 
 import org.apache.geode.security.PostProcessor;
 
-/**
- * This is example that implements PostProcessor
- */
 public class SamplePostProcessor implements PostProcessor{
+  public static String MASK = "****";
 
   @Override
   public void init(final Properties securityProps) {
 
   }
 
-  /**
-   * this simply modifies the value with all the parameter values
-   * @param principal
-   *        The principal that's accessing the value
-   * @param regionName
-   *        The region that's been accessed. This could be null.
-   * @param key
-   *        the key of the value that's been accessed. This could be null.
-   * @param value
-   *        the value, this could be null.
-   * @return
-   */
   @Override
   public Object processRegionValue(Principal principal,
                                    String regionName,

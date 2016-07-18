@@ -16,14 +16,6 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.auth;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.*;
-
-import java.lang.reflect.Method;
-import java.security.Principal;
-import java.util.Properties;
-import java.util.Set;
-
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -34,11 +26,18 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Authe
 import com.gemstone.gemfire.internal.ClassLoadUtil;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.AuthInitialize;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
+
+import java.lang.reflect.Method;
+import java.security.Principal;
+import java.util.Properties;
+import java.util.Set;
+
+import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 // static messages
 
@@ -196,7 +195,12 @@ public class GMSAuthenticator implements Authenticator {
 
     try {
       if (authMethod != null && authMethod.length() > 0) {
-        AuthInitialize auth = GeodeSecurityUtil.getObjectOfType(authMethod, AuthInitialize.class);
+        Method getter = ClassLoadUtil.methodFromName(authMethod);
+        AuthInitialize auth = (AuthInitialize)getter.invoke(null, (Object[]) null);
+        if (auth == null) {
+          throw new AuthenticationRequiredException(AUTH_FAILED_TO_ACQUIRE_AUTHINITIALIZE_INSTANCE.toLocalizedString(authMethod));
+        }
+
         try {
           LogWriter logWriter = services.getLogWriter();
           LogWriter securityLogWriter = services.getSecurityLogWriter();

@@ -19,11 +19,6 @@ package org.apache.geode.security;
 
 import org.apache.shiro.authz.permission.WildcardPermission;
 
-/**
- * GeodePermission defines the resource, the operation, the region and the key involved in the action to be authorized.
- *
- * It is passed to the SecurityManager for the implementation to decide whether to grant a user this permission or not.
- */
 public class GeodePermission extends WildcardPermission {
 
   public static String ALL_REGIONS = "*";
@@ -42,34 +37,18 @@ public class GeodePermission extends WildcardPermission {
     READ
   }
 
-  /**
-   * Returns the resource, could be either DATA or CLUSTER
-   * @return
-   */
   public Resource getResource() {
     return resource;
   }
 
-  /**
-   * Returns the operation, could be either MANAGE, WRITE or READ
-   * @return
-   */
   public Operation getOperation() {
     return operation;
   }
 
-  /**
-   * returns the regionName, could be "*", meaning all regions
-   * @return
-   */
   public String getRegionName() {
     return regionName;
   }
 
-  /**
-   * returns the key, could be "*" meaning all keys.
-   * @return
-   */
   public String getKey() {
     return key;
   }

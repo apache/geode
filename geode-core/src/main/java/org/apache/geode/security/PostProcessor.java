@@ -44,7 +44,7 @@ public interface PostProcessor {
    * @param key
    *        the key of the value that's been accessed. This could be null.
    * @param value
-   *        the original value. The orginal value could be null as well.
+   *        the value, this could be null.
    * @return
    *        the value that will be returned to the requester
    */
