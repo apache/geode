@@ -39,8 +39,10 @@ import org.apache.geode.security.GeodePermission;
 import org.apache.geode.security.SecurityManager;
 import org.apache.shiro.authz.Permission;
 
+import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
+import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 
 /**
@@ -96,7 +98,7 @@ public class SampleSecurityManager implements SecurityManager {
       setUpWithJsonFile("security.json");
     }
     catch (IOException e) {
-      e.printStackTrace();
+      throw new GemFireSecurityException("Unable to read security.json", e);
     }
   }
 
@@ -117,8 +119,9 @@ public class SampleSecurityManager implements SecurityManager {
 
   public static void setUpWithJsonFile(String jsonFileName) throws IOException {
     InputStream input = ClassLoader.getSystemResourceAsStream(jsonFileName);
-    if (input == null)
-      return;
+    if (input == null) {
+      throw new GemFireSecurityException("Unable to find security.json in classpath");
+    }
 
     StringWriter writer = new StringWriter();
     IOUtils.copy(input, writer, "UTF-8");
