@@ -92,6 +92,8 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
 import com.gemstone.gemfire.security.AuthInitialize;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
@@ -118,7 +120,9 @@ public class HandShake implements ClientHandShake
   protected static final byte REPLY_WAN_CREDENTIALS = (byte)65;
   
   protected static final byte REPLY_AUTH_NOT_REQUIRED = (byte)66;
-
+  
+  private static SecurityService securityService = IntegratedSecurityService.getSecurityService();
+  
   private byte code;
   private int clientReadTimeout = PoolFactory.DEFAULT_READ_TIMEOUT;
 
@@ -899,7 +903,7 @@ public class HandShake implements ClientHandShake
       throws GemFireSecurityException, IOException {
 
     Properties credentials = null;
-    boolean requireAuthentication = GeodeSecurityUtil.isClientSecurityRequired();
+    boolean requireAuthentication = securityService.isClientSecurityRequired();
     try {
       byte secureMode = dis.readByte();
       if (secureMode == CREDENTIALS_NONE) {
@@ -1161,7 +1165,7 @@ public class HandShake implements ClientHandShake
     // non-blank setting for DH symmetric algo, or this is a server
     // that has authenticator defined.
     if ((dhSKAlgo != null && dhSKAlgo.length() > 0)
-        || GeodeSecurityUtil.isClientSecurityRequired()) {
+        || securityService.isClientSecurityRequired()) {
       KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH");
       DHParameterSpec dhSpec = new DHParameterSpec(dhP, dhG, dhL);
       keyGen.initialize(dhSpec);
@@ -1632,7 +1636,7 @@ public class HandShake implements ClientHandShake
       DataOutputStream dos, DistributedSystem system)
       throws GemFireSecurityException, IOException {
 
-    boolean requireAuthentication = GeodeSecurityUtil.isClientSecurityRequired();
+    boolean requireAuthentication = securityService.isClientSecurityRequired();
     Properties credentials = null;
     try {
       byte secureMode = dis.readByte();
@@ -1793,7 +1797,7 @@ public class HandShake implements ClientHandShake
       if(AcceptorImpl.isIntegratedSecurity()){
         String username = credentials.getProperty("security-username");
         String password = credentials.getProperty("security-password");
-        return GeodeSecurityUtil.login(username, password);
+        return securityService.login(username, password);
       }
       else {
         Method instanceGetter = ClassLoadUtil.methodFromName(authenticatorMethod);

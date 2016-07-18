@@ -107,6 +107,9 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
+import com.gemstone.gemfire.internal.util.BlobHelper;
 import com.gemstone.gemfire.security.AccessControl;
 
 /**
@@ -336,6 +339,8 @@ public class CacheClientProxy implements ClientSession {
   /** number of cq drains that are currently in progress **/
   private int numDrainsInProgress = 0;
   private final Object drainsInProgressLock = new Object();
+
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
   
   /**
    * Constructor.
@@ -1662,7 +1667,7 @@ public class CacheClientProxy implements ClientSession {
    */
   protected void deliverMessage(Conflatable conflatable)
   {
-    ThreadState state = GeodeSecurityUtil.bindSubject(this.subject);
+    ThreadState state = this.securityService.bindSubject(this.subject);
     ClientUpdateMessage clientMessage = null;
     if(conflatable instanceof HAEventWrapper) {
       clientMessage = ((HAEventWrapper)conflatable).getClientUpdateMessage();
@@ -1673,7 +1678,7 @@ public class CacheClientProxy implements ClientSession {
     this._statistics.incMessagesReceived();
 
     // post process
-    if(GeodeSecurityUtil.needPostProcess()) {
+    if(this.securityService.needPostProcess()) {
       Object oldValue = clientMessage.getValue();
       Object newValue = GeodeSecurityUtil.postProcess(clientMessage.getRegionName(), clientMessage.getKeyOfInterest(), oldValue, clientMessage.valueIsObject());
       clientMessage.setLatestValue(newValue);

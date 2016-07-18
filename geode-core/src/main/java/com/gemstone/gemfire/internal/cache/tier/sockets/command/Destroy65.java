@@ -17,11 +17,11 @@
 /**
  *
  */
-
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.security.Security;
 
 import com.gemstone.gemfire.cache.DynamicRegionFactory;
 import com.gemstone.gemfire.cache.EntryNotFoundException;
@@ -48,17 +48,12 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-
 
 public class Destroy65 extends BaseCommand {
 
   private final static Destroy65 singleton = new Destroy65();
-
-  protected Destroy65() {
-  }
 
   public static Command getCommand() {
     return singleton;
@@ -191,16 +186,13 @@ public class Destroy65 extends BaseCommand {
       return;
     }
 
-    LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
+    LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
     if (region == null) {
       String reason = LocalizedStrings.Destroy__0_WAS_NOT_FOUND_DURING_DESTROY_REQUEST.toLocalizedString(regionName);
       writeRegionDestroyedEx(msg, regionName, reason, servConn);
       servConn.setAsTrue(RESPONDED);
       return;
     }
-
-    // for integrated security
-    GeodeSecurityUtil.authorizeRegionWrite(regionName, key.toString());
 
     // Destroy the entry
     ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
@@ -227,6 +219,9 @@ public class Destroy65 extends BaseCommand {
     }
 
     try {
+      // for integrated security
+      this.securityService.authorizeRegionWrite(regionName, key.toString());
+
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {
         // TODO SW: This is to handle DynamicRegionFactory destroy

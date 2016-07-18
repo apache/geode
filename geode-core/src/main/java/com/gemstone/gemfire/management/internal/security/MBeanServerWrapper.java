@@ -44,6 +44,8 @@ import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 import javax.management.remote.MBeanServerForwarder;
 
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
@@ -57,6 +59,8 @@ import org.apache.geode.security.ResourcePermission;
  */
 public class MBeanServerWrapper implements MBeanServerForwarder {
   private MBeanServer mbs;
+
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   public MBeanServerWrapper(){
   }
@@ -147,7 +151,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   public Object getAttribute(ObjectName name, String attribute) throws MBeanException, InstanceNotFoundException,
       ReflectionException {
     ResourcePermission ctx = getOperationContext(name, attribute, false);
-    GeodeSecurityUtil.authorize(ctx);
+    this.securityService.authorize(ctx);
     Object result;
     try {
       result = mbs.getAttribute(name, attribute);
@@ -177,7 +181,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   public void setAttribute(ObjectName name, Attribute attribute) throws InstanceNotFoundException,
       AttributeNotFoundException, InvalidAttributeValueException, MBeanException, ReflectionException {
     ResourcePermission ctx = getOperationContext(name, attribute.getName(), false);
-    GeodeSecurityUtil.authorize(ctx);
+    this.securityService.authorize(ctx);
     mbs.setAttribute(name, attribute);
   }
 
@@ -200,7 +204,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
       throws InstanceNotFoundException, MBeanException, ReflectionException {
 
     ResourcePermission ctx = getOperationContext(name, operationName, true);
-    GeodeSecurityUtil.authorize(ctx);
+    this.securityService.authorize(ctx);
 
     Object result = mbs.invoke(name, operationName, params, signature);
 

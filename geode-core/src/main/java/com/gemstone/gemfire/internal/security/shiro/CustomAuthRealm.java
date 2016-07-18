@@ -73,7 +73,11 @@ public class CustomAuthRealm extends AuthorizingRealm {
 
     Principal principal  = securityManager.authenticate(credentialProps);
 
-    return new SimpleAuthenticationInfo(principal, authToken.getPassword(), REALM_NAME);
+    try {
+      return new SimpleAuthenticationInfo(principal, authToken.getPassword(), REALM_NAME);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("failed for " + username + " " + password, e);
+    }
   }
 
   @Override

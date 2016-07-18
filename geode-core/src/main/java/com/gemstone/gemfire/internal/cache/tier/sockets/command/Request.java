@@ -51,7 +51,7 @@ public class Request extends BaseCommand {
     return singleton;
   }
 
-  protected Request() {
+  Request() {
   }
 
   @Override
@@ -135,7 +135,7 @@ public class Request extends BaseCommand {
       servConn.setAsTrue(RESPONDED);
     }
     else {
-      Region region = crHelper.getRegion(regionName);
+      Region region = servConn.getCache().getRegion(regionName);
       if (region == null) {
         String reason = LocalizedStrings.Request__0_WAS_NOT_FOUND_DURING_GET_REQUEST.toLocalizedString(regionName);
         writeRegionDestroyedEx(msg, regionName, reason, servConn);
@@ -146,6 +146,7 @@ public class Request extends BaseCommand {
         GetOperationContext getContext = null;
         
           try {
+            this.securityService.authorizeRegionRead(regionName, key.toString());
             AuthorizeRequest authzRequest = servConn.getAuthzRequest();
               if (authzRequest != null) {
               getContext = authzRequest

@@ -27,6 +27,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
@@ -39,6 +41,8 @@ public class GeodeSecurityUtilWithIniFileJUnitTest {
 
   protected static Properties props = new Properties();
 
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
+
   @BeforeClass
   public static void beforeClass() throws Exception{
     props.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
@@ -47,22 +51,22 @@ public class GeodeSecurityUtilWithIniFileJUnitTest {
 
   @Test
   public void testRoot(){
-    GeodeSecurityUtil.login("root", "secret");
-    GeodeSecurityUtil.authorize(TestCommand.none);
-    GeodeSecurityUtil.authorize(TestCommand.everyOneAllowed);
-    GeodeSecurityUtil.authorize(TestCommand.dataRead);
-    GeodeSecurityUtil.authorize(TestCommand.dataWrite);
-    GeodeSecurityUtil.authorize(TestCommand.regionARead);
-    GeodeSecurityUtil.authorize(TestCommand.regionAWrite);
-    GeodeSecurityUtil.authorize(TestCommand.clusterWrite);
-    GeodeSecurityUtil.authorize(TestCommand.clusterRead);
+    this.securityService.login("root", "secret");
+    this.securityService.authorize(TestCommand.none);
+    this.securityService.authorize(TestCommand.everyOneAllowed);
+    this.securityService.authorize(TestCommand.dataRead);
+    this.securityService.authorize(TestCommand.dataWrite);
+    this.securityService.authorize(TestCommand.regionARead);
+    this.securityService.authorize(TestCommand.regionAWrite);
+    this.securityService.authorize(TestCommand.clusterWrite);
+    this.securityService.authorize(TestCommand.clusterRead);
   }
 
   @Test
   public void testGuest(){
-    GeodeSecurityUtil.login("guest", "guest");
-    GeodeSecurityUtil.authorize(TestCommand.none);
-    GeodeSecurityUtil.authorize(TestCommand.everyOneAllowed);
+    this.securityService.login("guest", "guest");
+    this.securityService.authorize(TestCommand.none);
+    this.securityService.authorize(TestCommand.everyOneAllowed);
 
     assertNotAuthorized(TestCommand.dataRead);
     assertNotAuthorized(TestCommand.dataWrite);
@@ -70,70 +74,70 @@ public class GeodeSecurityUtilWithIniFileJUnitTest {
     assertNotAuthorized(TestCommand.regionAWrite);
     assertNotAuthorized(TestCommand.clusterRead);
     assertNotAuthorized(TestCommand.clusterWrite);
-    GeodeSecurityUtil.logout();
+    this.securityService.logout();
   }
 
   @Test
   public void testRegionAReader(){
-    GeodeSecurityUtil.login("regionAReader", "password");
-    GeodeSecurityUtil.authorize(TestCommand.none);
-    GeodeSecurityUtil.authorize(TestCommand.everyOneAllowed);
-    GeodeSecurityUtil.authorize(TestCommand.regionARead);
+    this.securityService.login("regionAReader", "password");
+    this.securityService.authorize(TestCommand.none);
+    this.securityService.authorize(TestCommand.everyOneAllowed);
+    this.securityService.authorize(TestCommand.regionARead);
 
     assertNotAuthorized(TestCommand.regionAWrite);
     assertNotAuthorized(TestCommand.dataRead);
     assertNotAuthorized(TestCommand.dataWrite);
     assertNotAuthorized(TestCommand.clusterRead);
     assertNotAuthorized(TestCommand.clusterWrite);
-    GeodeSecurityUtil.logout();
+    this.securityService.logout();
   }
 
   @Test
   public void testRegionAUser(){
-    GeodeSecurityUtil.login("regionAUser", "password");
-    GeodeSecurityUtil.authorize(TestCommand.none);
-    GeodeSecurityUtil.authorize(TestCommand.everyOneAllowed);
-    GeodeSecurityUtil.authorize(TestCommand.regionAWrite);
-    GeodeSecurityUtil.authorize(TestCommand.regionARead);
+    this.securityService.login("regionAUser", "password");
+    this.securityService.authorize(TestCommand.none);
+    this.securityService.authorize(TestCommand.everyOneAllowed);
+    this.securityService.authorize(TestCommand.regionAWrite);
+    this.securityService.authorize(TestCommand.regionARead);
 
     assertNotAuthorized(TestCommand.dataRead);
     assertNotAuthorized(TestCommand.dataWrite);
     assertNotAuthorized(TestCommand.clusterRead);
     assertNotAuthorized(TestCommand.clusterWrite);
-    GeodeSecurityUtil.logout();
+    this.securityService.logout();
   }
 
   @Test
   public void testDataReader(){
-    GeodeSecurityUtil.login("dataReader", "12345");
-    GeodeSecurityUtil.authorize(TestCommand.none);
-    GeodeSecurityUtil.authorize(TestCommand.everyOneAllowed);
-    GeodeSecurityUtil.authorize(TestCommand.regionARead);
-    GeodeSecurityUtil.authorize(TestCommand.dataRead);
+    this.securityService.login("dataReader", "12345");
+    this.securityService.authorize(TestCommand.none);
+    this.securityService.authorize(TestCommand.everyOneAllowed);
+    this.securityService.authorize(TestCommand.regionARead);
+    this.securityService.authorize(TestCommand.dataRead);
 
     assertNotAuthorized(TestCommand.regionAWrite);
     assertNotAuthorized(TestCommand.dataWrite);
     assertNotAuthorized(TestCommand.clusterRead);
     assertNotAuthorized(TestCommand.clusterWrite);
-    GeodeSecurityUtil.logout();
+    this.securityService.logout();
   }
 
   @Test
   public void testReader(){
-    GeodeSecurityUtil.login("reader", "12345");
-    GeodeSecurityUtil.authorize(TestCommand.none);
-    GeodeSecurityUtil.authorize(TestCommand.everyOneAllowed);
-    GeodeSecurityUtil.authorize(TestCommand.regionARead);
-    GeodeSecurityUtil.authorize(TestCommand.dataRead);
-    GeodeSecurityUtil.authorize(TestCommand.clusterRead);
+    this.securityService.login("reader", "12345");
+    this.securityService.authorize(TestCommand.none);
+    this.securityService.authorize(TestCommand.everyOneAllowed);
+    this.securityService.authorize(TestCommand.regionARead);
+    this.securityService.authorize(TestCommand.dataRead);
+    this.securityService.authorize(TestCommand.clusterRead);
 
     assertNotAuthorized(TestCommand.regionAWrite);
     assertNotAuthorized(TestCommand.dataWrite);
     assertNotAuthorized(TestCommand.clusterWrite);
-    GeodeSecurityUtil.logout();
+    this.securityService.logout();
   }
 
   private void assertNotAuthorized(ResourcePermission context){
-    assertThatThrownBy(()-> GeodeSecurityUtil.authorize(context)).isInstanceOf(GemFireSecurityException.class).hasMessageContaining(context.toString());
+    assertThatThrownBy(()-> this.securityService.authorize(context)).isInstanceOf(GemFireSecurityException.class).hasMessageContaining(context.toString());
   }
 }

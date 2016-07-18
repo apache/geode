@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 
 
@@ -118,7 +117,14 @@ public class UnregisterInterestList extends BaseCommand {
       return;
     }
 
-    GeodeSecurityUtil.authorizeRegionRead(regionName);
+    try {
+      this.securityService.authorizeRegionRead(regionName);
+    } catch (NotAuthorizedException ex) {
+      writeException(msg, ex, false, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    }
+  
 
     AuthorizeRequest authzRequest = servConn.getAuthzRequest();
     if (authzRequest != null) {

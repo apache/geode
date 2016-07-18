@@ -16,15 +16,19 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.internal.offheap.AddressableMemoryManager;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
-
-import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.DSCODE;
+import com.gemstone.gemfire.internal.HeapDataOutputStream;
+import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.offheap.AddressableMemoryManager;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
 
 /**
  * Represents one unit of information (essentially a <code>byte</code>

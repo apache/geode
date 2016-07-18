@@ -35,7 +35,8 @@ import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
 import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.management.cli.CliMetaData;
 import com.gemstone.gemfire.management.cli.ConverterHint;
 import com.gemstone.gemfire.management.cli.Result;
@@ -79,6 +80,8 @@ public class IndexCommands extends AbstractCommandsSupport {
   private static final DestroyIndexFunction destroyIndexFunction = new DestroyIndexFunction();
   private static final CreateDefinedIndexesFunction createDefinedIndexesFunction = new CreateDefinedIndexesFunction();
   private static final Set<IndexInfo> indexDefinitions = Collections.synchronizedSet(new HashSet<IndexInfo>());
+
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   @Override
   protected Set<DistributedMember> getMembers(final Cache cache) {
@@ -206,7 +209,7 @@ public class IndexCommands extends AbstractCommandsSupport {
     Result result = null;
     XmlEntity xmlEntity = null;
 
-    GeodeSecurityUtil.authorizeRegionManage(regionPath);
+    this.securityService.authorizeRegionManage(regionPath);
     try {
       final Cache cache = CacheFactory.getAnyInstance();
 
@@ -360,10 +363,10 @@ public class IndexCommands extends AbstractCommandsSupport {
     // If a regionName is specified, then authorize data manage on the regionName, otherwise, it requires data manage permission on all regions
     if (!StringUtils.isBlank(regionPath)) {
       regionName = regionPath.startsWith("/") ? regionPath.substring(1) : regionPath;
-      GeodeSecurityUtil.authorizeRegionManage(regionName);
+      this.securityService.authorizeRegionManage(regionName);
     }
     else{
-      GeodeSecurityUtil.authorizeDataManage();
+      this.securityService.authorizeDataManage();
     }
 
     IndexInfo indexInfo = new IndexInfo(indexName, regionName);
@@ -488,7 +491,7 @@ public class IndexCommands extends AbstractCommandsSupport {
     Result result = null;
     XmlEntity xmlEntity = null;
 
-    GeodeSecurityUtil.authorizeRegionManage(regionPath);
+    this.securityService.authorizeRegionManage(regionPath);
     
     int idxType = IndexInfo.RANGE_INDEX;
 
