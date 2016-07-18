@@ -181,68 +181,23 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       final ResultCollector<?, ?> rc = this.executeFunctionOnGroups(createIndexFunction, groups, indexInfo);
       final List<CliFunctionResult> funcResults = (List<CliFunctionResult>) rc.getResult();
 
-      final Set<String> successfulMembers = new TreeSet<String>();
-      final Map<String, Set<String>> indexOpFailMap = new HashMap<String, Set<String>>();
-
+      final TabularResultData tabularResult = ResultBuilder.createTabularResultData();
       for (final CliFunctionResult cliFunctionResult : funcResults) {
+        tabularResult.accumulate("Member",cliFunctionResult.getMemberIdOrName());
 
           if (cliFunctionResult.isSuccessful()) {
-            successfulMembers.add(cliFunctionResult.getMemberIdOrName());
-
-            if (xmlEntity == null) {
-              xmlEntity = cliFunctionResult.getXmlEntity();
-            }
+            tabularResult.accumulate("Status","Successfully created lucene index");
+//            if (xmlEntity == null) {
+//              xmlEntity = cliFunctionResult.getXmlEntity();
+//            }
           }
           else {
-            final String exceptionMessage = cliFunctionResult.getMessage();
-            Set<String> failedMembers = indexOpFailMap.get(exceptionMessage);
-
-            if (failedMembers == null) {
-              failedMembers = new TreeSet<String>();
-            }
-            failedMembers.add(cliFunctionResult.getMemberIdOrName());
-            indexOpFailMap.put(exceptionMessage, failedMembers);
+            tabularResult.accumulate("Status","Failed: "+cliFunctionResult.getMessage());
           }
       }
-
-      if (!successfulMembers.isEmpty()) {
-
-        final InfoResultData infoResult = ResultBuilder.createInfoResultData();
-        infoResult.addLine(LuceneCliStrings.CREATE_INDEX__SUCCESS__MSG);
-        infoResult.addLine(CliStrings.format(LuceneCliStrings.CREATE_INDEX__NAME__MSG, indexName));
-        infoResult.addLine(CliStrings.format(LuceneCliStrings.CREATE_INDEX__REGIONPATH__MSG, regionPath));
-        infoResult.addLine(LuceneCliStrings.CREATE_INDEX__MEMBER__MSG);
-
-        int num = 0;
-
-        for (final String memberId : successfulMembers) {
-          ++num;
-          infoResult.addLine(CliStrings.format(LuceneCliStrings.CREATE_INDEX__NUMBER__AND__MEMBER, num, memberId));
-        }
-        result = ResultBuilder.buildResult(infoResult);
-
-
-      } else {
-        //Group members by the exception thrown.
-        final ErrorResultData erd = ResultBuilder.createErrorResultData();
-        erd.addLine(CliStrings.format(LuceneCliStrings.CREATE_INDEX__FAILURE__MSG, indexName));
-
-        final Set<String> exceptionMessages = indexOpFailMap.keySet();
-
-        for (final String exceptionMessage : exceptionMessages) {
-          erd.addLine(exceptionMessage);
-          erd.addLine(LuceneCliStrings.CREATE_INDEX__EXCEPTION__OCCURRED__ON);
-          final Set<String> memberIds = indexOpFailMap.get(exceptionMessage);
-
-          int num = 0;
-          for (final String memberId : memberIds) {
-            ++num;
-            erd.addLine(CliStrings.format(LuceneCliStrings.CREATE_INDEX__NUMBER__AND__MEMBER, num, memberId));
-          }
-        }
-        result = ResultBuilder.buildResult(erd);
+        result = ResultBuilder.buildResult(tabularResult);
       }
-    } catch (CommandResultException crex) {
+     catch (CommandResultException crex) {
       result = crex.getResult();
     } catch (Exception e) {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());

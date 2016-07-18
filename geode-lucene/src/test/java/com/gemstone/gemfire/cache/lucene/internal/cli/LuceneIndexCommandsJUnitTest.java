@@ -168,9 +168,11 @@ public class LuceneIndexCommandsJUnitTest {
     final Cache mockCache=mock(Cache.class);
     final ResultCollector mockResultCollector = mock(ResultCollector.class);
     final LuceneIndexCommands commands=spy(createIndexCommands(mockCache,null));
-    final String memberId="member1";
+
     final List<CliFunctionResult> cliFunctionResults=new ArrayList<>();
-    cliFunctionResults.add(new CliFunctionResult(memberId,true,"Index Created"));
+    cliFunctionResults.add(new CliFunctionResult("member1",true,"Index Created"));
+    cliFunctionResults.add(new CliFunctionResult("member2",false,"Index creation failed"));
+    cliFunctionResults.add(new CliFunctionResult("member3",true,"Index Created"));
 
     doReturn(mockResultCollector).when(commands).executeFunctionOnGroups(isA(LuceneCreateIndexFunction.class),any(),any(LuceneIndexInfo.class));
     doReturn(cliFunctionResults).when(mockResultCollector).getResult();
@@ -180,20 +182,12 @@ public class LuceneIndexCommandsJUnitTest {
     String[] searchableFields={"field1","field2","field3"};
     String[] fieldAnalyzers = { StandardAnalyzer.class.getCanonicalName(), KeywordAnalyzer.class.getCanonicalName(), StandardAnalyzer.class.getCanonicalName()};
 
-    Result actualResult=commands.createIndex(indexName,regionPath,searchableFields,fieldAnalyzers,null);
-    Result expectedResult = buildResult(indexName, regionPath, memberId);
-    assertEquals(Status.OK,actualResult.getStatus());
-    assertEquals(expectedResult,actualResult);
-  }
+    CommandResult result=(CommandResult) commands.createIndex(indexName,regionPath,searchableFields,fieldAnalyzers,null);
+    assertEquals(Status.OK,result.getStatus());
+    TabularResultData data = (TabularResultData) result.getResultData();
+    assertEquals(Arrays.asList("member1","member2","member3"), data.retrieveAllValues("Member"));
+    assertEquals(Arrays.asList("Successfully created lucene index","Failed: Index creation failed","Successfully created lucene index"), data.retrieveAllValues("Status"));
 
-  private Result buildResult(final String indexName, final String regionPath, final String memberId) {
-    final InfoResultData infoResult = ResultBuilder.createInfoResultData();
-    infoResult.addLine(LuceneCliStrings.CREATE_INDEX__SUCCESS__MSG);
-    infoResult.addLine(CliStrings.format(LuceneCliStrings.CREATE_INDEX__NAME__MSG, indexName));
-    infoResult.addLine(CliStrings.format(LuceneCliStrings.CREATE_INDEX__REGIONPATH__MSG, regionPath));
-    infoResult.addLine(LuceneCliStrings.CREATE_INDEX__MEMBER__MSG);
-    infoResult.addLine(CliStrings.format(LuceneCliStrings.CREATE_INDEX__NUMBER__AND__MEMBER, 1 , memberId));
-    return ResultBuilder.buildResult(infoResult);
   }
 
   @Test
