@@ -14,9 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- *
- */
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
@@ -35,16 +32,11 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.NotAuthorizedException;
-
 
 public class ContainsKey extends BaseCommand {
 
   private final static ContainsKey singleton = new ContainsKey();
-
-  private ContainsKey() {
-  }
 
   public static Command getCommand() {
     return singleton;
@@ -52,7 +44,6 @@ public class ContainsKey extends BaseCommand {
 
   private static void writeContainsKeyResponse(boolean containsKey, Message origMsg, ServerConnection servConn)
     throws IOException {
-    LogWriterI18n logger = servConn.getLogWriter();
     Message responseMsg = servConn.getResponseMessage();
     responseMsg.setMessageType(MessageType.RESPONSE);
     responseMsg.setNumberOfParts(1);
@@ -63,11 +54,11 @@ public class ContainsKey extends BaseCommand {
 
   @Override
   public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
-    Part regionNamePart = null, keyPart = null;
+    Part regionNamePart = null;
+    Part keyPart = null;
     String regionName = null;
     Object key = null;
-    //StringBuffer errMessage = new StringBuffer();
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
+
     CacheServerStats stats = servConn.getCacheServerStats();
 
     servConn.setAsTrue(REQUIRES_RESPONSE);
@@ -109,7 +100,8 @@ public class ContainsKey extends BaseCommand {
       servConn.setAsTrue(RESPONDED);
       return;
     }
-    LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
+
+    LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
     if (region == null) {
       String reason = LocalizedStrings.ContainsKey_WAS_NOT_FOUND_DURING_CONTAINSKEY_REQUEST.toLocalizedString();
       writeRegionDestroyedEx(msg, regionName, reason, servConn);
@@ -117,7 +109,13 @@ public class ContainsKey extends BaseCommand {
       return;
     }
 
-    GeodeSecurityUtil.authorizeRegionRead(regionName, key.toString());
+    try {
+      this.securityService.authorizeRegionRead(regionName, key.toString());
+    } catch (NotAuthorizedException ex) {
+      writeException(msg, ex, false, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    }
 
     AuthorizeRequest authzRequest = servConn.getAuthzRequest();
     if (authzRequest != null) {

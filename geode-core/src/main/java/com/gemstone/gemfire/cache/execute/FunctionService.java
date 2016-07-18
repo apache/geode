@@ -41,10 +41,10 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * 
  * @since GemFire 6.0
  */
-public final class FunctionService {
+public class FunctionService {
   private static final FunctionServiceManager functionSvcMgr= new FunctionServiceManager();
   
-  private FunctionService() {}
+  FunctionService() {}
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data

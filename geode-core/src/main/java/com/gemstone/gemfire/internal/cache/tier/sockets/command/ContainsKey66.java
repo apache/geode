@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.client.internal.ContainsKeyOp;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
@@ -36,16 +35,11 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.NotAuthorizedException;
-
 
 public class ContainsKey66 extends BaseCommand {
 
   private final static ContainsKey66 singleton = new ContainsKey66();
-
-  private ContainsKey66() {
-  }
 
   public static Command getCommand() {
     return singleton;
@@ -68,8 +62,6 @@ public class ContainsKey66 extends BaseCommand {
     String regionName = null;
     Object key = null;
     ContainsKeyOp.MODE mode;
-    //StringBuffer errMessage = new StringBuffer();
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
     CacheServerStats stats = servConn.getCacheServerStats();
 
     servConn.setAsTrue(REQUIRES_RESPONSE);
@@ -112,7 +104,7 @@ public class ContainsKey66 extends BaseCommand {
       servConn.setAsTrue(RESPONDED);
       return;
     }
-    LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
+    LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
     if (region == null) {
       String reason = LocalizedStrings.ContainsKey_WAS_NOT_FOUND_DURING_CONTAINSKEY_REQUEST.toLocalizedString();
       writeRegionDestroyedEx(msg, regionName, reason, servConn);
@@ -120,7 +112,13 @@ public class ContainsKey66 extends BaseCommand {
       return;
     }
 
-    GeodeSecurityUtil.authorizeRegionRead(regionName, key.toString());
+    try {
+      this.securityService.authorizeRegionRead(regionName, key.toString());
+    } catch (NotAuthorizedException ex) {
+      writeException(msg, ex, false, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    }
 
     AuthorizeRequest authzRequest = servConn.getAuthzRequest();
     if (authzRequest != null) {

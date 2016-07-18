@@ -14,9 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- *
- */
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
@@ -42,7 +39,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 
 public class Put extends BaseCommand {
@@ -53,8 +49,6 @@ public class Put extends BaseCommand {
     return singleton;
   }
 
-  private Put() {
-  }
 
   @Override
   public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException, InterruptedException {
@@ -134,7 +128,7 @@ public class Put extends BaseCommand {
       return;
     }
 
-    LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
+    LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
     if (region == null) {
       String reason = LocalizedStrings.Put_REGION_WAS_NOT_FOUND_DURING_PUT_REQUEST.toLocalizedString();
       writeRegionDestroyedEx(msg, regionName, reason, servConn);
@@ -154,8 +148,6 @@ public class Put extends BaseCommand {
       return;
     }
 
-    GeodeSecurityUtil.authorizeRegionWrite(regionName, key.toString());
-
     ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
     long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
     long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
@@ -164,6 +156,9 @@ public class Put extends BaseCommand {
     try {
       byte[] value = valuePart.getSerializedForm();
       boolean isObject = valuePart.isObject();
+
+      this.securityService.authorizeRegionWrite(regionName, key.toString());
+
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {
         // TODO SW: This is to handle DynamicRegionFactory create

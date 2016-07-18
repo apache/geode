@@ -38,7 +38,8 @@ import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneListIndexF
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneSearchIndexFunction;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.management.cli.CliMetaData;
 import com.gemstone.gemfire.management.cli.ConverterHint;
 import com.gemstone.gemfire.management.cli.Result;
@@ -67,6 +68,8 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
   private static final LuceneDescribeIndexFunction describeIndexFunction = new LuceneDescribeIndexFunction();
   private static final LuceneSearchIndexFunction searchIndexFunction = new LuceneSearchIndexFunction();
   private List<LuceneSearchResults> searchResults=null;
+
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   @CliCommand(value = LuceneCliStrings.LUCENE_LIST_INDEX, help = LuceneCliStrings.LUCENE_LIST_INDEX__HELP)
   @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA })
@@ -180,7 +183,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     Result result = null;
     XmlEntity xmlEntity = null;
 
-    GeodeSecurityUtil.authorizeRegionManage(regionPath);
+    this.securityService.authorizeRegionManage(regionPath);
     try {
       final Cache cache = getCache();
       LuceneIndexInfo indexInfo = new LuceneIndexInfo(indexName, regionPath, fields, analyzers);
@@ -250,7 +253,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
 
   @SuppressWarnings("unchecked")
   protected List<LuceneIndexDetails> getIndexDetails(LuceneIndexInfo indexInfo) throws Exception {
-    GeodeSecurityUtil.authorizeRegionManage(indexInfo.getRegionPath());
+    this.securityService.authorizeRegionManage(indexInfo.getRegionPath());
     final ResultCollector<?, ?> rc = this.executeFunctionOnGroups(describeIndexFunction, new String[] {}, indexInfo);
     final List<LuceneIndexDetails> funcResults = (List<LuceneIndexDetails>) rc.getResult();
     return funcResults.stream().filter(indexDetails -> indexDetails != null).collect(Collectors.toList());
@@ -399,7 +402,8 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
   }
 
   private List<LuceneSearchResults> getSearchResults(final LuceneQueryInfo queryInfo) throws Exception {
-    GeodeSecurityUtil.authorizeRegionManage(queryInfo.getRegionPath());
+    securityService.authorizeRegionManage(queryInfo.getRegionPath());
+
     final String[] groups = {};
     final ResultCollector<?, ?> rc = this.executeSearch(queryInfo);
     final List<Set<LuceneSearchResults>> functionResults = (List<Set<LuceneSearchResults>>) rc.getResult();

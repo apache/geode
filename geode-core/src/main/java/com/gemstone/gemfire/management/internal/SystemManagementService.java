@@ -37,7 +37,8 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.management.AlreadyRunningException;
 import com.gemstone.gemfire.management.AsyncEventQueueMXBean;
 import com.gemstone.gemfire.management.CacheServerMXBean;
@@ -66,6 +67,8 @@ import com.gemstone.gemfire.management.membership.MembershipListener;
  */
 public final class SystemManagementService extends BaseManagementService {
   private static final Logger logger = LogService.getLogger();
+
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   /**
    * The concrete implementation of DistributedSystem that provides
@@ -151,7 +154,7 @@ public final class SystemManagementService extends BaseManagementService {
     this.jmxAdapter = new MBeanJMXAdapter();      
     this.repo = new ManagementResourceRepo();
 
-    GeodeSecurityUtil.initSecurity(system.getConfig().getSecurityProps());
+    this.securityService.initSecurity(system.getConfig().getSecurityProps());
 
     this.notificationHub = new NotificationHub(repo);
     if (system.getConfig().getJmxManager()) {
@@ -273,7 +276,7 @@ public final class SystemManagementService extends BaseManagementService {
       }
 
       // clean out Shiro's thread local content
-      GeodeSecurityUtil.close();
+      this.securityService.close();
 
       getGemFireCacheImpl().getJmxManagerAdvisor().broadcastChange();
       instances.remove(cache);

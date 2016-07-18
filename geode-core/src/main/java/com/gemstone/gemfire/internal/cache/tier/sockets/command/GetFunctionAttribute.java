@@ -26,7 +26,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 public class GetFunctionAttribute extends BaseCommand {
 
@@ -34,9 +33,6 @@ public class GetFunctionAttribute extends BaseCommand {
 
   public static Command getCommand() {
     return singleton;
-  }
-
-  private GetFunctionAttribute() {
   }
 
   @Override
@@ -62,7 +58,7 @@ public class GetFunctionAttribute extends BaseCommand {
       return;
     }
 
-    GeodeSecurityUtil.authorizeClusterRead();
+    this.securityService.authorizeClusterRead();
 
     byte[] functionAttributes = new byte[3];
     functionAttributes[0] = (byte)(function.hasResult() ? 1 : 0);

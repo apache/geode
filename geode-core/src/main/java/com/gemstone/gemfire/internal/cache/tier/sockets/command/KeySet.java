@@ -40,9 +40,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.NotAuthorizedException;
-
 
 public class KeySet extends BaseCommand {
 
@@ -52,14 +50,10 @@ public class KeySet extends BaseCommand {
     return singleton;
   }
 
-  private KeySet() {
-  }
-
   @Override
   public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException, InterruptedException {
     Part regionNamePart = null;
     String regionName = null;
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
     servConn.setAsTrue(REQUIRES_RESPONSE);
     servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
 
@@ -88,7 +82,7 @@ public class KeySet extends BaseCommand {
       return;
     }
 
-    LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
+    LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
     if (region == null) {
       String reason = LocalizedStrings.KeySet__0_WAS_NOT_FOUND_DURING_KEY_SET_REQUEST.toLocalizedString(regionName);
       writeRegionDestroyedEx(msg, regionName, reason, servConn);
@@ -96,7 +90,13 @@ public class KeySet extends BaseCommand {
       return;
     }
 
-    GeodeSecurityUtil.authorizeRegionRead(regionName);
+    try {
+      this.securityService.authorizeRegionRead(regionName);
+    } catch (NotAuthorizedException ex) {
+      writeChunkedException(msg, ex, false, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    }
 
     KeySetOperationContext keySetContext = null;
     AuthorizeRequest authzRequest = servConn.getAuthzRequest();

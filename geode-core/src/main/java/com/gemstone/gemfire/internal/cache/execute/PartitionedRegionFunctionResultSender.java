@@ -251,11 +251,17 @@ public final class PartitionedRegionFunctionResultSender implements
       else {
         reply.addResult(memberID, oneResult);
       }
-      FunctionStats.getFunctionStats(function.getId(),
-          this.dm == null ? null : this.dm.getSystem()).incResultsReceived();
+      if (this.dm == null) {
+        FunctionStats.getFunctionStats(function.getId()).incResultsReceived();
+      } else {
+        FunctionStats.getFunctionStats(function.getId(), this.dm.getSystem()).incResultsReceived();
+      }
     }
-    FunctionStats.getFunctionStats(function.getId(),
-        this.dm == null ? null : this.dm.getSystem()).incResultsReturned();
+    if (this.dm == null) {
+      FunctionStats.getFunctionStats(function.getId()).incResultsReturned();
+    } else {
+      FunctionStats.getFunctionStats(function.getId(), this.dm.getSystem()).incResultsReturned();
+    }
   }
       
   public void sendResult(Object oneResult) {

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
@@ -62,7 +61,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 /**
  * @since GemFire 6.6
@@ -87,7 +85,7 @@ public class ExecuteFunction66 extends BaseCommand {
     return singleton;
   }
 
-  protected ExecuteFunction66() {
+  ExecuteFunction66() {
   }
 
   @Override
@@ -186,9 +184,10 @@ public class ExecuteFunction66 extends BaseCommand {
         functionObject = (Function) function;
       }
 
-      GeodeSecurityUtil.authorizeDataWrite();
+      FunctionStats stats = FunctionStats.getFunctionStats(functionObject.getId());
 
-      FunctionStats stats = FunctionStats.getFunctionStats(functionObject.getId(), null);
+      this.securityService.authorizeDataWrite();
+
       // check if the caller is authorized to do this operation on server
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       ExecuteFunctionOperationContext executeContext = null;
@@ -199,7 +198,7 @@ public class ExecuteFunction66 extends BaseCommand {
       m.setTransactionId(msg.getTransactionId());
       ServerToClientFunctionResultSender resultSender = new ServerToClientFunctionResultSender65(m, MessageType.EXECUTE_FUNCTION_RESULT, servConn, functionObject, executeContext);
 
-      InternalDistributedMember localVM = InternalDistributedSystem.getAnyInstance().getDistributedMember();
+      InternalDistributedMember localVM =  (InternalDistributedMember)servConn.getCache().getDistributedSystem().getDistributedMember();
       FunctionContext context = null;
 
       if (memberMappedArg != null) {
@@ -214,7 +213,7 @@ public class ExecuteFunction66 extends BaseCommand {
         if (logger.isDebugEnabled()) {
           logger.debug("Executing Function on Server: {} with context: {}", servConn, context);
         }
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+        GemFireCacheImpl cache = (GemFireCacheImpl)servConn.getCache();
         HeapMemoryMonitor hmm = ((InternalResourceManager) cache.getResourceManager()).getHeapMonitor();
         if (functionObject.optimizeForWrite() && cache != null && hmm.getState()
                                                                      .isCritical() && !MemoryThresholds.isLowMemoryExceptionDisabled()) {

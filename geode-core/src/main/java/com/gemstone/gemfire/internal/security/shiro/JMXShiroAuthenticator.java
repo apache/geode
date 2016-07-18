@@ -28,7 +28,8 @@ import javax.management.remote.JMXConnectionNotification;
 import javax.management.remote.JMXPrincipal;
 import javax.security.auth.Subject;
 
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 
@@ -37,6 +38,8 @@ import com.gemstone.gemfire.security.AuthenticationFailedException;
  */
 
 public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationListener {
+
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   @Override
   public Subject authenticate(Object credentials) {
@@ -52,7 +55,7 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
       throw new AuthenticationFailedException(MISSING_CREDENTIALS_MESSAGE);
     }
 
-    org.apache.shiro.subject.Subject shiroSubject = GeodeSecurityUtil.login(username, password);
+    org.apache.shiro.subject.Subject shiroSubject = this.securityService.login(username, password);
     Principal principal;
 
     if(shiroSubject==null){
@@ -72,7 +75,7 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
       JMXConnectionNotification cxNotification = (JMXConnectionNotification) notification;
       String type = cxNotification.getType();
       if (JMXConnectionNotification.CLOSED.equals(type)) {
-        GeodeSecurityUtil.logout();
+        this.securityService.logout();
       }
     }
   }
