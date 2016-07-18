@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.security;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-import java.security.Principal;
 import java.util.Properties;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -29,8 +28,6 @@ import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
-import org.apache.geode.security.GeodePermission;
-import org.apache.geode.security.SecurityManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +35,7 @@ import org.junit.experimental.categories.Category;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class IntegratedSecurityCacheLifecycleIntegrationTest {
+
   private Properties securityProps;
   private Cache cache;
 
@@ -52,7 +50,6 @@ public class IntegratedSecurityCacheLifecycleIntegrationTest {
     props.setProperty(LOCATORS, "");
 
     cache = new CacheFactory(props).create();
-
   }
 
   @After
@@ -70,24 +67,4 @@ public class IntegratedSecurityCacheLifecycleIntegrationTest {
     assertThat(ssm.closeInvoked).isEqualTo(1);
   }
 
-  public static class SpySecurityManager implements SecurityManager {
-
-    public int initInvoked = 0;
-    public int closeInvoked = 0;
-
-    @Override
-    public void init(final Properties securityProps) {
-      initInvoked++;
-    }
-
-    @Override
-    public Principal authenticate(final Properties props) throws AuthenticationFailedException {
-      return null;
-    }
-
-    @Override
-    public void close() {
-      closeInvoked++;
-    }
-  }
 }

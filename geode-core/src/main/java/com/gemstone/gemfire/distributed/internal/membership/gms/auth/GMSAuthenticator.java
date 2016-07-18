@@ -16,9 +16,15 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.auth;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.*;
+
+import java.lang.reflect.Method;
+import java.security.Principal;
+import java.util.Properties;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
@@ -26,6 +32,8 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Authe
 import com.gemstone.gemfire.internal.ClassLoadUtil;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.security.AuthInitialize;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
@@ -43,15 +51,22 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 public class GMSAuthenticator implements Authenticator {
 
-  private final static String secPrefix = DistributionConfig.GEMFIRE_PREFIX + "sys.security-";
-  private final static int gemfireSysPrefixLen = (DistributionConfig.GEMFIRE_PREFIX + "sys.").length();
-
   private Services services;
-  private Properties securityProps = getSecurityProps();
+  private Properties securityProps;
+  private final SecurityService securityService;
+  
+  public GMSAuthenticator() {
+    this(SecurityService.getSecurityService());
+  }
 
+  GMSAuthenticator(SecurityService securityService) {
+    this.securityService = securityService;
+  }
+  
   @Override
   public void init(Services s) {
     this.services = s;
+    this.securityProps = this.services.getConfig().getDistributionConfig().getSecurityProps();
   }
 
   @Override
@@ -104,16 +119,31 @@ public class GMSAuthenticator implements Authenticator {
    *         this will be removed since return string is used for failure
    */
   @Override
-  public String authenticate(InternalDistributedMember member, Object credentials) throws AuthenticationFailedException {
+  public String authenticate(InternalDistributedMember member, Properties credentials) throws AuthenticationFailedException {
     return authenticate(member, credentials, this.securityProps, this.services.getJoinLeave().getMemberID());
   }
 
   /**
    * Method is package protected to be used in testing.
    */
-  String authenticate(DistributedMember member, Object credentials, Properties secProps, DistributedMember localMember) throws AuthenticationFailedException {
+  String authenticate(DistributedMember member, Properties credentials, Properties secProps, DistributedMember localMember) throws AuthenticationFailedException {
 
-    String authMethod = secProps.getProperty(SECURITY_PEER_AUTHENTICATOR);
+    boolean isAuthenticationRequired = this.securityService.isPeerSecurityRequired(secProps);
+    if (!isAuthenticationRequired) {
+      return null;
+    }
+
+    boolean isIntegratedSecurity = this.securityService.isIntegratedSecurity(secProps);
+    String authMethod = null;
+
+    if (isIntegratedSecurity) {
+      // no-arg constructor
+      authMethod = secProps.getProperty(SECURITY_MANAGER);
+    } else {
+      // .create method
+      authMethod = secProps.getProperty(SECURITY_PEER_AUTHENTICATOR);
+    }
+
     if (authMethod == null || authMethod.length() == 0) {
       return null;
     }
@@ -122,10 +152,17 @@ public class GMSAuthenticator implements Authenticator {
     String failMsg = null;
     if (credentials != null) {
       try {
-        invokeAuthenticator(authMethod, member, credentials);
+        if (isIntegratedSecurity) {
+          String username = credentials.getProperty("security-username");
+          String password = credentials.getProperty("security-password");
+          this.securityService.login(username, password);
+        }
+        else {
+          invokeAuthenticator(authMethod, member, credentials);
+        }
 
       } catch (Exception ex) {
-        securityLogWriter.warning(AUTH_PEER_AUTHENTICATION_FAILED_WITH_EXCEPTION, new Object[] {member, authMethod, ex.getLocalizedMessage()}, ex);
+        securityLogWriter.warning(AUTH_PEER_AUTHENTICATION_FAILED_WITH_EXCEPTION, new Object[] { member, authMethod, ex.getLocalizedMessage() }, ex);
         failMsg = AUTH_PEER_AUTHENTICATION_FAILED.toLocalizedString(localMember);
       }
 
@@ -140,12 +177,12 @@ public class GMSAuthenticator implements Authenticator {
   /**
    * Method is package protected to be used in testing.
    */
-  Principal invokeAuthenticator(String authMethod, DistributedMember member, Object credentials) throws AuthenticationFailedException {
+  Principal invokeAuthenticator(String authMethod, DistributedMember member, Properties credentials) throws AuthenticationFailedException {
     com.gemstone.gemfire.security.Authenticator auth = null;
 
     try {
-      Method getter = ClassLoadUtil.methodFromName(authMethod);
-      auth = (com.gemstone.gemfire.security.Authenticator) getter.invoke(null, (Object[]) null);
+      Method authenticatMethod = ClassLoadUtil.methodFromName(authMethod);
+      auth = (com.gemstone.gemfire.security.Authenticator) authenticatMethod.invoke(null, (Object[]) null);
       if (auth == null) {
         throw new AuthenticationFailedException(HandShake_AUTHENTICATOR_INSTANCE_COULD_NOT_BE_OBTAINED.toLocalizedString());
       }
@@ -154,7 +191,7 @@ public class GMSAuthenticator implements Authenticator {
       LogWriter securityLogWriter = this.services.getSecurityLogWriter();
 
       auth.init(this.securityProps, logWriter, securityLogWriter); // this.securityProps contains security-ldap-basedn but security-ldap-baseDomainName is expected
-      return auth.authenticate((Properties) credentials, member);
+      return auth.authenticate(credentials, member);
 
     } catch (GemFireSecurityException gse) {
       throw gse;
@@ -172,10 +209,10 @@ public class GMSAuthenticator implements Authenticator {
    *
    * @param  member
    *         the target distributed member
-   * @return the credential object
+   * @return the credentials
    */
   @Override
-  public Object getCredentials(InternalDistributedMember member) {
+  public Properties getCredentials(InternalDistributedMember member) {
     try {
       return getCredentials(member, securityProps);
 
@@ -221,16 +258,11 @@ public class GMSAuthenticator implements Authenticator {
     return credentials;
   }
 
+  /**
+   * For testing only.
+   */
   Properties getSecurityProps() {
-    Properties props = new Properties();
-    Set keys = System.getProperties().keySet();
-    for (Object key: keys) {
-      String propKey = (String) key;
-      if (propKey.startsWith(secPrefix)) {
-        props.setProperty(propKey.substring(gemfireSysPrefixLen), System.getProperty(propKey));
-      }
-    }
-    return props;
+    return this.securityProps;
   }
 
   @Override

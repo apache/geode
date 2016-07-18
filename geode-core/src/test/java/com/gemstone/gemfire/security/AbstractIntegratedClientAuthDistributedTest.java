@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.security;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.security.JSONAuthorization.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.*;
 
@@ -32,7 +33,6 @@ import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
@@ -56,7 +56,7 @@ public class AbstractIntegratedClientAuthDistributedTest extends JUnit4CacheTest
     this.client2 = host.getVM(2);
     this.client3 = host.getVM(3);
 
-    JSONAuthorization.setUpWithJsonFile("clientServer.json");
+    JSONAuthorization.setUpWithJsonFile(CLIENT_SERVER_JSON);
 
     Properties props = new Properties();
     props.setProperty(SECURITY_MANAGER, JSONAuthorization.class.getName());
