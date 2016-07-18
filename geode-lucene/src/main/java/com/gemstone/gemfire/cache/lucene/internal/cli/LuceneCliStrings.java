@@ -24,11 +24,11 @@ public class LuceneCliStrings {
   public static final String LUCENE__REGION_PATH = "region";
 
   //List lucene index commands
-  public static final String LUCENE_LIST_INDEX = "list lucene index";
+  public static final String LUCENE_LIST_INDEX = "list lucene indexes";
   public static final String LUCENE_LIST_INDEX__HELP = "Display the list of lucene indexes created for all members.";
   public static final String LUCENE_LIST_INDEX__ERROR_MESSAGE = "An error occurred while collecting all lucene index information across the Geode cluster: %1$s";
   public static final String LUCENE_LIST_INDEX__INDEXES_NOT_FOUND_MESSAGE = "No lucene indexes found";
-  public static final String LUCENE_LIST_INDEX__STATS = "stats";
+  public static final String LUCENE_LIST_INDEX__STATS = "with-stats";
   public static final String LUCENE_LIST_INDEX__STATS__HELP = "Display lucene index stats";
 
   //Create lucene index commands 
