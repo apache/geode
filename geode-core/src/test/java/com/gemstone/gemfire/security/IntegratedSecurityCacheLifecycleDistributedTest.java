@@ -16,11 +16,10 @@
  */
 package com.gemstone.gemfire.security;
 
-
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.security.JSONAuthorization.*;
 import static org.assertj.core.api.Assertions.*;
 
-import java.security.Principal;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -29,8 +28,6 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
-import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
-import com.gemstone.gemfire.security.IntegratedSecurityCacheLifecycleIntegrationTest.SpySecurityManager;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
@@ -41,13 +38,14 @@ import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4CacheTestCase {
+
   private VM locator;
 
   @Override
   public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     locator = host.getVM(0);
-    JSONAuthorization.setUpWithJsonFile("clientServer.json");
+    JSONAuthorization.setUpWithJsonFile(CLIENT_SERVER_JSON);
     int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     String locators =  NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]";
 
@@ -55,21 +53,19 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
       DistributedTestUtils.deleteLocatorStateFile(locatorPort);
 
       final Properties properties = new Properties();
+//      properties.setProperty(LOCATORS, locators);
       properties.setProperty(MCAST_PORT, "0");
-      properties.setProperty(START_LOCATOR, locators);
       properties.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName());
+      properties.setProperty(START_LOCATOR, locators);
       properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
       getSystem(properties);
       getCache();
     });
 
     final Properties properties = new Properties();
+    properties.setProperty(LOCATORS, locators);
     properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName());
-    properties.setProperty(LOCATORS, locators);
-    properties.setProperty(JMX_MANAGER, "false");
-    properties.setProperty(JMX_MANAGER_PORT, "0");
-    properties.setProperty(JMX_MANAGER_START, "false");
     properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
     getSystem(properties);
 
@@ -95,8 +91,7 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
   }
 
   private void verifyInitCloseInvoked() {
-    SpySecurityManager ssm = (SpySecurityManager) GeodeSecurityUtil
-      .getSecurityManager();
+    SpySecurityManager ssm = (SpySecurityManager) GeodeSecurityUtil.getSecurityManager();
     assertThat(ssm.initInvoked).isEqualTo(1);
     getCache().close();
     assertThat(ssm.closeInvoked).isEqualTo(1);

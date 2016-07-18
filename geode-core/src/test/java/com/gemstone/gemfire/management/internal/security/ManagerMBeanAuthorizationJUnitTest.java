@@ -18,6 +18,7 @@ package com.gemstone.gemfire.management.internal.security;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static com.gemstone.gemfire.security.JSONAuthorization.*;
 
 import java.lang.management.ManagementFactory;
 import javax.management.ObjectName;
@@ -41,7 +42,7 @@ public class ManagerMBeanAuthorizationJUnitTest {
 
   @ClassRule
   public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, "cacheServer.json");
+      jmxManagerPort, CACHE_SERVER_JSON);
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);

@@ -32,8 +32,10 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.AuthInitialize;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.Authenticator;
@@ -46,6 +48,7 @@ public class GMSAuthenticatorJUnitTest {
 
   private String prefix;
   private Properties props;
+  protected Properties securityProps;
   private Services services;
   private GMSAuthenticator authenticator;
   private DistributedMember member;
@@ -57,27 +60,26 @@ public class GMSAuthenticatorJUnitTest {
   public void setUp() throws Exception {
     prefix = getClass().getName() + "$";
     props = new Properties();
+    securityProps = new Properties();
     authenticator = new GMSAuthenticator();
 
     services = mock(Services.class);
     InternalLogWriter securityLog = mock(InternalLogWriter.class);
     when(services.getSecurityLogWriter()).thenReturn(mock(InternalLogWriter.class));
 
+    DistributionConfig distributionConfig = mock(DistributionConfig.class);
+    when(distributionConfig.getSecurityProps()).thenReturn(securityProps);
+
+    ServiceConfig serviceConfig = mock(ServiceConfig.class);
+    when(serviceConfig.getDistributionConfig()).thenReturn(distributionConfig);
+
+    services = mock(Services.class);
+    when(services.getSecurityLogWriter()).thenReturn(securityLog);
+    when(services.getConfig()).thenReturn(serviceConfig);
+
     authenticator.init(services);
-
+    GeodeSecurityUtil.initSecurity(securityProps);
     member = mock(DistributedMember.class);
-  }
-
-  @Test
-  public void testGetSecurityProps() throws Exception {
-    props.setProperty(DistributionConfig.GEMFIRE_PREFIX + "sys."+SECURITY_PEER_AUTH_INIT, "dummy1");
-    props.setProperty(DistributionConfig.GEMFIRE_PREFIX + "sys."+SECURITY_PEER_AUTHENTICATOR, "dummy2");
-    props.setProperty("security-auth-init", "dummy3");
-    System.setProperties(props);
-    Properties secProps = authenticator.getSecurityProps();
-    assertEquals("wrong size", 2, secProps.size());
-    assertEquals("wrong value", "dummy1", secProps.getProperty(SECURITY_PEER_AUTH_INIT));
-    assertEquals("wrong value", "dummy2", secProps.getProperty(SECURITY_PEER_AUTHENTICATOR));
   }
 
   @Test
@@ -141,6 +143,7 @@ public class GMSAuthenticatorJUnitTest {
   @Test
   public void testAuthenticatorNormal() throws Exception {
     props.setProperty(SECURITY_PEER_AUTHENTICATOR, prefix + "TestAuthenticator4.create");
+    GeodeSecurityUtil.initSecurity(props);
     TestAuthenticator4 auth = new TestAuthenticator4();
     assertFalse(auth.isClosed());
     TestAuthenticator4.setAuthenticator(auth);
@@ -159,6 +162,7 @@ public class GMSAuthenticatorJUnitTest {
   @Test
   public void testAuthenticatorWithEmptyAuth() throws Exception {
     props.setProperty(SECURITY_PEER_AUTHENTICATOR, "");
+    GeodeSecurityUtil.initSecurity(props);
     String result = authenticator.authenticate(member, props, props, member);
     assertNull(result);
   }
@@ -166,34 +170,39 @@ public class GMSAuthenticatorJUnitTest {
   @Test
   public void testAuthenticatorWithNotExistAuth() throws Exception {
     props.setProperty(SECURITY_PEER_AUTHENTICATOR, prefix + "NotExistAuth.create");
+    GeodeSecurityUtil.initSecurity(props);
     verifyNegativeAuthenticate(props, props, "Authentication failed. See coordinator");
   }
 
   @Test
   public void testAuthenticatorWithNullAuth() throws Exception {
     props.setProperty(SECURITY_PEER_AUTHENTICATOR, prefix + "TestAuthenticator1.create");
+    GeodeSecurityUtil.initSecurity(props);
     verifyNegativeAuthenticate(props, props, "Authentication failed. See coordinator");
   }
 
   @Test
   public void testAuthenticatorWithNullCredential() throws Exception {
     props.setProperty(SECURITY_PEER_AUTHENTICATOR, prefix + "TestAuthenticator1.create");
+    GeodeSecurityUtil.initSecurity(props);
     verifyNegativeAuthenticate(null, props, "Failed to find credentials from");
   }
 
   @Test
   public void testAuthenticatorWithAuthInitFailure() throws Exception {
     props.setProperty(SECURITY_PEER_AUTHENTICATOR, prefix + "TestAuthenticator2.create");
+    GeodeSecurityUtil.initSecurity(props);
     verifyNegativeAuthenticate(props, props, "Authentication failed. See coordinator");
   }
 
   @Test
   public void testAuthenticatorWithAuthFailure() throws Exception {
     props.setProperty(SECURITY_PEER_AUTHENTICATOR, prefix + "TestAuthenticator3.create");
+    GeodeSecurityUtil.initSecurity(props);
     verifyNegativeAuthenticate(props, props, "Authentication failed. See coordinator");
   }
 
-  void verifyNegativeAuthenticate(Object credential, Properties props, String expectedError) throws Exception {
+  void verifyNegativeAuthenticate(Properties credential, Properties props, String expectedError) throws Exception {
     String result = authenticator.authenticate(member, credential, props, member);
     assertTrue(result, result.startsWith(expectedError));
   }

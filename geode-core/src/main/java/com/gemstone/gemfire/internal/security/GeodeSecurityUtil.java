@@ -65,7 +65,7 @@ public class GeodeSecurityUtil {
    * @return the shiro subject, null if security is not enabled
    */
   public static Subject getSubject() {
-    if (!isIntegratedSecure) {
+    if (!isIntegratedSecurity) {
       return null;
     }
 
@@ -102,7 +102,7 @@ public class GeodeSecurityUtil {
    * @return null if security is not enabled, otherwise return a shiro subject
    */
   public static Subject login(String username, String password) {
-    if (!isIntegratedSecure) {
+    if (!isIntegratedSecurity) {
       return null;
     }
 
@@ -271,8 +271,9 @@ public class GeodeSecurityUtil {
 
   private static PostProcessor postProcessor;
   private static SecurityManager securityManager;
-  private static boolean isSecure;
-  private static boolean isIntegratedSecure;
+  private static boolean isIntegratedSecurity;
+  private static boolean isClientAuthenticator;
+  private static boolean isPeerAuthenticator;
 
   /**
    * initialize Shiro's Security Manager and Security Utilities
@@ -286,6 +287,7 @@ public class GeodeSecurityUtil {
     String shiroConfig = securityProps.getProperty(SECURITY_SHIRO_INIT);
     String securityConfig = securityProps.getProperty(SECURITY_MANAGER);
     String clientAuthenticatorConfig = securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
+    String peerAuthenticatorConfig = securityProps.getProperty(SECURITY_PEER_AUTHENTICATOR);
 
     if (!StringUtils.isBlank(shiroConfig)) {
       IniSecurityManagerFactory factory = new IniSecurityManagerFactory("classpath:" + shiroConfig);
@@ -299,8 +301,7 @@ public class GeodeSecurityUtil {
 
       org.apache.shiro.mgt.SecurityManager securityManager = factory.getInstance();
       SecurityUtils.setSecurityManager(securityManager);
-      isSecure = true;
-      isIntegratedSecure = true;
+      isIntegratedSecurity = true;
     }
     // only set up shiro realm if user has implemented SecurityManager
     else if (!StringUtils.isBlank(securityConfig)) {
@@ -309,17 +310,18 @@ public class GeodeSecurityUtil {
       Realm realm = new CustomAuthRealm(securityManager);
       org.apache.shiro.mgt.SecurityManager shiroManager = new DefaultSecurityManager(realm);
       SecurityUtils.setSecurityManager(shiroManager);
-      isSecure = true;
-      isIntegratedSecure = true;
+      isIntegratedSecurity = true;
     }
     else if( !StringUtils.isBlank(clientAuthenticatorConfig)) {
-      isSecure = true;
-      isIntegratedSecure = false;
+      isClientAuthenticator = true;
+    }
+    else if (!StringUtils.isBlank(peerAuthenticatorConfig)) {
+      isPeerAuthenticator = true;
     }
     else {
-      SecurityUtils.setSecurityManager(null);
-      isSecure = false;
-      isIntegratedSecure = false;
+      isIntegratedSecurity = false;
+      isClientAuthenticator = false;
+      isPeerAuthenticator = false;
     }
 
     // this initializes the post processor
@@ -344,8 +346,9 @@ public class GeodeSecurityUtil {
       postProcessor = null;
     }
     ThreadContext.remove();
-    isSecure = false;
-    isIntegratedSecure = false;
+    isIntegratedSecurity = false;
+    isClientAuthenticator = false;
+    isPeerAuthenticator = false;
   }
 
   /**
@@ -353,7 +356,7 @@ public class GeodeSecurityUtil {
    * But if your postProcess is pretty involved with preparations and you need to bypass it entirely, call this first.
    */
   public static boolean needPostProcess(){
-    return (isIntegratedSecure && postProcessor != null);
+    return (isIntegratedSecurity && postProcessor != null);
   }
 
   public static Object postProcess(String regionPath, Object key, Object result){
@@ -446,12 +449,16 @@ public class GeodeSecurityUtil {
   }
 
 
-  public static boolean isSecurityRequired(){
-    return isSecure;
+  public static boolean isClientSecurityRequired() {
+    return isClientAuthenticator || isIntegratedSecurity;
+  }
+
+  public static boolean isPeerSecurityRequired() {
+    return isPeerAuthenticator || isIntegratedSecurity;
   }
 
   public static boolean isIntegratedSecurity(){
-    return isIntegratedSecure;
+    return isIntegratedSecurity;
   }
 
 }
