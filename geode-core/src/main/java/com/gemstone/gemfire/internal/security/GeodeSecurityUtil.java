@@ -394,13 +394,25 @@ public class GeodeSecurityUtil {
   }
 
 
-  public static boolean isSecurityRequired(Properties securityProps){
+  public static boolean isSecurityRequired(Properties securityProps) {
     String authenticator = securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
     String securityManager = securityProps.getProperty(SECURITY_MANAGER);
     return !StringUtils.isEmpty(authenticator) || !StringUtils.isEmpty(securityManager);
   }
 
-  public static boolean isIntegratedSecurity(Properties securityProps){
+  public static boolean isClientSecurityRequired(Properties securityProps) {
+    String authenticator = securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
+    String securityManager = securityProps.getProperty(SECURITY_MANAGER);
+    return !StringUtils.isEmpty(authenticator) || !StringUtils.isEmpty(securityManager);
+  }
+
+  public static boolean isPeerSecurityRequired(Properties securityProps) {
+    String authenticator = securityProps.getProperty(SECURITY_PEER_AUTHENTICATOR);
+    String securityManager = securityProps.getProperty(SECURITY_MANAGER);
+    return !StringUtils.isEmpty(authenticator) || !StringUtils.isEmpty(securityManager);
+  }
+
+  public static boolean isIntegratedSecurity(Properties securityProps) {
     String securityManager = securityProps.getProperty(SECURITY_MANAGER);
     return !StringUtils.isEmpty(securityManager);
   }

@@ -476,7 +476,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     Object creds = incomingRequest.getCredentials();
     String rejection = null;
     try {
-      rejection = services.getAuthenticator().authenticate(incomingRequest.getMemberID(), creds);
+      rejection = services.getAuthenticator().authenticate(incomingRequest.getMemberID(), (Properties)creds);
     } catch (Exception e) {
       rejection = e.getMessage();
     }

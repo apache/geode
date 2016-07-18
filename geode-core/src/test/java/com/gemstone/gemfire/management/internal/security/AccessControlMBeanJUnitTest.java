@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import static com.gemstone.gemfire.security.JSONAuthorization.*;
 import static org.assertj.core.api.Assertions.*;
 
 import com.gemstone.gemfire.internal.AvailablePort;
@@ -35,7 +36,7 @@ public class AccessControlMBeanJUnitTest {
 
   @ClassRule
   public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, "cacheServer.json");
+      jmxManagerPort, CACHE_SERVER_JSON);
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);

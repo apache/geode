@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.security;
+package com.gemstone.gemfire.security;
 
 import java.io.File;
 import java.io.FileReader;
@@ -29,11 +29,17 @@ import com.gemstone.gemfire.util.test.TestUtil;
  */
 public class JSONAuthorization extends SampleSecurityManager {
 
+  public static String AUTH1_JSON = "/com/gemstone/gemfire/management/internal/security/auth1.json";
+  public static String AUTH2_JSON = "/com/gemstone/gemfire/management/internal/security/auth2.json";
+  public static String AUTH3_JSON = "/com/gemstone/gemfire/management/internal/security/auth3.json";
+  public static String CACHE_SERVER_JSON = "/com/gemstone/gemfire/management/internal/security/cacheServer.json";
+  public static String CLIENT_SERVER_JSON = "/com/gemstone/gemfire/management/internal/security/clientServer.json";
+  public static String SHIRO_INI_JSON = "/com/gemstone/gemfire/management/internal/security/shiro-ini.json";
+  public static String PEER_AUTH_JSON = "/com/gemstone/gemfire/security/peerAuth.json";
+
   /**
    * Override the child class's implemention to look for jsonFile in the same package as this class instead of
    * in the classpath
-   * @param jsonFileName
-   * @throws IOException
    */
   public static void setUpWithJsonFile(String jsonFileName) throws IOException {
     String filePath = TestUtil.getResourcePath(JSONAuthorization.class, jsonFileName);

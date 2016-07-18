@@ -67,7 +67,7 @@ public class GMSJoinLeaveJUnitTest {
   private InternalDistributedMember gmsJoinLeaveMemberId;
   private InternalDistributedMember[] mockMembers;
   private InternalDistributedMember mockOldMember;
-  private Object credentials = new Object();
+  private Properties credentials = new Properties();
   private Messenger messenger;
   private GMSJoinLeave gmsJoinLeave;
   private Manager manager;

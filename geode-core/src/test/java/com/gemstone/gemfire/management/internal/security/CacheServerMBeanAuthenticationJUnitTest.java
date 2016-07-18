@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import static com.gemstone.gemfire.security.JSONAuthorization.*;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -34,7 +36,7 @@ public class CacheServerMBeanAuthenticationJUnitTest {
 
   @ClassRule
   public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, "cacheServer.json");
+      jmxManagerPort, CACHE_SERVER_JSON);
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
