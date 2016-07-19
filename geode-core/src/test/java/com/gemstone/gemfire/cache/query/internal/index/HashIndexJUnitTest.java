@@ -1215,7 +1215,7 @@ public class HashIndexJUnitTest {
       SameHashObject p = new SameHashObject(5, i);
       region.put("" + i, p);
     }
-    region.put("0", new SameHashObject(index.entriesSet._set.length + 5, 100));
+    region.put("0", new SameHashObject(index.entriesSet._hashIndexSetProperties._set.length + 5, 100));
     
     SelectResults results = (SelectResults) qs.newQuery(
         "Select * FROM /portfolios p where p.ID = 5").execute();
