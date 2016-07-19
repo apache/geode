@@ -295,9 +295,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           socket.shutdownOutput();
           GMSHealthMonitor.this.stats.incFinalCheckResponsesSent();
           GMSHealthMonitor.this.stats.incTcpFinalCheckResponsesSent();
-          if (debug) {
-            logger.debug("HealthMonitor: server replied OK.");
-          }
+          logger.debug("HealthMonitor: server replied OK.");
         } else {
           if (logger.isDebugEnabled()) {
             logger.debug("HealthMonitor: sending ERROR reply - my UUID is {},{} received is {},{}.  My viewID is {} received is {}", 
@@ -312,9 +310,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           socket.shutdownOutput();
           GMSHealthMonitor.this.stats.incFinalCheckResponsesSent();
           GMSHealthMonitor.this.stats.incTcpFinalCheckResponsesSent();
-          if (debug) {
-            logger.debug("HealthMonitor: server replied ERROR.");
-          }
+          logger.debug("HealthMonitor: server replied ERROR.");
         }
       } catch (IOException e) {
         // this is expected if it is a connection-timeout or other failure

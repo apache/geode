@@ -53,9 +53,9 @@ public class AnalyzeSerializablesJUnitTest {
   @Before
   public void loadClasses() throws Exception {
     String version = System.getProperty("java.runtime.version");
-    boolean jdk17 = version != null && version.startsWith("1.8");
+    boolean jdk18 = version != null && version.startsWith("1.8");
       // sanctioned info is based on a 1.7 compiler
-    Assume.assumeTrue("AnalyzeSerializables requires a Java 7 but tests are running with v"+version, jdk17);
+    Assume.assumeTrue("AnalyzeSerializables requires a Java 8 but tests are running with v"+version, jdk18);
     if (classes.size() > 0) {
       return;
     }
