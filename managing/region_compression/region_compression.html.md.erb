@@ -1,10 +1,12 @@
+---
+title: Region Compression
+---
 <a id="topic_r43_wgc_gl"></a>
 
-# Region Compression
 
 This section describes region compression, its benefits and usage.
 
-One way to reduce memory consumption by <span class="keyword">Geode</span> is to enable compression in your regions. <span class="keyword">Geode</span> allows you to compress in-memory region values using pluggable compressors (compression codecs). <span class="keyword">Geode</span> includes the [Snappy](https://code.google.com/p/snappy/) compressor as the built-in compression codec; however, you can implement and specify a different compressor for each compressed region.
+One way to reduce memory consumption by <span class="keyword">Geode</span> is to enable compression in your regions. <span class="keyword">Geode</span> allows you to compress in-memory region values using pluggable compressors (compression codecs). <span class="keyword">Geode</span> includes the [Snappy](http://google.github.io/snappy/) compressor as the built-in compression codec; however, you can implement and specify a different compressor for each compressed region.
 
 ## What Gets Compressed
 
@@ -14,22 +16,23 @@ When compression is enabled, each value in the region is compressed, and each re
 
 You can have a mix of compressed and non-compressed regions in the same cache.
 
--   **[Guidelines on Using Compression](../../managing/region_compression/region_compression.html#concept_a2c_rhc_gl)**
+-   **[Guidelines on Using Compression](#concept_a2c_rhc_gl)**
 
     This topic describes factors to consider when deciding on whether to use compression.
 
--   **[How to Enable Compression in a Region](../../managing/region_compression/region_compression.html#topic_inm_whc_gl)**
+-   **[How to Enable Compression in a Region](#topic_inm_whc_gl)**
 
     This topic describes how to enable compression on your region.
 
--   **[Working with Compressors](../../managing/region_compression/region_compression.html#topic_hqf_syj_g4)**
+-   **[Working with Compressors](#topic_hqf_syj_g4)**
 
     When using region compression, you can use the default Snappy compressor included with <span class="keyword">Geode</span> or you can specify your own compressor.
 
--   **[Comparing Performance of Compressed and Non-Compressed Regions](../../managing/region_compression/region_compression.html#topic_omw_j3c_gl)**
+-   **[Comparing Performance of Compressed and Non-Compressed Regions](#topic_omw_j3c_gl)**
 
     The comparative performance of compressed regions versus non-compressed regions can vary depending on how the region is being used and whether the region is hosted in a memory-bound JVM.
 
+<a id="concept_a2c_rhc_gl"></a>
 ## Guidelines on Using Compression
 
 This topic describes factors to consider when deciding on whether to use compression.
@@ -56,6 +59,7 @@ Review the following guidelines when deciding on whether or not to enable compre
 
 <a id="topic_inm_whc_gl"></a>
 
+<a id="topic_inm_whc_gl"></a>
 ## How to Enable Compression in a Region
 
 This topic describes how to enable compression on your region.

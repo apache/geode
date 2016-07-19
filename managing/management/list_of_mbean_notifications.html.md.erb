@@ -1,18 +1,22 @@
+---
+title: List of JMX MBean Notifications
+---
 <a id="mbean_notifications_list"></a>
 
-# List of JMX MBean Notifications
 
 This topic lists all available JMX notifications emitted by <span class="keyword">Geode</span> MBeans.
 
 Notifications are emitted by the following MBeans:
 
--   **[MemberMXBean Notifications](../../managing/management/list_of_mbean_notifications.html#reference_czt_hq2_vj)**
+-   **[MemberMXBean Notifications](list_of_mbean_notifications.html#reference_czt_hq2_vj)**
 
--   **[MemberMXBean Gateway Notifications](../../managing/management/list_of_mbean_notifications.html#reference_dzt_hq2_vj)**
+-   **[MemberMXBean Gateway Notifications](list_of_mbean_notifications.html#reference_dzt_hq2_vj)**
 
--   **[CacheServerMXBean Notifications](../../managing/management/list_of_mbean_notifications.html#cacheservermxbean_notifications)**
+-   **[CacheServerMXBean Notifications](list_of_mbean_notifications.html#cacheservermxbean_notifications)**
 
--   **[DistributedSystemMXBean Notifications](../../managing/management/list_of_mbean_notifications.html#distributedsystemmxbean_notifications)**
+-   **[DistributedSystemMXBean Notifications](list_of_mbean_notifications.html#distributedsystemmxbean_notifications)**
+
+<a id="reference_czt_hq2_vj"></a>
 
 ## MemberMXBean Notifications
 
@@ -29,6 +33,8 @@ Notifications are emitted by the following MBeans:
 | gemfire.distributedsystem.cache.server.stopped      | Member name or ID   | Cache Server is stopped in the VM                           |
 | gemfire.distributedsystem.locator.started           | Member name or ID   | Locator is Started in the VM                                |
 
+<a id="reference_dzt_hq2_vj"></a>
+
 ## MemberMXBean Gateway Notifications
 
 | Notification Type                                  | Notification Source | Message                                           |
@@ -43,6 +49,8 @@ Notifications are emitted by the following MBeans:
 | gemfire.distributedsystem.gateway.receiver.stopped | Member name or ID   | GatewayReceiver Stopped in the VM                 |
 | gemfire.distributedsystem.cache.server.started     | Member name or ID   | Cache Server is Started in the VM                 |
 
+<a id="cacheservermxbean_notifications"></a>
+
 ## CacheServerMXBean Notifications
 
 | Notification Type                                    | Notification Source    | Message                                  |
@@ -50,6 +58,8 @@ Notifications are emitted by the following MBeans:
 | gemfire.distributedsystem.cacheserver.client.joined  | CacheServer MBean Name | Client joined with Id &lt;Client ID&gt;  |
 | gemfire.distributedsystem.cacheserver.client.left    | CacheServer MBean Name | Client crashed with Id &lt;Client ID&gt; |
 | gemfire.distributedsystem.cacheserver.client.crashed | CacheServer MBean name | Client left with Id &lt;Client ID&gt;    |
+
+<a id="distributedsystemmxbean_notifications"></a>
 
 ## DistributedSystemMXBean Notifications
 
