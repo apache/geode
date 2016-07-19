@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.security.templates.SamplePostProcessor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -77,7 +78,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testGetAttributeNames() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    assertEquals(attNames.length, 142);
+    assertEquals(attNames.length, 143);
 
     List boolList = new ArrayList();
     List intList = new ArrayList();
@@ -111,7 +112,7 @@ public class DistributionConfigJUnitTest {
 
     assertEquals(boolList.size(), 30);
     assertEquals(intList.size(), 33);
-    assertEquals(stringList.size(), 71);
+    assertEquals(stringList.size(), 72);
     assertEquals(fileList.size(), 5);
     assertEquals(otherList.size(), 3);
   }
@@ -329,8 +330,8 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testSecurityProps(){
     Properties props = new Properties();
-    props.put(SECURITY_CLIENT_AUTHENTICATOR, JSONAuthorization.class.getName() + ".create");
-    props.put(SECURITY_CLIENT_ACCESSOR, JSONAuthorization.class.getName() + ".create");
+    props.put(SECURITY_MANAGER, JSONAuthorization.class.getName());
+    props.put(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
     props.put(SECURITY_LOG_LEVEL, "config");
     // add another non-security property to verify it won't get put in the security properties
     props.put(ACK_WAIT_THRESHOLD, 2);
@@ -342,8 +343,8 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testSecurityPropsWithNoSetter(){
     Properties props = new Properties();
-    props.put(SECURITY_CLIENT_AUTHENTICATOR, JSONAuthorization.class.getName() + ".create");
-    props.put(SECURITY_CLIENT_ACCESSOR, JSONAuthorization.class.getName() + ".create");
+    props.put(SECURITY_MANAGER, JSONAuthorization.class.getName());
+    props.put(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
     props.put(SECURITY_LOG_LEVEL, "config");
     // add another non-security property to verify it won't get put in the security properties
     props.put(ACK_WAIT_THRESHOLD, 2);

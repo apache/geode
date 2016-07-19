@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.gemstone.gemfire.security;
+package org.apache.geode.security;
 
 import java.security.Principal;
 import java.util.Properties;
 
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.security.AuthenticationFailedException;
 
 /**
  * User implementation of a authentication/authorization logic for Integrated Security.
- * The implementation will guard client/server, jmx, pulse, gfsh commands
+ * The implementation will guard client/server, JMX, Pulse, GFSH commands
  *
  * @since Geode 1.0
  */
@@ -43,15 +43,13 @@ public interface SecurityManager {
 
   /**
    * Verify the credentials provided in the properties
-   * @param props:
+   * @param props
    *        it contains the security-username and security-password as keys of the properties
    * @return
    *        the authenticated Principal object
    * @throws AuthenticationFailedException
    */
-
   Principal authenticate(Properties props) throws AuthenticationFailedException;
-
 
   /**
    * Authorize the GeodePermission for a given Principal
@@ -67,7 +65,7 @@ public interface SecurityManager {
   }
 
   /**
-   * close any resources used by the SecurityManager, called when a cache is closed.
+   * Close any resources used by the SecurityManager, called when a cache is closed.
    */
   default void close() {}
 }

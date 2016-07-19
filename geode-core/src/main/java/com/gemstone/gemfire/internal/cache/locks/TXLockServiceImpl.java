@@ -242,7 +242,7 @@ public class TXLockServiceImpl extends TXLockService {
   
   @Override
   public boolean isDestroyed() {
-    return this.dlock.isDestroyed() || this.system.getCancelCriterion().cancelInProgress() != null;
+    return this.dlock.isDestroyed() || this.system.getCancelCriterion().isCancelInProgress();
   }
 
   // -------------------------------------------------------------------------

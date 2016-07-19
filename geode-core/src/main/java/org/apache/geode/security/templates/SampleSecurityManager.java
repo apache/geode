@@ -14,10 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.security.templates;
+package org.apache.geode.security.templates;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -37,13 +35,13 @@ import javax.management.remote.JMXPrincipal;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
+import org.apache.geode.security.GeodePermission;
+import org.apache.geode.security.SecurityManager;
 import org.apache.shiro.authz.Permission;
 
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.GeodePermission;
 import com.gemstone.gemfire.security.NotAuthorizedException;
-import com.gemstone.gemfire.security.SecurityManager;
 
 /**
  * This class provides a sample implementation for authentication and authorization via the {@link SecurityManager}
@@ -51,7 +49,7 @@ import com.gemstone.gemfire.security.SecurityManager;
  * In order to use it, a Geode member must be started with the following properties:
  * <p/>
  * <code>
- *   security-manager = com.gemstone.gemfire.security.examples.SampleSecurityManager.create
+ *   security-manager = com.gemstone.gemfire.security.examples.SampleSecurityManager
  * </code>
  * <p/>
  * The class is initialized with a JSON file called {@code security.json}. This file must exist on the classpath,
@@ -93,6 +91,15 @@ import com.gemstone.gemfire.security.SecurityManager;
  */
 public class SampleSecurityManager implements SecurityManager {
 
+  public SampleSecurityManager() {
+    try {
+      setUpWithJsonFile("security.json");
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
   public static class Role {
     List<GeodePermission> permissions = new ArrayList<>();
     String name;
@@ -107,18 +114,11 @@ public class SampleSecurityManager implements SecurityManager {
 
   private static Map<String, User> acl = null;
 
-  public static SampleSecurityManager create() throws IOException {
-    if (acl == null) {
-      setUpWithJsonFile("security.json");
-    }
-    return new SampleSecurityManager();
-  }
 
   public static void setUpWithJsonFile(String jsonFileName) throws IOException {
     InputStream input = ClassLoader.getSystemResourceAsStream(jsonFileName);
-    if (input == null) {
-      throw new RuntimeException("Could not find the required JSON security file on the classpath: " + jsonFileName);
-    }
+    if (input == null)
+      return;
 
     StringWriter writer = new StringWriter();
     IOUtils.copy(input, writer, "UTF-8");
@@ -201,9 +201,6 @@ public class SampleSecurityManager implements SecurityManager {
     return acl;
   }
 
-  private Principal principal = null;
-
-
   @Override
   public boolean authorize(Principal principal, GeodePermission context) {
     if (principal == null) return false;
@@ -242,15 +239,5 @@ public class SampleSecurityManager implements SecurityManager {
     }
 
     return new JMXPrincipal(user);
-  }
-
-  protected static String readFile(String name) throws IOException {
-    File file = new File(name);
-    FileReader reader = new FileReader(file);
-    char[] buffer = new char[(int) file.length()];
-    reader.read(buffer);
-    String json = new String(buffer);
-    reader.close();
-    return json;
   }
 }

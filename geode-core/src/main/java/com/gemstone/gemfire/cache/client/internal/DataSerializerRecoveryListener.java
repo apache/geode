@@ -89,7 +89,7 @@ public class DataSerializerRecoveryListener extends EndpointManager.EndpointList
 
     @Override
     public void run2() {
-      if (pool.getCancelCriterion().cancelInProgress() != null) {
+      if (pool.getCancelCriterion().isCancelInProgress()) {
         return;
       }
       
@@ -111,7 +111,7 @@ public class DataSerializerRecoveryListener extends EndpointManager.EndpointList
               TimeUnit.MILLISECONDS);
           recoveryScheduled = true;
         } catch (RejectedExecutionException e) {
-          if (pool.getCancelCriterion().cancelInProgress() == null) {
+          if (!pool.getCancelCriterion().isCancelInProgress()) {
             throw e;
           }
         }
@@ -125,12 +125,12 @@ public class DataSerializerRecoveryListener extends EndpointManager.EndpointList
         }
         catch (RejectedExecutionException e) {
           // This is probably because we've started to shut down.
-          if (pool.getCancelCriterion().cancelInProgress() == null) {
+          if (!pool.getCancelCriterion().isCancelInProgress()) {
             throw e; // weird
           }
         }
         catch(Exception e) {
-          if (pool.getCancelCriterion().cancelInProgress() != null) {
+          if (pool.getCancelCriterion().isCancelInProgress()) {
             return;
           }
           
@@ -153,7 +153,7 @@ public class DataSerializerRecoveryListener extends EndpointManager.EndpointList
               recoveryScheduled = true;
             } catch (RejectedExecutionException ex) { // GEODE-1613 - suspect string while shutting down
               if (!background.isTerminated()
-                  && pool.getCancelCriterion().cancelInProgress() == null) {
+                  && !pool.getCancelCriterion().isCancelInProgress()) {
                 throw ex;
               }
             }

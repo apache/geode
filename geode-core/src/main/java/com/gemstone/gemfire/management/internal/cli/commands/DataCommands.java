@@ -30,6 +30,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -77,8 +79,6 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-import com.gemstone.gemfire.security.GeodePermission.Operation;
-import com.gemstone.gemfire.security.GeodePermission.Resource;
 
 /**
  * 
@@ -1130,7 +1130,6 @@ public class DataCommands implements CommandMarker {
       CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION
   })
   @CliCommand(value = { CliStrings.REMOVE }, help = CliStrings.REMOVE__HELP)
-  @ResourceOperation(resource=Resource.DATA, operation = Operation.MANAGE)
   public Result remove(
       @CliOption(key = { CliStrings.REMOVE__KEY }, help = CliStrings.REMOVE__KEY__HELP) String key,
       @CliOption(key = { CliStrings.REMOVE__REGION }, mandatory = true, help = CliStrings.REMOVE__REGION__HELP, optionContext = ConverterHint.REGIONPATH) String regionPath,
@@ -1149,6 +1148,13 @@ public class DataCommands implements CommandMarker {
       return makePresentationResult(dataResult = DataCommandResult
           .createRemoveResult(key, null, null,
               CliStrings.REMOVE__MSG__KEY_EMPTY, false));
+    }
+
+    if(removeAllKeys){
+      GeodeSecurityUtil.authorizeRegionWrite(regionPath);
+    }
+    else {
+      GeodeSecurityUtil.authorizeRegionWrite(regionPath, key);
     }
 
     @SuppressWarnings("rawtypes")

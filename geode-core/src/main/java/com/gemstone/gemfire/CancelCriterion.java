@@ -45,6 +45,7 @@ package com.gemstone.gemfire;
  */
 public abstract class CancelCriterion
 {
+  
   /**
    * Indicate if the service is in the progress of being cancelled.  The
    * typical use of this is to indicate, in the case of an {@link InterruptedException},
@@ -105,4 +106,16 @@ public abstract class CancelCriterion
    *         the receiver has not been cancelled.
    */
   abstract public RuntimeException generateCancelledException(Throwable e);
+
+  /**
+   * Checks to see if a cancellation is in progress.  This is equivalent to
+   * the expression (cancelInProgress() != null).
+   * 
+   * @return true if a cancellation is in progress, false if not
+   */
+  public boolean isCancelInProgress() {
+    return cancelInProgress() != null;
+  }
+
+
 }

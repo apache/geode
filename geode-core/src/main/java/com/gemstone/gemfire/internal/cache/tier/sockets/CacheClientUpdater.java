@@ -1544,14 +1544,14 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
       // de facto flag indicating we are to stop
       return true;
     }
-    if (cache != null && cache.getCancelCriterion().cancelInProgress() != null) {
+    if (cache != null && cache.getCancelCriterion().isCancelInProgress()) {
       // System is cancelling
       return true;
     }
 
     // The pool stuff is really sick, so it's possible for us to have a distributed
     // system that is not the same as our cache.  Check it just in case...
-    if (system.getCancelCriterion().cancelInProgress() != null) {
+    if (system.getCancelCriterion().isCancelInProgress()) {
       return true;
     }
 

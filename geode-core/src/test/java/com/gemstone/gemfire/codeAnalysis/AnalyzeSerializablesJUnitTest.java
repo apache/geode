@@ -42,17 +42,13 @@ import com.gemstone.gemfire.codeAnalysis.decode.CompiledMethod;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 
-/**
- * 
- */
 @Category(IntegrationTest.class)
 public class AnalyzeSerializablesJUnitTest {
+
   /** all loaded classes */
   protected static Map<String, CompiledClass> classes = new HashMap<String, CompiledClass>();
+
   private static boolean ClassesNotFound;
-  
-  public AnalyzeSerializablesJUnitTest() {
-  }
   
   @Before
   public void loadClasses() throws Exception {
@@ -155,8 +151,7 @@ public class AnalyzeSerializablesJUnitTest {
       classes.remove(exclusion);
     }
   }
-  
-  
+
   @Test
   public void testDataSerializables() throws Exception {
     System.out.println("testDataSerializables starting");
@@ -250,8 +245,7 @@ public class AnalyzeSerializablesJUnitTest {
     removeExclusions(newClasses, excludedClasses);
     classes.putAll(newClasses);
   }
-  
-  
+
   public static void loadClassesFromBuild(File buildDir, List<String> excludedClasses) {
     Map<String, CompiledClass> newClasses = CompiledClassUtils.parseClassFilesInDir(buildDir);
     removeExclusions(newClasses, excludedClasses);
@@ -298,8 +292,7 @@ public class AnalyzeSerializablesJUnitTest {
     Collections.sort(result);
     return result;
   }
-  
-  
+
   public List<ClassAndVariables> findSerializables() {
     List<ClassAndVariables> result = new ArrayList<ClassAndVariables>(2000);
     for (Map.Entry<String, CompiledClass> entry: classes.entrySet()) {

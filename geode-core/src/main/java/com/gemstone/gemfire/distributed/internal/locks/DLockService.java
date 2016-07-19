@@ -528,11 +528,11 @@ public class DLockService extends DistributedLockService {
         // assertion: grantor should now be either ready or destroyed!
       
         if (myGrantor.isInitializing() && 
-            dm.getCancelCriterion().cancelInProgress() == null) {
+            !dm.getCancelCriterion().isCancelInProgress()) {
           logger.error(LogMarker.DLS, LocalizedMessage.create(LocalizedStrings.DLockService_GRANTOR_IS_STILL_INITIALIZING));
         }
         if (!success && !myGrantor.isDestroyed() && 
-            dm.getCancelCriterion().cancelInProgress() == null) {
+            !dm.getCancelCriterion().isCancelInProgress()) {
           logger.error(LogMarker.DLS, LocalizedMessage.create(
               LocalizedStrings.DLockService_GRANTOR_CREATION_WAS_ABORTED_BUT_GRANTOR_WAS_NOT_DESTROYED));
         }
@@ -1040,7 +1040,7 @@ public class DLockService extends DistributedLockService {
       finally {
         Assert.assertTrue(myGrantor == null 
             || !myGrantor.isInitializing()
-            || this.dm.getCancelCriterion().cancelInProgress() != null
+            || this.dm.getCancelCriterion().isCancelInProgress()
             || isDestroyed(),
             "BecomeLockGrantor failed and left grantor non-ready");
       }
@@ -2590,7 +2590,7 @@ public class DLockService extends DistributedLockService {
       if (isCurrentlyLockGrantor || isMakingLockGrantor) {
         // If forcedDisconnect is in progress, the membership view will not
         // change and no-one else can contact this member, so don't wait for a grantor
-        if (this.ds.getCancelCriterion().cancelInProgress() != null) {
+        if (this.ds.getCancelCriterion().isCancelInProgress()) {
           // KIRK: probably don't need to waitForGrantor
           try {
             DLockGrantor.waitForGrantor(this);

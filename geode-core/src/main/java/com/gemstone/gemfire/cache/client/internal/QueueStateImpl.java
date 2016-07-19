@@ -259,7 +259,7 @@ public class QueueStateImpl implements QueueState {
     @Override
     public void run2() {
       SystemFailure.checkFailure();
-      if (qManager.getPool().getCancelCriterion().cancelInProgress() != null) {
+      if (qManager.getPool().getCancelCriterion().isCancelInProgress()) {
         return;
       }
       if (PoolImpl.BEFORE_SENDING_CLIENT_ACK_CALLBACK_FLAG) {

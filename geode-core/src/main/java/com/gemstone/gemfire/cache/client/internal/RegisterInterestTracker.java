@@ -215,7 +215,7 @@ public class RegisterInterestTracker {
                                      true/*isClosing*/, keepAlive);
       }
       catch (Exception e) {
-        if(srp.getPool().getCancelCriterion().cancelInProgress() == null) {
+        if (!srp.getPool().getCancelCriterion().isCancelInProgress()) {
           logger.warn(LocalizedMessage.create(
               LocalizedStrings.RegisterInterestTracker_PROBLEM_REMOVING_ALL_INTEREST_ON_REGION_0_INTERESTTYPE_1_2,
               new Object[] {regName, InterestType.getString(interestType), e.getLocalizedMessage()}));

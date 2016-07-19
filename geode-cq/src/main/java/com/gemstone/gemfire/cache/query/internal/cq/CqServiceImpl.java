@@ -1087,7 +1087,7 @@ public final class CqServiceImpl implements CqService  {
                 .getQueueManager().getPool(), cqEvent.getEventID(), null);
             Object newVal = null;
             if (result == null || (newVal = result.getObject()) == null) {
-              if (this.cache.getCancelCriterion().cancelInProgress() == null) {
+              if (!cache.getCancelCriterion().isCancelInProgress()) {
                 Exception ex = new Exception(
                     "Failed to retrieve full value from server for eventID "
                     + cqEvent.getEventID());
@@ -1117,7 +1117,7 @@ public final class CqServiceImpl implements CqService  {
         }
         // Handle client side exceptions.
       } catch (Exception ex) {
-        if (this.cache.getCancelCriterion().cancelInProgress() == null) {
+        if (!cache.getCancelCriterion().isCancelInProgress()) {
           logger.warn(LocalizedMessage.create(
               LocalizedStrings.CqService_EXCEPTION_IN_THE_CQLISTENER_OF_THE_CQ_CQNAME_0_ERROR__1,
               new Object[] { cqName, ex.getMessage()}));
@@ -1174,7 +1174,7 @@ public final class CqServiceImpl implements CqService  {
         }
         // Handle client side exceptions.
       } catch (Exception ex) {
-        if (this.cache.getCancelCriterion().cancelInProgress() == null) {
+        if (!cache.getCancelCriterion().isCancelInProgress()) {
           logger.warn(LocalizedMessage.create(
               LocalizedStrings.CqService_EXCEPTION_IN_THE_CQLISTENER_OF_THE_CQ_CQNAME_0_ERROR__1,
               new Object[] { cqName, ex.getMessage()}));

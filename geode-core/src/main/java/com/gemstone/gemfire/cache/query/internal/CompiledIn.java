@@ -591,18 +591,28 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
       if (evalColln instanceof Map) {
         Iterator itr = ((Map)evalColln).entrySet().iterator();
         while (itr.hasNext()) {
-          this.queryIndex(itr.next(),indexInfo, results,iterOperands, indpndntItr, context, projAttrib,conditioningNeeded);          
+          this.queryIndex(itr.next(),indexInfo, results,iterOperands, indpndntItr, context, projAttrib,conditioningNeeded);
         }
 
       }
       else if (evalColln instanceof Collection) {
-        //Removing duplicates from the collection
-        HashSet set = new HashSet((Collection)evalColln);
-        Iterator itr = set.iterator();
-        while (itr.hasNext()) {
-          this.queryIndex(itr.next(),indexInfo, results,iterOperands, indpndntItr, context, projAttrib,conditioningNeeded);
+        Object key = indexInfo.evaluateIndexKey(context);
+        //If the index is a map index, the key is actually an object[] tuple that contains the map key in the [1]
+        //and the evalColln in the [0] position
+        if (key instanceof Object[]) {
+          Iterator iterator = ((ResultsSet)((Object[]) key)[0]).iterator();
+          while (iterator.hasNext()) {
+            this.queryIndex(new Object[]{iterator.next(), ((Object[])key)[1]}, indexInfo, results, iterOperands, indpndntItr, context, projAttrib, conditioningNeeded);
+          }
         }
-
+        else {
+          //Removing duplicates from the collection
+          HashSet set = new HashSet((Collection) evalColln);
+          Iterator itr = set.iterator();
+          while (itr.hasNext()) {
+            this.queryIndex(itr.next(), indexInfo, results, iterOperands, indpndntItr, context, projAttrib, conditioningNeeded);
+          }
+        }
       }
       else {
         if (!evalColln.getClass().isArray()) {
@@ -840,6 +850,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     }
     assert idxInfo.length == 1;
     Object key = idxInfo[0].evaluateIndexKey(context);
+
     if (key != null && key.equals(QueryService.UNDEFINED))
       return 0;
     
@@ -862,11 +873,19 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
 
     }
     else if (evalColln instanceof Collection) {
-      Iterator itr = ((Collection)evalColln).iterator();
-      while (itr.hasNext()) {
-        size+=idxInfo[0]._index.getSizeEstimate(itr.next(), TOK_EQ, idxInfo[0]._matchLevel);
+      if (key instanceof Object[]) {
+        Iterator iterator = ((ResultsSet)((Object[]) key)[0]).iterator();
+        while (iterator.hasNext()) {
+          size+=idxInfo[0]._index.getSizeEstimate(new Object[]{iterator.next(), ((Object[])key)[1]}, TOK_EQ, idxInfo[0]._matchLevel);
+        }
       }
+      else {
 
+        Iterator itr = ((Collection) evalColln).iterator();
+        while (itr.hasNext()) {
+          size += idxInfo[0]._index.getSizeEstimate(itr.next(), TOK_EQ, idxInfo[0]._matchLevel);
+        }
+      }
     }
     else {
       if (!evalColln.getClass().isArray()) {

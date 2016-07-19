@@ -1784,15 +1784,6 @@ public class HandShake implements ClientHandShake
 
   /**
    * this could return either a Subject or a Principal depending on if it's integrated security or not
-   * @param authenticatorMethod
-   * @param credentials
-   * @param securityProperties
-   * @param logWriter
-   * @param securityLogWriter
-   * @param member
-   * @return
-   * @throws AuthenticationRequiredException
-   * @throws AuthenticationFailedException
    */
   public static Object verifyCredentials(String authenticatorMethod,
       Properties credentials, Properties securityProperties, InternalLogWriter logWriter,

@@ -105,7 +105,7 @@ public class InstantiatorRecoveryListener extends EndpointManager.EndpointListen
 
     @Override
     public void run2() {
-      if (pool.getCancelCriterion().cancelInProgress() != null) {
+      if (pool.getCancelCriterion().isCancelInProgress()) {
         return;
       }
       synchronized(recoveryScheduledLock) {

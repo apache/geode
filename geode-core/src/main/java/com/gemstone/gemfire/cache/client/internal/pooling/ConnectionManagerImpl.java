@@ -721,7 +721,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   protected boolean prefill() {
     try {
       while (connectionCount < minConnections) {
-        if (cancelCriterion.cancelInProgress() != null) {
+        if (cancelCriterion.isCancelInProgress()) {
           return true;
         }
         boolean createdConnection= prefillConnection();
@@ -878,7 +878,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       prefill();
       lock.lock();
       try {
-        if(connectionCount < minConnections && cancelCriterion.cancelInProgress() == null) {
+        if(connectionCount < minConnections && !cancelCriterion.isCancelInProgress()) {
           try {
             backgroundProcessor.schedule(new PrefillConnectionsTask(), prefillRetry, TimeUnit.MILLISECONDS);
           } catch(RejectedExecutionException e) {

@@ -63,7 +63,7 @@ public class CallbackSampler {
   }
 
   private void sampleCallbacks() {
-    if(cancelCriterion.cancelInProgress() != null) {
+    if(cancelCriterion.isCancelInProgress()) {
       executor.shutdown();
     }
     int errors = 0;

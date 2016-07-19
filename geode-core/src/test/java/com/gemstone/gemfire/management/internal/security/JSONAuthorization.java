@@ -16,20 +16,33 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 
-import com.gemstone.gemfire.security.templates.SampleSecurityManager;
+import org.apache.geode.security.templates.SampleSecurityManager;
 import com.gemstone.gemfire.util.test.TestUtil;
 
+/**
+ * Used by test code. when using this class for security-manager, you will need explicitly call setUpWithJsonFile
+ * to initialize the acl (access control list).
+ */
 public class JSONAuthorization extends SampleSecurityManager {
 
-  public static JSONAuthorization create() throws IOException {
-    return new JSONAuthorization();
-  }
-
+  /**
+   * Override the child class's implemention to look for jsonFile in the same package as this class instead of
+   * in the classpath
+   * @param jsonFileName
+   * @throws IOException
+   */
   public static void setUpWithJsonFile(String jsonFileName) throws IOException {
-    String json = readFile(TestUtil.getResourcePath(JSONAuthorization.class, jsonFileName));
+    String filePath = TestUtil.getResourcePath(JSONAuthorization.class, jsonFileName);
+    File file = new File(filePath);
+    FileReader reader = new FileReader(file);
+    char[] buffer = new char[(int) file.length()];
+    reader.read(buffer);
+    String json = new String(buffer);
+    reader.close();
     readSecurityDescriptor(json);
   }
-
 }

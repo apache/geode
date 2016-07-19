@@ -273,7 +273,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor extends AbstractGatew
         }
       }
     } catch (InterruptedException e) {
-      throw new InternalGemFireException(e.getMessage());
+      throw new InternalGemFireException(e);
     } catch (RejectedExecutionException rejectedExecutionEx) {
       throw rejectedExecutionEx;
     }

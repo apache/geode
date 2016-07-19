@@ -59,9 +59,9 @@ public class AbstractIntegratedClientAuthDistributedTest extends JUnit4CacheTest
     JSONAuthorization.setUpWithJsonFile("clientServer.json");
 
     Properties props = new Properties();
-    props.setProperty(SECURITY_MANAGER, JSONAuthorization.class.getName()+".create");
+    props.setProperty(SECURITY_MANAGER, JSONAuthorization.class.getName());
     if(postProcessor!=null){
-      props.setProperty(SECURITY_CLIENT_ACCESSOR_PP, postProcessor.getName()+".create");
+      props.setProperty(SECURITY_POST_PROCESSOR, postProcessor.getName());
     }
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");

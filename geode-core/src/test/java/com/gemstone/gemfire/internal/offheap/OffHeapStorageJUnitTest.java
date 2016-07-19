@@ -168,6 +168,7 @@ public class OffHeapStorageJUnitTest {
       assertEquals(1024 * 1024, stats.getMaxMemory());
       assertEquals(0, stats.getUsedMemory());
       assertEquals(0, stats.getDefragmentations());
+      assertEquals(0, stats.getDefragmentationsInProgress());
       assertEquals(0, stats.getDefragmentationTime());
       assertEquals(0, stats.getFragmentation());
       assertEquals(1, stats.getFragments());
@@ -217,11 +218,13 @@ public class OffHeapStorageJUnitTest {
       DistributionStats.enableClockStats = true;
       try {
         long start = stats.startDefragmentation();
-        while (stats.startDefragmentation() == start) {
+        assertEquals(1, stats.getDefragmentationsInProgress());
+        while (DistributionStats.getStatTime() == start) {
           Thread.yield();
         }
         stats.endDefragmentation(start);
         assertEquals(1, stats.getDefragmentations());
+        assertEquals(0, stats.getDefragmentationsInProgress());
         assertTrue(stats.getDefragmentationTime() > 0);
       } finally {
         DistributionStats.enableClockStats = originalEnableClockStats;
@@ -236,6 +239,7 @@ public class OffHeapStorageJUnitTest {
       assertEquals(0, stats.getMaxMemory());
       assertEquals(0, stats.getUsedMemory());
       assertEquals(0, stats.getDefragmentations());
+      assertEquals(0, stats.getDefragmentationsInProgress());
       assertEquals(0, stats.getDefragmentationTime());
       assertEquals(0, stats.getFragmentation());
       assertEquals(0, stats.getFragments());

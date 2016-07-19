@@ -448,7 +448,7 @@ public class GatewayReceiverCommand extends BaseCommand {
             } catch (CancelException e) {
               // FIXME better exception hierarchy would avoid this check
               if (servConn.getCachedRegionHelper().getCache()
-                  .getCancelCriterion().cancelInProgress() != null) {
+                  .getCancelCriterion().isCancelInProgress()) {
                 if (logger.isDebugEnabled()) {
                   logger.debug("{} ignoring message of type {} from client {} because shutdown occurred during message processing.", servConn.getName(), MessageType.getString(msg.getMessageType()), servConn.getProxyID());
                 }

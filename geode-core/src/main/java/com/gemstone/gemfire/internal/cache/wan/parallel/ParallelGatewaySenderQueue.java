@@ -1669,7 +1669,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       if (shutdown) {
         return true;
       }
-      if (cache.getCancelCriterion().cancelInProgress() != null) {
+      if (cache.getCancelCriterion().isCancelInProgress()) {
         return true;
       }
       return false;

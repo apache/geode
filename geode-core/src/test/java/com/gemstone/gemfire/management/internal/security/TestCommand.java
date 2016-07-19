@@ -20,7 +20,7 @@ package com.gemstone.gemfire.management.internal.security;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gemstone.gemfire.security.GeodePermission;
+import org.apache.geode.security.GeodePermission;
 
 import org.apache.shiro.authz.Permission;
 
@@ -102,7 +102,7 @@ public class TestCommand {
     createTestCommand("import data --region=RegionA --file=import.txt --member=importMember", regionAWrite);
     createTestCommand("put --key=key1 --value=value1 --region=RegionA", regionAWrite);
     createTestCommand("get --key=key1 --region=RegionA", regionARead);
-    createTestCommand("remove --region=RegionA", dataManage);
+    createTestCommand("remove --region=RegionA --key=key1", regionAWrite);
     createTestCommand("query --query='SELECT * FROM /RegionA'", regionARead);
     createTestCommand("locate entry --key=k1 --region=RegionA", regionARead);
 

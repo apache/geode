@@ -101,7 +101,7 @@ public final class FetchHostResponse extends AdminResponse {
       File product = lib.getParentFile();
       m.gemfireDir = product.getCanonicalFile();//may thro' IOException if url is not in a proper format
     } catch (Exception ex) {
-      if (dm != null && dm.getCancelCriterion().cancelInProgress() == null) {
+      if (dm != null && !dm.getCancelCriterion().isCancelInProgress()) {
         logger.debug(ex.getMessage(), ex);
       }
       m.name = m.name != null ? m.name : DistributionConfig.DEFAULT_NAME;

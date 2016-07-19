@@ -5861,7 +5861,7 @@ public class PartitionedRegion extends LocalRegion implements
         }
       } catch (InterruptedException e) {
         thr = e;
-        if (this.cache.getCancelCriterion().cancelInProgress() == null) {
+        if (!cache.getCancelCriterion().isCancelInProgress()) {
           if (logger.isDebugEnabled()) {
             logger.debug("Invalidating partitioned region caught exception", e);
           }

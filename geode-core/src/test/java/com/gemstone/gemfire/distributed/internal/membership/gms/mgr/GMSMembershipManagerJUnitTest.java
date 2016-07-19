@@ -310,7 +310,7 @@ public class GMSMembershipManagerJUnitTest {
     Set<InternalDistributedMember> failures = manager.directChannelSend(recipients, m, null);
     when(dc.send(any(GMSMembershipManager.class), any(mockMembers.getClass()), any(DistributionMessage.class), anyInt(), anyInt()))
       .thenReturn(0);
-    when(stopper.cancelInProgress()).thenReturn("stopping for test");
+    when(stopper.isCancelInProgress()).thenReturn(Boolean.TRUE);
     try {
       manager.directChannelSend(recipients, m, null);
       fail("expected directChannelSend to throw an exception");

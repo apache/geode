@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Class which implements a Gemfire persisted {@code HttpSession}
  */
+@SuppressWarnings("deprecation")
 public class GemfireHttpSession implements
     HttpSession, DataSerializable, Delta {
 

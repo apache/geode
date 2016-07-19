@@ -845,7 +845,7 @@ public class Connection implements Runnable {
   private void waitForAddressCompletion() {
     InternalDistributedMember myAddr = this.owner.getConduit().getLocalAddress();
     synchronized (myAddr) {
-      while ((owner.getConduit().getCancelCriterion().cancelInProgress() == null)
+      while ((!owner.getConduit().getCancelCriterion().isCancelInProgress())
           && myAddr.getInetAddress() == null && myAddr.getVmViewId() < 0) {
         try {
           myAddr.wait(100); // spurious wakeup ok
@@ -1767,7 +1767,7 @@ public class Connection implements Runnable {
       } catch (Exception ignore) {}      
       return; // exit loop and thread
     } catch (IOException ex) {
-      if (stopped || owner.getConduit().getCancelCriterion().cancelInProgress() != null) {
+      if (stopped || owner.getConduit().getCancelCriterion().isCancelInProgress()) {
         try { 
           requestClose(LocalizedStrings.Connection_RUNNIOREADER_CAUGHT_SHUTDOWN.toLocalizedString());
         } catch (Exception ignore) {}
@@ -1807,7 +1807,7 @@ public class Connection implements Runnable {
           }
           SystemFailure.checkFailure(); // throws
         }
-        if (this.owner.getConduit().getCancelCriterion().cancelInProgress() != null) {
+        if (this.owner.getConduit().getCancelCriterion().isCancelInProgress()) {
           break;
         }
 
@@ -1913,7 +1913,7 @@ public class Connection implements Runnable {
   /** initiate suspect processing if a shared/ordered connection is lost and we're not shutting down */
   private void initiateSuspicionIfSharedUnordered() {
     if (this.isReceiver && this.handshakeRead && !this.preserveOrder && this.sharedResource) {
-      if (this.owner.getConduit().getCancelCriterion().cancelInProgress() == null) {
+      if (!this.owner.getConduit().getCancelCriterion().isCancelInProgress()) {
         this.owner.getDM().getMembershipManager().suspectMember(this.getRemoteAddress(),
             INITIATING_SUSPECT_PROCESSING);
       }
@@ -2017,7 +2017,7 @@ public class Connection implements Runnable {
       input = new BufferedInputStream(getSocket().getInputStream(), INITIAL_CAPACITY);
     }
     catch (IOException io) {
-      if (stopped || owner.getConduit().getCancelCriterion().cancelInProgress() != null) {
+      if (stopped || owner.getConduit().getCancelCriterion().isCancelInProgress()) {
         return; // bug 37520: exit run loop (and thread)
       }
       logger.fatal(LocalizedMessage.create(LocalizedStrings.Connection_UNABLE_TO_GET_INPUT_STREAM), io);
@@ -2049,7 +2049,7 @@ public class Connection implements Runnable {
           }
           SystemFailure.checkFailure(); // throws
         }
-        if (this.owner.getConduit().getCancelCriterion().cancelInProgress() != null) {
+        if (this.owner.getConduit().getCancelCriterion().isCancelInProgress()) {
           break;
         }
         int len = 0;
@@ -2428,7 +2428,7 @@ public class Connection implements Runnable {
           // sleep a bit to avoid a hot error loop
           try { Thread.sleep(1000); } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
-            if (this.owner.getConduit().getCancelCriterion().cancelInProgress() != null) {
+            if (this.owner.getConduit().getCancelCriterion().isCancelInProgress()) {
               return;
             }
             break;
@@ -2436,7 +2436,7 @@ public class Connection implements Runnable {
         }
       } // IOException
       catch (Exception e) {
-        if (this.owner.getConduit().getCancelCriterion().cancelInProgress() != null) {
+        if (this.owner.getConduit().getCancelCriterion().isCancelInProgress()) {
           return; // bug 37101
         }
         if (!stopped && !(e instanceof InterruptedException) ) {
@@ -2996,7 +2996,7 @@ public class Connection implements Runnable {
             }
             SystemFailure.checkFailure(); // throws
           }
-          if (this.owner.getConduit().getCancelCriterion().cancelInProgress() != null) {
+          if (this.owner.getConduit().getCancelCriterion().isCancelInProgress()) {
             break;
           }
           flushId++;

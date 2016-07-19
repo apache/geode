@@ -17,7 +17,7 @@
 package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit3CacheTestCase;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 /**
  * The abstract superclass of tests that require the creation of a
@@ -25,9 +25,5 @@ import com.gemstone.gemfire.test.dunit.cache.internal.JUnit3CacheTestCase;
  *
  * @since GemFire 3.0
  */
-public abstract class CacheTestCase extends JUnit3CacheTestCase {
-
-  public CacheTestCase(String name) {
-    super(name);
-  }
+public abstract class CacheTestCase extends JUnit4CacheTestCase {
 }

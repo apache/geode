@@ -62,7 +62,7 @@ public class IndexRepositoryFactory {
   /**
    * Find the bucket in region2 that matches the bucket id from region1.
    */
-  private BucketRegion getMatchingBucket(PartitionedRegion region, Integer bucketId) {
+  protected BucketRegion getMatchingBucket(PartitionedRegion region, Integer bucketId) {
     //Force the bucket to be created if it is not already
     region.getOrCreateNodeForBucketWrite(bucketId, null);
 

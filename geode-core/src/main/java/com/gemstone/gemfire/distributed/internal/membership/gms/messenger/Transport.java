@@ -136,7 +136,9 @@ public class Transport extends UDP {
   // overridden to implement AvailablePort response
   @Override
   public void receive(Address sender, byte[] data, int offset, int length) {
-    if(data == null) return;
+    if (data == null || length <= 0) { // GEODE-1596 - check for empty messages
+      return;
+    }
 
     // drop message from self; it has already been looped back up (https://issues.jboss.org/browse/JGRP-1765)
     if(local_physical_addr != null && local_physical_addr.equals(sender))

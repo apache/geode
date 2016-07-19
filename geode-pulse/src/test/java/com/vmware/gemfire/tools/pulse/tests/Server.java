@@ -72,7 +72,7 @@ public class Server {
       Map<String, Object> env = new HashMap<String, Object>();
 
       // set up Shiro Security Manager
-      Realm realm = new CustomAuthRealm(JSONAuthorization.class.getName() + ".create");
+      Realm realm = new CustomAuthRealm(JSONAuthorization.class.getName());
       SecurityManager securityManager = new DefaultSecurityManager(realm);
       SecurityUtils.setSecurityManager(securityManager);
 

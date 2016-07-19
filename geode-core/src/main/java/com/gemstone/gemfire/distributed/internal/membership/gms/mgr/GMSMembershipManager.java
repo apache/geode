@@ -1709,7 +1709,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
       }
       
       if (sentBytes == 0) {
-        if (services.getCancelCriterion().cancelInProgress() != null) {
+        if (services.getCancelCriterion().isCancelInProgress()) {
           throw new DistributedSystemDisconnectedException();
         }
       }
@@ -1832,7 +1832,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     Set result = null;
     boolean allDestinations = msg.forAll();
     
-    if (services.getCancelCriterion().cancelInProgress() != null) {
+    if (services.getCancelCriterion().isCancelInProgress()) {
       throw new DistributedSystemDisconnectedException("Distributed System is shutting down",
           services.getCancelCriterion().generateCancelledException(null));
     }
@@ -1914,7 +1914,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
   void checkAddressesForUUIDs(InternalDistributedMember[] addresses) {
     for (int i=0; i<addresses.length; i++) {
       InternalDistributedMember m = addresses[i];
-      if(m != null) {
+      if (m != null) {
         GMSMember id = (GMSMember)m.getNetMember();
         if (!id.hasUUID()) {
           latestViewLock.readLock().lock();
@@ -2295,7 +2295,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         Thread.sleep(pauseTime);
       }
     } while (wait && (dc != null && dc.isOpen())
-        && services.getCancelCriterion().cancelInProgress()==null );
+        && !services.getCancelCriterion().isCancelInProgress());
     if (logger.isDebugEnabled()) {
       logger.debug("operations for {} should all be in the cache at this point", mbr);
     }

@@ -458,8 +458,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
             // no action necessary
           }
           catch (Exception e) {
-            if (GatewaySenderAdvisor.this.sender
-                .getStopper().cancelInProgress() == null) {
+            if (!sender.getStopper().isCancelInProgress()) {
               logger.fatal(LocalizedMessage.create(
                   LocalizedStrings.GatewaySenderAdvisor_0_THE_THREAD_TO_OBTAIN_THE_FAILOVER_LOCK_WAS_INTERRUPTED__THIS_GATEWAY_SENDER_WILL_NEVER_BECOME_THE_PRIMARY,
                   GatewaySenderAdvisor.this), e);

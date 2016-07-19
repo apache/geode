@@ -322,7 +322,10 @@ public abstract class AbstractDistributionConfig
       int portVal = 0;
       try {
         portVal = Integer.parseInt(port);
-        if (portVal < 1 || portVal > 65535) {
+        if(0 == portVal){
+          return "";
+        }
+        else if (portVal < 1 || portVal > 65535) {
           throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_INVALID_LOCATOR_0_THE_PORT_1_WAS_NOT_GREATER_THAN_ZERO_AND_LESS_THAN_65536.toLocalizedString(new Object[] {value, Integer.valueOf(portVal)}));
         }
       } catch (NumberFormatException ex) {
@@ -1131,7 +1134,8 @@ public abstract class AbstractDistributionConfig
     m.put(DISTRIBUTED_TRANSACTIONS, "Flag to indicate whether all transactions including JTA should be distributed transactions.  Default is false, meaning colocated transactions.");
 
     m.put(SECURITY_SHIRO_INIT, "The name of the shiro configuration file in the classpath, e.g. shiro.ini");
-    m.put(SECURITY_MANAGER, "User defined fully qualified method name implementing SecurityManager interface for integrated security. Defaults to \"{0}\". Legal values can be any \"method name\" of a static method that is present in the classpath.");
+    m.put(SECURITY_MANAGER, "User defined fully qualified class name implementing SecurityManager interface for integrated security. Defaults to \"{0}\". Legal values can be any \"class name\" implementing SecurityManager that is present in the classpath.");
+    m.put(SECURITY_POST_PROCESSOR, "User defined fully qualified class name implementing PostProcessor interface for integrated security. Defaults to \"{0}\". Legal values can be any \"class name\" implementing PostProcessor that is present in the classpath.");
 
     dcAttDescriptions = Collections.unmodifiableMap(m);
 

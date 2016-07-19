@@ -185,7 +185,7 @@ public class LogWriterAppenderJUnitTest {
     assertTrue(Pattern.compile(".*\\[finest .*DIRECT MESSAGE.*", Pattern.DOTALL).matcher(stringWriter.toString()).matches());
     stringWriter.getBuffer().setLength(0);
     
-    LogEvent event = Log4jLogEvent.newBuilder().setLevel(Level.INFO).setLoggerFqcn("NAME").setLoggerName("NAME").setMessage(new ParameterizedMessage("LOGEVENT MESSAGE", null)).build();
+    LogEvent event = Log4jLogEvent.newBuilder().setLevel(Level.INFO).setLoggerFqcn("NAME").setLoggerName("NAME").setMessage(new ParameterizedMessage("LOGEVENT MESSAGE")).build();
     this.appender.append(event);
     assertTrue(Pattern.compile(".*\\[info .*LOGEVENT MESSAGE.*", Pattern.DOTALL).matcher(stringWriter.toString()).matches());
     stringWriter.getBuffer().setLength(0);

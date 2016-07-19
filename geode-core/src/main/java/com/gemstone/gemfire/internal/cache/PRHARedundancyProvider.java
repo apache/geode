@@ -721,7 +721,7 @@ public class PRHARedundancyProvider
         } catch (Exception e) {
           // if region is going down, then no warning level logs
           if (e instanceof CancelException || e instanceof CacheClosedException
-              || (prRegion.getCancelCriterion().cancelInProgress() != null)) {
+              || (prRegion.getCancelCriterion().isCancelInProgress())) {
             logger.debug("Exception trying choose a primary after bucket creation failure", e);
           }
           else {
@@ -832,7 +832,7 @@ public class PRHARedundancyProvider
     
     //Don't elect ourselves as primary or tell others to persist our ID if this member
     //has been destroyed.
-    if(prRegion.getCancelCriterion().cancelInProgress()  != null || prRegion.isDestroyed()) {
+    if(prRegion.getCancelCriterion().isCancelInProgress() || prRegion.isDestroyed()) {
       return;
     }
     

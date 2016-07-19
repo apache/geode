@@ -370,10 +370,6 @@ public class Services {
       return reasonForStopping;
     }
 
-    public boolean isCancelInProgress() {
-      return cancelInProgress() != null;
-    }
-
     @Override
     public RuntimeException generateCancelledException(Throwable e) {
       String reason = cancelInProgress();

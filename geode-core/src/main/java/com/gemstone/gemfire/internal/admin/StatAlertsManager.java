@@ -354,7 +354,7 @@ public class StatAlertsManager {
       final boolean isDebugEnabled = logger.isDebugEnabled();
       
       synchronized (StatAlertsManager.this) {
-        if (dm.getCancelCriterion().cancelInProgress() != null) {
+        if (dm.getCancelCriterion().isCancelInProgress()) {
           return;
         }
         

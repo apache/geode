@@ -603,6 +603,14 @@ public class InternalLocator extends Locator implements ConnectListener {
         this.handler, new DelayedPoolStatHelper(), group, this.toString());
   }
 
+  //Reset the file names with the correct port number if startLocatorAndDS was called with port number 0
+  public void resetInternalLocatorFileNamesWithCorrectPortNumber(int port){
+    this.stateFile = new File("locator" + port + "view.dat");
+    File productUseFile = new File("locator"+port+"views.log");
+    this.productUseLog = new ProductUseLog(productUseFile);
+  }
+
+
   private void startTcpServer() throws IOException {
     logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_STARTING_0, this));
     server.start();

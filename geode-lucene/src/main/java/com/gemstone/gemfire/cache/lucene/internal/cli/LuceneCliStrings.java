@@ -19,17 +19,22 @@
 package com.gemstone.gemfire.cache.lucene.internal.cli;
 
 public class LuceneCliStrings {
-  //List Lucene Index commands
-  public static final String LUCENE_LIST_INDEX = "list lucene index";
+  //Common parameters/options
+  public static final String LUCENE__INDEX_NAME = "name";
+  public static final String LUCENE__REGION_PATH = "region";
+
+  //List lucene index commands
+  public static final String LUCENE_LIST_INDEX = "list lucene indexes";
   public static final String LUCENE_LIST_INDEX__HELP = "Display the list of lucene indexes created for all members.";
   public static final String LUCENE_LIST_INDEX__ERROR_MESSAGE = "An error occurred while collecting all lucene index information across the Geode cluster: %1$s";
-  public static final String LUCENE_LIST_INDEX__INDEXES_NOT_FOUND_MESSAGE = "No lucene indexes Found";
+  public static final String LUCENE_LIST_INDEX__INDEXES_NOT_FOUND_MESSAGE = "No lucene indexes found";
+  public static final String LUCENE_LIST_INDEX__STATS = "with-stats";
+  public static final String LUCENE_LIST_INDEX__STATS__HELP = "Display lucene index stats";
 
+  //Create lucene index commands 
   public static final String LUCENE_CREATE_INDEX = "create lucene index";
   public static final String LUCENE_CREATE_INDEX__HELP = "Create a lucene index that can be used to execute queries.";
-  public static final String LUCENE_CREATE_INDEX__NAME = "name";
   public static final String LUCENE_CREATE_INDEX__NAME__HELP = "Name of the lucene index to create.";
-  public static final String LUCENE_CREATE_INDEX__REGION = "region";
   public static final String LUCENE_CREATE_INDEX__REGION_HELP = "Name/Path of the region where the lucene index is created on.";
   public static final String LUCENE_CREATE_INDEX__FIELD = "field";
   public static final String LUCENE_CREATE_INDEX__FIELD_HELP = "fields on the region values which are stored in the lucene index.";
@@ -37,7 +42,6 @@ public class LuceneCliStrings {
   public static final String LUCENE_CREATE_INDEX__ANALYZER_HELP = "Type of the analyzer for each field.";
   public static final String LUCENE_CREATE_INDEX__GROUP = "group";
   public static final String LUCENE_CREATE_INDEX__GROUP__HELP = "Group of members in which the lucene index will be created.";
-
   public static final String CREATE_INDEX__SUCCESS__MSG = "Index successfully created with following details";
   public static final String CREATE_INDEX__FAILURE__MSG = "Failed to create index \"{0}\" due to following reasons";
   public static final String CREATE_INDEX__NAME__MSG = "Name       : {0}";
@@ -45,4 +49,14 @@ public class LuceneCliStrings {
   public static final String CREATE_INDEX__MEMBER__MSG = "Members which contain the index";
   public static final String CREATE_INDEX__NUMBER__AND__MEMBER = "{0}. {1}";
   public static final String CREATE_INDEX__EXCEPTION__OCCURRED__ON = "Occurred on following members";
+  
+  //Describe lucene index commands
+  public static final String LUCENE_DESCRIBE_INDEX = "describe lucene index";
+  public static final String LUCENE_DESCRIBE_INDEX__HELP = "Display the describe of lucene indexes created for all members.";
+  public static final String LUCENE_DESCRIBE_INDEX__ERROR_MESSAGE = "An error occurred while collecting lucene index information across the Geode cluster: %1$s";
+  public static final String LUCENE_DESCRIBE_INDEX__NAME__HELP = "Name of the lucene index to describe.";
+  public static final String LUCENE_DESCRIBE_INDEX__REGION_HELP = "Name/Path of the region where the lucene index to be described exists.";
+
+
+
 }
