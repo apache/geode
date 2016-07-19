@@ -4,28 +4,29 @@ title: Managing Heap and Off-heap Memory
 
 By default, <span class="keyword">Apache Geode</span> uses the JVM heap. <span class="keyword">Apache Geode</span> also offers an option to store data off heap. This section describes how to manage heap and off-heap memory to best support your application.
 
--   **[Tuning the JVM's Garbage Collection Parameters](../../managing/heap_use/heap_management.html#section_590DA955523246ED980E4E351FF81F71)**
+-   **[Tuning the JVM's Garbage Collection Parameters](#section_590DA955523246ED980E4E351FF81F71)**
 
     Because <span class="keyword">Apache Geode</span> is specifically designed to manipulate data held in memory, you can optimize your application's performance by tuning the way <span class="keyword">Apache Geode</span> uses the JVM heap.
 
--   **[Using the Geode Resource Manager](../../managing/heap_use/heap_management.html#how_the_resource_manager_works)**
+-   **[Using the Geode Resource Manager](#how_the_resource_manager_works)**
 
     The <span class="keyword">Geode</span> resource manager works with your JVM's tenured garbage collector to control heap use and protect your member from hangs and crashes due to memory overload.
 
--   **[Controlling Heap Use with the Resource Manager](../../managing/heap_use/heap_management.html#configuring_resource_manager)**
+-   **[Controlling Heap Use with the Resource Manager](#configuring_resource_manager)**
 
     Resource manager behavior is closely tied to the triggering of Garbage Collection (GC) activities, the use of concurrent garbage collectors in the JVM, and the number of parallel GC threads used for concurrency.
 
--   **[Resource Manager Example Configurations](../../managing/heap_use/heap_management.html#resource_manager_example_configurations)**
+-   **[Resource Manager Example Configurations](#resource_manager_example_configurations)**
 
--   **[Managing Off-Heap Memory](../../managing/heap_use/off_heap_management.html)**
+-   **[Managing Off-Heap Memory](off_heap_management.html)**
 
     <span class="keyword">Geode</span> can be configured to store region values in off-heap memory, which is memory within the JVM that is not subject to Java garbage collection.
 
--   **[Locking Memory (Linux Systems Only)](../../managing/heap_use/lock_memory.html)**
+-   **[Locking Memory (Linux Systems Only)](lock_memory.html)**
 
     On Linux systems, you can lock memory to prevent the operating system from paging out heap or off-heap memory.
 
+<a id="section_590DA955523246ED980E4E351FF81F71"></a>
 ## Tuning the JVM's Garbage Collection Parameters
 
 Because <span class="keyword">Apache Geode</span> is specifically designed to manipulate data held in memory, you can optimize your application's performance by tuning the way <span class="keyword">Apache Geode</span> uses the JVM heap.
@@ -58,6 +59,7 @@ $ gfsh start server --name=app.MyApplication --initial-heap=30m --max-heap=30m \
 --J=-XX:+UseConcMarkSweepGC --J=-XX:CMSInitiatingOccupancyFraction=60
 ```
 
+<a id="how_the_resource_manager_works"></a>
 ## Using the <span class="keyword">Geode</span> Resource Manager
 
 The <span class="keyword">Geode</span> resource manager works with your JVM's tenured garbage collector to control heap use and protect your member from hangs and crashes due to memory overload.
@@ -96,6 +98,7 @@ When the manager kicks off evictions:
 
 See also [Memory Requirements for Cached Data](../../reference/topics/memory_requirements_for_cache_data.html#calculating_memory_requirements).
 
+<a id="configuring_resource_manager"></a>
 ## Controlling Heap Use with the Resource Manager
 
 Resource manager behavior is closely tied to the triggering of Garbage Collection (GC) activities, the use of concurrent garbage collectors in the JVM, and the number of parallel GC threads used for concurrency.
@@ -181,6 +184,7 @@ Applications that quickly put a lot of data into the cache can more easily overr
  - Your choice of JVM
 Each JVM has its own GC behavior, which affects how efficiently the collector can operate, how quickly it kicks in when needed, and other factors.
 
+<a id="resource_manager_example_configurations"></a>
 ## Resource Manager Example Configurations
 
 <a id="resource_manager_example_configurations__section_B50C552B114D47F3A63FC906EB282024"></a>
