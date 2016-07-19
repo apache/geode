@@ -369,7 +369,7 @@ public class QueryJUnitTest {
     } catch (Exception e) {
       fail("Query execution failed " + e);
     }
-    assertEquals("Incorrect result size ", 1, sr.size());
+    assertEquals("Incorrect result size ", 2, sr.size());
   }
 
   @Test
