@@ -16,36 +16,25 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.NoAvailableLocatorsException;
-import com.gemstone.gemfire.cache.client.NoAvailableServersException;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.management.membership.ClientMembership;
-import com.gemstone.gemfire.management.membership.ClientMembershipEvent;
-import com.gemstone.gemfire.management.membership.ClientMembershipListenerAdapter;
-import com.gemstone.gemfire.test.dunit.*;
 import org.junit.Assert;
+import org.junit.*;
+import org.junit.experimental.categories.*;
 
-import java.io.Serializable;
-import java.net.BindException;
-import java.net.InetSocketAddress;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.client.*;
+import com.gemstone.gemfire.cache.server.*;
+import com.gemstone.gemfire.distributed.internal.*;
+import com.gemstone.gemfire.internal.*;
+import com.gemstone.gemfire.internal.cache.*;
+import com.gemstone.gemfire.management.membership.*;
+import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.junit.categories.*;
 
 /**
  * Tests cases that are particular for the auto connection source
@@ -387,9 +376,8 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     resetBridgeListener(bridge1VM);
     waitForCrash(clientVM);
     clientListener = getBridgeListener(clientVM);
-    Assert.assertEquals(1, clientListener.getCrashes());
-    Assert.assertEquals(0, clientListener.getDepartures());
     Assert.assertEquals(0, clientListener.getJoins());
+    Assert.assertEquals(1, clientListener.getDepartures()+clientListener.getCrashes());
     resetBridgeListener(clientVM);
 
     //stop the client and make sure the bridge server notices
@@ -479,9 +467,8 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
           }
           if (expectedEndpointPorts.size() == actualEndpointPorts.size()) {
             break;
-          } else {
-            Wait.pause(100);
           }
+          Wait.pause(100);
         } while (retryCount-- > 0);
         Assert.assertEquals(expectedEndpointPorts, actualEndpointPorts);
       }
@@ -499,7 +486,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
   }
 
   protected void resetBridgeListener(VM vm) {
-    vm.invoke(new SerializableRunnable("Add membership listener") {
+    vm.invoke(new SerializableRunnable("Reset membership listener") {
       public void run() {
         MyListener listener = (MyListener) remoteObjects.get(BRIDGE_LISTENER);
         listener.reset();
@@ -508,7 +495,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
   }
 
   private MyListener getBridgeListener(VM vm) {
-    return (MyListener) vm.invoke(new SerializableCallable("Add membership listener") {
+    return (MyListener) vm.invoke(new SerializableCallable("Get membership listener") {
       public Object call() {
         return remoteObjects.get(BRIDGE_LISTENER);
       }
@@ -516,7 +503,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
   }
 
   private void waitForJoin(VM vm) {
-    vm.invoke(new SerializableRunnable() {
+    vm.invoke(new SerializableRunnable("wait for join") {
       public void run() {
         MyListener listener = (MyListener) remoteObjects.get(BRIDGE_LISTENER);
         synchronized (listener) {
@@ -524,7 +511,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
           while (listener.joins == 0) {
             try {
               long remaining = end - System.currentTimeMillis();
-              if (remaining < 0) {
+              if (remaining <= 0) {
                 break;
               }
               listener.wait(remaining);
@@ -532,13 +519,14 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
               fail("interrupted");
             }
           }
+          GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
         }
       }
     });
   }
 
   private void waitForCrash(VM vm) {
-    vm.invoke(new SerializableRunnable() {
+    vm.invoke(new SerializableRunnable("wait for crash") {
       public void run() {
         MyListener listener = (MyListener) remoteObjects.get(BRIDGE_LISTENER);
         synchronized (listener) {
@@ -560,7 +548,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
   }
 
   private void waitForDeparture(VM vm) {
-    vm.invoke(new SerializableRunnable() {
+    vm.invoke(new SerializableRunnable("wait for departure") {
       public void run() {
         MyListener listener = (MyListener) remoteObjects.get(BRIDGE_LISTENER);
         synchronized (listener) {
@@ -589,6 +577,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     @Override
     public synchronized void memberCrashed(ClientMembershipEvent event) {
       crashes++;
+      System.out.println("memberCrashed invoked");
       notifyAll();
     }
 
@@ -601,12 +590,14 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     @Override
     public synchronized void memberJoined(ClientMembershipEvent event) {
       joins++;
+      System.out.println("memberJoined invoked");
       notifyAll();
     }
 
     @Override
     public synchronized void memberLeft(ClientMembershipEvent event) {
       departures++;
+      System.out.println("memberLeft invoked");
       notifyAll();
     }
 
