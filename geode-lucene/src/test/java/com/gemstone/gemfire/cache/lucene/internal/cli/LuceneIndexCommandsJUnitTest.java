@@ -24,12 +24,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.payloads.FloatEncoder;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.junit.Assert;
 import org.junit.Test;
@@ -42,6 +44,7 @@ import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneCreateIndexFunction;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
+import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneSearchIndexFunction;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
 import com.gemstone.gemfire.internal.util.CollectionUtils;
@@ -220,7 +223,31 @@ public class LuceneIndexCommandsJUnitTest {
     assertEquals(Arrays.asList("10"), data.retrieveAllValues("Commits"));
     assertEquals(Arrays.asList("5"), data.retrieveAllValues("Updates"));
     assertEquals(Arrays.asList("1"), data.retrieveAllValues("Documents"));
+  }
 
+  @Test
+  public void testSearchIndex() throws CommandResultException {
+
+    final Cache mockCache = mock(Cache.class, "Cache");
+    final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
+    final LuceneIndexCommands commands=spy(createIndexCommands(mockCache,null));
+
+    final List<Set<LuceneSearchResults>> queryResultsList = new ArrayList<>();
+    HashSet<LuceneSearchResults> queryResults = new HashSet<>();
+    queryResults.add(createQueryResults("A","Result1",Float.valueOf("1.3")));
+    queryResults.add(createQueryResults("B","Result1",Float.valueOf("1.2")));
+    queryResults.add(createQueryResults("C","Result1",Float.valueOf("1.1")));
+    queryResultsList.add(queryResults);
+    doReturn(mockResultCollector).when(commands).executeFunctionOnGroups(isA(LuceneSearchIndexFunction.class),any(),any(LuceneQueryInfo.class));
+    doReturn(queryResultsList).when(mockResultCollector).getResult();
+
+    CommandResult result = (CommandResult) commands.searchIndex("index","region","Result1","field1");
+
+    TabularResultData data = (TabularResultData) result.getResultData();
+
+    assertEquals(Arrays.asList("C","B","A"), data.retrieveAllValues("key"));
+    assertEquals(Arrays.asList("Result1","Result1","Result1"), data.retrieveAllValues("value"));
+    assertEquals(Arrays.asList("1.1","1.2","1.3"), data.retrieveAllValues("score"));
   }
 
 
@@ -247,6 +274,10 @@ public class LuceneIndexCommandsJUnitTest {
 
   private LuceneIndexDetails createIndexDetails(final String indexName, final String regionPath, final String[] searchableFields, final Map<String, Analyzer> fieldAnalyzers) {
     return new LuceneIndexDetails(indexName, regionPath, searchableFields, fieldAnalyzers,null);
+  }
+
+  private LuceneSearchResults createQueryResults(final String key, final String value, final float score) {
+    return new LuceneSearchResults(key,value,score);
   }
 
   private static class LuceneTestIndexCommands extends LuceneIndexCommands {

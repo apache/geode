@@ -16,15 +16,11 @@
  */
 package com.gemstone.gemfire.cache.lucene.internal.cli;
 
-import static com.gemstone.gemfire.cache.operations.OperationContext.*;
-
 import java.util.ArrayList;
-
-import java.util.HashMap;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.apache.geode.security.GeodePermission.Operation;
@@ -38,9 +34,12 @@ import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.FunctionAdapter;
 import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
+import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
+import com.gemstone.gemfire.cache.lucene.PageableLuceneQueryResults;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneCreateIndexFunction;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
+import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneSearchIndexFunction;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
@@ -52,8 +51,6 @@ import com.gemstone.gemfire.management.internal.cli.commands.AbstractCommandsSup
 import com.gemstone.gemfire.management.internal.cli.functions.CliFunctionResult;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResultException;
-import com.gemstone.gemfire.management.internal.cli.result.ErrorResultData;
-import com.gemstone.gemfire.management.internal.cli.result.InfoResultData;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
@@ -70,6 +67,7 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 public class LuceneIndexCommands extends AbstractCommandsSupport {
   private static final LuceneCreateIndexFunction createIndexFunction = new LuceneCreateIndexFunction();
   private static final LuceneDescribeIndexFunction describeIndexFunction = new LuceneDescribeIndexFunction();
+  private static final LuceneSearchIndexFunction searchIndexFunction = new LuceneSearchIndexFunction();
 
   @CliCommand(value = LuceneCliStrings.LUCENE_LIST_INDEX, help = LuceneCliStrings.LUCENE_LIST_INDEX__HELP)
   @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA })
@@ -251,8 +249,80 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     return funcResults.stream().filter(indexDetails -> indexDetails != null).collect(Collectors.toList());
   }
 
+  @CliCommand(value = LuceneCliStrings.LUCENE_SEARCH_INDEX, help = LuceneCliStrings.LUCENE_SEARCH_INDEX__HELP)
+  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA })
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
+  public Result searchIndex(
+    @CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME,
+      mandatory=true,
+      help = LuceneCliStrings.LUCENE_SEARCH_INDEX__NAME__HELP) final String indexName,
+
+    @CliOption (key = LuceneCliStrings.LUCENE__REGION_PATH,
+      mandatory = true,
+      optionContext = ConverterHint.REGIONPATH,
+      help = LuceneCliStrings.LUCENE_SEARCH_INDEX__REGION_HELP) final String regionPath,
+
+    @CliOption (key = LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING,
+      mandatory = true,
+      help = LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING__HELP) final String queryString,
+
+    @CliOption (key = LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD,
+      mandatory = true,
+      help = LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD__HELP) final String defaultField) {
+    try {
+
+      LuceneQueryInfo queryInfo=new LuceneQueryInfo(indexName,regionPath,queryString, defaultField);
+      return getSearchResults(queryInfo);
+
+    }
+    catch (FunctionInvocationTargetException ignore) {
+      return ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN,
+        LuceneCliStrings.LUCENE_SEARCH_INDEX));
+    }
+    catch (VirtualMachineError e) {
+      SystemFailure.initiateFailure(e);
+      throw e;
+    }
+    catch (Throwable t) {
+      SystemFailure.checkFailure();
+      getCache().getLogger().error(t);
+      return ResultBuilder.createGemFireErrorResult(String.format(LuceneCliStrings.LUCENE_SEARCH_INDEX__ERROR_MESSAGE,
+        toString(t, isDebugging())));
+    }
+  }
+
+  private Result getSearchResults(final LuceneQueryInfo queryInfo) throws Exception {
+    GeodeSecurityUtil.authorizeRegionManage(queryInfo.getRegionPath());
+    final String[] groups = {};
+    final ResultCollector<?, ?> rc = this.executeFunctionOnGroups(searchIndexFunction, groups, queryInfo);
+    final List<Set<LuceneSearchResults>> functionResults = (List<Set<LuceneSearchResults>>) rc.getResult();
+
+    List<LuceneSearchResults> results = functionResults.stream()
+      .flatMap(set -> set.stream())
+      .sorted()
+      .collect(Collectors.toList());
+    if (results.size() != 0) {
+      final TabularResultData data = ResultBuilder.createTabularResultData();
+      for (LuceneSearchResults struct : results) {
+        data.accumulate("key", struct.getKey());
+        data.accumulate("value", struct.getValue());
+        data.accumulate("score", struct.getScore());
+      }
+      return ResultBuilder.buildResult(data);
+    }
+    else {
+      return ResultBuilder.createInfoResult(LuceneCliStrings.LUCENE_SEARCH_INDEX__NO_RESULTS_MESSAGE);
+    }
+    //@TODO : Pagination
+  }
+
   protected ResultCollector<?, ?> executeFunctionOnGroups(FunctionAdapter function, String[]groups, final LuceneIndexInfo indexInfo) throws CommandResultException {
     final Set<DistributedMember> targetMembers = CliUtil.findAllMatchingMembers(groups, null);
     return CliUtil.executeFunction(function, indexInfo, targetMembers);
+  }
+
+  protected ResultCollector<?, ?> executeFunctionOnGroups(FunctionAdapter function, String[]groups, final LuceneQueryInfo queryInfo) throws CommandResultException {
+    final Set<DistributedMember> targetMembers = CliUtil.findAllMatchingMembers(groups, null);
+    return CliUtil.executeFunction(function, queryInfo, targetMembers);
   }
 }

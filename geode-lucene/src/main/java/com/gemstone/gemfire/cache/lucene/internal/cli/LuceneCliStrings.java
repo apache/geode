@@ -57,6 +57,16 @@ public class LuceneCliStrings {
   public static final String LUCENE_DESCRIBE_INDEX__NAME__HELP = "Name of the lucene index to describe.";
   public static final String LUCENE_DESCRIBE_INDEX__REGION_HELP = "Name/Path of the region where the lucene index to be described exists.";
 
-
-
+  
+  //Search lucene index commands
+  public static final String LUCENE_SEARCH_INDEX = "lucene search";
+  public static final String LUCENE_SEARCH_INDEX__HELP = "Search lucene index";
+  public static final String LUCENE_SEARCH_INDEX__ERROR_MESSAGE = "An error occurred while searching lucene index across the Geode cluster: %1$s";
+  public static final String LUCENE_SEARCH_INDEX__NAME__HELP = "Name of the lucene index to search.";
+  public static final String LUCENE_SEARCH_INDEX__REGION_HELP = "Name/Path of the region where the lucene index exists.";
+  public static final String LUCENE_SEARCH_INDEX__QUERY_STRING="queryStrings";
+  public static final String LUCENE_SEARCH_INDEX__QUERY_STRING__HELP="Query string to search the lucene index";
+  public static final String LUCENE_SEARCH_INDEX__DEFAULT_FIELD="defaultField";
+  public static final String LUCENE_SEARCH_INDEX__DEFAULT_FIELD__HELP="Default field to search in";
+  public static final String LUCENE_SEARCH_INDEX__NO_RESULTS_MESSAGE="No results";
 }
