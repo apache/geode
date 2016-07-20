@@ -318,6 +318,8 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH,REGION_NAME);
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING,"field1:value1");
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD,"field1");
+    executeCommandAndLogResult(csb);
+
     TabularResultData data = (TabularResultData) executeCommandAndGetResult(csb).getResultData();
     assertEquals(4,data.retrieveAllValues("key").size());
   }
@@ -343,9 +345,39 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH,REGION_NAME);
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING,"NotAnExistingValue");
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD,"field1");
+    executeCommandAndLogResult(csb);
+
     String resultAsString = executeCommandAndLogResult(csb);
     assertTrue(resultAsString.contains(LuceneCliStrings.LUCENE_SEARCH_INDEX__NO_RESULTS_MESSAGE));
   }
+
+  @Test
+  public void searchWithLimitShouldReturnCorrectResults() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(1);
+
+    createIndex(vm1);
+    Map<String,TestObject> entries=new HashMap<>();
+    entries.put("A",new TestObject("field1:value1 ","field2:value2","field3:value3"));
+    entries.put("B",new TestObject("ABC","EFG","HIJ"));
+    entries.put("C",new TestObject("field1:value1","QWE","RTY"));
+    entries.put("D",new TestObject("ABC","EFG","HIJ"));
+    entries.put("E",new TestObject("field1 :value1","ABC","EFG"));
+    entries.put("F",new TestObject("ABC","EFG","HIJ"));
+    entries.put("G",new TestObject("field1: value1","JKR","POW"));
+    entries.put("H",new TestObject("ABC","EFG","H2J"));
+    putEntries(vm1,entries,8);
+
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_SEARCH_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME,INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH,REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING,"field1:value1");
+    csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD,"field1");
+    csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT,"2");
+    executeCommandAndLogResult(csb);
+    TabularResultData data = (TabularResultData) executeCommandAndGetResult(csb).getResultData();
+    assertEquals(2,data.retrieveAllValues("key").size());
+  }
+
   private void createRegion() {
     getCache().createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
   }
