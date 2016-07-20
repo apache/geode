@@ -9,16 +9,13 @@ You can register interest for specific entry keys or for all keys. Regular expre
 **Note:** Interest registration and unregistration are symmetrical operations. Consequently, you cannot register interest in all keys and then unregister interest in a specific set of keys. Also, if you first register interest in specific keys with `registerKeys`, then call `registerAllKeys`, you must call `unregisterAllKeys` before specifying interest in specific keys again.
 
 
-<a id="registering-interest-for-entries__section_C9A3D7F193B24ACD83B2D67813E596A0"></a>
-## Client API for Registering Interest
+## <a id="registering-interest-for-entries__section_C9A3D7F193B24ACD83B2D67813E596A0" class="no-quick-link"></a>Client API for Registering Interest
 
 You register client interest through the C++ or NET API. The C++ API provides the `registerKeys`, `registerAllKeys`, and `registerRegex` methods, with corresponding unregistration accomplished using the `unregisterKeys`, `unregisterAllKeys`, and `unregisterRegex` methods. The .NET API provides the `RegisterKeys`, `RegisterAllKeys`, and `RegisterRegex` methods, with corresponding unregistration accomplished using the `UnregisterKeys`, `UnregisterAllKeys`, and `UnregisterRegex` methods.
 
 The `registerKeys`, `registerRegex` and `registerAllKeys` methods have the option to populate the cache with the registration results from the server. The `registerRegex` and `registerAllKeys` methods can also optionally return the current list of keys registered on the server.
 
-<a id="registering-interest-for-entries__section_C1A3F89EE73448D7AFF2076F41848F55"></a>
-
-## Setting Up Client Notification
+## <a id="registering-interest-for-entries__section_C1A3F89EE73448D7AFF2076F41848F55" class="no-quick-link"></a>Setting Up Client Notification
 
 In addition to the programmatic function calls, to register interest for a server region and receive updated entries you need to configure the region with the `PROXY` or `CACHING_PROXY RegionShortcut` setting. The region's pool should have `subscription-enabled=true` set either in the client XML or programmatically via a `CacheFactory::setSubscriptionEnabled(true)` API call. Otherwise, when you register interest, you will get an `UnsupportedOperationException`.
 
@@ -35,9 +32,7 @@ Notifications invoke `CacheListeners` of cacheless clients in all cases for keys
 
 If you register to receive notifications, listener callbacks are invoked irrespective of whether the key is in the client cache when a `destroy` or `invalidate` event is received.
 
-<a id="registering-interest-for-entries__section_8772147940754C2D9688C789EB2F2AA6"></a>
-
-## Registering Interest for Specific Keys
+## <a id="registering-interest-for-entries__section_8772147940754C2D9688C789EB2F2AA6" class="no-quick-link"></a>Registering Interest for Specific Keys
 
 You register and unregister interest for specific keys through the `registerKeys` and `unregisterKeys` functions. You register interest in a key or set of keys by specifying the key name using the programmatic syntax shown in the following example:
 
@@ -55,9 +50,7 @@ regPtr0->unregisterKeys(keys0);
 regPtr1->unregisterKeys(keys1);
 ```
 
-<a id="registering-interest-for-entries__section_EA4525CCDC474DD495410E948EAF566C"></a>
-
-## Registering Interest for All Keys
+## <a id="registering-interest-for-entries__section_EA4525CCDC474DD495410E948EAF566C" class="no-quick-link"></a>Registering Interest for All Keys
 
 If the client registers interest in all keys, the server provides notifications for all updates to all keys in the region. The next example shows how to register interest in all keys:
 
@@ -73,9 +66,7 @@ regPtr0->unregisterAllKeys();
 regPtr1->unregisterAllKeys();
 ```
 
-<a id="registering-interest-for-entries__section_BD50B80FCE9F429C8F6A9FEA818D5A91"></a>
-
-## Registering Interest Using Regular Expressions
+## <a id="registering-interest-for-entries__section_BD50B80FCE9F429C8F6A9FEA818D5A91" class="no-quick-link"></a>Registering Interest Using Regular Expressions
 
 The `registerRegex` function registers interest in a regular expression pattern. The server automatically sends the client changes for entries whose keys match the specified pattern.
 
@@ -93,9 +84,7 @@ To unregister interest using regular expressions, you use the `unregisterRegex` 
 regPtr1->unregisterRegex("Key-.*");
 ```
 
-<a id="registering-interest-for-entries__section_2D71A423B185493489129AAC30DC6733"></a>
-
-## Register Interest Scenario
+## <a id="registering-interest-for-entries__section_2D71A423B185493489129AAC30DC6733" class="no-quick-link"></a>Register Interest Scenario
 
 In this register interest scenario, a cache listener is used with a cacheless region that has `subscription-enabled` set to `true`. The client region is configured with caching disabled; client notification is enabled; and a cache listener is established. The client has not registered interest in any keys.
 

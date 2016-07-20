@@ -4,8 +4,7 @@ title:  Implementing an AsyncEventListener for Write-Behind Cache Event Handling
 
 An `AsyncEventListener` asynchronously processes batches of events after they have been applied to a region. You can use an `AsyncEventListener` implementation as a write-behind cache event handler to synchronize region updates with a database.
 
-<a id="implementing_write_behind_cache_event_handling__section_35B3ADC77E1147468A568E49C8C308E1"></a>
-## How an AsyncEventListener Works
+## <a id="implementing_write_behind_cache_event_handling__section_35B3ADC77E1147468A568E49C8C308E1" class="no-quick-link"></a>How an AsyncEventListener Works
 
 An `AsyncEventListener` instance is serviced by its own dedicated thread in which a callback method is invoked. Events that update a region are placed in an internal `AsyncEventQueue`, and one or more threads dispatch batches of events at a time to the listener implementation.
 
@@ -39,9 +38,7 @@ These operations are not distributed:
 -   Expiration actions
 -   Expiration destroy, if the `forward-expiration-destroy` attribute is set to `false`. The default value is `false`.
 
-<a id="implementing_write_behind_cache_event_handling__section_6FDBAFCB9C194EB0AF0822A509F2F9F2"></a>
-
-## Guidelines for Using an AsyncEventListener
+## <a id="implementing_write_behind_cache_event_handling__section_6FDBAFCB9C194EB0AF0822A509F2F9F2" class="no-quick-link"></a>Guidelines for Using an AsyncEventListener
 
 Review the following guidelines before using an AsyncEventListener:
 
@@ -54,9 +51,7 @@ Review the following guidelines before using an AsyncEventListener:
 -   To preserve pending events through member shutdowns, configure Geode to persist the internal queue of the `AsyncEventListener` to an available disk store. By default, any pending events that reside in the internal queue of an `AsyncEventListener` are lost if the active listener's member shuts down.
 -   To ensure high availability and reliable delivery of events, configure the event queue to be both persistent and redundant.
 
-<a id="implementing_write_behind_cache_event_handling__section_FB3EB382E37945D9895E09B47A64D6B9"></a>
-
-## Implementing an AsyncEventListener
+## <a id="implementing_write_behind_cache_event_handling__section_FB3EB382E37945D9895E09B47A64D6B9" class="no-quick-link"></a>Implementing an AsyncEventListener
 
 To receive region events for processing, you create a class that implements the `AsyncEventListener` interface. The `processEvents` method in your listener receives a list of queued `AsyncEvent` objects in each batch.
 
@@ -80,9 +75,7 @@ class MyAsyncEventListener implements AsyncEventListener {
 }
 ```
 
-<a id="implementing_write_behind_cache_event_handling__section_AB80262CFB6D4867B52A5D6D880A5294"></a>
-
-## Processing AsyncEvents
+## <a id="implementing_write_behind_cache_event_handling__section_AB80262CFB6D4867B52A5D6D880A5294" class="no-quick-link"></a>Processing AsyncEvents
 
 Use the [AsyncEventListener.processEvents](/releases/latest/javadoc/com/gemstone/gemfire/cache/asyncqueue/AsyncEventListener.html) method to process AsyncEvents. This method is called asynchronously when events are queued to be processed. The size of the list reflects the number of batch events where batch size is defined in the AsyncEventQueueFactory. The `processEvents` method returns a boolean; true if the AsyncEvents are processed correctly, and false if any events fail processing. As long as `processEvents` returns false, Geode continues to re-try processing the events.
 
@@ -120,9 +113,7 @@ public boolean processEvents(@SuppressWarnings("rawtypes") List<AsyncEvent> list
      }  
 ```
 
-<a id="implementing_write_behind_cache_event_handling__section_9286E8C6B3C54089888E1680B4F43692"></a>
-
-## Configuring an AsyncEventListener
+## <a id="implementing_write_behind_cache_event_handling__section_9286E8C6B3C54089888E1680B4F43692" class="no-quick-link"></a>Configuring an AsyncEventListener
 
 To configure a write-behind cache listener, you first configure an asynchronous queue to dispatch the region events, and then create the queue with your listener implementation. You then assign the queue to a region in order to process that region's events.
 

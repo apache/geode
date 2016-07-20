@@ -81,9 +81,7 @@ For Geode client configuration, see [&lt;client-cache&gt; Element Reference](cli
 </cache>
 ```
 
-<a id="id_hdt_tbq_rr"></a>
-
-## &lt;cache-transaction-manager&gt;
+## <a id="id_hdt_tbq_rr" class="no-quick-link"></a>&lt;cache-transaction-manager&gt;
 
 Specifies a transaction listener.
 
@@ -112,25 +110,19 @@ Specifies a transaction listener.
 </cache>
 ```
 
-<a id="id_s4p_ybq_rr"></a>
-
-## &lt;transaction-listener&gt;
+## <a id="id_s4p_ybq_rr" class="no-quick-link"></a>&lt;transaction-listener&gt;
 
 When a transaction ends, its thread calls the TransactionListener to perform the appropriate follow-up for successful commits, failed commits, or voluntary rollbacks.
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](cache_xml.html#class-name_parameter).
 
-<a id="id_ohj_dcq_rr"></a>
-
-## &lt;transaction-writer&gt;
+## <a id="id_ohj_dcq_rr" class="no-quick-link"></a>&lt;transaction-writer&gt;
 
 When you commit a transaction, a TransactionWriter can perform additional tasks, including aborting the transaction.
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](cache_xml.html#class-name_parameter).
 
-<a id="id_sqg_3cq_rr"></a>
-
-## &lt;dynamic-region-factory&gt;
+## <a id="id_sqg_3cq_rr" class="no-quick-link"></a>&lt;dynamic-region-factory&gt;
 
 The `<dynamic-region-factory>` element configures a dynamic region factory for this cache. You can use this element to dynamically create regions in your application code. Use the <span class="keyword apiname">createDynamicRegion()</span> method of the <span class="keyword apiname">com.gemstone.gemfire.cache.DynamicRegionFactory</span> class in your Java code to dynamically create regions.
 
@@ -164,9 +156,7 @@ Set the `pool-name` attribute to set the name of the connection pool used by cli
 </dynamic-region-factory>
 ```
 
-<a id="id_utn_c3p_wk"></a>
-
-## &lt;disk-dir&gt;
+## <a id="id_utn_c3p_wk" class="no-quick-link"></a>&lt;disk-dir&gt;
 
 Specifies a region or disk store's disk directory.
 
@@ -205,39 +195,27 @@ Specifies a region or disk store's disk directory.
     dir-size="20480">/host3/users/gf/memberA_DStore</disk-dir> 
 ```
 
-<a id="gateway-hub"></a>
-
-## &lt;gateway-hub&gt;
+## <a id="gateway-hub" class="no-quick-link"></a>&lt;gateway-hub&gt;
 
 Deprecated See [&lt;gateway-sender&gt;](#gateway-sender) and [&lt;gateway-receiver&gt;](#gateway-receiver) instead.
 
-<a id="gateway"></a>
-
-## &lt;gateway&gt;
+## <a id="gateway" class="no-quick-link"></a>&lt;gateway&gt;
 
 Deprecated
 
-<a id="topic_99006504F94C4666BE33D3B5E7C90FB2"></a>
-
-## &lt;gateway-endpoint&gt;
+## <a id="topic_99006504F94C4666BE33D3B5E7C90FB2" class="no-quick-link"></a>&lt;gateway-endpoint&gt;
 
 Deprecated
 
-<a id="topic_EEA017734DFF438AB8C08034C813D594"></a>
-
-## &lt;gateway-listener&gt;
+## <a id="topic_EEA017734DFF438AB8C08034C813D594" class="no-quick-link"></a>&lt;gateway-listener&gt;
 
 Deprecated
 
-<a id="topic_4939576D40C74BF28F4BE5EDB9607D8D"></a>
-
-## &lt;gateway-queue&gt;
+## <a id="topic_4939576D40C74BF28F4BE5EDB9607D8D" class="no-quick-link"></a>&lt;gateway-queue&gt;
 
 Deprecated
 
-<a id="gateway-sender"></a>
-
-## &lt;gateway-sender&gt;
+## <a id="gateway-sender" class="no-quick-link"></a>&lt;gateway-sender&gt;
 
 Configures a gateway sender to distribute region events to another Geode site. See [Configuring a Multi-site (WAN) System](../../topologies_and_comm/multi_site_configuration/setting_up_a_multisite_system.html#setting_up_a_multisite_system).
 
@@ -382,9 +360,7 @@ When distributing region events from the local queue, multiple dispatcher thread
 </cache>
 ```
 
-<a id="gateway-event-filter"></a>
-
-## &lt;gateway-event-filter&gt;
+## <a id="gateway-event-filter" class="no-quick-link"></a>&lt;gateway-event-filter&gt;
 
 A GatewayEventFilter implementation determines whether a region event is placed in a gateway sender queue and/or whether an event in a gateway queue is distributed to a remote site. You can optionally add one or more GatewayEventFilter implementations to a gateway sender, either in the cache.xml configuration file or using the Java API.
 
@@ -401,9 +377,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </gateway-event-filter>
 ```
 
-<a id="gateway-event-substitution-filter"></a>
-
-## &lt;gateway-event-substitution-filter&gt;
+## <a id="gateway-event-substitution-filter" class="no-quick-link"></a>&lt;gateway-event-substitution-filter&gt;
 
 A GatewayEventSubstitutionFilter provides a way to specify a substitute value to be stored in the GatewayQueueEvent and enqueued in the RegionQueue. You can optionally add one GatewayEventSubstitutionFilter implementation to a gateway sender.
 
@@ -420,9 +394,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </gateway-event-substitution-filter>
 ```
 
-<a id="gateway-transport-filter"></a>
-
-## &lt;gateway-transport-filter&gt;
+## <a id="gateway-transport-filter" class="no-quick-link"></a>&lt;gateway-transport-filter&gt;
 
 Use a GatewayTransportFilter implementation to process the TCP stream that sends a batch of events that is distributed from one Geode cluster to another over a WAN. A GatewayTransportFilter is typically used to perform encryption or compression on the data that distributed. You install the same GatewayTransportFilter implementation on both a gateway sender and gateway receiver.
 
@@ -440,9 +412,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </gateway-transport-filter>
 ```
 
-<a id="gateway-receiver"></a>
-
-## &lt;gateway-receiver&gt;
+## <a id="gateway-receiver" class="no-quick-link"></a>&lt;gateway-receiver&gt;
 
 Configures a gateway receiver to receive and apply region events that were distributed from another Geode site. You can only specify one gateway receiver on a member. See [Configuring a Multi-site (WAN) System](../../topologies_and_comm/multi_site_configuration/setting_up_a_multisite_system.html#setting_up_a_multisite_system).
 
@@ -523,9 +493,7 @@ Configures a gateway receiver to receive and apply region events that were distr
 </cache>
 ```
 
-<a id="gateway-receiver_gateway-transport-filter"></a>
-
-## &lt;gateway-transport-filter&gt;
+## <a id="gateway-receiver_gateway-transport-filter" class="no-quick-link"></a>&lt;gateway-transport-filter&gt;
 
 Use a GatewayTransportFilter implementation to process the TCP stream that sends a batch of events that is distributed from one Geode cluster to another over a WAN. A GatewayTransportFilter is typically used to perform encryption or compression on the data that distributed. You install the same GatewayTransportFilter implementation on both a gateway sender and gateway receiver.
 
@@ -543,9 +511,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </gateway-transport-filter>
 ```
 
-<a id="gateway-conflict-resolver"></a>
-
-## &lt;gateway-conflict-resolver&gt;
+## <a id="gateway-conflict-resolver" class="no-quick-link"></a>&lt;gateway-conflict-resolver&gt;
 
 An event-handler plug-in that is called in order to determine whether a potentially conflicting WAN update should be applied to the local cache. A GatewayConflictResolver is invoked if the current value in a cache entry was established by a different distributed system (with a different distributed-system-id) than an event that is attempting to modify the entry. It is not invoked if the event has the same distributed system ID as the event that last changed the entry. See [Resolving Conflicting Events](../../developing/events/resolving_multisite_conflicts.html#topic_E97BB68748F14987916CD1A50E4B4542)
 
@@ -563,9 +529,7 @@ Specify the Java class for the gateway conflict resolver plug-in and its initial
   </gateway-conflict-resolver>
 ```
 
-<a id="id_zrr_scq_rr"></a>
-
-## &lt;async-event-queue&gt;
+## <a id="id_zrr_scq_rr" class="no-quick-link"></a>&lt;async-event-queue&gt;
 
 Configures a queue for sending region events to an AsyncEventListener implementation (for example, for write-behind event handling).
 
@@ -684,9 +648,7 @@ Configures a queue for sending region events to an AsyncEventListener implementa
 </cache>
 ```
 
-<a id="id_obx_tcq_rr"></a>
-
-## &lt;async-event-listener&gt;
+## <a id="id_obx_tcq_rr" class="no-quick-link"></a>&lt;async-event-listener&gt;
 
 An AsyncEventListener receives callbacks for events that change region data. You can use an AsyncEventListener implementation as a write-behind cache event handler to synchronize region updates with a database.
 
@@ -713,9 +675,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 ...
 ```
 
-<a id="id_j5l_xcq_rr"></a>
-
-## &lt;cache-server&gt;
+## <a id="id_j5l_xcq_rr" class="no-quick-link"></a>&lt;cache-server&gt;
 
 Configures the cache to serve region data to clients in a client/server caching system. This element indicates the port the server listens on for client communication.
 
@@ -834,15 +794,11 @@ The `cacheserver` process uses only `cache.xml` configuration. For application s
 </cache>
 ```
 
-<a id="id_pqz_ycq_rr"></a>
-
-## &lt;group&gt;
+## <a id="id_pqz_ycq_rr" class="no-quick-link"></a>&lt;group&gt;
 
 Deprecated as of GemFire 7.0. Specify server groups in the gemfire.properties file. See [Organizing Servers Into Logical Member Groups](../../topologies_and_comm/cs_configuration/configure_servers_into_logical_groups.html).
 
-<a id="id_zbs_zcq_rr"></a>
-
-## &lt;client-subscription&gt;
+## <a id="id_zbs_zcq_rr" class="no-quick-link"></a>&lt;client-subscription&gt;
 
 Overflow specification for client subscription queues. Sets a capacity limit on the in-memory queue and specifies where to overflow when capacity is reached. By default no overflow is used. Specified in three parts:
 
@@ -868,9 +824,7 @@ Overflow specification for client subscription queues. Sets a capacity limit on 
 </cache>
 ```
 
-<a id="id_vfw_3dq_rr"></a>
-
-## &lt;custom-load-probe&gt;
+## <a id="id_vfw_3dq_rr" class="no-quick-link"></a>&lt;custom-load-probe&gt;
 
 Application plug-in used to provide current and predicted server load information to the server locators.
 
@@ -890,9 +844,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
   </custom-load-probe>
 ```
 
-<a id="id_jbr_kdq_rr"></a>
-
-## &lt;pool&gt;
+## <a id="id_jbr_kdq_rr" class="no-quick-link"></a>&lt;pool&gt;
 
 Use for client caches. Defines a client's server pool used to communicate with servers running in a different distributed system.
 
@@ -1053,9 +1005,7 @@ Use for client caches. Defines a client's server pool used to communicate with s
 </pool>
 ```
 
-<a id="id_fsd_ldq_rr"></a>
-
-## &lt;locator&gt;
+## <a id="id_fsd_ldq_rr" class="no-quick-link"></a>&lt;locator&gt;
 
 Addresses and ports of the locators to connect to. You can define multiple locators for the pool.
 
@@ -1082,9 +1032,7 @@ Provide a locator list or `server` list, but not both.
        port="12345"/>
 ```
 
-<a id="id_ds3_ndq_rr"></a>
-
-## &lt;server&gt;
+## <a id="id_ds3_ndq_rr" class="no-quick-link"></a>&lt;server&gt;
 
 Addresses and ports of the servers to connect to.
 
@@ -1114,9 +1062,7 @@ Provide a server list or `locator` list, but not both.
 </pool>
 ```
 
-<a id="id_q21_5dq_rr"></a>
-
-## &lt;disk-store&gt;
+## <a id="id_q21_5dq_rr" class="no-quick-link"></a>&lt;disk-store&gt;
 
 Defines a pool of one or more disk stores, which can be used by regions, and client subscription queues.
 
@@ -1213,15 +1159,11 @@ Defines a pool of one or more disk stores, which can be used by regions, and cli
 </disk-store>
 ```
 
-<a id="id_s5t_5dq_rr"></a>
-
-## &lt;disk-dirs&gt;
+## <a id="id_s5t_5dq_rr" class="no-quick-link"></a>&lt;disk-dirs&gt;
 
 An element of a disk store that defines a set of `<disk-dir>` elements.
 
-<a id="id_o3f_vdq_rr"></a>
-
-## &lt;disk-dir&gt;
+## <a id="id_o3f_vdq_rr" class="no-quick-link"></a>&lt;disk-dir&gt;
 
 Specifies a region or disk store's disk directory.
 
@@ -1260,9 +1202,7 @@ Specifies a region or disk store's disk directory.
     dir-size="20480">/host3/users/gf/memberA_DStore</disk-dir> 
 ```
 
-<a id="id_vvt_vdq_rr"></a>
-
-## &lt;pdx&gt;
+## <a id="id_vvt_vdq_rr" class="no-quick-link"></a>&lt;pdx&gt;
 
 Specifies the configuration for the Portable Data eXchange (PDX) method of serialization.
 
@@ -1297,9 +1237,7 @@ Specifies the configuration for the Portable Data eXchange (PDX) method of seria
 </cache>
 ```
 
-<a id="id_td2_ydq_rr"></a>
-
-## &lt;pdx-serializer&gt;
+## <a id="id_td2_ydq_rr" class="no-quick-link"></a>&lt;pdx-serializer&gt;
 
 Allows you to configure the PdxSerializer for this Geode member.
 
@@ -1322,9 +1260,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </cache>
 ```
 
-<a id="id_p1s_ydq_rr"></a>
-
-## &lt;region-attributes&gt;
+## <a id="id_p1s_ydq_rr" class="no-quick-link"></a>&lt;region-attributes&gt;
 
 Specifies a region attributes template that can be named (by `id`) and referenced (by `refid`) later in the `cache.xml` and through the API.
 
@@ -1713,9 +1649,7 @@ Used only with GemFire version 6.x gateway configurations. For GemFire 7.0 confi
 
 : <span class="tablecap">Table 15. Attributes</span>
 
-<a id="id_b1f_zdq_rr"></a>
-
-## &lt;key-constraint&gt;
+## <a id="id_b1f_zdq_rr" class="no-quick-link"></a>&lt;key-constraint&gt;
 
 Defines the type of object to be allowed for the region entry keys. This must be a fully-qualified class name. The attribute ensures that the keys for the region entries are all of the same class. If key-constraint is not used, the region’s keys can be of any class. This attribute, along with value-constraint, is useful for querying and indexing because it provides object type information to the query engine.
 
@@ -1736,9 +1670,7 @@ Set the constraint in every cache where you create or update the region entries.
 </region-attributes>
 ```
 
-<a id="id_uyf_b2q_rr"></a>
-
-## &lt;value-constraint&gt;
+## <a id="id_uyf_b2q_rr" class="no-quick-link"></a>&lt;value-constraint&gt;
 
 Defines the type of object to be allowed for the region entry values. This must be a fully-qualified class name. If value constraint isn’t used, the region’s value can be of any class. This attribute, along with `key-constraint`, is useful for querying and indexing because it provides object type information to the query engine.
 
@@ -1759,9 +1691,7 @@ Set the constraint in every cache where you create or update the region entries.
 </region-attributes>
 ```
 
-<a id="id_zxp_b2q_rr"></a>
-
-## &lt;region-time-to-live&gt;
+## <a id="id_zxp_b2q_rr" class="no-quick-link"></a>&lt;region-time-to-live&gt;
 
 Expiration setting that specifies how long the region can remain in the cache without anyone accessing or updating it.
 
@@ -1782,9 +1712,7 @@ Expiration setting that specifies how long the region can remain in the cache wi
 </region-attributes>
 ```
 
-<a id="id_ekj_c2q_rr"></a>
-
-## &lt;expiration-attributes&gt;
+## <a id="id_ekj_c2q_rr" class="no-quick-link"></a>&lt;expiration-attributes&gt;
 
 Within the `entry-time-to-live` or `entry-idle-time` element, this element specifies the expiration rules for removing old region entries that you are not using. You can destroy or invalidate entries, either locally or across the distributed system. Within the `region-time-to-live` or `region-idle-time` element, this element specifies the expiration rules for the entire region.
 
@@ -1858,9 +1786,7 @@ Select one of the following expiration actions:
 </region-attributes>
 ```
 
-<a id="id_l2x_c2q_rr"></a>
-
-## &lt;custom-expiry&gt;
+## <a id="id_l2x_c2q_rr" class="no-quick-link"></a>&lt;custom-expiry&gt;
 
 Specifies the custom class that implements `com.gemstone.gemfire.cache.CustomExpiry`. You define this class in order to override the region-wide settings for specific entries. See [Configure Data Expiration](../../developing/expiration/configuring_data_expiration.html) for an example.
 
@@ -1885,9 +1811,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements.
 
-<a id="id_m2p_3gr_rr"></a>
-
-## &lt;region-idle-time&gt;
+## <a id="id_m2p_3gr_rr" class="no-quick-link"></a>&lt;region-idle-time&gt;
 
 Expiration setting that specifies how long the region can remain in the cache without anyone accessing it.
 
@@ -1910,9 +1834,7 @@ To ensure reliable read behavior across the partitioned region, use `region-time
 </region-attributes>
 ```
 
-<a id="region-idle-time_expiration-attributes"></a>
-
-## &lt;expiration-attributes&gt;
+## <a id="region-idle-time_expiration-attributes" class="no-quick-link"></a>&lt;expiration-attributes&gt;
 
 Within the `entry-time-to-live` or `entry-idle-time` element, this element specifies the expiration rules for removing old region entries that you are not using. You can destroy or invalidate entries, either locally or across the distributed system. Within the `region-time-to-live` or `region-idle-time` element, this element specifies the expiration rules for the entire region.
 
@@ -1986,9 +1908,7 @@ Select one of the following expiration actions:
 </region-attributes>
 ```
 
-<a id="region-idle-time_custom-expiry"></a>
-
-## &lt;custom-expiry&gt;
+## <a id="region-idle-time_custom-expiry" class="no-quick-link"></a>&lt;custom-expiry&gt;
 
 Specifies the custom class that implements `com.gemstone.gemfire.cache.CustomExpiry`. You define this class in order to override the region-wide settings for specific entries. See [Configure Data Expiration](../../developing/expiration/configuring_data_expiration.html) for an example.
 
@@ -2013,9 +1933,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements.
 
-<a id="id_axp_22q_rr"></a>
-
-## &lt;entry-time-to-live&gt;
+## <a id="id_axp_22q_rr" class="no-quick-link"></a>&lt;entry-time-to-live&gt;
 
 Expiration setting that specifies how long the region’s entries can remain in the cache without anyone accessing or updating them. See [&lt;expiration-attributes&gt;](cache_xml.html#expiration-attributes) for details.
 
@@ -2036,9 +1954,7 @@ Expiration setting that specifies how long the region’s entries can remain in 
 </region-attributes>
 ```
 
-<a id="entry-time-to-live_expiration-attributes"></a>
-
-## &lt;expiration-attributes&gt;
+## <a id="entry-time-to-live_expiration-attributes" class="no-quick-link"></a>&lt;expiration-attributes&gt;
 
 Within the `entry-time-to-live` or `entry-idle-time` element, this element specifies the expiration rules for removing old region entries that you are not using. You can destroy or invalidate entries, either locally or across the distributed system. Within the `region-time-to-live` or `region-idle-time` element, this element specifies the expiration rules for the entire region.
 
@@ -2112,9 +2028,7 @@ Select one of the following expiration actions:
 </region-attributes>
 ```
 
-<a id="entry-time-to-live_custom_expiry"></a>
-
-## &lt;custom-expiry&gt;
+## <a id="entry-time-to-live_custom_expiry" class="no-quick-link"></a>&lt;custom-expiry&gt;
 
 Specifies the custom class that implements `com.gemstone.gemfire.cache.CustomExpiry`. You define this class in order to override the region-wide settings for specific entries. See [Configure Data Expiration](../../developing/expiration/configuring_data_expiration.html) for an example.
 
@@ -2139,9 +2053,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements.
 
-<a id="id_gx2_f2q_rr"></a>
-
-## &lt;entry-idle-time&gt;
+## <a id="id_gx2_f2q_rr" class="no-quick-link"></a>&lt;entry-idle-time&gt;
 
 Expiration setting that specifies how long the region’s entries can remain in the cache without anyone accessing them. See [&lt;expiration-attributes&gt;](cache_xml.html#expiration-attributes) for details.
 
@@ -2164,9 +2076,7 @@ To ensure reliable read behavior across the partitioned region, use `entry-time-
 </region-attributes>
 ```
 
-<a id="entry-idle-time_expiration-attributes"></a>
-
-## &lt;expiration-attributes&gt;
+## <a id="entry-idle-time_expiration-attributes" class="no-quick-link"></a>&lt;expiration-attributes&gt;
 
 Within the `entry-time-to-live` or `entry-idle-time` element, this element specifies the expiration rules for removing old region entries that you are not using. You can destroy or invalidate entries, either locally or across the distributed system. Within the `region-time-to-live` or `region-idle-time` element, this element specifies the expiration rules for the entire region.
 
@@ -2240,9 +2150,7 @@ Select one of the following expiration actions:
 </region-attributes>
 ```
 
-<a id="entry-idle-time_custom-expiry"></a>
-
-## &lt;custom-expiry&gt;
+## <a id="entry-idle-time_custom-expiry" class="no-quick-link"></a>&lt;custom-expiry&gt;
 
 Specifies the custom class that implements `com.gemstone.gemfire.cache.CustomExpiry`. You define this class in order to override the region-wide settings for specific entries. See [Configure Data Expiration](../../developing/expiration/configuring_data_expiration.html) for an example.
 
@@ -2267,9 +2175,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements.
 
-<a id="id_thp_h2q_rr"></a>
-
-## &lt;partition-attributes&gt;
+## <a id="id_thp_h2q_rr" class="no-quick-link"></a>&lt;partition-attributes&gt;
 
 Defines the region as partitioned and controls partitioning behavior. This is set during the region creation in the first data store for the partitioned region.
 
@@ -2302,9 +2208,7 @@ With the exception of `local-max-memory`, all members defining a partitioned reg
 </region-attributes>
 ```
 
-<a id="id_wjb_32q_rr"></a>
-
-## &lt;partition-resolver&gt;
+## <a id="id_wjb_32q_rr" class="no-quick-link"></a>&lt;partition-resolver&gt;
 
 Describes a custom PartitionResolver for a region.
 
@@ -2335,9 +2239,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </region>
 ```
 
-<a id="id_jgn_32q_rr"></a>
-
-## &lt;partition-listener&gt;
+## <a id="id_jgn_32q_rr" class="no-quick-link"></a>&lt;partition-listener&gt;
 
 Defines a custom PartitionListener for a partitioned region.
 
@@ -2358,9 +2260,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
  </partition-attributes>
 ```
 
-<a id="id_vgx_32q_rr"></a>
-
-## &lt;fixed-partition-attributes&gt;
+## <a id="id_vgx_32q_rr" class="no-quick-link"></a>&lt;fixed-partition-attributes&gt;
 
 Describes a partition in a Fixed Partitioned Region.
 
@@ -2398,9 +2298,7 @@ Describes a partition in a Fixed Partitioned Region.
 </cache>
 ```
 
-<a id="id_dsh_j2q_rr"></a>
-
-## &lt;membership-attributes&gt;
+## <a id="id_dsh_j2q_rr" class="no-quick-link"></a>&lt;membership-attributes&gt;
 
 Establishes reliability requirements and behavior for a region. Use this to configure the region to require one or more membership roles to be running in the system for reliable access to the region. You can set up your own roles, such as producer or backup, specifying each role as a string. Membership attributes have no effect unless one or more required roles are specified.
 
@@ -2490,9 +2388,7 @@ Specifies how the region is affected by resumption of reliability when one or mo
 </region-attributes>
 ```
 
-<a id="id_kfw_j2q_rr"></a>
-
-## &lt;required-role&gt;
+## <a id="id_kfw_j2q_rr" class="no-quick-link"></a>&lt;required-role&gt;
 
 Specifies a role that is required for reliable access to the region.
 
@@ -2516,9 +2412,7 @@ Specifies a role that is required for reliable access to the region.
 </membership-attributes>
 ```
 
-<a id="id_a3g_k2q_rr"></a>
-
-## &lt;subscription-attributes&gt;
+## <a id="id_a3g_k2q_rr" class="no-quick-link"></a>&lt;subscription-attributes&gt;
 
 Specifies subscriber requirements and behavior for the region. There is one subscription attribute, `interest-policy`, that defines which distributed entry events are delivered to the local region.
 
@@ -2577,9 +2471,7 @@ The interest policy determines which events are delivered, but the `data-policy`
 </region-attributes>
 ```
 
-<a id="id_o1f_l2q_rr"></a>
-
-## &lt;cache-loader&gt;
+## <a id="id_o1f_l2q_rr" class="no-quick-link"></a>&lt;cache-loader&gt;
 
 An event-handler plug-in that allows you to program for cache misses. At most, one cache loader can be defined in each member for the region. For distributed regions, a cache loader may be invoked remotely from other members that have the region defined. When an entry get results in a cache miss in a region with a cache loader defined, the loader’s <span class="keyword apiname">load</span> method is called. This method is usually programmed to retrieve data from an outside data source, but it can do anything required by your application.
 
@@ -2597,9 +2489,7 @@ For partitioned regions, if you want to have a cache loader, install an instance
 </region-attributes>
 ```
 
-<a id="id_j31_m2q_rr"></a>
-
-## &lt;cache-writer&gt;
+## <a id="id_j31_m2q_rr" class="no-quick-link"></a>&lt;cache-writer&gt;
 
 An event-handler plug-in that allows you to receive before-event notification for changes to the region and its entries. It also has the ability to abort events. At most, one cache writer can be defined in each member for the region. A cache writer may be invoked remotely from other members that have the region defined.
 
@@ -2615,9 +2505,7 @@ An event-handler plug-in that allows you to receive before-event notification fo
 </region-attributes>
 ```
 
-<a id="id_xt4_m2q_rr"></a>
-
-## &lt;cache-listener&gt;
+## <a id="id_xt4_m2q_rr" class="no-quick-link"></a>&lt;cache-listener&gt;
 
 An event-handler plug-in that receives after-event notification of changes to the region and its entries. Any number of cache listeners can be defined for a region in any member. Geode offers several listener types with callbacks to handle data and process events. Depending on the `data-policy` and the `interest-policy` subscription attributes, a cache listener may receive only events that originate in the local cache, or it may receive those events along with events that originate remotely.
 
@@ -2637,9 +2525,7 @@ Specify the Java class for the cache listener and its initialization parameters 
 </region-attributes>
 ```
 
-<a id="id_ks2_n2q_rr"></a>
-
-## &lt;compressor&gt;
+## <a id="id_ks2_n2q_rr" class="no-quick-link"></a>&lt;compressor&gt;
 
 A compressor registers a custom class that extends `Compressor` to support compression on a region.
 
@@ -2656,9 +2542,7 @@ A compressor registers a custom class that extends `Compressor` to support compr
 ...
 ```
 
-<a id="id_kc4_n2q_rr"></a>
-
-## &lt;eviction-attributes&gt;
+## <a id="id_kc4_n2q_rr" class="no-quick-link"></a>&lt;eviction-attributes&gt;
 
 Specifies whether and how to control a region’s size. Size is controlled by removing least recently used (LRU) entries to make space for new ones. This may be done through destroy or overflow actions. You can configure your region for lru-heap-percentage with an eviction action of local-destroy using Geode’s stored region attributes.
 
@@ -2678,9 +2562,7 @@ Specifies whether and how to control a region’s size. Size is controlled by re
 </region-attributes
 ```
 
-<a id="id_wpy_n2q_rr"></a>
-
-## &lt;lru-entry-count&gt;
+## <a id="id_wpy_n2q_rr" class="no-quick-link"></a>&lt;lru-entry-count&gt;
 
 Using the maximum attribute, specifies maximum region capacity based on entry count.
 
@@ -2730,9 +2612,7 @@ Using the maximum attribute, specifies maximum region capacity based on entry co
 
 : <span class="tablecap">Table 26. Attributes</span>
 
-<a id="id_gpn_42q_rr"></a>
-
-## &lt;lru-heap-percentage&gt;
+## <a id="id_gpn_42q_rr" class="no-quick-link"></a>&lt;lru-heap-percentage&gt;
 
 Runs evictions when the Geode resource manager says to. The manager orders evictions when the total cache size is over the heap percentage limit specified in the manager configuration. You can declare a Java class that implements the ObjectSizer interface to measure the size of objects in the Region.
 
@@ -2779,9 +2659,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 : <span class="tablecap">Table 27. Attributes</span>
 
-<a id="id_brh_p2q_rr"></a>
-
-## &lt;lru-memory-size&gt;
+## <a id="id_brh_p2q_rr" class="no-quick-link"></a>&lt;lru-memory-size&gt;
 
 Using the maximum attribute, specifies maximum region capacity based on the amount of memory used, in megabytes. You can declare a Java class that implements the ObjectSizer interface to measure the size of objects in the Region.
 
@@ -2833,9 +2711,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 : <span class="tablecap">Table 28. Attributes</span>
 
-<a id="id_wnw_p2q_rr"></a>
-
-## &lt;jndi-bindings&gt;
+## <a id="id_wnw_p2q_rr" class="no-quick-link"></a>&lt;jndi-bindings&gt;
 
 Specifies the binding for a data-source used in transaction management. See [Configuring Database Connections Using JNDI](../../reference/topics/../../developing/transactions/configuring_db_connections_using_JNDI.html#topic_A5E3A67C808D48C08E1F0DC167C5C494).
 
@@ -2873,9 +2749,7 @@ Specifies the binding for a data-source used in transaction management. See [Con
    </jndi-bindings>
 ```
 
-<a id="id_jrf_q2q_rr"></a>
-
-## &lt;jndi-binding&gt;
+## <a id="id_jrf_q2q_rr" class="no-quick-link"></a>&lt;jndi-binding&gt;
 
 For every datasource that is bound to the JNDI tree, there should be one `<jndi-binding>` element. This element describes the property and the configuration of the datasource. Geode uses the attributes of the `<jndi-binding>` element for configuration. Use the `<config-property>` element to configure properties for the datasource.
 
@@ -3025,9 +2899,7 @@ Set one of the following types:
 
 : <span class="tablecap">Table 29. Attributes</span>
 
-<a id="id_rls_q2q_rr"></a>
-
-## &lt;config-property&gt;
+## <a id="id_rls_q2q_rr" class="no-quick-link"></a>&lt;config-property&gt;
 
 A configuration property of the datasource. Use the sub-elements to identify the name, datatype, and value of the property.
 
@@ -3047,27 +2919,19 @@ A configuration property of the datasource. Use the sub-elements to identify the
 
 Configuration properties vary depending on the database vendor. See [Configuring Database Connections Using JNDI](../../reference/topics/../../developing/transactions/configuring_db_connections_using_JNDI.html#topic_A5E3A67C808D48C08E1F0DC167C5C494) for examples of different configuration property configurations.
 
-<a id="id_zjc_r2q_rr"></a>
-
-## &lt;config-property-name&gt;
+## <a id="id_zjc_r2q_rr" class="no-quick-link"></a>&lt;config-property-name&gt;
 
 The name of this datasource property.
 
-<a id="id_wrk_r2q_rr"></a>
-
-## &lt;config-property-type&gt;
+## <a id="id_wrk_r2q_rr" class="no-quick-link"></a>&lt;config-property-type&gt;
 
 The data type of this datasource property.
 
-<a id="id_d5s_r2q_rr"></a>
-
-## &lt;config-property-value&gt;
+## <a id="id_d5s_r2q_rr" class="no-quick-link"></a>&lt;config-property-value&gt;
 
 The value of this datasource property.
 
-<a id="id_q5c_s2q_rr"></a>
-
-## &lt;region&gt;
+## <a id="id_q5c_s2q_rr" class="no-quick-link"></a>&lt;region&gt;
 
 Defines a region in the cache. See [&lt;region-attributes&gt;](cache_xml.html#region-attributes) for more details on configuring regions. You can specify zero or more subregions within a region. See [Create and Access Data Subregions](../../basic_config/data_regions/managing_data_regions.html#data_regions__section_jn1_sry_5m) for restrictions on creating subregions. For example, you cannot create a partitioned subregion.
 
@@ -3108,9 +2972,7 @@ Defines a region in the cache. See [&lt;region-attributes&gt;](cache_xml.html#re
 
 See[&lt;region-attributes&gt;](cache_xml.html#region-attributes) for a complete listing of region attributes.
 
-<a id="id_kcn_s2q_rr"></a>
-
-## &lt;index&gt;
+## <a id="id_kcn_s2q_rr" class="no-quick-link"></a>&lt;index&gt;
 
 Describes an index to be created on a region. The index node, if any, should all come immediately after the "region-attributes" node. The "name" attribute is a required field which identifies the name of the index. See [Working with Indexes](../../developing/query_index/query_index.html) for more information on indexes.
 
@@ -3153,9 +3015,7 @@ Describes an index to be created on a region. The index node, if any, should all
 </region>
 ```
 
-<a id="id_lyg_52q_rr"></a>
-
-## &lt;entry&gt;
+## <a id="id_lyg_52q_rr" class="no-quick-link"></a>&lt;entry&gt;
 
 An "entry" element describes an entry to be added to a region. Note that if an entry with the given key already exists in the region, it will be replaced.
 
@@ -3177,15 +3037,11 @@ An "entry" element describes an entry to be added to a region. Note that if an e
 </region>
 ```
 
-<a id="id_xlq_52q_rr"></a>
-
-## &lt;key&gt;
+## <a id="id_xlq_52q_rr" class="no-quick-link"></a>&lt;key&gt;
 
 Required. Describes the key in a region entry. A key can contain either a &lt;string&gt; or a &lt;declarable&gt; sub-element.
 
-<a id="id_g4r_chr_rr"></a>
-
-## &lt;declarable&gt;
+## <a id="id_g4r_chr_rr" class="no-quick-link"></a>&lt;declarable&gt;
 
 Specifies a Declarable object to be placed in a Region entry.
 
@@ -3206,9 +3062,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </parameter>
 ```
 
-<a id="id_vxp_1hr_rr"></a>
-
-## &lt;string&gt;
+## <a id="id_vxp_1hr_rr" class="no-quick-link"></a>&lt;string&gt;
 
 Specifies a String to be placed in a Region entry.
 
@@ -3226,15 +3080,11 @@ Specifies a String to be placed in a Region entry.
 </region>
 ```
 
-<a id="id_rc2_v2q_rr"></a>
-
-## &lt;value&gt;
+## <a id="id_rc2_v2q_rr" class="no-quick-link"></a>&lt;value&gt;
 
 Required. Describes the value of a region entry. A `<value>` can contain either a `<string>` or a `<declarable>` sub-element.
 
-<a id="id_cyf_dhr_rr"></a>
-
-## &lt;declarable&gt;
+## <a id="id_cyf_dhr_rr" class="no-quick-link"></a>&lt;declarable&gt;
 
 Specifies a Declarable object to be placed in a Region entry.
 
@@ -3255,9 +3105,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </parameter>
 ```
 
-<a id="id_dbq_dhr_rr"></a>
-
-## &lt;string&gt;
+## <a id="id_dbq_dhr_rr" class="no-quick-link"></a>&lt;string&gt;
 
 Specifies a String to be placed in a Region entry.
 
@@ -3275,23 +3123,17 @@ Specifies a String to be placed in a Region entry.
 </region>
 ```
 
-<a id="id_zbw_v2q_rr"></a>
-
-## &lt;region&gt;
+## <a id="id_zbw_v2q_rr" class="no-quick-link"></a>&lt;region&gt;
 
 When nested within a `<region>` element, defines a subregion. See [Create and Access Data Subregions](../../basic_config/data_regions/managing_data_regions.html#data_regions__section_jn1_sry_5m) for restrictions on creating subregions. For example, you cannot create a partitioned subregion.
 
 See [&lt;region&gt;](cache_xml.html#region)
 
-<a id="id_dh3_w2q_rr"></a>
-
-## &lt;vm-root-region&gt;
+## <a id="id_dh3_w2q_rr" class="no-quick-link"></a>&lt;vm-root-region&gt;
 
 DEPRECATED
 
-<a id="id_d4q_w2q_rr"></a>
-
-## &lt;function-service&gt;
+## <a id="id_d4q_w2q_rr" class="no-quick-link"></a>&lt;function-service&gt;
 
 Configures the behavior of the function execution service.
 
@@ -3308,9 +3150,7 @@ Configures the behavior of the function execution service.
 </function-service>
 ```
 
-<a id="id_p5c_x2q_rr"></a>
-
-## &lt;function&gt;
+## <a id="id_p5c_x2q_rr" class="no-quick-link"></a>&lt;function&gt;
 
 Defines a function for registration in the function service
 
@@ -3330,9 +3170,7 @@ Specify the Java class for the function and its initialization parameters with t
 </function>
 ```
 
-<a id="id_yvl_x2q_rr"></a>
-
-## &lt;resource-manager&gt;
+## <a id="id_yvl_x2q_rr" class="no-quick-link"></a>&lt;resource-manager&gt;
 
 A memory monitor that tracks cache size as a percentage of total heap or off-heap memory and controls size by restricting access to the cache and prompting eviction of old entries from the cache. For tenured heap, used in conjunction with settings for JVM memory and Java garbage collection. For off-heap memory, used with the off-heap memory manager.
 
@@ -3402,9 +3240,7 @@ A memory monitor that tracks cache size as a percentage of total heap or off-hea
 </cache>
 ```
 
-<a id="id_z5z_x2q_rr"></a>
-
-## &lt;serialization-registration&gt;
+## <a id="id_z5z_x2q_rr" class="no-quick-link"></a>&lt;serialization-registration&gt;
 
 Set of serializer or instantiator tags to register customer DataSerializer extensions or DataSerializable implementations respectively.
 
@@ -3418,9 +3254,7 @@ Set of serializer or instantiator tags to register customer DataSerializer exten
 </serialization-registration> 
 ```
 
-<a id="id_jsk_y2q_rr"></a>
-
-## &lt;serializer&gt;
+## <a id="id_jsk_y2q_rr" class="no-quick-link"></a>&lt;serializer&gt;
 
 Allows you to configure the DataSerializer for this Geode member. It registers a custom class which extends DataSerializer to support custom serialization of non-modifiable object types inside Geode.
 
@@ -3428,9 +3262,7 @@ Specify the Java class for the `DataSerializer` and its initialization parameter
 
 **API:** You can also register a `DataSerializer` by using the `com.gemstone.gemfire.DataSerializer.register` API. Use the `com.gemstone.gemfire.Instantiator` API to register a `DataSerializable` implementation.
 
-<a id="id_p5t_y2q_rr"></a>
-
-## &lt;instantiator&gt;
+## <a id="id_p5t_y2q_rr" class="no-quick-link"></a>&lt;instantiator&gt;
 
 An Instantiator registers a custom class which implements the `DataSerializable` interface to support custom object serialization inside Geode.
 
@@ -3448,9 +3280,7 @@ You can also directly specify `<instantiator>` as a sub-element of `<cache>`. Us
 
 : <span class="tablecap">Table 33. Attributes</span>
 
-<a id="id_cld_z2q_rr"></a>
-
-## &lt;backup&gt;
+## <a id="id_cld_z2q_rr" class="no-quick-link"></a>&lt;backup&gt;
 
 Defines additional files or directories that should be backed up when the system wide backup command is invoked. Disk stores with persistent data are automatically backed up and do not need to be listed with this element.
 
@@ -3461,9 +3291,7 @@ Defines additional files or directories that should be backed up when the system
 <backup>/users/jpearson/gfSystemInfo/myCustomerConfig.doc</backup>
 ```
 
-<a id="id_rn4_z2q_rr"></a>
-
-## &lt;initializer&gt;
+## <a id="id_rn4_z2q_rr" class="no-quick-link"></a>&lt;initializer&gt;
 
 Used to specify a callback class (and optionally its parameters) that will be run after the cache is initialized. This element can be specified for both server and client caches.
 
@@ -3484,9 +3312,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </initializer>
 ```
 
-<a id="topic_BDE840596CD24A7A8754A56E7D31FE3F"></a>
-
-## &lt;declarable&gt;
+## <a id="topic_BDE840596CD24A7A8754A56E7D31FE3F" class="no-quick-link"></a>&lt;declarable&gt;
 
 Specifies a Declarable object to be placed in a Region entry.
 
@@ -3507,9 +3333,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </parameter>
 ```
 
-<a id="class-name_parameter"></a>
-
-## &lt;class-name&gt; and &lt;parameter&gt;
+## <a id="class-name_parameter" class="no-quick-link"></a>&lt;class-name&gt; and &lt;parameter&gt;
 
 Specify the name of a Java class with the `<class-name>` sub-element.
 
@@ -3528,9 +3352,7 @@ The following transaction writer configuration example specifies a Java class na
 </transaction-writer>
 ```
 
-<a id="id_ytq_1fq_rr"></a>
-
-## &lt;declarable&gt;
+## <a id="id_ytq_1fq_rr" class="no-quick-link"></a>&lt;declarable&gt;
 
 Specifies a Declarable object to be placed in a Region entry.
 
@@ -3551,9 +3373,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </parameter>
 ```
 
-<a id="id_nzc_bfq_rr"></a>
-
-## &lt;string&gt;
+## <a id="id_nzc_bfq_rr" class="no-quick-link"></a>&lt;string&gt;
 
 Specifies a String to be placed in a Region entry.
 

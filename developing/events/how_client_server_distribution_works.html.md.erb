@@ -30,9 +30,7 @@ Client to server distribution uses the client pool connections to send updates t
 **Note:**
 Invalidations on the client side are not forwarded to the server.
 
-<a id="how_client_server_distribution_works__section_A16562611E094C88B12BC149D5EEEEBA"></a>
-
-## Server-to-Client Event Distribution
+## <a id="how_client_server_distribution_works__section_A16562611E094C88B12BC149D5EEEEBA" class="no-quick-link"></a>Server-to-Client Event Distribution
 
 The server automatically sends entry modification events only for keys in which the client has registered interest. In the interest registration, the client indicates whether to send new values or just invalidations for the server-side entry creates and updates. If invalidation is used, the client then updates the values lazily as needed.
 
@@ -74,9 +72,7 @@ Server-side distributed operations are all operations that originate as a distri
 **Note:**
 To maintain a unified set of data in your servers, do not do local entry invalidation in your server regions.
 
-<a id="how_client_server_distribution_works__section_34613292788D4FA4AB730045FB9A405A"></a>
-
-## Server-to-Client Message Tracking
+## <a id="how_client_server_distribution_works__section_34613292788D4FA4AB730045FB9A405A" class="no-quick-link"></a>Server-to-Client Message Tracking
 
 The server uses an asynchronous messaging queue to send events to its clients. Every event in the queue originates in an operation performed by a thread in a client, a server, or an application in the server’s or some other distributed system. The event message has a unique identifier composed of the originating thread’s ID combined with its member’s distributed system member ID, and the sequential ID of the operation. So the event messages originating in any single thread can be grouped and ordered by time from lowest sequence ID to highest. Servers and clients track the highest sequential ID for each member thread ID.
 
@@ -86,9 +82,7 @@ A single client thread receives and processes messages from the server, tracking
 
 The client’s message tracking list holds the highest sequence ID of any message received for each originating thread. The list can become quite large in systems where there are many different threads coming and going and doing work on the cache. After a thread dies, its tracking entry is not needed. To avoid maintaining tracking information for threads that have died, the client expires entries that have had no activity for more than the `subscription-message-tracking-timeout`.
 
-<a id="how_client_server_distribution_works__section_99E436C569F3422AA842AA74F73A6B36"></a>
-
-## Client Interest Registration on the Server
+## <a id="how_client_server_distribution_works__section_99E436C569F3422AA842AA74F73A6B36" class="no-quick-link"></a>Client Interest Registration on the Server
 
 The system processes client interest registration following these steps:
 
@@ -109,9 +103,7 @@ Once interest is registered, the server continually monitors region activities a
 -   The server maintains the interest registration list separate from the region. The list can contain specifications for entries that are not currently in the server region.
 -   The `registerInterestRegex` method uses the standard `java.util.regex` methods to parse the key specification.
 
-<a id="how_client_server_distribution_works__section_928BB60066414BEB9FAA7FB3120334A3"></a>
-
-## Server Failover
+## <a id="how_client_server_distribution_works__section_928BB60066414BEB9FAA7FB3120334A3" class="no-quick-link"></a>Server Failover
 
 When a server hosting a subscription queue fails, the queueing responsibilities pass to another server. How this happens depends on whether the new server is a secondary server. In any case, all failover activities are carried out automatically by the Geode system.
 

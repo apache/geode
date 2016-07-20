@@ -7,9 +7,7 @@ The Geode QueryService provides methods to create the Query object. You can then
 
 The QueryService instance you should use depends on whether you are querying the local cache of an application or if you want your application to query the server cache.
 
-<a id="running_a_querying__section_8B9C3F5BFBA6421A81EEB404DBE512C2"></a>
-
-## Querying a Local Cache
+## <a id="running_a_querying__section_8B9C3F5BFBA6421A81EEB404DBE512C2" class="no-quick-link"></a>Querying a Local Cache
 
 To query the application's local cache or to query other members, use `com.gemstone.gemfire.cache.Cache.getQueryService`.
 
@@ -35,9 +33,7 @@ To query the application's local cache or to query other members, use `com.gemst
  Portfolio p = (Portfolio)results.iterator().next(); /* Region containing Portfolio object. */
 ```
 
-<a id="running_a_querying__section_BAD35A249F784095857CC6848F91F6A4"></a>
-
-## Querying a Server Cache from a Client
+## <a id="running_a_querying__section_BAD35A249F784095857CC6848F91F6A4" class="no-quick-link"></a>Querying a Server Cache from a Client
 
 To perform a client to server query, use `com.gemstone.gemfire.cache.client.Pool.getQueryService`.
 

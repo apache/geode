@@ -4,8 +4,7 @@ title:  Fine-Tuning Your Client/Server Configuration
 
 You can fine-tune your client/server system with server load-balancing and client thread use of pool connections. For example, you can configure how often the servers check their load with the cache server `load-poll-interval` property, or configure your own server load metrics by implementing the `com.gemstone.gemfire.cache.server` package.
 
-<a id="client_server_whats_next__section_64AD4CBC253B4C309E3D592D0CED2A6B"></a>
-## How Server Load Conditioning Works
+## <a id="client_server_whats_next__section_64AD4CBC253B4C309E3D592D0CED2A6B" class="no-quick-link"></a>How Server Load Conditioning Works
 
 When the client pool requests connection information from the server locator, the locator returns the least-loaded server for the connection type. The pool uses this "best server" response to open new connections and to condition (rebalance) its existing pool connections.
 
@@ -20,21 +19,15 @@ Geode provides a default utility that probes the server and its resource usage t
 
 To use your own server load metrics instead of the default, implement the `ServerLoadProbe` or `ServerLoadProbeAdapter` and related interfaces and classes in the `com.gemstone.gemfire.cache.server` package. The load for each server is weighed relative to the loads reported by other servers in the system.
 
-<a id="client_server_whats_next__section_CE66DA4747BC4870893DB93690DAB95B"></a>
-
-## Client Thread Use of Pool Connections
+## <a id="client_server_whats_next__section_CE66DA4747BC4870893DB93690DAB95B" class="no-quick-link"></a>Client Thread Use of Pool Connections
 
 By default, a client thread retrieves a connection from the open connection pool for each forwarded operation and returns the connection to the pool as soon as the request is complete. If your client thread runs a `put` on a client region, for example, that operation grabs a server connection, sends the `put` to the server, and then returns the connection to the pool. This action keeps the connections available to the most threads possible.
 
-<a id="client_server_whats_next__section_7CC2BB7D03D8466D881888127F7A06A9"></a>
-
-## Set Up a Thread-Local (Dedicated) Connection
+## <a id="client_server_whats_next__section_7CC2BB7D03D8466D881888127F7A06A9" class="no-quick-link"></a>Set Up a Thread-Local (Dedicated) Connection
 
 You configure threads to use dedicated connections by setting `thread-local-connections` to true. In this case the thread holds its connection either until the thread explicitly releases the connection, or the connection expires based on `idle-timeout` or `load-conditioning-interval`.
 
-<a id="client_server_whats_next__section_396E1207E2E84590B9557D449F0846FD"></a>
-
-## Release a Thread-Local Connection
+## <a id="client_server_whats_next__section_396E1207E2E84590B9557D449F0846FD" class="no-quick-link"></a>Release a Thread-Local Connection
 
 If you use thread-local connections, you should release the connection as soon as your thread finishes its server activities.
 

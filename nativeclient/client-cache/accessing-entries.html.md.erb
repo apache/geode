@@ -15,9 +15,7 @@ The standard `Region::get` functions may implement a number of operations in ord
 
 The following sections discuss the `get` function and special considerations for entry retrieval.
 
-<a id="accessing-entries__section_AD6AFD842C144C128FA1C7F0B9283372"></a>
-
-## Entry Retrieval
+## <a id="accessing-entries__section_AD6AFD842C144C128FA1C7F0B9283372" class="no-quick-link"></a>Entry Retrieval
 
 You retrieve entry values with the `Region::get` function.
 
@@ -27,9 +25,7 @@ When an entry value is requested from a region, it is either retrieved from the 
 2.  server cache
 3.  local load (For distributed regions, the local load is fetched before remote cache values)
 
-<a id="accessing-entries__section_82B624FE364F4034AF010D20A8D0DF68"></a>
-
-## How the get Operation Affects the Local Entry Value
+## <a id="accessing-entries__section_82B624FE364F4034AF010D20A8D0DF68" class="no-quick-link"></a>How the get Operation Affects the Local Entry Value
 
 If a `get` operation retrieves an entry value from outside the local cache through a local load, it automatically `put`s the value into the cache for future reference.
 
@@ -37,8 +33,6 @@ Note that these load operations do not invoke a cache writer. Because the loader
 
 **Note:** Access through a `get` operation resets an entry's timestamp for LRU expiration.
 
-<a id="accessing-entries__section_F636614605C84513B2B7F4A674FD6E38"></a>
-
-## Getting Multiple Entries Using getAll
+## <a id="accessing-entries__section_F636614605C84513B2B7F4A674FD6E38" class="no-quick-link"></a>Getting Multiple Entries Using getAll
 
 You can use the `getAll` Region API to get all values for an array of keys from the local cache or cache server. Under [Bulk Put Operations Using putAll](../cpp-caching-api/add-entry-to-cache.html#concept_26D4E6C6BC6F4AB8884E33119999656D__section_748916759F0246619CD27E7456DCA365) for more information.

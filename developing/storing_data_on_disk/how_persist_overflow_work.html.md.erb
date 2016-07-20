@@ -11,18 +11,14 @@ Persistent data outlives the member where the region resides and can be used to 
 
 The data is written to disk according to the configuration of Geode disk stores. For any disk option, you can specify the name of the disk store to use or use the Geode default disk store. See [Disk Storage](../../managing/disk_storage/chapter_overview.html).
 
-<a id="how_persist_overflow_work__section_78F2D1820B6C48859A0E5411CE360105"></a>
-
-## How Data Is Persisted and Overflowed
+## <a id="how_persist_overflow_work__section_78F2D1820B6C48859A0E5411CE360105" class="no-quick-link"></a>How Data Is Persisted and Overflowed
 
 For persistence, the entry keys and values are copied to disk. For overflow, only the entry values are copied. Other data, such as statistics and user attributes, are retained in memory only.
 
 -   Data regions are overflowed to disk by least recently used (LRU) entries because those entries are deemed of least interest to the application and therefore less likely to be accessed.
 -   Server subscription queues overflow most recently used (MRU) entries. These are the messages that are at the end of the queue and so are last in line to be sent to the client.
 
-<a id="how_persist_overflow_work__section_1A3AE288145749058880D98C699FE124"></a>
-
-## Persistence
+## <a id="how_persist_overflow_work__section_1A3AE288145749058880D98C699FE124" class="no-quick-link"></a>Persistence
 
 Persistence provides a disk backup of region entry data. The keys and values of all entries are saved to disk, like having a replica of the region on disk. Region entry operations such as put and destroy are carried out in memory and on disk.
 
@@ -30,9 +26,7 @@ Persistence provides a disk backup of region entry data. The keys and values of 
 
 When the member stops for any reason, the region data on disk remains. In partitioned regions, where data buckets are divided among members, this can result in some data only on disk and some on disk and in memory. The disk data can be used at member startup to populate the same region.
 
-<a id="how_persist_overflow_work__section_55A7BBEB48574F649C40EB5D3E9CD0AC"></a>
-
-## Overflow
+## <a id="how_persist_overflow_work__section_55A7BBEB48574F649C40EB5D3E9CD0AC" class="no-quick-link"></a>Overflow
 
 Overflow limits region size in memory by moving the values of least recently used (LRU) entries to disk. Overflow basically uses disk as a swap space for entry values. If an entry is requested whose value is only on disk, the value is copied back up into memory, possibly causing the value of a different LRU entry to be moved to disk. As with persisted entries, overflowed entries are maintained on disk just as they are in memory.
 
@@ -40,9 +34,7 @@ In this figure, the value of entry X has been moved to disk to make space in mem
 
 <img src="../../images_svg/developing_overflow.svg" id="how_persist_overflow_work__image_1F89C9FBACB54EDA844778EC60F61B8D" class="image" />
 
-<a id="how_persist_overflow_work__section_9CBEBC0B59554DB49CE4941435793C51"></a>
-
-## Persistence and Overflow Together
+## <a id="how_persist_overflow_work__section_9CBEBC0B59554DB49CE4941435793C51" class="no-quick-link"></a>Persistence and Overflow Together
 
 Used together, persistence and overflow keep all entry keys and values on disk and only the most active entry values in memory. The removal of an entry value from memory due to overflow has no effect on the disk copy as all entries are already on disk.
 

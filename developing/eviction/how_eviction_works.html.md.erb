@@ -9,9 +9,7 @@ You configure for eviction based on entry count, percentage of available heap, a
 
 When Geode determines that adding or updating an entry would take the region over the specified level, it overflows or removes enough older entries to make room. For entry count eviction, this means a one-to-one trade of an older entry for the newer one. For the memory settings, the number of older entries that need to be removed to make space depends entirely on the relative sizes of the older and newer entries.
 
-<a id="how_eviction_works__section_69E2AA453EDE4E088D1C3332C071AFE1"></a>
-
-## Eviction in Partitioned Regions
+## <a id="how_eviction_works__section_69E2AA453EDE4E088D1C3332C071AFE1" class="no-quick-link"></a>Eviction in Partitioned Regions
 
 In partitioned regions, Geode removes the oldest entry it can find *in the bucket where the new entry operation is being performed*. Geode maintains LRU entry information on a bucket-by-bucket bases, as the cost of maintaining information across the partitioned region would be too great a performance hit.
 

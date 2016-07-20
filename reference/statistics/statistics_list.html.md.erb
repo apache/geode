@@ -61,9 +61,7 @@ Performance statistics are collected for each Java application or cache server t
 
 -   **[Statistics Collection (StatSampler)](#section_55F3AF6413474317902845EE4996CC21)**
 
-<a id="section_DEF8D3644D3246AB8F06FE09A37DC5C8"></a>
-
-## Cache Performance (CachePerfStats)
+## <a id="section_DEF8D3644D3246AB8F06FE09A37DC5C8" class="no-quick-link"></a>Cache Performance (CachePerfStats)
 
 Statistics for the Geode cache. These can be used to determine the type and number of cache operations being performed and how much time they consume.
 
@@ -137,9 +135,7 @@ The primary statistics are:
 | `updates`                        | The total number of updates originating remotely that have been applied to this cache.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `updateTime`                     | Total time spent performing an update.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 
-<a id="section_EF5C2C59BFC74FFB8607F9571AB9A471"></a>
-
-## Cache Server (CacheServerStats)
+## <a id="section_EF5C2C59BFC74FFB8607F9571AB9A471" class="no-quick-link"></a>Cache Server (CacheServerStats)
 
 Statistics used for cache servers and for gateway receivers are recorded in CacheServerStats in a cache server. The primary statistics are:
 
@@ -226,9 +222,7 @@ Statistics used for cache servers and for gateway receivers are recorded in Cach
 | `writePutResponseTime`                    | Total time, in nanoseconds, spent in writing put responses.                                                                                    |
 | `writeQueryResponseTime`                  | Total time, in nanoseconds, spent in writing query responses.                                                                                  |
 
-<a id="section_B08C0783BBF9489E8BB48B4AEC597C62"></a>
-
-## Client-Side Notifications (CacheClientUpdaterStats)
+## <a id="section_B08C0783BBF9489E8BB48B4AEC597C62" class="no-quick-link"></a>Client-Side Notifications (CacheClientUpdaterStats)
 
 Statistics in a client that pertain to server-to-client data pushed from the server over a queue to the client (they are the client side of the server’s `CacheClientNotifierStatistics`) :
 
@@ -238,9 +232,7 @@ Statistics in a client that pertain to server-to-client data pushed from the ser
 | `messagesBeingReceived`     | Current number of message being received off the network or being processed after reception. |
 | `messageBytesBeingReceived` | Current number of bytes consumed by messages being received or processed.                    |
 
-<a id="section_04B7D7387E584712B7710B5ED1E876BB"></a>
-
-## Client-to-Server Messaging Performance (ClientStats)
+## <a id="section_04B7D7387E584712B7710B5ED1E876BB" class="no-quick-link"></a>Client-to-Server Messaging Performance (ClientStats)
 
 These statistics are in a client and they describe all the messages sent from the client to a specific server. The primary statistics are:
 
@@ -433,9 +425,7 @@ These statistics are in a client and they describe all the messages sent from th
 | `unregisterInterestTime`               | Total amount of time, in nanoseconds, spent doing unregisterInterests.                        |
 | `unregisterInterestTimeouts`           | Total number of unregisterInterest attempts that have timed out.                              |
 
-<a id="section_6C247F61DB834C079A16BE92789D4692"></a>
-
-## Client Connection Pool (PoolStats)
+## <a id="section_6C247F61DB834C079A16BE92789D4692" class="no-quick-link"></a>Client Connection Pool (PoolStats)
 
 These statistics are in a client and they describe one of the client’s connection pools. The primary statistics are:
 
@@ -461,9 +451,7 @@ These statistics are in a client and they describe one of the client’s connect
 | `REQUESTS_TO_LOCATOR`       | Number of requests from this connection pool to a locator.                                                           |
 | `RESPONSES_FROM_LOCATOR`    | Number of responses from the locator to this connection pool.                                                        |
 
-<a id="section_66C0E7748501480B85209D57D24256D5"></a>
-
-## Continuous Querying (CQStatistics)
+## <a id="section_66C0E7748501480B85209D57D24256D5" class="no-quick-link"></a>Continuous Querying (CQStatistics)
 
 These statistics are for continuous querying information. The statistics are:
 
@@ -509,9 +497,7 @@ These statistics are for continuous querying information. The statistics are:
 | `cqCount`                        | Number of CQs operations on the client. For server notification to a single client.                                    |
 | `cqProcessingTime`               | Total time, in nanoseconds, spent by the cache client notifier processing CQs. For server notification to all clients. |
 
-<a id="section_D4ABED3FF94245C0BEE0F6FC9481E867"></a>
-
-## Delta Propagation (DeltaPropagationStatistics)
+## <a id="section_D4ABED3FF94245C0BEE0F6FC9481E867" class="no-quick-link"></a>Delta Propagation (DeltaPropagationStatistics)
 
 These statistics are for delta propagation between members. The primary statistics are:
 
@@ -545,9 +531,7 @@ These statistics are for delta propagation between members. The primary statisti
 | `processedDeltaPuts`                           | Number of cache client put requests containing delta received from a client and processed successfuly.                                                                      |
 | `processedDeltaPutsTime`                       | Total time spent in applying delta received from a client on existing value in this server's region.                                                                        |
 
-<a id="section_6C2BECC63A83456190B029DEDB8F4BE3"></a>
-
-## Disk Space Usage (DiskDirStatistics)
+## <a id="section_6C2BECC63A83456190B029DEDB8F4BE3" class="no-quick-link"></a>Disk Space Usage (DiskDirStatistics)
 
 These statistics pertain to the disk usage for a region’s disk directory. The primary statistics are:
 
@@ -560,9 +544,7 @@ These statistics pertain to the disk usage for a region’s disk directory. The 
 | `volumeFreeSpaceTime`   | The total time, in nanseconds, spent checking disk usage.                                                                                                  |
 | `volumeSize`            | The total size in bytes of the disk volume.                                                                                                                |
 
-<a id="section_983BFC6D53C74829A04A91C39E06315F"></a>
-
-## Disk Usage and Performance (DiskRegionStatistics)
+## <a id="section_983BFC6D53C74829A04A91C39E06315F" class="no-quick-link"></a>Disk Usage and Performance (DiskRegionStatistics)
 
 Statistics regarding operations performed on a disk region for persistence/overflow. The primary statistics are:
 
@@ -587,9 +569,7 @@ Statistics regarding operations performed on a disk region for persistence/overf
 | `writeTime`      | Total amount of time, in nanoseconds, spent writing to the disk.                                                                                                                       |
 | `writtenBytes`   | Total number of bytes that have been written to the disk.                                                                                                                              |
 
-<a id="section_ACB4161F10D64BC0B15871D003FF6FDF"></a>
-
-## Distributed System Messaging (DistributionStats)
+## <a id="section_ACB4161F10D64BC0B15871D003FF6FDF" class="no-quick-link"></a>Distributed System Messaging (DistributionStats)
 
 Statistics on the Geode distribution layer. These statistcs can be used to tell how much message traffic exists between this member and other distributed system members.
 
@@ -799,9 +779,7 @@ The distribution statistics provide statistics pertaining to slow receivers. The
 | `asyncQueueTimeoutExceeded`        | Incremented every time a queue flushing has exceeded `async-queue-timeout` and the receiver has been sent a disconnect message.                                                                       |
 | `asyncSocketWrite*`                | Used anytime a producer is distributing to one or more consumers with a non-zero distribution timeout. These statistics also reflect the writes done by the threads that service asynchronous queues. |
 
-<a id="section_78D346A580724E1EA645E31626EECE40"></a>
-
-## Distributed Lock Services (DLockStats)
+## <a id="section_78D346A580724E1EA645E31626EECE40" class="no-quick-link"></a>Distributed Lock Services (DLockStats)
 
 These statistics are for distributed lock services. The primary statistics are:
 
@@ -871,9 +849,7 @@ These statistics are for distributed lock services. The primary statistics are:
 | `waitingQueueSizeDesc`                       | The number of distribution messages currently waiting for some other resource before they can be processed. |
 | `waitingThreadsDesc`                         | The number of threads currently processing messages that had to wait for a resource.                        |
 
-<a id="section_5E211DDB0E8640689AD0A4659511E17A"></a>
-
-## Function Execution (FunctionServiceStatistics)
+## <a id="section_5E211DDB0E8640689AD0A4659511E17A" class="no-quick-link"></a>Function Execution (FunctionServiceStatistics)
 
 These are the statistics for each execution of the function. The primary statistics are:
 
@@ -889,9 +865,7 @@ These are the statistics for each execution of the function. The primary statist
 | `resultsReceived`                                    | Total number of results received and passed to the ResultCollector.                                             |
 | `resultsSentToResultCollector`                       | Total number of results sent to the ResultCollector.                                                            |
 
-<a id="section_C4199A541B1F4B82B6178C416C0FAE4B"></a>
-
-## Gateway Queue (GatewayStatistics)
+## <a id="section_C4199A541B1F4B82B6178C416C0FAE4B" class="no-quick-link"></a>Gateway Queue (GatewayStatistics)
 
 These statistics are for outgoing gateway queue and its connection. The primary statistics are:
 
@@ -915,9 +889,7 @@ These statistics are for outgoing gateway queue and its connection. The primary 
 | `unprocessedTokensRemovedBySecondary` | Number of tokens removed from the secondary's unprocessed token map by the secondary.                                                   |
 | `unprocessedTokensRemovedByTimeout`   | Number of tokens removed from the secondary's unprocessed token map by a timeout.                                                       |
 
-<a id="section_86A61860024B480592DAC67FFB882538"></a>
-
-## Indexes (IndexStats)
+## <a id="section_86A61860024B480592DAC67FFB882538" class="no-quick-link"></a>Indexes (IndexStats)
 
 ## Query-Independent Statistics on Indexes
 
@@ -937,9 +909,7 @@ These statistics are for outgoing gateway queue and its connection. The primary 
 | `usesInProgress` | Current number of uses of the index in progress or current number of concurrent threads accessing the index for querying. Concurrent use of an index is allowed for different queries. |
 | `useTime`        | Total time during the use of the Index for querying.                                                                                                                                   |
 
-<a id="section_607C3867602E410CAE5FAB26A7FF1CB9"></a>
-
-## JVM Performance
+## <a id="section_607C3867602E410CAE5FAB26A7FF1CB9" class="no-quick-link"></a>JVM Performance
 
 ## Geode JVM Resource Manager (ResourceManagerStats)
 
@@ -1012,9 +982,7 @@ Show details on how the Java heap memory is being used. The primary statistics a
 | `maxMemory`       | The maximum amount of memory, measured in bytes, this area can have.      |
 | `usedMemory`      | The amount of used memory, measured in bytes, for this area.              |
 
-<a id="section_C48B654F973E4B44AD825D459C23A6CD"></a>
-
-## Locator (LocatorStatistics)
+## <a id="section_C48B654F973E4B44AD825D459C23A6CD" class="no-quick-link"></a>Locator (LocatorStatistics)
 
 These statistics are on the Geode locator. The primary statistics are:
 
@@ -1029,9 +997,7 @@ These statistics are on the Geode locator. The primary statistics are:
 | `RESPONSES_FROM_LOCATOR` | Number of responses this locator has sent to clients.                         |
 | `SERVER_LOAD_UPDATES`    | Total number of times a server load update has been received.                 |
 
-<a id="topic_ohc_tjk_w5"></a>
-
-## Off-Heap (OffHeapMemoryStats)
+## <a id="topic_ohc_tjk_w5" class="no-quick-link"></a>Off-Heap (OffHeapMemoryStats)
 
 These statistics quantify the use of off-heap memory. The primary statistics are:
 
@@ -1048,9 +1014,7 @@ These statistics quantify the use of off-heap memory. The primary statistics are
 | `reads`               | The total number of reads of objects that are stored in off-heap memory.                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `usedMemory`          | The number of bytes of off-heap memory currently used for region values.                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 
-<a id="section_923B28F01BC3416786D3AFBD87F22A5E"></a>
-
-## Operating System Statistics - Linux
+## <a id="section_923B28F01BC3416786D3AFBD87F22A5E" class="no-quick-link"></a>Operating System Statistics - Linux
 
 ## Linux Process Performance (LinuxProcessStats)
 
@@ -1221,9 +1185,7 @@ This value will be above zero whenever actualRedundantCopies is less than config
 </tbody>
 </table>
 
-<a id="section_374FBD92A3B74F6FA08AA23047929B4F"></a>
-
-## Region Entry Eviction – Count-Based (LRUStatistics)
+## <a id="section_374FBD92A3B74F6FA08AA23047929B4F" class="no-quick-link"></a>Region Entry Eviction – Count-Based (LRUStatistics)
 
 The entry-count least recently used (LRU) eviction mechanism records these LRUStatistics. The primary statistics are:
 
@@ -1237,9 +1199,7 @@ The entry-count least recently used (LRU) eviction mechanism records these LRUSt
 | `lruEvictions`     | Number of total entry evictions triggered by an LRU.                       |
 | `lruGreedyReturns` | Number of non-LRU entries evicted during LRU operations.                   |
 
-<a id="section_3D2AA2BCE5B6485699A7B6ADD1C49FF7"></a>
-
-## Region Entry Eviction – Size-based (LRUStatistics)
+## <a id="section_3D2AA2BCE5B6485699A7B6ADD1C49FF7" class="no-quick-link"></a>Region Entry Eviction – Size-based (LRUStatistics)
 
 The least recently used (LRU) mechanism that keeps the size of a region under a given set point records these MemLRUStatistics. The primary statistics are:
 
@@ -1253,9 +1213,7 @@ The least recently used (LRU) mechanism that keeps the size of a region under a 
 | `lruEvictions`     | Total number of entry evictions triggered by LRU.                       |
 | `lruGreedyReturns` | Number of non-LRU entries evicted during LRU operations.                |
 
-<a id="section_5362EF9AECBC48D69475697109ABEDFA"></a>
-
-## Server Notifications for All Clients (CacheClientNotifierStatistics)
+## <a id="section_5362EF9AECBC48D69475697109ABEDFA" class="no-quick-link"></a>Server Notifications for All Clients (CacheClientNotifierStatistics)
 
 Statistics regarding cache server operations sent to all clients.
 
@@ -1271,9 +1229,7 @@ Statistics regarding cache server operations sent to all clients.
 | `eventsEnqueuedWhileClientAwayCount` | Number of events enqueued for a durable client.                                           |
 | `queueDroppedCount`                  | Number of times the client subscription queue for a particular durable client is dropped. |
 
-<a id="section_E03865F509E543D9B8F9462B3DA6255E"></a>
-
-## Server Notifications for Single Client (CacheClientProxyStatistics)
+## <a id="section_E03865F509E543D9B8F9462B3DA6255E" class="no-quick-link"></a>Server Notifications for Single Client (CacheClientProxyStatistics)
 
 Statistics regarding cache server operations and cache server client notifications sent to a single client.
 
@@ -1289,9 +1245,7 @@ Statistics regarding cache server operations and cache server client notificatio
 | `messagesQueued`                 | Number of client operations messages added to the subscription queue.                                                                                                                |
 | `messagesReceived`               | Number of client operations messages received.                                                                                                                                       |
 
-<a id="section_3AB1C0AA55014163A2BBF68E13D25E3A"></a>
-
-## Server-to-Client Messaging Performance (ClientSubscriptionStats)
+## <a id="section_3AB1C0AA55014163A2BBF68E13D25E3A" class="no-quick-link"></a>Server-to-Client Messaging Performance (ClientSubscriptionStats)
 
 Collected in the server, these statistics track event messages queued on the server to be sent to the client. The statistics are gathered for each client subscription queue and are incremental for the lifetime of the queue. The event messages are referred to as events in these statistics. The primary statistics are:
 
@@ -1307,9 +1261,7 @@ Collected in the server, these statistics track event messages queued on the ser
 | `numVoidRemovals`     | Number of events which were supposed to be destroyed from the subscription queue through remove but were removed by some other operation like conflation or expiration.                                                                    |
 | `threadIdentifiers`   | Number of ThreadIdentifier objects (units) in the subscription queue.                                                                                                                                                                      |
 
-<a id="section_55F3AF6413474317902845EE4996CC21"></a>
-
-## Statistics Collection (StatSampler)
+## <a id="section_55F3AF6413474317902845EE4996CC21" class="no-quick-link"></a>Statistics Collection (StatSampler)
 
 These statistics show how much time is spent collecting statistics. The primary statistics are:
 

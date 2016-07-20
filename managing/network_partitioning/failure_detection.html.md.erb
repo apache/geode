@@ -4,8 +4,7 @@ title:  Failure Detection and Membership Views
 
 Geode uses failure detection to remove unresponsive members from membership views.
 
-<a id="concept_CFD13177F78C456095622151D6EE10EB__section_1AAE6C92FED249EFBA476D8A480B8E51"></a>
-## Failure Detection
+## <a id="concept_CFD13177F78C456095622151D6EE10EB__section_1AAE6C92FED249EFBA476D8A480B8E51" class="no-quick-link"></a>Failure Detection
 
 Network partitioning has a failure detection protocol that is not subject to hanging when NICs or machines fail. Failure detection has each member observe messages from the peer to its right within the membership view (see "Membership Views" below for the view layout). A member that suspects the failure of its peer to the right sends a datagram heartbeat request to the suspect member. With no response from the suspect member, the suspicious member broadcasts a `SuspectMembersMessage` datagram message to all other members. The coordinator attempts to connect to the suspect member. If the connection attempt is unsuccessful, the suspect member is removed from the membership view. The suspect member is sent a message to disconnect from the distributed system and close the cache. In parallel to the receipt of the `SuspectMembersMessage`, a distributed algorithm promotes the leftmost member within the view to act as the coordinator, if the coordinator is the suspect member.
 
@@ -21,9 +20,7 @@ Possible loss of quorum detected due to loss of {0} cache processes: {1}
 
 in which {0} is the number of processes that failed and {1} lists the members (cache processes).
 
-<a id="concept_CFD13177F78C456095622151D6EE10EB__section_1170FBBD6B7A483AB2C2A837F1B8876D"></a>
-
-## Membership Views
+## <a id="concept_CFD13177F78C456095622151D6EE10EB__section_1170FBBD6B7A483AB2C2A837F1B8876D" class="no-quick-link"></a>Membership Views
 
 The following is a sample membership view:
 

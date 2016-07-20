@@ -57,9 +57,7 @@ API: `com.gemstone.gemfire.cache.client.ClientCacheFactory` and `PoolFactory` in
 </client-cache>
 ```
 
-<a id="cc-cache-transaction-manager"></a>
-
-## &lt;cache-transaction-manager&gt;
+## <a id="cc-cache-transaction-manager" class="no-quick-link"></a>&lt;cache-transaction-manager&gt;
 
 Specifies a transaction listener.
 
@@ -88,25 +86,19 @@ Specifies a transaction listener.
 </cache>
 ```
 
-<a id="cc-transaction-listener"></a>
-
-## &lt;transaction-listener&gt;
+## <a id="cc-transaction-listener" class="no-quick-link"></a>&lt;transaction-listener&gt;
 
 When a transaction ends, its thread calls the TransactionListener to perform the appropriate follow-up for successful commits, failed commits, or voluntary rollbacks.
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](cache_xml.html#class-name_parameter).
 
-<a id="cc-transaction-writer"></a>
-
-## &lt;transaction-writer&gt;
+## <a id="cc-transaction-writer" class="no-quick-link"></a>&lt;transaction-writer&gt;
 
 When you commit a transaction, a TransactionWriter can perform additional tasks, including aborting the transaction.
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](cache_xml.html#class-name_parameter).
 
-<a id="cc-pool"></a>
-
-## &lt;pool&gt;
+## <a id="cc-pool" class="no-quick-link"></a>&lt;pool&gt;
 
 Use for client caches. Defines a client's server pool used to communicate with servers running in a different distributed system.
 
@@ -267,9 +259,7 @@ Use for client caches. Defines a client's server pool used to communicate with s
 </pool>
 ```
 
-<a id="cc-locator"></a>
-
-## &lt;locator&gt;
+## <a id="cc-locator" class="no-quick-link"></a>&lt;locator&gt;
 
 Addresses and ports of the locators to connect to. You can define multiple locators for the pool.
 
@@ -296,9 +286,7 @@ Provide a locator list or `server` list, but not both.
        port="12345"/>
 ```
 
-<a id="cc-server"></a>
-
-## &lt;server&gt;
+## <a id="cc-server" class="no-quick-link"></a>&lt;server&gt;
 
 Addresses and ports of the servers to connect to.
 
@@ -328,9 +316,7 @@ Provide a server list or `locator` list, but not both.
 </pool>
 ```
 
-<a id="cc-disk-store"></a>
-
-## &lt;disk-store&gt;
+## <a id="cc-disk-store" class="no-quick-link"></a>&lt;disk-store&gt;
 
 Defines a pool of one or more disk stores, which can be used by regions, and client subscription queues.
 
@@ -427,15 +413,11 @@ Defines a pool of one or more disk stores, which can be used by regions, and cli
 </disk-store>
 ```
 
-<a id="cc-disk-dirs"></a>
-
-## &lt;disk-dirs&gt;
+## <a id="cc-disk-dirs" class="no-quick-link"></a>&lt;disk-dirs&gt;
 
 An element of a disk store that defines a set of `<disk-dir>` elements.
 
-<a id="cc-disk-dir"></a>
-
-## &lt;disk-dir&gt;
+## <a id="cc-disk-dir" class="no-quick-link"></a>&lt;disk-dir&gt;
 
 Specifies a region or disk store's disk directory.
 
@@ -474,9 +456,7 @@ Specifies a region or disk store's disk directory.
     dir-size="20480">/host3/users/gf/memberA_DStore</disk-dir> 
 ```
 
-<a id="cc-pdx"></a>
-
-## &lt;pdx&gt;
+## <a id="cc-pdx" class="no-quick-link"></a>&lt;pdx&gt;
 
 Specifies the configuration for the Portable Data eXchange (PDX) method of serialization.
 
@@ -511,9 +491,7 @@ Specifies the configuration for the Portable Data eXchange (PDX) method of seria
 </cache>
 ```
 
-<a id="cc-pdx-serializer"></a>
-
-## &lt;pdx-serializer&gt;
+## <a id="cc-pdx-serializer" class="no-quick-link"></a>&lt;pdx-serializer&gt;
 
 Allows you to configure the PdxSerializer for this Geode member.
 
@@ -536,9 +514,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </cache>
 ```
 
-<a id="cc-region-attributes"></a>
-
-## &lt;region-attributes&gt;
+## <a id="cc-region-attributes" class="no-quick-link"></a>&lt;region-attributes&gt;
 
 Specifies a region attributes template that can be named (by `id`) and referenced (by `refid`) later in the `cache.xml` and through the API.
 
@@ -927,9 +903,7 @@ Used only with GemFire version 6.x gateway configurations. For GemFire 7.0 confi
 
 : <span class="tablecap">Table 8. Attributes</span>
 
-<a id="cc-key-constraint"></a>
-
-## &lt;key-constraint&gt;
+## <a id="cc-key-constraint" class="no-quick-link"></a>&lt;key-constraint&gt;
 
 Defines the type of object to be allowed for the region entry keys. This must be a fully-qualified class name. The attribute ensures that the keys for the region entries are all of the same class. If key-constraint is not used, the region’s keys can be of any class. This attribute, along with value-constraint, is useful for querying and indexing because it provides object type information to the query engine.
 
@@ -950,9 +924,7 @@ Set the constraint in every cache where you create or update the region entries.
 </region-attributes>
 ```
 
-<a id="cc-value-constraint"></a>
-
-## &lt;value-constraint&gt;
+## <a id="cc-value-constraint" class="no-quick-link"></a>&lt;value-constraint&gt;
 
 Defines the type of object to be allowed for the region entry values. This must be a fully-qualified class name. If value constraint isn’t used, the region’s value can be of any class. This attribute, along with `key-constraint`, is useful for querying and indexing because it provides object type information to the query engine.
 
@@ -973,9 +945,7 @@ Set the constraint in every cache where you create or update the region entries.
 </region-attributes>
 ```
 
-<a id="cc-region-time-to-live"></a>
-
-## &lt;region-time-to-live&gt;
+## <a id="cc-region-time-to-live" class="no-quick-link"></a>&lt;region-time-to-live&gt;
 
 Expiration setting that specifies how long the region can remain in the cache without anyone accessing or updating it.
 
@@ -996,9 +966,7 @@ Expiration setting that specifies how long the region can remain in the cache wi
 </region-attributes>
 ```
 
-<a id="cc-expiration-attributes"></a>
-
-## &lt;expiration-attributes&gt;
+## <a id="cc-expiration-attributes" class="no-quick-link"></a>&lt;expiration-attributes&gt;
 
 Within the `entry-time-to-live` or `entry-idle-time` element, this element specifies the expiration rules for removing old region entries that you are not using. You can destroy or invalidate entries, either locally or across the distributed system. Within the `region-time-to-live` or `region-idle-time` element, this element specifies the expiration rules for the entire region.
 
@@ -1072,9 +1040,7 @@ Select one of the following expiration actions:
 </region-attributes>
 ```
 
-<a id="cc-custom-expiry"></a>
-
-## &lt;custom-expiry&gt;
+## <a id="cc-custom-expiry" class="no-quick-link"></a>&lt;custom-expiry&gt;
 
 Specifies the custom class that implements `com.gemstone.gemfire.cache.CustomExpiry`. You define this class in order to override the region-wide settings for specific entries. See [Configure Data Expiration](../../developing/expiration/configuring_data_expiration.html) for an example.
 
@@ -1099,9 +1065,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements.
 
-<a id="cc-region-idle-time"></a>
-
-## &lt;region-idle-time&gt;
+## <a id="cc-region-idle-time" class="no-quick-link"></a>&lt;region-idle-time&gt;
 
 Expiration setting that specifies how long the region can remain in the cache without anyone accessing it.
 
@@ -1124,9 +1088,7 @@ To ensure reliable read behavior across the partitioned region, use `region-time
 </region-attributes>
 ```
 
-<a id="cc-rit-expiration-attributes"></a>
-
-## &lt;expiration-attributes&gt;
+## <a id="cc-rit-expiration-attributes" class="no-quick-link"></a>&lt;expiration-attributes&gt;
 
 Within the `entry-time-to-live` or `entry-idle-time` element, this element specifies the expiration rules for removing old region entries that you are not using. You can destroy or invalidate entries, either locally or across the distributed system. Within the `region-time-to-live` or `region-idle-time` element, this element specifies the expiration rules for the entire region.
 
@@ -1200,9 +1162,7 @@ Select one of the following expiration actions:
 </region-attributes>
 ```
 
-<a id="cc-rit-custom-expiry"></a>
-
-## &lt;custom-expiry&gt;
+## <a id="cc-rit-custom-expiry" class="no-quick-link"></a>&lt;custom-expiry&gt;
 
 Specifies the custom class that implements `com.gemstone.gemfire.cache.CustomExpiry`. You define this class in order to override the region-wide settings for specific entries. See [Configure Data Expiration](../../developing/expiration/configuring_data_expiration.html) for an example.
 
@@ -1227,9 +1187,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements.
 
-<a id="cc-entry-time-to-live"></a>
-
-## &lt;entry-time-to-live&gt;
+## <a id="cc-entry-time-to-live" class="no-quick-link"></a>&lt;entry-time-to-live&gt;
 
 Expiration setting that specifies how long the region’s entries can remain in the cache without anyone accessing or updating them. See [&lt;expiration-attributes&gt;](cache_xml.html#expiration-attributes) for details.
 
@@ -1250,9 +1208,7 @@ Expiration setting that specifies how long the region’s entries can remain in 
 </region-attributes>
 ```
 
-<a id="cc-ettl-expiration-attributes"></a>
-
-## &lt;expiration-attributes&gt;
+## <a id="cc-ettl-expiration-attributes" class="no-quick-link"></a>&lt;expiration-attributes&gt;
 
 Within the `entry-time-to-live` or `entry-idle-time` element, this element specifies the expiration rules for removing old region entries that you are not using. You can destroy or invalidate entries, either locally or across the distributed system. Within the `region-time-to-live` or `region-idle-time` element, this element specifies the expiration rules for the entire region.
 
@@ -1326,9 +1282,7 @@ Select one of the following expiration actions:
 </region-attributes>
 ```
 
-<a id="cc-ettl-custom-expiry"></a>
-
-## &lt;custom-expiry&gt;
+## <a id="cc-ettl-custom-expiry" class="no-quick-link"></a>&lt;custom-expiry&gt;
 
 Specifies the custom class that implements `com.gemstone.gemfire.cache.CustomExpiry`. You define this class in order to override the region-wide settings for specific entries. See [Configure Data Expiration](../../developing/expiration/configuring_data_expiration.html) for an example.
 
@@ -1353,9 +1307,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements.
 
-<a id="cc-entry-idle-time"></a>
-
-## &lt;entry-idle-time&gt;
+## <a id="cc-entry-idle-time" class="no-quick-link"></a>&lt;entry-idle-time&gt;
 
 Expiration setting that specifies how long the region’s entries can remain in the cache without anyone accessing them. See [&lt;expiration-attributes&gt;](cache_xml.html#expiration-attributes) for details.
 
@@ -1378,9 +1330,7 @@ To ensure reliable read behavior across the partitioned region, use `entry-time-
 </region-attributes>
 ```
 
-<a id="cc-eit-expiration-attributes"></a>
-
-## &lt;expiration-attributes&gt;
+## <a id="cc-eit-expiration-attributes" class="no-quick-link"></a>&lt;expiration-attributes&gt;
 
 Within the `entry-time-to-live` or `entry-idle-time` element, this element specifies the expiration rules for removing old region entries that you are not using. You can destroy or invalidate entries, either locally or across the distributed system. Within the `region-time-to-live` or `region-idle-time` element, this element specifies the expiration rules for the entire region.
 
@@ -1454,9 +1404,7 @@ Select one of the following expiration actions:
 </region-attributes>
 ```
 
-<a id="cc-eit-custom-expiry"></a>
-
-## &lt;custom-expiry&gt;
+## <a id="cc-eit-custom-expiry" class="no-quick-link"></a>&lt;custom-expiry&gt;
 
 Specifies the custom class that implements `com.gemstone.gemfire.cache.CustomExpiry`. You define this class in order to override the region-wide settings for specific entries. See [Configure Data Expiration](../../developing/expiration/configuring_data_expiration.html) for an example.
 
@@ -1481,9 +1429,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements.
 
-<a id="cc-id_uqb_3qw_bm"></a>
-
-## &lt;cache-loader&gt;
+## <a id="cc-id_uqb_3qw_bm" class="no-quick-link"></a>&lt;cache-loader&gt;
 
 An event-handler plug-in that allows you to program for cache misses. At most, one cache loader can be defined in each member for the region. For distributed regions, a cache loader may be invoked remotely from other members that have the region defined. When an entry get results in a cache miss in a region with a cache loader defined, the loader’s <span class="keyword apiname">load</span> method is called. This method is usually programmed to retrieve data from an outside data source, but it can do anything required by your application.
 
@@ -1501,9 +1447,7 @@ For partitioned regions, if you want to have a cache loader, install an instance
 </region-attributes>
 ```
 
-<a id="cc-id_k3w_3qw_bm"></a>
-
-## &lt;cache-writer&gt;
+## <a id="cc-id_k3w_3qw_bm" class="no-quick-link"></a>&lt;cache-writer&gt;
 
 An event-handler plug-in that allows you to receive before-event notification for changes to the region and its entries. It also has the ability to abort events. At most, one cache writer can be defined in each member for the region. A cache writer may be invoked remotely from other members that have the region defined.
 
@@ -1519,9 +1463,7 @@ An event-handler plug-in that allows you to receive before-event notification fo
 </region-attributes>
 ```
 
-<a id="cc-cache-listener"></a>
-
-## &lt;cache-listener&gt;
+## <a id="cc-cache-listener" class="no-quick-link"></a>&lt;cache-listener&gt;
 
 An event-handler plug-in that receives after-event notification of changes to the region and its entries. Any number of cache listeners can be defined for a region in any member. Geode offers several listener types with callbacks to handle data and process events. Depending on the `data-policy` and the `interest-policy` subscription attributes, a cache listener may receive only events that originate in the local cache, or it may receive those events along with events that originate remotely.
 
@@ -1541,9 +1483,7 @@ Specify the Java class for the cache listener and its initialization parameters 
 </region-attributes>
 ```
 
-<a id="cc-eviction-attributes"></a>
-
-## &lt;eviction-attributes&gt;
+## <a id="cc-eviction-attributes" class="no-quick-link"></a>&lt;eviction-attributes&gt;
 
 Specifies whether and how to control a region’s size. Size is controlled by removing least recently used (LRU) entries to make space for new ones. This may be done through destroy or overflow actions. You can configure your region for lru-heap-percentage with an eviction action of local-destroy using Geode’s stored region attributes.
 
@@ -1563,9 +1503,7 @@ Specifies whether and how to control a region’s size. Size is controlled by re
 </region-attributes
 ```
 
-<a id="cc-lru-entry-count"></a>
-
-## &lt;lru-entry-count&gt;
+## <a id="cc-lru-entry-count" class="no-quick-link"></a>&lt;lru-entry-count&gt;
 
 Using the maximum attribute, specifies maximum region capacity based on entry count.
 
@@ -1615,9 +1553,7 @@ Using the maximum attribute, specifies maximum region capacity based on entry co
 
 : <span class="tablecap">Table 13. Attributes</span>
 
-<a id="cc-lru-heap-percentage"></a>
-
-## &lt;lru-heap-percentage&gt;
+## <a id="cc-lru-heap-percentage" class="no-quick-link"></a>&lt;lru-heap-percentage&gt;
 
 Runs evictions when the Geode resource manager says to. The manager orders evictions when the total cache size is over the heap percentage limit specified in the manager configuration. You can declare a Java class that implements the ObjectSizer interface to measure the size of objects in the Region.
 
@@ -1664,9 +1600,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 : <span class="tablecap">Table 14. Attributes</span>
 
-<a id="cc-lru-memory-size"></a>
-
-## &lt;lru-memory-size&gt;
+## <a id="cc-lru-memory-size" class="no-quick-link"></a>&lt;lru-memory-size&gt;
 
 Using the maximum attribute, specifies maximum region capacity based on the amount of memory used, in megabytes. You can declare a Java class that implements the ObjectSizer interface to measure the size of objects in the Region.
 
@@ -1718,9 +1652,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 : <span class="tablecap">Table 15. Attributes</span>
 
-<a id="cc-jndi-bindings"></a>
-
-## &lt;jndi-bindings&gt;
+## <a id="cc-jndi-bindings" class="no-quick-link"></a>&lt;jndi-bindings&gt;
 
 Specifies the binding for a data-source used in transaction management. See [Configuring Database Connections Using JNDI](../../developing/transactions/configuring_db_connections_using_JNDI.html#topic_A5E3A67C808D48C08E1F0DC167C5C494).
 
@@ -1758,9 +1690,7 @@ Specifies the binding for a data-source used in transaction management. See [Con
    </jndi-bindings>
 ```
 
-<a id="cc-jndi-binding"></a>
-
-## &lt;jndi-binding&gt;
+## <a id="cc-jndi-binding" class="no-quick-link"></a>&lt;jndi-binding&gt;
 
 For every datasource that is bound to the JNDI tree, there should be one `<jndi-binding>` element. This element describes the property and the configuration of the datasource. Geode uses the attributes of the `<jndi-binding>` element for configuration. Use the `<config-property>` element to configure properties for the datasource.
 
@@ -1910,9 +1840,7 @@ Set one of the following types:
 
 : <span class="tablecap">Table 16. Attributes</span>
 
-<a id="cc-config-property"></a>
-
-## &lt;config-property&gt;
+## <a id="cc-config-property" class="no-quick-link"></a>&lt;config-property&gt;
 
 A configuration property of the datasource. Use the sub-elements to identify the name, datatype, and value of the property.
 
@@ -1932,27 +1860,19 @@ A configuration property of the datasource. Use the sub-elements to identify the
 
 Configuration properties vary depending on the database vendor. See [Configuring Database Connections Using JNDI](../../developing/transactions/configuring_db_connections_using_JNDI.html#topic_A5E3A67C808D48C08E1F0DC167C5C494) for examples of different configuration property configurations.
 
-<a id="cc-config-property-name"></a>
-
-## &lt;config-property-name&gt;
+## <a id="cc-config-property-name" class="no-quick-link"></a>&lt;config-property-name&gt;
 
 The name of this datasource property.
 
-<a id="cc-config-property-type"></a>
-
-## &lt;config-property-type&gt;
+## <a id="cc-config-property-type" class="no-quick-link"></a>&lt;config-property-type&gt;
 
 The data type of this datasource property.
 
-<a id="cc-config-property-value"></a>
-
-## &lt;config-property-value&gt;
+## <a id="cc-config-property-value" class="no-quick-link"></a>&lt;config-property-value&gt;
 
 The value of this datasource property.
 
-<a id="cc-region"></a>
-
-## &lt;region&gt;
+## <a id="cc-region" class="no-quick-link"></a>&lt;region&gt;
 
 Defines a region in the cache. See [&lt;region-attributes&gt;](cache_xml.html#region-attributes) for more details on configuring regions. You can specify zero or more subregions within a region. See [Create and Access Data Subregions](../../basic_config/data_regions/managing_data_regions.html#data_regions__section_jn1_sry_5m) for restrictions on creating subregions. For example, you cannot create a partitioned subregion.
 
@@ -1993,9 +1913,7 @@ Defines a region in the cache. See [&lt;region-attributes&gt;](cache_xml.html#re
 
 See[&lt;region-attributes&gt;](cache_xml.html#region-attributes) for a complete listing of region attributes.
 
-<a id="cc-r-region-attributes"></a>
-
-## &lt;region-attributes&gt;
+## <a id="cc-r-region-attributes" class="no-quick-link"></a>&lt;region-attributes&gt;
 
 Specifies a region attributes template that can be named (by `id`) and referenced (by `refid`) later in the `cache.xml` and through the API.
 
@@ -2384,9 +2302,7 @@ Used only with GemFire version 6.x gateway configurations. For GemFire 7.0 confi
 
 : <span class="tablecap">Table 18. Attributes</span>
 
-<a id="cc-index"></a>
-
-## &lt;index&gt;
+## <a id="cc-index" class="no-quick-link"></a>&lt;index&gt;
 
 Describes an index to be created on a region. The index node, if any, should all come immediately after the "region-attributes" node. The "name" attribute is a required field which identifies the name of the index. See [Working with Indexes](../../developing/query_index/query_index.html) for more information on indexes.
 
@@ -2429,9 +2345,7 @@ Describes an index to be created on a region. The index node, if any, should all
 </region>
 ```
 
-<a id="cc-entry"></a>
-
-## &lt;entry&gt;
+## <a id="cc-entry" class="no-quick-link"></a>&lt;entry&gt;
 
 An "entry" element describes an entry to be added to a region. Note that if an entry with the given key already exists in the region, it will be replaced.
 
@@ -2453,15 +2367,11 @@ An "entry" element describes an entry to be added to a region. Note that if an e
 </region>
 ```
 
-<a id="cc-key"></a>
-
-## &lt;key&gt;
+## <a id="cc-key" class="no-quick-link"></a>&lt;key&gt;
 
 Required. Describes the key in a region entry. A key can contain either a &lt;string&gt; or a &lt;declarable&gt; sub-element.
 
-<a id="cc-string"></a>
-
-## &lt;string&gt;
+## <a id="cc-string" class="no-quick-link"></a>&lt;string&gt;
 
 Specifies a String to be placed in a Region entry.
 
@@ -2479,9 +2389,7 @@ Specifies a String to be placed in a Region entry.
 </region>
 ```
 
-<a id="cc-declarable"></a>
-
-## &lt;declarable&gt;
+## <a id="cc-declarable" class="no-quick-link"></a>&lt;declarable&gt;
 
 Specifies a Declarable object to be placed in a Region entry.
 
@@ -2502,15 +2410,11 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </parameter>
 ```
 
-<a id="cc-value"></a>
-
-## &lt;value&gt;
+## <a id="cc-value" class="no-quick-link"></a>&lt;value&gt;
 
 Required. Describes the value of a region entry. A `<value>` can contain either a `<string>` or a `<declarable>` sub-element.
 
-<a id="cc-v-string"></a>
-
-## &lt;string&gt;
+## <a id="cc-v-string" class="no-quick-link"></a>&lt;string&gt;
 
 Specifies a String to be placed in a Region entry.
 
@@ -2528,9 +2432,7 @@ Specifies a String to be placed in a Region entry.
 </region>
 ```
 
-<a id="cc-v-declarable"></a>
-
-## &lt;declarable&gt;
+## <a id="cc-v-declarable" class="no-quick-link"></a>&lt;declarable&gt;
 
 Specifies a Declarable object to be placed in a Region entry.
 
@@ -2551,9 +2453,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </parameter>
 ```
 
-<a id="cc-ra-region"></a>
-
-## &lt;region&gt;
+## <a id="cc-ra-region" class="no-quick-link"></a>&lt;region&gt;
 
 Defines a region in the cache. See [&lt;region-attributes&gt;](cache_xml.html#region-attributes) for more details on configuring regions. You can specify zero or more subregions within a region. See [Create and Access Data Subregions](../../basic_config/data_regions/managing_data_regions.html#data_regions__section_jn1_sry_5m) for restrictions on creating subregions. For example, you cannot create a partitioned subregion.
 
@@ -2594,9 +2494,7 @@ Defines a region in the cache. See [&lt;region-attributes&gt;](cache_xml.html#re
 
 See[&lt;region-attributes&gt;](cache_xml.html#region-attributes) for a complete listing of region attributes.
 
-<a id="cc-function-service"></a>
-
-## &lt;function-service&gt;
+## <a id="cc-function-service" class="no-quick-link"></a>&lt;function-service&gt;
 
 Configures the behavior of the function execution service.
 
@@ -2613,9 +2511,7 @@ Configures the behavior of the function execution service.
 </function-service>
 ```
 
-<a id="cc-function"></a>
-
-## &lt;function&gt;
+## <a id="cc-function" class="no-quick-link"></a>&lt;function&gt;
 
 Defines a function for registration in the function service
 
@@ -2635,9 +2531,7 @@ Specify the Java class for the function and its initialization parameters with t
 </function>
 ```
 
-<a id="cc-resource-manager"></a>
-
-## &lt;resource-manager&gt;
+## <a id="cc-resource-manager" class="no-quick-link"></a>&lt;resource-manager&gt;
 
 A memory monitor that tracks cache size as a percentage of total heap or off-heap memory and controls size by restricting access to the cache and prompting eviction of old entries from the cache. For tenured heap, used in conjunction with settings for JVM memory and Java garbage collection. For off-heap memory, used with the off-heap memory manager.
 
@@ -2707,9 +2601,7 @@ A memory monitor that tracks cache size as a percentage of total heap or off-hea
 </cache>
 ```
 
-<a id="cc-serialization-registration"></a>
-
-## &lt;serialization-registration&gt;
+## <a id="cc-serialization-registration" class="no-quick-link"></a>&lt;serialization-registration&gt;
 
 Set of serializer or instantiator tags to register customer DataSerializer extensions or DataSerializable implementations respectively.
 
@@ -2723,9 +2615,7 @@ Set of serializer or instantiator tags to register customer DataSerializer exten
 </serialization-registration> 
 ```
 
-<a id="cc-serializer"></a>
-
-## &lt;serializer&gt;
+## <a id="cc-serializer" class="no-quick-link"></a>&lt;serializer&gt;
 
 Allows you to configure the DataSerializer for this Geode member. It registers a custom class which extends DataSerializer to support custom serialization of non-modifiable object types inside Geode.
 
@@ -2733,9 +2623,7 @@ Specify the Java class for the `DataSerializer` and its initialization parameter
 
 **API:** You can also register a `DataSerializer` by using the `com.gemstone.gemfire.DataSerializer.register` API. Use the `com.gemstone.gemfire.Instantiator` API to register a `DataSerializable` implementation.
 
-<a id="cc-instantiator"></a>
-
-## &lt;instantiator&gt;
+## <a id="cc-instantiator" class="no-quick-link"></a>&lt;instantiator&gt;
 
 An Instantiator registers a custom class which implements the `DataSerializable` interface to support custom object serialization inside Geode.
 
@@ -2753,9 +2641,7 @@ You can also directly specify `<instantiator>` as a sub-element of `<cache>`. Us
 
 : <span class="tablecap">Table 22. Attributes</span>
 
-<a id="cc-initializer"></a>
-
-## &lt;initializer&gt;
+## <a id="cc-initializer" class="no-quick-link"></a>&lt;initializer&gt;
 
 Used to specify a callback class (and optionally its parameters) that will be run after the cache is initialized. This element can be specified for both server and client caches.
 

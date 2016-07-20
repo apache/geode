@@ -4,17 +4,14 @@ title:  How Functions Execute
 
 This section discusses the basic function execution process, how highly available functions execute after a failure, and the execution scenarios for data-dependent and data-independent functions.
 
-<a id="how-functions-execute__section_B3311A9E6A9243BB8403BFD3B488B840"></a>
-## How Functions Execute
+## <a id="how-functions-execute__section_B3311A9E6A9243BB8403BFD3B488B840" class="no-quick-link"></a>How Functions Execute
 
 1.  The calling client application runs the `execute` method on the `Execution` object. The object must already be registered on the servers.
 2.  The function is invoked on all servers where it needs to run. The locations are determined by the `FunctionService                         on*` method calls, region configuration, and any filters.
 3.  If the function has results, the result is returned to the `AddResult` method call in a `ResultCollector` object.
 4.  The client collects results using the result collector `getResult`.
 
-<a id="how-functions-execute__section_08C66E4B3D934ADC8587DF1E3766C9FD"></a>
-
-## How Highly Available Functions Execute after a Failure
+## <a id="how-functions-execute__section_08C66E4B3D934ADC8587DF1E3766C9FD" class="no-quick-link"></a>How Highly Available Functions Execute after a Failure
 
 If a failure occurs in function execution, the error is returned to the calling application. You can code for high availability for `onRegion` functions that return a result, so the function is automatically retried. For information on setting this up on the server side, see [Executing a Function in Apache Geode](../../developing/function_exec/function_execution.html). To use a highly available function, the client must call the results collector `getResult` method. When an execution error occurs or a member crashes while executing, the system does the following:
 
@@ -25,9 +22,7 @@ If a failure occurs in function execution, the error is returned to the calling 
 
 The system retries the execution up to the number specified in the server pool’s `retryAttempts` setting. If the function continues to fail, the final exception is returned to the `getResult` method.
 
-<a id="how-functions-execute__section_CD9A1A997259413EAB4E2A31E773EF3D"></a>
-
-## Data-Independent Function Execution
+## <a id="how-functions-execute__section_CD9A1A997259413EAB4E2A31E773EF3D" class="no-quick-link"></a>Data-Independent Function Execution
 
 The figure shows the sequence of events for a data-independent function executed against all available servers.
 
@@ -37,9 +32,7 @@ The figure shows the sequence of events for a data-independent function executed
 
 <img src="../common/images/data-indep-func-from-client.gif" alt="Data-Independent Function Invoked on All Servers" id="how-functions-execute__image_E0558B648AC0408AA8EBA1B20BBDA6E8" class="image" />
 
-<a id="how-functions-execute__section_2B8EF74570294EDA9468303E6ABF1589"></a>
-
-## Data-Dependent Function Execution
+## <a id="how-functions-execute__section_2B8EF74570294EDA9468303E6ABF1589" class="no-quick-link"></a>Data-Dependent Function Execution
 
 The figure shows a data-dependent function run by a client. The specified region is connected to the server system, so the function automatically goes there to run against all servers holding data for the region.
 

@@ -47,9 +47,7 @@ System.out.println("Rebalance would transfer " + results.getTotalBucketTransferB
 System.out.println(" and create " + results.getTotalBucketCreatesCompleted() + " buckets.\n");
 ```
 
-<a id="rebalancing_pr_data__section_1592413D533D454D9E5ACFCDC4685DD1"></a>
-
-## How Partitioned Region Rebalancing Works
+## <a id="rebalancing_pr_data__section_1592413D533D454D9E5ACFCDC4685DD1" class="no-quick-link"></a>How Partitioned Region Rebalancing Works
 
 The rebalancing operation runs asynchronously.
 
@@ -68,9 +66,7 @@ Partitioned region rebalancing:
 -   Resets entry time to live and idle time statistics during bucket migration.
 -   Replaces offline members.
 
-<a id="rebalancing_pr_data__section_BE71EE52DE1A4275BC7854CA597797F4"></a>
-
-## When to Rebalance a Partitioned Region
+## <a id="rebalancing_pr_data__section_BE71EE52DE1A4275BC7854CA597797F4" class="no-quick-link"></a>When to Rebalance a Partitioned Region
 
 You typically want to trigger rebalancing when capacity is increased or reduced through member startup, shut down or failure.
 
@@ -79,9 +75,7 @@ You may also need to rebalance when:
 -   You use redundancy for high availability and have configured your region to not automatically recover redundancy after a loss. In this case, Geode only restores redundancy when you invoke a rebalance. See [Configure High Availability for a Partitioned Region](configuring_ha_for_pr.html).
 -   You have uneven hashing of data. Uneven hashing can occur if your keys do not have a hash code method, which ensures uniform distribution, or if you use a `PartitionResolver` to colocate your partitioned region data (see [Colocate Data from Different Partitioned Regions](colocating_partitioned_region_data.html#colocating_partitioned_region_data)). In either case, some buckets may receive more data than others. Rebalancing can be used to even out the load between data stores by putting fewer buckets on members that are hosting large buckets.
 
-<a id="rebalancing_pr_data__section_495FEE48ED60433BADB7D36C73279C89"></a>
-
-## How to Simulate Region Rebalancing
+## <a id="rebalancing_pr_data__section_495FEE48ED60433BADB7D36C73279C89" class="no-quick-link"></a>How to Simulate Region Rebalancing
 
 You can simulate the rebalance operation before moving any actual data around by executing the `rebalance` command with the following option:
 

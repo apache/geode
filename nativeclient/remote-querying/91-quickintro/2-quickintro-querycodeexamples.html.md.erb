@@ -12,8 +12,7 @@ In all queries that use the example data, it is assumed that the `portfolios` re
 3.  Use the `execute` method for the `Query` interface to submit the query string to the cache server. The server remotely evaluates the query string and returns the results to the client.
 4.  You can iterate through the returned objects as part of the query process.
 
-<a id="security__section_15C6689C363B469B947B177E1DE73208"></a>
-## C\#/.NET Example
+## <a id="security__section_15C6689C363B469B947B177E1DE73208" class="no-quick-link"></a>C\#/.NET Example
 
 ``` pre
 Query<Portfolio> qry = qrySvc.NewQuery("SELECT DISTINCT * FROM /portfolios");
@@ -24,9 +23,7 @@ while (iter.MoveNext()) {
 }
 ```
 
-<a id="security__section_79FEE9FE8530496A8FD984C6D6D03894"></a>
-
-## C++ Example
+## <a id="security__section_79FEE9FE8530496A8FD984C6D6D03894" class="no-quick-link"></a>C++ Example
 
 **Note:**
 The C++ examples in this chapter all assume that you have already obtained a pointer to the `QueryService`.

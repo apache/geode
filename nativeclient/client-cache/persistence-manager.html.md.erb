@@ -21,8 +21,7 @@ Persistence manager declaration:
 The optional properties set parameters for the plug-in.
 
 
-<a id="persistence-manager__section_9FC7089FDF8044868F17A2659397402A"></a>
-## Using SQLite as a Persistence Manager
+## <a id="persistence-manager__section_9FC7089FDF8044868F17A2659397402A" class="no-quick-link"></a>Using SQLite as a Persistence Manager
 
 The Geode native client distribution includes a persistence manager that uses the open-source SQLite library.
 
@@ -35,9 +34,7 @@ Each SQLite persistence manager persists its region data in a SQLite database th
 
 <img src="../../images/SQLite_Persistence_Mgr.png" id="persistence-manager__image_BD1AF915E09548D68D9307E2F52737F9" class="image" />
 
-<a id="persistence-manager__section_3C6991A39C5F4FB8A945EF15FB089287"></a>
-
-## SQLite Persistence Manager Region Attributes
+## <a id="persistence-manager__section_3C6991A39C5F4FB8A945EF15FB089287" class="no-quick-link"></a>SQLite Persistence Manager Region Attributes
 
 The following table describes the region attributes that can be configured for the SQLite persistence manager.
 
@@ -47,9 +44,7 @@ The following table describes the region attributes that can be configured for t
 | PageSize             | Maximum page size of the SQLite database. SQLite can limit the size of a database file to prevent the database file from growing too large and consuming too much disk space.                                                                                                                              | Ordinarily, if no value is explicitly provided, SQLite creates a database with the page size set to SQLITE\_DEFAULT\_PAGE\_SIZE (default is 1024). However, based on certain device characteristics (for example, sector-size and atomic write() support) SQLite may choose a larger value. PageSize specifies the maximum value that SQLite will be able to choose on its own. See <a href="http://www.sqlite.org/compile.html#default_page_size">http://www.sqlite.org/compile.html#default_page_size</a>. for more details on SQLITE\_DEFAULT\_PAGE\_SIZE. |
 | MaxPageCount         | Maximum number of pages in one database file.                                                                                                                                                                                                                                                              | SQLite default, which is 1073741823.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
-<a id="persistence-manager__section_A9583FBEB5D74B92AD61CB6158AE2B4C"></a>
-
-## Configuring the SQLite Persistence Manager Plug-In for C++ Applications
+## <a id="persistence-manager__section_A9583FBEB5D74B92AD61CB6158AE2B4C" class="no-quick-link"></a>Configuring the SQLite Persistence Manager Plug-In for C++ Applications
 
 To load the SQLite persistence manager plug-in for C++ applications, you can configure it either in your client's `cache.xml` or programmatically using the native client C++ API.
 
@@ -80,9 +75,7 @@ regionFactory->setPersistenceManager("SqLiteImpl","createSqLiteInstance",
           sqliteProperties);
 ```
 
-<a id="persistence-manager__section_7410F68E0BB144A584A9AFE7E8CDBE22"></a>
-
-## Configuring the SQLite Persistence Manager Plug-In for .NET Applications
+## <a id="persistence-manager__section_7410F68E0BB144A584A9AFE7E8CDBE22" class="no-quick-link"></a>Configuring the SQLite Persistence Manager Plug-In for .NET Applications
 
 To load the SQLite persistence manager plug-in for .NET applications, you can configure it either in your client's cache.xml or programmatically using the .NET API:
 
@@ -117,9 +110,7 @@ You can also use and configure the C++ SQLite persistence manager library from y
 rf.SetPersistenceManager("SqliteImpl", "createSqLiteInstance", sqliteProperties);
 ```
 
-<a id="persistence-manager__section_9D038C438E01415EA4D32000D5CB5596"></a>
-
-## Implementing a PersistenceManager with the IPersistenceManager Interface
+## <a id="persistence-manager__section_9D038C438E01415EA4D32000D5CB5596" class="no-quick-link"></a>Implementing a PersistenceManager with the IPersistenceManager Interface
 
 When developing .NET managed applications, you can use the IPersistenceManager managed interface to implement your own persistence manager. The following code sample provides the IPersistenceManager interface:
 

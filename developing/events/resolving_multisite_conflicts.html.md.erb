@@ -8,8 +8,7 @@ By default, all regions perform consistency checks when a member applies an upda
 
 You can override the default consistency checking behavior by writing and configuring a custom `GatewayConflictResolver`. The `GatewayConflictResolver` implementation can use the timestamp and distributed system ID included in a WAN update event to determine whether or not to apply the update. For example, you may decide that updates from a particular cluster should always "win" a conflict when the timestamp difference between updates is less than some fixed period of time.
 
-<a id="topic_E97BB68748F14987916CD1A50E4B4542__section_E20B4A8A98FD4EDAAA8C14B8059AA7F7"></a>
-## Implementing a GatewayConflictResolver
+## <a id="topic_E97BB68748F14987916CD1A50E4B4542__section_E20B4A8A98FD4EDAAA8C14B8059AA7F7" class="no-quick-link"></a>Implementing a GatewayConflictResolver
 
 **Note:**
 A `GatewayConflictResolver` implementation is called only for update events that could cause a conflict in the region. This corresponds to update events that have a different distributed system ID than the distributed system that last updated the region entry. If the same distributed system ID makes consecutive updates to a region entry, no conflict is possible, and the `GatewayConflictResolver` is not called.

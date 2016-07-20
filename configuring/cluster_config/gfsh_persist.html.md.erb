@@ -61,8 +61,7 @@ The following gateway-related commands use the cluster configuration service, an
 -   `create gateway-sender`
 -   `create gateway-receiver`
 
-<a id="concept_r22_hyw_bl__section_bn3_23p_y4"></a>
-## gfsh Limitations
+## <a id="concept_r22_hyw_bl__section_bn3_23p_y4" class="no-quick-link"></a>gfsh Limitations
 
 There are some configurations that you cannot create using `gfsh`, and that you must configure using cache.xml or the API:
 
@@ -104,8 +103,6 @@ In addition, there are some limitations on configuring gateways using `gfsh`.You
     -   `gateway-transport-filter`
     -   `gateway-event-substitution-filter`
 
-<a id="concept_r22_hyw_bl__section_fh1_c3p_y4"></a>
-
-## Disabling the Cluster Configuration Service
+## <a id="concept_r22_hyw_bl__section_fh1_c3p_y4" class="no-quick-link"></a>Disabling the Cluster Configuration Service
 
 If you do not want to use the cluster configuration service, start up your locator with the `--enable-cluster-configuration` parameter set to false or do not use standalone locators. You will then need to configure the cache (via cache.xml or API) separately on all your distributed system members.

@@ -6,14 +6,11 @@ title: Consistency Checking by Region Type
 
 Geode performs different consistency checks depending on the type of region you have configured.
 
-<a id="topic_7A4B6C6169BD4B1ABD356294F744D236__section_B090F5FB87D84104A7BE4BCEA6BAE6B7"></a>
-## Partitioned Region Consistency
+## <a id="topic_7A4B6C6169BD4B1ABD356294F744D236__section_B090F5FB87D84104A7BE4BCEA6BAE6B7" class="no-quick-link"></a>Partitioned Region Consistency
 
 For a partitioned region, Geode maintains consistency by routing all updates on a given key to the Geode member that holds the primary copy of that key. That member holds a lock on the key while distributing updates to other members that host a copy of the key. Because all updates to a partitioned region are serialized on the primary Geode member, all members apply the updates in the same order and consistency is maintained at all times. See [Understanding Partitioning](../partitioned_regions/how_partitioning_works.html).
 
-<a id="topic_7A4B6C6169BD4B1ABD356294F744D236__section_72DFB366C8F14ADBAF2A136669ECAB1E"></a>
-
-## Replicated Region Consistency
+## <a id="topic_7A4B6C6169BD4B1ABD356294F744D236__section_72DFB366C8F14ADBAF2A136669ECAB1E" class="no-quick-link"></a>Replicated Region Consistency
 
 For a replicated region, any member that hosts the region can update a key and distribute that update to other members without locking the key. It is possible that two members can update the same key at the same time (a concurrent update). It is also possible that, due to network latency, an update in one member is distributed to other members at a later time, after those members have already applied more recent updates to the key (an out-of-order update). By default, Geode members perform conflict checking before applying region updates in order to detect and consistently resolve concurrent and out-of-order updates. Conflict checking ensures that region data eventually becomes consistent on all members that host the region. The conflict checking behavior for replicated regions is summarized as follows:
 
@@ -22,17 +19,13 @@ For a replicated region, any member that hosts the region can update a key and d
 
 [How Consistency Checking Works for Replicated Regions](#topic_C5B74CCDD909403C815639339AA03758) and [How Destroy and Clear Operations Are Resolved](#topic_321B05044B6641FCAEFABBF5066BD399) provide more details about how Geode performs conflict checking when applying an update.
 
-<a id="topic_7A4B6C6169BD4B1ABD356294F744D236__section_313045F430EE459CB411CAAE7B00F3D8"></a>
-
-## Non-Replicated Regions and Client Cache Consistency
+## <a id="topic_7A4B6C6169BD4B1ABD356294F744D236__section_313045F430EE459CB411CAAE7B00F3D8" class="no-quick-link"></a>Non-Replicated Regions and Client Cache Consistency
 
 When a member receives an update for an entry in a non-replicated region and applies an update, it performs conflict checking in the same way as for a replicated region. However, if the member initiates an operation on an entry that is not present in the region, it first passes that operation to a member that hosts a replicate. The member that hosts the replica generates and provides the version information necessary for subsequent conflict checking. See [How Consistency Checking Works for Replicated Regions](#topic_C5B74CCDD909403C815639339AA03758).
 
 Client caches also perform consistency checking in the same way when they receive an update for a region entry. However, all region operations that originate in the client cache are first passed onto an available Geode server, which generates the version information necessary for subsequent conflict checking.
 
-<a id="topic_B64891585E7F4358A633C792F10FA23E"></a>
-
-## Configuring Consistency Checking
+## <a id="topic_B64891585E7F4358A633C792F10FA23E" class="no-quick-link"></a>Configuring Consistency Checking
 
 Geode enables consistency checking by default. You cannot disable consistency checking for persistent regions. For all other regions, you can explicitly enable or disable consistency checking by setting the `concurrency-checks-enabled` region attribute in `cache.xml` to "true" or "false."
 
@@ -45,9 +38,7 @@ See [&lt;region-attributes&gt;](../../reference/topics/cache_xml.html#region-att
 **Note:**
 Regions that do not enable consistency checking remain subject to race conditions. Concurrent updates may result in one or more members having different values for the same key. Network latency can result in older updates being applied to a key after more recent updates have occurred.
 
-<a id="topic_0BDACA590B2C4974AC9C450397FE70B2"></a>
-
-## Overhead for Consistency Checks
+## <a id="topic_0BDACA590B2C4974AC9C450397FE70B2" class="no-quick-link"></a>Overhead for Consistency Checks
 
 Consistency checking requires additional overhead for storing and distributing version and timestamp information, as well as for maintaining destroyed entries for a period of time to meet consistency requirements.
 
@@ -55,9 +46,7 @@ To provide consistency checking, each region entry uses an additional 16 bytes. 
 
 If you cannot support the additional overhead in your deployment, you can disable consistency checks by setting `concurrency-checks-enabled` to "false" for each region. See [Consistency for Region Updates](region_entry_versions.html#topic_CF2798D3E12647F182C2CEC4A46E2045).
 
-<a id="topic_C5B74CCDD909403C815639339AA03758"></a>
-
-## How Consistency Checking Works for Replicated Regions
+## <a id="topic_C5B74CCDD909403C815639339AA03758" class="no-quick-link"></a>How Consistency Checking Works for Replicated Regions
 
 Each region stores version and timestamp information for use in conflict detection. Geode members use the recorded information to detect and resolve conflicts consistently before applying a distributed update.
 
@@ -93,9 +82,7 @@ At this point, all members that host the region have achieved a consistent state
 
 <img src="../../images_svg/region_entry_versions_3.svg" id="topic_C5B74CCDD909403C815639339AA03758__image_gsv_k5b_pr" class="image" />
 
-<a id="topic_321B05044B6641FCAEFABBF5066BD399"></a>
-
-## How Destroy and Clear Operations Are Resolved
+## <a id="topic_321B05044B6641FCAEFABBF5066BD399" class="no-quick-link"></a>How Destroy and Clear Operations Are Resolved
 
 When consistency checking is enabled for a region, a Geode member does not immediately remove an entry from the region when an application destroys the entry. Instead, the member retains the entry with its current version stamp for a period of time in order to detect possible conflicts with operations that have occurred. The retained entry is referred to as a *tombstone*. Geode retains tombstones for partitioned regions and non-replicated regions as well as for replicated regions, in order to provide consistency.
 
@@ -108,14 +95,11 @@ To avoid out-of-memory errors, a Geode member also initiates garbage collection 
 
 You can monitor the total number of tombstones in a cache using the `tombstoneCount` statistic in `CachePerfStats`. The `tombstoneGCCount` statistic records the total number of tombstone garbage collection cycles that a member has performed. `replicatedTombstonesSize` and `nonReplicatedTombstonesSize` show the approximate number of bytes that are currently consumed by tombstones in replicated or partitioned regions, and in non-replicated regions, respectively. See [Geode Statistics List](../../reference/statistics/statistics_list.html#statistics_list).
 
-<a id="topic_321B05044B6641FCAEFABBF5066BD399__section_4D0140E96A3141EB8D983D0A43464097"></a>
-## About Region.clear() Operations
+## <a id="topic_321B05044B6641FCAEFABBF5066BD399__section_4D0140E96A3141EB8D983D0A43464097" class="no-quick-link"></a>About Region.clear() Operations
 
 Region entry version stamps and tombstones ensure consistency only when individual entries are destroyed. A `Region.clear()` operation, however, operates on all entries in a region at once. To provide consistency for `Region.clear()` operations, Geode obtains a distributed read/write lock for the region, which blocks all concurrent updates to the region. Any updates that were initiated before the clear operation are allowed to complete before the region is cleared.
 
-<a id="topic_32ACFA5542C74F3583ECD30467F352B0"></a>
-
-## Transactions with Consistent Regions
+## <a id="topic_32ACFA5542C74F3583ECD30467F352B0" class="no-quick-link"></a>Transactions with Consistent Regions
 
 A transaction that modifies a region having consistency checking enabled generates all necessary version information for region updates when the transaction commits.
 

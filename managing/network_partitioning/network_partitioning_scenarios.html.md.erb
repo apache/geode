@@ -6,8 +6,7 @@ This topic describes network partitioning scenarios and what happens to the part
 
 <img src="../../images_svg/network_partition_scenario.svg" id="concept_357ABE91AAA042D2A20328BD01FEB882__image_6ED88C6911EE4C68A19353ABD7B1552A" class="image" />
 
-<a id="concept_357ABE91AAA042D2A20328BD01FEB882__section_DAFBCB8BB421453EB6C5B4A348640762"></a>
-## What the Losing Side Does
+## <a id="concept_357ABE91AAA042D2A20328BD01FEB882__section_DAFBCB8BB421453EB6C5B4A348640762" class="no-quick-link"></a>What the Losing Side Does
 
 In a network partitioning scenario, the "losing side" constitutes the cluster partition where the membership coordinator has detected that there is an insufficient quorum of members to continue.
 
@@ -32,8 +31,6 @@ Operation.isExpiration(): false
 
 Peers still actively performing operations on the cache may see `ShutdownException`s or `CacheClosedException`s with `Caused by: ForcedDisconnectException`.
 
-<a id="concept_357ABE91AAA042D2A20328BD01FEB882__section_E6E914107FE64C0F9D8F7DA142D00AD7"></a>
-
-## What Isolated Members Do
+## <a id="concept_357ABE91AAA042D2A20328BD01FEB882__section_E6E914107FE64C0F9D8F7DA142D00AD7" class="no-quick-link"></a>What Isolated Members Do
 
 When a member is isolated from all locators, it is unable to receive membership view changes. It can't know if the current coordinator is present or, if it has left, whether there are other members available to take over that role. In this condition, a member will eventually detect the loss of all other members and will use the loss threshold to determine whether it should shut itself down. In the case of a distributed system with 2 locators and 2 cache servers, the loss of communication with the non-lead cache server plus both locators would result in this situation and the remaining cache server would eventually shut itself down.

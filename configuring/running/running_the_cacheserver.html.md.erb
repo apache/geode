@@ -10,9 +10,7 @@ The Geode server is used primarily for hosting long-lived data regions and for r
 -   The `gfsh` tool allows you to manage Geode server processes from the command line.
 -   You can also start, stop and manage the Geode servers through the `com.gemstone.gemfire.distributed.ServerLauncher` API. The `ServerLauncher` API can only be used for Geode Servers that were started with `gfsh` or with the `ServerLauncher` class itself. See the JavaDocs for additional specifics on using the `ServerLauncher` API.
 
-<a id="running_the_cacheserver__section_E15FB1B039CE4F6CB2E4B5618D7ECAA1"></a>
-
-## Default Server Configuration and Log Files
+## <a id="running_the_cacheserver__section_E15FB1B039CE4F6CB2E4B5618D7ECAA1" class="no-quick-link"></a>Default Server Configuration and Log Files
 
 The `gfsh` utility uses a working directory for its configuration files and log files. These are the defaults and configuration options:
 
@@ -35,9 +33,7 @@ The `gfsh` utility uses a working directory for its configuration files and log 
 
 -   Pivotal recommends that you do not use the `-XX:+UseCompressedStrings` and `-XX:+UseStringCache` JVM configuration properties when starting up servers. These JVM options can cause issues with data corruption and compatibility.
 
-<a id="running_the_cacheserver__section_07001480D33745139C3707EDF8166D86"></a>
-
-## Start the Server
+## <a id="running_the_cacheserver__section_07001480D33745139C3707EDF8166D86" class="no-quick-link"></a>Start the Server
 
 The startup syntax for Geode servers in `gfsh` is:
 
@@ -125,9 +121,7 @@ import com.gemstone.gemfire.distributed.ServerLauncher;
     }
 ```
 
-<a id="running_the_cacheserver__section_F58F229D5C7048E9915E0EC470F9A923"></a>
-
-## Check Server Status
+## <a id="running_the_cacheserver__section_F58F229D5C7048E9915E0EC470F9A923" class="no-quick-link"></a>Check Server Status
 
 If you are connected to the distributed system in `gfsh`, you can check the status of a running cache server by providing the server name. For example:
 
@@ -163,9 +157,7 @@ JVM Arguments:
 ...
 ```
 
-<a id="running_the_cacheserver__section_0E4DDED6AB784B0CAFBAD538B227F487"></a>
-
-## Stop Server
+## <a id="running_the_cacheserver__section_0E4DDED6AB784B0CAFBAD538B227F487" class="no-quick-link"></a>Stop Server
 
 If you are connected to the distributed system in `gfsh`, you can stop a running cache server by providing the server name. For example:
 

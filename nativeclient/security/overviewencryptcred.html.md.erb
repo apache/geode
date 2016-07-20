@@ -4,8 +4,7 @@ title:  Encrypt Credentials with Diffe-Hellman
 
 For secure transmission of sensitive credentials like passwords, encrypt credentials using the Diffie-Hellman key exchange algorithm. With Diffie-Hellman enabled, you can have your client authenticate its servers.
 
-<a id="security__section_1BB8F13C7ACB44668FF337F59A3BA5AE"></a>
-## Enabling Diffe-Hellman
+## <a id="security__section_1BB8F13C7ACB44668FF337F59A3BA5AE" class="no-quick-link"></a>Enabling Diffe-Hellman
 
 Set the `security-client-dhalgo` system property in the `gfcpp.properties` file to the password for the public key file store on the client (the name of a valid symmetric key cipher supported by the JDK).
 
@@ -21,9 +20,7 @@ For `AES` algorithms, you may need Java Cryptography Extension (JCE) Unlimited S
 
 Adding settings for Diffie-Hellman on clients also enables challenge response from server to client in addition to encryption of credentials using the exchanged key to avoid replay attacks from clients to servers. Clients can also enable authentication of servers, with challenge-response from client to server to avoid server-side replay attacks.
 
-<a id="security__section_F881653044EC4AB5BE88F673890F2A40"></a>
-
-## Client Authentication of Server
+## <a id="security__section_F881653044EC4AB5BE88F673890F2A40" class="no-quick-link"></a>Client Authentication of Server
 
 With Diffie-Hellman enabled, you can have your client authenticate its servers.
 

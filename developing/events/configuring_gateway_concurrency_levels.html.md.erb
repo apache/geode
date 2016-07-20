@@ -11,8 +11,7 @@ By default, a gateway sender queue or asynchronous event queue uses 5 dispatcher
 -   [Configuring the Ordering Policy for Serial Queues](configuring_gateway_concurrency_levels.html#concept_6C52A037E39E4FD6AE4C6A982A4A1A85__section_4835BA30CDFD4B658BD2576F6BC2E23F)
 -   [Examples—Configuring Dispatcher Threads and Ordering Policy for a Serial Gateway Sender Queue](configuring_gateway_concurrency_levels.html#concept_6C52A037E39E4FD6AE4C6A982A4A1A85__section_752F08F9064B4F67A80DA0A994671EA0)
 
-<a id="concept_6C52A037E39E4FD6AE4C6A982A4A1A85__section_20E8EFCE89EB4DC7AA822D03C8E0F470"></a>
-## Using Multiple Dispatcher Threads to Process a Queue
+## <a id="concept_6C52A037E39E4FD6AE4C6A982A4A1A85__section_20E8EFCE89EB4DC7AA822D03C8E0F470" class="no-quick-link"></a>Using Multiple Dispatcher Threads to Process a Queue
 
 When multiple dispatcher threads are configured for a parallel queue, Geode simply uses multiple threads to process the contents of each individual queue. The total number of queues that are created is still determined by the number of Geode members that host the region.
 
@@ -21,18 +20,14 @@ When multiple dispatcher threads are configured for a serial queue, Geode create
 The following diagram illustrates a serial gateway sender queue that is configured with multiple dispatcher threads.
 <img src="../../images/MultisiteConcurrency_WAN_Gateway.png" id="concept_6C52A037E39E4FD6AE4C6A982A4A1A85__image_093DAC58EBEE456485562C92CA79899F" class="image" width="624" />
 
-<a id="concept_6C52A037E39E4FD6AE4C6A982A4A1A85__section_C4C83B5C0FDD4913BA128365EE7E4E35"></a>
-
-## Performance and Memory Considerations
+## <a id="concept_6C52A037E39E4FD6AE4C6A982A4A1A85__section_C4C83B5C0FDD4913BA128365EE7E4E35" class="no-quick-link"></a>Performance and Memory Considerations
 
 When a serial gateway sender or an asynchronous event queue uses multiple dispatcher threads, consider the following:
 
 -   Queue attributes are repeated for each copy of the queue that is created for a dispatcher thread. That is, each concurrent queue points to the same disk store, so the same disk directories are used. If persistence is enabled and overflow occurs, the threads that insert entries into the queues compete for the disk. This applies to application threads and dispatcher threads, so it can affect application performance.
 -   The `maximum-queue-memory` setting applies to each copy of the serial queue. If you configure 10 dispatcher threads and the maximum queue memory is set to 100MB, then the total maximum queue memory for the queue is 1000MB on each member that hosts the queue.
 
-<a id="concept_6C52A037E39E4FD6AE4C6A982A4A1A85__section_4835BA30CDFD4B658BD2576F6BC2E23F"></a>
-
-## Configuring the Ordering Policy for Serial Queues
+## <a id="concept_6C52A037E39E4FD6AE4C6A982A4A1A85__section_4835BA30CDFD4B658BD2576F6BC2E23F" class="no-quick-link"></a>Configuring the Ordering Policy for Serial Queues
 
 When using multiple `dispatcher-threads` (greater than 1) with a serial event queue, you can also configure the `order-policy` that those threads use to distribute events from the queue. The valid order policy values are:
 
@@ -42,9 +37,7 @@ When using multiple `dispatcher-threads` (greater than 1) with a serial event qu
 
 You cannot configure the `order-policy` for a parallel event queue, because parallel queues cannot preserve event ordering for regions. Only the ordering of events for a given partition (or in a given queue of a distributed region) can be preserved.
 
-<a id="concept_6C52A037E39E4FD6AE4C6A982A4A1A85__section_752F08F9064B4F67A80DA0A994671EA0"></a>
-
-## Examples—Configuring Dispatcher Threads and Ordering Policy for a Serial Gateway Sender Queue
+## <a id="concept_6C52A037E39E4FD6AE4C6A982A4A1A85__section_752F08F9064B4F67A80DA0A994671EA0" class="no-quick-link"></a>Examples—Configuring Dispatcher Threads and Ordering Policy for a Serial Gateway Sender Queue
 
 To increase the number of dispatcher threads and set the ordering policy for a serial gateway sender, use one of the following mechanisms.
 

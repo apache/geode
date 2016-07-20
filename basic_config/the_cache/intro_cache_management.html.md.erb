@@ -11,9 +11,7 @@ You generally configure caches using the `gfsh` command-line utility or a combin
 
 Geode has one cache type for managing server and peer caches and one for managing client caches. The cache server process automatically creates its server cache at startup. In your application process, the cache creation returns an instance of the server/peer or client cache. From that point on, you manage the cache through API calls in your application.
 
-<a id="concept_F8BA7F2D3B5A40D78461E78BC5FB31FA__section_20973C59F1C94E35A02CE6582503205A"></a>
-
-## The Caching APIs
+## <a id="concept_F8BA7F2D3B5A40D78461E78BC5FB31FA__section_20973C59F1C94E35A02CE6582503205A" class="no-quick-link"></a>The Caching APIs
 
 Geode's caching APIs provide specialized behavior for different system member types and security settings.
 
@@ -22,9 +20,7 @@ Geode's caching APIs provide specialized behavior for different system member ty
 -   **`com.gemstone.gemfire.cache.Cache`**. Use the `Cache` interface to manage server and peer caches. You have one `Cache` per server or peer process. The `Cache` extends `GemFireCache` and adds server/peer caching features like communication within the distributed system, region creation, transactions and querying, and cache server functionality.
 -   **`com.gemstone.gemfire.cache.ClientCache`**. Use the `ClientCache` interface to manage the cache in your clients. You have one `ClientCache` per client process. The `ClientCache` extends `GemFireCache` and adds client-specific caching features like client region creation, subscription keep-alive management for durable clients, querying on server and client tiers, and RegionService creation for secure access by multiple users within the client.
 
-<a id="concept_F8BA7F2D3B5A40D78461E78BC5FB31FA__section_6486BDAF06EC4B91A548872066F3EC8C"></a>
-
-## The Cache XML
+## <a id="concept_F8BA7F2D3B5A40D78461E78BC5FB31FA__section_6486BDAF06EC4B91A548872066F3EC8C" class="no-quick-link"></a>The Cache XML
 
 Your `cache.xml` must be formatted according to the product XML schema definition `cache-1.0.xsd`. The schema definition file is available in the product distribution at `$GEMFIRE/schemas/geode.apache.org/schema/cache/cache-1.0.xsd`.
 
@@ -57,9 +53,7 @@ You use one format for peer and server caches and another for client caches.
 
 For more information on the `cache.xml` file, see [cache.xml](../../reference/topics/chapter_overview_cache_xml.html#cache_xml).
 
-<a id="concept_F8BA7F2D3B5A40D78461E78BC5FB31FA__section_B113BC6921DA434C947D4326DDB4526E"></a>
-
-## Create and Close a Cache
+## <a id="concept_F8BA7F2D3B5A40D78461E78BC5FB31FA__section_B113BC6921DA434C947D4326DDB4526E" class="no-quick-link"></a>Create and Close a Cache
 
 Your system configuration and cache configuration are initialized when you start your member processes and create each member’s Geode cache. If you are using the cluster configuration service, member processes can pick up its cache configuration from the cluster or group's current configuration. See [Overview of the Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html).
 
@@ -74,9 +68,7 @@ For all of your Geode applications:
 
 Follow the instructions in the subtopics under [Cache Management](chapter_overview.html#the_cache) to customize your cache creation and closure for your application needs. You may need to combine more than one of the sets of instructions. For example, to create a client cache in a system with security, you would follow the instructions for creating and closing a client cache and for creating and closing a cache in a secure system.
 
-<a id="concept_F8BA7F2D3B5A40D78461E78BC5FB31FA__section_E8781B263D434F6A9104194AE7BE1647"></a>
-
-## Export and Import a Cache Snapshot
+## <a id="concept_F8BA7F2D3B5A40D78461E78BC5FB31FA__section_E8781B263D434F6A9104194AE7BE1647" class="no-quick-link"></a>Export and Import a Cache Snapshot
 
 To aid in the administration of cache data and speed the setup of new environments, you can export a snapshot of the entire cache (all regions) and then import the snapshot into a new cache. For example, you could take a snapshot of the production environment cache in order to import the cache's data into a testing environment.
 

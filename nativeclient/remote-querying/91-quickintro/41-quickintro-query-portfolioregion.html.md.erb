@@ -6,8 +6,7 @@ Examples show a sampling of specific queries that you can run against `portfolio
 
 The query results for the data are listed in the table. For the first several, the coding examples are included as well to show how you can execute the queries using the API.
 
-<a id="running-native-client-xact__section_2EA54E860ACB48259484B555CA065E98"></a>
-## Get distinct positions from portfolios with at least a $25.00 market value
+## <a id="running-native-client-xact__section_2EA54E860ACB48259484B555CA065E98" class="no-quick-link"></a>Get distinct positions from portfolios with at least a $25.00 market value
 
 This query assigns iterator variable names to the collections in the FROM clause. For example, the variable `qryP` is the iterator for the entry values in the `portfolios` region. This variable is used in the second part of the FROM clause to access the values of the positions map for each entry value.
 
@@ -22,9 +21,7 @@ Collection of Position instances with secId: xxx, xxy, bbb, bbc
 
 ```
 
-<a id="running-native-client-xact__section_F9C4640459F0406A922818B717D3EDB9"></a>
-
-## Retrieve all active portfolios
+## <a id="running-native-client-xact__section_F9C4640459F0406A922818B717D3EDB9" class="no-quick-link"></a>Retrieve all active portfolios
 
 In the following example, a query response timeout parameter of 10 seconds is specified for the execute method to allow sufficient time for the operation to succeed.
 
@@ -46,9 +43,7 @@ while (iter.hasNext()) {
 }
 ```
 
-<a id="running-native-client-xact__section_71ED0337A0964501A6AE552B758058FC"></a>
-
-## Retrieve all active portfolios that have type xyz
+## <a id="running-native-client-xact__section_71ED0337A0964501A6AE552B758058FC" class="no-quick-link"></a>Retrieve all active portfolios that have type xyz
 
 The `type` attribute is passed to the query engine in double quotes to distinguish it from the query keyword of the same name. A query response timeout parameter of 10 seconds is specified for the execute method to allow sufficient time for the operation to succeed.
 
@@ -71,9 +66,7 @@ while (iter.hasNext()) {
 }
 ```
 
-<a id="running-native-client-xact__section_4F13C92EDBCA4F04BE37C87D44AD7D49"></a>
-
-## Get the ID and status of all portfolios with positions in secId 'yyy'
+## <a id="running-native-client-xact__section_4F13C92EDBCA4F04BE37C87D44AD7D49" class="no-quick-link"></a>Get the ID and status of all portfolios with positions in secId 'yyy'
 
 ``` pre
 Query string: 

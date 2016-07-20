@@ -4,8 +4,7 @@ title:  Understanding Custom Partitioning and Data Colocation
 
 Custom partitioning and data colocation can be used separately or in conjunction with one another.
 
-<a id="custom_partitioning_and_data_colocation__section_ABFEE9CB17AF44F1AE252AC10FB5E999"></a>
-## Custom Partitioning
+## <a id="custom_partitioning_and_data_colocation__section_ABFEE9CB17AF44F1AE252AC10FB5E999" class="no-quick-link"></a>Custom Partitioning
 
 Use custom partitioning to group like entries into region buckets within a region. By default, Geode assigns new entries to buckets based on the entry key contents. With custom partitioning, you can assign your entries to buckets in whatever way you want.
 
@@ -27,9 +26,7 @@ With custom partitioning, you have two choices:
     -   Geode cannot rebalance fixed partition region data because it cannot move the buckets around among the host members. You must carefully consider your expected data loads for the partitions you create.
     -   With fixed partitioning, the region configuration is different between host members. Each member identifies the named partitions it hosts, and whether it is hosting the primary copy or a secondary copy. You then program fixed partition resolver to return the partition id, so the entry is placed on the right members. Only one member can be primary for a particular partition name and that member cannot be the partition's secondary.
 
-<a id="custom_partitioning_and_data_colocation__section_D2C66951FE38426F9C05050D2B9028D8"></a>
-
-## Data Colocation Between Regions
+## <a id="custom_partitioning_and_data_colocation__section_D2C66951FE38426F9C05050D2B9028D8" class="no-quick-link"></a>Data Colocation Between Regions
 
 With data colocation, Geode stores entries that are related across multiple data regions in a single member. Geode does this by storing all of the regions' buckets with the same ID together in the same member. During rebalancing operations, Geode moves these bucket groups together or not at all.
 

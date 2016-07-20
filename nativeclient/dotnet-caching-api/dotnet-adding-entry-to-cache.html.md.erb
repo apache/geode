@@ -24,7 +24,6 @@ region3.Put(111, "Value1", null);
 region3.Put(222, "Value2", null);
 ```
 
-<a id="concept_51D1C2475B394B10868CE6ED8DC5E542__section_8DAEA246DA464BD1B9654827A84A93BF"></a>
-## Batch Operations—Using PutAll to Add Multiple Entries
+## <a id="concept_51D1C2475B394B10868CE6ED8DC5E542__section_8DAEA246DA464BD1B9654827A84A93BF" class="no-quick-link"></a>Batch Operations—Using PutAll to Add Multiple Entries
 
 You can batch up multiple key/value pairs into a hashmap and put them into the cache with a single operation using the .NET `Region.PutAll` API function. Each entry is processed for interest registration on the server, so each entry requires its own unique event ID. Updates and creates can be mixed in a `PutAll` operation, so those events need to be addressed on the cache server for appropriate cache listener invocation on distributed system members. Map entries retain their original order when they are processed at the server.

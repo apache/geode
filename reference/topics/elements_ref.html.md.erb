@@ -8,8 +8,7 @@ This section documents cache.xml file requirements and variables. It also points
 -   [Variables in cache.xml](#topic_7B1CABCAD056499AA57AF3CFDBF8ABE3__section_5DBA12F9FC08406AAD5557E13A3DEDF2)
 -   [Configuration Quick Reference](elements_ref.html#topic_7B1CABCAD056499AA57AF3CFDBF8ABE3__section_2076DDF1F0464CF8894B42ABC32AE4CB)
 
-<a id="topic_7B1CABCAD056499AA57AF3CFDBF8ABE3__section_A6B050113DCC4D12A6A9C0F250527AF8"></a>
-## Cache XML Requirements
+## <a id="topic_7B1CABCAD056499AA57AF3CFDBF8ABE3__section_A6B050113DCC4D12A6A9C0F250527AF8" class="no-quick-link"></a>Cache XML Requirements
 
 The cache.xml file has these requirements:
 
@@ -43,9 +42,7 @@ The cache.xml file has these requirements:
 
 -   Any class name specified in the file **must have a public zero-argument constructor** and must implement the `com.gemstone.gemfire.cache.Declarable` interface. Parameters declared in the XML for the class are passed to the class init method.
 
-<a id="topic_7B1CABCAD056499AA57AF3CFDBF8ABE3__section_5DBA12F9FC08406AAD5557E13A3DEDF2"></a>
-
-## Variables in cache.xml
+## <a id="topic_7B1CABCAD056499AA57AF3CFDBF8ABE3__section_5DBA12F9FC08406AAD5557E13A3DEDF2" class="no-quick-link"></a>Variables in cache.xml
 
 You can use variables in the `cache.xml` to customize your settings without modifying the XML file.
 
@@ -71,9 +68,7 @@ Example cache.xml with variables and the gfsh `start server` command that sets t
 gfsh>start server --name=server2 --cache-xml-file=cache.xml --J=-DPORT=30333 --J=-DMAXCNXS=77
 ```
 
-<a id="topic_7B1CABCAD056499AA57AF3CFDBF8ABE3__section_2076DDF1F0464CF8894B42ABC32AE4CB"></a>
-
-## Configuration Quick Reference
+## <a id="topic_7B1CABCAD056499AA57AF3CFDBF8ABE3__section_2076DDF1F0464CF8894B42ABC32AE4CB" class="no-quick-link"></a>Configuration Quick Reference
 
 To configure cache servers, clients, and WAN topologies, see the following sections:
 

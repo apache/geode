@@ -7,8 +7,7 @@ To set up the HTTP Module for tc Server, start a tc Server instance with the app
 **Note:**
 In the procedures that follow, you may be required to log in as root or use sudo to run the commands in Unix, especially if you installed Pivotal tc Server from RPM using yum.
 
-<a id="tc_setting_up_the_module__section_564B0D4008E343D7AF2791A1271B1F8E"></a>
-## Setup and Start
+## <a id="tc_setting_up_the_module__section_564B0D4008E343D7AF2791A1271B1F8E" class="no-quick-link"></a>Setup and Start
 
 Edit the configuration in the appropriate file for the topology to set the locator host and port. For peer-to-peer topology, edit `geode-p2p/conf/catalina.properties` to set the `geode-p2p.locators` property. For client/server topology, edit `geode-cs/conf/cache-client.xml`.
 
@@ -70,9 +69,7 @@ $ gfsh start server --name=server1 --locators=localhost[10334] \
         --server-port=0 --classpath=$CLASSPATH
 ```
 
-<a id="tc_setting_up_the_module__section_B6AA6C00DBBD44E68649BDB793578694"></a>
-
-## Starting the Application Server
+## <a id="tc_setting_up_the_module__section_B6AA6C00DBBD44E68649BDB793578694" class="no-quick-link"></a>Starting the Application Server
 
 Once you've created a tc Server instance, you are ready to start the instance.
 
@@ -106,9 +103,7 @@ Running on: /192.0.2.0, 8 cpu(s), x86_64 Mac OS X 10.11.4
 
 Information is also logged within the Geode log file, which by default is named `gemfire_modules.log`.
 
-<a id="tc_setting_up_the_module__section_B2396FB0879248DBA85ADFDBBEFA987E"></a>
-
-## Configuring Non-Sticky Session Replication
+## <a id="tc_setting_up_the_module__section_B2396FB0879248DBA85ADFDBBEFA987E" class="no-quick-link"></a>Configuring Non-Sticky Session Replication
 
 Some situations require that sessions be 'non-sticky', which means that client requests can be directed to any server in a cluster of application servers instead of the same server each time. To achieve this, you must configure your deployment as described for the following topologies.
 

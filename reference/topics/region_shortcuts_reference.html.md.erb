@@ -6,8 +6,7 @@ This topic describes the various region shortcuts you can use to configure Geode
 
 ## <span class="keyword parmname">LOCAL</span>
 
-<a id="reference_w2h_3cd_lk__section_36EBE4321D89491A96865922A41813FB"></a>
-### Description
+### <a id="reference_w2h_3cd_lk__section_36EBE4321D89491A96865922A41813FB" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">LOCAL</span> region shortcut is scoped only to its JVM and is not visible to other peer members. The region does not distribute data and operations to other caches.
 
@@ -16,8 +15,7 @@ For more information, see:
 -   [Local Regions](../../developing/region_options/region_types.html#region_types__section_A8150BDBC74E4019B1942481877A4370)
 -   [RegionShortcuts for Peers and Servers](../../basic_config/data_regions/region_shortcuts.html#region_shortcuts__section_D0975C76572E41F79C1A6EE7CF371251)
 
-<a id="reference_w2h_3cd_lk__section_54BD7A01BDB14D8A9FE5928F03E0D33D"></a>
-### Default Attributes
+### <a id="reference_w2h_3cd_lk__section_54BD7A01BDB14D8A9FE5928F03E0D33D" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -26,9 +24,7 @@ For more information, see:
 | scope: | local |
 | data-policy: | NORMAL |
 
-<a id="reference_w2h_3cd_lk__section_FF6CC3A9EB9D4705A68ED9B345900D6A"></a>
-
-### gfsh Command Example
+### <a id="reference_w2h_3cd_lk__section_FF6CC3A9EB9D4705A68ED9B345900D6A" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myLOCALregion --type=LOCAL
@@ -50,9 +46,7 @@ Region | data-policy | NORMAL
        | size        | 0
 ```
 
-<a id="reference_w2h_3cd_lk__section_506C4E195E0A412482931CB2BA30D1DD"></a>
-
-### XML Definition of <span class="keyword parmname">LOCAL</span>
+### <a id="reference_w2h_3cd_lk__section_506C4E195E0A412482931CB2BA30D1DD" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">LOCAL</span>
 
 ``` pre
 <region name="myLOCALregion">
@@ -62,8 +56,7 @@ Region | data-policy | NORMAL
 
 ## <span class="keyword parmname">LOCAL\_HEAP\_LRU</span>
 
-<a id="reference_wd5_lpy_lk__section_2FA756DED1494EADA5E0061B365638EF"></a>
-### Description
+### <a id="reference_wd5_lpy_lk__section_2FA756DED1494EADA5E0061B365638EF" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">LOCAL\_HEAP\_LRU</span> region shortcut is scoped to its JVM and is not visible to other peer members. The region does not distribute data and operations to other caches. The region destroys the least recently used entries when it detects that the JVM is running low on memory.
 
@@ -72,8 +65,7 @@ For more information, see:
 -   [Eviction](../../developing/eviction/chapter_overview.html)
 -   [Local Regions](../../developing/region_options/region_types.html#region_types__section_A8150BDBC74E4019B1942481877A4370)
 
-<a id="reference_wd5_lpy_lk__section_2E433A09EE974B90A0482766268DE433"></a>
-### Default Attributes
+### <a id="reference_wd5_lpy_lk__section_2E433A09EE974B90A0482766268DE433" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -89,9 +81,7 @@ For more information, see:
 | eviction-algorithm: | lru-heap-percentage |
 | eviction-action:    | local-destroy       |
 
-<a id="reference_wd5_lpy_lk__section_C7C04C729B204034A9AA8232C2A582A6"></a>
-
-### gfsh Command Example
+### <a id="reference_wd5_lpy_lk__section_C7C04C729B204034A9AA8232C2A582A6" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myLHLregion --type=LOCAL_HEAP_LRU
@@ -115,9 +105,7 @@ Eviction | eviction-algorithm | lru-heap-percentage
          | eviction-action    | local-destroy
 ```
 
-<a id="reference_wd5_lpy_lk__section_C9C0A77F6EF548898E0B24BDC8C92CD8"></a>
-
-### XML Definition of <span class="keyword parmname">LOCAL\_HEAP\_LRU</span>
+### <a id="reference_wd5_lpy_lk__section_C9C0A77F6EF548898E0B24BDC8C92CD8" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">LOCAL\_HEAP\_LRU</span>
 
 ``` pre
 <region name="myLHLregion">
@@ -137,8 +125,7 @@ Eviction | eviction-algorithm | lru-heap-percentage
 
 ## <span class="keyword parmname">LOCAL\_OVERFLOW</span>
 
-<a id="reference_adk_y4y_lk__section_7EDCA6AB41E24F4BA63EC083224E93B5"></a>
-### Description
+### <a id="reference_adk_y4y_lk__section_7EDCA6AB41E24F4BA63EC083224E93B5" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">LOCAL\_OVERFLOW</span> region shortcut is scoped only to its JVM and is not visible to other peer members. The region does not distribute data and operations to other caches. The region moves the values of entries to disk when it detects that the JVM is running low on memory.
 
@@ -148,8 +135,7 @@ For more information, see:
 -   [Local Regions](../../developing/region_options/region_types.html#region_types__section_A8150BDBC74E4019B1942481877A4370)
 -   [Eviction](../../developing/eviction/chapter_overview.html)
 
-<a id="reference_adk_y4y_lk__section_DA75B0D2F8A94AE1A4FD48A8B59F4554"></a>
-### Default Attributes
+### <a id="reference_adk_y4y_lk__section_DA75B0D2F8A94AE1A4FD48A8B59F4554" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -165,9 +151,7 @@ For more information, see:
 | eviction-algorithm: | lru-heap-percentage |
 | eviction-action:    | overflow-to-disk    |
 
-<a id="reference_adk_y4y_lk__section_FCEA598100164237B548C60EAA1556FF"></a>
-
-### gfsh Command Example
+### <a id="reference_adk_y4y_lk__section_FCEA598100164237B548C60EAA1556FF" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myLOregion --type=LOCAL_OVERFLOW
@@ -191,9 +175,7 @@ Eviction | eviction-algorithm | lru-heap-percentage
          | eviction-action    | overflow-to-disk
 ```
 
-<a id="reference_adk_y4y_lk__section_6E6C4A4B92D248C59FEAB20C63558F30"></a>
-
-### XML Definition of <span class="keyword parmname">LOCAL\_OVERFLOW</span>
+### <a id="reference_adk_y4y_lk__section_6E6C4A4B92D248C59FEAB20C63558F30" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">LOCAL\_OVERFLOW</span>
 
 ``` pre
 <region name="myLOregion">
@@ -209,8 +191,7 @@ Eviction | eviction-algorithm | lru-heap-percentage
 
 ## <span class="keyword parmname">LOCAL\_PERSISTENT</span>
 
-<a id="reference_l5r_y4y_lk__section_CBC85A6AEF944EBC9C7B7A414D90B286"></a>
-### Description
+### <a id="reference_l5r_y4y_lk__section_CBC85A6AEF944EBC9C7B7A414D90B286" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">LOCAL\_PERSISTENT</span> region shortcut is scoped to its JVM and is not visible to other peer members. The region does not distribute data and operations to other caches. The region writes its state to disk and can recover that state when the member restarts.
 
@@ -219,8 +200,7 @@ For more information, see:
 -   [Persistence and Overflow](../../developing/storing_data_on_disk/chapter_overview.html)
 -   [Local Regions](../../developing/region_options/region_types.html#region_types__section_A8150BDBC74E4019B1942481877A4370)
 
-<a id="reference_l5r_y4y_lk__section_338E763857B845BD8C2ED4C3C0D62E4E"></a>
-### Default Attributes
+### <a id="reference_l5r_y4y_lk__section_338E763857B845BD8C2ED4C3C0D62E4E" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -229,9 +209,7 @@ For more information, see:
 | scope: |  local |
 | data-policy: | PERSISTENT-REPLICATE |
 
-<a id="reference_l5r_y4y_lk__section_E41981F332664D48A3914D4BEEC50902"></a>
-
-### gfsh Command Example
+### <a id="reference_l5r_y4y_lk__section_E41981F332664D48A3914D4BEEC50902" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myLPregion --type=LOCAL_PERSISTENT
@@ -254,9 +232,7 @@ Non-Default Attributes Shared By Hosting Members
 Region | size | 0
 ```
 
-<a id="reference_l5r_y4y_lk__section_3FC68C0F5413452C924C71DC2F8D6BDF"></a>
-
-### XML Definition of <span class="keyword parmname">LOCAL\_PERSISTENT</span>
+### <a id="reference_l5r_y4y_lk__section_3FC68C0F5413452C924C71DC2F8D6BDF" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">LOCAL\_PERSISTENT</span>
 
 ``` pre
 <region name="myLPregion">
@@ -268,8 +244,7 @@ Region | size | 0
 
 ## <span class="keyword parmname">LOCAL\_PERSISTENT\_OVERFLOW</span>
 
-<a id="reference_a45_y4y_lk__section_9D76AA9F92AC461C8702945AE990303E"></a>
-### Description
+### <a id="reference_a45_y4y_lk__section_9D76AA9F92AC461C8702945AE990303E" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">LOCAL\_PERSISTENT\_OVERFLOW</span> region shortcut is scoped to its JVM and is not visible to other peer members. The region does not distribute data and operations to other caches. The region writes its state to disk and can recover that state when the member restarts. The region also removes the values of entries from memory when it detects that the JVM is running low on memory.
 
@@ -278,8 +253,7 @@ For more information, see:
 -   [Persistence and Overflow](../../developing/storing_data_on_disk/chapter_overview.html)
 -   [Local Regions](../../developing/region_options/region_types.html#region_types__section_A8150BDBC74E4019B1942481877A4370)
 
-<a id="reference_a45_y4y_lk__section_06524290FD6347B19D91BBB2B98B6D7E"></a>
-### Default Attributes
+### <a id="reference_a45_y4y_lk__section_06524290FD6347B19D91BBB2B98B6D7E" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -295,9 +269,7 @@ For more information, see:
 | eviction-algorithm: | lru-heap-percentage |
 | eviction-action:    | overflow-to-disk    |
 
-<a id="reference_a45_y4y_lk__section_F81B5ACAFE3A41948BD8D15406ECA1A1"></a>
-
-### gfsh Command Example
+### <a id="reference_a45_y4y_lk__section_F81B5ACAFE3A41948BD8D15406ECA1A1" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myLPOregion --type=LOCAL_PERSISTENT_OVERFLOW
@@ -322,9 +294,7 @@ Eviction | eviction-algorithm | lru-heap-percentage
          | eviction-action    | overflow-to-disk
 ```
 
-<a id="reference_a45_y4y_lk__section_97980143983D4624B6736F19A9AD42FE"></a>
-
-### XML Definition of <span class="keyword parmname">LOCAL\_PERSISTENT\_OVERFLOW</span>
+### <a id="reference_a45_y4y_lk__section_97980143983D4624B6736F19A9AD42FE" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">LOCAL\_PERSISTENT\_OVERFLOW</span>
 
 ``` pre
 <region name="myLPOregion">
@@ -341,8 +311,7 @@ Eviction | eviction-algorithm | lru-heap-percentage
 
 ## <span class="keyword parmname">PARTITION</span>
 
-<a id="reference_ow5_4qy_lk__section_FC75463878014EB99450012BB2BF56F3"></a>
-### Description
+### <a id="reference_ow5_4qy_lk__section_FC75463878014EB99450012BB2BF56F3" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">PARTITION</span> region shortcut has local scope that is partitioned across each peer member that created the region.
 
@@ -352,8 +321,7 @@ For more information, see:
 -   [Partitioned Regions](../../developing/partitioned_regions/chapter_overview.html)
 -   [RegionShortcuts for Peers and Servers](../../basic_config/data_regions/region_shortcuts.html#region_shortcuts__section_D0975C76572E41F79C1A6EE7CF371251)
 
-<a id="reference_ow5_4qy_lk__section_8F8F7C54F95B41D79ED814717E62961E"></a>
-### Default Attributes
+### <a id="reference_ow5_4qy_lk__section_8F8F7C54F95B41D79ED814717E62961E" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -361,9 +329,7 @@ For more information, see:
 |----|----|
 | data-policy: | PARTITION |
 
-<a id="reference_ow5_4qy_lk__section_7989417AE95E4B5F8569CD545663A33D"></a>
-
-### gfsh Command Example
+### <a id="reference_ow5_4qy_lk__section_7989417AE95E4B5F8569CD545663A33D" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myPregion --type=PARTITION
@@ -386,9 +352,7 @@ Non-Default Attributes Shared By Hosting Members
 Region | size | 0
 ```
 
-<a id="reference_ow5_4qy_lk__section_309654CBE5C24F5A85650CEE3AAB38DB"></a>
-
-### XML Definition of <span class="keyword parmname">PARTITION</span>
+### <a id="reference_ow5_4qy_lk__section_309654CBE5C24F5A85650CEE3AAB38DB" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">PARTITION</span>
 
 ``` pre
 <region name="myPregion">
@@ -399,8 +363,7 @@ Region | size | 0
 
 ## <span class="keyword parmname">PARTITION\_HEAP\_LRU</span>
 
-<a id="reference_twx_y4y_lk__section_AC539D91DDBC4CC5B7F5E12190ECAD01"></a>
-### Description
+### <a id="reference_twx_y4y_lk__section_AC539D91DDBC4CC5B7F5E12190ECAD01" class="no-quick-link"></a>Description
 
 A region configured with <span class="keyword parmname">PARTITION\_HEAP\_LRU</span> has local scope that is partitioned across each peer member that created the region. The region destroys entries when it detects that the JVM is running low on memory.
 
@@ -411,9 +374,7 @@ For more information, see:
 -   [Eviction](../../developing/eviction/chapter_overview.html)
 -   [Partitioned Regions](../../developing/partitioned_regions/chapter_overview.html)
 
-<a id="reference_twx_y4y_lk__section_4A9CCE754E8F486FB33CC1D7B91D3B7C"></a>
-
-### Default Attributes
+### <a id="reference_twx_y4y_lk__section_4A9CCE754E8F486FB33CC1D7B91D3B7C" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -428,9 +389,7 @@ For more information, see:
 | eviction-algorithm: | lru-heap-percentage |
 | eviction-action:    | local-destroy       |
 
-<a id="reference_twx_y4y_lk__section_F804443937334AF7AE6CE4AF700A01C6"></a>
-
-### gfsh Command Example
+### <a id="reference_twx_y4y_lk__section_F804443937334AF7AE6CE4AF700A01C6" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myPHLregion --type=PARTITION_HEAP_LRU
@@ -455,9 +414,7 @@ Eviction | eviction-algorithm | lru-heap-percentage
          | eviction-action    | local-destroy
 ```
 
-<a id="reference_twx_y4y_lk__section_53D3C52436A746918383D437FEEC648E"></a>
-
-### XML Definition of <span class="keyword parmname">PARTITION\_HEAP\_LRU</span>
+### <a id="reference_twx_y4y_lk__section_53D3C52436A746918383D437FEEC648E" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">PARTITION\_HEAP\_LRU</span>
 
 ``` pre
 <region name="myPHLregion">
@@ -475,8 +432,7 @@ Eviction | eviction-algorithm | lru-heap-percentage
 
 ## <span class="keyword parmname">PARTITION\_OVERFLOW</span>
 
-<a id="reference_js1_z4y_lk__section_2D3C2F9081DF4102826B8A1273FE1A4D"></a>
-### Description
+### <a id="reference_js1_z4y_lk__section_2D3C2F9081DF4102826B8A1273FE1A4D" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">PARTITION\_OVERFLOW</span> region shortcut has local state that is partitioned across each peer member that created the region. The region moves the values of entries to disk when it detects that the JVM is running low on memory.
 
@@ -487,8 +443,7 @@ For more information, see:
 -   [Partitioned Regions](../../developing/partitioned_regions/chapter_overview.html)
 -   [Eviction](../../developing/eviction/chapter_overview.html)
 
-<a id="reference_js1_z4y_lk__section_06393B7E4B3A4BEABF992607626555DE"></a>
-### Default Attributes
+### <a id="reference_js1_z4y_lk__section_06393B7E4B3A4BEABF992607626555DE" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -503,9 +458,7 @@ For more information, see:
 | eviction-algorithm: | lru-heap-percentage |
 | eviction-action:    | overflow-to-disk    |
 
-<a id="reference_js1_z4y_lk__section_5054474CFB19482E96FA3802B38A84DD"></a>
-
-### gfsh Command Example
+### <a id="reference_js1_z4y_lk__section_5054474CFB19482E96FA3802B38A84DD" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myPOregion --type=PARTITION_OVERFLOW
@@ -530,9 +483,7 @@ Eviction | eviction-algorithm | lru-heap-percentage
          | eviction-action    | overflow-to-disk
 ```
 
-<a id="reference_js1_z4y_lk__section_1B882ACE4D234D39BDCF281969593B26"></a>
-
-### XML Definition of <span class="keyword parmname">PARTITION\_OVERFLOW</span>
+### <a id="reference_js1_z4y_lk__section_1B882ACE4D234D39BDCF281969593B26" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">PARTITION\_OVERFLOW</span>
 
 ``` pre
 <region name="myPOregion">
@@ -548,8 +499,7 @@ Eviction | eviction-algorithm | lru-heap-percentage
 
 ## <span class="keyword parmname">PARTITION\_PERSISTENT</span>
 
-<a id="reference_d4k_jpy_lk__section_449C439FCF224960B25CBADA6B15559F"></a>
-### Description
+### <a id="reference_d4k_jpy_lk__section_449C439FCF224960B25CBADA6B15559F" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">PARTITION\_PERSISTENT</span> has local state that is partitioned across each peer member that created the region. The region writes its state to disk and can recover that state when the member restarts.
 
@@ -560,8 +510,7 @@ For more information, see:
 -   [Persistence and Overflow](../../developing/storing_data_on_disk/chapter_overview.html)
 -   [Partitioned Regions](../../developing/partitioned_regions/chapter_overview.html)
 
-<a id="reference_d4k_jpy_lk__section_CFD6C4ADD9C84C48A846166DD047621C"></a>
-### Default Attributes
+### <a id="reference_d4k_jpy_lk__section_CFD6C4ADD9C84C48A846166DD047621C" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -569,9 +518,7 @@ For more information, see:
 |----|----|
 | data-policy: | PERSISTENT-PARTITION |
 
-<a id="reference_d4k_jpy_lk__section_F2B651B4803341E3991F554544EF8551"></a>
-
-### gfsh Command Example
+### <a id="reference_d4k_jpy_lk__section_F2B651B4803341E3991F554544EF8551" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myPPregion --type=PARTITION_PERSISTENT
@@ -594,9 +541,7 @@ Non-Default Attributes Shared By Hosting Members
 Region | size | 0
 ```
 
-<a id="reference_d4k_jpy_lk__section_FF304DDCE61C4260AE2BD038C4AE4C65"></a>
-
-### XML Definition of <span class="keyword parmname">PARTITION\_PERSISTENT</span>
+### <a id="reference_d4k_jpy_lk__section_FF304DDCE61C4260AE2BD038C4AE4C65" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">PARTITION\_PERSISTENT</span>
 
 ``` pre
 <region name="myPPregion">
@@ -607,8 +552,7 @@ Region | size | 0
 
 ## <span class="keyword parmname">PARTITION\_PERSISTENT\_OVERFLOW</span>
 
-<a id="reference_v5l_jpy_lk__section_63D18AA41CDE4E02AAA0EB3AA8437422"></a>
-### Description
+### <a id="reference_v5l_jpy_lk__section_63D18AA41CDE4E02AAA0EB3AA8437422" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">PARTITION\_PERSISTENT\_OVERFLOW</span> has local state that is partitioned across each peer member that created the region. The region writes its state to disk and can recover that state when the member restarts. . The region removes the values of entries from memory when it detects that the JVM is running low on memory.
 
@@ -618,9 +562,7 @@ For more information, see:
 -   [Persistence and Overflow](../../developing/storing_data_on_disk/chapter_overview.html)
 -   [Partitioned Regions](../../developing/partitioned_regions/chapter_overview.html)
 
-<a id="reference_v5l_jpy_lk__section_3A5BF41715ED499193A42119F9F4C8B8"></a>
-
-### Default Attributes
+### <a id="reference_v5l_jpy_lk__section_3A5BF41715ED499193A42119F9F4C8B8" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -635,9 +577,7 @@ For more information, see:
 | eviction-algorithm: | lru-heap-percentage |
 | eviction-action:    | overflow-to-disk    |
 
-<a id="reference_v5l_jpy_lk__section_64138E9923064EBC8007B6803223E64F"></a>
-
-### gfsh Command Example
+### <a id="reference_v5l_jpy_lk__section_64138E9923064EBC8007B6803223E64F" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myPPOregion --type=PARTITION_PERSISTENT_OVERFLOW
@@ -662,9 +602,7 @@ Eviction | eviction-algorithm | lru-heap-percentage
          | eviction-action    | overflow-to-disk
 ```
 
-<a id="reference_v5l_jpy_lk__section_C73C1D158A034627BC73A7FA46FA4A96"></a>
-
-### XML Definition of <span class="keyword parmname">PARTITION\_PERSISTENT\_OVERFLOW</span>
+### <a id="reference_v5l_jpy_lk__section_C73C1D158A034627BC73A7FA46FA4A96" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">PARTITION\_PERSISTENT\_OVERFLOW</span>
 
 ``` pre
 <region name="myPPOregion">
@@ -680,8 +618,7 @@ Eviction | eviction-algorithm | lru-heap-percentage
 
 ## <span class="keyword parmname">PARTITION\_PROXY</span>
 
-<a id="reference_v4m_jpy_lk__section_90846BE9CEC64883B03F83312A0876FB"></a>
-### Description
+### <a id="reference_v4m_jpy_lk__section_90846BE9CEC64883B03F83312A0876FB" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">PARTITION\_PROXY</span> region shortcut has no local state and forwards all operations to a peer region configured with the <span class="keyword parmname">PARTITION</span> shortcut or a peer region configured with the <span class="keyword parmname">PARTITION\_PERSISTENT</span> shortcut.
 
@@ -690,8 +627,7 @@ See:
 -   [RegionShortcuts for Peers and Servers](../../basic_config/data_regions/region_shortcuts.html#region_shortcuts__section_D0975C76572E41F79C1A6EE7CF371251)
 -   [Partitioned Regions](../../developing/partitioned_regions/chapter_overview.html)
 
-<a id="reference_v4m_jpy_lk__section_527EB23A43234FD3A1B8A1A98BF2D4F4"></a>
-### Default Attributes
+### <a id="reference_v4m_jpy_lk__section_527EB23A43234FD3A1B8A1A98BF2D4F4" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -705,9 +641,7 @@ See:
 |-------------------|-----|
 | local-max-memory: | 0   |
 
-<a id="reference_v4m_jpy_lk__section_1BDB4F2D00644B0B9C69D2F1F89C409E"></a>
-
-### gfsh Command Example
+### <a id="reference_v4m_jpy_lk__section_1BDB4F2D00644B0B9C69D2F1F89C409E" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myPPXYregion --type=PARTITION_PROXY
@@ -731,9 +665,7 @@ Region    | size             | 0
 Partition | local-max-memory | 0
 ```
 
-<a id="reference_v4m_jpy_lk__section_63DE16AB9EC84F4281488D566C0C1AF4"></a>
-
-### XML Definition of <span class="keyword parmname">PARTITION\_PROXY</span>
+### <a id="reference_v4m_jpy_lk__section_63DE16AB9EC84F4281488D566C0C1AF4" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">PARTITION\_PROXY</span>
 
 ``` pre
 <region name="myPPXYregion">
@@ -747,8 +679,7 @@ Partition | local-max-memory | 0
 
 ## <span class="keyword parmname">PARTITION\_PROXY\_REDUNDANT</span>
 
-<a id="reference_c1n_jpy_lk__section_DB38EA21A67C42AFB10FBA19320F9F2C"></a>
-### Description
+### <a id="reference_c1n_jpy_lk__section_DB38EA21A67C42AFB10FBA19320F9F2C" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">PARTITION\_PROXY\_REDUNDANT</span> region shortcut has no local state and forwards all operations to a peer region configured with the <span class="keyword parmname">PARTITION\_REDUNDANT</span> shortcut or a peer region configured with the <span class="keyword parmname">PARTITION\_REDUNDANT\_PERSISTENT</span> shortcut.
 
@@ -757,8 +688,7 @@ See:
 -   [RegionShortcuts for Peers and Servers](../../basic_config/data_regions/region_shortcuts.html#region_shortcuts__section_D0975C76572E41F79C1A6EE7CF371251)
 -   [Partitioned Regions](../../developing/partitioned_regions/chapter_overview.html)
 
-<a id="reference_c1n_jpy_lk__section_2279D137C360400B885C5CEFD1F24579"></a>
-### Default Attributes
+### <a id="reference_c1n_jpy_lk__section_2279D137C360400B885C5CEFD1F24579" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -773,9 +703,7 @@ See:
 | redundant-copies: | 1   |
 | local-max-memory  | 0   |
 
-<a id="reference_c1n_jpy_lk__section_D385EB36652A4E25B240C0A1BF91117E"></a>
-
-### gfsh Command Example
+### <a id="reference_c1n_jpy_lk__section_D385EB36652A4E25B240C0A1BF91117E" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myPPRregion --type=PARTITION_PROXY_REDUNDANT
@@ -800,9 +728,7 @@ Partition | redundant-copies | 1
           | local-max-memory | 0
 ```
 
-<a id="reference_c1n_jpy_lk__section_F6D8A5F0DB014475BE8FE57185DCD4DB"></a>
-
-### XML Definition of <span class="keyword parmname">PARTITION\_PROXY\_REDUNDANT</span>
+### <a id="reference_c1n_jpy_lk__section_F6D8A5F0DB014475BE8FE57185DCD4DB" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">PARTITION\_PROXY\_REDUNDANT</span>
 
 ``` pre
 <region name="myPPRregion">
@@ -817,8 +743,7 @@ Partition | redundant-copies | 1
 
 ## <span class="keyword parmname">PARTITION\_REDUNDANT</span>
 
-<a id="reference_shn_jpy_lk__section_ECFF0FB6A1E84E1182C0CAFCD29419B1"></a>
-### Description
+### <a id="reference_shn_jpy_lk__section_ECFF0FB6A1E84E1182C0CAFCD29419B1" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">PARTITION\_REDUNDANT</span> region shortcut has local state that is partitioned across each peer member that created the region. The region maintains an extra copy of the data in memory.
 
@@ -827,8 +752,7 @@ See:
 -   [RegionShortcuts for Peers and Servers](../../basic_config/data_regions/region_shortcuts.html#region_shortcuts__section_D0975C76572E41F79C1A6EE7CF371251)
 -   [Partitioned Regions](../../developing/partitioned_regions/chapter_overview.html)
 
-<a id="reference_shn_jpy_lk__section_5F453E9AC5094AE6AA4FF111A7E5DB75"></a>
-### Default Attributes
+### <a id="reference_shn_jpy_lk__section_5F453E9AC5094AE6AA4FF111A7E5DB75" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -842,9 +766,7 @@ See:
 |-------------------|-----|
 | redundant-copies: | 1   |
 
-<a id="reference_shn_jpy_lk__section_75BDE5C09ABD40CCBBC61B3D1D2DF7CA"></a>
-
-### gfsh Command Example
+### <a id="reference_shn_jpy_lk__section_75BDE5C09ABD40CCBBC61B3D1D2DF7CA" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myPRregion --type=PARTITION_REDUNDANT
@@ -868,9 +790,7 @@ Region    | size             | 0
 Partition | redundant-copies | 1
 ```
 
-<a id="reference_shn_jpy_lk__section_512F8B9D526544DE8BD22E08CFDEC471"></a>
-
-### XML Definition of <span class="keyword parmname">PARTITION\_REDUNDANT</span>
+### <a id="reference_shn_jpy_lk__section_512F8B9D526544DE8BD22E08CFDEC471" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">PARTITION\_REDUNDANT</span>
 
 ``` pre
 <region name="myPRregion">
@@ -884,8 +804,7 @@ Partition | redundant-copies | 1
 
 ## <span class="keyword parmname">PARTITION\_REDUNDANT\_HEAP\_LRU</span>
 
-<a id="reference_m4n_jpy_lk__section_3EE028397BF149C98156ECF677D10802"></a>
-### Description
+### <a id="reference_m4n_jpy_lk__section_3EE028397BF149C98156ECF677D10802" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">PARTITION\_REDUNDANT\_HEAP\_LRU</span> region shortcut has local state that is partitioned across each peer member that created the region. The region keeps an extra copy of the data in memory. The region destroys entries when it detects that the JVM is running low on memory.
 
@@ -897,8 +816,7 @@ For more information, see:
 -   [RegionShortcuts for Peers and Servers](../../basic_config/data_regions/region_shortcuts.html#region_shortcuts__section_D0975C76572E41F79C1A6EE7CF371251)
 -   [Partitioned Regions](../../developing/partitioned_regions/chapter_overview.html)
 
-<a id="reference_m4n_jpy_lk__section_9439F1B932754F3085175C331431425A"></a>
-### Default Attributes
+### <a id="reference_m4n_jpy_lk__section_9439F1B932754F3085175C331431425A" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -919,9 +837,7 @@ For more information, see:
 |-------------------|-----|
 | redundant-copies: | 1   |
 
-<a id="reference_m4n_jpy_lk__section_A3C8919EF7DF4B17AD0C3F31254B7340"></a>
-
-### gfsh Command Example
+### <a id="reference_m4n_jpy_lk__section_A3C8919EF7DF4B17AD0C3F31254B7340" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myPRHLregion --type=PARTITION_REDUNDANT_HEAP_LRU
@@ -947,9 +863,7 @@ Eviction  | eviction-algorithm | lru-heap-percentage
 Partition | redundant-copies   | 1
 ```
 
-<a id="reference_m4n_jpy_lk__section_9C65B716E4C747D3AD7D1F904FF4B7DA"></a>
-
-### XML Definition of <span class="keyword parmname">PARTITION\_REDUNDANT\_HEAP\_LRU</span>
+### <a id="reference_m4n_jpy_lk__section_9C65B716E4C747D3AD7D1F904FF4B7DA" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">PARTITION\_REDUNDANT\_HEAP\_LRU</span>
 
 ``` pre
 <region name="myPRHLregion">
@@ -969,8 +883,7 @@ Partition | redundant-copies   | 1
 
 ## <span class="keyword parmname">PARTITION\_REDUNDANT\_OVERFLOW</span>
 
-<a id="reference_own_jpy_lk__section_B547C6D2F1B140A1ABAB1F45AD0D92F2"></a>
-### Description
+### <a id="reference_own_jpy_lk__section_B547C6D2F1B140A1ABAB1F45AD0D92F2" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">PARTITION\_REDUNDANT\_OVERFLOW</span> region shortcut has local state that is partitioned across each peer member that created the region. The region keeps an extra copy of the data in memory. The region moves the values of entries to disk when it detects that the JVM is running low on memory.
 
@@ -982,8 +895,7 @@ For more information, see:
 -   [RegionShortcuts for Peers and Servers](../../basic_config/data_regions/region_shortcuts.html#region_shortcuts__section_D0975C76572E41F79C1A6EE7CF371251)
 -   [Partitioned Regions](../../developing/partitioned_regions/chapter_overview.html)
 
-<a id="reference_own_jpy_lk__section_78AD311F20D4495E9CDBA219F64CB79D"></a>
-### Default Attributes
+### <a id="reference_own_jpy_lk__section_78AD311F20D4495E9CDBA219F64CB79D" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -1004,9 +916,7 @@ For more information, see:
 |-------------------|-----|
 | redundant-copies: | 1   |
 
-<a id="reference_own_jpy_lk__section_C131CE53EFAF4C6DA03D3B30607FB715"></a>
-
-### gfsh Command Example
+### <a id="reference_own_jpy_lk__section_C131CE53EFAF4C6DA03D3B30607FB715" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myPROregion --type=PARTITION_REDUNDANT_OVERFLOW
@@ -1032,9 +942,7 @@ Eviction  | eviction-algorithm | lru-heap-percentage
 Partition | redundant-copies   | 1
 ```
 
-<a id="reference_own_jpy_lk__section_045EF130769244CDA2C83AFB6170A3C7"></a>
-
-### XML Definition of <span class="keyword parmname">PARTITION\_REDUNDANT\_OVERFLOW</span>
+### <a id="reference_own_jpy_lk__section_045EF130769244CDA2C83AFB6170A3C7" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">PARTITION\_REDUNDANT\_OVERFLOW</span>
 
 ``` pre
 <region name="myPROregion">
@@ -1052,8 +960,7 @@ Partition | redundant-copies   | 1
 
 ## <span class="keyword parmname">PARTITION\_REDUNDANT\_PERSISTENT</span>
 
-<a id="reference_bd4_jpy_lk__section_F0C1C42195A54F03AA385982DA15DF2C"></a>
-### Description
+### <a id="reference_bd4_jpy_lk__section_F0C1C42195A54F03AA385982DA15DF2C" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">PARTITION\_REDUNDANT\_PERSISTENT</span> region shortcut has local state that is partitioned across each peer member that created the region. The region writes its state to disk and recovers its state from disk when the region is created. The region maintains an extra copy of the data in memory.
 
@@ -1063,8 +970,7 @@ For more information, see:
 -   [RegionShortcuts for Peers and Servers](../../basic_config/data_regions/region_shortcuts.html#region_shortcuts__section_D0975C76572E41F79C1A6EE7CF371251).
 -   [Partitioned Regions](../../developing/partitioned_regions/chapter_overview.html)
 
-<a id="reference_bd4_jpy_lk__section_390DABC994794F9C9FF19A50B8E53D71"></a>
-### Default Attributes
+### <a id="reference_bd4_jpy_lk__section_390DABC994794F9C9FF19A50B8E53D71" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -1078,9 +984,7 @@ For more information, see:
 |-------------------|-----|
 | redundant-copies: | 1   |
 
-<a id="reference_bd4_jpy_lk__section_8D226B0DB7B04878850B2A14BE0EA409"></a>
-
-### gfsh Command Example
+### <a id="reference_bd4_jpy_lk__section_8D226B0DB7B04878850B2A14BE0EA409" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myPRPregion --type=PARTITION_REDUNDANT_PERSISTENT
@@ -1104,9 +1008,7 @@ Region    | size             | 0
 Partition | redundant-copies | 1
 ```
 
-<a id="reference_bd4_jpy_lk__section_4E26C39621AC4A1D8B27D44CC2690209"></a>
-
-### XML Definition of <span class="keyword parmname">PARTITION\_REDUNDANT\_PERSISTENT</span>
+### <a id="reference_bd4_jpy_lk__section_4E26C39621AC4A1D8B27D44CC2690209" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">PARTITION\_REDUNDANT\_PERSISTENT</span>
 
 ``` pre
 <region name="myPRPregion">
@@ -1120,8 +1022,7 @@ Partition | redundant-copies | 1
 
 ## <span class="keyword parmname">PARTITION\_REDUNDANT\_PERSISTENT\_OVERFLOW</span>
 
-<a id="reference_xqq_tvc_lk__section_27D3FA56EF3D4A6F9BF1EFF86C0EBBC2"></a>
-### Description
+### <a id="reference_xqq_tvc_lk__section_27D3FA56EF3D4A6F9BF1EFF86C0EBBC2" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">PARTITION\_REDUNDANT\_PERSISTENT\_OVERFLOW</span> region shortcut has local state that is partitioned across each peer member that created the region. The region writes its state to disk and recovers its state from disk when the region is created. The region maintains an extra copy of the data in memory. The region removes the values of entries from memory when it detects that the JVM is running out of memory.
 
@@ -1131,8 +1032,7 @@ For more information, see:
 -   [RegionShortcuts for Peers and Servers](../../basic_config/data_regions/region_shortcuts.html#region_shortcuts__section_D0975C76572E41F79C1A6EE7CF371251).
 -   [Partitioned Regions](../../developing/partitioned_regions/chapter_overview.html)
 
-<a id="reference_xqq_tvc_lk__section_BADCEF8DBEDC446A85A353EF846C12C8"></a>
-### Default Attributes
+### <a id="reference_xqq_tvc_lk__section_BADCEF8DBEDC446A85A353EF846C12C8" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -1153,9 +1053,7 @@ For more information, see:
 |-------------------|-----|
 | redundant-copies: | 1   |
 
-<a id="reference_xqq_tvc_lk__section_7D4A02096A9D4F119C58125D3ECA1965"></a>
-
-### gfsh Command Example
+### <a id="reference_xqq_tvc_lk__section_7D4A02096A9D4F119C58125D3ECA1965" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 create region --name=myPRPOregion --type=PARTITION_REDUNDANT_PERSISTENT_OVERFLOW
@@ -1179,9 +1077,7 @@ Eviction  | eviction-algorithm | lru-heap-percentage
 Partition | redundant-copies   | 1
 ```
 
-<a id="reference_xqq_tvc_lk__section_0B8062252F014FCCA3826C220499232E"></a>
-
-### XML Definition of <span class="keyword parmname">PARTITION\_REDUNDANT\_PERSISTENT\_OVERFLOW</span>
+### <a id="reference_xqq_tvc_lk__section_0B8062252F014FCCA3826C220499232E" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">PARTITION\_REDUNDANT\_PERSISTENT\_OVERFLOW</span>
 
 ``` pre
 <region name="myPRPOregion">
@@ -1199,8 +1095,7 @@ Partition | redundant-copies   | 1
 
 ## <span class="keyword parmname">REPLICATE</span>
 
-<a id="reference_wq4_jpy_lk__section_FBCA755812B9401D8EB1F94C062A207D"></a>
-### Description
+### <a id="reference_wq4_jpy_lk__section_FBCA755812B9401D8EB1F94C062A207D" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">REPLICATE</span> region shortcut has local state that is kept in sync with all other peer regions configured with a REPLICATE data policy.
 
@@ -1210,8 +1105,7 @@ For more information, see:
 -   [RegionShortcuts for Peers and Servers](../../basic_config/data_regions/region_shortcuts.html#region_shortcuts__section_D0975C76572E41F79C1A6EE7CF371251)
 -   [Distributed and Replicated Regions](../../developing/distributed_regions/chapter_overview.html)
 
-<a id="reference_wq4_jpy_lk__section_CAC42D7285E14540AA825F8A111D295D"></a>
-### Default Attributes
+### <a id="reference_wq4_jpy_lk__section_CAC42D7285E14540AA825F8A111D295D" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -1220,9 +1114,7 @@ For more information, see:
 | scope: |  distributed-ack |
 | data-policy: | REPLICATE |
 
- <a id="reference_wq4_jpy_lk__section_91941611D45D45609402EF2D1E5A7885"></a>
-
-### gfsh Command Example
+ ### <a id="reference_wq4_jpy_lk__section_91941611D45D45609402EF2D1E5A7885" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myRregion --type=REPLICATE
@@ -1237,9 +1129,7 @@ server1 | Region "/myRregion" created on "server1"
 server2 | Region "/myRregion" created on "server2"
 ```
 
-<a id="reference_wq4_jpy_lk__section_1CEC0DACC13C4092BB2ACD1A9BA0CD66"></a>
-
-### XML Definition of <span class="keyword parmname">REPLICATE</span>
+### <a id="reference_wq4_jpy_lk__section_1CEC0DACC13C4092BB2ACD1A9BA0CD66" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">REPLICATE</span>
 
 ``` pre
 <region name="myRregion">
@@ -1251,8 +1141,7 @@ server2 | Region "/myRregion" created on "server2"
 
 ## <span class="keyword parmname">REPLICATE\_HEAP\_LRU</span>
 
-<a id="reference_xx4_jpy_lk__section_DEAA6152FA324D5B8A266294FA8ADBF7"></a>
-### Description
+### <a id="reference_xx4_jpy_lk__section_DEAA6152FA324D5B8A266294FA8ADBF7" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">REPLICATE\_HEAP\_LRU</span> region shortcut has local state that is kept in sync with all other peer regions configured with a REPLICATE data policy. The region destroys entries when it detects that the JVM is running low on memory.
 
@@ -1265,8 +1154,7 @@ For more information, see:
 -   [Eviction](../../developing/eviction/chapter_overview.html)
 -   [Distributed and Replicated Regions](../../developing/distributed_regions/chapter_overview.html)
 
-<a id="reference_xx4_jpy_lk__section_ECA05E395EBC4671BA3AA2C05EC50868"></a>
-### Default Attributes
+### <a id="reference_xx4_jpy_lk__section_ECA05E395EBC4671BA3AA2C05EC50868" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -1302,9 +1190,7 @@ For more information, see:
 |------------------|-----|
 | interest-policy: | all |
 
-<a id="reference_xx4_jpy_lk__section_34CA13FA44C94181B57AF30A9CE5A0FD"></a>
-
-### gfsh Command Example
+### <a id="reference_xx4_jpy_lk__section_34CA13FA44C94181B57AF30A9CE5A0FD" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myRHLregion --type=REPLICATE_HEAP_LRU
@@ -1329,9 +1215,7 @@ Eviction | eviction-algorithm | lru-heap-percentage
          | eviction-action    | local-destroy
 ```
 
-<a id="reference_xx4_jpy_lk__section_4033265D958B4551AB93F16DBB084DA8"></a>
-
-### XML Definition of <span class="keyword parmname">REPLICATE\_HEAP\_LRU</span>
+### <a id="reference_xx4_jpy_lk__section_4033265D958B4551AB93F16DBB084DA8" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">REPLICATE\_HEAP\_LRU</span>
 
 ``` pre
 <region name="myRHLregion">
@@ -1352,8 +1236,7 @@ Eviction | eviction-algorithm | lru-heap-percentage
 
 ## <span class="keyword parmname">REPLICATE\_OVERFLOW</span>
 
-<a id="reference_t2p_jpy_lk__section_7980E9B8EE1049CEB7ABF243B068E1BB"></a>
-### Description
+### <a id="reference_t2p_jpy_lk__section_7980E9B8EE1049CEB7ABF243B068E1BB" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">REPLICATE\_OVERFLOW</span> region shortcut has local state that is kept in sync with all other peer regions configured with a <span class="keyword parmname">REPLICATE</span> data policy.
 
@@ -1363,8 +1246,7 @@ For more information, see:
 -   [RegionShortcuts for Peers and Servers](../../basic_config/data_regions/region_shortcuts.html#region_shortcuts__section_D0975C76572E41F79C1A6EE7CF371251)
 -   [Distributed and Replicated Regions](../../developing/distributed_regions/chapter_overview.html)
 
-<a id="reference_t2p_jpy_lk__section_446237A732494640B82C918E0274E300"></a>
-### Default Attributes
+### <a id="reference_t2p_jpy_lk__section_446237A732494640B82C918E0274E300" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -1380,9 +1262,7 @@ For more information, see:
 | eviction-algorithm: | lru-heap-percentage |
 | eviction-action:    | overflow-to-disk    |
 
-<a id="reference_t2p_jpy_lk__section_E6BF992DE8774584BDB8B0E77DC00FA9"></a>
-
-### gfsh Command Example
+### <a id="reference_t2p_jpy_lk__section_E6BF992DE8774584BDB8B0E77DC00FA9" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myROregion --type=REPLICATE_OVERFLOW
@@ -1407,9 +1287,7 @@ Eviction | eviction-algorithm | lru-heap-percentage
          | eviction-action    | overflow-to-disk
 ```
 
-<a id="reference_t2p_jpy_lk__section_03CBA2AB88084878A5EE83D9B4DE5BF4"></a>
-
-### XML Definition of <span class="keyword parmname">REPLICATE\_OVERFLOW</span>
+### <a id="reference_t2p_jpy_lk__section_03CBA2AB88084878A5EE83D9B4DE5BF4" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">REPLICATE\_OVERFLOW</span>
 
 ``` pre
 <region name="myROregion">
@@ -1426,8 +1304,7 @@ Eviction | eviction-algorithm | lru-heap-percentage
 
 ## <span class="keyword parmname">REPLICATE\_PERSISTENT</span>
 
-<a id="reference_emp_jpy_lk__section_4DCA5EAD6CDB482CB0BC7F543686C9B2"></a>
-### Description
+### <a id="reference_emp_jpy_lk__section_4DCA5EAD6CDB482CB0BC7F543686C9B2" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">REPLICATE\_PERSISTENT</span> region shortcut has local state that is kept in sync with all other peer regions that are configured with a <span class="keyword parmname">REPLICATE</span> data policy. The region writes its state to disk and recovers that state when the member restarts.
 
@@ -1437,8 +1314,7 @@ For more information, see:
 -   [RegionShortcuts for Peers and Servers](../../basic_config/data_regions/region_shortcuts.html#region_shortcuts__section_D0975C76572E41F79C1A6EE7CF371251)
 -   [Distributed and Replicated Regions](../../developing/distributed_regions/chapter_overview.html)
 
-<a id="reference_emp_jpy_lk__section_667FE780E8B040478B1A88EA4782DCD7"></a>
-### Default Attributes
+### <a id="reference_emp_jpy_lk__section_667FE780E8B040478B1A88EA4782DCD7" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -1447,9 +1323,7 @@ For more information, see:
 | scope: |  distributed-ack |
 | data-policy: | PERSISTENT-REPLICATE |
 
-<a id="reference_emp_jpy_lk__section_71C90F066BDC4013B8AB7B68D4766B5B"></a>
-
-### gfsh Command Example
+### <a id="reference_emp_jpy_lk__section_71C90F066BDC4013B8AB7B68D4766B5B" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myRPregion --type=REPLICATE_PERSISTENT
@@ -1472,9 +1346,7 @@ Non-Default Attributes Shared By Hosting Members
 Region | size | 0
 ```
 
-<a id="reference_emp_jpy_lk__section_9B8780A631D64431966A0D8723C920F5"></a>
-
-### XML Definition of <span class="keyword parmname">REPLICATE\_PERSISTENT</span>
+### <a id="reference_emp_jpy_lk__section_9B8780A631D64431966A0D8723C920F5" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">REPLICATE\_PERSISTENT</span>
 
 ``` pre
 <region name="myRPregion">
@@ -1486,8 +1358,7 @@ Region | size | 0
 
 ## <span class="keyword parmname">REPLICATE\_PERSISTENT\_OVERFLOW</span>
 
-<a id="reference_tsp_jpy_lk__section_74EF03750D3A4531A6276F88071E62F0"></a>
-### Description
+### <a id="reference_tsp_jpy_lk__section_74EF03750D3A4531A6276F88071E62F0" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">REPLICATE\_PERSISTENT\_OVERFLOW</span> region shortcut has local state that is kept in sync with all other peer regions configured with a <span class="keyword parmname">REPLICATE</span> data policy. The region writes its state to disk and recovers that state when the member restarts. The region removes the values of entries from memory when it detects that the JVM is running low on memory.
 
@@ -1497,8 +1368,7 @@ For more information, see:
 -   [RegionShortcuts for Peers and Servers](../../basic_config/data_regions/region_shortcuts.html#region_shortcuts__section_D0975C76572E41F79C1A6EE7CF371251)
 -   [Distributed and Replicated Regions](../../developing/distributed_regions/chapter_overview.html)
 
-<a id="reference_tsp_jpy_lk__section_5992CA09DAC145D88940879ED690C8CA"></a>
-### Default Attributes
+### <a id="reference_tsp_jpy_lk__section_5992CA09DAC145D88940879ED690C8CA" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -1514,9 +1384,7 @@ For more information, see:
 | eviction-algorithm: | lru-heap-percentage |
 | eviction-action:    | overflow-to-disk    |
 
-<a id="reference_tsp_jpy_lk__section_090DD0E7DD9A40E581BFB90BB93C6081"></a>
-
-### gfsh Command Example
+### <a id="reference_tsp_jpy_lk__section_090DD0E7DD9A40E581BFB90BB93C6081" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myRPOregion --type=REPLICATE_PERSISTENT
@@ -1545,9 +1413,7 @@ Eviction | eviction-algorithm | lru-heap-percentage
          | eviction-action    | overflow-to-disk
 ```
 
-<a id="reference_tsp_jpy_lk__section_ED067AAEB4604438A570CCE3EAFF4F31"></a>
-
-### XML Definition of <span class="keyword parmname">REPLICATE\_PERSISTENT\_OVERFLOW</span>
+### <a id="reference_tsp_jpy_lk__section_ED067AAEB4604438A570CCE3EAFF4F31" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">REPLICATE\_PERSISTENT\_OVERFLOW</span>
 
 ``` pre
  <region name="myRPOregion">
@@ -1564,8 +1430,7 @@ Eviction | eviction-algorithm | lru-heap-percentage
 
 ## <span class="keyword parmname">REPLICATE\_PROXY</span>
 
-<a id="reference_n1q_jpy_lk__section_71E08A97BCFD4CD59032843064BD202A"></a>
-### Description
+### <a id="reference_n1q_jpy_lk__section_71E08A97BCFD4CD59032843064BD202A" class="no-quick-link"></a>Description
 
 A region configured with the <span class="keyword parmname">REPLICATE\_PROXY</span> region shortcut has no local state and forwards all operations to a peer region configured with the [REPLICATE](#reference_wq4_jpy_lk) or [REPLICATE_PERSISTENT](#reference_emp_jpy_lk) region shortcut.
 
@@ -1574,8 +1439,7 @@ For more information, see:
 -   [RegionShortcuts for Peers and Servers](../../basic_config/data_regions/region_shortcuts.html#region_shortcuts__section_D0975C76572E41F79C1A6EE7CF371251)
 -   [Distributed and Replicated Regions](../../developing/distributed_regions/chapter_overview.html)
 
-<a id="reference_n1q_jpy_lk__section_C9BA03C04A0A4FBFAC42D6413B353A2B"></a>
-### Default Attributes
+### <a id="reference_n1q_jpy_lk__section_C9BA03C04A0A4FBFAC42D6413B353A2B" class="no-quick-link"></a>Default Attributes
 
 <span class="keyword parmname">Region Attributes</span>
 
@@ -1584,9 +1448,7 @@ For more information, see:
 | scope: |  distributed-ack |
 | data-policy: | EMPTY |
 
-<a id="reference_n1q_jpy_lk__section_4AE0D8F15CAC4CFD8198007BCF91FA85"></a>
-
-### gfsh Command Example
+### <a id="reference_n1q_jpy_lk__section_4AE0D8F15CAC4CFD8198007BCF91FA85" class="no-quick-link"></a>gfsh Command Example
 
 ``` pre
 gfsh>create region --name=myRPXYregion --type=REPLICATE_PROXY
@@ -1609,9 +1471,7 @@ Non-Default Attributes Shared By Accessor Members
 Region | size | 0
 ```
 
-<a id="reference_n1q_jpy_lk__section_7B52EA99FD054123BBF5546EC0614FA2"></a>
-
-### XML Definition of <span class="keyword parmname">REPLICATE\_PROXY</span>
+### <a id="reference_n1q_jpy_lk__section_7B52EA99FD054123BBF5546EC0614FA2" class="no-quick-link"></a>XML Definition of <span class="keyword parmname">REPLICATE\_PROXY</span>
 
 ``` pre
 <region name="myRPXYregion">

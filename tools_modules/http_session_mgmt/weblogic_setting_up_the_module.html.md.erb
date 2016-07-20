@@ -10,8 +10,7 @@ Refer to [Common Topologies for HTTP Session Management](common_gemfire_topologi
 $ modify_war -h
 ```
 
-<a id="weblogic_setting_up_the_module__section_9D330F0A9E934B209D77C5A5D79B741C"></a>
-## Manual Configuration
+## <a id="weblogic_setting_up_the_module__section_9D330F0A9E934B209D77C5A5D79B741C" class="no-quick-link"></a>Manual Configuration
 
 To modify your war or ear file manually, make the following updates:
 
@@ -89,9 +88,7 @@ If you are deploying an ear file:
     lib/log4j-jul-2.5.jar
     ```
 
-<a id="weblogic_setting_up_the_module__section_20294A39368D4402AEFB3D074E8D5887"></a>
-
-## Peer-to-Peer Setup
+## <a id="weblogic_setting_up_the_module__section_20294A39368D4402AEFB3D074E8D5887" class="no-quick-link"></a>Peer-to-Peer Setup
 
 <img src="../../images_svg/http_module_p2p_with_locator.svg" id="weblogic_setting_up_the_module__image_86E949E0F1AD4E9EB67605EFA4E97E13" class="image" />
 
@@ -116,9 +113,7 @@ to result in the following `web.xml` content:
 </filter>
 ```
 
-<a id="weblogic_setting_up_the_module__section_B0CEBE93564540DBA165E0F7A10FDC0B"></a>
-
-## Client/Server Setup
+## <a id="weblogic_setting_up_the_module__section_B0CEBE93564540DBA165E0F7A10FDC0B" class="no-quick-link"></a>Client/Server Setup
 
 <img src="../../images_svg/http_module_cs_with_locator.svg" id="weblogic_setting_up_the_module__image_BDF2273487EA4FEB9895D02A6F6FD445" class="image" />
 
@@ -147,9 +142,7 @@ to result in the following `web.xml` content:
 
 The `cache-client.xml` file contains a &lt;pool&gt; element pointing at the locator. Its default value is localhost\[10334\].
 
-<a id="weblogic_setting_up_the_module__section_2B97047AB30A4C549D91AD258657FBA6"></a>
-
-## Starting the Application Server
+## <a id="weblogic_setting_up_the_module__section_2B97047AB30A4C549D91AD258657FBA6" class="no-quick-link"></a>Starting the Application Server
 
 After you update the configuration, you are now ready to start your application server instance. Instantiate the locator first:
 
@@ -170,9 +163,7 @@ $ gfsh start server \
 
 Once the application server is started, the Geode client will automatically launch within the application server process.
 
-<a id="weblogic_setting_up_the_module__section_3E186713737E4D5383E23B41CDFED59B"></a>
-
-## Verifying that Geode Started
+## <a id="weblogic_setting_up_the_module__section_3E186713737E4D5383E23B41CDFED59B" class="no-quick-link"></a>Verifying that Geode Started
 
 You can verify that Geode has successfully started by inspecting the application server log file. For example:
 
@@ -189,9 +180,7 @@ Running on: /192.0.2.0, 8 cpu(s), x86_64 Mac OS X 10.11.4
 
 Information is also logged within the Geode log file, which by default is named `gemfire_modules.<date>.log`.
 
-<a id="weblogic_setting_up_the_module__section_E0E0E5A1C9484D4AA13878273F16A920"></a>
-
-## Configuring Non-Sticky Session Replication
+## <a id="weblogic_setting_up_the_module__section_E0E0E5A1C9484D4AA13878273F16A920" class="no-quick-link"></a>Configuring Non-Sticky Session Replication
 
 Some situations require sessions to be 'non-sticky', which means that client requests can be directed to any server in a cluster of application servers instead of the same server each time. To achieve this, you must configure your deployment as described for the following topologies.
 

@@ -4,8 +4,7 @@ title:  Usage and Performance Notes
 
 Optimize the cache and region snapshot feature by understanding how it performs.
 
-<a id="concept_49775DA33EFF4534950E1A60158F4B36__section_D1AB128682CA41D2BEFB429BED892ABE"></a>
-## Cache Consistency and Concurrent Operations
+## <a id="concept_49775DA33EFF4534950E1A60158F4B36__section_D1AB128682CA41D2BEFB429BED892ABE" class="no-quick-link"></a>Cache Consistency and Concurrent Operations
 
 Importing and exporting region data is an administrative operation, and certain simultaneous runtime conditions can cause the import or export operation to fail such as when you are rebalancing partitioned region buckets or experience a network partition event. This behavior is expected, and you should retry the operation. Redoing an export overwrites an incomplete snapshot file, and redoing an import updates partially imported data.
 
@@ -15,9 +14,7 @@ For example, modifications to region entries during an export can result in a sn
 
 The default behavior is to perform all I/O operations on the node where the snapshot operations are invoked. This will involve either collecting or dispersing data over the network if the region is a partitioned region.
 
-<a id="concept_49775DA33EFF4534950E1A60158F4B36__section_2C90FE1552D94AD08D1E5F3035153E0E"></a>
-
-## Performance Considerations
+## <a id="concept_49775DA33EFF4534950E1A60158F4B36__section_2C90FE1552D94AD08D1E5F3035153E0E" class="no-quick-link"></a>Performance Considerations
 
 When using the data snapshot feature, be aware of the following performance considerations:
 

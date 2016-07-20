@@ -7,9 +7,7 @@ Use the FROM clause to bring the data you need into scope for the rest of your q
 
 The query engine resolves names and path expressions according to the name space that is currently in scope in the query.
 
-<a id="the_from_clause__section_CF6063A6C5134EFC89C43D106B6A6D4D"></a>
-
-## Path Expressions
+## <a id="the_from_clause__section_CF6063A6C5134EFC89C43D106B6A6D4D" class="no-quick-link"></a>Path Expressions
 
 The initial name space for any query is composed of:
 
@@ -61,9 +59,7 @@ Query values in the region. Return a collection of entry values in the region th
 SELECT * FROM /exampleRegion.values portfolio WHERE portfolio.status = 'active'
 ```
 
-<a id="the_from_clause__section_AB1734C16DC348479C00FD6829B933AA"></a>
-
-## Aliases and Synonyms
+## <a id="the_from_clause__section_AB1734C16DC348479C00FD6829B933AA" class="no-quick-link"></a>Aliases and Synonyms
 
 In query strings, you can use aliases in path expressions (region and its objects) so that you can refer to the region or objects in other places in the query.
 
@@ -79,9 +75,7 @@ SELECT DISTINCT * FROM /exampleRegion p WHERE p.status = 'active'
 SELECT * FROM /exampleRegion p, p.positions.values AS pos WHERE pos.secId != '1'
 ```
 
-<a id="the_from_clause__section_A5B42CCB7C924949954AEC2DAAD51134"></a>
-
-## Object Typing
+## <a id="the_from_clause__section_A5B42CCB7C924949954AEC2DAAD51134" class="no-quick-link"></a>Object Typing
 
 Specifying object type in the FROM clause helps the query engine to process the query at optimal speed. Apart from specifying the object types during configuration (using key-constraint and value-constraint), type can be explicitly specified in the query string.
 
