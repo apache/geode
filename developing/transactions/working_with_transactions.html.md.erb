@@ -1,33 +1,34 @@
 ---
-title: Working with <span class="keyword">Geode</span> Cache Transactions
+title: Working with Geode Cache Transactions
 ---
 <a id="topic_tx2_gs4_5k"></a>
 
 
 This section contains guidelines and additional information on working with <span class="keyword">Geode</span> and its cache transactions.
 
--   **[Setting Global Copy on Read](../../developing/transactions/working_with_transactions.html#concept_vx2_gs4_5k)**
+-   **[Setting Global Copy on Read](#concept_vx2_gs4_5k)**
 
--   **[Making a Safe Change Within a Transaction Using CopyHelper.copy](../../developing/transactions/working_with_transactions.html#concept_fdr_wht_vk)**
+-   **[Making a Safe Change Within a Transaction Using CopyHelper.copy](#concept_fdr_wht_vk)**
 
--   **[Transactions and Functions](../../developing/transactions/working_with_transactions.html#concept_ihn_zmt_vk)**
+-   **[Transactions and Functions](#concept_ihn_zmt_vk)**
 
--   **[Using Queries and Indexes with Transactions](../../developing/transactions/working_with_transactions.html#concept_ty1_vnt_vk)**
+-   **[Using Queries and Indexes with Transactions](#concept_ty1_vnt_vk)**
 
--   **[Collections and Region.Entry Instances in Transactions](../../developing/transactions/working_with_transactions.html#concept_ksh_twz_vk)**
+-   **[Collections and Region.Entry Instances in Transactions](#concept_ksh_twz_vk)**
 
--   **[Using Eviction and Expiration Operations](../../developing/transactions/working_with_transactions.html#concept_vyt_txz_vk)**
+-   **[Using Eviction and Expiration Operations](#concept_vyt_txz_vk)**
 
--   **[Transactions and Consistent Regions](../../developing/transactions/working_with_transactions.html#transactions_and_consistency)**
+-   **[Transactions and Consistent Regions](#transactions_and_consistency)**
 
--   **[Suspending and Resuming Transactions](../../developing/transactions/working_with_transactions.html#concept_u5b_ryz_vk)**
+-   **[Suspending and Resuming Transactions](#concept_u5b_ryz_vk)**
 
--   **[Using Cache Writer and Cache Listener Plug-Ins](../../developing/transactions/working_with_transactions.html#concept_ysx_nf1_wk)**
+-   **[Using Cache Writer and Cache Listener Plug-Ins](#concept_ysx_nf1_wk)**
 
--   **[Configuring Transaction Plug-In Event Handlers](../../developing/transactions/working_with_transactions.html#concept_ocw_vf1_wk)**
+-   **[Configuring Transaction Plug-In Event Handlers](#concept_ocw_vf1_wk)**
 
--   **[How Transaction Events Are Managed](../../developing/transactions/transaction_event_management.html)**
+-   **[How Transaction Events Are Managed](transaction_event_management.html)**
 
+<a id="concept_vx2_gs4_5k"></a>
 ## Setting Global Copy on Read
 
 As many entry operations return a reference to the cache entry, copy-on-read avoids problems within a transaction setting. To enable global copy-on-read for all reads, modify the `cache.xml` file or use the corresponding Java API call.
@@ -151,6 +152,7 @@ The `EntryEvent` that a callback receives has a unique <span class="keyword">Geo
 
 For more information on writing cache event handlers, see [Implementing Cache Event Handlers](../events/implementing_cache_event_handlers.html).
 
+<a id="concept_ocw_vf1_wk"></a>
 ## Configuring Transaction Plug-In Event Handlers
 
 <span class="keyword">Geode</span> has two types of transaction plug-ins: Transaction Writers and Transaction Listeners. You can optionally install one transaction writer and one or more transaction listeners per cache.
