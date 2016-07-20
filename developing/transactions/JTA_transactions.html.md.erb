@@ -1,5 +1,5 @@
 ---
-title: JTA Global Transactions with <span class="keyword">Geode</span>
+title: JTA Global Transactions with Geode
 ---
 
 
@@ -24,23 +24,23 @@ An application creates a global transaction by using `javax.transaction.UserTran
 **Note:**
 See the Sun documentation for more information on topics such as JTA, `javax.transaction`, committing and rolling back global transactions, and the related exceptions.
 
--   **[Coordinating with External JTA Transactions Managers](../../developing/transactions/JTA_transactions.html#concept_cp1_zx1_wk)**
+-   **[Coordinating with External JTA Transactions Managers](#concept_cp1_zx1_wk)**
 
     <span class="keyword">Geode</span> can work with the JTA transaction managers of several containers like JBoss, WebLogic, GlassFish, and so on.
 
--   **[Using Geode as the "Last Resource" in a Container-Managed JTA Transaction](../../developing/transactions/JTA_transactions.html#concept_csy_vfb_wk)**
+-   **[Using Geode as the "Last Resource" in a Container-Managed JTA Transaction](#concept_csy_vfb_wk)**
 
     The "last resource" feature in certain 3rd party containers such as WebLogic allow the use one non-XAResource (such as <span class="keyword">Geode</span>) in a transaction with multiple XAResources while ensuring consistency.
 
--   **[Using Geode as the JTA Transaction Manager](../../developing/transactions/JTA_transactions.html#concept_8567sdkbigige)**
+-   **[Using Geode as the JTA Transaction Manager](#concept_8567sdkbigige)**
 
     You can also use <span class="keyword">Geode</span> as the JTA transaction manager.
 
--   **[Behavior of Geode Cache Writers and Loaders Under JTA](../../developing/transactions/cache_plugins_with_jta.html)**
+-   **[Behavior of Geode Cache Writers and Loaders Under JTA](cache_plugins_with_jta.html)**
 
     When <span class="keyword">Geode</span> participates in a global transactions, you can still have <span class="keyword">Geode</span> cache writers and cache loaders operating in the usual way.
 
--   **[Turning Off JTA Transactions](../../developing/transactions/turning_off_jta.html)**
+-   **[Turning Off JTA Transactions](turning_off_jta.html)**
 
     You can configure regions to not participate in any JTA global transaction.
 
@@ -167,7 +167,7 @@ To accomplish this, the application server container must use a JCA Resource Ada
 
 See [JCA Resource Adapter Example](jca_adapter_example.html#concept_swv_z2p_wk) for an example of how to set up a transaction using the JCA Resource Adapter.
 
-<a id="concept_csy_vfb_wk"></a>
+<a id="concept_8567sdkbigige"></a>
 
 ## Using <span class="keyword">Geode</span> as the JTA Transaction Manager
 
@@ -223,8 +223,8 @@ To run a global transaction, perform the following steps:
 
 See [Geode JTA Transaction Example](transaction_jta_gemfire_example.html#concept_ffg_sj5_1l).
 
--   **[Configuring Database Connections Using JNDI](../../developing/transactions/configuring_db_connections_using_JNDI.html)**
+-   **[Configuring Database Connections Using JNDI](configuring_db_connections_using_JNDI.html)**
 
--   **[Example DataSource Configurations in cache.xml](../../developing/transactions/configuring_db_connections_using_JNDI.html#topic_F67EC20067124A618A8099AB4CBF634C)**
+-   **[Example DataSource Configurations in cache.xml](configuring_db_connections_using_JNDI.html#topic_F67EC20067124A618A8099AB4CBF634C)**
 
 
