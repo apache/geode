@@ -1,5 +1,5 @@
 ---
-title:  Changing the Default <span class="keyword">Geode</span> Configuration in the Tomcat Module
+title:  Changing the Default Geode Configuration in the Tomcat Module
 ---
 
 By default, the Tomcat module will run <span class="keyword">Geode</span> automatically with pre-configured settings. You can change these <span class="keyword">Geode</span> settings.
@@ -90,8 +90,8 @@ This example creates a partitioned region by the name of "my\_region".
 
 The following parameters are the cache configuration parameters that can be added to Tomcat's `context.xml` file.
 
-CommitSessionValve   
-Whether to wait until the end of the HTTP request to save all session attribute changes to the <span class="keyword">Geode</span> cache; if the configuration line is present in the application's `context.xml` file, then only one put will be performed into the cache for the session per HTTP request. If the configuration line is not included, then the session is saved each time the setAttribute or removeAttribute method is invoked. As a consequence, multiple puts are performed into the cache during a single session. This configuration setting is recommended for any applications that modify the session frequently during a single HTTP request.
+<dt>**CommitSessionValve**</dt>
+<dd>Whether to wait until the end of the HTTP request to save all session attribute changes to the <span class="keyword">Geode</span> cache; if the configuration line is present in the application's `context.xml` file, then only one put will be performed into the cache for the session per HTTP request. If the configuration line is not included, then the session is saved each time the `setAttribute` or `removeAttribute` method is invoked. As a consequence, multiple puts are performed into the cache during a single session. This configuration setting is recommended for any applications that modify the session frequently during a single HTTP request.</dd>
 
 Default: Set
 
@@ -101,8 +101,8 @@ To disable this configuration, remove or comment out the following line from Tom
 <Valve className="com.gemstone.gemfire.modules.session.catalina.CommitSessionValve"/>
 ```
 
-enableDebugListener   
-Whether to enable a debug listener in the session region; if this parameter is set to true, info-level messages are logged to the GemFire log when sessions are created, updated, invalidated or expired
+<dt>**enableDebugListener**</dt>
+<dd>Whether to enable a debug listener in the session region; if this parameter is set to true, info-level messages are logged to the GemFire log when sessions are created, updated, invalidated or expired.</dd>
 
 Default: `false`
 
@@ -115,8 +115,8 @@ AttributesFactory factory = ...; <or> RegionFactory factory = ...;
 factory.addCacheListener(new DebugCacheListener());
 ```
 
-enableLocalCache   
-Whether a local cache is enabled. If this parameter is set to true, the app server load balancer should be configured for sticky session mode
+<dt>**enableLocalCache**</dt>
+<dd>Whether a local cache is enabled. If this parameter is set to true, the app server load balancer should be configured for sticky session mode.</dd>
 
 Default: `false` for peer-to-peer, `true` for client/server
 
@@ -129,8 +129,8 @@ Cache.createRegionFactory(REPLICATE_PROXY);
 ClientCache.createClientRegionFactory(CACHING_PROXY_HEAP_LRU);
 ```
 
-regionAttributesId   
-Specifies the region shortcut. For more information see [Region Shortcuts and Custom Named Region Attributes](../../basic_config/data_regions/region_shortcuts.html); when using a partitioned region attribute, it is recommended that you use PARTITION\_REDUNDANT (rather than PARTITION) to ensure that the failure of a server does not result in lost session data
+<dt>**regionAttributesId**</dt>
+<dd>Specifies the region shortcut. For more information see [Region Shortcuts and Custom Named Region Attributes](../../basic_config/data_regions/region_shortcuts.html); when using a partitioned region attribute, it is recommended that you use PARTITION\_REDUNDANT (rather than PARTITION) to ensure that the failure of a server does not result in lost session data.</dd>
 
 Default: REPLICATE for peer-to-peer, PARTITION\_REDUNDANT for client/server
 
@@ -141,8 +141,8 @@ The <span class="keyword">Geode</span> API equivalent to setting this parameter:
 Cache.createRegionFactory(regionAttributesId); 
 ```
 
-regionName   
-Name of the region
+<dt>**regionName**</dt>
+<dd>Name of the region.</dd>
 
 Default: gemfire\_modules\_sessions
 
