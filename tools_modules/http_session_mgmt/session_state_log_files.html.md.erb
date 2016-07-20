@@ -5,13 +5,13 @@ title:  Session State Log Files
 Several log files are written by the various parts of the session management code.
 
 -   `catalina.log`. Log file written by the tc server
--   `cacheserver.log`. Log file written by the <span class="keyword">Geode</span> server process.
--   `gemfire_modules.log`. Log file written by the <span class="keyword">Geode</span> cache client.
+-   `cacheserver.log`. Log file written by the Geode server process.
+-   `gemfire_modules.log`. Log file written by the Geode cache client.
 
 <a id="concept_33F73F78783D4994B721486243827E15__section_A547F9C7AA4541ED9B99CF0DEAC1417A"></a>
 ## Adding FINE Debug Logging to catalina.log
 
-To add <span class="keyword">Geode</span>-specific FINE logging to the `catalina.log` file, add the following lines to your `<instance>/conf/logging.properties` file:
+To add Geode-specific FINE logging to the `catalina.log` file, add the following lines to your `<instance>/conf/logging.properties` file:
 
 ``` pre
 com.gemstone.gemfire.modules.session.catalina.DeltaSessionManager.level = FINE
@@ -63,7 +63,7 @@ key=5782ED83A3D9F101BBF8D851CE4E798E
 
 ## Adding Additional Debug Logging to the Geode Server Log
 
-To add fine-level logging to the <span class="keyword">Geode</span> cache server, add the 'log-level' property to the server process. For example:
+To add fine-level logging to the Geode cache server, add the 'log-level' property to the server process. For example:
 
 ``` pre
 gfsh> start server --name=server1 --cache-xml-file=../conf/cache-server.xml 
@@ -73,13 +73,13 @@ gfsh> start server --name=server1 --cache-xml-file=../conf/cache-server.xml
 This will add fine-level logging to the `server.log` file.
 
 **Note:**
-This will help debug <span class="keyword">Geode</span> server issues, but it adds a lot of logging to the file.
+This will help debug Geode server issues, but it adds a lot of logging to the file.
 
 <a id="concept_33F73F78783D4994B721486243827E15__section_D36A81360D904450B8BE7334897C5685"></a>
 
 ## Add Debug Logging to gemfire\_modules.log
 
-To add fine-level logging to the <span class="keyword">Geode</span> Cache Client, add the 'log-level' property to the Listener element in the tc Server or Tomcat `server.xml` file. For example:
+To add fine-level logging to the Geode Cache Client, add the 'log-level' property to the Listener element in the tc Server or Tomcat `server.xml` file. For example:
 
 ``` pre
 <Listener log-level="fine" 
@@ -96,6 +96,6 @@ statistic-sampling-enabled="${geode-cs.statistic.sampling.enabled}"/>
 This will add fine-level logging to the file defined by the `${geode-cs.log.file}` property. The default log file name is `gemfire_modules.log`.
 
 **Note:**
-This will help debug <span class="keyword">Geode</span> client issues, but it adds a lot of logging to the file.
+This will help debug Geode client issues, but it adds a lot of logging to the file.
 
 

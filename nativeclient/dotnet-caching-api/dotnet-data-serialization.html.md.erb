@@ -2,7 +2,7 @@
 title:  Data Serialization
 ---
 
-All data that <span class="keyword">Geode</span> moves out of the local cache must be serializable.
+All data that Geode moves out of the local cache must be serializable.
 
 Region data that must be serializable falls under the following categories:
 
@@ -14,15 +14,15 @@ Region data that must be serializable falls under the following categories:
 -   Regions that receive events from remote caches.
 -   Regions that provide function arguments and results.
 
-To minimize the cost of serialization and deserialization, <span class="keyword">Geode</span> avoids changing the data format whenever possible. This means your data may be stored in the cache in serialized or deserialized form, depending on how you use it. For example, if a server acts only as a storage location for data distribution between clients, it makes sense to leave the data in serialized form, ready to be transmitted to clients that request it. Partitioned region data is always stored in serialized form with one exception—functions that add data to a partitioned region locally use the deserialized form.
+To minimize the cost of serialization and deserialization, Geode avoids changing the data format whenever possible. This means your data may be stored in the cache in serialized or deserialized form, depending on how you use it. For example, if a server acts only as a storage location for data distribution between clients, it makes sense to leave the data in serialized form, ready to be transmitted to clients that request it. Partitioned region data is always stored in serialized form with one exception—functions that add data to a partitioned region locally use the deserialized form.
 
 -   **[Data Serialization Options](../../nativeclient/dotnet-caching-api/dotnet-data-serialization-options.html)**
 
-    Built-in .NET types are serialized automatically into the cache and can be retrieved by Java servers and other <span class="keyword">Geode</span> clients. For domain objects that are not simple types, you have three <span class="keyword">Geode</span> serialization options.
+    Built-in .NET types are serialized automatically into the cache and can be retrieved by Java servers and other Geode clients. For domain objects that are not simple types, you have three Geode serialization options.
 
 -   **[Serialize with PDX Serialization](../../nativeclient/dotnet-caching-api/dotnet-pdx-serialization.html)**
 
-    <span class="keyword">Geode</span>'s Portable Data eXchange (PDX) is a cross-language data format that can reduce the cost of distributing and serializing your objects. PDX stores data in named fields that you can access individually, to avoid the cost of deserializing the entire data object. PDX also allows you to mix versions of objects where you have added or removed fields.
+    Geode's Portable Data eXchange (PDX) is a cross-language data format that can reduce the cost of distributing and serializing your objects. PDX stores data in named fields that you can access individually, to avoid the cost of deserializing the entire data object. PDX also allows you to mix versions of objects where you have added or removed fields.
 
 -   **[Serialize with the Geode IGFSerializable Interface](../../nativeclient/dotnet-caching-api/serialize-using-igfserializable.html)**
 

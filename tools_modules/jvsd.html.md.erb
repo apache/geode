@@ -4,7 +4,7 @@ title: Java Visual Statistics Display (JVSD)
 <a id="topic_523F6DE33FE54307BBE8F83BB7D9355D"></a>
 
 
-The Java Visual Statistics Display utility reads <span class="keyword">Geode</span> statistics and produces graphical displays for analysis.
+The Java Visual Statistics Display utility reads Geode statistics and produces graphical displays for analysis.
 
 -   **[JVSD Overview](#jvsd-overview)**
 
@@ -14,13 +14,13 @@ The Java Visual Statistics Display utility reads <span class="keyword">Geode</sp
 
 ## JVSD Overview
 
-JVSD is an open source tool for review of the <span class="keyword">Geode</span> metrics.
+JVSD is an open source tool for review of the Geode metrics.
 
 ## Installing and Running JVSD
 
-JVSD is available as a feature branch of the <span class="keyword">Geode</span> repository. To install and run JVSD:
+JVSD is available as a feature branch of the Geode repository. To install and run JVSD:
 
-1. Make sure that you have a recent checkout of <span class="keyword">Geode</span> and that you are on the JVSD branch, `feature/GEODE-78`.
+1. Make sure that you have a recent checkout of Geode and that you are on the JVSD branch, `feature/GEODE-78`.
 
     ``` pre
     $ git status 
@@ -89,9 +89,9 @@ JVSD is available as a feature branch of the <span class="keyword">Geode</span> 
 
 <img src="../images/jVSD-startup.png" class="image" />
 
-## Configure Statistics Sampling in <span class="keyword">Geode</span>
+## Configure Statistics Sampling in Geode
 
-Before you use JVSD, you must enable the collection of <span class="keyword">Geode</span> statistics at runtime. Set the following configurations in gemfire.properties:
+Before you use JVSD, you must enable the collection of Geode statistics at runtime. Set the following configurations in gemfire.properties:
 
 ``` pre
 statistic-sampling-enabled=true
@@ -100,12 +100,12 @@ statistic-archive-file=myStats.gfs
 
 Since collecting statistics at the default sampling rate of once every second does not affect performance, we recommend that sampling should always be enabled, including during development, testing, and in production.
 
-There is a special category of statistics called time-based statistics that can be very useful in troubleshooting and assessing the performance of some <span class="keyword">Geode</span> operations, but they should be used with caution because their collection can affect performance. These statistics can be enabled using the following gemfire.properties configuration:
+There is a special category of statistics called time-based statistics that can be very useful in troubleshooting and assessing the performance of some Geode operations, but they should be used with caution because their collection can affect performance. These statistics can be enabled using the following gemfire.properties configuration:
 
 ``` pre
 enable-time-statistics=true
 ```
 
-When the distributed system is up and running, every <span class="keyword">Geode</span> instance generates a statistics file. To simplify browsing these statistics in JVSD, you may want to copy all the statistics files from all members into one directory so that you can easily load the files into JVSD.
+When the distributed system is up and running, every Geode instance generates a statistics file. To simplify browsing these statistics in JVSD, you may want to copy all the statistics files from all members into one directory so that you can easily load the files into JVSD.
 
 

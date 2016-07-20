@@ -2,9 +2,9 @@
 title:  Developing C++ Programs on Windows
 ---
 
-<span class="keyword">Geode</span> uses the Visual Studio 2010 Service Pack 1 compiler for C++ programs on Windows, which invokes Microsoft<sup>®</sup> `cl.exe` from the command line at compile time.
+Geode uses the Visual Studio 2010 Service Pack 1 compiler for C++ programs on Windows, which invokes Microsoft<sup>®</sup> `cl.exe` from the command line at compile time.
 
-The <span class="keyword">Geode</span> native client supports .NET 4.0 and Visual Studio 2010. For advantages and more information on the features of .NET 4.0 and Visual Studio 2010 SP1, see [http://msdn.microsoft.com/en-us/library/dd831853(v=vs.100).aspx](http://msdn.microsoft.com/en-us/library/dd831853(v=vs.100).aspx) and [http://msdn.microsoft.com/en-us/library/vstudio/w0x726c2(v=vs.100).aspx](http://msdn.microsoft.com/en-us/library/vstudio/w0x726c2(v=vs.100).aspx).
+The Geode native client supports .NET 4.0 and Visual Studio 2010. For advantages and more information on the features of .NET 4.0 and Visual Studio 2010 SP1, see [http://msdn.microsoft.com/en-us/library/dd831853(v=vs.100).aspx](http://msdn.microsoft.com/en-us/library/dd831853(v=vs.100).aspx) and [http://msdn.microsoft.com/en-us/library/vstudio/w0x726c2(v=vs.100).aspx](http://msdn.microsoft.com/en-us/library/vstudio/w0x726c2(v=vs.100).aspx).
 
 Visual Studio 2010 SP1 is the recommended compiler. If you are using any other compiler, contact technical support for assistance.
 
@@ -48,7 +48,7 @@ If you want to use the Visual Studio user interface instead of invoking `cl.exe`
 | `/MD`                             | Memory model.                                                                                                         |
 | `/EHsc`                           | Catches C++ exceptions only and tells the compiler to assume that \*extern\* C functions never throw a C++ exception. |
 | `/GR`                             | Runtime type information.                                                                                             |
-| `-I%GFCPP%\include`               | Specifies the <span class="keyword">Geode</span> `include` directory.                                                 |
+| `-I%GFCPP%\include`               | Specifies the Geode `include` directory.                                                 |
 | `%GFCPP%\lib\gfcppcache.lib`      | Specifies the library file for the shared library.                                                                    |
 | `/D_CRT_SECURE_NO_DEPRECATE`      | Suppresses warnings. Required for Visual Studio 2010.                                                                 |
 | `/D_CRT_NON_CONFORMING_SWPRINTFS` | Suppresses warnings. Required for Visual Studio 2010.                                                                 |
@@ -58,6 +58,6 @@ If you want to use the Visual Studio user interface instead of invoking `cl.exe`
 
 ## Step 4. Verify that You Can Load the Native Client Library
 
-Because <span class="keyword">Geode</span> does not provide a library that can be linked statically into an application on Windows, you must dynamically link to the native client library.
+Because Geode does not provide a library that can be linked statically into an application on Windows, you must dynamically link to the native client library.
 
-To make the native client library available for loading, verify that the directory `productDir/bin` is included in the *PATH* environment variable, where *productDir* is the path to the <span class="keyword">Geode</span> product directory.
+To make the native client library available for loading, verify that the directory `productDir/bin` is included in the *PATH* environment variable, where *productDir* is the path to the Geode product directory.

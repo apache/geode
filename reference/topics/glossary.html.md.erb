@@ -2,7 +2,7 @@
 title:  Glossary
 ---
 
-This glossary defines terms used in <span class="keyword">Apache Geode</span> documentation.
+This glossary defines terms used in Apache Geode documentation.
 
 <a id="glossary__section_DAFADE21D316465481B71C795FF77AD5"></a>
 ## ACK wait threshold
@@ -19,13 +19,13 @@ See [event](glossary.html#glossary__section_2AF9B98BC1CA402A9F24E552EE9C9ACF).
 
 ## API
 
-Application Programming Interface. <span class="keyword">Geode</span> provides APIs to cached data for Java applications.
+Application Programming Interface. Geode provides APIs to cached data for Java applications.
 
 <a id="glossary__section_1DCB29DBB9064E82A4CC0A6413191820"></a>
 
 ## application program
 
-A program designed to perform a specific function directly for the user or, in some cases, for another application program. <span class="keyword">Geode</span> applications use the <span class="keyword">Geode</span> application programming interfaces (APIs) to modify cached data.
+A program designed to perform a specific function directly for the user or, in some cases, for another application program. Geode applications use the Geode application programming interfaces (APIs) to modify cached data.
 
 <a id="glossary__section_1E6C71FF293148BE853D0C7D657F90ED"></a>
 
@@ -51,7 +51,7 @@ A behavior associated with synchronization functions. Blocking behavior is exhib
 
 ## cache
 
-In-memory <span class="keyword">Geode</span> data storage created by an application or cache server for data storage, distribution, and management. This is the point of access for Java applications for all caching features, and the only view of the cache that is available to the application. Cache creation creates a connection to the distributed system. See also [local](glossary.html#glossary__section_598D82A75D9842438BB934E01E77266E) and [remote](glossary.html#glossary__section_CC864725C0014791805D2549D87DA545).
+In-memory Geode data storage created by an application or cache server for data storage, distribution, and management. This is the point of access for Java applications for all caching features, and the only view of the cache that is available to the application. Cache creation creates a connection to the distributed system. See also [local](glossary.html#glossary__section_598D82A75D9842438BB934E01E77266E) and [remote](glossary.html#glossary__section_CC864725C0014791805D2549D87DA545).
 
 <a id="glossary__section_F63DF98EB5D04EB5BBF9C6AD923341F5"></a>
 
@@ -63,7 +63,7 @@ Residing or occurring in the local cache.
 
 ## cache.xml
 
-Common name for the XML file that declares the initial configuration of a cache. This file is used to customize the behavior of the <span class="keyword">Geode</span> cache server process and can be used by any Java application. Applications can also configure the cache through the <span class="keyword">Geode</span> Java APIs. You can give this file any name.
+Common name for the XML file that declares the initial configuration of a cache. This file is used to customize the behavior of the Geode cache server process and can be used by any Java application. Applications can also configure the cache through the Geode Java APIs. You can give this file any name.
 
 <a id="glossary__section_61C824936B6E495D9214EE7E0F0C0F63"></a>
 
@@ -87,19 +87,19 @@ User-implemented plug-in for loading data into a region. A region’s cache load
 
 ## cache miss
 
-The situation where a key’s value is requested from a cache and the requested key is not present or has a null value. <span class="keyword">Geode</span> responds to cache misses in various ways, depending on the region and system configuration. For example, a client region goes to its servers to satisfy cache misses. A region with local scope uses its data loader to load the value from an outside data source, if a loader is installed on the region.
+The situation where a key’s value is requested from a cache and the requested key is not present or has a null value. Geode responds to cache misses in various ways, depending on the region and system configuration. For example, a client region goes to its servers to satisfy cache misses. A region with local scope uses its data loader to load the value from an outside data source, if a loader is installed on the region.
 
 <a id="glossary__section_cache_server"></a>
 
 ## cache server
 
-A long-lived, configurable <span class="keyword">Geode</span> distributed system member process that can service client connections.
+A long-lived, configurable Geode distributed system member process that can service client connections.
 
 <a id="glossary__section_cache_transaction"></a>
 
 ## cache transaction
 
-A native <span class="keyword">Geode</span> transaction, managed by <span class="keyword">Geode</span> and not by JTA. This type of transaction operates only on data available from the <span class="keyword">Geode</span> cache in the local member. See also [JTA](glossary.html#glossary__section_2B4ADA311CA946839F3E8F3B071D4E74) and [global transaction](glossary.html#glossary__section_CDA3C2530A74433CBE0204D588C237AC).
+A native Geode transaction, managed by Geode and not by JTA. This type of transaction operates only on data available from the Geode cache in the local member. See also [JTA](glossary.html#glossary__section_2B4ADA311CA946839F3E8F3B071D4E74) and [global transaction](glossary.html#glossary__section_CDA3C2530A74433CBE0204D588C237AC).
 
 <a id="glossary__section_40FFA1BD5E4A4E3084AE8B257C612EDE"></a>
 
@@ -111,13 +111,13 @@ User-implemented plug-in intended for synchronizing the cache with an outside da
 
 ## client
 
-A <span class="keyword">Geode</span> application that is configured as a standalone distributed system member, with regions configured as client regions. Client configuration uses the &lt;client-cache&gt; `cache.xml` element and the ClientCache API.
+A Geode application that is configured as a standalone distributed system member, with regions configured as client regions. Client configuration uses the &lt;client-cache&gt; `cache.xml` element and the ClientCache API.
 
 <a id="glossary__section_A586ED6889724255957630F01B2E54F4"></a>
 
 ## client region
 
-A <span class="keyword">Geode</span> cache region that is configured to go to one or more <span class="keyword">Geode</span> servers, in a separate <span class="keyword">Geode</span> distributed system, for all data distribution activities. Among other things, client regions go to servers to satisfy cache misses, distribute data modifications, and to run single queries and continuous queries.
+A Geode cache region that is configured to go to one or more Geode servers, in a separate Geode distributed system, for all data distribution activities. Among other things, client regions go to servers to satisfy cache misses, distribute data modifications, and to run single queries and continuous queries.
 
 ## cluster configuration service
 
@@ -145,25 +145,25 @@ Region attribute that specifies an estimate of the number of threads ever expect
 
 ## conflation
 
-Combining entries in a message queue for better performance. When an event is added to queue, if a similar event exists in the queue, there are two ways to conflate the events. One way is to remove the existing entry from wherever it resides in the queue, and add the new entry to the end of the queue. The other way is to replace the existing entry with the new entry, where it resides in the queue, and add nothing to the end of the queue. In <span class="keyword">Geode</span>, region entry update events, server events going to clients, and gateway sender events going to remote distributed systems can all be conflated.
+Combining entries in a message queue for better performance. When an event is added to queue, if a similar event exists in the queue, there are two ways to conflate the events. One way is to remove the existing entry from wherever it resides in the queue, and add the new entry to the end of the queue. The other way is to replace the existing entry with the new entry, where it resides in the queue, and add nothing to the end of the queue. In Geode, region entry update events, server events going to clients, and gateway sender events going to remote distributed systems can all be conflated.
 
 <a id="glossary__section_6D18D4A3D0D046E6B3664B4C95065EB3"></a>
 
 ## connection
 
-The connection used by an application to access a <span class="keyword">Geode</span> system. A Java application connects to its <span class="keyword">Geode</span> distributed system when it creates its cache. The application must connect to a distributed system to gain access to the <span class="keyword">Geode</span> functionalities. A client connects to a running <span class="keyword">Geode</span> server to distribute data and events between itself and the server tier. These client connections are managed by server connection pools within the client applications. Gateway senders connect to a remote gateway receiver to distribute data events between sites.
+The connection used by an application to access a Geode system. A Java application connects to its Geode distributed system when it creates its cache. The application must connect to a distributed system to gain access to the Geode functionalities. A client connects to a running Geode server to distribute data and events between itself and the server tier. These client connections are managed by server connection pools within the client applications. Gateway senders connect to a remote gateway receiver to distribute data events between sites.
 
 <a id="glossary__section_32D2C413690A4F44BA8F7B0F2AF3CD1A"></a>
 
 ## consumer
 
-<span class="keyword">Geode</span> member process that receives data and/or events from other members. Peer consumers are often configured with replicated regions, so all changes in the distributed system arrive into the local cache. Client consumers can register subscriptions with their servers so that updates are automatically forwarded from the server tier. See [producer](glossary.html#glossary__section_8742E7E064364DED98D4D399B98DBCF3).
+Geode member process that receives data and/or events from other members. Peer consumers are often configured with replicated regions, so all changes in the distributed system arrive into the local cache. Client consumers can register subscriptions with their servers so that updates are automatically forwarded from the server tier. See [producer](glossary.html#glossary__section_8742E7E064364DED98D4D399B98DBCF3).
 
 <a id="glossary__section_E02DBBD928D54E8C82EC59B5CCC528EF"></a>
 
 ## coordinator
 
-The member of the distributed system that sends out membership views. This is typically the locator in <span class="keyword">Geode</span>.
+The member of the distributed system that sends out membership views. This is typically the locator in Geode.
 
 <a id="glossary__section_6049C4E876C24615B245D8E2A92E3D89"></a>
 
@@ -181,7 +181,7 @@ See [entry](glossary.html#glossary__section_5D8ED880C9BD4062BE6F0404B28FA005).
 
 ## data fabric
 
-Also referred to as an in-memory data grid or an enterprise data fabric. <span class="keyword">Geode</span> is an implementation of a data fabric. A data fabric is a distributed, memory-based data management platform that uses cluster-wide resources -- memory, CPU, network bandwidth, and optionally local disk -- to manage application data and application logic (behavior). The data fabric uses dynamic replication and data partitioning techniques to offer continuous availability, very high performance, and linear scalability for data intensive applications, all without compromising on data consistency even when exposed to failure conditions.
+Also referred to as an in-memory data grid or an enterprise data fabric. Geode is an implementation of a data fabric. A data fabric is a distributed, memory-based data management platform that uses cluster-wide resources -- memory, CPU, network bandwidth, and optionally local disk -- to manage application data and application logic (behavior). The data fabric uses dynamic replication and data partitioning techniques to offer continuous availability, very high performance, and linear scalability for data intensive applications, all without compromising on data consistency even when exposed to failure conditions.
 
 <a id="glossary__section_41C4996366BF4CD4BF290E6DF6E2F20D"></a>
 
@@ -237,7 +237,7 @@ A collection of caches spread across multiple machines and multiple locations th
 
 ## distributed system
 
-One or more <span class="keyword">Geode</span> system members that have been configured to communicate cache events with each other, forming a single, logical system.
+One or more Geode system members that have been configured to communicate cache events with each other, forming a single, logical system.
 
 <a id="glossary__section_FC39A1F63F4D40FC9B3DF00F1A75282E"></a>
 
@@ -273,7 +273,7 @@ The data contained in an entry.
 
 ## event
 
-An action recognized by the <span class="keyword">Geode</span> system members, which can respond by executing callback methods. The <span class="keyword">Geode</span> API produces two types of events: cache events for detail-level management of applications with data caches and administrative events for higher-level management of the distributed system and its components. An operation can produce administrative events, cache events, or both.
+An action recognized by the Geode system members, which can respond by executing callback methods. The Geode API produces two types of events: cache events for detail-level management of applications with data caches and administrative events for higher-level management of the distributed system and its components. An operation can produce administrative events, cache events, or both.
 
 <a id="glossary__section_1B57CC3632B843AA89CB321489C3B91C"></a>
 
@@ -293,7 +293,7 @@ A cached object expires when its time-to-live or idle timeout counters are exhau
 
 The action to be taken when a cached object expires. The expiration action specifies whether the object is to be invalidated or destroyed and whether the action is to be performed only in the local cache or throughout the distributed system. A destroyed object is completely removed from the cache. A region is invalidated by invalidating all entries contained in the region. An entry is invalidated by having its value marked as invalid. Region.getEntry.getValue returns null for an invalid entry.
 
-In <span class="keyword">Geode</span>, expiration attributes are set at the region level for the region and at the entry level for entries. See also idle timeout and time-to-live.
+In Geode, expiration attributes are set at the region level for the region and at the entry level for entries. See also idle timeout and time-to-live.
 
 <a id="glossary__section_5CFFD2274BAD4A73849B3AA854BA4661"></a>
 
@@ -323,7 +323,7 @@ A gateway sender defines a single remote distributed system site and an associat
 
 ## gemfire.properties
 
-Common name for the file used for distributed system configuration, including system member connection and communication behavior, logging and statistics files and settings, and security settings. Applications can also configure the distributed system through the <span class="keyword">Geode</span> Java APIs. You can give this file any name.
+Common name for the file used for distributed system configuration, including system member connection and communication behavior, logging and statistics files and settings, and security settings. Applications can also configure the distributed system through the Geode Java APIs. You can give this file any name.
 
 <a id="glossary__section_6838A6C252464E94965F05E285A94689"></a>
 
@@ -335,7 +335,7 @@ Data distribution setting that provides locking across the distributed system fo
 
 ## global transaction
 
-A JTA-controlled transaction in which multiple resources, such as the <span class="keyword">Geode</span> cache and a JDBC database connection, participate. JTA coordinates the completion of the transaction with each of the transaction’s resources. See also [JTA](glossary.html#glossary__section_2B4ADA311CA946839F3E8F3B071D4E74) and [cache transaction](glossary.html#glossary__section_cache_transaction).
+A JTA-controlled transaction in which multiple resources, such as the Geode cache and a JDBC database connection, participate. JTA coordinates the completion of the transaction with each of the transaction’s resources. See also [JTA](glossary.html#glossary__section_2B4ADA311CA946839F3E8F3B071D4E74) and [cache transaction](glossary.html#glossary__section_cache_transaction).
 
 <a id="glossary__section_46D4C19244A3481290BF5C54E4DFE951"></a>
 
@@ -387,13 +387,13 @@ Java Management eXtensions. A set of specifications for dynamic application and 
 
 ## JNDI
 
-Java Naming and Directory Interface. An interface to naming and directory services for Java applications. Applications can use JNDI to locate data sources, such as databases to use in global transactions. <span class="keyword">Geode</span> allows its JNDI to be configured in a `cache.xml` configuration file.
+Java Naming and Directory Interface. An interface to naming and directory services for Java applications. Applications can use JNDI to locate data sources, such as databases to use in global transactions. Geode allows its JNDI to be configured in a `cache.xml` configuration file.
 
 <a id="glossary__section_2B4ADA311CA946839F3E8F3B071D4E74"></a>
 
 ## JTA
 
-Java Transaction API. The local Java interfaces between a transaction manager (JTS) and the parties involved in a global transaction. <span class="keyword">Geode</span> can be a member of a JTA global transaction. See also [global transaction](glossary.html#glossary__section_CDA3C2530A74433CBE0204D588C237AC).
+Java Transaction API. The local Java interfaces between a transaction manager (JTS) and the parties involved in a global transaction. Geode can be a member of a JTA global transaction. See also [global transaction](glossary.html#glossary__section_CDA3C2530A74433CBE0204D588C237AC).
 
 <a id="glossary__section_731F788890994955863C24BF1FED7F56"></a>
 
@@ -439,31 +439,31 @@ Data distribution setting that keeps data private and visible only to threads ru
 
 ## locator
 
-<span class="keyword">Geode</span> process that tracks system members and provides current membership information to joining members so they can establish communication. For server systems, the locator also tracks servers and server load and, when a client requests a server connection, the locator sends the client to one of the least loaded servers. .
+Geode process that tracks system members and provides current membership information to joining members so they can establish communication. For server systems, the locator also tracks servers and server load and, when a client requests a server connection, the locator sends the client to one of the least loaded servers. .
 
 <a id="glossary__section_AED421A3C46349168730605059F9B2B0"></a>
 
 ## LRU
 
-Least recently used. Used to refer to region entry or entries most eligible for eviction due to lack of interest by client applications. <span class="keyword">Geode</span> offers eviction controllers that use the LRU status of a region’s entries to determine which to evict to free up space. Possible eviction actions are local destroy and overflow. See also [resource manager](glossary.html#glossary__section_A8EA732962854C499CA06CAD40084AA2).
+Least recently used. Used to refer to region entry or entries most eligible for eviction due to lack of interest by client applications. Geode offers eviction controllers that use the LRU status of a region’s entries to determine which to evict to free up space. Possible eviction actions are local destroy and overflow. See also [resource manager](glossary.html#glossary__section_A8EA732962854C499CA06CAD40084AA2).
 
 <a id="glossary__section_ACCE0EBD75C64DEA9563ECA18802E3EC"></a>
 
 ## machine
 
-Any <span class="keyword">Geode</span>-supported physical machine or Virtual Machine.
+Any Geode-supported physical machine or Virtual Machine.
 
 <a id="glossary__section_51E160ED7FEF40469FD3D6BA80792393"></a>
 
 ## member
 
-A process that has defined a connection to a <span class="keyword">Geode</span> distributed system and created a <span class="keyword">Geode</span> cache. This can be a Java or Native Client application. This can also be a <span class="keyword">Geode</span> process such as a locator or cacheserver. The minimal <span class="keyword">Geode</span> process configuration is a single member that is connected to a distributed system.
+A process that has defined a connection to a Geode distributed system and created a Geode cache. This can be a Java or Native Client application. This can also be a Geode process such as a locator or cacheserver. The minimal Geode process configuration is a single member that is connected to a distributed system.
 
 <a id="glossary__section_B43A3D6E64AF487480B32B78567C06E7"></a>
 
 ## message queue
 
-A first-in, first-out data structure in a <span class="keyword">Geode</span> system member that stores messages for distribution in the same order that the original operations happened in the local member. Each thread has its own queue. Depending on the kind of queue, the messages could be going between two members of a distributed system, a client and server, or two members in different distributed systems. See also [conflation](glossary.html#glossary__section_3FEC7A097CE247299F47EA209C5F91B8).
+A first-in, first-out data structure in a Geode system member that stores messages for distribution in the same order that the original operations happened in the local member. Each thread has its own queue. Depending on the kind of queue, the messages could be going between two members of a distributed system, a client and server, or two members in different distributed systems. See also [conflation](glossary.html#glossary__section_3FEC7A097CE247299F47EA209C5F91B8).
 
 <a id="glossary__section_012843121ADE4BB883151BA8C8425C6C"></a>
 
@@ -481,25 +481,25 @@ A form of UDP communications where a datagram is sent to multiple processes in o
 
 ## named region attributes
 
-Region attributes that are stored in the member memory and can be retrieved through their region attributes refid setting. <span class="keyword">Geode</span> provides standard predefined named region attributes, that are stored using region shortcut refids. You can use any stored attributes that you wish, setting an id when you create them and using the id setting in the refid you want to use to retrieve them.
+Region attributes that are stored in the member memory and can be retrieved through their region attributes refid setting. Geode provides standard predefined named region attributes, that are stored using region shortcut refids. You can use any stored attributes that you wish, setting an id when you create them and using the id setting in the refid you want to use to retrieve them.
 
 <a id="glossary__section_BFFF4BF9D6414AA392F7AEAC1256C112"></a>
 
 ## netLoad
 
-The method used by <span class="keyword">Geode</span> to load an entry value into a distributed region. The netLoad operation invokes all remote cache loaders defined for the region until either the entry value is successfully loaded or all loaders have been tried.
+The method used by Geode to load an entry value into a distributed region. The netLoad operation invokes all remote cache loaders defined for the region until either the entry value is successfully loaded or all loaders have been tried.
 
 <a id="glossary__section_B9B118509831405D9AB4069503119DFB"></a>
 
 ## netSearch
 
-The method used by <span class="keyword">Geode</span> to search remote caches for a data entry that is not found in the member’s local cache region. This method operates only on distributed regions with a data-policy of empty, normal and preloaded.
+The method used by Geode to search remote caches for a data entry that is not found in the member’s local cache region. This method operates only on distributed regions with a data-policy of empty, normal and preloaded.
 
 <a id="glossary__section_3B75FF1066664923B2C9A61BDA133559"></a>
 
 ## netWrite
 
-The method used by <span class="keyword">Geode</span> to invoke a cache writer for region and region entry events. This method operates only on distributed regions. For each event, if any cache writer is defined for the region, the netWrite operation invokes exactly one of them.
+The method used by Geode to invoke a cache writer for region and region entry events. This method operates only on distributed regions. For each event, if any cache writer is defined for the region, the netWrite operation invokes exactly one of them.
 
 <a id="glossary__section_ECBDD95CCC6445B2ADDFC8F4010BD459"></a>
 
@@ -511,7 +511,7 @@ A situation that arises from a communications partition that causes processes to
 
 ## OQL
 
-Object Query Language, SQL-92 extended for querying object data. <span class="keyword">Geode</span> supports a subset of OQL.
+Object Query Language, SQL-92 extended for querying object data. Geode supports a subset of OQL.
 
 ## off-heap memory
 
@@ -545,7 +545,7 @@ A region that manages large volumes of data by partitioning it into manageable c
 
 ## peer
 
-A <span class="keyword">Geode</span> member application that is not configured as a client. Peer configuration uses the &lt;cache&gt; `cache.xml` element and the Cache API. Peers can also be configured as servers to client applications and as gateway-receivers or gateway-senders to remote distributed systems.
+A Geode member application that is not configured as a client. Peer configuration uses the &lt;cache&gt; `cache.xml` element and the Cache API. Peers can also be configured as servers to client applications and as gateway-receivers or gateway-senders to remote distributed systems.
 
 <a id="glossary__section_244F67CD366141858D3B3771E3E58889"></a>
 
@@ -569,19 +569,19 @@ A region attribute setting identifying a region as a replicate whose data is per
 
 ## producer
 
-A <span class="keyword">Geode</span> member process that puts data into the cache for consumption by other members. Producers may be configured with empty regions, where the data they put into the cache is not stored locally, but causes cache update events to be sent to other members. This is a common configuration in peer members and for client processes. See [consumer](glossary.html#glossary__section_32D2C413690A4F44BA8F7B0F2AF3CD1A).
+A Geode member process that puts data into the cache for consumption by other members. Producers may be configured with empty regions, where the data they put into the cache is not stored locally, but causes cache update events to be sent to other members. This is a common configuration in peer members and for client processes. See [consumer](glossary.html#glossary__section_32D2C413690A4F44BA8F7B0F2AF3CD1A).
 
 <a id="glossary__section_900E459B58914FBFB20480F722F4F46E"></a>
 
 ## pull model
 
-Data distribution model where each process receives updates only for the data in which the process has explicitly expressed interest. In a <span class="keyword">Geode</span> peer member, this is accomplished using a distributed, non-replicated region and creating the data entries that are of interest in the local region. When updates happen for the region in remote caches, the only updates that are forwarded to the local cache are those for entries that are already defined in the local cache. In a <span class="keyword">Geode</span> client, you get pull behavior by specifically subscribing to the entries of interest. See [push model](glossary.html#glossary__section_B8D00D2F5F574FB4B8D082FA62384D9F).
+Data distribution model where each process receives updates only for the data in which the process has explicitly expressed interest. In a Geode peer member, this is accomplished using a distributed, non-replicated region and creating the data entries that are of interest in the local region. When updates happen for the region in remote caches, the only updates that are forwarded to the local cache are those for entries that are already defined in the local cache. In a Geode client, you get pull behavior by specifically subscribing to the entries of interest. See [push model](glossary.html#glossary__section_B8D00D2F5F574FB4B8D082FA62384D9F).
 
 <a id="glossary__section_B8D00D2F5F574FB4B8D082FA62384D9F"></a>
 
 ## push model
 
-Data distribution model where each process receives updates for everything in the data set. In a <span class="keyword">Geode</span> peer member, this is accomplished using a replicated region. All data modifications, creations, and deletes in remote caches are pushed to the replicated region. In a <span class="keyword">Geode</span> client, you get push behavior by registering interest in all keys in the region. See [pull model](glossary.html#glossary__section_900E459B58914FBFB20480F722F4F46E).
+Data distribution model where each process receives updates for everything in the data set. In a Geode peer member, this is accomplished using a replicated region. All data modifications, creations, and deletes in remote caches are pushed to the replicated region. In a Geode client, you get push behavior by registering interest in all keys in the region. See [pull model](glossary.html#glossary__section_900E459B58914FBFB20480F722F4F46E).
 
 <a id="glossary__section_1C769F32BEFD4760B325D7B0730E878C"></a>
 
@@ -629,13 +629,13 @@ See [entry](glossary.html#glossary__section_5D8ED880C9BD4062BE6F0404B28FA005).
 
 ## region shortcut
 
-Enums RegionShortcut and ClientRegionShortcut defining the main region types in <span class="keyword">Geode</span> for peers/servers and clients, respectively. Region shortcuts are predefined named region attributes.
+Enums RegionShortcut and ClientRegionShortcut defining the main region types in Geode for peers/servers and clients, respectively. Region shortcuts are predefined named region attributes.
 
 <a id="glossary__section_CC864725C0014791805D2549D87DA545"></a>
 
 ## remote
 
-Resident or running in a cache other than the current member’s cache, but connected to the current member’s cache through <span class="keyword">Geode</span>. For example, if a member does not have a data entry in the region in its local cache, it can do a netSearch in an attempt to retrieve the entry from the region in a remote cache within the same distributed system. Or, if the member is a client, it can send a request to a server in an attempt to retrieve the entry from the region in a remote server cache in the server’s distributed system. In multi-site installations, a gateway sends events from the local cache to remote caches in other distributed systems. See also [local](glossary.html#glossary__section_598D82A75D9842438BB934E01E77266E).
+Resident or running in a cache other than the current member’s cache, but connected to the current member’s cache through Geode. For example, if a member does not have a data entry in the region in its local cache, it can do a netSearch in an attempt to retrieve the entry from the region in a remote cache within the same distributed system. Or, if the member is a client, it can send a request to a server in an attempt to retrieve the entry from the region in a remote server cache in the server’s distributed system. In multi-site installations, a gateway sends events from the local cache to remote caches in other distributed systems. See also [local](glossary.html#glossary__section_598D82A75D9842438BB934E01E77266E).
 
 <a id="glossary__section_90D41320BD05471D81382209A4D5F4D8"></a>
 
@@ -653,7 +653,7 @@ Region data-policy specification indicating to copy all distributed region data 
 
 ## resource manager
 
-<span class="keyword">Geode</span> process that works with your JVM’s tenured garbage collection (GC) to control heap use and protect your JVM from hangs and crashes due to memory overload. The manager prevents the cache from consuming too much memory by evicting old data and, if the collector is unable to keep up, by refusing additions to the cache until the collector has freed an adequate amount of memory. Eviction is done for regions configured for LRU eviction based on heap percentage. See also [LRU](glossary.html#glossary__section_AED421A3C46349168730605059F9B2B0) and [eviction-attributes](glossary.html#glossary__section_1B57CC3632B843AA89CB321489C3B91C).
+Geode process that works with your JVM’s tenured garbage collection (GC) to control heap use and protect your JVM from hangs and crashes due to memory overload. The manager prevents the cache from consuming too much memory by evicting old data and, if the collector is unable to keep up, by refusing additions to the cache until the collector has freed an adequate amount of memory. Eviction is done for regions configured for LRU eviction based on heap percentage. See also [LRU](glossary.html#glossary__section_AED421A3C46349168730605059F9B2B0) and [eviction-attributes](glossary.html#glossary__section_1B57CC3632B843AA89CB321489C3B91C).
 
 <a id="glossary__section_82276B0AED4543518C98E173C1528735"></a>
 
@@ -685,7 +685,7 @@ The process of converting an object or object graph to a stream of bytes.
 
 ## server
 
-A <span class="keyword">Geode</span> member application that is configured as a peer in its own system and as a server to connecting <span class="keyword">Geode</span> client applications.
+A Geode member application that is configured as a peer in its own system and as a server to connecting Geode client applications.
 
 <a id="glossary__section_3A6AB71E3D844134AB8B51D676F84AEE"></a>
 
@@ -795,7 +795,7 @@ The result of a history of transactional operations for a given open transaction
 
 ## transport layer
 
-The network used to connect the <span class="keyword">Geode</span> system members in a <span class="keyword">Geode</span> system.
+The network used to connect the Geode system members in a Geode system.
 
 <a id="glossary__section_94B886825B1640269017386D5731A086"></a>
 
@@ -825,7 +825,7 @@ Uniform Resource Identifier. A unique identifier for abstract or physical resour
 
 ## user attribute
 
-An optional object associated with a region or a data entry where an application can store data about the region or entry. The data is accessed by the application only. <span class="keyword">Geode</span> does not use these attributes. Compare to region attributes, which are used by <span class="keyword">Geode</span>.
+An optional object associated with a region or a data entry where an application can store data about the region or entry. The data is accessed by the application only. Geode does not use these attributes. Compare to region attributes, which are used by Geode.
 
 <a id="glossary__section_8386E2FB49424CA4B5F0343F9E6A04E5"></a>
 

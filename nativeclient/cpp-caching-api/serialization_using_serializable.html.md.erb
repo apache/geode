@@ -2,18 +2,18 @@
 title:  Serializing Data with the Serializable Interface
 ---
 
-The native client C++ API provides a `Serializable` interface that you can use for fast and compact data serialization. This section discusses the <span class="keyword">Geode</span> serializable interface, and presents implementation examples.
+The native client C++ API provides a `Serializable` interface that you can use for fast and compact data serialization. This section discusses the Geode serializable interface, and presents implementation examples.
 
 <a id="concept_696AB5206C3E45898CC1A24CDD93D003__section_8143F965A8C6495E8AB104FD36DA366A"></a>
 ## How Serialization Works
 
-When your application puts an object into the cache for subsequent distribution, <span class="keyword">Geode</span> serializes the data by taking these steps:
+When your application puts an object into the cache for subsequent distribution, Geode serializes the data by taking these steps:
 
 1.  Calls the appropriate `classId` function.
 2.  Writes the full `typeId` using the `classId` for the instance.
 3.  Invokes the instance’s `toData` function.
 
-When your application subsequently receives a byte array, <span class="keyword">Geode</span> takes the following steps:
+When your application subsequently receives a byte array, Geode takes the following steps:
 
 1.  Decodes the `typeId`, extracts the `classId` from the `typeId`, then creates an object of the designated type using the registered factory functions.
 

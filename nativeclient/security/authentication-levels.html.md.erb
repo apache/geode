@@ -10,7 +10,7 @@ Client connections can be authenticated at two levels, process and multiuser.
 
 -   **Multi-user**. Each user/pool pair creates a connection to one server and then sticks with it for operations. If the server is unable to respond to a request, the pool selects a new one for the user.
 
-    Typically, application servers or web servers that act as clients to <span class="keyword">Geode</span> servers make multi-user connections. Multi-user allows a single application or web server process to service a large number of users with varied access permissions.
+    Typically, application servers or web servers that act as clients to Geode servers make multi-user connections. Multi-user allows a single application or web server process to service a large number of users with varied access permissions.
 
 By default, server pools use process-level authentication. Enable multi-user authentication by setting a pool's `multi-user-secure-mode-enabled` attribute to `true`.
 

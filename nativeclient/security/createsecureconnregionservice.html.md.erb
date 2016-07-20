@@ -4,7 +4,7 @@ title:  Creating Multiple Secure User Connections
 
 To create multiple, secure connections to your servers from a single client, so the client can service different user types, you create an authenticated `RegionService` for each user.
 
-Typically, a <span class="keyword">Geode</span> client embedded in an application server supports data requests from many users. Each user can be authorized to access a subset of data on the servers. For example, customer users are allowed only to see and update their own orders and shipments.
+Typically, a Geode client embedded in an application server supports data requests from many users. Each user can be authorized to access a subset of data on the servers. For example, customer users are allowed only to see and update their own orders and shipments.
 
 The authenticated users all access the same Cache through instances of the `RegionService` interface. See [RegionService](../client-cache/caching-apis.html#caching-apis__section_8F81996678B64BBE94EF352527F7F006).
 

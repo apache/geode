@@ -4,7 +4,7 @@ title:  CQ API and Main Features
 
 This chapter documents the primary native client API for CQ management.
 
-The <span class="keyword">Apache Geode</span> native client API allows your clients to create and manage CQs. (The server side does not have an API.) Continuous querying provides native client query syntax, events-based management, integration with client/server architecture, active query execution, and interest criteria based on data values. For complete information on the classes and interfaces described here, see the online API documentation.
+The Apache Geode native client API allows your clients to create and manage CQs. (The server side does not have an API.) Continuous querying provides native client query syntax, events-based management, integration with client/server architecture, active query execution, and interest criteria based on data values. For complete information on the classes and interfaces described here, see the online API documentation.
 
 -   [CQ API and Main Features](3-native-client-cq-api.html)
 -   [Main Features of Continuous Querying](3-native-client-cq-api.html#security__section_74A3A0ECC2B645CEAEFDF68350E55EB4)
@@ -33,8 +33,8 @@ Only C\# versions of CQ API interfaces, classes, and methods are shown here (exa
 
 Continuous querying in the native client has the following features:
 
--   **Standard <span class="keyword">Geode</span> native client query syntax and semantics**. CQ queries are expressed in the same language used for other native client queries (see [Remote Querying.](../remote-querying/remote-querying.html#security)).
--   **Standard <span class="keyword">Geode</span> events-based management of CQ events**. The event handling used to process CQ events is based on the standard <span class="keyword">Geode</span> event handling framework. The CQListener interface is similar to [Application Plug-Ins](../client-cache/application-plugins.html#application-plugins) and [Application Callbacks](../dotnet-caching-api/application-callbacks.html#concept_E66738BC9B3B4E239D19ABFB198BE754).
+-   **Standard Geode native client query syntax and semantics**. CQ queries are expressed in the same language used for other native client queries (see [Remote Querying.](../remote-querying/remote-querying.html#security)).
+-   **Standard Geode events-based management of CQ events**. The event handling used to process CQ events is based on the standard Geode event handling framework. The CQListener interface is similar to [Application Plug-Ins](../client-cache/application-plugins.html#application-plugins) and [Application Callbacks](../dotnet-caching-api/application-callbacks.html#concept_E66738BC9B3B4E239D19ABFB198BE754).
 -   **Complete integration with the client/server architecture**. CQ functionality uses existing server-to-client messaging mechanisms to send events. All tuning of your server-to-client messaging also tunes the messaging of your CQ events. If your system is configured for high availability then your CQs are highly available, with seamless failover provided in case of server failure (see [High Availability for Client-to-Server Communication](../preserving-data/high-availability-client-server.html#concept_F7A143F51EEA46B28AC612DEB7849D99)). If your clients are durable, you can also define any of your CQs as durable (see [Durable Client Messaging](../preserving-data/durable-client-messaging.html#concept_F88B659FB4324F599924F3F2933452B4)).
 -   **Interest criteria based on data values**. CQ queries are run against the region's entry values. Compare this to register interest by reviewing [Registering Interest for Entries](../client-cache/registering-interest-for-entries.html#registering-interest-for-entries).
 -   **Active query execution**. Once initialized, the queries only operate on new events instead of on the entire region data set. Events that change the query result are sent to the client immediately.
