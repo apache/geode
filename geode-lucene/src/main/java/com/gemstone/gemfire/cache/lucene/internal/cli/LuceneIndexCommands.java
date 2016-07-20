@@ -31,6 +31,7 @@ import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.FunctionAdapter;
 import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
+
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneCreateIndexFunction;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
@@ -272,10 +273,15 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
 
     @CliOption (key = LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD,
       mandatory = true,
-      help = LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD__HELP) final String defaultField) {
+      help = LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD__HELP) final String defaultField,
+
+    @CliOption (key = LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT,
+      mandatory = false,
+      unspecifiedDefaultValue = "-1",
+      help = LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT__HELP) final int limit) {
     try {
 
-      LuceneQueryInfo queryInfo=new LuceneQueryInfo(indexName,regionPath,queryString, defaultField);
+      LuceneQueryInfo queryInfo=new LuceneQueryInfo(indexName,regionPath,queryString, defaultField,limit);
       return getSearchResults(queryInfo);
 
     }

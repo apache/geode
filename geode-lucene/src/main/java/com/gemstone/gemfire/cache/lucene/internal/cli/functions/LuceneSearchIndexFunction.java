@@ -71,8 +71,9 @@ public class LuceneSearchIndexFunction<K,V> extends FunctionAdapter implements I
     LuceneService luceneService = LuceneServiceProvider.get(getCache());
     try {
       if (cache.getRegion(queryInfo.getRegionPath())!=null) {
-        final LuceneQuery<K, V> query = luceneService.createLuceneQueryFactory().create(
-          queryInfo.getIndexName(), queryInfo.getRegionPath(), queryInfo.getQueryString(), queryInfo.getDefaultField());
+        final LuceneQuery<K, V> query = luceneService.createLuceneQueryFactory()
+          .setResultLimit(queryInfo.getLimit())
+          .create(queryInfo.getIndexName(), queryInfo.getRegionPath(), queryInfo.getQueryString(), queryInfo.getDefaultField());
         PageableLuceneQueryResults pageableLuceneQueryResults = query.findPages();
         while (pageableLuceneQueryResults.hasNext()) {
           List<LuceneResultStruct> page = pageableLuceneQueryResults.next();

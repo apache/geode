@@ -225,7 +225,7 @@ public class LuceneIndexCommandsJUnitTest {
     doReturn(mockResultCollector).when(commands).executeFunctionOnGroups(isA(LuceneSearchIndexFunction.class),any(),any(LuceneQueryInfo.class));
     doReturn(queryResultsList).when(mockResultCollector).getResult();
 
-    CommandResult result = (CommandResult) commands.searchIndex("index","region","Result1","field1");
+    CommandResult result = (CommandResult) commands.searchIndex("index","region","Result1","field1",-1);
 
     TabularResultData data = (TabularResultData) result.getResultData();
 
