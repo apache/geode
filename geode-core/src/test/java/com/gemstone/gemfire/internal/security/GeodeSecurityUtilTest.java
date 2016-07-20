@@ -17,9 +17,13 @@
 package com.gemstone.gemfire.internal.security;
 
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.assertj.core.api.Java6Assertions.*;
 import static org.junit.Assert.*;
 
+import java.util.Properties;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -28,6 +32,12 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class GeodeSecurityUtilTest {
+  Properties properties;
+  @Before
+  public void before(){
+    properties = new Properties();
+    GeodeSecurityUtil.initSecurity(properties);
+  }
 
   @Test
   public void testGetObjectFromConstructor(){
@@ -59,6 +69,53 @@ public class GeodeSecurityUtilTest {
 
     assertThatThrownBy(() -> GeodeSecurityUtil.getObjectOfType(Factories.class.getName()+".getNullString", String.class))
       .isInstanceOf(GemFireSecurityException.class);
+  }
+
+  @Test
+  public void testInitialSecurityFlags() {
+    // initial state of GeodeSecurityUtil
+    assertFalse(GeodeSecurityUtil.isClientSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isIntegratedSecurity());
+    assertFalse(GeodeSecurityUtil.isPeerSecurityRequired());
+  }
+
+  @Test
+  public void testInitWithSecurityManager() {
+    properties.setProperty(SECURITY_MANAGER, "org.apache.geode.security.templates.SampleSecurityManager");
+    GeodeSecurityUtil.initSecurity(properties);
+    assertTrue(GeodeSecurityUtil.isClientSecurityRequired());
+    assertTrue(GeodeSecurityUtil.isIntegratedSecurity());
+    assertTrue(GeodeSecurityUtil.isPeerSecurityRequired());
+  }
+
+  @Test
+  public void testInitWithClientAuthenticator()
+  {
+    properties.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "org.abc.test");
+    GeodeSecurityUtil.initSecurity(properties);
+    assertTrue(GeodeSecurityUtil.isClientSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isIntegratedSecurity());
+    assertFalse(GeodeSecurityUtil.isPeerSecurityRequired());
+  }
+
+  @Test
+  public void testInitWithPeerAuthenticator()
+  {
+    properties.setProperty(SECURITY_PEER_AUTHENTICATOR, "org.abc.test");
+    GeodeSecurityUtil.initSecurity(properties);
+    assertFalse(GeodeSecurityUtil.isClientSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isIntegratedSecurity());
+    assertTrue(GeodeSecurityUtil.isPeerSecurityRequired());
+  }
+
+  @Test
+  public void testInitWithShiroAuthenticator()
+  {
+    properties.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
+    GeodeSecurityUtil.initSecurity(properties);
+    assertTrue(GeodeSecurityUtil.isClientSecurityRequired());
+    assertTrue(GeodeSecurityUtil.isIntegratedSecurity());
+    assertTrue(GeodeSecurityUtil.isPeerSecurityRequired());
   }
 
   private static class Factories{
