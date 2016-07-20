@@ -12,8 +12,7 @@ The Geode Redis adapter allows Geode to function as a drop-in replacement for a 
 
 -   **[Advantages of Geode over a Redis Server](#advantages-of-geode-over-redis)**
 
-<a id="using-the-redis-adapter"></a>
-## Using the Redis Adapter
+## <a id="using-the-redis-adapter" class="no-quick-link"></a>Using the Redis Adapter
 
 To use the Redis Adapter, you will need three pieces of information:
 
@@ -42,8 +41,7 @@ gfsh> start server --name=server1 --redis-bind-address=localhost \
 
 Redis clients can then connect to the server at localhost:11211.
 
-<a id="how-the-redis-adapter-works"></a>
-## How the Redis Adapter Works
+## <a id="how-the-redis-adapter-works" class="no-quick-link"></a>How the Redis Adapter Works
 
 The Geode Redis Adapter supports all Redis data structures, including
 
@@ -62,8 +60,7 @@ The Geode Redis Adapter supports all Redis commands for each of the Redis data s
 -   Any command that returns a count of newly set members has an unspecified return value. The command will work just as the Redis protocol states, but the count will not necessarily reflect the number set compared to the number overridden.
 -   Transactions work just as they would on a Redis instance; they are local transactions. Transactions cannot be executed on data that is not local to the executing server, that is on a partitioned region in a different server instance, or that is on a persistent region that does not have transactions enabled. Also, you cannot watch or unwatch keys, as all keys within a Geode transaction are watched by default.
 
-<a id="advantages-of-geode-over-redis"></a>
-## Advantages of Geode over a Redis Server
+## <a id="advantages-of-geode-over-redis" class="no-quick-link"></a>Advantages of Geode over a Redis Server
 
 Geode’s primary advantage is its **scalability**. While the Redis server is single threaded, Geode supports high concurrency. Many Redis clients can execute commands on the Geode server simultaneously.
 

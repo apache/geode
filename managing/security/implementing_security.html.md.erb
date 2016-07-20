@@ -13,9 +13,7 @@ You can use Geode security for secure communication, to authorize system members
 4.  If you have a client/server system, implement any authorized access control your servers will use for clients attempting to access or modify the cache.
 5.  If you want to use secure socket layer (SSL) protocol for your peer-to-peer and client/server connections, implement that. You can configure SSL separately for peer-to-peer, client/server, JMX, and HTTP connections.
 
-<a id="implementing_security__section_1B8A856DB52449C6BF2AEB7C0D9515B5"></a>
-
-## Where to Place Security Configuration Settings
+## <a id="implementing_security__section_1B8A856DB52449C6BF2AEB7C0D9515B5" class="no-quick-link"></a>Where to Place Security Configuration Settings
 
 Any security-related (properties that begin with `security-*`) configuration properties that are normally configured in `gemfire.properties` can be moved to a separate `gfsecurity.properties` file. Placing these configuration settings in a separate file allows you to restrict access to security configuration data. This way, you can still allow read or write access for your `gemfire.properties` file.
 

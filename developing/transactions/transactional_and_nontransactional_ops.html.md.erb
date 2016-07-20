@@ -22,9 +22,7 @@ An operation that acts directly on the cache does not usually act on the transac
 
 -   **[No-Ops](#no-ops)**
 
-<a id="transactional_operations"></a>
-
-## Transactional Operations
+## <a id="transactional_operations" class="no-quick-link"></a>Transactional Operations
 
 The `CacheTransactionManager` methods are the only ones used specifically for cache operations. Otherwise, you use the same methods as usual. Most methods that run within a transaction affect the transactional view, and they do not change the cache until the transaction commits. Methods that behave this way are considered transactional operations. Transactional operations are classified in two ways: whether they modify the transactional view or the cache itself, and whether they create write conflicts with other transactions.
 
@@ -34,15 +32,11 @@ Transactional operations that can cause write conflicts are those that modify an
 
 Transactional read operations do not cause conflicts directly, but they can modify the transactional view. Read operations look for the entry in the transaction view first and then, if necessary, go to the cache. If the entry is returned by a cache read, it is stored as part of the transactional view. At commit time, the transaction uses the initial snapshot of the entry in the view to discover write conflicts.
 
-<a id="non_transactional_operations"></a>
-
-## Non-Transactional Operations
+## <a id="non_transactional_operations" class="no-quick-link"></a>Non-Transactional Operations
 
 A few methods, when invoked within a transaction, have no effect on the transactional view, but they have an immediate effect on the cache. They are considered non-transactional operations. Often, non-transactional operations are administrative, such as `Region.destroy` and `Region.invalidate`. These operations are not supported within a transaction. If you call them, the system throws an exception of type `UnsupportedOperationInTransactionException`.
 
-<a id="entry_operations"></a>
-
-## Entry Operations
+## <a id="entry_operations" class="no-quick-link"></a>Entry Operations
 
 **Note:**
 Transactional entry operations can be rolled back.
@@ -70,9 +64,7 @@ These operations can add a snapshot of an entry to the transaction’s view even
 | destroy: local and distributed    | `Region.localDestroy, destroy`       | when it throws an `EntryNotFoundException`                                |
 | invalidate: local and distributed | `Region.localInvalidate, invalidate` | when it throws an `EntryNotFoundException`or the entry is already invalid |
 
-<a id="region_operations"></a>
-
-## Region Operations
+## <a id="region_operations" class="no-quick-link"></a>Region Operations
 
 When you create a region in a transaction, any data from the getInitialImage operation goes directly into the cache, rather than waiting for the transaction to commit.
 
@@ -85,9 +77,7 @@ When you create a region in a transaction, any data from the getInitialImage ope
 | mutate attribute                  | `Region.getAttributesMutator` methods            | cache                 | no             |
 | set user attribute                | `Region.setUserAttribute`                        | cache                 | no             |
 
-<a id="cache_operations"></a>
-
-## Cache Operations
+## <a id="cache_operations" class="no-quick-link"></a>Cache Operations
 
 When you create a region in a transaction, any data from the getInitialImage operation goes directly into the cache, rather than waiting for the transaction to commit.
 
@@ -96,9 +86,7 @@ When you create a region in a transaction, any data from the getInitialImage ope
 | create     | `createRegionFactory().create()` | committed      | no             |
 | close      | `close`                          | committed      | yes            |
 
-<a id="no-ops"></a>
-
-## No-Ops
+## <a id="no-ops" class="no-quick-link"></a>No-Ops
 
 Any operation that has no effect in a non-transactional context remains a no-op in a transactional context. For example, if you do two `localInvalidate` operations in a row on the same region, the second `localInvalidate` is a no-op. No-op operations do not:
 

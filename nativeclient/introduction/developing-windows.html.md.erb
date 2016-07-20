@@ -10,17 +10,14 @@ Visual Studio 2010 SP1 is the recommended compiler. If you are using any other c
 
 **Note:** When compiling external projects or applications that are used or referenced by the native client, make sure that you compile them for the same target architecture as your native client installation. For example, if you installed the 32-bit (x86) version of the native client, compile your external projects for 32-bit (x86) architecture.
 
-<a id="developing-windows__section_6BFD4982A7144301A03F948CFF953AFD"></a>
-## Step 1. Installer Sets Up Environment Variables
+## <a id="developing-windows__section_6BFD4982A7144301A03F948CFF953AFD" class="no-quick-link"></a>Step 1. Installer Sets Up Environment Variables
 
 When you install on Windows, the installer performs these tasks:
 
 -   Sets the *GFCPP* environment variable to *&lt;productDir&gt;*, where *&lt;productDir&gt;* is the path to the native client product directory.
 -   Adds the *%GFCPP%\\bin* executable directory to the Windows *PATH*.
 
-<a id="developing-windows__section_0BF2BE9A38BC40D1B9FAD2AC8DBFAB0E"></a>
-
-## Step 2. Choose 32-bit or 64-bit Command-line Prompt
+## <a id="developing-windows__section_0BF2BE9A38BC40D1B9FAD2AC8DBFAB0E" class="no-quick-link"></a>Step 2. Choose 32-bit or 64-bit Command-line Prompt
 
 For 32-bit:
 
@@ -32,9 +29,7 @@ Start &gt; Programs &gt; Microsoft Visual Studio 2010 &gt; Visual Studio Tools &
 
 To build using the Microsoft Visual Studio Interface, from the Solutions Platform, choose **Win32** or **x86** from the Build menu for 32-bit builds or x64 for a 64-bit build.
 
-<a id="developing-windows__section_597B20DBE5FD4F66A6BCB2A09C04C9C9"></a>
-
-## Step 3. Compile C++ Clients and Dynamically Link Them to Native Client Library
+## <a id="developing-windows__section_597B20DBE5FD4F66A6BCB2A09C04C9C9" class="no-quick-link"></a>Step 3. Compile C++ Clients and Dynamically Link Them to Native Client Library
 
 The following table lists the compiler and linker switches that must be present on the `cl.exe` command line.
 
@@ -54,9 +49,7 @@ If you want to use the Visual Studio user interface instead of invoking `cl.exe`
 | `/D_CRT_NON_CONFORMING_SWPRINTFS` | Suppresses warnings. Required for Visual Studio 2010.                                                                 |
 
 
-<a id="developing-windows__section_B66588EC7C6F4D9BA772406CFD5F3EAE"></a>
-
-## Step 4. Verify that You Can Load the Native Client Library
+## <a id="developing-windows__section_B66588EC7C6F4D9BA772406CFD5F3EAE" class="no-quick-link"></a>Step 4. Verify that You Can Load the Native Client Library
 
 Because Geode does not provide a library that can be linked statically into an application on Windows, you must dynamically link to the native client library.
 

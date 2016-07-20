@@ -72,8 +72,7 @@ datanode2 | group1_functions.jar | /usr/local/gemfire/deploy/vf.gf#group1_functi
 
 For more information on `gfsh` usage, see [gfsh (Geode SHell)](../../tools_modules/gfsh/chapter_overview.html).
 
-<a id="concept_4436C021FB934EC4A330D27BD026602C__section_D36E345C6E254D27B0F4B0C8711F5E6A"></a>
-## Deployment Location for JAR Files
+## <a id="concept_4436C021FB934EC4A330D27BD026602C__section_D36E345C6E254D27B0F4B0C8711F5E6A" class="no-quick-link"></a>Deployment Location for JAR Files
 
 The system location where JAR files are written on each member is determined by the `deploy-working-dir` Geode property configured for that member. For example, you could have the following configured in the `gemfire.properties` file for your member:
 
@@ -90,9 +89,7 @@ By default, the cluster configuration service distributes deployed JAR files to 
 
 See [Overview of the Cluster Configuration Service](gfsh_persist.html).
 
-<a id="concept_4436C021FB934EC4A330D27BD026602C__section_D9219C5EEED64672930200677C2118C9"></a>
-
-## Versioning of JAR Files
+## <a id="concept_4436C021FB934EC4A330D27BD026602C__section_D9219C5EEED64672930200677C2118C9" class="no-quick-link"></a>Versioning of JAR Files
 
 When you deploy JAR files to a distributed system or member group, the JAR file is modified to indicate version information in its name. Each JAR filename is prefixed with `vf.gf#` and contains a version number at the end of the filename. For example, if you deploy `MyClasses.jar` five times, the filename is displayed as `vf.gf#MyClasses.jar#5` when you list all deployed jars.
 
@@ -100,9 +97,7 @@ When you deploy a new JAR file, the member receiving the deployment checks wheth
 
 When a member begins using a JAR file, the member obtains a shared lock on the file. If the member receives a newer version by deployment, the member releases the shared lock and tries to delete the existing JAR file in favor of the newer version. If no other member has a shared lock on the existing JAR, the existing, older version JAR is deleted.
 
-<a id="concept_4436C021FB934EC4A330D27BD026602C__section_F8AC59EEC8C5434FBC6F38A12A7371CE"></a>
-
-## Automatic Class Path Loading
+## <a id="concept_4436C021FB934EC4A330D27BD026602C__section_F8AC59EEC8C5434FBC6F38A12A7371CE" class="no-quick-link"></a>Automatic Class Path Loading
 
 When a cache is started, the new cache requests that the latest versions of each JAR file in the current working directory be added to the ClassPathLoader. If a JAR file has already been deployed to the ClassPathLoader, the ClassPathLoader updates its loaded version if a newer version is found; otherwise, there is no change. If detected, older versions of the JAR files are deleted if no other member has a shared lock on them.
 
@@ -112,9 +107,7 @@ When a cache is closed it requests that all currently deployed JAR files be remo
 
 If you are using a shared deployment working directory, all members sharing the directory should belong to the same member group. Upon restart, all members that share the same deployment working directory will deploy and autoload their CLASSPATH with any JARs found in the current working directory. This means that some members may load the JARs even though they are not part of the member group that received the original deployment.
 
-<a id="concept_4436C021FB934EC4A330D27BD026602C__section_C1ECA5A66C27403A9A18D0E04EFCC66D"></a>
-
-## Automatic Function Registration
+## <a id="concept_4436C021FB934EC4A330D27BD026602C__section_C1ECA5A66C27403A9A18D0E04EFCC66D" class="no-quick-link"></a>Automatic Function Registration
 
 When you deploy a JAR file that contains a function (in other words, contains a class that implements the Function interface), the function is automatically registered through the `FunctionService.registerFunction` method. If another JAR file is deployed (either with the same JAR filename or another filename) with the same function, the new implementation of the function is registered, overwriting the old one. If a JAR file is undeployed, any functions that were auto-registered at the time of deployment are unregistered. Because deploying a JAR file that has the same name multiple times results in the JAR being un-deployed and re-deployed, functions in the JAR are unregistered and re-registered each time this occurs. If a function with the same ID is registered from multiple differently named JAR files, the function is unregistered if any of those JAR files are re-deployed or un-deployed.
 

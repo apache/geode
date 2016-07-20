@@ -12,9 +12,7 @@ When creating indexes, keep in mind the following:
 -   Indexes have limited support on overflow regions. See [Using Indexes with Overflow Regions](indexes_with_overflow_regions.html#concept_87BE7DB32C714EB0BF7532AF93569328) for details.
 -   If you are creating multiple indexes on the same region, first define your indexes and then create the indexes all at once to avoid iterating over the region multiple times. See [Creating Multiple Indexes at Once](create_multiple_indexes.html) for details.
 
-<a id="indexing_guidelines__section_A8AFAA243B5C43DD9BB9F9235A48AF53"></a>
-
-## Tips for Writing Queries that Use Indexes
+## <a id="indexing_guidelines__section_A8AFAA243B5C43DD9BB9F9235A48AF53" class="no-quick-link"></a>Tips for Writing Queries that Use Indexes
 
 As with query processors that run against relational databases, the way a query is written can greatly affect execution performance. Among other things, whether indexes are used depends on how each query is stated. These are some of the things to consider when optimizing your Geode queries for performance:
 

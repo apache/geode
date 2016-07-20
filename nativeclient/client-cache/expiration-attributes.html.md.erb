@@ -45,15 +45,11 @@ Region and region entry expiration attributes are set at the region level. By de
 </tbody>
 </table>
 
-<a id="expiration-attributes__section_F338C1117B7B44398F59523B881EDD55"></a>
-
-## Using Statistics to Measure Expiration
+## <a id="expiration-attributes__section_F338C1117B7B44398F59523B881EDD55" class="no-quick-link"></a>Using Statistics to Measure Expiration
 
 Expiration is measured by comparing expiration attribute settings with the last accessed time and last modified time statistics. These statistics are directly available to applications through the `CacheStatistics` object that is returned by the `Region::getStatistics` and `RegionEntry::getStatistics` functions. The `CacheStatistics` object also provides a function for resetting the statistics counters.
 
-<a id="expiration-attributes__section_6B402F97ECD8492A8798AC838D0BB606"></a>
-
-## Expiration Actions
+## <a id="expiration-attributes__section_6B402F97ECD8492A8798AC838D0BB606" class="no-quick-link"></a>Expiration Actions
 
 You can specify one of the following actions for each expiration attribute:
 
@@ -64,8 +60,6 @@ You can specify one of the following actions for each expiration attribute:
     **Note:**
     Destruction and invalidation cause the same event notification activities whether carried out explicitly or through expiration activities.
 
-<a id="expiration-attributes__section_57F5B32CE9B34F29907E8697F51817F9"></a>
-
-## Region Expiration
+## <a id="expiration-attributes__section_57F5B32CE9B34F29907E8697F51817F9" class="no-quick-link"></a>Region Expiration
 
 Expiration activities in distributed regions can be distributed or performed only in the local cache. So one cache could control region expiration for a number of caches in the distributed system.

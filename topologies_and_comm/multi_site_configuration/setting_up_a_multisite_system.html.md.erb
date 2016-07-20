@@ -4,16 +4,13 @@ title:  Configuring a Multi-site (WAN) System
 
 Plan and configure your multi-site topology, and configure the regions that will be shared between systems.
 
-<a id="setting_up_a_multisite_system__section_5DF2D8D199364E6C8B7F83382A134B5E"></a>
-## Prerequisites
+## <a id="setting_up_a_multisite_system__section_5DF2D8D199364E6C8B7F83382A134B5E" class="no-quick-link"></a>Prerequisites
 
 Before you start, you should understand how to configure membership and communication in peer-to-peer systems using locators. See [Configuring Peer-to-Peer Discovery](../p2p_configuration/setting_up_a_p2p_system.html) and [Configuring Peer Communication](../p2p_configuration/setting_up_peer_communication.html).
 
 WAN deployments increase the messaging demands on a Geode system. To avoid hangs related to WAN messaging, always set `conserve-sockets=false` for Geode members that participate in a WAN deployment. See [Configuring Sockets in Multi-Site (WAN) Deployments](../../managing/monitor_tune/sockets_and_gateways.html) and [Making Sure You Have Enough Sockets](../../managing/monitor_tune/socket_communication_have_enough_sockets.html).
 
-<a id="setting_up_a_multisite_system__section_86F9FE9D786D407FB438C56E43FC5DB1"></a>
-
-## Main Steps
+## <a id="setting_up_a_multisite_system__section_86F9FE9D786D407FB438C56E43FC5DB1" class="no-quick-link"></a>Main Steps
 
 Use the following steps to configure a multi-site system:
 
@@ -35,9 +32,7 @@ Use the following steps to configure a multi-site system:
 8.  (Optional.) Deploy WAN filters to determine which events are distributed over the WAN, or to modify events as they are distributed over the WAN. See [Filtering Events for Multi-Site (WAN) Distribution](../../developing/events/filtering_multisite_events.html#topic_E97BB68748F14987916CD1A50E4B4542).
 9.  (Optional.) Configure persistence, conflation, and/or dispatcher threads for gateway sender queues using the instructions in [Configuring Multi-Site (WAN) Event Queues](../../developing/events/configure_multisite_event_messaging.html#configure_multisite_event_messaging).
 
-<a id="setting_up_a_multisite_system__section_1500299A8F9A4C2385680E337F5D3DEC"></a>
-
-## Configure Gateway Senders
+## <a id="setting_up_a_multisite_system__section_1500299A8F9A4C2385680E337F5D3DEC" class="no-quick-link"></a>Configure Gateway Senders
 
 Each gateway sender configuration includes:
 
@@ -166,9 +161,7 @@ See [WAN Configuration](../../reference/topics/elements_ref.html#topic_7B1CABCAD
 **Note:**
 The gateway sender configuration for a specific sender `id` must be identical on each Geode member that hosts the gateway sender.
 
-<a id="setting_up_a_multisite_system__section_E1DEDD0743D54831AFFBCCDC750F8879"></a>
-
-## Create Data Regions for Multi-site Communication
+## <a id="setting_up_a_multisite_system__section_E1DEDD0743D54831AFFBCCDC750F8879" class="no-quick-link"></a>Create Data Regions for Multi-site Communication
 
 When you are using a multi-site configuration, you choose which data regions to share between sites. Because of the high cost of distributing data between disparate geographical locations, not all changes are passed between sites. After you define gateway senders, configure regions to use the gateway sender to distribute region events.
 
@@ -215,9 +208,7 @@ Replicated regions cannot use a parallel gateway sender. Use a serial gateway se
 **Note:**
 In addition to configuring regions with gateway senders to distribute events, you must configure the same regions in the target clusters to apply the distributed events. The region name in the receiving cluster must exactly match the region name in the sending cluster.
 
-<a id="setting_up_a_multisite_system__section_E3A44F85359046C7ADD12861D261637B"></a>
-
-## Configure Gateway Receivers
+## <a id="setting_up_a_multisite_system__section_E3A44F85359046C7ADD12861D261637B" class="no-quick-link"></a>Configure Gateway Receivers
 
 Always configure a gateway receiver in each Geode cluster that will receive and apply region events from another cluster.
 

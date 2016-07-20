@@ -13,9 +13,7 @@ For each member where you define the region, you can choose how much space to al
 
 A distributed system can have multiple partitioned regions, and it can mix partitioned regions with distributed regions and local regions. The usual requirement for unique region names, except for regions with local scope, still applies. A single member can host multiple partitioned regions.
 
-<a id="how_partitioning_works__section_260C2455FC8C40A094B39BF585D06B7D"></a>
-
-## Data Partitioning
+## <a id="how_partitioning_works__section_260C2455FC8C40A094B39BF585D06B7D" class="no-quick-link"></a>Data Partitioning
 
 Geode automatically determines the physical location of data in the members that host a partitioned region's data. Geode breaks partitioned region data into units of storage known as buckets and stores each bucket in a region host member. Buckets are distributed in accordance to the member’s region attribute settings.
 
@@ -25,17 +23,13 @@ You must run the data stores needed to accommodate storage for the partitioned r
 
 You can customize how Geode groups your partitioned region data with custom partitioning and data colocation.
 
-<a id="how_partitioning_works__section_155F9D4AB539473F848FD05E413B21B3"></a>
-
-## Partitioned Region Operation
+## <a id="how_partitioning_works__section_155F9D4AB539473F848FD05E413B21B3" class="no-quick-link"></a>Partitioned Region Operation
 
 A partitioned region operates much like a non-partitioned region with distributed scope. Most of the standard `Region` methods are available, although some methods that are normally local operations become distributed operations, because they work on the partitioned region as a whole instead of the local cache. For example, a `put` or `create` into a partitioned region may not actually be stored into the cache of the member that called the operation. The retrieval of any entry requires no more than one hop between members.
 
 Partitioned regions support the client/server model, just like other regions. If you need to connect dozens of clients to a single partitioned region, using servers greatly improves performance.
 
-<a id="how_partitioning_works__section_3B47A291ADAB4988AF9D0DF34BC2CDAC"></a>
-
-## Additional Information About Partitioned Regions
+## <a id="how_partitioning_works__section_3B47A291ADAB4988AF9D0DF34BC2CDAC" class="no-quick-link"></a>Additional Information About Partitioned Regions
 
 Keep the following in mind about partitioned regions:
 

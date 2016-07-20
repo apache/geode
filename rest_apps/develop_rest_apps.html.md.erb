@@ -20,9 +20,7 @@ You can browse, query, update and delete data stored in your Geode deployment. Y
 
     Geode REST APIs support the discovery and execution of predefined Geode functions on your cluster deployments.
 
-<a id="topic_qhs_f25_m4"></a>
-
-## Working with Regions
+## <a id="topic_qhs_f25_m4" class="no-quick-link"></a>Working with Regions
 
 The Geode REST APIs provide basic CRUD (create, read, update and delete) operations for data entries stored in your regions.
 
@@ -421,9 +419,7 @@ DELETE /gemfire-api/v1/{region}/{key}{key1},{key2},...{keyN}
 
 If any of the supplied keys are not found in the region, the request will fail and return a 404 NOT FOUND ERROR.
 
-<a id="topic_fcn_g25_m4"></a>
-
-## Working with Queries
+## <a id="topic_fcn_g25_m4" class="no-quick-link"></a>Working with Queries
 
 Geode supports the use of queries to extract data from its regions. Using REST APIs, you can create and execute either prepared or ad-hoc queries on Geode regions. You can also update and delete prepared queries.
 
@@ -437,8 +433,7 @@ GET /gemfire-api/v1/queries
 
 All queries that have been predefined and assigned IDs in Geode are listed.
 
-<a id="topic_fcn_g25_m4__section_t4h_wtp_y4"></a>
-## Creating a New Query
+## <a id="topic_fcn_g25_m4__section_t4h_wtp_y4" class="no-quick-link"></a>Creating a New Query
 
 To create a query, use the following endpoint:
 
@@ -459,9 +454,7 @@ You can specify query bind parameters ($1) in your predefined queries and then p
 
 To update this query at a later time, use the [PUT operation](#topic_fcn_g25_m4__section_oj1_b5p_y4) described below.
 
-<a id="topic_fcn_g25_m4__section_b1p_wtp_y4"></a>
-
-## Executing a Prepared Query
+## <a id="topic_fcn_g25_m4__section_b1p_wtp_y4" class="no-quick-link"></a>Executing a Prepared Query
 
 To run a prepared query, use:
 
@@ -569,9 +562,7 @@ Content-Type: application/json
 ]
 ```
 
-<a id="topic_fcn_g25_m4__section_oj1_b5p_y4"></a>
-
-## Modifying a Prepared Query
+## <a id="topic_fcn_g25_m4__section_oj1_b5p_y4" class="no-quick-link"></a>Modifying a Prepared Query
 
 To modify an existing prepared query, use the following endpoint:
 
@@ -589,9 +580,7 @@ You can specify query bind parameters ($1) in your predefined queries, and then 
 
 A PUT operation will only succeed if the specified queryId already exists (for example, created with the [POST operation](#topic_fcn_g25_m4__section_t4h_wtp_y4) above.) If the queryId does already exist, you will receive a 404 response - "Named query (selectKey456) does not exist!"
 
-<a id="topic_fcn_g25_m4__section_igg_b5p_y4"></a>
-
-## Deleting a Prepared Query
+## <a id="topic_fcn_g25_m4__section_igg_b5p_y4" class="no-quick-link"></a>Deleting a Prepared Query
 
 To delete an existing prepared query, use the following endpoint:
 
@@ -599,9 +588,7 @@ To delete an existing prepared query, use the following endpoint:
 DELETE /gemfire-api/v1/queries/{queryId}
 ```
 
-<a id="topic_fcn_g25_m4__section_wbk_b5p_y4"></a>
-
-## Executing an Ad-Hoc Query
+## <a id="topic_fcn_g25_m4__section_wbk_b5p_y4" class="no-quick-link"></a>Executing an Ad-Hoc Query
 
 To run an unnamed query, use the following endpoint:
 
@@ -617,9 +604,7 @@ For example:
 http://localhost:7070/gemfire-api/v1/queries/adhoc?q="SELECT * FROM /customers"
 ```
 
-<a id="topic_rbc_h25_m4"></a>
-
-## Working with Functions
+## <a id="topic_rbc_h25_m4" class="no-quick-link"></a>Working with Functions
 
 Geode REST APIs support the discovery and execution of predefined Geode functions on your cluster deployments.
 

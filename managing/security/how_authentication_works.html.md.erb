@@ -16,8 +16,7 @@ Locators maintain and distribute the authenticated member list. The distributed 
 <img src="../../images/security-1.gif" id="how_authentication_works__image_D3AE53AB4E0441A5A078E5D07EC20C5D" class="image" />
 Geode authentication provides a flexible plug-in framework. Any security infrastructure can be plugged in to the system as long as the plug-ins implement the required Geode interfaces.
 
-<a id="how_authentication_works__section_3C5F1D7D27CC4C85B01F6F91AA602ED6"></a>
-## Client Authentication Options
+## <a id="how_authentication_works__section_3C5F1D7D27CC4C85B01F6F91AA602ED6" class="no-quick-link"></a>Client Authentication Options
 
 The Geode client can connect in two different ways:
 
@@ -28,9 +27,7 @@ By default, the server pools in clients use process level authentication. You ca
 
 <img src="../../images/security-3.gif" id="how_authentication_works__image_A16EEDE08B0D480187F1C757E6A31140" class="image" />
 
-<a id="how_authentication_works__section_79E28941E4A74318AF3B4B85525F9CA9"></a>
-
-## Client Authentication Process
+## <a id="how_authentication_works__section_79E28941E4A74318AF3B4B85525F9CA9" class="no-quick-link"></a>Client Authentication Process
 
 The client authentication process occurs for each connection established by a pool, regardless of whether the pool is configured for process-wide or single user connections. All credentials are checked for each connection between client and server, including the server-to-client notification channel.
 
@@ -46,9 +43,7 @@ This ever-changing identifier provides protection against replay attacks, becaus
 
 If the connection fails after the client has sent a request and before the server can respond, the next server request fails due to an invalid unique identifier, and the client pool automatically establishes a new connection to the server system for the client.
 
-<a id="how_authentication_works__section_05201B3F7B8D466C97EEE5235C749984"></a>
-
-## When a Member Fails to Join
+## <a id="how_authentication_works__section_05201B3F7B8D466C97EEE5235C749984" class="no-quick-link"></a>When a Member Fails to Join
 
 The following describe the scenarios that occur when a member fails to join:
 

@@ -14,9 +14,7 @@ By default, locators run as peer and server locators.
 
 You can run the locator standalone or embedded within another Geode process. Running your locators standalone provides the highest reliability and availability of the locator service as a whole.
 
-<a id="running_the_locator__section_0733348268AF4D5F8851B999A6A36C53"></a>
-
-## Locator Configuration and Log Files
+## <a id="running_the_locator__section_0733348268AF4D5F8851B999A6A36C53" class="no-quick-link"></a>Locator Configuration and Log Files
 
 Locator configuration and log files have the following properties:
 
@@ -42,17 +40,13 @@ Locator configuration and log files have the following properties:
 -   By default, a locator will start in a subdirectory (named after the locator) under the directory where `gfsh` is executed. This subdirectory is considered the current working directory. You can also specify a different working directory when starting the locator in `gfsh`.
 -   By default, a locator that has been shutdown and disconnected due to a network partition event or member unresponsiveness will restart itself and automatically try to reconnect to the existing distributed system. When a locator is in the reconnecting state, it provides no discovery services for the distributed system. See [Handling Forced Cache Disconnection Using Autoreconnect](../../managing/autoreconnect/member-reconnect.html) for more details.
 
-<a id="running_the_locator__section_wst_ykb_rr"></a>
-
-## Locators and the Cluster Configuration Service
+## <a id="running_the_locator__section_wst_ykb_rr" class="no-quick-link"></a>Locators and the Cluster Configuration Service
 
 Locators use the cluster configuration service to save configurations that apply to all cluster members, or to members of a specified group. The configurations are saved in the Locator's directory and are propagated to all locators in a distributed system. When you start servers using `gfsh`, the servers receive the group-level and cluster-level configurations from the locators.
 
 See [Overview of the Cluster Configuration Service](../cluster_config/gfsh_persist.html).
 
-<a id="running_the_locator__section_FF25228E30624E04ACA8784A2183D585"></a>
-
-## Start the Locator
+## <a id="running_the_locator__section_FF25228E30624E04ACA8784A2183D585" class="no-quick-link"></a>Start the Locator
 
 Use the following guidelines to start the locator:
 
@@ -167,9 +161,7 @@ Use the following guidelines to start the locator:
 
         The directory where you execute the java command becomes the working directory for the locator process.
 
-<a id="running_the_locator__section_F58F229D5C7048E9915E0EC470F9A923"></a>
-
-## Check Locator Status
+## <a id="running_the_locator__section_F58F229D5C7048E9915E0EC470F9A923" class="no-quick-link"></a>Check Locator Status
 
 If you are connected to the distributed system in `gfsh`, you can check the status of a running Locator by providing the Locator name. For example:
 
@@ -214,9 +206,7 @@ Class-Path: /home/stymon/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependenci
 Cluster configuration service is up and running.
 ```
 
-<a id="running_the_locator__section_0E4DDED6AB784B0CAFBAD538B227F487"></a>
-
-## Stop the Locator
+## <a id="running_the_locator__section_0E4DDED6AB784B0CAFBAD538B227F487" class="no-quick-link"></a>Stop the Locator
 
 If you are connected to the distributed system in `gfsh`, you can stop a running locator by providing the locator name. For example:
 

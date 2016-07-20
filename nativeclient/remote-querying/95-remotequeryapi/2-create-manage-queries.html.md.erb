@@ -8,8 +8,7 @@ The `newQuery` method for the `Query` interface binds a query string. By invokin
 
 The `QueryService` method is the entry point to the query package. It is retrieved from the Cache instance through `Cache::getQueryService`. If you are using the Pool API you must obtain the `QueryService` from the pools and not from the cache.
 
-<a id="running-native-client-xact__section_41564A36A1DE4EEDA8F3E00992F8D02B"></a>
-## Query
+## <a id="running-native-client-xact__section_41564A36A1DE4EEDA8F3E00992F8D02B" class="no-quick-link"></a>Query
 
 A `Query` is obtained from a `QueryService` method, which is obtained from the cache. The `Query` interface provides methods for managing the compilation and execution of queries, and for retrieving an existing query string.
 
@@ -19,9 +18,7 @@ You must obtain a `Query` object for each new query. The following example demon
 QueryPtr newQuery(const char * querystr); 
 ```
 
-<a id="running-native-client-xact__section_0F92AD1BDB29426BB24CD41F5A0FAB78"></a>
-
-## Region Shortcut Query Methods
+## <a id="running-native-client-xact__section_0F92AD1BDB29426BB24CD41F5A0FAB78" class="no-quick-link"></a>Region Shortcut Query Methods
 
 The `Region` interface has several shortcut query methods. All take a `query` predicate which is used in the `WHERE` clause of a standard query. See [WHERE Clause](../93-querystrings/4-where-clause.html#security) for more information. Each of the following examples also set the query response timeout to 10 seconds to allow sufficient time for the operation to succeed.
 

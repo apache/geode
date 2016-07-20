@@ -46,8 +46,7 @@ Instance created.
 
 For information on setting up your instance for the most common types of configurations, refer to the sections below. For more information about each interactive prompt, refer to [Interactive Mode Reference](interactive_mode_ref.html).
 
-<a id="tc_changing_gf_default_cfg__use_a_diff_mc_port"></a>
-## Using a Different Locator Port
+## <a id="tc_changing_gf_default_cfg__use_a_diff_mc_port" class="no-quick-link"></a>Using a Different Locator Port
 
 For a Geode peer-to-peer member to communicate on a different port than the default (10334), answer the following question in the tc Server HTTP module's interactive mode:
 
@@ -58,9 +57,7 @@ The format is a comma-separated list of host[port]. Default 'localhost[10334]': 
 
 This example changes the locator port to 10335 on localhost.
 
-<a id="tc_changing_gf_default_cfg__section_38D803A7E8474188898963F456188543"></a>
-
-## Overriding Region Attributes
+## <a id="tc_changing_gf_default_cfg__section_38D803A7E8474188898963F456188543" class="no-quick-link"></a>Overriding Region Attributes
 
 When using the HTTP Session Management Module, you cannot override region attributes directly on the cache server. You must place all region attribute definitions in the region attributes template that you customize within tc Server. For example, to specify a different name for the region's disk store, you could add the new disk-store-name specification to the region attributes template and then reference the template on the cache server.
 

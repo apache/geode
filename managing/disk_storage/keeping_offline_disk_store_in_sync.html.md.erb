@@ -5,9 +5,7 @@ title:  Keeping a Disk Store Synchronized with the Cache
 <a id="syncing_offline_disk_store__section_7D01550D750E48289EFBA9BBDB5A334E"></a>
 You can take several actions to optimize disk store use and data loading at startup.
 
-<a id="syncing_offline_disk_store__section_7B95B20F07BD40699CDB7F3D6A93B905"></a>
-
-## Change Region Configuration
+## <a id="syncing_offline_disk_store__section_7B95B20F07BD40699CDB7F3D6A93B905" class="no-quick-link"></a>Change Region Configuration
 
 When your disk store is offline, you can keep the configuration for its regions up-to-date with your `cache.xml` and API settings. The disk store retains region capacity and load settings, including entry map settings (initial capacity, concurrency level, load factor), LRU eviction settings, and the statistics enabled boolean. If the configurations do not match at startup, the `cache.xml` and API override any disk store settings and the disk store is automatically updated to match. So you do not need to modify your disk store to keep your cache configuration and disk store synchronized, but you will save startup time and memory if you do.
 
@@ -26,9 +24,7 @@ gfsh>alter disk-store --name=myDiskStoreName --region=partitioned_region
 --disk-dirs=/firstDiskStoreDir,/secondDiskStoreDir,/thirdDiskStoreDir  
 ```
 
-<a id="syncing_offline_disk_store__section_0CA17ED106394686A1A5B30601758DA6"></a>
-
-## Take a Region Out of Your Cache Configuration and Disk Store
+## <a id="syncing_offline_disk_store__section_0CA17ED106394686A1A5B30601758DA6" class="no-quick-link"></a>Take a Region Out of Your Cache Configuration and Disk Store
 
 You might remove a region from your application if you decide to rename it or to split its data into two entirely different regions. Any significant data restructuring can cause you to retire some data regions.
 

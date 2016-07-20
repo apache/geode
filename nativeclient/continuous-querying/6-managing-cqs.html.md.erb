@@ -8,8 +8,7 @@ This section discusses how to access and manage your CQs from your client. The c
 
 For detailed method usage, see the online API documentation.
 
-<a id="security__section_939E26544C6E4C419336B7B04D1DE77F"></a>
-## Accessing CQs and CQ Statistics
+## <a id="security__section_939E26544C6E4C419336B7B04D1DE77F" class="no-quick-link"></a>Accessing CQs and CQ Statistics
 
 You can use the `QueryServicegetCq*` methods to access a single named CQ, an array of all CQs registered, and an array of all CQs registered in the client. You canuse the `CqEvent.getCq` method to access the CQ used to produce a `CqEvent`.
 
@@ -17,15 +16,11 @@ CQ runtime statistics are available for the client through the `CqServiceStatist
 
 Client statistics are for the single client only. The server's pertain to all clients with CQs on this server.
 
-<a id="security__section_0803146FEC9F4E088C01C521ED83723D"></a>
-
-## Modifying CQ Attributes
+## <a id="security__section_0803146FEC9F4E088C01C521ED83723D" class="no-quick-link"></a>Modifying CQ Attributes
 
 You can modify the attributes for an existing CQ using the methods provided by `CqQuery.GetCqAttributesMutator`. The attributes consist of a list of listeners.
 
-<a id="security__section_132104D528A7457A90EAE120B9080565"></a>
-
-## Stopping and Closing CQs
+## <a id="security__section_132104D528A7457A90EAE120B9080565" class="no-quick-link"></a>Stopping and Closing CQs
 
 You stop individual CQs with the `CqQuerystop` method. You can stop all CQs for the client through the `QueryService`. Stopped CQs are in the same state as new CQs that have not yet been executed. You can close or execute a stopped CQ.
 
@@ -35,8 +30,6 @@ You close individual CQs with the `CqQueryclose` method. You can also close all 
 -   The client disconnects from its server--This might be because of a network outage or some other failure. When a client disconnects, all CQs created by the client are removed from the server and put into a `CLOSED` state on the client.
 -   The server region is destroyed--When a server region is destroyed, all associated CQs are also cleaned up on the server and the region destroy event is sent to the client. On the client, the `CqListener.Close` method is called for all CQs on the region.
 
-<a id="security__section_C11FA08192934D578C4FC1EFB610F50B"></a>
-
-## Getting All Durable CQs Registered with the Server
+## <a id="security__section_C11FA08192934D578C4FC1EFB610F50B" class="no-quick-link"></a>Getting All Durable CQs Registered with the Server
 
 To obtain a list of all durable CQs registered on the server, use the `QueryService.getAllDurableCqsFromServer` API.

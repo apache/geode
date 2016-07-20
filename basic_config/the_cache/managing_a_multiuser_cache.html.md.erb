@@ -39,9 +39,7 @@ Follow these steps in addition to the steps in [Managing a Cache in a Secure Sys
     For each user, do all of your caching and region work through the assigned `RegionService` instance. Access to the server cache will be governed by the server’s configured authorization rules for each individual user.
 2.  Close your cache by closing the `ClientCache` instance only. Do not close the `RegionService` instances first. This is especially important for durable clients.
 
-<a id="managing_a_multiuser_cache__section_692D9961E8224739903E483BF8AB4F84"></a>
-
-## Requirements and Caveats for RegionService
+## <a id="managing_a_multiuser_cache__section_692D9961E8224739903E483BF8AB4F84" class="no-quick-link"></a>Requirements and Caveats for RegionService
 
 Once each region is created, you can perform operations on it through the `ClientCache` instance or the `RegionService` instances, but not both.
 

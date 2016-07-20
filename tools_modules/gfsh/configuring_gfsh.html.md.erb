@@ -11,8 +11,7 @@ The `gfsh.bat` and `gfsh` bash script automatically append the required Apache G
 -   [Command History and gfsh.history](configuring_gfsh.html#concept_3B9C6CE2F64841E98C33D9F6441DF487__section_72323A45E0064FD2982663F7AC2A2E07)
 -   [Machine Hostname](configuring_gfsh.html#concept_3B9C6CE2F64841E98C33D9F6441DF487__section_02EEF9A519094EAD9D6B5C8E896EBA27)
 
-<a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_0D2EEA7A9ED54DFDB2E1EE955E47921E"></a>
-## JAR Libraries in CLASSPATH
+## <a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_0D2EEA7A9ED54DFDB2E1EE955E47921E" class="no-quick-link"></a>JAR Libraries in CLASSPATH
 
 When you start up `gfsh`, it will automatically load required JAR files that have been packaged in the `gfsh-dependencies.jar` file. You do not need to modify your CLASSPATH to run gfsh. When starting servers and locators in gfsh, the start server and start locator commands will load `server-dependencies.jar` and `locator-dependencies.jar` files into the process CLASSPATH for you.
 
@@ -21,15 +20,11 @@ These dependency JAR files are packaged in your Apache Geode installation in the
 **Note:**
 The `gfsh` command-line utility also searches for `tools.jar` (included with JDK) and adds it to gfsh's CLASSPATH. If you do not have a JDK installed, gfsh uses file-based communication instead for the `status` and `stop` commands. If using a JRE instead of JDK, gfsh must have read-write permissions in the working directory of the server and locator processes.
 
-<a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_02EEF9A519094EAD9D6B5C8E896EBA27"></a>
-
-## Machine Hostname
+## <a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_02EEF9A519094EAD9D6B5C8E896EBA27" class="no-quick-link"></a>Machine Hostname
 
 On some operating systems, you may need to ensure that the hostname of your machine is configured in your system hosts file. For example, on Mac OSX you may need to map your machine's hostname to your IP address in the `/etc/hosts` file in order for `gfsh` and Pulse to operate correctly.
 
-<a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_3FA4CD2B451B4A30A12D30DDE8DF8619"></a>
-
-## Configuring gfsh Security
+## <a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_3FA4CD2B451B4A30A12D30DDE8DF8619" class="no-quick-link"></a>Configuring gfsh Security
 
 Since `gfsh` must connect to a JMX Manager member to run certain commands (namely those commands that manage and monitor other members), JMX Manager configuration properties can affect `gfsh` security. In `gemfire.properties`, the following Geode properties can affect `gfsh` connection settings to the JMX Manager:
 
@@ -40,9 +35,7 @@ Since `gfsh` must connect to a JMX Manager member to run certain commands (namel
 
 You may also need to verify that the ports are available and open to client connections. See [Configuring a JMX Manager](../../managing/management/jmx_manager_operations.html#topic_263072624B8D4CDBAD18B82E07AA44B6) for details on these security properties.
 
-<a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_C69A2711A7664A9091A5E634221053CB"></a>
-
-## Configuring gfsh Environment Variables
+## <a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_C69A2711A7664A9091A5E634221053CB" class="no-quick-link"></a>Configuring gfsh Environment Variables
 
 In addition, you can set several gfsh-specific preset SHELL variables by using the `set variable` command. For example, you can set `gfsh` to run in quiet mode. Not all `gfsh` variables are modifiable; user-configurable variables include:
 
@@ -52,9 +45,7 @@ In addition, you can set several gfsh-specific preset SHELL variables by using t
 
 See [Useful gfsh Shell Variables](useful_gfsh_shell_variables.html#concept_731ECA5E40E943CBA5C1198A0745D8EE) for more information.
 
-<a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_BE7FB8B355E748FA8BEFE75B2C3CB86E"></a>
-
-## Configuring gfsh Session Logging
+## <a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_BE7FB8B355E748FA8BEFE75B2C3CB86E" class="no-quick-link"></a>Configuring gfsh Session Logging
 
 By default, `gfsh` session logging is disabled. To enable gfsh logging, you must set the Java system property `-Dgfsh.log-level=desired_log_level                 `where *desired\_log \_level* is one of the following values: severe, warning, info, config, fine, finer, finest. For example, in Linux:
 
@@ -90,9 +81,7 @@ gfsh writes several log files for any members that are started via gfsh. Useful 
 -   **&lt;server\_name&gt;.log**. Details a server's configuration (including all gemfire.properties) and all activity that occurs on the server after startup. This log file is written to a directory that is named after the server. For example, if you start a server named server1, the file is written as `server1.log` in the `<product_dir>/server1` directory. If you stop and start the server with an identical name, the older log files are kept in the same directory but renamed for versioning purposes.
 -   **vf.gf.server.pid**. Contains the process ID of the server. You can use the PID to stop or view the status of this server. This file is written to the same location as the server log file.
 
-<a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_jcs_ltx_n4"></a>
-
-## Tab Completion
+## <a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_jcs_ltx_n4" class="no-quick-link"></a>Tab Completion
 
 *This section applies only to UNIX installations.*
 
@@ -106,15 +95,11 @@ After running this command, you can use auto completion when running gfsh comman
 
 See [Using Tab Completion](getting_started_gfsh.html#concept_45D28CC9710C4EAFB6EECFA0D651D439__p_sb2_ttx_n4).
 
-<a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_72323A45E0064FD2982663F7AC2A2E07"></a>
-
-## Command History and gfsh.history
+## <a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_72323A45E0064FD2982663F7AC2A2E07" class="no-quick-link"></a>Command History and gfsh.history
 
 A history of commands that have been executed successfully is logged in `.gfsh.history` file in a `.gemfire` directory under the home directory of the user running gfsh. You can also export a history file by using the `history --file=your_file_name` command.
 
-<a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_C84414FF16AB4279A43A41C6C8B61A7E"></a>
-
-## JMX Manager Update Rate and System Monitoring
+## <a id="concept_3B9C6CE2F64841E98C33D9F6441DF487__section_C84414FF16AB4279A43A41C6C8B61A7E" class="no-quick-link"></a>JMX Manager Update Rate and System Monitoring
 
 When you perform data operations (such as put) and then monitor the state of the system (such as using the gfsh `show metrics` command or Apache Geode Pulse), the monitored system may not immediately reflect the most recent operations. For example, if you perform a put operation and then immediately execute the `show metrics` gfsh command, you may not see the correct number of entries in the region. The management layer updates every 2 seconds. Wait a few seconds after performing operational activity to see the most accurate results.
 

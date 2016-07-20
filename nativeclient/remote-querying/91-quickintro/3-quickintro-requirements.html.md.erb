@@ -4,14 +4,11 @@ title:  Remote Querying Requirements
 
 Note the particular requirements for using region endpoints; setting server region data policy and scope; implementing equals and hashcode methods; and setting object type constraints.
 
-<a id="security__section_AB5CC1F7CA1949FEA8A35687BC486F10"></a>
-## Using Region Endpoints
+## <a id="security__section_AB5CC1F7CA1949FEA8A35687BC486F10" class="no-quick-link"></a>Using Region Endpoints
 
 When you are using region endpoints, at least one region must exist on the native client before a query can be executed through the client. All objects in the region belong to the same class hierarchy (homogenous types).
 
-<a id="security__section_A619799378B14214AF922D819907FF38"></a>
-
-## Setting Server Region Data Policy and Scope
+## <a id="security__section_A619799378B14214AF922D819907FF38" class="no-quick-link"></a>Setting Server Region Data Policy and Scope
 
 Native client remote querying only accesses the data that is available in the remote cache server region, so no local cache loading operations are performed. Depending on the cache server region's scope and data-policy attribute settings, this could mean that your queries and indexes only see a part of the data available for the server region in the distributed cache.
 
@@ -31,17 +28,13 @@ The following table summarizes the effects of cache server region scope and data
 | `distributed-ack or distributed-no-ack` | N/A                | FULL data set (if no race conditions). |
 | `global`                                  | N/A                | FULL data set.                         |
 
-<a id="security__section_18C174BB0B2A4F23B9A78F872FA220C4"></a>
-
-## Implementing the equals and hashcode Methods
+## <a id="security__section_18C174BB0B2A4F23B9A78F872FA220C4" class="no-quick-link"></a>Implementing the equals and hashcode Methods
 
 The `Portfolio` and `Position` query objects for the cache server must have the `equals` and `hashCode` methods implemented, and those methods must provide the properties and behavior mentioned in the online documentation for `Object.equals` and `Object.hashCode`. Inconsistent query results can occur if these methods are absent.
 
 See the `Object` class description in the Java API documentation for more information about the equals and hashCode methods.
 
-<a id="security__section_407A315F22014CD8A0BC622454789888"></a>
-
-## Setting Object Type Constraints
+## <a id="security__section_407A315F22014CD8A0BC622454789888" class="no-quick-link"></a>Setting Object Type Constraints
 
 Performing queries on cache server regions containing heterogeneous objects, which are objects of different data types, may produce undesirable results. Queries should be performed only on regions that contain homogeneous objects of the same object type, although subtypes are allowed.
 

@@ -4,8 +4,7 @@ title:  Maintaining Indexes (Synchronously or Asynchronously) and Index Storage
 
 Indexes are automatically kept current with the region data they reference. The region attribute `IndexMaintenanceSynchronous` specifies whether the region indexes are updated synchronously when a region is modified or asynchronously in a background thread.
 
-<a id="concept_98ED3F38919A490B9AE2553568455C35__section_FF1945F2AAFA4B158067CEE967410616"></a>
-## Index Maintenance Behavior
+## <a id="concept_98ED3F38919A490B9AE2553568455C35__section_FF1945F2AAFA4B158067CEE967410616" class="no-quick-link"></a>Index Maintenance Behavior
 
 Asynchronous index maintenance batches up multiple updates to the same region key. The default mode is synchronous, since this provides the greatest consistency with region data.
 
@@ -18,9 +17,7 @@ This declarative index creation sets the maintenance mode to asynchronous:
 </region-attributes>
 ```
 
-<a id="concept_98ED3F38919A490B9AE2553568455C35__section_68308B5597CF4A9EAA8EC0BD83A233E6"></a>
-
-## Internal Index Structure and Storage
+## <a id="concept_98ED3F38919A490B9AE2553568455C35__section_68308B5597CF4A9EAA8EC0BD83A233E6" class="no-quick-link"></a>Internal Index Structure and Storage
 
 Indexes are stored either as compact or non-compact data structures based on the indexed expression (even if the index key type is the same.) For example, consider the following Passenger object:
 

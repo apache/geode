@@ -15,9 +15,7 @@ Locking of regions and entries is done in two ways:
     **Note:**
     You must use the `Region` API to lock regions and region entries. Do not use the `DistributedLockService` in the `com.gemstone.gemfire.distributed` package. That service is available only for locking in arbitrary distributed applications. It is not compatible with the `Region` locking methods.
 
-<a id="locking_in_global_regions__section_5B47F9C5C27A4B789A3498AC553BB1FB"></a>
-
-## Lock Timeouts
+## <a id="locking_in_global_regions__section_5B47F9C5C27A4B789A3498AC553BB1FB" class="no-quick-link"></a>Lock Timeouts
 
 Getting a lock on a region or entry is a two-step process of getting a lock instance for the entity and then using the instance to set the lock. Once you have the lock, you hold it for your operations, then release it for someone else to use. You can set limits on the time spent waiting to get a lock and the time spent holding it. Both implicit and explicit locking operations are affected by the timeouts:
 
@@ -46,9 +44,7 @@ Getting a lock on a region or entry is a two-step process of getting a lock inst
     gfsh>alter runtime --lock-lease=120
     ```
 
-<a id="locking_in_global_regions__section_031727F04D114B42944872360A386907"></a>
-
-## Optimize Locking Performance
+## <a id="locking_in_global_regions__section_031727F04D114B42944872360A386907" class="no-quick-link"></a>Optimize Locking Performance
 
 For each global region, one of the members with the region defined will be assigned the job of lock grantor. The lock grantor runs the lock service that receives lock requests from system members, queues them as needed, and grants them in the order received.
 
@@ -67,9 +63,7 @@ You can request lock grantor status:
 
 2.  After region creation through the region `becomeLockGrantor` method. Changing lock grantors should be done with care, however, as doing so takes cycles from other operations. In particular, be careful to avoid creating a situation where you have members vying for lock grantor status.
 
-<a id="locking_in_global_regions__section_34661E38DFF9420B89C1A2B25F232D53"></a>
-
-## Examples
+## <a id="locking_in_global_regions__section_34661E38DFF9420B89C1A2B25F232D53" class="no-quick-link"></a>Examples
 
 These two examples show entry locking and unlocking. Note how the entry’s `Lock` object is obtained and then its lock method invoked to actually set the lock. The example program stores the entry lock information in a hash table for future reference.
 

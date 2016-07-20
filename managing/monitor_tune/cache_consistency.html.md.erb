@@ -4,8 +4,7 @@ title:  Maintaining Cache Consistency
 
 Maintaining data consistency between caches in a distributed Geode system is vital for ensuring its functional integrity and preventing data loss.
 
-<a id="cache_const__section_lf3_lvn_nr"></a>
-## General Guidelines
+## <a id="cache_const__section_lf3_lvn_nr" class="no-quick-link"></a>General Guidelines
 
 **Before Restarting a Region with a Disk Store, Consider the State of the Entire Region**
 
@@ -45,9 +44,7 @@ A region in a cache with transactions may not stay in sync with a region of the 
 
 Two applications running the same sequence of operations in their transactions may get different results. This could occur because operations happening outside a transaction in one of the members can overwrite the transaction, even in the process of committing. This could also occur if the results of a large transaction exceed the machine’s memory or the capacity of Geode. Those limits can vary by machine, so the two members may not be in sync.
 
-<a id="cache_const__section_qxx_kvn_nr"></a>
-
-## Guidelines for Multi-Site Deployments
+## <a id="cache_const__section_qxx_kvn_nr" class="no-quick-link"></a>Guidelines for Multi-Site Deployments
 
 **Optimize socket-buffer-size**
 

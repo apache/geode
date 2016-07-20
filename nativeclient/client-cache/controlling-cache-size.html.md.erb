@@ -7,15 +7,11 @@ You can control cache size through region size limits, cache size limits, or a c
 <a id="controlling-cache-size__section_A0C25D6D1D5243778800AE67CAD8CB2C"></a>
 Geode controls region size by moving least recently used (LRU) entries from the region or from all cache regions.
 
-<a id="controlling-cache-size__section_3C7994A4C9D9468F860D99C0ED086D74"></a>
-
-## Controlling Region Size
+## <a id="controlling-cache-size__section_3C7994A4C9D9468F860D99C0ED086D74" class="no-quick-link"></a>Controlling Region Size
 
 You can cap the size of any region with the region attribute [LruEntriesLimit](lru-entries-limit.html#concept_75D723D60E044FF9AE97C939699AB10A). You can specify whether to destroy the entries or overflow them to disk in the attribute [DiskPolicy](disk-policy.html#disk-policy). If you overflow entries to disk, you must also specify the attribute [PersistenceManager](persistence-manager.html#persistence-manager).
 
-<a id="controlling-cache-size__section_E59CA4D5724147DC83E8991E654AC155"></a>
-
-## Controlling Cache Size
+## <a id="controlling-cache-size__section_E59CA4D5724147DC83E8991E654AC155" class="no-quick-link"></a>Controlling Cache Size
 
 You can control overall cache size with the [heap-lru-limit](../setting-properties/attributes-gfcpp.html#attributes-gfcpp), which is set in `gfcpp.properties`. This property sets the maximum amount of memory used for the cache, in megabytes. If a new entry causes memory to grow past this limit, the LRU algorithm is called to evict entries. Heap LRU causes eviction to occur on all regions in the cache, overriding region-level [LruEntriesLimit](lru-entries-limit.html#concept_75D723D60E044FF9AE97C939699AB10A) settings when it needs to reclaim memory.
 

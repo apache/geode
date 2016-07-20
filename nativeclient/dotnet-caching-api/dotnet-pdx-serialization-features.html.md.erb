@@ -4,8 +4,7 @@ title:  Geode PDX Serialization Features
 
 Geode PDX serialization offers several advantages.
 
-<a id="concept_E8DCAA3027B64C0C8213A0DF2D773BF4__section_8F8D96A0DAC3416DA90622D0E240F54A"></a>
-## Application Versioning of PDX Domain Objects
+## <a id="concept_E8DCAA3027B64C0C8213A0DF2D773BF4__section_8F8D96A0DAC3416DA90622D0E240F54A" class="no-quick-link"></a>Application Versioning of PDX Domain Objects
 
 Domain objects evolve along with your application code. You may create an address object with two address lines, then realize later that a third line is required for some situations. Or you may realize that a particular field is not used and want to get rid of it.
 
@@ -13,17 +12,13 @@ With PDX, you can use old and new versions of domain objects together in a distr
 
 Geode maintains a central registry of the PDX domain object metadata. Using the registry, Geode preserves fields in each member's cache regardless of whether the member has the field defined. When a member receives an object that has a field registered that the member is not aware of, the member does not access the field, but preserves it and passes it along with the rest of the object to other members. When a member receives an object that is missing one or more fields according to the member's version, Geode assigns the .NET default values for the field types to the missing fields.
 
-<a id="concept_E8DCAA3027B64C0C8213A0DF2D773BF4__section_4CD0072C619F4F0496B73597B92B2289"></a>
-
-## Portability of PDX Serializable Objects
+## <a id="concept_E8DCAA3027B64C0C8213A0DF2D773BF4__section_4CD0072C619F4F0496B73597B92B2289" class="no-quick-link"></a>Portability of PDX Serializable Objects
 
 When you create an `IPdxSerializable` object, Geode stores the object's type information in a central registry. The information is passed between peers, between clients and servers, and between distributed systems.
 
 This offers a notable advantage to the .NET client, which shares data with Java cache servers. Clients automatically pass registry information to servers when they store an `IPdxSerializable` object. Clients can run queries and functions against the data in the servers without the servers needing to know anything about the stored objects. One client can store data on the server to be retrieved by another client, with the server never needing to know the object type. This means you can code your .NET clients to manage data using Java servers without having to create Java implementations of your .NET domain objects.
 
-<a id="concept_E8DCAA3027B64C0C8213A0DF2D773BF4__section_0437E67A0DDE4F92A24658DAB48DD76C"></a>
-
-## Reduced Deserialization of Serialized Objects
+## <a id="concept_E8DCAA3027B64C0C8213A0DF2D773BF4__section_0437E67A0DDE4F92A24658DAB48DD76C" class="no-quick-link"></a>Reduced Deserialization of Serialized Objects
 
 The access methods for `IPdxSerializable` objects allow you to examine specific fields of your domain object without deserializing the entire object. This can reduce serialization and deserialization costs significantly. .NET clients can run queries and execute functions against the objects in the server caches without deserializing the entire object on the server side. The query engine automatically recognizes PDX objects and uses only the fields it needs.
 

@@ -28,8 +28,7 @@ This section contains guidelines and additional information on working with Geod
 
 -   **[How Transaction Events Are Managed](transaction_event_management.html)**
 
-<a id="concept_vx2_gs4_5k"></a>
-## Setting Global Copy on Read
+## <a id="concept_vx2_gs4_5k" class="no-quick-link"></a>Setting Global Copy on Read
 
 As many entry operations return a reference to the cache entry, copy-on-read avoids problems within a transaction setting. To enable global copy-on-read for all reads, modify the `cache.xml` file or use the corresponding Java API call.
 
@@ -152,8 +151,7 @@ The `EntryEvent` that a callback receives has a unique Geode transaction ID, so 
 
 For more information on writing cache event handlers, see [Implementing Cache Event Handlers](../events/implementing_cache_event_handlers.html).
 
-<a id="concept_ocw_vf1_wk"></a>
-## Configuring Transaction Plug-In Event Handlers
+## <a id="concept_ocw_vf1_wk" class="no-quick-link"></a>Configuring Transaction Plug-In Event Handlers
 
 Geode has two types of transaction plug-ins: Transaction Writers and Transaction Listeners. You can optionally install one transaction writer and one or more transaction listeners per cache.
 

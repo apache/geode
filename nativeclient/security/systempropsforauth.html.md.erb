@@ -4,14 +4,11 @@ title:  Configuring Credentials for Authentication
 
 The native client uses system properties to acquire valid credentials for authentication by the server. You define these properties in the `gfcpp.properties` file, which the native client accesses during startup.
 
-<a id="security__section_E1835A3B22D44D47A4C9DB54A3590B71"></a>
-## security-client-auth-factory
+## <a id="security__section_E1835A3B22D44D47A4C9DB54A3590B71" class="no-quick-link"></a>security-client-auth-factory
 
 System property for the factory function of the class implementing the `AuthInitialize` interface (`IAuthInitialize` in .NET). The .NET clients can load both C++ and .NET implementations. For .NET implementations, this property is the fully qualified name of the static factory function (including the namespace and class).
 
-<a id="security__section_15C6689C363B469B947B177E1DE73208"></a>
-
-## security-client-auth-library
+## <a id="security__section_15C6689C363B469B947B177E1DE73208" class="no-quick-link"></a>security-client-auth-library
 
 System property for the library where the factory methods reside. The library is loaded explicitly and the factory functions are invoked dynamically, returning an object of the class implementing the `AuthInitialize` interface.
 
@@ -21,9 +18,7 @@ The `getCredentials` function for the `AuthInitialize` interface is called to ob
 
 `PropertiesPtr getCredentials(PropertiesPtr& securityprops, const char                     *server);`
 
-<a id="security__section_869DD42F1B23450D9425712EBBD5CB1C"></a>
-
-## Implementing the Factory Method for Authentication (C++ and .NET)
+## <a id="security__section_869DD42F1B23450D9425712EBBD5CB1C" class="no-quick-link"></a>Implementing the Factory Method for Authentication (C++ and .NET)
 
 The following examples show how to implement the factory method in both C++ and .NET. **C++ Implementation**
 
@@ -47,9 +42,7 @@ Implementations of the factory method are user-provided. Credentials in the form
 
 The Geode native client installation provides sample security implementations in its `templates/security` folder.
 
-<a id="security__section_9DEC6B55C76D446FB0821AF3B3922BD6"></a>
-
-## Acquiring Credentials Programmatically (C++ and .NET)
+## <a id="security__section_9DEC6B55C76D446FB0821AF3B3922BD6" class="no-quick-link"></a>Acquiring Credentials Programmatically (C++ and .NET)
 
 This example shows a C++ client connecting with credentials.
 

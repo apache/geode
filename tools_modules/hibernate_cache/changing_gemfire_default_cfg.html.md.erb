@@ -12,8 +12,7 @@ When adding properties, use the following syntax:
 
 In the preceding code snippet, `PROPERTY_NAME` is the property name and `PROPERTY_VALUE` is the property value. The list of configurable system properties include any of the properties that can be specified in Geode's `gemfire.properties` file. The property changes associated with the most common configurations are described below.
 
-<a id="changing_gemfire_default_cfg__changing_gemfire_topology"></a>
-## Changing the Geode Topology
+## <a id="changing_gemfire_default_cfg__changing_gemfire_topology" class="no-quick-link"></a>Changing the Geode Topology
 
 By default, the topology is set for a peer-to-peer configuration rather than a client/server configuration. To use the peer-to-peer configuration, you don't have to make any changes. If you want to change the configuration to a client/server topology, alter this line of the Hibernate configuration file to be:
 
@@ -32,9 +31,7 @@ $ gfsh start server \
 path/to/hibernate-jars/geode-modules-hibernate-1.0.0.jar
 ```
 
-<a id="changing_gemfire_default_cfg__changing_p2p_region_atts"></a>
-
-## Changing Peer-to-Peer Region Attributes
+## <a id="changing_gemfire_default_cfg__changing_p2p_region_atts" class="no-quick-link"></a>Changing Peer-to-Peer Region Attributes
 
 You can change the region attributes from within the `hibernate.cfg.xml` file using the same region shortcuts specified in [Region Shortcuts and Custom Named Region Attributes](../../basic_config/data_regions/region_shortcuts.html).
 
@@ -56,15 +53,11 @@ You can also control the region type on a per-entity basis using the following c
 
 In this example, com.foo.Bar is the name of your class and REGION\_ATTRIBUTE can be one of the region shortcuts.
 
-<a id="changing_gemfire_default_cfg__section_1AB292DC8D0B420DABFD2120A38FEDB4"></a>
-
-## Changing Region Names
+## <a id="changing_gemfire_default_cfg__section_1AB292DC8D0B420DABFD2120A38FEDB4" class="no-quick-link"></a>Changing Region Names
 
 By default, the Geode Hibernate module puts entities in a region whose name is the fully qualified path of the entity. The module uses these region names to eagerly prefetch related entities. Therefore, we recommend that you do not change the default names of the regions that are created by Hibernate.
 
-<a id="changing_gemfire_default_cfg__changing_cs_region_atts"></a>
-
-## Changing Client/Server Region Attributes
+## <a id="changing_gemfire_default_cfg__changing_cs_region_atts" class="no-quick-link"></a>Changing Client/Server Region Attributes
 
 When using a client/server configuration, the default region attribute for the Geode servers is a PARTITION region. This means that the data is partitioned across the pool of Geode servers. You can modify this behavior using the same instructions specified in [Changing Peer-to-Peer Region Attributes](changing_gemfire_default_cfg.html#changing_gemfire_default_cfg__changing_p2p_region_atts).
 
@@ -90,9 +83,7 @@ You can also control the client region type on a per-entity basis using the foll
 
 In this example, com.foo.Bar is the name of your class and CLIENT\_REGION\_ATTRIBUTE can be one of the client region shortcuts.
 
-<a id="changing_gemfire_default_cfg__turning_on_persistence"></a>
-
-## Turning On Persistence
+## <a id="changing_gemfire_default_cfg__turning_on_persistence" class="no-quick-link"></a>Turning On Persistence
 
 If you change the region type to any one of the persistent modes (such as PARTITION\_PERSISTENT and REPLICATE\_PERSISTENT), cache data will get stored into the current working directory. To change this location, supply disk storage information in Geode's `cache.xml` configuration file. For example:
 
@@ -128,15 +119,11 @@ You must also change Hibernate's `hibernate.cfg.xml` file to point to this xml f
 </property> 
 ```
 
-<a id="changing_gemfire_default_cfg__section_6F67CECB091948129081FDD34B892F91"></a>
-
-## **Caching Query Results**
+## <a id="changing_gemfire_default_cfg__section_6F67CECB091948129081FDD34B892F91" class="no-quick-link"></a>**Caching Query Results**
 
 In a Hibernate application, the caching of query results is recommended for queries that are run frequently with the same parameters. However, most applications using Hibernate do not benefit from query results caching because Hibernate will invalidate cached results when even a single entity involved in the query is updated. For example, suppose that a query on the Person entity is cached. As soon as any instance of Person is updated, created or deleted, Hibernate will invalidate this query because it cannot predict the impact of the change on the cached query results. Therefore, the Geode Hibernate Cache Module does not distribute query results to other Geode member caches. The query results are always cached only in the Geode cache local to the Hibernate session.
 
-<a id="changing_gemfire_default_cfg__section_E884BF4251D6494695408B30D1F350B1"></a>
-
-## Remapping the Hibernate EnumType with the Geode EnumType
+## <a id="changing_gemfire_default_cfg__section_E884BF4251D6494695408B30D1F350B1" class="no-quick-link"></a>Remapping the Hibernate EnumType with the Geode EnumType
 
 Due to an issue with Hibernate in a client-server topology, application classes must be present on the Geode cache server when a Hibernate application uses annotations. If you do not want to place the application classes on the Geode cache server, you can modify the Hibernate configuration to use the `com.gemstone.gemfire.modules.hibernate.EnumType` in place of `org.hibernate.type.EnumType`.
 

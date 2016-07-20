@@ -12,8 +12,7 @@ Besides the disk stores you specify, Apache Geode has a default disk store that 
 -   [Configuring Regions, Queues, and PDX Serialization to Use the Disk Stores](using_disk_stores.html#defining_disk_stores__section_AFB254CA9C5A494A8E335352A6849C16)
 -   [Configuring Disk Stores on Gateway Senders](using_disk_stores.html#defining_disk_stores__config-disk-store-gateway)
 
-<a id="defining_disk_stores__section_0CD724A12EE4418587046AAD9EEC59C5"></a>
-## Design Your Disk Stores
+## <a id="defining_disk_stores__section_0CD724A12EE4418587046AAD9EEC59C5" class="no-quick-link"></a>Design Your Disk Stores
 
 Before you begin, you should understand Geode [Basic Configuration and Programming](../../basic_config/book_intro.html).
 
@@ -31,9 +30,7 @@ Before you begin, you should understand Geode [Basic Configuration and Programmi
     -   Make sure the new storage does not interfere with other processes that use disk on your systems. If possible, store your files to disks that are not used by other processes, including virtual memory or swap space. If you have multiple disks available, for the best performance, place one directory on each disk.
     -   Use different directories for different members. You can use any number of directories for a single disk store.
 
-<a id="defining_disk_stores__section_37BC5A4D84B34DB49E489DD4141A4884"></a>
-
-## Create and Configure Your Disk Stores
+## <a id="defining_disk_stores__section_37BC5A4D84B34DB49E489DD4141A4884" class="no-quick-link"></a>Create and Configure Your Disk Stores
 
 1.  In the locations you have chosen, create all directories you will specify for your disk stores to use. Geode throws an exception if the specified directories are not available when a disk store is created. You do not need to populate these directories with anything.
 2.  Open a `gfsh` prompt and connect to the distributed system.
@@ -113,9 +110,7 @@ As an alternative to defining cache.xml on every server in the cluster-- if you 
 
 You can modify an offline disk store by using the [alter disk-store](../../tools_modules/gfsh/command-pages/alter.html#topic_99BCAD98BDB5470189662D2F308B68EB) command. If you are modifying the default disk store configuration, use "DEFAULT" as the disk-store name.
 
-<a id="defining_disk_stores__section_AFB254CA9C5A494A8E335352A6849C16"></a>
-
-## Configuring Regions, Queues, and PDX Serialization to Use the Disk Stores
+## <a id="defining_disk_stores__section_AFB254CA9C5A494A8E335352A6849C16" class="no-quick-link"></a>Configuring Regions, Queues, and PDX Serialization to Use the Disk Stores
 
 The following are examples of using already created and named disk stores for Regions, Queues, and PDX Serialization.
 
@@ -154,9 +149,7 @@ Example of using a named disk store for PDX serialization metadata (cache.xml):
 </pdx>
 ```
 
-<a id="defining_disk_stores__config-disk-store-gateway"></a>
-
-## Configuring Disk Stores on Gateway Senders
+## <a id="defining_disk_stores__config-disk-store-gateway" class="no-quick-link"></a>Configuring Disk Stores on Gateway Senders
 
 Gateway sender queues are always overflowed and may be persisted. Assign them to overflow disk stores if you do not persist, and to persistence disk stores if you do.
 

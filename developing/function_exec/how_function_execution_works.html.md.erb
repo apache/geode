@@ -2,8 +2,7 @@
 title:  How Function Execution Works
 ---
 
-<a id="how_function_execution_works__section_881D2FF6761B4D689DDB46C650E2A2E1"></a>
-## Where Functions Are Executed
+## <a id="how_function_execution_works__section_881D2FF6761B4D689DDB46C650E2A2E1" class="no-quick-link"></a>Where Functions Are Executed
 
 You can execute data-independent functions or data-dependent functions in Geode in the following places:
 
@@ -19,9 +18,7 @@ You can execute data-independent functions or data-dependent functions in Geode 
 
 See the `com.gemstone.gemfire.cache.execute.FunctionService` Java API documentation for more details.
 
-<a id="how_function_execution_works__section_E0C4B7D2E4414F099788A5A441FF0E03"></a>
-
-## How Functions Are Executed
+## <a id="how_function_execution_works__section_E0C4B7D2E4414F099788A5A441FF0E03" class="no-quick-link"></a>How Functions Are Executed
 
 The following things occur when executing a function:
 
@@ -29,9 +26,7 @@ The following things occur when executing a function:
 2.  If the function has results, they are returned to the `addResult` method call in a `ResultCollector` object.
 3.  The originating member collects results using `ResultCollector.getResult`.
 
-<a id="how_function_execution_works__section_14FF9932C7134C5584A14246BB4D4FF6"></a>
-
-## Highly Available Functions
+## <a id="how_function_execution_works__section_14FF9932C7134C5584A14246BB4D4FF6" class="no-quick-link"></a>Highly Available Functions
 
 Generally, function execution errors are returned to the calling application. You can code for high availability for `onRegion` functions that return a result, so Geode automatically retries a function if it does not execute successfully. You must code and configure the function to be highly available, and the calling application must invoke the function using the results collector `getResult` method.
 
@@ -46,9 +41,7 @@ For client regions, the system retries the execution according to `com.gemstone.
 
 For member calls, the system retries until either it succeeds or no data remains in the system for the function to operate on.
 
-<a id="how_function_execution_works__section_A0FD54B73E9A453AA38FC4A4D5282351"></a>
-
-## Function Execution Scenarios
+## <a id="how_function_execution_works__section_A0FD54B73E9A453AA38FC4A4D5282351" class="no-quick-link"></a>Function Execution Scenarios
 
 [Server-distributed System](#how_function_execution_works__fig_server_distributed_system) shows the sequence of events for a data-independent function invoked from a client on all available servers.
 

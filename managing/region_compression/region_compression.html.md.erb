@@ -32,8 +32,7 @@ You can have a mix of compressed and non-compressed regions in the same cache.
 
     The comparative performance of compressed regions versus non-compressed regions can vary depending on how the region is being used and whether the region is hosted in a memory-bound JVM.
 
-<a id="concept_a2c_rhc_gl"></a>
-## Guidelines on Using Compression
+## <a id="concept_a2c_rhc_gl" class="no-quick-link"></a>Guidelines on Using Compression
 
 This topic describes factors to consider when deciding on whether to use compression.
 
@@ -59,8 +58,7 @@ Review the following guidelines when deciding on whether or not to enable compre
 
 <a id="topic_inm_whc_gl"></a>
 
-<a id="topic_inm_whc_gl"></a>
-## How to Enable Compression in a Region
+## <a id="topic_inm_whc_gl" class="no-quick-link"></a>How to Enable Compression in a Region
 
 This topic describes how to enable compression on your region.
 
@@ -114,9 +112,7 @@ Region myRegion = cache.getRegion("myRegion");
 Compressor compressor = myRegion.getAttributes().getCompressor();
 ```
 
-<a id="topic_hqf_syj_g4"></a>
-
-## Working with Compressors
+## <a id="topic_hqf_syj_g4" class="no-quick-link"></a>Working with Compressors
 
 When using region compression, you can use the default Snappy compressor included with Geode or you can specify your own compressor.
 
@@ -187,9 +183,7 @@ However, if you need to change the compressor or disable compression, you can do
 2.  Modify the cache.xml file for the member either specifying a new compressor or removing the compressor attribute from the region.
 3.  Restart the member.
 
-<a id="topic_omw_j3c_gl"></a>
-
-## Comparing Performance of Compressed and Non-Compressed Regions
+## <a id="topic_omw_j3c_gl" class="no-quick-link"></a>Comparing Performance of Compressed and Non-Compressed Regions
 
 The comparative performance of compressed regions versus non-compressed regions can vary depending on how the region is being used and whether the region is hosted in a memory-bound JVM.
 

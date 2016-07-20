@@ -15,8 +15,7 @@ When the query memory monitoring feature is on, the default query time out is se
 
 When system memory is low (as determined by the critical heap percentage threshold that you defined in cache.xml or in the getResourceManager API ), queries will throw a `QueryExecutionLowMemoryException`. Any indexes that are in the process of being created will throw an `InvalidIndexException` with the message indicating the reason.
 
-<a id="topic_685CED6DE7D0449DB8816E8ABC1A6E6F__section_2E9DEEC9D9C94D038543DDE03BC60B20"></a>
-## Partitioned Region Queries and Low Memory
+## <a id="topic_685CED6DE7D0449DB8816E8ABC1A6E6F__section_2E9DEEC9D9C94D038543DDE03BC60B20" class="no-quick-link"></a>Partitioned Region Queries and Low Memory
 
 Partitioned region queries are likely causes for out-of-memory exceptions. If query monitoring is enabled, partitioned region queries drop or ignore results that are being gathered by other servers if the executing server is low in memory.
 

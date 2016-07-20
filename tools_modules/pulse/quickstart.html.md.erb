@@ -39,9 +39,7 @@ To run Pulse in embedded mode:
 **Note:**
 When running in embedded mode, the Pulse application connects only to the JMX Manager running in the locator or member that hosts Pulse. This enables you to monitor all members of that distributed system. You can also view (but not monitor) connected WAN clusters, and can view gateway senders and receivers that are configured in the local cluster.
 
-<a id="topic_795C97B46B9843528961A094EE520782"></a>
-
-## Hosting Pulse on a Web Application Server
+## <a id="topic_795C97B46B9843528961A094EE520782" class="no-quick-link"></a>Hosting Pulse on a Web Application Server
 
 Host Pulse on a dedicated Web application server to make the Pulse application available at a consistent address, or to use SSL for accessing the Pulse application. When you host Pulse in this way, you also configure Pulse to connect to a specific locator or JMX Manager node for monitoring.
 
@@ -127,14 +125,11 @@ To host Pulse on a Web application server:
 
 8.  After you log in, Pulse displays the main cluster view for the distributed system to which it has connected. See [Using Pulse Views](quickstart.html#topic_F0ECE9E8179541CCA3D6C5F4FBA84404).
 
-<a id="topic_AC9FFAA6FB044279BAED7A3E099E07AC"></a>
-
-## Configuring Pulse Authentication
+## <a id="topic_AC9FFAA6FB044279BAED7A3E099E07AC" class="no-quick-link"></a>Configuring Pulse Authentication
 
 Pulse requires all users to authenticate themselves before they can use the Pulse Web application. If you have configured JMX authentication on the Geode JMX Manager node, the Pulse Web application itself may also need to authenticate itself to the Geode JMX Manager node on startup.
 
-<a id="topic_AC9FFAA6FB044279BAED7A3E099E07AC__section_D31C25130C3D470083DAC76AE64DD1B6"></a>
-## Authenticating the Pulse Application to the JMX Manager
+## <a id="topic_AC9FFAA6FB044279BAED7A3E099E07AC__section_D31C25130C3D470083DAC76AE64DD1B6" class="no-quick-link"></a>Authenticating the Pulse Application to the JMX Manager
 
 If you run Pulse in embedded mode, the Pulse application runs on the JMX Manager node and no JMX authentication is required. You do not need to specify valid JMX credentials to start an embedded Pulse application.
 
@@ -143,9 +138,7 @@ If you host Pulse on a Web Application server (non-embedded mode) and you config
 **Note:**
 The credentials that you specify must have both read and write privileges in the JMX Manager node. See [Configuring a JMX Manager](../../managing/management/jmx_manager_operations.html#topic_263072624B8D4CDBAD18B82E07AA44B6).
 
-<a id="topic_AC9FFAA6FB044279BAED7A3E099E07AC__section_E3703ED899354839BE51278D3AE79062"></a>
-
-## Authenticating Pulse Users
+## <a id="topic_AC9FFAA6FB044279BAED7A3E099E07AC__section_E3703ED899354839BE51278D3AE79062" class="no-quick-link"></a>Authenticating Pulse Users
 
 Pulse implements user authentication using the Spring security framework. The authentication configuration is specified in the `spring-security.xml` file, which is stored in the `WEB-INF` directory of Pulse WAR file. The `spring-security.xml` file contains bean definitions for role-based resource access, authentication profiles, and authentication handlers. The file also contains a default authentication manager bean definition.
 
@@ -244,9 +237,7 @@ To configure and use a custom authentication configuration:
 
 6.  Start Pulse and log in using credentials that are authorized in the custom configuration.
 
-<a id="topic_AC9FFAA6FB044279BAED7A3E099E07AC__section_kjx_ylq_kq"></a>
-
-## Using LDAP Authentication in Pulse
+## <a id="topic_AC9FFAA6FB044279BAED7A3E099E07AC__section_kjx_ylq_kq" class="no-quick-link"></a>Using LDAP Authentication in Pulse
 
 This section provides instructions for using LDAP authentication with Pulse in either embedded and non-embedded mode.
 
@@ -388,9 +379,7 @@ The above parameters apply to all HTTP services hosted on the JMX Manager, which
 
 When the above properties are configured, all HTTP services become SSL-enabled and you must configure your client applications accordingly. For SSL-enabled Pulse, you will need to configure your browsers with proper certificates.
 
-<a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404"></a>
-
-## Using Pulse Views
+## <a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404" class="no-quick-link"></a>Using Pulse Views
 
 Pulse provides a variety of different views to help you monitor Geode clusters, members, and regions.
 
@@ -402,8 +391,7 @@ The following sections provide an overview of the main Pulse views:
 -   [Data Browser](#topic_F0ECE9E8179541CCA3D6C5F4FBA84404__sec_pulsedatabrowser)
 -   [Alerts Widget](#topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_bfk_sc3_wn)
 
-<a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_9794B5754E474E10ABFBCD8B1DA240F8"></a>
-## Cluster View
+## <a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_9794B5754E474E10ABFBCD8B1DA240F8" class="no-quick-link"></a>Cluster View
 
 The cluster view is a high-level overview of the Geode distributed system. It is displayed immediately after you log into Pulse. Information displays around the perimeter of the cluster view show statistics such as memory usage, JVM pauses, and throughput. You can use the cluster view to drill down into details for individual members and regions in the distributed system.
 
@@ -570,9 +558,7 @@ The following table describes the data pieces displayed on the Cluster View scre
 </tbody>
 </table>
 
-<a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_3629814A3DF64D31A190495782DB0DBF"></a>
-
-## Member View
+## <a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_3629814A3DF64D31A190495782DB0DBF" class="no-quick-link"></a>Member View
 
 When you select an individual Geode member in Cluster View, Pulse displays the regions available on that member, as well as member-specific information such as the configured listen ports.
 
@@ -704,9 +690,7 @@ The following table describes the data elements displayed on the Member View scr
 </tbody>
 </table>
 
-<a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_D151776BAC8B4704A71F37F8B5CE063D"></a>
-
-## Region View
+## <a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_D151776BAC8B4704A71F37F8B5CE063D" class="no-quick-link"></a>Region View
 
 The Pulse Region View provides a comprehensive overview of all regions in the Geode distributed system:
 
@@ -785,9 +769,7 @@ The following table describes the data elements displayed on the Region View scr
 </tbody>
 </table>
 
-<a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__sec_pulsedatabrowser"></a>
-
-## Data Browser
+## <a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__sec_pulsedatabrowser" class="no-quick-link"></a>Data Browser
 
 The Pulse Data Browser enables you to query region data. Note that there are two key attributes available on DistributedSystemMXBean (see [List of Geode JMX MBeans](../../managing/management/list_of_mbeans.html#topic_4BCF867697C3456D96066BAD7F39FC8B)) that you can use to configure limits for the result sets displayed in Data Browser:
 
@@ -812,9 +794,7 @@ Use these basic controls while in Data Browser view:
 8.  Export the query results to a text file.
 9.  Return to [Cluster View](quickstart.html#topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_9794B5754E474E10ABFBCD8B1DA240F8).
 
-<a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_bfk_sc3_wn"></a>
-
-## Alerts Widget
+## <a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_bfk_sc3_wn" class="no-quick-link"></a>Alerts Widget
 
 The Alerts Widget appears in the right portion of the screen and displays a list of alerts.
 

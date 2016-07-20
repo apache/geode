@@ -8,8 +8,7 @@ Normally Geode uses metadata to determine automatically which copy of persistent
 
 The following sections describe scenarios that can cause `ConflictingPersistentDataException`s in Geode and how to resolve the conflict.
 
-<a id="topic_ghw_z2m_jq__section_sj3_lpm_jq"></a>
-## Independently Created Copies
+## <a id="topic_ghw_z2m_jq__section_sj3_lpm_jq" class="no-quick-link"></a>Independently Created Copies
 
 Trying to merge two independently created distributed systems into a single distributed system will cause a `ConflictingPersistentDataException`.
 
@@ -20,9 +19,7 @@ There are a few ways to end up with independently created systems.
 
 Geode will not automatically merge independently created data for the same region. Instead, you need to export the data from one of the systems and import it into the other system. See the section [Cache and Region Snapshots](../cache_snapshots/chapter_overview.html#concept_E6AC3E25404D4D7788F2D52D83EE3071) for instructions on how to export data from one system and import it into another.
 
-<a id="topic_ghw_z2m_jq__section_op5_hpm_jq"></a>
-
-## Starting New Members First
+## <a id="topic_ghw_z2m_jq__section_op5_hpm_jq" class="no-quick-link"></a>Starting New Members First
 
 Starting a brand new member that has no persistent data before starting older members with persistent data can cause a `ConflictingPersistentDataException`.
 

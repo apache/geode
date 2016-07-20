@@ -9,17 +9,13 @@ Geode compacts an old operation log by copying all non-garbage records into the 
 
 You can configure the system to automatically compact any closed operation log when its garbage content reaches a certain percentage. You can also manually request compaction for online and offline disk stores. For the online disk store, the current operation log is not available for compaction, no matter how much garbage it contains.
 
-<a id="compacting_disk_stores__section_98C6B6F48E4F4F0CB7749E426AF4D647"></a>
-
-## Log File Compaction for the Online Disk Store
+## <a id="compacting_disk_stores__section_98C6B6F48E4F4F0CB7749E426AF4D647" class="no-quick-link"></a>Log File Compaction for the Online Disk Store
 
 <img src="../../images/diskStores-3.gif" id="compacting_disk_stores__image_7E34CC58B13548B196DAA15F5B0A0ECA" class="image" />
 
 Offline compaction runs essentially in the same way, but without the incoming cache operations. Also, because there is no current open log, the compaction creates a new one to get started.
 
-<a id="compacting_disk_stores__section_96E774B5502648458E7742B37CA235FF"></a>
-
-## Run Online Compaction
+## <a id="compacting_disk_stores__section_96E774B5502648458E7742B37CA235FF" class="no-quick-link"></a>Run Online Compaction
 
 Old log files become eligible for online compaction when their garbage content surpasses a configured percentage of the total file. A record is garbage when its operation is superseded by a more recent operation for the same object. During compaction, the non-garbage records are added to the current log along with new cache operations. Online compaction does not block current system operations.
 
@@ -44,9 +40,7 @@ Old log files become eligible for online compaction when their garbage content s
             **Note:**
             You need to be connected to a JMX Manager in `gfsh` to run this command.
 
-<a id="compacting_disk_stores__section_25BDB098E9584EAA9BC6582597544726"></a>
-
-## Run Offline Compaction
+## <a id="compacting_disk_stores__section_25BDB098E9584EAA9BC6582597544726" class="no-quick-link"></a>Run Offline Compaction
 
 Offline compaction is a manual process. All log files are compacted as much as possible, regardless of how much garbage they hold. Offline compaction creates new log files for the compacted log records.
 
@@ -66,26 +60,20 @@ You must provide all of the directories in the disk store. If no oplog max size 
 
 Offline compaction can take a lot of memory. If you get a `java.lang.OutOfMemory` error while running this, you may need to increase your heap size with the `-J=-Xmx` parameter.
 
-<a id="compacting_disk_stores__section_D2374039480947C5AE4CC64167E60978"></a>
-
-## Performance Benefits of Manual Compaction
+## <a id="compacting_disk_stores__section_D2374039480947C5AE4CC64167E60978" class="no-quick-link"></a>Performance Benefits of Manual Compaction
 
 You can improve performance during busy times if you disable automatic compaction and run your own manual compaction during lighter system load or during downtimes. You could run the API call after your application performs a large set of data operations. You could run `compact disk-store` command every night when system use is very low.
 
 To follow a strategy like this, you need to set aside enough disk space to accommodate all non-compacted disk data. You might need to increase system monitoring to make sure you do not overrun your disk space. You may be able to run only offline compaction. If so, you can set `allow-force-compaction` to false and avoid storing the information required for manual online compaction.
 
-<a id="compacting_disk_stores__section_A9EE86F662EE4D46A327C336E901A0F2"></a>
-
-## Directory Size Limits
+## <a id="compacting_disk_stores__section_A9EE86F662EE4D46A327C336E901A0F2" class="no-quick-link"></a>Directory Size Limits
 
 Reaching directory size limits during has different results depending on whether you are running an automatic or manual compaction:
 
 -   For automatic compaction, the system logs a warning, but does not stop.
 -   For manual compaction, the operation stops and returns a `DiskAccessException` to the calling process, reporting that the system has run out of disk space.
 
-<a id="compacting_disk_stores__section_7A311038408440D49097B8FA4E2BCED9"></a>
-
-## Example Compaction Run
+## <a id="compacting_disk_stores__section_7A311038408440D49097B8FA4E2BCED9" class="no-quick-link"></a>Example Compaction Run
 
 In this example offline compaction run listing, the disk store compaction had nothing to do in the `*_3.*` files, so they were left alone. The `*_4.*` files had garbage records, so the oplog from them was compacted into the new `*_5.*` files.
 

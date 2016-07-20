@@ -18,8 +18,7 @@ You can implement and deploy two different types of filter for multi-site events
 
     When a gateway sender processes a batch of events for distribution, Geode delivers the stream to the `getInputStream` method of a configured `GatewayTransportFilter` implementation. The filter processes and returns the stream, which is then transmitted to the gateway receiver. When the gateway receiver receives the batch, Geode calls the `getOutputStream` method of a configured filter, which again processes and returns the stream so that the events can be applied in the local cluster.
 
-<a id="topic_E97BB68748F14987916CD1A50E4B4542__section_E20B4A8A98FD4EDAAA8C14B8059AA7F7"></a>
-## Configuring Multi-Site Event Filters
+## <a id="topic_E97BB68748F14987916CD1A50E4B4542__section_E20B4A8A98FD4EDAAA8C14B8059AA7F7" class="no-quick-link"></a>Configuring Multi-Site Event Filters
 
 You install a `GatewayEventFilter` implementation to a configured gateway sender in order to decide which events are queued and distributed. You install a `GatewayTransportFilter` implementation to both a gateway sender and a gateway receiver to process the stream of batched events that are distributed between two sites:
 

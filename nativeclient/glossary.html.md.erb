@@ -24,9 +24,7 @@ An XML file that declares the initial configuration of a cache, commonly named `
 
 User-implemented plug-in for receiving and handling region entry events. A region's cache listener is called after an entry in the local cache is modified.
 
-<a id="nc_glossary_cache_loader"></a>
-
-## cache loader
+## <a id="nc_glossary_cache_loader" class="no-quick-link"></a>cache loader
 
 User-implemented plug-in for loading data into a region. A region's cache loader is used to load data that is requested of the region but is not available in the distributed system. For a distributed region, the loader that is used can be in a different cache from the one where the data-request operation originated. See also [cache writer](#nc_glossary_cache_writer) and [netSearch](#nc_glossary_netSearch).
 
@@ -34,9 +32,7 @@ User-implemented plug-in for loading data into a region. A region's cache loader
 
 A long-running, configurable caching process, generally used to serve cached data to the applications. Usually, cache servers are configured to operate as servers in a client-server typology and their regions are configured to be replicates. See also [server](#nc_glossary_server).
 
-<a id="nc_glossary_cache_writer"></a>
-
-## cache writer
+## <a id="nc_glossary_cache_writer" class="no-quick-link"></a>cache writer
 
 User-implemented plug-in intended for synchronizing the cache with an outside data source. A region's cache writer is a synchronous listener to cache data events. The cache writer has the ability to abort a data modification. See also [cache loader](#nc_glossary_cache_loader).
 
@@ -60,15 +56,11 @@ What an application uses to access a Geode distributed system. An application ca
 
 Remove an entry from a region or remove a region from a cache.
 
-<a id="nc_glossary_disk_policy"></a>
-
-## disk policy
+## <a id="nc_glossary_disk_policy" class="no-quick-link"></a>disk policy
 
 Determines whether LRU entries exceeding the entries limit for a caching region are destroyed or written to disk.
 
-<a id="nc_glossary_distributed_scope"></a>
-
-## distributed scope
+## <a id="nc_glossary_distributed_scope" class="no-quick-link"></a>distributed scope
 
 Enables a region to automatically send entry value updates to remote caches and incorporate updates received from remote caches. The scope identifies whether distribution operations must wait for acknowledgement from other caches before continuing. A distributed region's **cache loader** and **cache writer** (defined in the local cache) can be invoked for operations originating in remote caches.
 
@@ -80,21 +72,15 @@ One or more Geode system members that have been configured to communicate with e
 
 Document Type Definition. A language that describes the contents of a Standard Generalized Markup Language (SGML) document. The DTD is also used with XML. The DTD definitions can be embedded within an XML document or in a separate file.
 
-<a id="nc_glossary_entry"></a>
-
-## entry
+## <a id="nc_glossary_entry" class="no-quick-link"></a>entry
 
 A data object in a region. A region entry consists of a key and a value. The value is either null (invalid) or an object. A region entry knows what region it is in. See also [region data](#nc_glossary_region_data), [entry key](#nc_glossary_entry_key), and [entry value](#nc_glosssary_entry_value).
 
-<a id="nc_glossary_entry_key"></a>
-
-## entry key
+## <a id="nc_glossary_entry_key" class="no-quick-link"></a>entry key
 
 The unique identifier for an entry in a region.
 
-<a id="nc_glosssary_entry_value"></a>
-
-## entry value
+## <a id="nc_glosssary_entry_value" class="no-quick-link"></a>entry value
 
 The data contained in an entry.
 
@@ -102,9 +88,7 @@ The data contained in an entry.
 
 A cached object expires when its time-to-live or idle timeout counters are exhausted. A region has one set of expiration attributes for itself and one set for all region entries.
 
-<a id="nc_glossary_expiration_action"></a>
-
-## expiration action
+## <a id="nc_glossary_expiration_action" class="no-quick-link"></a>expiration action
 
 The action to be taken when a cached object expires. The expiration action specifies whether the object is to be invalidated or destroyed, and whether the action is to be performed only in the local cache or throughout the distributed system. A destroyed object is completely removed from the cache. A region is invalidated by invalidating all entries contained in the region. An entry is invalidated by having its value marked as invalid.
 
@@ -114,9 +98,7 @@ Expiration attributes are set at the region level for the region and at the entr
 
 An interface for creating an object which at creation time can let its subclasses decide which class to instantiate. The factory method helps instantiate the appropriate subclass by creating the correct object from a group of related classes.
 
-<a id="nc_glossary_idle_timeout"></a>
-
-## idle timeout
+## <a id="nc_glossary_idle_timeout" class="no-quick-link"></a>idle timeout
 
 The amount of time a region or region entry may remain in the cache unaccessed before being expired. Access to an entry includes any `get` operation and any operation that resets the entry's time-to-live counter. Region access includes any operation that resets an entry idle timeout, and any operation that resets the region's time-to-live.
 
@@ -142,15 +124,11 @@ An event handler. The listener registers its interest in one or more events and 
 
 A region attribute that sets initial parameters on the underlying hashmap used for storing region entries.
 
-<a id="nc_glossary_local_cache"></a>
-
-## local cache
+## <a id="nc_glossary_local_cache" class="no-quick-link"></a>local cache
 
 The part of the distributed cache that is resident in the current process. This term is used to differentiate the cache where a specific operation is being performed from other caches in the distributed system. See also [remote cache](#nc_glossary_remote_cache).
 
-<a id="nc_glossary_local_scope"></a>
-
-## local scope
+## <a id="nc_glossary_local_scope" class="no-quick-link"></a>local scope
 
 Enables a region to hold a private data set that is not visible to other caches. See also [scope](#nc_glossary_scope).
 
@@ -166,15 +144,11 @@ A region attribute that sets the maximum number of entries to hold in a caching 
 
 Applications and cache servers connect to a Geode distributed system by invoking the static function `DistributedSystem::connect`. Through this connection, the application gains access to the APIs for distributed data caches. When a C++ or .NET application connects to a distributed system, it specifies the system it is connecting to by indicating the communication protocol and address to use to find other system members.
 
-<a id="nc_glossary_netSearch"></a>
-
-## netSearch
+## <a id="nc_glossary_netSearch" class="no-quick-link"></a>netSearch
 
 The method used by Geode to search remote caches for a data entry that is not found in the local cache region. This operates only on distributed regions.
 
-<a id="nc_glossary_overflows"></a>
-
-## overflows
+## <a id="nc_glossary_overflows" class="no-quick-link"></a>overflows
 
 An eviction option that causes the values of LRU entries to be moved to disk when the region reaches capacity. See [disk policy](#nc_glossary_disk_policy).
 
@@ -190,9 +164,7 @@ A logical grouping of data within a cache. Regions are used to store data entrie
 
 The class of attributes governing the creation, location, distribution, and management of a region and its entries.
 
-<a id="nc_glossary_region_data"></a>
-
-## region data
+## <a id="nc_glossary_region_data" class="no-quick-link"></a>region data
 
 All of the entries directly contained in the region.
 
@@ -200,15 +172,11 @@ All of the entries directly contained in the region.
 
 See [entry](#nc_glossary_entry).
 
-<a id="nc_glossary_remote_cache"></a>
-
-## remote cache
+## <a id="nc_glossary_remote_cache" class="no-quick-link"></a>remote cache
 
 Any part of the distributed cache that is resident in a process other than the current one. If an application or cache server does not have a data entry in the region in its local cache, it can do a `netSearch` in an attempt to retrieve the entry from the region in a remote cache. See also [local cache](#nc_glossary_local_cache).
 
-<a id="nc_glossary_scope"></a>
-
-## scope
+## <a id="nc_glossary_scope" class="no-quick-link"></a>scope
 
 Region attribute. Identifies whether a region keeps its entries private or automatically sends entry value updates to remote caches and incorporates updates received from remote caches. The scope also identifies whether distribution operations must wait for acknowledgement from other caches before continuing. See also [distributed scope](#nc_glossary_distributed_scope) and [local scope](#nc_glossary_local_scope).
 
@@ -216,9 +184,7 @@ Region attribute. Identifies whether a region keeps its entries private or autom
 
 The process of converting an object graph to a stream of bytes.
 
-<a id="nc_glossary_server"></a>
-
-## server
+## <a id="nc_glossary_server" class="no-quick-link"></a>server
 
 In a client-server topology, the server manages membership and allows remote operations. The server maintains membership information for its clients in the distributed system, along with information about peer applications and other servers in the system. See also **cache server**.
 
@@ -226,9 +192,7 @@ In a client-server topology, the server manages membership and allows remote ope
 
 A process that has established a connection to a distributed system.
 
-<a id="nc_glossary_time-to-live"></a>
-
-## time-to-live
+## <a id="nc_glossary_time-to-live" class="no-quick-link"></a>time-to-live
 
 The amount of time a region or region entry may remain in the cache without being modified before being expired. Entry modification includes creation, update, and removal. Region modification includes creation, update, or removal of the region or any of its entries.
 
@@ -238,8 +202,7 @@ Time-to-live attributes are set at the region level for the region, and at the e
 
 EXtensible Markup Language. An open standard for describing data from the W3C, XML is a markup language similar to HTML. Both are designed to describe and transform data, but where HTML uses predefined tags, XML allows tags to be defined inside the XML document itself. Using XML, virtually any data item can be identified. The XML programmer creates and implements data-appropriate tags whose syntax is defined in a DTD file or an XSD (XML schema definition.)
 
-<a id="glossary__section_B65D71221D6F4F02B829EE4DB12FFCAB"></a>
-## XML schema definition
+## <a id="glossary__section_B65D71221D6F4F02B829EE4DB12FFCAB" class="no-quick-link"></a>XML schema definition
 
 The definition of the structure, content, and semantics used in an XML document. The definition can be used to verify that each item of content in a document adheres to the specification of the element in which the content is placed. The XML schema is a superset of DTD. Unlike DTD, XML schemas are written in XML syntax, which, although more verbose than DTD, are more descriptive and can have stronger typing. Files containing XML schema definitions generally have the XSD extension.
 
