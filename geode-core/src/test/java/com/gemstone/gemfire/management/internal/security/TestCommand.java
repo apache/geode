@@ -191,7 +191,7 @@ public class TestCommand {
 
     //RegionCommands
     createTestCommand("describe region --name=value", clusterRead);
-    createTestCommand("list regions", clusterRead);
+    createTestCommand("list regions", dataRead);
 
     // StatusCommands
     createTestCommand("status cluster-config-service", clusterRead);
