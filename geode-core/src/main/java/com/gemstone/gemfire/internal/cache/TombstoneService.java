@@ -787,9 +787,9 @@ public class TombstoneService {
       this.sweeperThread.start();
     }
 
-    synchronized void stop() {
-      this.isStopped = true;
-      if (this.sweeperThread != null) {
+    void stop() {
+      synchronized (this) {
+        this.isStopped = true;
         notifyAll();
       }
       try {
@@ -797,7 +797,6 @@ public class TombstoneService {
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       }
-      getQueue().clear();
     }
 
     private void lockQueueHead() {
