@@ -1,5 +1,5 @@
 ---
-title: <span class="keyword">Geode</span> Redis Adapter
+title: Geode Redis Adapter
 ---
 <a id="topic_523F6DE33FE54307BBE8F83BB7D9355D"></a>
 
@@ -10,8 +10,9 @@ The <span class="keyword">Geode</span> Redis adapter allows <span class="keyword
 
 -   **[How the Redis Adapter Works](#how-the-redis-adapter-works)**
 
--   **[Advantages of Geode over a Redis Server](redis_adapter.html#advantages-of-geode-over-redis)**
+-   **[Advantages of Geode over a Redis Server](#advantages-of-geode-over-redis)**
 
+<a id="using-the-redis-adapter"></a>
 ## Using the Redis Adapter
 
 To use the Redis Adapter, you will need three pieces of information:
@@ -41,6 +42,7 @@ gfsh> start server --name=server1 --redis-bind-address=localhost \
 
 Redis clients can then connect to the server at localhost:11211.
 
+<a id="how-the-redis-adapter-works"></a>
 ## How the Redis Adapter Works
 
 The <span class="keyword">Geode</span> Redis Adapter supports all Redis data structures, including
@@ -60,6 +62,7 @@ The <span class="keyword">Geode</span> Redis Adapter supports all Redis commands
 -   Any command that returns a count of newly set members has an unspecified return value. The command will work just as the Redis protocol states, but the count will not necessarily reflect the number set compared to the number overridden.
 -   Transactions work just as they would on a Redis instance; they are local transactions. Transactions cannot be executed on data that is not local to the executing server, that is on a partitioned region in a different server instance, or that is on a persistent region that does not have transactions enabled. Also, you cannot watch or unwatch keys, as all keys within a <span class="keyword">Geode</span> transaction are watched by default.
 
+<a id="advantages-of-geode-over-redis"></a>
 ## Advantages of <span class="keyword">Geode</span> over a Redis Server
 
 <span class="keyword">Geode</span>’s primary advantage is its **scalability**. While the Redis server is single threaded, <span class="keyword">Geode</span> supports high concurrency. Many Redis clients can execute commands on the <span class="keyword">Geode</span> server simultaneously.
