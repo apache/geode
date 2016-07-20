@@ -2,7 +2,7 @@
 title:  Programming Your Application to Use PdxInstances
 ---
 
-A `PdxInstance` is a lightweight wrapper around the raw bytes of the PDX serialized objects kept in the cache. It provides applications with run-time access to files of a PDX serialized object. <span class="keyword">Geode</span> provides the implementation of the `PdxInstance` class.
+A `PdxInstance` is a lightweight wrapper around the raw bytes of the PDX serialized objects kept in the cache. It provides applications with run-time access to files of a PDX serialized object. Geode provides the implementation of the `PdxInstance` class.
 
 You can configure your cache to return a `PdxInstance` when a PDX serialized object is deserialized instead of deserializing the object to a domain class. Preventing deserialization saves both time and memory and does not require you deserialize the object to the domain class.
 

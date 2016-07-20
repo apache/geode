@@ -4,7 +4,7 @@ title:  Developing C++ Programs on Linux
 
 This section describes how to build and run a native client application on Linux.
 
-**Note:** When compiling external projects or applications that are used or referenced by the <span class="keyword">Geode</span> native client, make sure that you compile them for the same target architecture as your native client installation. For example, if you installed the 64-bit (x86) version of the native client, compile your external projects for 64-bit (x86) architecture.
+**Note:** When compiling external projects or applications that are used or referenced by the Geode native client, make sure that you compile them for the same target architecture as your native client installation. For example, if you installed the 64-bit (x86) version of the native client, compile your external projects for 64-bit (x86) architecture.
 
 <a id="developing-linux__section_4AD6E18611AE42E9942C77DF91347768"></a>
 ## Step 1. Set Environment Variables
@@ -88,4 +88,4 @@ cpp/plugins/DurableCacheListener.cpp \
 
 When the C++ application is dynamically linked to the native client library, the library must be dynamically loadable.
 
-To ensure that the native client library is available for loading, make sure you have added the path *productDir*`/lib` to the *LD\_LIBRARY\_PATH* environment variable, where *productDir* is the path to the <span class="keyword">Geode</span> product directory.
+To ensure that the native client library is available for loading, make sure you have added the path *productDir*`/lib` to the *LD\_LIBRARY\_PATH* environment variable, where *productDir* is the path to the Geode product directory.

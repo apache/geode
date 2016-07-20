@@ -16,10 +16,10 @@ In this example, the feeder client is connected to the first server, and the rec
 
 These are the main operations shown in the example:
 
-1.  In the Feeder client, the application updates the entry object and puts the entry. In response to the `put`, <span class="keyword">Geode</span> calls `hasDelta`, which returns true.
-2.  <span class="keyword">Geode</span> calls `toDelta` and forwards the extracted delta to the server. If `hasDelta` returned false, <span class="keyword">Geode</span> would distribute the full entry value.
-3.  In Server1, <span class="keyword">Geode</span> applies the delta to the cache, distributes the received delta to the server’s peers, and forwards it to any other clients with interest in the entry (there are no other clients to Server1 in this example).
-4.  In Server2, <span class="keyword">Geode</span> applies the delta to the cache and forwards it to its interested clients, which in this case is just Receiver client.
+1.  In the Feeder client, the application updates the entry object and puts the entry. In response to the `put`, Geode calls `hasDelta`, which returns true.
+2.  Geode calls `toDelta` and forwards the extracted delta to the server. If `hasDelta` returned false, Geode would distribute the full entry value.
+3.  In Server1, Geode applies the delta to the cache, distributes the received delta to the server’s peers, and forwards it to any other clients with interest in the entry (there are no other clients to Server1 in this example).
+4.  In Server2, Geode applies the delta to the cache and forwards it to its interested clients, which in this case is just Receiver client.
 
 <a id="examples__section_C6CB9DB1EB684CD48A38002EF59E54F0"></a>
 

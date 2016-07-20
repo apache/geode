@@ -18,6 +18,6 @@ If you have data that is best handled as a blob, such as structs that do not con
 If you have a graph of objects in which each node can be serializable, the parent node calls `DataOutput.WriteObject` to delegate the serialization responsibility to its child nodes. Similarly, your application calls `DataInput.ReadObject` to deserialize the object graph.
 
 **Note:**
-The <span class="keyword">Geode</span> `IGFSerializable` interface does not support object graphs with multiple references to the same object. If your application uses these types of circular graphs, you must address this design concern explicitly.
+The Geode `IGFSerializable` interface does not support object graphs with multiple references to the same object. If your application uses these types of circular graphs, you must address this design concern explicitly.
 
 For more information, see the online API documentation for `DataOutput` and `DataInput`.

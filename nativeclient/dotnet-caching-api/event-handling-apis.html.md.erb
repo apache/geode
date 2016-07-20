@@ -2,9 +2,9 @@
 title:  Event Handling APIs
 ---
 
-Code your event handlers to do minimal work before returning control to <span class="keyword">Geode</span>.
+Code your event handlers to do minimal work before returning control to Geode.
 
-For example, a listener implementation may hand off the event to a thread pool that processes the event on its thread rather than the listener thread. Exceptions thrown by the listeners are caught by <span class="keyword">Geode</span> and logged.
+For example, a listener implementation may hand off the event to a thread pool that processes the event on its thread rather than the listener thread. Exceptions thrown by the listeners are caught by Geode and logged.
 
 -   **RegionEvent class**. Provides information about the event, such as what region the event originated in, whether the event originated in a cache remote to the event handler, and whether the event resulted from a distributed operation.
 -   **EntryEvent class**. Provides all available information for the `RegionEvent` . It also provides entry-specific information, such as the old and new entry values and whether the event resulted from a load operation.

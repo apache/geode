@@ -2,7 +2,7 @@
 title:  Cloning
 ---
 
-With cloning enabled, <span class="keyword">Geode</span> does a deep copy of the object, using serialization. You can improve performance by implementing the appropriate `clone` method for your API, making a deep copy of anything to which a delta may be applied.
+With cloning enabled, Geode does a deep copy of the object, using serialization. You can improve performance by implementing the appropriate `clone` method for your API, making a deep copy of anything to which a delta may be applied.
 
 The goal is to significantly reduce the overhead of copying the object while still retaining the isolation needed for your deltas.
 
@@ -18,7 +18,7 @@ Cloning can be expensive, but it ensures that the new object is fully initialize
 Without cloning:
 
 -   It is possible for application code to read the entry value as it is being modified, possibly seeing the value in an intermediate, inconsistent state, with just part of the delta applied. You may choose to resolve this issue by having your application code synchronize on reads and writes.
--   <span class="keyword">Geode</span> loses any reference to the old value because the old value is transformed in place into the new value. Because of this, your `CacheListener` sees the same new value returned for `EntryEvent.getOldValue` and `EntryEvent.getNewValue`.
+-   Geode loses any reference to the old value because the old value is transformed in place into the new value. Because of this, your `CacheListener` sees the same new value returned for `EntryEvent.getOldValue` and `EntryEvent.getNewValue`.
 -   Exceptions thrown from `fromDelta` may leave your cache in an inconsistent state. Without cloning, any interruption of the delta application could leave you with some fields in your cached object changed and others unchanged. If you do not use cloning, keep this in mind when you program your error handling in your `fromDelta` implementation.
 
 ## Enabling Cloning in cache.xml

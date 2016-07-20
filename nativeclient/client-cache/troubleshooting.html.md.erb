@@ -14,7 +14,7 @@ Can't get Windows performance data. RegQueryValueEx returned 5
 ```
 
 This can occur because incorrect information is returned when a Win32 application calls the ANSI version of `RegQueryValueEx` Win32 API with `HKEY_PERFORMANCE_DATA`. This error is described in Microsoft KB article ID 226371 at [http://support.microsoft.com/kb/226371/en-us](http://support.microsoft.com/kb/226371/en-us).
-To successfully acquire Windows performance data, you need to verify that you have the proper registry key access permissions in the system registry. In particular, make sure that `Perflib` in the following registry path is readable (`KEY_READ` access) by the <span class="keyword">Geode</span> process:
+To successfully acquire Windows performance data, you need to verify that you have the proper registry key access permissions in the system registry. In particular, make sure that `Perflib` in the following registry path is readable (`KEY_READ` access) by the Geode process:
 
 ``` pre
 HKEY_LOCAL_MACHINE\
@@ -27,7 +27,7 @@ HKEY_LOCAL_MACHINE\
 
 An example of reasonable security on the performance data would be to grant administrators `KEY_ALL_ACCESS` and interactive users `KEY_READ` access. This particular configuration prevents non-administrator remote users from querying performance data.
 
-See [http://support.microsoft.com/kb/310426](http://support.microsoft.com/kb/310426) and [http://support.microsoft.com/kb/146906](http://support.microsoft.com/kb/146906) for instructions about how to ensure that <span class="keyword">Geode</span> processes have access to the registry keys associated with performance.
+See [http://support.microsoft.com/kb/310426](http://support.microsoft.com/kb/310426) and [http://support.microsoft.com/kb/146906](http://support.microsoft.com/kb/146906) for instructions about how to ensure that Geode processes have access to the registry keys associated with performance.
 
 <a id="troubleshooting__section_65EC3B1EAC55421BB734E72E7BFEBFFC"></a>
 

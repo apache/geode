@@ -12,7 +12,7 @@ For more information, see [Delta Propagation API](delta-propagation-api.html#del
 -   Decide whether to enable cloning. Cloning is disabled by default. See [cloning-enabled](delta-propagation-properties.html#delta-propagation-properties).
 -   If you enable cloning, consider providing your own implementation, to optimize performance.
 -   If you do not enable cloning, be sure to synchronize your delta code.
--   If you do not enable cloning, review all associated listener code for dependencies on the entry event old value. Without cloning, <span class="keyword">Geode</span> modifies the entry in place and so loses its reference to the old value. For delta events, the `EntryEvent` methods to retrieve the old and new values both return the new value.
+-   If you do not enable cloning, review all associated listener code for dependencies on the entry event old value. Without cloning, Geode modifies the entry in place and so loses its reference to the old value. For delta events, the `EntryEvent` methods to retrieve the old and new values both return the new value.
 
 **Procedure**
 
@@ -24,7 +24,7 @@ For every class in which you want delta propagation, implement the delta interfa
 
 2.  In the application code that puts entries, put the fully populated object into the local cache. This usually means doing a `get` on the entry, unless you are sure it does not already exist anywhere in the distributed region.
 
-    Even though you are planning to send only deltas, errors on the receiving end could cause <span class="keyword">Geode</span> to request the full object, so you must provide it to the originating put method. Do this even in empty producers, with regions configured for no local data storage.
+    Even though you are planning to send only deltas, errors on the receiving end could cause Geode to request the full object, so you must provide it to the originating put method. Do this even in empty producers, with regions configured for no local data storage.
 
 3.  Change each field’s update method to record information about the update.
 

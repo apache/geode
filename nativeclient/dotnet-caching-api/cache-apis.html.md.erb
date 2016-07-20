@@ -5,6 +5,6 @@ title:  Cache APIs
 This section describes the `CacheFactory` and `Cache` classes.
 
 -   **CacheFactory class**. Creates a `Cache` instance based on the provided distributed system and cache configuration. Any `gfcpp`.properties and `cache.xml` files provided to the application are used to initialize the system and cache. See [Setting System and Cache Properties](../setting-properties/chapter-overview.html#system_and_cache_properties). If a `cache.xml` file is used to create a cache and some of the regions already exist, a warning states that the regions exist and the cache is created.
--   **Cache class**. Entry point to the <span class="keyword">Geode</span> caching API. This class allows you to create regions. The cache is created by calling the `create` function of the `CacheFactory` class. When creating a cache, you specify a `DistributedSystem` that tells the new cache where to find other caches on the network and how to communicate with them.
+-   **Cache class**. Entry point to the Geode caching API. This class allows you to create regions. The cache is created by calling the `create` function of the `CacheFactory` class. When creating a cache, you specify a `DistributedSystem` that tells the new cache where to find other caches on the network and how to communicate with them.
 
 
