@@ -17,14 +17,12 @@
 package com.gemstone.gemfire.cache;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Properties;
 
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.distributed.LeaseExpiredException;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
@@ -824,38 +822,7 @@ public class RegionFactory<K,V>
     RegionAttributes<K,V> ra = this.attrsFactory.create();
     return getCache().createRegion(name, ra);
   }
-  /**
-   * Creates a region with the given name in this factory's {@link Cache}
-   * using the provided configuration. Validation of the
-   * provided attributes may cause exceptions to be thrown if there are problems
-   * with the configuration data.
-   *
-   * @param name
-   *          the name of the region to create
-   * @param regionAttributes
-   *          the attributes for the region
-   * @param internalRegionArguments
-   *          additional arguments for the region
-   *
-   * @return the region object
-   * @throws LeaseExpiredException
-   *           if lease expired on distributed lock for Scope.GLOBAL
-   * @throws RegionExistsException
-   *           if a region, shared or unshared, is already in this cache
-   * @throws TimeoutException
-   *           if timed out getting distributed lock for Scope.GLOBAL
-   * @throws CacheClosedException
-   *           if the cache is closed
-   * @throws IllegalStateException
-   *           if the supplied RegionAttributes are incompatible with this region
-   *           in another cache in the distributed system (see
-   *           {@link AttributesFactory} for compatibility rules)
-   */
-  @SuppressWarnings("unchecked")
-  public Region<K,V> create(String name, RegionAttributes<K, V> regionAttributes, InternalRegionArguments internalRegionArguments)
-    throws CacheExistsException, RegionExistsException, CacheWriterException, TimeoutException, IOException, ClassNotFoundException {
-    return getCache().createVMRegion(name, regionAttributes, internalRegionArguments);
-  }
+
   /**
    * Creates a sub-region in the {@link Cache} using
    * the configuration contained in this RegionFactory. Validation of the

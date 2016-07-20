@@ -221,12 +221,13 @@ import com.gemstone.gemfire.internal.util.concurrent.StoppableReadWriteLock;
  *
  */
 @SuppressWarnings("deprecation")
-public class LocalRegion extends AbstractRegion 
+public class LocalRegion extends AbstractRegion
   implements LoaderHelperFactory, ResourceListener<MemoryEvent>,
              DiskExceptionHandler, DiskRecoveryStore
 {
   private static final Logger logger = LogService.getLogger();
-  
+  private static final Pattern NAME_PATTERN = Pattern.compile("[aA-zZ0-9-_.]+");
+
   /**
    * Internal interface used to simulate failures when performing entry operations
    * @since GemFire 5.7
@@ -7905,26 +7906,12 @@ public class LocalRegion extends AbstractRegion
       return;
     }
 
-//    LocalRegion metaRegion = internalRegionArgs.getInternalMetaRegion();
-//    if (metaRegion != null) {
-//      if (metaRegion instanceof HARegion) {
-//        if (metaRegion.getName().equals(name)) {
-//          return;
-//        }
-//      }
-//      if (metaRegion instanceof SerialGatewaySenderQueueMetaRegion) {
-//        return;
-//      }
-//    }
-
-    if (name.startsWith("__")
-        && !name.equals(ClientHealthMonitoringRegion.ADMIN_REGION_NAME)) {
+    if (name.startsWith("__")) {
       throw new IllegalArgumentException("Region names may not begin with a double-underscore: " + name);
     }
 
     // Ensure the region only contains valid characters
-    Pattern pattern = Pattern.compile("[aA-zZ0-9-_.]+");
-    Matcher matcher = pattern.matcher(name);
+    Matcher matcher = NAME_PATTERN.matcher(name);
     if (!matcher.matches()) {
       throw new IllegalArgumentException("Region names may only be alphanumeric and may contain hyphens or underscores: " + name);
     }

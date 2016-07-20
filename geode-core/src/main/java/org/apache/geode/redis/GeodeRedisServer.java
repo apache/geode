@@ -435,15 +435,18 @@ public class GeodeRedisServer {
       RegionAttributes ra = af.create();
       Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion;
       Region<String, RedisDataType> redisMetaData;
+      GemFireCacheImpl gemFireCache = (GemFireCacheImpl) cache;
       try {
-        if ((stringsRegion = this.cache.getRegion(STRING_REGION)) == null)
-          stringsRegion = rfString.create(GeodeRedisServer.STRING_REGION, ra, ira);
-        if ((hLLRegion = this.cache.getRegion(HLL_REGION)) == null)
-          hLLRegion = rfHLL.create(HLL_REGION, ra, ira);
-        if ((redisMetaData = this.cache.getRegion(REDIS_META_DATA_REGION)) == null)
-          redisMetaData = rfMeta.create(REDIS_META_DATA_REGION, ra, ira);
-      }
-      catch (IOException | ClassNotFoundException e) {
+        if ((stringsRegion = this.cache.getRegion(STRING_REGION)) == null) {
+          stringsRegion = gemFireCache.createVMRegion(GeodeRedisServer.STRING_REGION, ra, ira);
+        }
+        if ((hLLRegion = this.cache.getRegion(HLL_REGION)) == null) {
+          hLLRegion = gemFireCache.createVMRegion(HLL_REGION, ra, ira);
+        }
+        if ((redisMetaData = this.cache.getRegion(REDIS_META_DATA_REGION)) == null) {
+          redisMetaData = gemFireCache.createVMRegion(REDIS_META_DATA_REGION, ra, ira);
+        }
+      } catch (IOException | ClassNotFoundException e) {
         // only if loading snapshot, not here
         InternalGemFireError assErr = new InternalGemFireError(LocalizedStrings.GemFireCache_UNEXPECTED_EXCEPTION.toLocalizedString());
         assErr.initCause(e);
