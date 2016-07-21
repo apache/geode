@@ -226,13 +226,12 @@ public class CreateRegionFunction implements Function, Declarable {
     af.setScope(Scope.LOCAL);
     RegionAttributes ra = af.create();
     try {
-      gemFireCache.createVMRegion(REGION_CONFIGURATION_METADATA_REGION, ra, ira);
+      return gemFireCache.createVMRegion(REGION_CONFIGURATION_METADATA_REGION, ra, ira);
     } catch (IOException | ClassNotFoundException e) {
       InternalGemFireError assErr = new InternalGemFireError(LocalizedStrings.GemFireCache_UNEXPECTED_EXCEPTION.toLocalizedString());
       assErr.initCause(e);
       throw assErr;
     }
-    return factory.create(REGION_CONFIGURATION_METADATA_REGION);
   }
 
   private void writeCacheXml() {

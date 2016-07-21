@@ -59,11 +59,11 @@ import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
@@ -424,10 +424,6 @@ public class GeodeRedisServer {
 
   private void initializeRedis() {
     synchronized (this.cache) {
-      RegionFactory<String, RedisDataType> rfMeta = cache.createRegionFactory(RegionShortcut.REPLICATE);
-      rfMeta.addCacheListener(this.metaListener);
-      RegionFactory<ByteArrayWrapper, ByteArrayWrapper> rfString = cache.createRegionFactory(DEFAULT_REGION_TYPE);
-      RegionFactory<ByteArrayWrapper, HyperLogLogPlus> rfHLL = cache.createRegionFactory(DEFAULT_REGION_TYPE);
       Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion;
       InternalRegionArguments ira = new InternalRegionArguments().setInternalRegion(true);
       AttributesFactory af = new AttributesFactory();
@@ -437,14 +433,16 @@ public class GeodeRedisServer {
       Region<String, RedisDataType> redisMetaData;
       GemFireCacheImpl gemFireCache = (GemFireCacheImpl) cache;
       try {
-        if ((stringsRegion = this.cache.getRegion(STRING_REGION)) == null) {
+        if ((stringsRegion = cache.getRegion(STRING_REGION)) == null) {
           stringsRegion = gemFireCache.createVMRegion(GeodeRedisServer.STRING_REGION, ra, ira);
         }
-        if ((hLLRegion = this.cache.getRegion(HLL_REGION)) == null) {
+        if ((hLLRegion = cache.getRegion(HLL_REGION)) == null) {
           hLLRegion = gemFireCache.createVMRegion(HLL_REGION, ra, ira);
         }
-        if ((redisMetaData = this.cache.getRegion(REDIS_META_DATA_REGION)) == null) {
-          redisMetaData = gemFireCache.createVMRegion(REDIS_META_DATA_REGION, ra, ira);
+        if ((redisMetaData = cache.getRegion(REDIS_META_DATA_REGION)) == null) {
+          af.addCacheListener(metaListener);
+          af.setDataPolicy(DataPolicy.REPLICATE);
+          redisMetaData = gemFireCache.createVMRegion(REDIS_META_DATA_REGION, af.create(), ira);
         }
       } catch (IOException | ClassNotFoundException e) {
         // only if loading snapshot, not here
