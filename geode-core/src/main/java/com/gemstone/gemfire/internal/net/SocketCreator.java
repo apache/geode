@@ -72,6 +72,7 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509ExtendedKeyManager;
 
 import org.apache.logging.log4j.Logger;
+import org.springframework.util.StringUtils;
 
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.SystemConnectException;
@@ -87,6 +88,7 @@ import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.ConnectionWatcher;
 import com.gemstone.gemfire.internal.GfeConsoleReaderFactory;
 import com.gemstone.gemfire.internal.GfeConsoleReaderFactory.GfeConsoleReader;
+import com.gemstone.gemfire.internal.admin.SSLConfig;
 import com.gemstone.gemfire.internal.cache.wan.TransportFilterServerSocket;
 import com.gemstone.gemfire.internal.cache.wan.TransportFilterSocketFactory;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -156,25 +158,25 @@ public class SocketCreator {
    */
   private boolean ready = false;
 
-  /**
-   * True if configured to use SSL
-   */
-  private boolean useSSL;
-
-  /**
-   * True if configured to require client authentication
-   */
-  private boolean needClientAuth;
-
-  /**
-   * Space-delimited list of SSL protocols to use, 'any' allows any
-   */
-  private String[] protocols;
-
-  /**
-   * Space-delimited list of SSL ciphers to use, 'any' allows any
-   */
-  private String[] ciphers;
+  //  /**
+  //   * True if configured to use SSL
+  //   */
+  //  private boolean useSSL;
+  //
+  //  /**
+  //   * True if configured to require client authentication
+  //   */
+  //  private boolean needClientAuth;
+  //
+  //  /**
+  //   * Space-delimited list of SSL protocols to use, 'any' allows any
+  //   */
+  //  private String[] protocols;
+  //
+  //  /**
+  //   * Space-delimited list of SSL ciphers to use, 'any' allows any
+  //   */
+  //  private String[] ciphers;
 
   /**
    * Only print this SocketCreator's config once
@@ -185,6 +187,8 @@ public class SocketCreator {
    * context for SSL socket factories
    */
   private SSLContext sslContext;
+
+  private SSLConfig sslConfig;
 
   static {
     InetAddress inetAddress = null;
@@ -251,7 +255,6 @@ public class SocketCreator {
    */
   public static final boolean ENABLE_TCP_KEEP_ALIVE;
 
-
   static {
     // bug #49484 - customers want tcp/ip keep-alive turned on by default
     // to avoid dropped connections.  It can be turned off by setting this
@@ -271,21 +274,11 @@ public class SocketCreator {
   /**
    * Constructs new SocketCreator instance.
    */
-  SocketCreator() {
-    this(false, false, null, null, null, null);
+  SocketCreator(final SSLConfig sslConfig) {
+    this.sslConfig = sslConfig;
+    initialize();
   }
 
-  /**
-   * Constructs new SocketCreator instance.
-   */
-  SocketCreator(final boolean useSSL,
-                final boolean needClientAuth,
-                final String[] protocols,
-                final String[] ciphers,
-                final Properties props,
-                final String alias) {
-    initialize(useSSL, needClientAuth, protocols, ciphers, props, alias);
-  }
 
   // -------------------------------------------------------------------------
   //   Static instance accessors
@@ -350,35 +343,19 @@ public class SocketCreator {
    * Initialize this SocketCreator.
    * <p>
    * Caller must synchronize on the SocketCreator instance.
-   * @param useSSL true if ssl is to be enabled
-   * @param needClientAuth true if client authentication is required
-   * @param protocols array of ssl protocols to use
-   * @param ciphers array of ssl ciphers to use
-   * @param props vendor properties passed in through gfsecurity.properties
    */
   @SuppressWarnings("hiding")
-  private void initialize(final boolean useSSL,
-                          final boolean needClientAuth,
-                          final String[] protocols,
-                          final String[] ciphers,
-                          final Properties props,
-                          final String alias) {
+  private void initialize() {
     try {
-      this.useSSL = useSSL;
-      this.needClientAuth = needClientAuth;
-
-      this.protocols = protocols;
-      this.ciphers = ciphers;
-
       // set p2p values...
-      if (this.useSSL) {
+      if (this.sslConfig.isEnabled()) {
         System.setProperty("p2p.useSSL", "true");
         System.setProperty("p2p.oldIO", "true");
         System.setProperty("p2p.nodirectBuffers", "true");
 
         try {
           if (sslContext == null) {
-            sslContext = createAndConfigureSSLContext(protocols, props, alias);
+            sslContext = createAndConfigureSSLContext();
             SSLContext.setDefault(sslContext);
           }
         } catch (Exception e) {
@@ -414,20 +391,16 @@ public class SocketCreator {
 
   /**
    * Creates & configures the SSLContext when SSL is enabled.
-   * @param protocolNames valid SSL protocols for this connection
-   * @param props vendor properties passed in through gfsecurity.properties
-   *
    * @return new SSLContext configured using the given protocols & properties
    *
    * @throws GeneralSecurityException if security information can not be found
    * @throws IOException if information can not be loaded
    */
-  private SSLContext createAndConfigureSSLContext(final String[] protocolNames, final Properties props, final String alias)
-    throws GeneralSecurityException, IOException {
+  private SSLContext createAndConfigureSSLContext() throws GeneralSecurityException, IOException {
 
-    SSLContext newSSLContext = getSSLContextInstance(protocolNames);
-    KeyManager[] keyManagers = getKeyManagers(props, alias);
-    TrustManager[] trustManagers = getTrustManagers(props);
+    SSLContext newSSLContext = getSSLContextInstance();
+    KeyManager[] keyManagers = getKeyManagers();
+    TrustManager[] trustManagers = getTrustManagers();
 
     newSSLContext.init(keyManagers, trustManagers, null /* use the default secure random*/);
     return newSSLContext;
@@ -481,7 +454,8 @@ public class SocketCreator {
     }
   }
 
-  private SSLContext getSSLContextInstance(String[] protocols) {
+  private SSLContext getSSLContextInstance() {
+    String[] protocols = sslConfig.getProtocolsAsStringArray();
     SSLContext sslContext = null;
     if (protocols != null && protocols.length > 0) {
       for (String protocol : protocols) {
@@ -511,142 +485,119 @@ public class SocketCreator {
     return sslContext;
   }
 
-  private TrustManager[] getTrustManagers(Properties sysProps) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+  private TrustManager[] getTrustManagers() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
     TrustManager[] trustManagers = null;
-    String trustStoreType = sysProps.getProperty("javax.net.ssl.trustStoreType");
     GfeConsoleReader consoleReader = GfeConsoleReaderFactory.getDefaultConsoleReader();
 
-    if (trustStoreType == null) {
-      trustStoreType = System.getProperty("javax.net.ssl.trustStoreType", KeyStore.getDefaultType());
-    } else if (trustStoreType.trim().equals("")) {
+    String trustStoreType = sslConfig.getTruststoreType();
+    if (StringUtils.isEmpty(trustStoreType)) {
       //read from console, default on empty
       if (consoleReader.isSupported()) {
         trustStoreType = consoleReader.readLine("Please enter the trustStoreType (javax.net.ssl.trustStoreType) : ");
-      }
-      if (isEmpty(trustStoreType)) {
+      } else {
         trustStoreType = KeyStore.getDefaultType();
       }
     }
+
     KeyStore ts = KeyStore.getInstance(trustStoreType);
-    String trustStorePath = System.getProperty("javax.net.ssl.trustStore");
-    if (trustStorePath == null) {
-      trustStorePath = sysProps.getProperty("javax.net.ssl.trustStore");
+    String trustStorePath = sslConfig.getTruststore();
+    if (StringUtils.isEmpty(trustStorePath)) {
+      if (consoleReader.isSupported()) {
+        trustStorePath = consoleReader.readLine("Please enter the trustStore location (javax.net.ssl.trustStore) : ");
+      }
     }
-    if (trustStorePath != null) {
-      if (trustStorePath.trim().equals("")) {
-        trustStorePath = System.getenv("javax.net.ssl.trustStore");
-        //read from console
-        if (isEmpty(trustStorePath) && consoleReader.isSupported()) {
-          trustStorePath = consoleReader.readLine("Please enter the trustStore location (javax.net.ssl.trustStore) : ");
-        }
-      }
-      FileInputStream fis = new FileInputStream(trustStorePath);
-      String passwordString = System.getProperty("javax.net.ssl.trustStorePassword");
-      if (passwordString == null) {
-        passwordString = sysProps.getProperty("javax.net.ssl.trustStorePassword");
-      }
-      char[] password = null;
-      if (passwordString != null) {
-        if (passwordString.trim().equals("")) {
-          String encryptedPass = System.getenv("javax.net.ssl.trustStorePassword");
-          if (!isEmpty(encryptedPass)) {
-            String toDecrypt = "encrypted(" + encryptedPass + ")";
-            passwordString = PasswordUtil.decrypt(toDecrypt);
-            password = passwordString.toCharArray();
-          }
-          //read from the console
-          if (isEmpty(passwordString) && consoleReader.isSupported()) {
-            password = consoleReader.readPassword("Please enter password for trustStore (javax.net.ssl.trustStorePassword) : ");
-          }
-        } else {
+    FileInputStream fis = new FileInputStream(trustStorePath);
+    String passwordString = sslConfig.getTruststorePassword();
+    char[] password = null;
+    if (passwordString != null) {
+      if (passwordString.trim().equals("")) {
+        if (!StringUtils.isEmpty(passwordString)) {
+          String toDecrypt = "encrypted(" + passwordString + ")";
+          passwordString = PasswordUtil.decrypt(toDecrypt);
           password = passwordString.toCharArray();
         }
-      }
-      ts.load(fis, password);
-
-      // default algorithm can be changed by setting property "ssl.TrustManagerFactory.algorithm" in security properties
-      TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-      tmf.init(ts);
-      trustManagers = tmf.getTrustManagers();
-      // follow the security tip in java doc
-      if (password != null) {
-        java.util.Arrays.fill(password, ' ');
+        //read from the console
+        if (StringUtils.isEmpty(passwordString) && consoleReader.isSupported()) {
+          password = consoleReader.readPassword("Please enter password for trustStore (javax.net.ssl.trustStorePassword) : ");
+        }
+      } else {
+        password = passwordString.toCharArray();
       }
     }
+    ts.load(fis, password);
+
+    // default algorithm can be changed by setting property "ssl.TrustManagerFactory.algorithm" in security properties
+    TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+    tmf.init(ts);
+    trustManagers = tmf.getTrustManagers();
+    // follow the security tip in java doc
+    if (password != null) {
+      java.util.Arrays.fill(password, ' ');
+    }
+
     return trustManagers;
   }
 
-  private KeyManager[] getKeyManagers(final Properties sysProps, final String alias)
-    throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
-    String keyStoreType = sysProps.getProperty("javax.net.ssl.keyStoreType");
+  private KeyManager[] getKeyManagers() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
     GfeConsoleReader consoleReader = GfeConsoleReaderFactory.getDefaultConsoleReader();
 
     KeyManager[] keyManagers = null;
-
-    if (keyStoreType == null) {
-      keyStoreType = System.getProperty("javax.net.ssl.keyStoreType", KeyStore.getDefaultType());
-    } else if (keyStoreType.trim().equals("")) {
+    String keyStoreType = sslConfig.getKeystoreType();
+    if (StringUtils.isEmpty(keyStoreType)) {
       // read from console, default on empty
       if (consoleReader.isSupported()) {
         keyStoreType = consoleReader.readLine("Please enter the keyStoreType (javax.net.ssl.keyStoreType) : ");
-      }
-      if (isEmpty(keyStoreType)) {
+      } else {
         keyStoreType = KeyStore.getDefaultType();
       }
     }
     KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-    String keyStoreFilePath = sysProps.getProperty("javax.net.ssl.keyStore");
-    if (keyStoreFilePath == null) {
-      keyStoreFilePath = System.getProperty("javax.net.ssl.keyStore");
+    String keyStoreFilePath = sslConfig.getKeystore();
+    if (StringUtils.isEmpty(keyStoreFilePath)) {
+      if (consoleReader.isSupported()) {
+        keyStoreFilePath = consoleReader.readLine("Please enter the keyStore location (javax.net.ssl.keyStore) : ");
+      } else {
+        keyStoreFilePath = System.getProperty("user.home") + System.getProperty("file.separator") + ".keystore";
+      }
     }
-    if (keyStoreFilePath != null) {
-      if (keyStoreFilePath.trim().equals("")) {
-        keyStoreFilePath = System.getenv("javax.net.ssl.keyStore");
-        //read from console
-        if (isEmpty(keyStoreFilePath) && consoleReader.isSupported()) {
-          keyStoreFilePath = consoleReader.readLine("Please enter the keyStore location (javax.net.ssl.keyStore) : ");
-        }
-        if (isEmpty(keyStoreFilePath)) {
-          keyStoreFilePath = System.getProperty("user.home") + System.getProperty("file.separator") + ".keystore";
-        }
-      }
-      FileInputStream fileInputStream = new FileInputStream(keyStoreFilePath);
-      String passwordString = sysProps.getProperty("javax.net.ssl.keyStorePassword");
-      if (passwordString == null) {
-        passwordString = System.getProperty("javax.net.ssl.keyStorePassword");
-      }
-      char[] password = null;
-      if (passwordString != null) {
-        if (passwordString.trim().equals("")) {
-          String encryptedPass = System.getenv("javax.net.ssl.keyStorePassword");
-          if (!isEmpty(encryptedPass)) {
-            String toDecrypt = "encrypted(" + encryptedPass + ")";
-            passwordString = PasswordUtil.decrypt(toDecrypt);
-            password = passwordString.toCharArray();
-          }
-          //read from the console
-          if (isEmpty(passwordString) && consoleReader != null) {
-            password = consoleReader.readPassword("Please enter password for keyStore (javax.net.ssl.keyStorePassword) : ");
-          }
-        } else {
+
+    FileInputStream fileInputStream = new FileInputStream(keyStoreFilePath);
+    String passwordString = sslConfig.getKeystorePassword();
+    char[] password = null;
+    if (passwordString != null) {
+      if (passwordString.trim().equals("")) {
+        String encryptedPass = System.getenv("javax.net.ssl.keyStorePassword");
+        if (!StringUtils.isEmpty(encryptedPass)) {
+          String toDecrypt = "encrypted(" + encryptedPass + ")";
+          passwordString = PasswordUtil.decrypt(toDecrypt);
           password = passwordString.toCharArray();
         }
-      }
-      keyStore.load(fileInputStream, password);
-      // default algorithm can be changed by setting property "ssl.KeyManagerFactory.algorithm" in security properties
-      KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-      keyManagerFactory.init(keyStore, password);
-      keyManagers = keyManagerFactory.getKeyManagers();
-      // follow the security tip in java doc
-      if (password != null) {
-        java.util.Arrays.fill(password, ' ');
+        //read from the console
+        if (StringUtils.isEmpty(passwordString) && consoleReader != null) {
+          password = consoleReader.readPassword("Please enter password for keyStore (javax.net.ssl.keyStorePassword) : ");
+        }
+      } else {
+        password = passwordString.toCharArray();
       }
     }
+    keyStore.load(fileInputStream, password);
+    // default algorithm can be changed by setting property "ssl.KeyManagerFactory.algorithm" in security properties
+    KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+    keyManagerFactory.init(keyStore, password);
+    keyManagers = keyManagerFactory.getKeyManagers();
+    // follow the security tip in java doc
+    if (password != null) {
+      java.util.Arrays.fill(password, ' ');
+    }
+
     KeyManager[] extendedKeyManagers = new KeyManager[keyManagers.length];
 
-    for (int i = 0; i < keyManagers.length; i++) {
-      extendedKeyManagers[i] = new ExtendedAliasKeyManager(keyManagers[i], alias);
+    for (int i = 0; i < keyManagers.length; i++)
+
+    {
+      extendedKeyManagers[i] = new ExtendedAliasKeyManager(keyManagers[i], sslConfig.getAlias());
     }
+
     return extendedKeyManagers;
   }
 
@@ -706,10 +657,6 @@ public class SocketCreator {
 
   }
 
-  private boolean isEmpty(String string) {
-    return (string == null || string.trim().equals(""));
-  }
-
   // -------------------------------------------------------------------------
   //   Public methods
   // -------------------------------------------------------------------------
@@ -718,7 +665,7 @@ public class SocketCreator {
    * Returns true if this SocketCreator is configured to use SSL.
    */
   public boolean useSSL() {
-    return this.useSSL;
+    return this.sslConfig.isEnabled();
   }
 
   /**
@@ -759,11 +706,11 @@ public class SocketCreator {
    * SSL configuration is left up to JSSE properties in java.security file.
    */
   public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr) throws IOException {
-    return createServerSocket(nport, backlog, bindAddr, -1, useSSL);
+    return createServerSocket(nport, backlog, bindAddr, -1, sslConfig.isEnabled());
   }
 
   public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr, int socketBufferSize) throws IOException {
-    return createServerSocket(nport, backlog, bindAddr, socketBufferSize, useSSL);
+    return createServerSocket(nport, backlog, bindAddr, socketBufferSize, sslConfig.isEnabled());
   }
 
   private ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr, int socketBufferSize, boolean sslConnection) throws IOException {
@@ -825,7 +772,7 @@ public class SocketCreator {
                                                        boolean useNIO,
                                                        int tcpBufferSize,
                                                        int[] tcpPortRange) throws IOException {
-    return createServerSocketUsingPortRange(ba, backlog, isBindAddress, useNIO, tcpBufferSize, tcpPortRange, this.useSSL);
+    return createServerSocketUsingPortRange(ba, backlog, isBindAddress, useNIO, tcpBufferSize, tcpPortRange, sslConfig.isEnabled());
   }
 
   /**
@@ -944,7 +891,7 @@ public class SocketCreator {
    */
   public Socket connect(InetAddress inetadd, int port, int timeout, ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize)
     throws IOException {
-    return connect(inetadd, port, timeout, optionalWatcher, clientSide, socketBufferSize, this.useSSL);
+    return connect(inetadd, port, timeout, optionalWatcher, clientSide, socketBufferSize, sslConfig.isEnabled());
   }
 
   /**
@@ -1030,7 +977,7 @@ public class SocketCreator {
           logger.debug(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_CONNECTION_FROM_PEER_0, ((X509Certificate) peer[0]).getSubjectDN()));
         }
       } catch (SSLPeerUnverifiedException ex) {
-        if (this.needClientAuth) {
+        if (this.sslConfig.isRequireAuth()) {
           logger.fatal(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_ERROR_IN_AUTHENTICATING_PEER_0_1, new Object[] {
             socket.getInetAddress(), Integer.valueOf(socket.getPort())
           }), ex);
@@ -1054,18 +1001,20 @@ public class SocketCreator {
    */
   private void finishServerSocket(SSLServerSocket serverSocket) throws IOException {
     serverSocket.setUseClientMode(false);
-    if (this.needClientAuth) {
+    if (this.sslConfig.isRequireAuth()) {
       //serverSocket.setWantClientAuth( true );
       serverSocket.setNeedClientAuth(true);
     }
     serverSocket.setEnableSessionCreation(true);
 
     // restrict cyphers
-    if (!"any".equalsIgnoreCase(this.protocols[0])) {
-      serverSocket.setEnabledProtocols(this.protocols);
+    String[] protocols = this.sslConfig.getProtocolsAsStringArray();
+    if (!"any".equalsIgnoreCase(protocols[0])) {
+      serverSocket.setEnabledProtocols(protocols);
     }
-    if (!"any".equalsIgnoreCase(this.ciphers[0])) {
-      serverSocket.setEnabledCipherSuites(this.ciphers);
+    String[] ciphers = this.sslConfig.getCiphersAsStringArray();
+    if (!"any".equalsIgnoreCase(ciphers[0])) {
+      serverSocket.setEnabledCipherSuites(ciphers);
     }
   }
 
@@ -1080,12 +1029,15 @@ public class SocketCreator {
       sslSocket.setUseClientMode(true);
       sslSocket.setEnableSessionCreation(true);
 
+      String[] protocols = this.sslConfig.getProtocolsAsStringArray();
+
       // restrict cyphers
-      if (this.protocols != null && !"any".equalsIgnoreCase(this.protocols[0])) {
-        sslSocket.setEnabledProtocols(this.protocols);
+      if (protocols != null && !"any".equalsIgnoreCase(protocols[0])) {
+        sslSocket.setEnabledProtocols(protocols);
       }
-      if (this.ciphers != null && !"any".equalsIgnoreCase(this.ciphers[0])) {
-        sslSocket.setEnabledCipherSuites(this.ciphers);
+      String[] ciphers = this.sslConfig.getCiphersAsStringArray();
+      if (ciphers != null && !"any".equalsIgnoreCase(ciphers[0])) {
+        sslSocket.setEnabledCipherSuites(ciphers);
       }
 
       try {
@@ -1096,7 +1048,7 @@ public class SocketCreator {
           logger.debug(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_CONNECTION_FROM_PEER_0, ((X509Certificate) peer[0]).getSubjectDN()));
         }
       } catch (SSLPeerUnverifiedException ex) {
-        if (this.needClientAuth) {
+        if (this.sslConfig.isRequireAuth()) {
           logger.fatal(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_ERROR_IN_AUTHENTICATING_PEER), ex);
           throw ex;
         }
@@ -1117,7 +1069,7 @@ public class SocketCreator {
       configShown = true;
       StringBuffer sb = new StringBuffer();
       sb.append("SSL Configuration: \n");
-      sb.append("  ssl-enabled = " + this.useSSL).append("\n");
+      sb.append("  ssl-enabled = " + this.sslConfig.isEnabled()).append("\n");
       // add other options here....
       for (String key : System.getProperties().stringPropertyNames()) { // fix for 46822
         if (key.startsWith("javax.net.ssl")) {

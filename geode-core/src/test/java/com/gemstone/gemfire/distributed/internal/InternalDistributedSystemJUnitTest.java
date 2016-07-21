@@ -705,10 +705,7 @@ public class InternalDistributedSystemJUnitTest
 
   @Test
   public void testDeprecatedSSLProps() {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
-    props.setProperty(CLUSTER_SSL_ENABLED, "true");
+    Properties props = getCommonProperties();
     Config config1 = new DistributionConfigImpl(props, false);
     Properties props1 = config1.toProperties();
     // For the deprecated ssl-* properties a decision was made
@@ -728,13 +725,10 @@ public class InternalDistributedSystemJUnitTest
 
   @Test
   public void testSSLEnabledComponents() {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
-    props.setProperty(CLUSTER_SSL_ENABLED, "true");
+    Properties props = getCommonProperties();
     props.setProperty(SSL_ENABLED_COMPONENTS, "cluster,server");
     Config config1 = new DistributionConfigImpl(props, false);
-    assertEquals("cluster,server", config1.getAttribute(SSL_ENABLED_COMPONENTS));
+    assertEquals("cluster server", config1.getAttribute(SSL_ENABLED_COMPONENTS));
   }
 
   @Rule
@@ -742,10 +736,7 @@ public class InternalDistributedSystemJUnitTest
 
   @Test(expected = IllegalArgumentException.class)
   public void testSSLEnabledComponentsWrongComponentName() {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
-    props.setProperty(CLUSTER_SSL_ENABLED, "true");
+    Properties props = getCommonProperties();
     props.setProperty(SSL_ENABLED_COMPONENTS, "testing");
     new DistributionConfigImpl(props, false);
     illegalArgumentException.expect(IllegalArgumentException.class);
@@ -755,10 +746,9 @@ public class InternalDistributedSystemJUnitTest
 
   @Test(expected = IllegalArgumentException.class)
   public void testSSLEnabledComponentsWithLegacyJMXSSLSettings() {
-    Properties props = new Properties();
-    props.setProperty(CLUSTER_SSL_ENABLED, "true");
-    props.setProperty(JMX_MANAGER_SSL_ENABLED, "true");
+    Properties props = getCommonProperties();
     props.setProperty(SSL_ENABLED_COMPONENTS, "all");
+    props.setProperty(JMX_MANAGER_SSL_ENABLED, "true");
     new DistributionConfigImpl(props, false);
     illegalArgumentException.expect(IllegalArgumentException.class);
     illegalArgumentException.expectMessage(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET.getRawText());
@@ -766,10 +756,9 @@ public class InternalDistributedSystemJUnitTest
 
   @Test(expected = IllegalArgumentException.class)
   public void testSSLEnabledComponentsWithLegacyGatewaySSLSettings() {
-    Properties props = new Properties();
-    props.setProperty(CLUSTER_SSL_ENABLED, "true");
-    props.setProperty(GATEWAY_SSL_ENABLED, "true");
+    Properties props = getCommonProperties();
     props.setProperty(SSL_ENABLED_COMPONENTS, "all");
+    props.setProperty(GATEWAY_SSL_ENABLED, "true");
     new DistributionConfigImpl(props, false);
 
     illegalArgumentException.expect(IllegalArgumentException.class);
@@ -778,10 +767,9 @@ public class InternalDistributedSystemJUnitTest
 
   @Test(expected = IllegalArgumentException.class)
   public void testSSLEnabledComponentsWithLegacyServerSSLSettings() {
-    Properties props = new Properties();
-    props.setProperty(CLUSTER_SSL_ENABLED, "true");
-    props.setProperty(SERVER_SSL_ENABLED, "true");
+    Properties props = getCommonProperties();
     props.setProperty(SSL_ENABLED_COMPONENTS, "all");
+    props.setProperty(SERVER_SSL_ENABLED, "true");
     new DistributionConfigImpl(props, false);
 
     illegalArgumentException.expect(IllegalArgumentException.class);
@@ -790,14 +778,21 @@ public class InternalDistributedSystemJUnitTest
 
   @Test(expected = IllegalArgumentException.class)
   public void testSSLEnabledComponentsWithLegacyHTTPServiceSSLSettings() {
-    Properties props = new Properties();
-    props.setProperty(CLUSTER_SSL_ENABLED, "true");
-    props.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    Properties props = getCommonProperties();
     props.setProperty(SSL_ENABLED_COMPONENTS, "all");
+    props.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
     new DistributionConfigImpl(props, false);
 
     illegalArgumentException.expect(IllegalArgumentException.class);
     illegalArgumentException.expectMessage(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET.getRawText());
+  }
+
+  private Properties getCommonProperties() {
+    Properties props = new Properties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(CLUSTER_SSL_ENABLED, "true");
+    return props;
   }
 
   public static String getHostAddress(InetAddress addr) {

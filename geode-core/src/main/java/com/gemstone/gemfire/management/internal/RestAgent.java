@@ -20,6 +20,9 @@ package com.gemstone.gemfire.management.internal;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.GemFireVersion;
+import com.gemstone.gemfire.internal.admin.SSLConfig;
+import com.gemstone.gemfire.internal.net.SSLConfigurationFactory;
+import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
@@ -126,11 +129,7 @@ public class RestAgent {
 
         final int port = this.config.getHttpServicePort();
 
-        this.httpServer = JettyHelper.initJetty(httpServiceBindAddress, port,
-            this.config.getHttpServiceSSLEnabled(),
-            this.config.getHttpServiceSSLRequireAuthentication(),
-            this.config.getHttpServiceSSLProtocols(), this.config.getHttpServiceSSLCiphers(),
-            this.config.getHttpServiceSSLProperties());
+        this.httpServer = JettyHelper.initJetty(httpServiceBindAddress, port, SSLConfigurationFactory.getSSLConfigForComponent(SSLEnabledComponent.HTTP_SERVICE));
 
         this.httpServer = JettyHelper.addWebApplication(httpServer, "/gemfire-api", gemfireAPIWar);
 

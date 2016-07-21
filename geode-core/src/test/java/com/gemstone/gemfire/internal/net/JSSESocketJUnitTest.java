@@ -29,6 +29,7 @@ import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Properties;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -46,6 +47,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
@@ -120,6 +122,9 @@ public class JSSESocketJUnitTest {
         System.setProperty("javax.net.ssl.keyStorePassword", "password");
       }
 
+      DistributionConfigImpl distributionConfig = new DistributionConfigImpl(new Properties());
+
+      SocketCreatorFactory.setDistributionConfig(distributionConfig);
       assertTrue(SocketCreatorFactory.getClusterSSLSocketCreator().useSSL());
 
       final ServerSocket serverSocket = SocketCreatorFactory.getClusterSSLSocketCreator().createServerSocket(randport, 0, InetAddress.getByName("localhost"));
@@ -174,7 +179,9 @@ public class JSSESocketJUnitTest {
   @Test
   public void testClientSocketFactory() {
     System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + "clientSocketFactory", TSocketFactory.class.getName());
-    System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + CLUSTER_SSL_ENABLED);
+    System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + CLUSTER_SSL_ENABLED, "false");
+    DistributionConfigImpl distributionConfig = new DistributionConfigImpl(new Properties());
+    SocketCreatorFactory.setDistributionConfig(distributionConfig);
     factoryInvoked = false;
     try {
       try {

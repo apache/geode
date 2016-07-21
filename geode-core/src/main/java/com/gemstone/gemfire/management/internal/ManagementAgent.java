@@ -58,6 +58,8 @@ import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.net.SSLConfigurationFactory;
+import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 import com.gemstone.gemfire.internal.security.shiro.JMXShiroAuthenticator;
@@ -226,8 +228,7 @@ public class ManagementAgent {
 
           boolean isRestWebAppAdded = false;
 
-          this.httpServer = JettyHelper.initJetty(bindAddress, port, this.config.getHttpServiceSSLEnabled(), this.config.getHttpServiceSSLRequireAuthentication(), this.config
-            .getHttpServiceSSLProtocols(), this.config.getHttpServiceSSLCiphers(), this.config.getHttpServiceSSLProperties());
+          this.httpServer = JettyHelper.initJetty(bindAddress, port, SSLConfigurationFactory.getSSLConfigForComponent(SSLEnabledComponent.HTTP_SERVICE));
 
           if (agentUtil.isWebApplicationAvailable(gemfireWar)) {
             this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/gemfire", gemfireWar);

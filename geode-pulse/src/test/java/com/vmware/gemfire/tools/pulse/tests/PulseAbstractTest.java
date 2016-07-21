@@ -44,6 +44,8 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import com.gemstone.gemfire.internal.net.SSLConfigurationFactory;
+import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.management.internal.JettyHelper;
 import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
 
@@ -146,7 +148,7 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
     int port = 8080;
     String context = "/pulse";
 
-    jetty = JettyHelper.initJetty(host, port, false, false, null, null, null);
+    jetty = JettyHelper.initJetty(host, port, SSLConfigurationFactory.getSSLConfigForComponent(SSLEnabledComponent.HTTP_SERVICE));
     JettyHelper.addWebApplication(jetty, context, getPulseWarPath());
     jetty.start();
 

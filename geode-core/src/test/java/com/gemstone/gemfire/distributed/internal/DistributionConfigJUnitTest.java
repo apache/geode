@@ -360,6 +360,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testSSLEnabledComponents() {
     Properties props = new Properties();
+    props.put(MCAST_PORT, "0");
     props.put(CLUSTER_SSL_ENABLED, "true");
     props.put(SSL_ENABLED_COMPONENTS, "all");
 
@@ -369,6 +370,7 @@ public class DistributionConfigJUnitTest {
   @Test(expected = IllegalArgumentException.class)
   public void testSSLEnabledComponentsLegacyFail() {
     Properties props = new Properties();
+    props.put(MCAST_PORT, "0");
     props.put(CLUSTER_SSL_ENABLED, "true");
     props.put(HTTP_SERVICE_SSL_ENABLED, "true");
     props.put(SSL_ENABLED_COMPONENTS, "all");
@@ -378,6 +380,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testSSLEnabledComponentsLegacyPass() {
     Properties props = new Properties();
+    props.put(MCAST_PORT, "0");
     props.put(CLUSTER_SSL_ENABLED, "true");
     props.put(HTTP_SERVICE_SSL_ENABLED, "true");
     props.put(SSL_ENABLED_COMPONENTS, "");

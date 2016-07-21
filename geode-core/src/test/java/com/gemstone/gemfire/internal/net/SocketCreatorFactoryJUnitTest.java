@@ -123,6 +123,7 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
     Properties properties = configureSSLProperties(SSLEnabledComponents.SERVER);
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
+
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
     Assert.assertFalse(SocketCreatorFactory.getClusterSSLSocketCreator().useSSL());

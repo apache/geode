@@ -46,6 +46,7 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.net.SSLConfigurationFactory;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.admin.ClientStatsManager;
 import com.gemstone.gemfire.internal.cache.DiskStoreObserver;
@@ -165,6 +166,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     if (system == null || !system.isConnected()) {
       // Figure out our distributed system properties
       SocketCreatorFactory.close();
+      SSLConfigurationFactory.close();
       Properties p = DistributedTestUtils.getAllDistributedSystemProperties(props);
       lastSystemCreatedInTest = getTestClass(); // used to be getDeclaringClass()
       if (logPerTest) {
