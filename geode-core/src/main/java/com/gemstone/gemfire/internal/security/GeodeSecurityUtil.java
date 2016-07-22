@@ -378,7 +378,7 @@ public class GeodeSecurityUtil {
    * @param className
    * @param expectedClazz
    * @param <T>
-   * @return
+   * @return the expected object loadded by using the className
    */
   public static <T> T getObjectOfTypeFromClassName(String className, Class<T> expectedClazz) {
     Class actualClass = null;
@@ -407,7 +407,7 @@ public class GeodeSecurityUtil {
    * @param factoryMethodName
    * @param expectedClazz
    * @param <T>
-   * @return
+   * @return the expected object loaded by the factory method
    */
   public static <T> T getObjectOfTypeFromFactoryMethod(String factoryMethodName, Class<T> expectedClazz){
     T actualObject = null;

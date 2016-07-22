@@ -42,7 +42,7 @@ public class SamplePostProcessor implements PostProcessor{
    *        the key of the value that's been accessed. This could be null.
    * @param value
    *        the value, this could be null.
-   * @return
+   * @return the processed value
    */
   @Override
   public Object processRegionValue(Principal principal,

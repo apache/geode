@@ -43,32 +43,29 @@ public class GeodePermission extends WildcardPermission {
   }
 
   /**
-   * Returns the resource, could be either DATA or CLUSTER
-   * @return
+   * Returns
+   * @return the resource, could be either DATA or CLUSTER
    */
   public Resource getResource() {
     return resource;
   }
 
   /**
-   * Returns the operation, could be either MANAGE, WRITE or READ
-   * @return
+   * @return the operation, could be either MANAGE, WRITE or READ
    */
   public Operation getOperation() {
     return operation;
   }
 
   /**
-   * returns the regionName, could be "*", meaning all regions
-   * @return
+   * @return the regionName, could be "*", meaning all regions
    */
   public String getRegionName() {
     return regionName;
   }
 
   /**
-   * returns the key, could be "*" meaning all keys.
-   * @return
+   * @return the key, could be "*" meaning all keys.
    */
   public String getKey() {
     return key;
