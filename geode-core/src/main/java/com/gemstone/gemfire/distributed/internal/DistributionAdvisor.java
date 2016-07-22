@@ -175,7 +175,7 @@ public class DistributionAdvisor  {
   /**
    * Hold onto removed profiles to compare to late-processed profiles. Fix for
    * bug 36881. Protected by synchronizing on this DistributionAdvisor.
-   * @guarded.By this DistributionAdvisor
+   * guarded.By this DistributionAdvisor
    */
   private final Map removedProfiles = new HashMap();
 

@@ -2381,7 +2381,7 @@ public class CacheClientProxy implements ClientSession {
     private volatile boolean _isStopped = true;
 
     /**
-     * @guarded.By _pausedLock
+     * guarded.By _pausedLock
      */
     //boolean _isPausedDispatcher = false;
     

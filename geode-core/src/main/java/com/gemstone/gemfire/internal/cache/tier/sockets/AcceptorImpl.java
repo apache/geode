@@ -232,13 +232,13 @@ public class AcceptorImpl extends Acceptor implements Runnable
    * 
    * Instances added when constructed; removed when terminated.
    * 
-   * @guarded.By {@link #allSCsLock}
+   * guarded.By {@link #allSCsLock}
    */
   private final HashSet allSCs = new HashSet();
 
   /** List of ServerConnections, for {@link #emergencyClose()}
    * 
-   *  @guarded.By {@link #allSCsLock}
+   *  guarded.By {@link #allSCsLock}
    */
   private volatile ServerConnection allSCList[] = new ServerConnection[0];
 

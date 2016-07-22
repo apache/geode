@@ -419,8 +419,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   /**
    * This method sends heartbeat request to other member and waits for member-timeout
    * time for response. If it doesn't see response then it returns false.
-   * @param member
-   * @return
    */
   private boolean doCheckMember(InternalDistributedMember member, boolean waitForResponse) {
     if (playingDead || beingSick) {

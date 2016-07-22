@@ -91,14 +91,14 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     /**
      * Our notion of the current elder
      * 
-     * @guarded.By {@link #elderLock}
+     * guarded.By {@link #elderLock}
      */
     InternalDistributedMember currentElder = null;
     
     /**
      * Count of the elder calls in-flight
      * 
-     * @guarded.By {@link #elderLock}
+     * guarded.By {@link #elderLock}
      */
     int elderCallsInProgress = 0;
     
@@ -106,7 +106,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
      * If true, we're cooling our heels waiting for the elders to pass
      * the baton
      * 
-     * @guarded.By {@link #elderLock}
+     * guarded.By {@link #elderLock}
      */
     boolean waitingToChangeElder = false;
     

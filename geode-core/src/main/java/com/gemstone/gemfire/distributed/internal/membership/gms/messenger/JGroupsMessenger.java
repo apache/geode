@@ -1076,8 +1076,6 @@ public class JGroupsMessenger implements Messenger {
     /**
      * returns the handler that should process the given message.
      * The default handler is the membership manager
-     * @param msg
-     * @return
      */
     private MessageHandler getMessageHandler(DistributionMessage msg) {
       Class<?> msgClazz = msg.getClass();

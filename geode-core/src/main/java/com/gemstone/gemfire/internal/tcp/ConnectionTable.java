@@ -108,7 +108,7 @@ public class ConnectionTable  {
   /**
    * Timer to kill idle threads
    * 
-   * @guarded.By this
+   * guarded.By this
    */
   private SystemTimer idleConnTimer;
   
