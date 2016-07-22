@@ -42,8 +42,8 @@ import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.ConfigSource;
-import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
 
@@ -274,13 +274,19 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    */
   private String securityClientAuthenticator = DEFAULT_SECURITY_CLIENT_AUTHENTICATOR;
 
-  /** The security manager class name*/
+  /**
+   * The security manager class name
+   */
   private String securityManager = DEFAULT_SECURITY_MANAGER;
 
-  /** The post processor class name*/
+  /**
+   * The post processor class name
+   */
   private String postProcessor = DEFAULT_SECURITY_POST_PROCESSOR;
 
-  /** The client Diffie-Hellman method name*/
+  /**
+   * The client Diffie-Hellman method name
+   */
   private String securityClientDHAlgo = DEFAULT_SECURITY_CLIENT_DHALGO;
 
   /**
@@ -379,13 +385,13 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private Properties clusterSSLProperties = new Properties();
 
   private String groups = DEFAULT_GROUPS;
-  
+
   protected boolean enableSharedConfiguration = DistributionConfig.DEFAULT_ENABLE_CLUSTER_CONFIGURATION;
   protected boolean useSharedConfiguration = DistributionConfig.DEFAULT_USE_CLUSTER_CONFIGURATION;
   protected boolean loadSharedConfigurationFromDir = DistributionConfig.DEFAULT_LOAD_CLUSTER_CONFIG_FROM_DIR;
   protected String clusterConfigDir = "";
-  
-  
+
+
   private int httpServicePort = DEFAULT_HTTP_SERVICE_PORT;
 
   private String httpServiceBindAddress = DEFAULT_HTTP_SERVICE_BIND_ADDRESS;
@@ -864,10 +870,10 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         if (e.getCause() instanceof RuntimeException) {
           throw (RuntimeException) e.getCause();
         } else {
-          throw new InternalGemFireException("error invoking getter for property" + propertyName );
+          throw new InternalGemFireException("error invoking getter for property" + propertyName);
         }
       }
-      checkAttribute(propertyName,value);
+      checkAttribute(propertyName, value);
     }
   }
 
@@ -1680,7 +1686,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
           throw new GemFireConfigException("Illegal port specified for start-locator", e);
         }
       } else {
-        
+
       }
     }
     this.startLocator = value;
@@ -1947,15 +1953,15 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   public void setSecurityClientAuthenticator(String value) {
-    securityClientAuthenticator = (String) value;
+    securityClientAuthenticator = value;
   }
 
-  public void setSecurityManager(String value){
-    securityManager = (String)checkAttribute(SECURITY_MANAGER, value);
+  public void setSecurityManager(String value) {
+    securityManager = value;
   }
 
   public void setPostProcessor(String value) {
-    postProcessor = (String) checkAttribute(SECURITY_POST_PROCESSOR, value);
+    postProcessor = value;
   }
 
   public String getSecurityClientDHAlgo() {
@@ -2189,31 +2195,31 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   public void setJmxManagerSSLKeyStore(String value) {
-    
+
     this.getJmxSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + KEY_STORE_NAME, value);
     this.jmxManagerSSLKeyStore = value;
   }
 
   public void setJmxManagerSSLKeyStoreType(String value) {
-    
+
     this.getJmxSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + KEY_STORE_TYPE_NAME, value);
     this.jmxManagerSSLKeyStoreType = value;
   }
 
   public void setJmxManagerSSLKeyStorePassword(String value) {
-    
+
     this.getJmxSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + KEY_STORE_PASSWORD_NAME, value);
     this.jmxManagerSSLKeyStorePassword = value;
   }
 
   public void setJmxManagerSSLTrustStore(String value) {
-    
+
     this.getJmxSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + TRUST_STORE_NAME, value);
     this.jmxManagerSSLTrustStore = value;
   }
 
   public void setJmxManagerSSLTrustStorePassword(String value) {
-    
+
     this.getJmxSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + TRUST_STORE_PASSWORD_NAME, value);
     this.jmxManagerSSLTrustStorePassword = value;
   }
@@ -2903,25 +2909,27 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         return false;
       }
     } else if (!securityClientAuthenticator.equals(other.securityClientAuthenticator)) {
-      return false;
-    if (securityManager == null) {
-      if (other.securityManager != null)
+      if (securityManager == null) {
+        if (other.securityManager != null) {
+          return false;
+        }
+      } else if (!securityManager.equals(other.securityManager)) {
         return false;
-    } else if (!securityManager
-      .equals(other.securityManager))
-      return false;
-    if (postProcessor == null) {
-      if (other.postProcessor != null)
+      }
+      if (postProcessor == null) {
+        if (other.postProcessor != null) {
+          return false;
+        }
+      } else if (!postProcessor.equals(other.postProcessor)) {
         return false;
-    } else if (!postProcessor
-      .equals(other.postProcessor))
-      return false;
-    if (shiroInit == null) {
-      if (other.shiroInit != null)
+      }
+      if (shiroInit == null) {
+        if (other.shiroInit != null) {
+          return false;
+        }
+      } else if (!shiroInit.equals(other.shiroInit)) {
         return false;
-    } else if (!shiroInit
-      .equals(other.shiroInit))
-      return false;
+      }
     }
     if (securityClientDHAlgo == null) {
       if (other.securityClientDHAlgo != null) {
@@ -3222,39 +3230,15 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     result = prime * result + (removeUnresponsiveClient ? 1231 : 1237);
     result = prime * result + ((roles == null) ? 0 : roles.hashCode());
     result = prime * result + ((security == null) ? 0 : security.hashCode());
-    result = prime
-        * result
-        + ((securityClientAccessor == null) ? 0 : securityClientAccessor
-            .hashCode());
-    result = prime
-        * result
-        + ((securityClientAccessorPP == null) ? 0 : securityClientAccessorPP
-            .hashCode());
-    result = prime
-        * result
-        + ((securityClientAuthInit == null) ? 0 : securityClientAuthInit
-            .hashCode());
-    result = prime
-        * result
-        + ((securityClientAuthenticator == null) ? 0
-            : securityClientAuthenticator.hashCode());
-    result = prime
-             * result
-             + ((securityManager == null) ? 0
-                  : securityManager.hashCode());
-    result = prime
-             * result
-             + ((postProcessor == null) ? 0
-                  : postProcessor.hashCode());
-    result = prime
-             * result
-             + ((shiroInit == null) ? 0
-                  : shiroInit.hashCode());
-    result = prime
-        * result
-        + ((securityClientDHAlgo == null) ? 0 : securityClientDHAlgo.hashCode());
-    result = prime * result
-        + ((securityLogFile == null) ? 0 : securityLogFile.hashCode());
+    result = prime * result + ((securityClientAccessor == null) ? 0 : securityClientAccessor.hashCode());
+    result = prime * result + ((securityClientAccessorPP == null) ? 0 : securityClientAccessorPP.hashCode());
+    result = prime * result + ((securityClientAuthInit == null) ? 0 : securityClientAuthInit.hashCode());
+    result = prime * result + ((securityClientAuthenticator == null) ? 0 : securityClientAuthenticator.hashCode());
+    result = prime * result + ((securityManager == null) ? 0 : securityManager.hashCode());
+    result = prime * result + ((postProcessor == null) ? 0 : postProcessor.hashCode());
+    result = prime * result + ((shiroInit == null) ? 0 : shiroInit.hashCode());
+    result = prime * result + ((securityClientDHAlgo == null) ? 0 : securityClientDHAlgo.hashCode());
+    result = prime * result + ((securityLogFile == null) ? 0 : securityLogFile.hashCode());
     result = prime * result + securityLogLevel;
     result = prime * result + ((securityPeerAuthInit == null) ? 0 : securityPeerAuthInit.hashCode());
     result = prime * result + ((securityPeerAuthenticator == null) ? 0 : securityPeerAuthenticator.hashCode());
