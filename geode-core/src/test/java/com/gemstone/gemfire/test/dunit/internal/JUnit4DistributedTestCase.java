@@ -166,7 +166,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     if (system == null || !system.isConnected()) {
       // Figure out our distributed system properties
       SocketCreatorFactory.close();
-      SSLConfigurationFactory.close();
       Properties p = DistributedTestUtils.getAllDistributedSystemProperties(props);
       lastSystemCreatedInTest = getTestClass(); // used to be getDeclaringClass()
       if (logPerTest) {

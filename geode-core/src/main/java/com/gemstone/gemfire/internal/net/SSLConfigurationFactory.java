@@ -60,6 +60,7 @@ public class SSLConfigurationFactory {
     SSLConfig sslConfig = new SSLConfig();
     configureClusterSSL(sslConfig, sslEnabledComponent);
     String[] sslEnabledComponents = distributionConfig.getSSLEnabledComponents();
+    sslConfig.setSslEnabledComponent(sslEnabledComponent);
     switch (sslEnabledComponent) {
       case ALL: {
 

@@ -521,7 +521,7 @@ public class Connection implements Runnable {
   /** creates a connection that we accepted (it was initiated by
    * an explicit connect being done on the other side).
    */
-  protected Connection(ConnectionTable t, Socket s)
+  protected Connection(ConnectionTable t, Socket socket)
     throws IOException, ConnectionException
   {
     if (t == null) {
@@ -529,18 +529,18 @@ public class Connection implements Runnable {
     }
     this.isReceiver = true;
     this.owner = t;
-    this.socket = s;
+    this.socket = socket;
     this.conduitIdStr = owner.getConduit().getId().toString();
     this.handshakeRead = false;
     this.handshakeCancelled = false;
     this.connected = true;
 
     try {
-      s.setTcpNoDelay(true);
-      s.setKeepAlive(true);
-//      s.setSoLinger(true, (Integer.valueOf(System.getProperty("p2p.lingerTime", "5000"))).intValue());
-      setSendBufferSize(s, SMALL_BUFFER_SIZE);
-      setReceiveBufferSize(s);
+      socket.setTcpNoDelay(true);
+      socket.setKeepAlive(true);
+//      socket.setSoLinger(true, (Integer.valueOf(System.getProperty("p2p.lingerTime", "5000"))).intValue());
+      setSendBufferSize(socket, SMALL_BUFFER_SIZE);
+      setReceiveBufferSize(socket);
     }
     catch (SocketException e) {
       // unable to get the settings we want.  Don't log an error because it will
@@ -548,12 +548,12 @@ public class Connection implements Runnable {
     }
     if (!useNIO()) {
       try {
-        //this.output = new BufferedOutputStream(s.getOutputStream(), SMALL_BUFFER_SIZE);
-        this.output = s.getOutputStream();
+        //this.output = new BufferedOutputStream(socket.getOutputStream(), SMALL_BUFFER_SIZE);
+        this.output = socket.getOutputStream();
       }
       catch (IOException io) {
         logger.fatal(LocalizedMessage.create(LocalizedStrings.Connection_UNABLE_TO_GET_P2P_CONNECTION_STREAMS), io);
-        t.getSocketCloser().asyncClose(s, this.remoteAddr.toString(), null);
+        t.getSocketCloser().asyncClose(socket, this.remoteAddr.toString(), null);
         throw io;
       }
     }
@@ -1205,7 +1205,9 @@ public class Connection implements Runnable {
                      DistributedMember remoteID,
                      boolean sharedResource)
     throws IOException, DistributedSystemDisconnectedException
-  {    
+  {
+
+    //initialize a socket upfront. So that the
     InternalDistributedMember remoteAddr = (InternalDistributedMember)remoteID;
     if (t == null) {
       throw new IllegalArgumentException(LocalizedStrings.Connection_CONNECTIONTABLE_IS_NULL.toLocalizedString());

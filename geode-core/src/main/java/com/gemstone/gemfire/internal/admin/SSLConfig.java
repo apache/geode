@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.management.internal.SSLUtil;
 
 /**
@@ -42,6 +43,7 @@ public class SSLConfig {
   private String truststorePassword = DistributionConfig.DEFAULT_CLUSTER_SSL_TRUSTSTORE_PASSWORD;
   private String truststoreType = DistributionConfig.DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE;
   private String alias = null;
+  private SSLEnabledComponent sslEnabledComponent = null;
 
   /**
    * SSL implementation-specific key-value pairs. Each key should be prefixed
@@ -159,6 +161,14 @@ public class SSLConfig {
       //            String value = newProps.getProperty(key);
       this.properties.setProperty(key, newProps.getProperty(key));
     }
+  }
+
+  public SSLEnabledComponent getSslEnabledComponent() {
+    return sslEnabledComponent;
+  }
+
+  public void setSslEnabledComponent(final SSLEnabledComponent sslEnabledComponent) {
+    this.sslEnabledComponent = sslEnabledComponent;
   }
 
   /**

@@ -2023,18 +2023,14 @@ public class WANTestBase extends JUnit4DistributedTestCase {
   }
   public static int createReceiverWithSSL(int locPort) {
     WANTestBase test = new WANTestBase();
-    boolean gatewaySslenabled = true;
-    String  gatewaySslprotocols = "any";
-    String  gatewaySslciphers = "any";
-    boolean gatewaySslRequireAuth = true;
 
     Properties gemFireProps = test.getDistributedSystemProperties();
 
     gemFireProps.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-    gemFireProps.put(GATEWAY_SSL_ENABLED, String.valueOf(gatewaySslenabled));
-    gemFireProps.put(GATEWAY_SSL_PROTOCOLS, gatewaySslprotocols);
-    gemFireProps.put(GATEWAY_SSL_CIPHERS, gatewaySslciphers);
-    gemFireProps.put(GATEWAY_SSL_REQUIRE_AUTHENTICATION, String.valueOf(gatewaySslRequireAuth));
+    gemFireProps.put(GATEWAY_SSL_ENABLED, "true");
+    gemFireProps.put(GATEWAY_SSL_PROTOCOLS, "any");
+    gemFireProps.put(GATEWAY_SSL_CIPHERS, "any");
+    gemFireProps.put(GATEWAY_SSL_REQUIRE_AUTHENTICATION, "true");
 
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_TYPE, "jks");
     gemFireProps.put(GATEWAY_SSL_KEYSTORE,

@@ -95,7 +95,6 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     this.blackList = new ServerBlackList(pingInterval);
     this.cancelCriterion = cancelCriterion;
     this.pool = pool;
-    InternalDistributedSystem internalDistributedSystem = InternalDistributedSystem.getConnectedInstance();
     if (this.usedByGateway || (this.gatewaySender != null)) {
       this.socketCreator = SocketCreatorFactory.getGatewaySSLSocketCreator();
       if (sender!= null && !sender.getGatewayTransportFilters().isEmpty()) {

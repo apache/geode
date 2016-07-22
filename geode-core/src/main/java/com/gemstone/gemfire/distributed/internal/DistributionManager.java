@@ -503,7 +503,7 @@ public class DistributionManager
   public static DistributionManager create(InternalDistributedSystem system)
   {
 
-    DistributionManager dm = null;
+    DistributionManager distributionManager = null;
     
     try {
 
@@ -526,13 +526,13 @@ public class DistributionManager
       
       long start = System.currentTimeMillis();
 
-      dm = new DistributionManager(system, transport);
-      dm.assertDistributionManagerType();
+      distributionManager = new DistributionManager(system, transport);
+      distributionManager.assertDistributionManagerType();
 
       {
-        InternalDistributedMember id = dm.getDistributionManagerId();
+        InternalDistributedMember id = distributionManager.getDistributionManagerId();
         if (!"".equals(id.getName())) {
-          for (InternalDistributedMember m: (List<InternalDistributedMember>)dm.getViewMembers()) {
+          for (InternalDistributedMember m: (List<InternalDistributedMember>)distributionManager.getViewMembers()) {
             if (m.equals(id)) {
               // I'm counting on the members returned by getViewMembers being ordered such that
               // members that joined before us will precede us AND members that join after us
@@ -541,28 +541,28 @@ public class DistributionManager
               break;
             }
             if (id.getName().equals(m.getName())) {
-              if (dm.getMembershipManager().verifyMember(m, "member is using the name of " + id)) {
+              if (distributionManager.getMembershipManager().verifyMember(m, "member is using the name of " + id)) {
                 throw new IncompatibleSystemException("Member " + id + " could not join this distributed system because the existing member " + m + " used the same name. Set the \"name\" gemfire property to a unique value.");
               }
             }
           }
         }
-        dm.addNewMember(id); // add ourselves
-        dm.selectElder(); // ShutdownException could be thrown here
+        distributionManager.addNewMember(id); // add ourselves
+        distributionManager.selectElder(); // ShutdownException could be thrown here
       }
 
       // Send out a StartupMessage to the other members.
-      StartupOperation op = new StartupOperation(dm, transport);
+      StartupOperation op = new StartupOperation(distributionManager, transport);
 
       try {
-        if (!dm.sendStartupMessage(op, true)) {
+        if (!distributionManager.sendStartupMessage(op, true)) {
           // We'll we didn't hear back from anyone else.  We assume that
           // we're the first one.
-          if (dm.getOtherDistributionManagerIds().size() == 0) {
+          if (distributionManager.getOtherDistributionManagerIds().size() == 0) {
             logger.info(LocalizedMessage.create(LocalizedStrings.DistributionManager_DIDNT_HEAR_BACK_FROM_ANY_OTHER_SYSTEM_I_AM_THE_FIRST_ONE));
           } else if (transport.isMcastEnabled()) {
             // perform a multicast ping test
-            if (!dm.testMulticast()) {
+            if (!distributionManager.testMulticast()) {
               logger.warn(LocalizedMessage.create(
                   LocalizedStrings.DistributionManager_RECEIVED_NO_STARTUP_RESPONSES_BUT_OTHER_MEMBERS_EXIST_MULTICAST_IS_NOT_RESPONSIVE));
             }
@@ -576,32 +576,32 @@ public class DistributionManager
         logger.fatal(ex.getMessage(), ex);
         throw ex;
       } finally {
-        dm.readyToSendMsgs();
+        distributionManager.readyToSendMsgs();
       }
 
       if (logger.isInfoEnabled()) {
         long delta = System.currentTimeMillis() - start;
         Object[] logArgs = new Object[] {
-            dm.getDistributionManagerId(),
+            distributionManager.getDistributionManagerId(),
             transport,
-            Integer.valueOf(dm.getOtherDistributionManagerIds().size()),
-            dm.getOtherDistributionManagerIds(), 
+            Integer.valueOf(distributionManager.getOtherDistributionManagerIds().size()),
+            distributionManager.getOtherDistributionManagerIds(),
             (logger.isInfoEnabled(LogMarker.DM) ? " (VERBOSE, took " + delta + " ms)" : ""),
-            ((dm.getDMType() == ADMIN_ONLY_DM_TYPE) ? " (admin only)" : (dm.getDMType() == LOCATOR_DM_TYPE) ? " (locator)" : "")
+            ((distributionManager.getDMType() == ADMIN_ONLY_DM_TYPE) ? " (admin only)" : (distributionManager.getDMType() == LOCATOR_DM_TYPE) ? " (locator)" : "")
         };
         logger.info(LogMarker.DM, LocalizedMessage.create(
             LocalizedStrings.DistributionManager_DISTRIBUTIONMANAGER_0_STARTED_ON_1_THERE_WERE_2_OTHER_DMS_3_4_5, logArgs));
 
-        MembershipLogger.logStartup(dm.getDistributionManagerId());
+        MembershipLogger.logStartup(distributionManager.getDistributionManagerId());
       }
-      return dm;
+      return distributionManager;
     }
     catch (RuntimeException r) {
-      if (dm != null) {
+      if (distributionManager != null) {
         if (logger.isDebugEnabled()) {
           logger.debug("cleaning up incompletely started DistributionManager due to exception", r); 
         }
-        dm.uncleanShutdown(true);
+        distributionManager.uncleanShutdown(true);
       }
       throw r;
     }
@@ -2618,7 +2618,7 @@ public class DistributionManager
    * Sends a startup message and waits for a response.
    * Returns true if response received; false if it timed out or there are no peers.
    */
-  protected boolean sendStartupMessage(StartupOperation op, boolean cancelOnTimeout)
+  protected boolean sendStartupMessage(StartupOperation startupOperation, boolean cancelOnTimeout)
     throws InterruptedException
   {
     if (Thread.interrupted()) throw new InterruptedException();
@@ -2669,7 +2669,7 @@ public class DistributionManager
     }
 
     try {
-      ok = op.sendStartupMessage(allOthers, STARTUP_TIMEOUT, equivs,
+      ok = startupOperation.sendStartupMessage(allOthers, STARTUP_TIMEOUT, equivs,
           redundancyZone, enforceUniqueZone());
     }
     catch (Exception re) {

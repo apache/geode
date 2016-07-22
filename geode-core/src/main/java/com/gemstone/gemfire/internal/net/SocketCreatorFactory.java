@@ -31,18 +31,10 @@ import com.gemstone.gemfire.internal.admin.SSLConfig;
 
 public class SocketCreatorFactory {
 
-  private static SocketCreatorFactory instance = new SocketCreatorFactory();
+  private static SocketCreatorFactory instance = null;
   private static final String NON_SSL = "Non_SSL";
   private Map<SSLEnabledComponent, SocketCreator> socketCreators = new HashMap<>();
   private DistributionConfig distributionConfig;
-
-  private SocketCreatorFactory() {
-    this(null);
-  }
-
-  private SocketCreatorFactory(DistributionConfig distributionConfig) {
-    initializeSocketCreators(distributionConfig);
-  }
 
   /**
    * Here we parse the distribution distributionConfig and setup the required SocketCreators
@@ -54,13 +46,23 @@ public class SocketCreatorFactory {
       this.distributionConfig = distributionConfig;
     }
     SSLConfigurationFactory.setDistributionConfig(this.distributionConfig);
+    initialize();
   }
 
-  private static SocketCreatorFactory getInstance() {
-    if (instance == null) {
+  private synchronized static SocketCreatorFactory getInstance(boolean closing) {
+    if (instance == null && !closing) {
       instance = new SocketCreatorFactory();
     }
     return instance;
+  }
+
+  private synchronized static SocketCreatorFactory getInstance() {
+    return getInstance(false);
+  }
+
+  private void initialize() {
+    //Hack... get a default cluster socket creator initialized
+    getClusterSSLSocketCreator();
   }
 
   public static SocketCreator getClusterSSLSocketCreator() {
@@ -168,14 +170,17 @@ public class SocketCreatorFactory {
   }
 
   public static void close() {
-    getInstance().clearSocketCreators();
-    getInstance().distributionConfig = null;
-    instance = null;
-    SSLConfigurationFactory.close();
+    SocketCreatorFactory socketCreatorFactory = getInstance(true);
+    if (socketCreatorFactory != null) {
+      socketCreatorFactory.clearSocketCreators();
+      socketCreatorFactory.distributionConfig = null;
+      SocketCreatorFactory.instance = null;
+      SSLConfigurationFactory.close();
+    }
   }
 
   private synchronized void clearSocketCreators() {
-    getInstance().socketCreators.clear();
+    socketCreators.clear();
   }
 
   public static SocketCreatorFactory setDistributionConfig(final DistributionConfig config) {

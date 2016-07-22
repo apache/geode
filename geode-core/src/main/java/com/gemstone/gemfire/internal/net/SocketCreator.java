@@ -348,22 +348,25 @@ public class SocketCreator {
   private void initialize() {
     try {
       // set p2p values...
-      if (this.sslConfig.isEnabled()) {
-        System.setProperty("p2p.useSSL", "true");
-        System.setProperty("p2p.oldIO", "true");
-        System.setProperty("p2p.nodirectBuffers", "true");
-
-        try {
-          if (sslContext == null) {
-            sslContext = createAndConfigureSSLContext();
-            SSLContext.setDefault(sslContext);
-          }
-        } catch (Exception e) {
-          throw new GemFireConfigException("Error configuring GemFire ssl ", e);
+      if(SSLEnabledComponent.CLUSTER.equals(sslConfig.getSslEnabledComponent())){
+        if (this.sslConfig.isEnabled()) {
+          System.setProperty("p2p.useSSL", "true");
+          System.setProperty("p2p.oldIO", "true");
+          System.setProperty("p2p.nodirectBuffers", "true");
+        } else {
+          System.setProperty("p2p.useSSL", "false");
         }
-      } else {
-        System.setProperty("p2p.useSSL", "false");
       }
+
+      try {
+        if (this.sslConfig.isEnabled() && sslContext == null) {
+          sslContext = createAndConfigureSSLContext();
+          SSLContext.setDefault(sslContext);
+        }
+      } catch (Exception e) {
+        throw new GemFireConfigException("Error configuring GemFire ssl ", e);
+      }
+
       // make sure TCPConduit picks up p2p properties...
       com.gemstone.gemfire.internal.tcp.TCPConduit.init();
 
