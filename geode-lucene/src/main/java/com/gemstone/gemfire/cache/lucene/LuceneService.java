@@ -23,6 +23,7 @@ import org.apache.lucene.analysis.Analyzer;
 
 import com.gemstone.gemfire.annotations.Experimental;
 import com.gemstone.gemfire.cache.GemFireCache;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexCreationProfile;
 
 /**
  * LuceneService instance is a singleton for each cache.
@@ -124,4 +125,5 @@ public interface LuceneService {
    * @return LuceneQueryFactory object
    */
   public LuceneQueryFactory createLuceneQueryFactory();
-}
+
+ }

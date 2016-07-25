@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexCreationProfile;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
 
@@ -30,23 +31,29 @@ import org.apache.lucene.analysis.Analyzer;
 
 public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Serializable {
   private static final long serialVersionUID = 1L;
-
   private final String indexName;
   private final String regionPath;
   private final String[] searchableFieldNames;
-  private final Map<String, String> fieldAnalyzers;
+  private Map<String, String> fieldAnalyzers=null;
   private final Map<String,Integer> indexStats;
+  private boolean initialized;
 
-  public LuceneIndexDetails(final String indexName, final String regionPath, final String[] searchableFieldNames, Map<String, Analyzer> fieldAnalyzers, LuceneIndexStats indexStats) {
+  public LuceneIndexDetails(final String indexName, final String regionPath, final String[] searchableFieldNames, final Map<String, Analyzer> fieldAnalyzers, LuceneIndexStats indexStats, boolean initialized) {
     this.indexName = indexName;
     this.regionPath = regionPath;
     this.searchableFieldNames = searchableFieldNames;
-    this.fieldAnalyzers = getAnalyzerStrings(fieldAnalyzers);
+    this.fieldAnalyzers = getFieldAnalyzerStrings(fieldAnalyzers);
     this.indexStats=getIndexStatsMap(indexStats);
+    this.initialized = initialized;
   }
 
   public LuceneIndexDetails(LuceneIndexImpl index) {
-    this(index.getName(), index.getRegionPath(), index.getFieldNames(), index.getFieldAnalyzers(),index.getIndexStats());
+    this(index.getName(), index.getRegionPath(), index.getFieldNames(),index.getFieldAnalyzers(),index.getIndexStats(), true);
+  }
+
+  public LuceneIndexDetails(LuceneIndexCreationProfile indexProfile) {
+    this(indexProfile.getIndexName(), indexProfile.getRegionPath(), indexProfile.getFieldNames(), null, null, false);
+    this.fieldAnalyzers=getFieldAnalyzerStringsFromProfile(indexProfile.getFieldAnalyzers());
   }
 
   public Map<String,Integer> getIndexStats() {
@@ -66,7 +73,7 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
     return indexStats.toString();
   }
 
-  private Map<String, String> getAnalyzerStrings(Map<String, Analyzer> fieldAnalyzers) {
+  private Map<String, String> getFieldAnalyzerStrings(Map<String, Analyzer> fieldAnalyzers) {
     if(fieldAnalyzers == null) {
       return Collections.emptyMap();
     }
@@ -77,6 +84,23 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
       final Analyzer analyzer = entry.getValue();
       if(analyzer != null) {
         results.put(entry.getKey(), analyzer.getClass().getSimpleName());
+      }
+    }
+    return results;
+  }
+
+  private Map<String, String> getFieldAnalyzerStringsFromProfile(Map<String, Class <? extends Analyzer>> fieldAnalyzers) {
+    if(fieldAnalyzers == null) {
+      return Collections.emptyMap();
+
+    }
+
+    Map<String, String> results = new HashMap<>();
+
+    for (Entry<String, Class<? extends Analyzer>> entry : fieldAnalyzers.entrySet()) {
+      final String analyzer = entry.getValue().getSimpleName();
+      if(analyzer != null) {
+        results.put(entry.getKey(), analyzer);
       }
     }
     return results;
@@ -98,11 +122,15 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
     buffer.append(",\tRegion Path = "+regionPath);
     buffer.append(",\tIndexed Fields = "+getSearchableFieldNamesString());
     buffer.append(",\tField Analyzer = "+getFieldAnalyzersString());
+    buffer.append(",\tStatus =\n\t"+ getInitialized());
     buffer.append(",\tIndex Statistics =\n\t"+getIndexStatsString());
     buffer.append("\n}\n");
     return buffer.toString();
   }
 
+  public boolean getInitialized() {
+    return initialized;
+  }
 
   public String getIndexName() {
     return indexName;

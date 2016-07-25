@@ -69,7 +69,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
   private static final Logger logger = LogService.getLogger();
 
   private GemFireCacheImpl cache;
-  private final HashMap<String, LuceneIndex> indexMap = new HashMap<String, LuceneIndex>();;
+  private final HashMap<String, LuceneIndex> indexMap = new HashMap<String, LuceneIndex>();
+  private final HashMap<String, LuceneIndexCreationProfile> definedIndexMap = new HashMap<>();
 
   public LuceneServiceImpl() {
     
@@ -136,6 +137,10 @@ public class LuceneServiceImpl implements InternalLuceneService {
     if(!regionPath.startsWith("/")) {
       regionPath = "/" + regionPath;
     }
+
+    registerDefinedIndex(LuceneServiceImpl.getUniqueIndexName(indexName, regionPath),
+                                new LuceneIndexCreationProfile(indexName, regionPath, fields, analyzer, fieldAnalyzers));
+
     Region region = cache.getRegion(regionPath);
     if(region != null) {
       throw new IllegalStateException("The lucene index must be created before region");
@@ -172,7 +177,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
     });
     
   }
-  
+
+
   /**
    * Finish creating the lucene index after the data region is created .
    * 
@@ -216,6 +222,12 @@ public class LuceneServiceImpl implements InternalLuceneService {
       throw new UnsupportedOperationException("Lucene indexes on replicated regions are not supported");
     }
     return index;
+  }
+
+  private void registerDefinedIndex(final String regionAndIndex, final LuceneIndexCreationProfile luceneIndexCreationProfile) {
+    if (definedIndexMap.containsKey(regionAndIndex) || indexMap.containsKey(regionAndIndex))
+      throw new IllegalArgumentException("Lucene index already exists in region");
+    definedIndexMap.put(regionAndIndex, luceneIndexCreationProfile);
   }
 
   @Override
@@ -265,6 +277,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     if( !indexMap.containsKey( regionAndIndex )) {
       indexMap.put(regionAndIndex, index);
     }
+    definedIndexMap.remove(regionAndIndex);
   }
 
   public void unregisterIndex(final String region){
@@ -304,5 +317,13 @@ public class LuceneServiceImpl implements InternalLuceneService {
     DSFIDFactory.registerDSFID(
         DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR,
         TopEntriesCollector.class);
+  }
+
+  public Collection<LuceneIndexCreationProfile> getAllDefinedIndexes() {
+    return definedIndexMap.values();
+  }
+
+  public LuceneIndexCreationProfile getDefinedIndex(String indexName, String regionPath) {
+    return definedIndexMap.get(getUniqueIndexName(indexName , regionPath));
   }
 }

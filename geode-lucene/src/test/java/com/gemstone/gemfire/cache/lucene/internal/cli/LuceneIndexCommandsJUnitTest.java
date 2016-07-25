@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 package com.gemstone.gemfire.cache.lucene.internal.cli;
-import static com.gemstone.gemfire.internal.lang.StringUtils.trim;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
@@ -31,7 +30,6 @@ import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
-import org.apache.lucene.analysis.payloads.FloatEncoder;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.junit.Assert;
 import org.junit.Test;
@@ -48,15 +46,10 @@ import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneSearchInde
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
 import com.gemstone.gemfire.internal.util.CollectionUtils;
-import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.functions.CliFunctionResult;
-import com.gemstone.gemfire.management.internal.cli.functions.CreateIndexFunction;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResultException;
-import com.gemstone.gemfire.management.internal.cli.result.InfoResultData;
-import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
@@ -89,17 +82,11 @@ public class LuceneIndexCommandsJUnitTest {
     fieldAnalyzers.put("field1", new StandardAnalyzer());
     fieldAnalyzers.put("field2", new KeywordAnalyzer());
     fieldAnalyzers.put("field3", null);
-    final LuceneIndexDetails indexDetails1 = createIndexDetails("memberFive", "/Employees", searchableFields, fieldAnalyzers);
-    final LuceneIndexDetails indexDetails2 = createIndexDetails("memberSix", "/Employees", searchableFields, fieldAnalyzers);
-    final LuceneIndexDetails indexDetails3 = createIndexDetails("memberTen", "/Employees", searchableFields, fieldAnalyzers);
+    final LuceneIndexDetails indexDetails1 = createIndexDetails("memberFive", "/Employees", searchableFields, fieldAnalyzers, true);
+    final LuceneIndexDetails indexDetails2 = createIndexDetails("memberSix", "/Employees", searchableFields, fieldAnalyzers, false);
+    final LuceneIndexDetails indexDetails3 = createIndexDetails("memberTen", "/Employees", searchableFields, fieldAnalyzers, true);
 
-
-    final List<LuceneIndexDetails> expectedIndexDetails = new ArrayList<>(3);
-    expectedIndexDetails.add(indexDetails1);
-    expectedIndexDetails.add(indexDetails2);
-    expectedIndexDetails.add(indexDetails3);
-
-    final List<Set<LuceneIndexDetails>> results = new ArrayList<Set<LuceneIndexDetails>>();
+    final List<Set<LuceneIndexDetails>> results = new ArrayList<>();
 
     results.add(CollectionUtils.asSet(indexDetails2, indexDetails1,indexDetails3));
 
@@ -117,6 +104,7 @@ public class LuceneIndexCommandsJUnitTest {
     assertEquals(Arrays.asList("/Employees", "/Employees", "/Employees"), data.retrieveAllValues("Region Path"));
     assertEquals(Arrays.asList("[field1, field2, field3]", "[field1, field2, field3]", "[field1, field2, field3]"), data.retrieveAllValues("Indexed Fields"));
     assertEquals(Arrays.asList("{field1=StandardAnalyzer, field2=KeywordAnalyzer}", "{field1=StandardAnalyzer, field2=KeywordAnalyzer}", "{field1=StandardAnalyzer, field2=KeywordAnalyzer}"), data.retrieveAllValues("Field Analyzer"));
+    assertEquals(Arrays.asList("Initialized", "Defined", "Initialized"), data.retrieveAllValues("Status"));
   }
 
   @Test
@@ -133,15 +121,10 @@ public class LuceneIndexCommandsJUnitTest {
     fieldAnalyzers.put("field1", new StandardAnalyzer());
     fieldAnalyzers.put("field2", new KeywordAnalyzer());
     fieldAnalyzers.put("field3", null);
-    final LuceneIndexDetails indexDetails1 = createIndexDetails("memberFive", "/Employees", searchableFields, fieldAnalyzers,mockIndexStats1);
-    final LuceneIndexDetails indexDetails2 = createIndexDetails("memberSix", "/Employees", searchableFields, fieldAnalyzers,mockIndexStats2);
-    final LuceneIndexDetails indexDetails3 = createIndexDetails("memberTen", "/Employees", searchableFields, fieldAnalyzers,mockIndexStats3);
+    final LuceneIndexDetails indexDetails1 = createIndexDetails("memberFive", "/Employees", searchableFields, fieldAnalyzers,mockIndexStats1, true);
+    final LuceneIndexDetails indexDetails2 = createIndexDetails("memberSix", "/Employees", searchableFields, fieldAnalyzers,mockIndexStats2, true);
+    final LuceneIndexDetails indexDetails3 = createIndexDetails("memberTen", "/Employees", searchableFields, fieldAnalyzers,mockIndexStats3, true);
 
-
-    final List<LuceneIndexDetails> expectedIndexDetails = new ArrayList<>(3);
-    expectedIndexDetails.add(indexDetails1);
-    expectedIndexDetails.add(indexDetails2);
-    expectedIndexDetails.add(indexDetails3);
 
     final List<Set<LuceneIndexDetails>> results = new ArrayList<>();
 
@@ -207,7 +190,7 @@ public class LuceneIndexCommandsJUnitTest {
     fieldAnalyzers.put("field3", null);
     final LuceneIndexStats mockIndexStats=getMockIndexStats(1,10,5,1);
     final List<LuceneIndexDetails> indexDetails = new ArrayList<>();
-    indexDetails.add(createIndexDetails("memberFive", "/Employees", searchableFields, fieldAnalyzers,mockIndexStats));
+    indexDetails.add(createIndexDetails("memberFive", "/Employees", searchableFields, fieldAnalyzers,mockIndexStats, true));
 
     doReturn(mockResultCollector).when(commands).executeFunctionOnGroups(isA(LuceneDescribeIndexFunction.class),any(),any(LuceneIndexInfo.class));
     doReturn(indexDetails).when(mockResultCollector).getResult();
@@ -215,14 +198,15 @@ public class LuceneIndexCommandsJUnitTest {
     CommandResult result = (CommandResult) commands.describeIndex("memberFive","/Employees");
 
     TabularResultData data = (TabularResultData) result.getResultData();
-    assertEquals(Arrays.asList("memberFive"), data.retrieveAllValues("Index Name"));
-    assertEquals(Arrays.asList("/Employees"), data.retrieveAllValues("Region Path"));
-    assertEquals(Arrays.asList("[field1, field2, field3]"), data.retrieveAllValues("Indexed Fields"));
-    assertEquals(Arrays.asList("{field1=StandardAnalyzer, field2=KeywordAnalyzer}"), data.retrieveAllValues("Field Analyzer"));
-    assertEquals(Arrays.asList("1"), data.retrieveAllValues("Query Executions"));
-    assertEquals(Arrays.asList("10"), data.retrieveAllValues("Commits"));
-    assertEquals(Arrays.asList("5"), data.retrieveAllValues("Updates"));
-    assertEquals(Arrays.asList("1"), data.retrieveAllValues("Documents"));
+    assertEquals(Collections.singletonList("memberFive"), data.retrieveAllValues("Index Name"));
+    assertEquals(Collections.singletonList("/Employees"), data.retrieveAllValues("Region Path"));
+    assertEquals(Collections.singletonList("[field1, field2, field3]"), data.retrieveAllValues("Indexed Fields"));
+    assertEquals(Collections.singletonList("{field1=StandardAnalyzer, field2=KeywordAnalyzer}"), data.retrieveAllValues("Field Analyzer"));
+    assertEquals(Collections.singletonList("Initialized"), data.retrieveAllValues("Status"));
+    assertEquals(Collections.singletonList("1"), data.retrieveAllValues("Query Executions"));
+    assertEquals(Collections.singletonList("10"), data.retrieveAllValues("Commits"));
+    assertEquals(Collections.singletonList("5"), data.retrieveAllValues("Updates"));
+    assertEquals(Collections.singletonList("1"), data.retrieveAllValues("Documents"));
   }
 
   @Test
@@ -268,12 +252,12 @@ public class LuceneIndexCommandsJUnitTest {
     return new LuceneTestIndexCommands(cache, functionExecutor);
   }
 
-  private LuceneIndexDetails createIndexDetails(final String indexName, final String regionPath, final String[] searchableFields, final Map<String, Analyzer> fieldAnalyzers, LuceneIndexStats indexStats) {
-    return new LuceneIndexDetails(indexName, regionPath, searchableFields, fieldAnalyzers,indexStats);
+  private LuceneIndexDetails createIndexDetails(final String indexName, final String regionPath, final String[] searchableFields, final Map<String, Analyzer> fieldAnalyzers, LuceneIndexStats indexStats, boolean status) {
+    return new LuceneIndexDetails(indexName, regionPath, searchableFields, fieldAnalyzers,indexStats, status);
   }
 
-  private LuceneIndexDetails createIndexDetails(final String indexName, final String regionPath, final String[] searchableFields, final Map<String, Analyzer> fieldAnalyzers) {
-    return new LuceneIndexDetails(indexName, regionPath, searchableFields, fieldAnalyzers,null);
+  private LuceneIndexDetails createIndexDetails(final String indexName, final String regionPath, final String[] searchableFields, final Map<String, Analyzer> fieldAnalyzers, boolean status) {
+    return new LuceneIndexDetails(indexName, regionPath, searchableFields, fieldAnalyzers, null, status);
   }
 
   private LuceneSearchResults createQueryResults(final String key, final String value, final float score) {
