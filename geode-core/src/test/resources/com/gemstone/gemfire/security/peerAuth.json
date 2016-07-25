@@ -1,0 +1,36 @@
+{
+  "users": [
+    {
+      "name": "locator1",
+      "password": "1234567",
+      "roles": [
+      ]
+    },
+    {
+      "name": "server1",
+      "password": "1234567",
+      "roles": [
+      ]
+    },
+    {
+      "name": "server2",
+      "password": "1234567",
+      "roles": [
+      ]
+    }
+  ]
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

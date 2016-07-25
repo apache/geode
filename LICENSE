@@ -201,161 +201,354 @@
    limitations under the License.
 
 ===========================================================================
+Apache Geode Subcomponents
+===========================================================================
 
-Apache Geode includes a number of components and libraries with separate 
-copyright notices and license terms. Your use of those components are 
-subject to the terms and conditions of the following licenses. 
+Apache Geode includes a number of components and libraries with separate
+copyright notices and license terms. Your use of those components are
+subject to the terms and conditions of the following licenses.
 
----------------------------------------------------------------------------
-Backbone (http://backbonejs.org)
----------------------------------------------------------------------------
-This product bundles Backbone which is available under an MIT license.  
-For details see http://www.opensource.org/licenses/mit-license.php.
-
----------------------------------------------------------------------------
-CompactConcurrentHashSet2 (http://gee.cs.oswego.edu/dl/concurrency-interest)
----------------------------------------------------------------------------
-This product bundles CompactConcurrentHashSet2 derived from JSR-166 
-ConcurrentHashMap v1.43 which is available in the public domain.  
+Apache Geode bundles the Droid fonts (http://www.droidfonts.com) under
+the Apache License v2.0.
 
 ---------------------------------------------------------------------------
-Handlebars (http://handlebarsjs.com)
+The BSD 3-Clause License (http://opensource.org/licenses/BSD-3-Clause)
 ---------------------------------------------------------------------------
-This product bundles Handlebars which is available under an MIT license.  
-For details see http://www.opensource.org/licenses/mit-license.php.
+
+Apache Geode bundles the following files under the BSD 3-Clause License:
+
+  - ANSIBuffer (http://jline.sourceforge.net/apidocs/jline/ANSIBuffer.html),
+    Copyright (c) 2002-2007 Marc Prud'hommeaux.
+  - highlight.js v7.3 (https://highlightjs.org), Copyright (c) 2006, Ivan
+    Sagalaev
+  - jQuery Sparklines v2.0 (http://omnipotent.net/jquery.sparkline/), Copyright
+    (c) 2012 Splunk Inc.
+  - Protocol Buffers (https://github.com/google/protobuf), Copyright (c) 2014
+    Google Inc.
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors
+may be used to endorse or promote products derived from this software without
+specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ---------------------------------------------------------------------------
-highlight.js (https://highlightjs.org)
+The ISC License (http://opensource.org/licenses/ISC)
 ---------------------------------------------------------------------------
-This product bundles highlight.js which is available under a BSD 3 clauses license.  
-For details see http://opensource.org/licenses/BSD-3-Clause.
+
+Apache Geode bundles the following file under the ISC license:
+
+  - Shred (https://github.com/pandastrike/shred), Copyright (c) 2012-2015
+    Panda Strike, LLC and Dan Yoder <dan@pandastrike.com>
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
+IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------------------------
-JOpt Simple (http://pholser.github.io/jopt-simple/)
+The JSON License (http://www.json.org/license.html)
 ---------------------------------------------------------------------------
-This product bundles JOpt Simple which is available under an MIT license.  
-For details see http://www.opensource.org/licenses/mit-license.php.
+
+Apache Geode bundles the following file under the JSON license:
+
+  - JSON (http://www.json.org), Copyright (c) 2002 JSON.org
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+The Software shall be used for Good, not Evil.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+
 
 ---------------------------------------------------------------------------
-jQuery (https://jquery.com)
+The MIT License (http://opensource.org/licenses/mit-license.html)
 ---------------------------------------------------------------------------
-This product bundles jQuery which is available under an MIT license.  
-For details see http://www.opensource.org/licenses/mit-license.php.
+
+Apache Geode bundles the following files under the MIT license:
+
+  - Backbone.js v0.9.2 (http://backbonejs.org), Copyright (c) 2010-2012
+    Jeremy Ashkenas, DocumentCloud Inc.
+  - Bootflat v1.0.1 (http://bootflat.github.io/), Copyright (c) 2014
+    bootflat
+  - Bootstrap v3.0.0 (http://getbootstrap.com/), Copyright (c) 2011-2016
+    Twitter, Inc.
+  - Font Awesome v4.0.3 (code files) (http://fontawesome.io), Copyright (c)
+    Dave Gandy
+  - Handlebars v1.0.0 (http://handlebarsjs.com), Copyright (c) 2011, Yehuda
+    Katz
+  - HeadJS v0.96 (http://headjs.com/), Copyright (c) 2013 Tero Piirainen
+    (tipiirai)
+  - HTML5 Shiv v3.6.2pre (https://github.com/aFarkas/html5shiv), Copyright
+    (c) 2014 Alexander Farkas (aFarkas)
+  - iCheck v0.8 (http://icheck.fronteed.com/), Copyright (c) 2013 Damir
+    Foy, http://damirfoy.com
+  - JavaScript InfoVis Toolkit v2.0.1 (http://philogb.github.io/jit/), 
+    Copyright (c) 2011 Sencha Inc.
+  - JOpt Simple (http://pholser.github.io/jopt-simple/), Copyright (c)
+    2004-2015 Paul R. Holser, Jr.
+  - jQuery JavaScript Library v.1.7.2 (https://jquery.com), Copyright (c)
+    jQuery Foundation and other contributors, http://jquery.org
+  - jQuery BBQ v1.2.1 (http://benalman.com/projects/jquery-bbq-plugin/),
+    Copyright (c) 2010, "Cowboy" Ben Alman
+  - jQuery.i18n.properties v1.0.x
+    (https://github.com/jquery-i18n-properties/jquery-i18n-properties),
+    Copyright (c) 2011 Nuno Miguel Correia Serra Fernandes
+    <nfgrilo@gmail.com>
+  - jQuery jqGrid v4.4.0 (https://plugins.jquery.com/jqGrid/), Copyright
+    (c) 2008 Tony Tomov, tony@trirand.com
+  - jQuery Mouse Wheel v3.0.6 (http://brandonaaron.net), Copyright (c) 2011
+    Brandon Aaron
+  - jQuery Placeholder (http://webcloud.se), Copyright (c) 2010 Daniel
+    Stocks
+  - jQuery-slideto (https://github.com/Sleavely/jQuery-slideto), Copyright
+    (c) 2015 Joakim Hedlund
+  - jQuery UI MultiSelect Widget v1.14pre
+    (http://www.erichynds.com/jquery/jquery-ui-multiselect-widget/),
+    Copyright (c) 2011 Eric Hynds
+  - jQuery UI v1.8.18 (http://jqueryui.com/about), Copyright (c) jQuery
+    Foundation and other contributors, http://jquery.org
+  - jQuery Wiggle (https://github.com/wilhelm-murdoch/jQuery-Wiggle),
+    Copyright (c) 2011 Wilhelm Murdoch <wilhelm.murdoch@gmail.com>,
+     TheDrunkenEpic <http://www.thedrunkenepic.com>
+  - jScrollPane (http://jscrollpane.kelvinluck.com/), Copyright (c) 2010
+    Kelvin Luck
+  - matchMedia() polyfill (https://github.com/paulirish/matchMedia.js),
+    Copyright (c) 2012 Scott Jehl
+  - Normalize.css v2.1.0 (https://necolas.github.io/normalize.css/),
+    Copyright (c) Nicolas Gallagher and Jonathan Neal
+  - Respond.js v1.1.0 (https://github.com/scottjehl/Respond), Copyright (c)
+    2012 Scott Jehl
+  - Split.js (https://github.com/nathancahill/Split.js), Copyright (c)
+    2015 Nathan Cahill
+  - TableDnD v0.5 (https://github.com/isocra/TableDnD), Copyright (c) 2012
+    Denis Howlett <denish@isocra.com>, Nick Lombard <nickl>, and other
+    contributors
+  - Timeago v1.3.0 (http://timeago.yarp.com), Copyright (c) 2008-2015 Ryan
+    McGeary
+  - Underscore (http://underscorejs.org), Copyright (c) 2009-2016 Jeremy
+    Ashkenas, DocumentCloud, and Investigative Reporters & Editors
+  - zTree v3.5.02 (http://zTree.me/), Copyright (c) 2010 Hunter.z
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+
 
 ---------------------------------------------------------------------------
-jQuery BBQ (http://benalman.com/projects/jquery-bbq-plugin/)
+The MX4J License (http://mx4j.sourceforge.net/docs/ch01s06.html)
 ---------------------------------------------------------------------------
-This product bundles jQuery BBQ which is available under an MIT and GPL dual license.  
-For details see http://benalman.com/about/license.
+
+Apache Geode bundles the following files under the MX4J License:
+
+  - MX4JModelMBean.java (http://mx4j.sourceforge.net)
+
+Version 1.0
+
+Copyright (c) 2001-2004 by the MX4J contributors.  All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in
+   the documentation and/or other materials provided with the
+   distribution.
+
+3. The end-user documentation included with the redistribution,
+   if any, must include the following acknowledgment:
+      "This product includes software developed by the
+       MX4J project (http://mx4j.sourceforge.net)."
+   Alternately, this acknowledgment may appear in the software itself,
+   if and wherever such third-party acknowledgments normally appear.
+
+4. The name "MX4J" must not be used to endorse or promote
+   products derived from this software without prior written
+   permission.
+   For written permission, please contact
+   biorn_steedom [at] users [dot] sourceforge [dot] net
+
+5. Products derived from this software may not be called "MX4J",
+   nor may "MX4J" appear in their name, without prior written
+   permission of Simone Bordet.
+
+THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED.  IN NO EVENT SHALL THE MX4J CONTRIBUTORS
+BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
 
 ---------------------------------------------------------------------------
-jQuery-slideto (https://github.com/Sleavely/jQuery-slideto)
+Public Domain
 ---------------------------------------------------------------------------
-This product bundles jQuery-slideto which is available under an MIT license.  
-For details see http://www.opensource.org/licenses/mit-license.php.
+
+Apache Geode bundles the following files, which are available in the public
+domain:
+
+  - CompactConcurrentHashSet2, derived from JSR-166 ConcurrentHashMap v1.43
+    (http://gee.cs.oswego.edu/dl/concurrency-interest).
+  - Reset CSS (http://meyerweb.com/eric/tools/css/reset/)
+  - tooltip.js v1.2.6 (https://github.com/jquerytools/jquerytools)
+
 
 ---------------------------------------------------------------------------
-jQuery Wiggle (https://github.com/wilhelm-murdoch/jQuery-Wiggle)
+SIL Open Font License (https://opensource.org/licenses/OFL-1.1)
 ---------------------------------------------------------------------------
-This product bundles jQuery Wiggle which is available under an MIT license.  
-For details see http://www.opensource.org/licenses/mit-license.php.
 
----------------------------------------------------------------------------
-JSON (http://json.org)
----------------------------------------------------------------------------
-This product bundles JSON which is available under a BSD-like license.  
-For details see http://json.org/license.html.
+Apache Geode bundles the following files under the SIL OFL 1.1 license:
 
----------------------------------------------------------------------------
-reset.css (http://meyerweb.com/eric/tools/css/reset/)
----------------------------------------------------------------------------
-This product bundles reset.css which is available in the public domain.
+  - Font Awesome (font files) (http://fontawesome.io) Copyright (c) Dave
+    Gandy
 
----------------------------------------------------------------------------
-tooltip.js (http://flowplayer.org/tools/tooltip/)
----------------------------------------------------------------------------
-This product bundles tooltip.css which is available in the public domain.
+Version 1.1 - 26 February 2007
 
----------------------------------------------------------------------------
-shred (https://github.com/pandastrike/shred)
----------------------------------------------------------------------------
-This product bundles shred which is available under an MIT or ISC license.  
-For details see https://github.com/pandastrike/shred/blob/master/LICENSE.
+PREAMBLE
+The goals of the Open Font License (OFL) are to stimulate worldwide
+development of collaborative font projects, to support the font creation
+efforts of academic and linguistic communities, and to provide a free and
+open framework in which fonts may be shared and improved in partnership
+with others.
 
----------------------------------------------------------------------------
-underscore (http://underscorejs.org)
----------------------------------------------------------------------------
-This product bundles underscore which is available under an MIT license.  
-For details see http://www.opensource.org/licenses/mit-license.php.
+The OFL allows the licensed fonts to be used, studied, modified and
+redistributed freely as long as they are not sold by themselves. The
+fonts, including any derivative works, can be bundled, embedded,
+redistributed and/or sold with any software provided that any reserved
+names are not used by derivative works. The fonts and derivatives,
+however, cannot be released under any other type of license. The
+requirement for fonts to remain under this license does not apply
+to any document created using the fonts or their derivatives.
 
----------------------------------------------------------------------------
-jquery jqGrid (https://plugins.jquery.com/jqGrid/)
----------------------------------------------------------------------------
-This product bundles jqGrid which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
+DEFINITIONS
+"Font Software" refers to the set of files released by the Copyright
+Holder(s) under this license and clearly marked as such. This may
+include source files, build scripts and documentation.
 
----------------------------------------------------------------------------
-html5.js (https://github.com/aFarkas/html5shiv)
----------------------------------------------------------------------------
-This product bundles html5 which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
+"Reserved Font Name" refers to any names specified as such after the
+copyright statement(s).
 
----------------------------------------------------------------------------
-jquery.i18n.properties (https://github.com/jquery-i18n-properties/jquery-i18n-properties)
----------------------------------------------------------------------------
-This product bundles jQuery i18n which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
+"Original Version" refers to the collection of Font Software components as
+distributed by the Copyright Holder(s).
 
----------------------------------------------------------------------------
-jquery.jscrollpane (http://jscrollpane.kelvinluck.com/)
----------------------------------------------------------------------------
-This product bundles jquery.jscrollpane which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
+"Modified Version" refers to any derivative made by adding to, deleting,
+or substituting — in part or in whole — any of the components of the
+Original Version, by changing formats or by porting the Font Software to a
+new environment.
 
----------------------------------------------------------------------------
-jquery.mousewheel (http://brandonaaron.net)
----------------------------------------------------------------------------
-This product bundles jquery.mousewheel which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
+"Author" refers to any designer, engineer, programmer, technical
+writer or other person who contributed to the Font Software.
 
----------------------------------------------------------------------------
-jquery.placeholder (http://webcloud.se)
----------------------------------------------------------------------------
-This product bundles jquery.placeholder which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
+PERMISSION & CONDITIONS
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Font Software, to use, study, copy, merge, embed, modify,
+redistribute, and sell modified and unmodified copies of the Font
+Software, subject to the following conditions:
 
----------------------------------------------------------------------------
-jquery.tablednd (https://github.com/isocra/TableDnD)
----------------------------------------------------------------------------
-This product bundles jquery.tablednd which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
+1) Neither the Font Software nor any of its individual components,
+in Original or Modified Versions, may be sold by itself.
 
----------------------------------------------------------------------------
-jquery.timeago (http://timeago.yarp.com/)
----------------------------------------------------------------------------
-This product bundles jquery.timeago which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
+2) Original or Modified Versions of the Font Software may be bundled,
+redistributed and/or sold with any software, provided that each copy
+contains the above copyright notice and this license. These can be
+included either as stand-alone text files, human-readable headers or
+in the appropriate machine-readable metadata fields within text or
+binary files as long as those fields can be easily viewed by the user.
 
----------------------------------------------------------------------------
-jquery.ztree (http://zTree.me/)
----------------------------------------------------------------------------
-This product bundles jquery.ztree which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
+3) No Modified Version of the Font Software may use the Reserved Font
+Name(s) unless explicit written permission is granted by the corresponding
+Copyright Holder. This restriction only applies to the primary font name as
+presented to the users.
 
----------------------------------------------------------------------------
-jquery.multiselect (http://www.erichynds.com/jquery/jquery-ui-multiselect-widget/)
----------------------------------------------------------------------------
-This product bundles jQuery.multiselect which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
+4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
+Software shall not be used to promote, endorse or advertise any
+Modified Version, except to acknowledge the contribution(s) of the
+Copyright Holder(s) and the Author(s) or with their explicit written
+permission.
 
----------------------------------------------------------------------------
-jquery.ui (http://jqueryui.com/about)
----------------------------------------------------------------------------
-This product bundles jquery UI which is available under an MIT license.
-For details see http://www.opensource.org/licenses/mit-license.php.
+5) The Font Software, modified or unmodified, in part or in whole,
+must be distributed entirely under this license, and must not be
+distributed under any other license. The requirement for fonts to
+remain under this license does not apply to any document created
+using the Font Software.
 
----------------------------------------------------------------------------
-jquery.sparkline.js (http://omnipotent.net/jquery.sparkline/)
----------------------------------------------------------------------------
-This product bundles jquery.sparkline which is available under a BSD-like license.
-For details see http://opensource.org/licenses/BSD-3-Clause.
+TERMINATION
+This license becomes null and void if any of the above conditions are
+not met.
+
+DISCLAIMER
+THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+OTHER DEALINGS IN THE FONT SOFTWARE.

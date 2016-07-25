@@ -1,20 +1,29 @@
-# Overview
+**[Overview](#overview)**  
+**[Main Concepts and Components](#concepts)**  
+**[Location of Directions for Building from Source](#building)**  
+**[Geode in 5 minutes](#started)**  
+**[Application Development](#development)**  
+**[Documentation](http://geode.docs.pivotal.io/)**  
+**[wiki](https://cwiki.apache.org/confluence/display/GEODE/Index)**  
+**Continuous Integration** [![Build Status](https://travis-ci.org/apache/incubator-geode.svg?branch=develop)](https://travis-ci.org/apache/incubator-geode)  
 
-Geode is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.
+## <a name="overview"></a>Overview
 
-Geode pools memory, CPU, network resources, and optionally local disk across multiple processes to manage application objects and behavior. It uses dynamic replication and data partitioning techniques to implement high availability, improved performance, scalability, and fault tolerance. In addition to being a distributed data container, Geode is an in-memory data management system that provides reliable asynchronous event notifications and guaranteed message delivery.
+[Apache Geode] (http://geode.incubator.apache.org/) is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.
 
-Geode is an extremely mature and robust product that can trace its legacy all the way back to one of the first Object Databases for Smalltalk: GemStone. Geode (as GemFire™) was first deployed in the financial sector as the transactional, low-latency data engine used by multiple Wall Street trading platforms.  Today Geode is used by over 600 enterprise customers for high-scale, 24x7 business critical applications. An example deployment includes [China National Railways](http://pivotal.io/big-data/case-study/scaling-online-sales-for-the-largest-railway-in-the-world-china-railway-corporation) that uses Geode to run railway ticketing for the entire country of China with a 10 node cluster that manages 2 terabytes of "hot data" in memory, and 10 backup nodes for high availability and elastic scale.
+Apache Geode pools memory, CPU, network resources, and optionally local disk across multiple processes to manage application objects and behavior. It uses dynamic replication and data partitioning techniques to implement high availability, improved performance, scalability, and fault tolerance. In addition to being a distributed data container, Apache Geode is an in-memory data management system that provides reliable asynchronous event notifications and guaranteed message delivery.
 
-# Main Concepts and Components
+Apache Geode is a mature, robust technology originally developed by GemStone Systems in Beaverton, Oregon. Commercially available as GemFire™, the technology was first deployed in the financial sector as the transactional, low-latency data engine used in Wall Street trading platforms.  Today Apache Geode is used by over 600 enterprise customers for high-scale business applications that must meet low latency and 24x7 availability requirements. An example deployment includes [China National Railways](http://pivotal.io/big-data/case-study/scaling-online-sales-for-the-largest-railway-in-the-world-china-railway-corporation) that uses Geode to run railway ticketing for the entire country of China with a 10 node cluster that manages 2 terabytes of "hot data" in memory, and 10 backup nodes for high availability and elastic scale.
 
-_Caches_ are an abstraction that describe a node in a Geode distributed system.
+## <a name="concepts"></a>Main Concepts and Components
+
+_Caches_ are an abstraction that describe a node in an Apache Geode distributed system.
 
 Within each cache, you define data _regions_. Data regions are analogous to tables in a relational database and manage data in a distributed fashion as name/value pairs. A _replicated_ region stores identical copies of the data on each cache member of a distributed system. A _partitioned_ region spreads the data among cache members. After the system is configured, client applications can access the distributed data in regions without knowledge of the underlying system architecture. You can define listeners to receive notifications when data has changed, and you can define expiration criteria to delete obsolete data in a region.
 
 _Locators_ provide clients with both discovery and server load balancing services. Clients are configured with locator information, and the locators maintain a dynamic list of member servers. The locators provide clients with connection information to a server. 
 
-Geode includes the following features:
+Apache Geode includes the following features:
 
 * Combines redundancy, replication, and a "shared nothing" persistence architecture to deliver fail-safe reliability and performance.
 * Horizontally scalable to thousands of cache members, with multiple cache topologies to meet different enterprise needs. The cache can be distributed across multiple computers.
@@ -28,19 +37,18 @@ Geode includes the following features:
 * Cluster-wide configurations that can be persisted and exported to other clusters.
 * Remote cluster management through HTTP.
 * REST APIs for REST-enabled application development.
-* Rolling upgrade between major version releases.
+* Rolling upgrades may be possible, but they will be subject to any limitations imposed by new features.
 
-# Geode in 5 minutes
+## <a name="building"></a>Building this Release from Source
 
-With both a recent version of Gradle and JDK 1.8 or a more recent version installed, obtain the source archive.
-Extract the source archive and build from the expanded directory:
+Directions to build Apache Geode (incubating) from source are in the source distribution, file `BUILDING.md`.
 
-    $ gradle build installDist
+## <a name="started"></a>Geode in 5 minutes
 
-Start a locator and server:
+With a JDK version 1.8 or a more recent version installed,
+start a locator and server:
 
-    $ cd gemfire-assembly/build/install/apache-geode
-    $ ./bin/gfsh
+    $ gfsh
     gfsh> start locator --name=locator
     gfsh> start server --name=server
 
@@ -75,26 +83,18 @@ _HelloWorld.java_
       }
     }
 
-Compile and run `HelloWorld.java`.  The classpath should include `gemfire-core-dependencies.jar`.
+Compile and run `HelloWorld.java`.  The classpath should include `geode-dependencies.jar`.
 
-    javac -cp /some/path/geode/gemfire-assembly/build/install/apache-geode/lib/gemfire-core-dependencies.jar HelloWorld.java
-    java -cp .:/some/path/geode/gemfire-assembly/build/install/apache-geode/lib/gemfire-core-dependencies.jar HelloWorld
+    javac -cp /some/path/geode/geode-assembly/build/install/apache-geode/lib/geode-dependencies.jar HelloWorld.java
+    java -cp .:/some/path/geode/geode-assembly/build/install/apache-geode/lib/geode-dependencies.jar HelloWorld
 
-#Application Development
+## <a name="development"></a>Application Development
 
-Geode applications can be written in a number of client technologies:
+Apache Geode applications can be written in these client technologies:
 
 * Java using the Geode client API or embedded using the Geode peer API
 * [Spring Data GemFire](http://projects.spring.io/spring-data-gemfire/) or [Spring Cache](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html)
 * [Python](https://github.com/gemfire/py-gemfire-rest)
 * [REST](http://geode.docs.pivotal.io/docs/rest_apps/book_intro.html)
 * [memcached](https://cwiki.apache.org/confluence/display/GEODE/Moving+from+memcached+to+gemcached)
-
-
-# Build environment in Docker
-```
-dev-tools/docker/compile/start-compile-docker.sh
-
-```
-
 

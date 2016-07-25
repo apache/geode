@@ -1,0 +1,48 @@
+{
+  "photos": [
+    [
+      {
+        "url": "image url",
+        "dimensions": "192x144"
+      },
+      {
+        "url": "image url",
+        "dimensions": "original"
+      },
+      {
+        "url": "image url",
+        "dimensions": "128x96"
+      },
+      {
+        "url": "image url",
+        "dimensions": "64x48"
+      },
+      {
+        "url": "image url",
+        "dimensions": "400x300"
+      }
+    ],
+    [
+      {
+        "url": "image url",
+        "dimensions": "192x144"
+      },
+      {
+        "url": "image url",
+        "dimensions": "original"
+      },
+      {
+        "url": "image url",
+        "dimensions": "128x96"
+      },
+      {
+        "url": "image url",
+        "dimensions": "64x48"
+      },
+      {
+        "url": "image url",
+        "dimensions": "400x300"
+      }
+    ]
+  ]
+}

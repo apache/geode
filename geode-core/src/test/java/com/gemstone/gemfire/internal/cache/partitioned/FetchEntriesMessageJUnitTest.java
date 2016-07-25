@@ -1,0 +1,89 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.gemstone.gemfire.internal.cache.partitioned;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
+import java.io.IOException;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.HeapDataOutputStream;
+import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.InitialImageOperation;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.cache.partitioned.FetchEntriesMessage.FetchEntriesReplyMessage;
+import com.gemstone.gemfire.internal.cache.partitioned.FetchEntriesMessage.FetchEntriesResponse;
+import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import com.gemstone.gemfire.test.fake.Fakes;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
+@Category(UnitTest.class)
+public class FetchEntriesMessageJUnitTest {
+
+  private GemFireCacheImpl cache;
+  
+  private VersionTag createVersionTag(boolean validVersionTag) throws ClassNotFoundException, IOException {
+    VersionTag tag = VersionTag.create(cache.getMyId());
+    if (validVersionTag) {
+      tag.setRegionVersion(1);
+      tag.setEntryVersion(1);
+    }
+    return tag;
+  }
+
+  private HeapDataOutputStream createDummyChunk() throws IOException, ClassNotFoundException {
+    HeapDataOutputStream mos = new HeapDataOutputStream(InitialImageOperation.CHUNK_SIZE_IN_BYTES+2048, Version.CURRENT);
+    mos.reset();
+    DataSerializer.writeObject("keyWithOutVersionTag", mos);
+    DataSerializer.writeObject("valueWithOutVersionTag", mos);
+    DataSerializer.writeObject(null /* versionTag */, mos);
+
+    DataSerializer.writeObject("keyWithVersionTag", mos);
+    DataSerializer.writeObject("valueWithVersionTag", mos);
+    
+    VersionTag tag = createVersionTag(true);
+    DataSerializer.writeObject(tag, mos);
+
+    DataSerializer.writeObject((Object)null, mos);
+    return mos;
+  }
+  
+  @Test
+  public void testProcessChunk() throws Exception {
+    cache = Fakes.cache();
+    PartitionedRegion pr = mock(PartitionedRegion.class);
+    InternalDistributedSystem system = cache.getDistributedSystem();
+
+    FetchEntriesResponse response = new FetchEntriesResponse(system, pr, null, 0);
+    HeapDataOutputStream chunkStream = createDummyChunk();
+    FetchEntriesReplyMessage reply = new FetchEntriesReplyMessage(null, 0, 0, chunkStream, 0, 0, 0, false, false);
+    reply.chunk = chunkStream.toByteArray();
+    response.processChunk(reply);
+    assertNull(response.returnRVV);
+    assertEquals(2, response.returnValue.size());
+    assertTrue(response.returnValue.get("keyWithOutVersionTag").equals("valueWithOutVersionTag"));
+    assertTrue(response.returnValue.get("keyWithVersionTag").equals("valueWithVersionTag"));
+    assertNull(response.returnVersions.get("keyWithOutVersionTag"));
+    assertNotNull(response.returnVersions.get("keyWithVersionTag"));
+  }
+}

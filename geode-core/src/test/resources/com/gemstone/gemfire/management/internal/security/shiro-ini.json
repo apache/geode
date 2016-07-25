@@ -1,0 +1,87 @@
+{
+  "roles": [
+    {
+      "name": "admin",
+      "operationsAllowed": [
+        "CLUSTER:MANAGE",
+        "CLUSTER:WRITE",
+        "CLUSTER:READ",
+        "DATA:MANAGE",
+        "DATA:WRITE",
+        "DATA:READ"
+      ]
+    },
+    {
+      "name": "readRegionA",
+      "operationsAllowed": [
+        "DATA:READ"
+      ],
+      "regions": "RegionA"
+    },
+    {
+      "name": "useRegionA",
+      "operationsAllowed": [
+        "DATA:MANAGE",
+        "DATA:WRITE",
+        "DATA:READ"
+      ],
+      "regions": "RegionA"
+    },
+    {
+      "name": "readData",
+      "operationsAllowed": [
+        "DATA:READ"
+      ]
+    },
+    {
+      "name": "readAll",
+      "operationsAllowed": [
+        "CLUSTER:READ",
+        "DATA:READ"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "name": "root",
+      "password": "secret",
+      "roles": [
+        "admin"
+      ]
+    },
+    {
+      "name": "guest",
+      "password": "guest",
+      "roles": [
+      ]
+    },
+    {
+      "name": "regionAReader",
+      "password": "password",
+      "roles": [
+        "readRegionA"
+      ]
+    },
+    {
+      "name": "regionAUser",
+      "password": "password",
+      "roles": [
+        "useRegionA"
+      ]
+    },
+    {
+      "name": "dataReader",
+      "password": "12345",
+      "roles": [
+        "readData"
+      ]
+    },
+    {
+      "name": "reader",
+      "password": "12345",
+      "roles": [
+        "readAll"
+      ]
+    }
+  ]
+}

@@ -43,7 +43,10 @@ subprojects {
         }
 
         metaInf {
-          from("$rootDir/NOTICE")
+          from("$rootDir/LICENSE")
+          if (!jar.source.contains('NOTICE')) {
+            from("$rootDir/NOTICE")
+          }
         }
       }
     }
@@ -61,33 +64,6 @@ subprojects {
     }
   }
 
-  // Here we want to disable all transitive dependencies on external artifacts.  This
-  // allows us to lock down library versions.  However, we want project dependencies to
-  // be transitive such that the libraries of a dependent project are automatically included.
-  configurations.all {
-    dependencies.all { dep ->
-      if (dep instanceof ModuleDependency && !(dep instanceof ProjectDependency)) {
-        dep.transitive = false
-      }
-    }
-  }
-
-  configurations.testCompile {
-    dependencies.all { dep ->
-      if (dep instanceof ModuleDependency) {
-        dep.transitive = true
-      }
-    }
-  }
-
-  configurations.testRuntime {
-    dependencies.all { dep ->
-      if (dep instanceof ModuleDependency) {
-        dep.transitive = true
-      }
-    }
-  }
- 
   // This ensures that javadoc and source jars also have any prefix paths stripped and will
   // be created as libs/foo-sources.jar instead of libs/extensions/foo-sources.jar for example.
   tasks.all { task ->
@@ -118,20 +94,6 @@ subprojects {
   javadoc {
     options.addStringOption('Xdoclint:none', '-quiet')
     options.encoding='UTF-8'
-  }
-
-  dependencies {
-    compile 'org.springframework:spring-aop:' + project.'springframework.version'
-    compile 'org.springframework:spring-beans:' + project.'springframework.version'
-    compile 'org.springframework:spring-context:' + project.'springframework.version'
-    compile 'org.springframework:spring-context-support:' + project.'springframework.version'
-    compile 'org.springframework:spring-core:' + project.'springframework.version'
-    compile 'org.springframework:spring-expression:' + project.'springframework.version'
-    compile 'org.springframework:spring-web:' + project.'springframework.version'
-    compile 'org.springframework:spring-webmvc:' + project.'springframework.version'
-    compile 'com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version'
-    compile 'com.google.code.findbugs:jsr305:' + project.'jsr305.version'
-    compile 'javax.enterprise:cdi-api:' + project.'cdi-api.version'
   }
 }
 

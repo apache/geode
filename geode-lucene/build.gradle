@@ -1,0 +1,38 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+dependencies {
+    compile project(':geode-core')
+    compile project(':geode-common')
+
+    compile 'org.apache.lucene:lucene-analyzers-common:' + project.'lucene.version'
+    compile 'org.apache.lucene:lucene-core:' + project.'lucene.version'
+    compile 'org.apache.lucene:lucene-queries:' + project.'lucene.version'
+    compile ('org.apache.lucene:lucene-queryparser:' + project.'lucene.version') {
+      exclude module: 'lucene-sandbox'
+    }
+
+    testCompile project(':geode-junit')
+
+    //Lucene test framework.
+    testCompile 'org.apache.lucene:lucene-test-framework:' + project.'lucene.version'
+    testCompile 'org.apache.lucene:lucene-codecs:' + project.'lucene.version'
+    testCompile files(project(':geode-core').sourceSets.test.output)
+}
+
+//The lucene integration tests don't have any issues that requiring forking
+integrationTest.forkEvery 0
