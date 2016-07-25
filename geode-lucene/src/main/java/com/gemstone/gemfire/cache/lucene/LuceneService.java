@@ -23,6 +23,7 @@ import org.apache.lucene.analysis.Analyzer;
 
 import com.gemstone.gemfire.annotations.Experimental;
 import com.gemstone.gemfire.cache.GemFireCache;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexCreationProfile;
 
 /**
  * LuceneService instance is a singleton for each cache.
@@ -124,4 +125,18 @@ public interface LuceneService {
    * @return LuceneQueryFactory object
    */
   public LuceneQueryFactory createLuceneQueryFactory();
+
+  /**
+   * get all defined lucene indexes (that haven't been initialized)
+   * @return all defined index profiles in a Collection
+   */
+  public Collection<LuceneIndexCreationProfile> getAllDefinedIndexes();
+
+  /**
+   * Get the lucene index creation profile specified by region name and index name
+   * @param indexName index name
+   * @param regionPath region name
+   * @return LuceneIndexCreationProfile object
+   */
+  public LuceneIndexCreationProfile getDefinedIndex(String indexName, String regionPath);
 }
