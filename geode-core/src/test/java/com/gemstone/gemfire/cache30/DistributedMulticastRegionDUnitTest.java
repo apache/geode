@@ -128,7 +128,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
     closeLocator();
   }
 
-  private static class TestObjectThrowsException implements PdxSerializable {
+  public static class TestObjectThrowsException implements PdxSerializable {
 
     String name = "TestObjectThrowsException";
 
