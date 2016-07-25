@@ -155,56 +155,35 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
       locatorPort = startLocator();
 
       vm0.invoke("setSysProps", () -> setSysProps());
-      //      vm1.invoke("setSysProps", () -> setSysProps());
-      setSysProps();
+      vm1.invoke("setSysProps", () -> setSysProps());
+
       //1. start locator with mcast port
       vm0.invoke("createRegion", () -> {
         createRegion(name, getRegionAttributes());
         return "";
       });
-      //      vm1.invoke("createRegion", () -> createRegion(name,getRegionAttributes()));
-      createRegion(name, getRegionAttributes());
+      vm1.invoke("createRegion", () -> {
+        createRegion(name, getRegionAttributes());
+        return "";
+      });
 
-      //There is possibility that you may get this packet from other tests
-      /*
-      SerializableRunnable validateMulticastBeforeRegionOps =
-          new CacheSerializableRunnable("validateMulticast before region ops") {
-              public void run2() throws CacheException {
-                validateMulticastOpsBeforeRegionOps();
-              }
-          };
-        
-      vm0.invoke(validateMulticastBeforeRegionOps);
-      vm1.invoke(validateMulticastBeforeRegionOps);
-      */
-
-      SerializableRunnable doPuts = new CacheSerializableRunnable("do put") {
-        public void run2() throws CacheException {
-          final Region region = getRootRegion().getSubregion(name);
-          boolean gotReplyException = false;
-          for (int i = 0; i < 1; i++) {
-            try {
-              region.put(i, new TestObjectThrowsException());
-            } catch (PdxSerializationException e) {
-              gotReplyException = true;
-            } catch (Exception e) {
-              region.getCache().getLogger().info("Got exception of type " + e.getClass().toString());
-            }
+      vm0.invoke("do Put() with exception test", () -> {
+        final Region region = getRootRegion().getSubregion(name);
+        boolean gotReplyException = false;
+        for (int i = 0; i < 1; i++) {
+          try {
+            region.put(i, new TestObjectThrowsException());
+          } catch (PdxSerializationException e) {
+            gotReplyException = true;
+          } catch (Exception e) {
+            region.getCache().getLogger().info("Got exception of type " + e.getClass().toString());
           }
-          assertTrue("We should have got ReplyEception ", gotReplyException);
         }
-      };
+        assertTrue("We should have got ReplyException ", gotReplyException);
+      });
 
-      vm0.invoke(doPuts);
-
-      SerializableRunnable validateMulticastAfterRegionOps = new CacheSerializableRunnable("validateMulticast after region ops") {
-        public void run2() throws CacheException {
-          validateMulticastOpsAfterRegionOps();
-        }
-      };
-
-      vm0.invoke(validateMulticastAfterRegionOps);
-      vm1.invoke(validateMulticastAfterRegionOps);
+      vm0.invoke("validateMulticastOpsAfterRegionOps", () -> validateMulticastOpsAfterRegionOps());
+      vm1.invoke("validateMulticastOpsAfterRegionOps", () -> validateMulticastOpsAfterRegionOps());
 
       closeLocator();
     } finally {
