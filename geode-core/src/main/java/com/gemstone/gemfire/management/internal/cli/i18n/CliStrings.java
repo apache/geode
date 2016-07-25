@@ -2194,7 +2194,14 @@ public class CliStrings {
   public static final String PDX_DELETE_FIELD__SUCCESS = "Successfully deleted field in types:\n{0}";
   public static final String PDX_DELETE_FIELD__ERROR = "Error deleting field : {0}";
   public static final String PDX_DELETE__EMPTY = "Field to be deleted not found in the class.";
-  
+
+
+  public static final String START_SERVER__REST_API = "start-rest-api";
+  public static final String START_SERVER__REST_API__HELP = "When set to true, will start the REST API service.";
+  public static final String START_SERVER__HTTP_SERVICE_PORT = "http-service-port";
+  public static final String START_SERVER__HTTP_SERVICE_PORT__HELP = "Port on which HTTP Service will listen on";
+  public static final String START_SERVER__HTTP_SERVICE_BIND_ADDRESS = "http-service-bind-address";
+  public static final String START_SERVER__HTTP_SERVICE_BIND_ADDRESS__HELP = "The IP address on which the HTTP Service will be bound.  By default, the Server is bound to all local addresses.";
   /**
    * Creates a MessageFormat with the given pattern and uses it to format the given argument.
    *

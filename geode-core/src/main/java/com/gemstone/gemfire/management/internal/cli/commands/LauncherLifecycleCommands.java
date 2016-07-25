@@ -1484,7 +1484,20 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
           unspecifiedDefaultValue = "true",
           specifiedDefaultValue = "true",
           help = CliStrings.START_SERVER__USE_CLUSTER_CONFIGURATION__HELP)
-      final Boolean requestSharedConfiguration)
+      final Boolean requestSharedConfiguration,
+          @CliOption(key = CliStrings.START_SERVER__REST_API,
+          unspecifiedDefaultValue = "false",
+          specifiedDefaultValue = "true",
+          help = CliStrings.START_SERVER__REST_API__HELP)
+      final Boolean startRestApi,
+          @CliOption(key = CliStrings.START_SERVER__HTTP_SERVICE_PORT,
+            unspecifiedDefaultValue = ("" + CacheServer.HTTP_DEFAULT_PORT),
+            help = CliStrings.START_SERVER__HTTP_SERVICE_PORT__HELP)
+      final String httpServicePort,
+          @CliOption(key = CliStrings.START_SERVER__HTTP_SERVICE_BIND_ADDRESS,
+           unspecifiedDefaultValue = CacheServer.HTTP_SERVICE_DEFAULT_BIND_ADDRESS,
+           help = CliStrings.START_SERVER__HTTP_SERVICE_BIND_ADDRESS__HELP)
+           final String httpServiceBindAddress)
   // NOTICE: keep the parameters in alphabetical order based on their CliStrings.START_SERVER_* text
   {
 
@@ -1546,6 +1559,11 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       gemfireProperties.setProperty(USE_CLUSTER_CONFIGURATION, StringUtils.valueOf(requestSharedConfiguration, Boolean.TRUE.toString()));
       gemfireProperties.setProperty(LOCK_MEMORY, StringUtils.valueOf(lockMemory, StringUtils.EMPTY_STRING));
       gemfireProperties.setProperty(OFF_HEAP_MEMORY_SIZE, StringUtils.valueOf(offHeapMemorySize, StringUtils.EMPTY_STRING));
+
+      gemfireProperties.setProperty(DistributionConfig.START_DEV_REST_API_NAME, StringUtils.valueOf(startRestApi, StringUtils.EMPTY_STRING));
+      gemfireProperties.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME,  StringUtils.valueOf(httpServicePort, StringUtils.EMPTY_STRING));
+      gemfireProperties.setProperty(DistributionConfig.HTTP_SERVICE_BIND_ADDRESS_NAME,  StringUtils.valueOf(httpServiceBindAddress, StringUtils.EMPTY_STRING));
+
 
       // read the OSProcess enable redirect system property here -- TODO: replace with new GFSH argument
       final boolean redirectOutput = Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
