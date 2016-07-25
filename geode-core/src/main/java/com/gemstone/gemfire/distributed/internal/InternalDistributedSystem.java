@@ -2085,7 +2085,7 @@ public class InternalDistributedSystem
         listener.handleEvent(event, resource);
       } catch(CancelException e) {
         //ignore
-      } catch (ManagementException ex) {
+      } catch (GemFireSecurityException|ManagementException ex) {
         if (event == ResourceEvent.CACHE_CREATE) {
           throw ex;
         } else {
