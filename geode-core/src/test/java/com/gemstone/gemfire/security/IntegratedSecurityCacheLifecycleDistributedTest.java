@@ -17,11 +17,11 @@
 package com.gemstone.gemfire.security;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static com.gemstone.gemfire.security.JSONAuthorization.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.Properties;
 
+import org.apache.geode.security.templates.SampleSecurityManager;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -45,7 +45,7 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
   public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     locator = host.getVM(0);
-    JSONAuthorization.setUpWithJsonFile(CLIENT_SERVER_JSON);
+
     int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     String locators =  NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]";
 
@@ -53,6 +53,7 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
       DistributedTestUtils.deleteLocatorStateFile(locatorPort);
 
       final Properties properties = new Properties();
+      properties.setProperty(SampleSecurityManager.SECURITY_JSON, "com/gemstone/gemfire/management/internal/security/clientServer.json");
 //      properties.setProperty(LOCATORS, locators);
       properties.setProperty(MCAST_PORT, "0");
       properties.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName());
@@ -63,6 +64,7 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
     });
 
     final Properties properties = new Properties();
+    properties.setProperty(SampleSecurityManager.SECURITY_JSON, "com/gemstone/gemfire/management/internal/security/clientServer.json");
     properties.setProperty(LOCATORS, locators);
     properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName());

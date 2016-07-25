@@ -16,13 +16,14 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import org.junit.rules.ExternalResource;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import org.junit.rules.ExternalResource;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
 
 public class ShiroCacheStartRule extends ExternalResource {
   private Cache cache;
@@ -33,7 +34,6 @@ public class ShiroCacheStartRule extends ExternalResource {
     this.jmxManagerPort = jmxManagerPort;
     this.shiroFile = shiroFile;
   }
-
 
   protected void before() throws Throwable {
     Properties properties = new Properties();

@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import static com.gemstone.gemfire.security.JSONAuthorization.*;
-import static org.assertj.core.api.AssertionsForClassTypes.fail;
 import static org.junit.Assert.*;
 
 import java.util.List;
@@ -35,8 +33,9 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
-@Category({IntegrationTest.class, SecurityTest.class})
+@Category({ IntegrationTest.class, SecurityTest.class })
 public class CliCommandsSecurityTest {
+
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
   private MemberMXBean bean;
@@ -45,7 +44,7 @@ public class CliCommandsSecurityTest {
 
   @ClassRule
   public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, CACHE_SERVER_JSON);
+      jmxManagerPort, "com/gemstone/gemfire/management/internal/security/cacheServer.json");
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);

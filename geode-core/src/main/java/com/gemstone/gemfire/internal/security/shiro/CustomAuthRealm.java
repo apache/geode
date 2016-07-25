@@ -34,18 +34,31 @@ import org.apache.shiro.subject.PrincipalCollection;
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 
-public class CustomAuthRealm extends AuthorizingRealm{
+public class CustomAuthRealm extends AuthorizingRealm {
 
   private static final String REALM_NAME = "CUSTOMAUTHREALM";
 
   private SecurityManager securityManager = null;
 
+  /**
+   * The caller must invoke {@link org.apache.geode.security.SecurityManager#init(Properties)}
+   * prior to instantiating CustomAuthRealm.
+   *
+   * @param securityManager instance of SecurityManager which has already been initialized
+   */
   public CustomAuthRealm(SecurityManager securityManager) {
     this.securityManager = securityManager;
   }
 
-  public CustomAuthRealm (String authenticatorFactory) {
+  /**
+   * SecurityManager will be constructed and initialized with the provided security properties.
+   *
+   * @param authenticatorFactory name of the SecurityManager implementation to construct
+   * @param securityProperties the security properties to initialize SecurityManager with
+   */
+  public CustomAuthRealm(String authenticatorFactory, Properties securityProperties) {
     this.securityManager = GeodeSecurityUtil.getObjectOfTypeFromClassName(authenticatorFactory, SecurityManager.class);
+    this.securityManager.init(securityProperties);
   }
 
   @Override

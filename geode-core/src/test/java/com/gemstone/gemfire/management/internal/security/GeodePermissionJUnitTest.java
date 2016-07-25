@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.management.internal.security;
 
 import static org.junit.Assert.*;
@@ -22,13 +21,14 @@ import static org.junit.Assert.*;
 import org.apache.geode.security.GeodePermission;
 import org.apache.geode.security.GeodePermission.Operation;
 import org.apache.geode.security.GeodePermission.Resource;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
 import org.apache.shiro.authz.permission.WildcardPermission;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-@Category(UnitTest.class)
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
+@Category({ UnitTest.class, SecurityTest.class })
 public class GeodePermissionJUnitTest {
 
   private GeodePermission context;

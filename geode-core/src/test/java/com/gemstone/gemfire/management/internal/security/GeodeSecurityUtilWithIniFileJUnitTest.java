@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.management.internal.security;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
@@ -22,23 +21,24 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Properties;
 
+import org.apache.geode.security.GeodePermission;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import org.apache.geode.security.GeodePermission;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * this test and ShiroUtilCustomRealmJUunitTest uses the same test body, but initialize the SecurityUtils differently.
- * If you change shiro.ini, remmber to change the shiro-ini.json to match the changes as well.
+ * Integration tests for {@link GeodeSecurityUtil} using shiro.ini
  */
-@Category({UnitTest.class, SecurityTest.class})
+@Category({ IntegrationTest.class, SecurityTest.class })
 public class GeodeSecurityUtilWithIniFileJUnitTest {
+
   protected static Properties props = new Properties();
+
   @BeforeClass
   public static void beforeClass() throws Exception{
     props.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");

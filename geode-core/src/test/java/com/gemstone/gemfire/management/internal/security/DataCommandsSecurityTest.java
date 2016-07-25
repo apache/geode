@@ -17,28 +17,29 @@
 package com.gemstone.gemfire.management.internal.security;
 
 import static org.assertj.core.api.Assertions.*;
-import static com.gemstone.gemfire.security.JSONAuthorization.*;
 
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.management.MemberMXBean;
-import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-@Category({IntegrationTest.class, SecurityTest.class})
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.management.MemberMXBean;
+import com.gemstone.gemfire.security.GemFireSecurityException;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+
+@Category({ IntegrationTest.class, SecurityTest.class })
 public class DataCommandsSecurityTest {
+
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
   private MemberMXBean bean;
 
   @ClassRule
   public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, CACHE_SERVER_JSON);
+      jmxManagerPort, "com/gemstone/gemfire/management/internal/security/cacheServer.json");
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);

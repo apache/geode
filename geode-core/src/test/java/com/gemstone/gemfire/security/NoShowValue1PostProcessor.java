@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.security;
 
 import java.security.Principal;
@@ -28,9 +27,10 @@ public class NoShowValue1PostProcessor implements PostProcessor {
                                    final String regionName,
                                    final Object key,
                                    final Object value) {
-    if(value.equals("value1"))
+    if (value.equals("value1")) {
       return null;
-    else
+    } else {
       return value;
+    }
   }
 }

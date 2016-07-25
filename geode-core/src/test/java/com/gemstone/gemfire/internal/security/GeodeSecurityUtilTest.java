@@ -16,13 +16,13 @@
  */
 package com.gemstone.gemfire.internal.security;
 
-
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.assertj.core.api.Java6Assertions.*;
 import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.security.templates.SampleSecurityManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -32,15 +32,17 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class GeodeSecurityUtilTest {
-  Properties properties;
+
+  private Properties properties;
+
   @Before
-  public void before(){
+  public void before() {
     properties = new Properties();
     GeodeSecurityUtil.initSecurity(properties);
   }
 
   @Test
-  public void testGetObjectFromConstructor(){
+  public void testGetObjectFromConstructor() {
     String string = GeodeSecurityUtil.getObjectOfType(String.class.getName(), String.class);
     assertNotNull(string);
     CharSequence charSequence = GeodeSecurityUtil.getObjectOfType(String.class.getName(), CharSequence.class);
@@ -58,7 +60,7 @@ public class GeodeSecurityUtilTest {
   }
 
   @Test
-  public void testGetObjectFromFactoryMethod(){
+  public void testGetObjectFromFactoryMethod() {
     String string = GeodeSecurityUtil.getObjectOfType(Factories.class.getName()+".getString", String.class);
     assertNotNull(string);
     CharSequence charSequence = GeodeSecurityUtil.getObjectOfType(Factories.class.getName()+".getString", String.class);
@@ -82,6 +84,7 @@ public class GeodeSecurityUtilTest {
   @Test
   public void testInitWithSecurityManager() {
     properties.setProperty(SECURITY_MANAGER, "org.apache.geode.security.templates.SampleSecurityManager");
+    properties.setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/security/templates/security.json");
     GeodeSecurityUtil.initSecurity(properties);
     assertTrue(GeodeSecurityUtil.isClientSecurityRequired());
     assertTrue(GeodeSecurityUtil.isIntegratedSecurity());
@@ -89,8 +92,7 @@ public class GeodeSecurityUtilTest {
   }
 
   @Test
-  public void testInitWithClientAuthenticator()
-  {
+  public void testInitWithClientAuthenticator() {
     properties.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "org.abc.test");
     GeodeSecurityUtil.initSecurity(properties);
     assertTrue(GeodeSecurityUtil.isClientSecurityRequired());
@@ -99,8 +101,7 @@ public class GeodeSecurityUtilTest {
   }
 
   @Test
-  public void testInitWithPeerAuthenticator()
-  {
+  public void testInitWithPeerAuthenticator() {
     properties.setProperty(SECURITY_PEER_AUTHENTICATOR, "org.abc.test");
     GeodeSecurityUtil.initSecurity(properties);
     assertFalse(GeodeSecurityUtil.isClientSecurityRequired());
@@ -109,8 +110,7 @@ public class GeodeSecurityUtilTest {
   }
 
   @Test
-  public void testInitWithShiroAuthenticator()
-  {
+  public void testInitWithShiroAuthenticator() {
     properties.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
     GeodeSecurityUtil.initSecurity(properties);
     assertTrue(GeodeSecurityUtil.isClientSecurityRequired());
@@ -119,6 +119,7 @@ public class GeodeSecurityUtilTest {
   }
 
   private static class Factories{
+
     public static String getString(){
       return new String();
     }

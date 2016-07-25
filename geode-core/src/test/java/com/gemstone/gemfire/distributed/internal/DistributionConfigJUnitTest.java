@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.geode.security.templates.SamplePostProcessor;
+import org.apache.geode.security.templates.SampleSecurityManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -38,7 +39,6 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.UnmodifiableException;
 import com.gemstone.gemfire.internal.ConfigSource;
-import com.gemstone.gemfire.security.JSONAuthorization;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -326,11 +326,10 @@ public class DistributionConfigJUnitTest {
     assertTrue(config.isAttributeModifiable(JMX_MANAGER_HTTP_PORT));
   }
 
-
   @Test
   public void testSecurityProps(){
     Properties props = new Properties();
-    props.put(SECURITY_MANAGER, JSONAuthorization.class.getName());
+    props.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
     props.put(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
     props.put(SECURITY_LOG_LEVEL, "config");
     // add another non-security property to verify it won't get put in the security properties
@@ -343,7 +342,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testSecurityPropsWithNoSetter(){
     Properties props = new Properties();
-    props.put(SECURITY_MANAGER, JSONAuthorization.class.getName());
+    props.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
     props.put(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
     props.put(SECURITY_LOG_LEVEL, "config");
     // add another non-security property to verify it won't get put in the security properties

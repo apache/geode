@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.management.internal.security;
 
 import static org.junit.Assert.*;
-import static com.gemstone.gemfire.security.JSONAuthorization.*;
 
 import java.util.List;
 
@@ -37,9 +35,11 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.ErrorResultData;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
-@Category(IntegrationTest.class)
+@Category({ IntegrationTest.class, SecurityTest.class })
 public class GfshCommandsSecurityTest {
+
   protected static int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
   protected static int jmxPort = ports[0];
   protected static int httpPort = ports[1];
@@ -48,15 +48,10 @@ public class GfshCommandsSecurityTest {
 
   @ClassRule
   public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxPort, httpPort, CACHE_SERVER_JSON);
+      jmxPort, httpPort, "com/gemstone/gemfire/management/internal/security/cacheServer.json");
 
   @Rule
-  public GfshShellConnectionRule gfshConnection;
-
-  public GfshCommandsSecurityTest(){
-    gfshConnection = new GfshShellConnectionRule(jmxPort, httpPort, false);
-  }
-
+  public GfshShellConnectionRule gfshConnection = new GfshShellConnectionRule(jmxPort, httpPort, false);
 
   @Before
   public void before(){
@@ -129,7 +124,6 @@ public class GfshCommandsSecurityTest {
     runCommandsWithAndWithout("DATA:MANAGE:RegionA");
   }
 
-
   private void runCommandsWithAndWithout(String permission) throws Exception{
     List<TestCommand> allPermitted = TestCommand.getPermittedCommands(new WildcardPermission(permission, true));
     for(TestCommand permitted:allPermitted) {
@@ -183,7 +177,5 @@ public class GfshCommandsSecurityTest {
     //gfsh.executeCommand("get --region=region1 --key=key1");
     gfsh.executeCommand("query --query=\"select * from /region1\"");
   }
-
-
 
 }

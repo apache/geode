@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.geode.security;
 
 import org.apache.shiro.authz.permission.WildcardPermission;
@@ -40,35 +39,6 @@ public class GeodePermission extends WildcardPermission {
     MANAGE,
     WRITE,
     READ
-  }
-
-  /**
-   * Returns
-   * @return the resource, could be either DATA or CLUSTER
-   */
-  public Resource getResource() {
-    return resource;
-  }
-
-  /**
-   * @return the operation, could be either MANAGE, WRITE or READ
-   */
-  public Operation getOperation() {
-    return operation;
-  }
-
-  /**
-   * @return the regionName, could be "*", meaning all regions
-   */
-  public String getRegionName() {
-    return regionName;
-  }
-
-  /**
-   * @return the key, could be "*" meaning all keys.
-   */
-  public String getKey() {
-    return key;
   }
 
   // these default values are used when creating a lock around an operation
@@ -111,6 +81,34 @@ public class GeodePermission extends WildcardPermission {
     if(key != null) this.key = key;
 
     setParts(this.resource+":"+this.operation+":"+this.regionName+":"+this.key, true);
+  }
+
+  /**
+   * Returns the resource, could be either DATA or CLUSTER
+   */
+  public Resource getResource() {
+    return resource;
+  }
+
+  /**
+   * Returns the operation, could be either MANAGE, WRITE or READ
+   */
+  public Operation getOperation() {
+    return operation;
+  }
+
+  /**
+   * returns the regionName, could be "*", meaning all regions
+   */
+  public String getRegionName() {
+    return regionName;
+  }
+
+  /**
+   * returns the key, could be "*" meaning all keys.
+   */
+  public String getKey() {
+    return key;
   }
 
   @Override

@@ -2070,7 +2070,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * 
    * Concurrency: protected by {@link #latestViewLock} ReentrantReadWriteLock
    *
-   * guarded.By latestViewLock
    * @return true if the given member is a zombie
    */
   public boolean isShunned(DistributedMember m) {

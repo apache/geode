@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.security;
 
 import static org.junit.Assert.*;
@@ -85,7 +84,6 @@ public class IntegratedSecurityPostProcessorDUnitTest extends AbstractIntegrated
       assertTrue(result.contains("super-user/null/null/value2"));
       assertTrue(result.contains("super-user/null/null/value3"));
       assertTrue(result.contains("super-user/null/null/value4"));
-
     });
   }
 

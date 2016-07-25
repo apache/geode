@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.geode.security.templates;
 
 import java.security.Principal;
@@ -29,11 +28,11 @@ public class SamplePostProcessor implements PostProcessor{
 
   @Override
   public void init(final Properties securityProps) {
-
   }
 
   /**
-   * this simply modifies the value with all the parameter values
+   * This simply modifies the value with all the parameter values
+   *
    * @param principal
    *        The principal that's accessing the value
    * @param regionName

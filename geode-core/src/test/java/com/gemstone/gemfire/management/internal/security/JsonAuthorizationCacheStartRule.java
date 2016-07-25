@@ -20,13 +20,14 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import java.util.Properties;
 
+import org.apache.geode.security.templates.SampleSecurityManager;
 import org.junit.rules.ExternalResource;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.security.JSONAuthorization;
 
 public class JsonAuthorizationCacheStartRule extends ExternalResource {
+
   private Cache cache;
   private int jmxManagerPort = 0;
   private int httpPort = 0;
@@ -38,7 +39,6 @@ public class JsonAuthorizationCacheStartRule extends ExternalResource {
     this.jsonFile = jsonFile;
     this.postProcessor = postProcessor;
   }
-
 
   public JsonAuthorizationCacheStartRule(int jmxManagerPort, String jsonFile) {
     this.jmxManagerPort = jmxManagerPort;
@@ -53,6 +53,7 @@ public class JsonAuthorizationCacheStartRule extends ExternalResource {
 
   protected void before() throws Throwable {
     Properties properties = new Properties();
+    properties.put(SampleSecurityManager.SECURITY_JSON, jsonFile);
     properties.put(NAME, JsonAuthorizationCacheStartRule.class.getSimpleName());
     properties.put(LOCATORS, "");
     properties.put(MCAST_PORT, "0");
@@ -60,20 +61,18 @@ public class JsonAuthorizationCacheStartRule extends ExternalResource {
     properties.put(JMX_MANAGER_START, "true");
     properties.put(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort));
     properties.put(HTTP_SERVICE_PORT, String.valueOf(httpPort));
-    properties.put(SECURITY_MANAGER, JSONAuthorization.class.getName());
+    properties.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
 
-    if(postProcessor!=null){
+    if (postProcessor!=null) {
       properties.put(SECURITY_POST_PROCESSOR, postProcessor.getName());
     }
-
-    JSONAuthorization.setUpWithJsonFile(jsonFile);
 
     cache = new CacheFactory(properties).create();
     cache.addCacheServer().start();
     cache.createRegionFactory().create("region1");
   }
 
-  public Cache getCache(){
+  public Cache getCache() {
     return cache;
   }
 

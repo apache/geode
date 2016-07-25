@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.gemstone.gemfire.security;
 
 import static com.gemstone.gemfire.cache30.ClientServerTestCase.*;
@@ -90,6 +89,7 @@ import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 /**
  * Contains utility methods for setting up servers/clients for authentication
  * and authorization tests.
+ *
  * @since GemFire 5.5
  */
 public final class SecurityTestUtils {

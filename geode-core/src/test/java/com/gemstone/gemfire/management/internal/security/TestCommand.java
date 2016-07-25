@@ -14,17 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.management.internal.security;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.security.GeodePermission;
-
 import org.apache.shiro.authz.Permission;
 
 public class TestCommand {
+
   public static GeodePermission none = null;
   public static GeodePermission everyOneAllowed = new GeodePermission();
   public static GeodePermission dataRead = new GeodePermission("DATA", "READ");
@@ -206,7 +205,6 @@ public class TestCommand {
     createTestCommand("sleep", null);
     createTestCommand("sh ls", null);
 
-
     // WAN Commands
     createTestCommand("create gateway-sender --id=sender1 --remote-distributed-system-id=2", dataManage);
     createTestCommand("start gateway-sender --id=sender1", dataManage);
@@ -223,6 +221,7 @@ public class TestCommand {
 
     //ShellCommand
     createTestCommand("disconnect", null);
+
     //Misc commands
     //createTestCommand("shutdown", clusterManage);
   };

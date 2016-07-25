@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.security;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
@@ -58,10 +57,17 @@ public class GeodeSecurityUtil {
 
   private static Logger logger = LogService.getLogger();
 
+  private static PostProcessor postProcessor;
+  private static SecurityManager securityManager;
+  private static boolean isIntegratedSecurity;
+  private static boolean isClientAuthenticator;
+  private static boolean isPeerAuthenticator;
 
   /**
-   * It first looks the shiro subject in AccessControlContext since JMX will use multiple threads to process operations from the same client.
-   * then it looks into Shiro's thead context.
+   * It first looks the shiro subject in AccessControlContext since JMX will
+   * use multiple threads to process operations from the same client, then it
+   * looks into Shiro's thead context.
+   *
    * @return the shiro subject, null if security is not enabled
    */
   public static Subject getSubject() {
@@ -97,8 +103,6 @@ public class GeodeSecurityUtil {
   }
 
   /**
-   * @param username
-   * @param password
    * @return null if security is not enabled, otherwise return a shiro subject
    */
   public static Subject login(String username, String password) {
@@ -153,7 +157,9 @@ public class GeodeSecurityUtil {
   }
 
   /**
-   * this binds the passed-in subject to the executing thread, normally, you would do this:
+   * this binds the passed-in subject to the executing thread, normally, you
+   * would do this:
+   *
    * ThreadState state = null;
    * try{
    *   state = GeodeSecurityUtil.bindSubject(subject);
@@ -269,15 +275,8 @@ public class GeodeSecurityUtil {
     }
   }
 
-  private static PostProcessor postProcessor;
-  private static SecurityManager securityManager;
-  private static boolean isIntegratedSecurity;
-  private static boolean isClientAuthenticator;
-  private static boolean isPeerAuthenticator;
-
   /**
    * initialize Shiro's Security Manager and Security Utilities
-   * @param securityProps
    */
   public static void initSecurity(Properties securityProps) {
     if (securityProps == null) {
@@ -352,8 +351,10 @@ public class GeodeSecurityUtil {
   }
 
   /**
-   * postProcess call already has this logic built in, you don't need to call this everytime you call postProcess.
-   * But if your postProcess is pretty involved with preparations and you need to bypass it entirely, call this first.
+   * postProcess call already has this logic built in, you don't need to call
+   * this everytime you call postProcess. But if your postProcess is pretty
+   * involved with preparations and you need to bypass it entirely, call this
+   * first.
    */
   public static boolean needPostProcess(){
     return (isIntegratedSecurity && postProcessor != null);
@@ -372,13 +373,9 @@ public class GeodeSecurityUtil {
     return postProcessor.processRegionValue((Principal)subject.getPrincipal(), regionName, key,  result);
   }
 
-
   /**
-   * this method would never return null, it either throws an exception or returns an object
-   * @param className
-   * @param expectedClazz
-   * @param <T>
-   * @return the expected object loadded by using the className
+   * this method would never return null, it either throws an exception or
+   * returns an object
    */
   public static <T> T getObjectOfTypeFromClassName(String className, Class<T> expectedClazz) {
     Class actualClass = null;
@@ -403,11 +400,8 @@ public class GeodeSecurityUtil {
   }
 
   /**
-   * this method would never return null, it either throws an exception or returns an object
-   * @param factoryMethodName
-   * @param expectedClazz
-   * @param <T>
-   * @return the expected object loaded by the factory method
+   * this method would never return null, it either throws an exception or
+   * returns an object
    */
   public static <T> T getObjectOfTypeFromFactoryMethod(String factoryMethodName, Class<T> expectedClazz){
     T actualObject = null;
@@ -426,12 +420,11 @@ public class GeodeSecurityUtil {
   }
 
   /**
-   * this method would never return null, it either throws an exception or returns an object
-   * @param classOrMethod
-   * @param expectedClazz
-   * @param <T>
-   * @return an object of type expectedClazz. This method would never return null. It either returns an non-null
-   * object or throws exception.
+   * this method would never return null, it either throws an exception or
+   * returns an object
+   *
+   * @return an object of type expectedClazz. This method would never return
+   * null. It either returns an non-null object or throws exception.
    */
   public static <T> T getObjectOfType(String classOrMethod, Class<T> expectedClazz) {
     T object = null;
@@ -447,7 +440,6 @@ public class GeodeSecurityUtil {
   public static SecurityManager getSecurityManager(){
     return securityManager;
   }
-
 
   public static boolean isClientSecurityRequired() {
     return isClientAuthenticator || isIntegratedSecurity;

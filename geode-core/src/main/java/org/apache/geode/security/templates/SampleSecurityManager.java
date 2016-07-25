@@ -16,6 +16,8 @@
  */
 package org.apache.geode.security.templates;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -45,19 +47,24 @@ import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 
 /**
- * This class provides a sample implementation for authentication and authorization via the {@link SecurityManager}
+ * This class provides a sample implementation of {@link SecurityManager} for
+ * authentication and authorization initialized from data provided as JSON.
  *
- * In order to use it, a Geode member must be started with the following properties:
- * <p/>
- * <code>
- *   security-manager = com.gemstone.gemfire.security.examples.SampleSecurityManager
- * </code>
- * <p/>
- * The class is initialized with a JSON file called {@code security.json}. This file must exist on the classpath,
+ * <p>A Geode member must be configured with the following:
+ *
+ * <p>{@code security-manager = com.gemstone.gemfire.security.examples.SampleSecurityManager}
+ *
+ * <p>The class can be initialized with from either a JSON string or a JSON
+ * file
+ *
+ * <p>TODO: example of configuring from in-memory JSON string specified in securityProperties
+ *
+ * <p>TODO: example of configuring from a JSON file specified in securityProperties<br/>
+ * ...called {@code security.json}. This file must exist on the classpath,
  * so members should be started with an appropriate {@code --classpath} option.
- * <p/>
- * The format of the file is as follows:
- * <pre>
+ *
+ * <p>The format of the JSON for configuration is as follows:
+ * <pre><code>
  * {
  *   "roles": [
  *     {
@@ -74,11 +81,11 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  *       ],
  *       "regions": ["RegionA", "RegionB"]
  *     }
- *   ]
+ *   ],
  *   "users": [
  *     {
  *       "name": "admin",
- *       "password": "secret".
+ *       "password": "secret",
  *       "roles": ["admin"]
  *     },
  *     {
@@ -88,133 +95,25 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  *     }
  *   ]
  * }
- * </pre>
+ * </code></pre>
  */
 public class SampleSecurityManager implements SecurityManager {
 
-  public SampleSecurityManager() {
-    try {
-      setUpWithJsonFile("security.json");
-    }
-    catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
+  public static final String SECURITY_JSON = "security-json";
 
-  public static class Role {
-    List<GeodePermission> permissions = new ArrayList<>();
-    String name;
-    String serverGroup;
-  }
+  protected static final String DEFAULT_JSON_FILE_NAME = "security.json";
 
-  public static class User {
-    String name;
-    Set<Role> roles = new HashSet<>();
-    String pwd;
-  }
-
-  private static Map<String, User> acl = null;
-
-
-  public static void setUpWithJsonFile(String jsonFileName) throws IOException {
-    InputStream input = ClassLoader.getSystemResourceAsStream(jsonFileName);
-    if (input == null)
-      return;
-
-    StringWriter writer = new StringWriter();
-    IOUtils.copy(input, writer, "UTF-8");
-    String json = writer.toString();
-    readSecurityDescriptor(json);
-  }
-
-  protected static void readSecurityDescriptor(String json) throws IOException {
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode jsonNode = mapper.readTree(json);
-    acl = new HashMap<>();
-    Map<String, Role> roleMap = readRoles(jsonNode);
-    readUsers(acl, jsonNode, roleMap);
-  }
-
-  private static void readUsers(Map<String, User> acl, JsonNode node, Map<String, Role> roleMap) {
-    for (JsonNode u : node.get("users")) {
-      User user = new User();
-      user.name = u.get("name").asText();
-
-      if (u.has("password")) {
-        user.pwd = u.get("password").asText();
-      } else {
-        user.pwd = user.name;
-      }
-
-      for (JsonNode r : u.get("roles")) {
-        user.roles.add(roleMap.get(r.asText()));
-      }
-
-      acl.put(user.name, user);
-    }
-  }
-
-  private static Map<String, Role> readRoles(JsonNode jsonNode) {
-    if (jsonNode.get("roles") == null) {
-      return Collections.EMPTY_MAP;
-    }
-
-    Map<String, Role> roleMap = new HashMap<>();
-    for (JsonNode r : jsonNode.get("roles")) {
-      Role role = new Role();
-      role.name = r.get("name").asText();
-      String regionNames = null;
-      String keys = null;
-
-      JsonNode regions = r.get("regions");
-      if (regions != null) {
-        if (regions.isArray()) {
-          regionNames = StreamSupport.stream(regions.spliterator(), false)
-              .map(JsonNode::asText)
-              .collect(Collectors.joining(","));
-        } else {
-          regionNames = regions.asText();
-        }
-      }
-
-      for (JsonNode op : r.get("operationsAllowed")) {
-        String[] parts = op.asText().split(":");
-        String resourcePart = (parts.length > 0) ? parts[0] : null;
-        String operationPart = (parts.length > 1) ? parts[1] : null;
-        if(parts.length>2){
-          regionNames = parts[2];
-        }
-        if(parts.length>3){
-          keys = parts[3];
-        }
-        String regionPart = (regionNames != null) ? regionNames : "*";
-        String keyPart = (keys !=null) ? keys : "*";
-
-        role.permissions.add(new GeodePermission(resourcePart, operationPart, regionPart, keyPart));
-      }
-
-      roleMap.put(role.name, role);
-
-      if (r.has("serverGroup")) {
-        role.serverGroup = r.get("serverGroup").asText();
-      }
-    }
-
-    return roleMap;
-  }
-  public static Map<String, User> getAcl() {
-    return acl;
-  }
+  private Map<String, User> userNameToUser;
 
   @Override
-  public boolean authorize(Principal principal, GeodePermission context) {
+  public boolean authorize(final Principal principal, final GeodePermission context) {
     if (principal == null) return false;
 
-    User user = acl.get(principal.getName());
+    User user = this.userNameToUser.get(principal.getName());
     if (user == null) return false; // this user is not authorized to do anything
 
     // check if the user has this permission defined in the context
-    for (Role role : acl.get(user.name).roles) {
+    for (Role role : this.userNameToUser.get(user.name).roles) {
       for (Permission permitted : role.permissions) {
         if (permitted.implies(context)) {
           return true;
@@ -226,23 +125,173 @@ public class SampleSecurityManager implements SecurityManager {
   }
 
   @Override
-  public void init(Properties props) throws NotAuthorizedException {
+  public void init(final Properties securityProperties) throws NotAuthorizedException {
+    String jsonPropertyValue = securityProperties.getProperty(SECURITY_JSON);
+    if (jsonPropertyValue == null) {
+      throw new AuthenticationFailedException("SampleSecurityManager: property [" + SECURITY_JSON + "] must be set.");
+    }
+
+    // 1st try to load value as a json resource
+    boolean initialized = initializeFromJsonResource(jsonPropertyValue);
+
+    // 2nd try to load value as a json file
+    if (!initialized) {
+      initialized = initializeFromJsonFile(new File(jsonPropertyValue));
+    }
+
+    // 3rd try to use value as a json string
+    if (!initialized) {
+      initialized = initializeFromJson(jsonPropertyValue);
+    }
+
+    if (!initialized) {
+      throw new AuthenticationFailedException("SampleSecurityManager: unable to read json from \"" + jsonPropertyValue + "\" as specified by [" + SECURITY_JSON + "].");
+    }
   }
 
   @Override
-  public Principal authenticate(Properties props) throws AuthenticationFailedException {
-    String user = props.getProperty(ResourceConstants.USER_NAME);
-    String pwd = props.getProperty(ResourceConstants.PASSWORD);
+  public Principal authenticate(final Properties credentials) throws AuthenticationFailedException {
+    String user = credentials.getProperty(ResourceConstants.USER_NAME);
+    String password = credentials.getProperty(ResourceConstants.PASSWORD);
 
-    User userObj = acl.get(user);
+    User userObj = this.userNameToUser.get(user);
     if (userObj == null) {
-      throw new AuthenticationFailedException("Wrong username/password");
+      throw new AuthenticationFailedException("SampleSecurityManager: wrong username/password");
     }
 
-    if (user != null && !userObj.pwd.equals(pwd) && !"".equals(user)) {
-      throw new AuthenticationFailedException("Wrong username/password");
+    if (user != null && !userObj.password.equals(password) && !"".equals(user)) {
+      throw new AuthenticationFailedException("SampleSecurityManager: wrong username/password");
     }
 
     return new JMXPrincipal(user);
   }
+
+  boolean initializeFromJson(final String json) {//throws IOException {
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode jsonNode = mapper.readTree(json);
+      this.userNameToUser = new HashMap<>();
+      Map<String, Role> roleMap = readRoles(jsonNode);
+      readUsers(this.userNameToUser, jsonNode, roleMap);
+      return true;
+    } catch (IOException ex) {
+      return false;
+    }
+  }
+
+  boolean initializeFromJsonFile(final File jsonFile) {//throws IOException {
+    try {
+      InputStream input = new FileInputStream(jsonFile);
+      if (input != null) {
+        initializeFromJson(readJsonFromInputStream(input));
+        return true;
+      }
+    } catch (IOException ex) {
+    }
+    return false;
+  }
+
+  boolean initializeFromJsonResource(final String jsonResource) {//throws IOException {
+    try {
+      InputStream input = ClassLoader.getSystemResourceAsStream(jsonResource);
+      if (input != null) {
+        initializeFromJson(readJsonFromInputStream(input));
+        return true;
+      }
+    } catch (IOException ex) {
+    }
+    return false;
+  }
+
+  User getUser(final String user) {
+    return this.userNameToUser.get(user);
+  }
+
+  private String readJsonFromInputStream(final InputStream input) throws IOException {
+    StringWriter writer = new StringWriter();
+    IOUtils.copy(input, writer, "UTF-8");
+    return writer.toString();
+  }
+
+  private void readUsers(final Map<String, User> rolesToUsers, final JsonNode node, final Map<String, Role> roleMap) {
+    for (JsonNode usersNode : node.get("users")) {
+      User user = new User();
+      user.name = usersNode.get("name").asText();
+
+      if (usersNode.has("password")) {
+        user.password = usersNode.get("password").asText();
+      } else {
+        user.password = user.name;
+      }
+
+      for (JsonNode rolesNode : usersNode.get("roles")) {
+        user.roles.add(roleMap.get(rolesNode.asText()));
+      }
+
+      rolesToUsers.put(user.name, user);
+    }
+  }
+
+  private Map<String, Role> readRoles(final JsonNode jsonNode) {
+    if (jsonNode.get("roles") == null) {
+      return Collections.EMPTY_MAP;
+    }
+    Map<String, Role> roleMap = new HashMap<>();
+    for (JsonNode rolesNode : jsonNode.get("roles")) {
+      Role role = new Role();
+      role.name = rolesNode.get("name").asText();
+      String regionNames = null;
+      String keys = null;
+
+      JsonNode regionsNode = rolesNode.get("regions");
+      if (regionsNode != null) {
+        if (regionsNode.isArray()) {
+          regionNames = StreamSupport.stream(regionsNode.spliterator(), false)
+                                     .map(JsonNode::asText)
+                                     .collect(Collectors.joining(","));
+        } else {
+          regionNames = regionsNode.asText();
+        }
+      }
+
+      for (JsonNode operationsAllowedNode : rolesNode.get("operationsAllowed")) {
+        String[] parts = operationsAllowedNode.asText().split(":");
+        String resourcePart = (parts.length > 0) ? parts[0] : null;
+        String operationPart = (parts.length > 1) ? parts[1] : null;
+
+        if (parts.length>2){
+          regionNames = parts[2];
+        }
+        if (parts.length>3){
+          keys = parts[3];
+        }
+
+        String regionPart = (regionNames != null) ? regionNames : "*";
+        String keyPart = (keys !=null) ? keys : "*";
+
+        role.permissions.add(new GeodePermission(resourcePart, operationPart, regionPart, keyPart));
+      }
+
+      roleMap.put(role.name, role);
+
+      if (rolesNode.has("serverGroup")) {
+        role.serverGroup = rolesNode.get("serverGroup").asText();
+      }
+    }
+
+    return roleMap;
+  }
+
+  static class Role {
+    List<GeodePermission> permissions = new ArrayList<>();
+    String name;
+    String serverGroup;
+  }
+
+  static class User {
+    String name;
+    Set<Role> roles = new HashSet<>();
+    String password;
+  }
+
 }
