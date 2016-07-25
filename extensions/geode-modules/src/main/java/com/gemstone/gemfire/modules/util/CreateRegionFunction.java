@@ -218,12 +218,11 @@ public class CreateRegionFunction implements Function, Declarable {
     if (r != null) {
       return r;
     }
-    RegionFactory<String, RegionConfiguration> factory = this.cache.createRegionFactory(RegionShortcut.REPLICATE);
-    factory.addCacheListener(new RegionConfigurationCacheListener());
     GemFireCacheImpl gemFireCache = (GemFireCacheImpl) cache;
     InternalRegionArguments ira = new InternalRegionArguments().setInternalRegion(true);
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
+    af.addCacheListener(new RegionConfigurationCacheListener());
     RegionAttributes ra = af.create();
     try {
       return gemFireCache.createVMRegion(REGION_CONFIGURATION_METADATA_REGION, ra, ira);
