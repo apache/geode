@@ -31,7 +31,7 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.rest.internal.web.RestFunctionTemplate;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.*;
 
 @Category(DistributedTest.class)
 public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase {
@@ -99,6 +99,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
   }
 
   @Test
+  @Category(FlakyTest.class) // GEODE-1594 HTTP server fails to respond
   public void testFunctionExecutionOnAllMembers() {
     createCacheForVMs();
 
