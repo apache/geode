@@ -705,7 +705,7 @@ Apache Geode bundles the following files under the MIT license:
     Copyright (c) Nicolas Gallagher and Jonathan Neal
   - Respond.js v1.1.0 (https://github.com/scottjehl/Respond), Copyright (c)
     2012 Scott Jehl
-  - SLF4J API v1.7.7 (http://www.slf4j.org), Copyright (c) 2004-2013 QOS.ch
+  - SLF4J API v1.7.21 (http://www.slf4j.org), Copyright (c) 2004-2013 QOS.ch
   - Split.js (https://github.com/nathancahill/Split.js), Copyright (c)
     2015 Nathan Cahill
   - TableDnD v0.5 (https://github.com/isocra/TableDnD), Copyright (c) 2012
@@ -797,6 +797,7 @@ Public Domain
 Apache Geode bundles the following files, which are available in the public
 domain:
 
+  - AOP Alliance v1.0 (http://aopalliance.sourceforge.net)
   - CompactConcurrentHashSet2, derived from JSR-166 ConcurrentHashMap v1.43
     (http://gee.cs.oswego.edu/dl/concurrency-interest).
   - Reset CSS (http://meyerweb.com/eric/tools/css/reset/)
