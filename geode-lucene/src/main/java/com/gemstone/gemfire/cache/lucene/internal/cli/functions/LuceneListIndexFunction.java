@@ -27,6 +27,7 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexCreationProfile;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
 import com.gemstone.gemfire.cache.lucene.internal.cli.LuceneIndexDetails;
 import com.gemstone.gemfire.internal.InternalEntity;
@@ -59,6 +60,10 @@ public class LuceneListIndexFunction extends FunctionAdapter implements Internal
     LuceneService service = LuceneServiceProvider.get(cache);
     for (LuceneIndex index : service.getAllIndexes()) {
       indexDetailsSet.add(new LuceneIndexDetails((LuceneIndexImpl) index));
+    }
+
+    for(LuceneIndexCreationProfile profile : service.getAllDefinedIndexes()) {
+      indexDetailsSet.add(new LuceneIndexDetails(profile));
     }
     context.getResultSender().lastResult(indexDetailsSet);
   }

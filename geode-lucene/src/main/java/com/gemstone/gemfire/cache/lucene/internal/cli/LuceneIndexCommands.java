@@ -124,12 +124,21 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
         indexData.accumulate("Region Path", indexDetails.getRegionPath());
         indexData.accumulate("Indexed Fields", indexDetails.getSearchableFieldNamesString());
         indexData.accumulate("Field Analyzer", indexDetails.getFieldAnalyzersString());
+        indexData.accumulate("Status", indexDetails.getStatus());
 
-        if (stats==true) {
-          indexData.accumulate("Query Executions",indexDetails.getIndexStats().get("queryExecutions"));
-          indexData.accumulate("Updates",indexDetails.getIndexStats().get("updates"));
-          indexData.accumulate("Commits",indexDetails.getIndexStats().get("commits"));
-          indexData.accumulate("Documents",indexDetails.getIndexStats().get("documents"));
+        if (stats == true) {
+          if (indexDetails.getStatus() == "Defined") {
+            indexData.accumulate("Query Executions", "NA");
+            indexData.accumulate("Updates", "NA");
+            indexData.accumulate("Commits", "NA");
+            indexData.accumulate("Documents", "NA");
+          }
+          else {
+            indexData.accumulate("Query Executions", indexDetails.getIndexStats().get("queryExecutions"));
+            indexData.accumulate("Updates", indexDetails.getIndexStats().get("updates"));
+            indexData.accumulate("Commits", indexDetails.getIndexStats().get("commits"));
+            indexData.accumulate("Documents", indexDetails.getIndexStats().get("documents"));
+          }
         }
       }
       return ResultBuilder.buildResult(indexData);

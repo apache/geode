@@ -22,6 +22,7 @@ import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneQuery;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexCreationProfile;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
 import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.management.cli.Result.Status;
@@ -37,6 +38,7 @@ import com.jayway.awaitility.Awaitility;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.search.Collector;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -47,6 +49,7 @@ import static com.gemstone.gemfire.test.dunit.Assert.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -101,6 +104,50 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
     String resultAsString = executeCommandAndLogResult(csb);
     assertTrue(resultAsString.contains("No lucene indexes found"));
+  }
+
+  @Test
+  public void listIndexShouldReturnCorrectStatus() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(1);
+
+    vm1.invoke(() -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      Map<String, Analyzer> fieldAnalyzers = new HashMap();
+      fieldAnalyzers.put("field1", new StandardAnalyzer());
+      luceneService.createIndex(INDEX_NAME, REGION_NAME, fieldAnalyzers);
+    });
+    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
+
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE_LIST_INDEX__STATS,"true");
+    TabularResultData data = (TabularResultData) executeCommandAndGetResult(csb).getResultData();
+    assertEquals(Collections.singletonList(INDEX_NAME), data.retrieveAllValues("Index Name"));
+    assertEquals(Collections.singletonList("Defined"), data.retrieveAllValues("Status"));
+  }
+
+  @Test
+  public void listIndexWithStatsShouldReturnCorrectStats() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(1);
+
+    createIndex(vm1);
+    Map<String,TestObject> entries=new HashMap<>();
+    entries.put("A",new TestObject("field1:value1","field2:value2","field3:value3"));
+    entries.put("B",new TestObject("ABC","EFG","HIJ"));
+
+    putEntries(vm1,entries,2);
+    queryAndVerify(vm1, "field1:value1", "field1", Collections.singletonList("A"));
+
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE_LIST_INDEX__STATS,"true");
+    TabularResultData data = (TabularResultData) executeCommandAndGetResult(csb).getResultData();
+
+    assertEquals(Collections.singletonList(INDEX_NAME), data.retrieveAllValues("Index Name"));
+    assertEquals(Collections.singletonList("Initialized"), data.retrieveAllValues("Status"));
+    assertEquals(Collections.singletonList("/region"), data.retrieveAllValues("Region Path"));
+    assertEquals(Collections.singletonList("113"), data.retrieveAllValues("Query Executions"));
+    assertEquals(Collections.singletonList("2"), data.retrieveAllValues("Commits"));
+    assertEquals(Collections.singletonList("2"), data.retrieveAllValues("Updates"));
+    assertEquals(Collections.singletonList("2"), data.retrieveAllValues("Documents"));
   }
 
   @Test
@@ -199,6 +246,28 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
+  public void createIndexWithoutRegionShouldReturnCorrectResults() throws Exception{
+    final VM vm1 = Host.getHost(0).getVM(1);
+    vm1.invoke(() -> {getCache();});
+
+    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
+
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME,INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH,REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD,"field1,field2,field3");
+
+    String resultAsString = executeCommandAndLogResult(csb);
+
+    vm1.invoke(() -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      final ArrayList<LuceneIndexCreationProfile> profiles= new ArrayList<> (luceneService.getAllDefinedIndexes());
+      assertEquals(1, profiles.size());
+      assertEquals(INDEX_NAME, profiles.get(0).getIndexName());
+    });
+  }
+
+  @Test
   public void describeIndexShouldReturnExistingIndex() throws Exception {
     final VM vm1 = Host.getHost(0).getVM(1);
 
@@ -225,30 +294,6 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     String resultAsString = executeCommandAndLogResult(csb);
 
     assertTrue(resultAsString.contains("No lucene indexes found"));
-  }
-
-  @Test
-  public void listIndexWithStatsShouldReturnCorrectStats() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-
-    createIndex(vm1);
-    Map<String,TestObject> entries=new HashMap<>();
-    entries.put("A",new TestObject("field1:value1","field2:value2","field3:value3"));
-    entries.put("B",new TestObject("ABC","EFG","HIJ"));
-
-    putEntries(vm1,entries,2);
-    queryAndVerify(vm1, "field1:value1", "field1", Collections.singletonList("A"));
-
-    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
-    csb.addOption(LuceneCliStrings.LUCENE_LIST_INDEX__STATS,"true");
-    TabularResultData data = (TabularResultData) executeCommandAndGetResult(csb).getResultData();
-
-    assertEquals(Collections.singletonList(INDEX_NAME), data.retrieveAllValues("Index Name"));
-    assertEquals(Collections.singletonList("/region"), data.retrieveAllValues("Region Path"));
-    assertEquals(Collections.singletonList("113"), data.retrieveAllValues("Query Executions"));
-    assertEquals(Collections.singletonList("2"), data.retrieveAllValues("Commits"));
-    assertEquals(Collections.singletonList("2"), data.retrieveAllValues("Updates"));
-    assertEquals(Collections.singletonList("2"), data.retrieveAllValues("Documents"));
   }
 
   @Test
