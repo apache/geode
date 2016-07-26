@@ -83,9 +83,6 @@ def configureTcServerAssembly = {
     from getJarArtifact(':extensions/geode-modules')
     from getJarArtifact(':extensions/geode-modules-tomcat7')
     from configurations.slf4jDeps
-    from('release/3rdparty_license') {
-      include "open_source_licenses*${version}.txt"
-    }
   }
   into('geode-p2p/bin') {
     from('release/scripts') {
