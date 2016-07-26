@@ -2,10 +2,9 @@
 title:  Creating, Listing and Removing Indexes
 ---
 
-The <span class="keyword">Geode</span> `QueryService` API provides methods to create, list and remove the index. You can also use `gfsh` command-line interface to create, list and remove indexes, and use cache.xml to create an index.
+The Geode `QueryService` API provides methods to create, list and remove the index. You can also use `gfsh` command-line interface to create, list and remove indexes, and use cache.xml to create an index.
 
-<a id="indexing__section_565C080FBDD0443C8504DF372E3C32C8"></a>
-## Creating Indexes
+## <a id="indexing__section_565C080FBDD0443C8504DF372E3C32C8" class="no-quick-link"></a>Creating Indexes
 
 Indexes can be created programmatically, by using the `gfsh` command line interface or by using cache.xml.
 
@@ -53,9 +52,7 @@ QueryService qs = cache.getQueryService();
 **Note:**
 If you do not specify the type of index in cache.xml, the type defaults to "range".
 
-<a id="indexing__section_40089270C67A49FFA0C749E287F722F8"></a>
-
-## Listing Indexes
+## <a id="indexing__section_40089270C67A49FFA0C749E287F722F8" class="no-quick-link"></a>Listing Indexes
 
 To retrieve a list of indexes from the cache or region, use the `QueryService.getIndexes` method or the `gfsh` command line interface.
 
@@ -75,9 +72,7 @@ QueryService qs = cache.getQueryService();
  qs.getIndexes(exampleRegion, myKeyIndex); //returns the index named myKeyIndex from the exampleRegion
 ```
 
-<a id="indexing__section_ACBFB76C539A405D90B05856CB79BEFF"></a>
-
-## Removing Indexes
+## <a id="indexing__section_ACBFB76C539A405D90B05856CB79BEFF" class="no-quick-link"></a>Removing Indexes
 
 To remove an index or all indexes from the cache or region, use the `QueryService.removeIndexes` method or the `gfsh` command line interface.
 

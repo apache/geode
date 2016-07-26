@@ -5,7 +5,7 @@ title:  Region Types
 Region types define region behavior within a single distributed system. You have various options for region data storage and distribution.
 
 <a id="region_types__section_E3435ED1D0D142538B99FA69A9E449EF"></a>
-Within a <span class="keyword">Geode</span> distributed system, you can define distributed regions and non-distributed regions, and you can define regions whose data is spread across the distributed system, and regions whose data is entirely contained in a single member.
+Within a Geode distributed system, you can define distributed regions and non-distributed regions, and you can define regions whose data is spread across the distributed system, and regions whose data is entirely contained in a single member.
 
 Your choice of region type is governed in part by the type of application you are running. In particular, you need to use specific region types for your servers and clients for effective communication between the two tiers:
 
@@ -74,9 +74,7 @@ These are the primary configuration choices for each data region.
 </tbody>
 </table>
 
-<a id="region_types__section_C92C7DBD8EF44F1789FCB36281D3F8BF"></a>
-
-## Partitioned Regions
+## <a id="region_types__section_C92C7DBD8EF44F1789FCB36281D3F8BF" class="no-quick-link"></a>Partitioned Regions
 
 Partitioning is a good choice for very large server regions. Partitioned regions are ideal for data sets in the hundreds of gigabytes and beyond.
 
@@ -87,16 +85,14 @@ Partitioned regions group your data into buckets, each of which is stored on a s
 
 Use partitioning for:
 
--   **Large data sets**. Store data sets that are too large to fit into a single member, and all members will see the same logical data set. Partitioned regions divide the data into units of storage called buckets that are split across the members hosting the partitioned region data, so no member needs to host all of the region’s data. <span class="keyword">Geode</span> provides dynamic redundancy recovery and rebalancing of partitioned regions, making them the choice for large-scale data containers. More members in the system can accommodate more uniform balancing of the data across all host members, allowing system throughput (both gets and puts) to scale as new members are added.
--   **High availability**. Partitioned regions allow you configure the number of copies of your data that <span class="keyword">Geode</span> should make. If a member fails, your data will be available without interruption from the remaining members. Partitioned regions can also be persisted to disk for additional high availability.
+-   **Large data sets**. Store data sets that are too large to fit into a single member, and all members will see the same logical data set. Partitioned regions divide the data into units of storage called buckets that are split across the members hosting the partitioned region data, so no member needs to host all of the region’s data. Geode provides dynamic redundancy recovery and rebalancing of partitioned regions, making them the choice for large-scale data containers. More members in the system can accommodate more uniform balancing of the data across all host members, allowing system throughput (both gets and puts) to scale as new members are added.
+-   **High availability**. Partitioned regions allow you configure the number of copies of your data that Geode should make. If a member fails, your data will be available without interruption from the remaining members. Partitioned regions can also be persisted to disk for additional high availability.
 -   **Scalability**. Partitioned regions can scale to large amounts of data because the data is divided between the members available to host the region. Increase your data capacity dynamically by simply adding new members. Partitioned regions also allow you to scale your processing capacity. Because your entries are spread out across the members hosting the region, reads and writes to those entries are also spread out across those members.
 -   **Good write performance**. You can configure the number of copies of your data. The amount of data transmitted per write does not increase with the number of members. By contrast, with replicated regions, each write must be sent to every member that has the region replicated, so the amount of data transmitted per write increases with the number of members.
 
 In partitioned regions, you can colocate keys within buckets and across multiple partitioned regions. You can also control which members store which data buckets.
 
-<a id="region_types__section_iwt_dnj_bm"></a>
-
-## Replicated Regions
+## <a id="region_types__section_iwt_dnj_bm" class="no-quick-link"></a>Replicated Regions
 
 
 Replicated regions provide the highest performance in terms of throughput and latency.
@@ -109,9 +105,7 @@ Use replicated regions for:
 -   **High performance data access**. Replication guarantees local access from the heap for application threads, providing the lowest possible latency for data access.
 -   **Asynchronous distribution**. All distributed regions, replicated and non-replicated, provide the fastest distribution speeds.
 
-<a id="region_types__section_2232BEC969F74CDB91B1BB74FEF67EE1"></a>
-
-## Distributed, Non-Replicated Regions
+## <a id="region_types__section_2232BEC969F74CDB91B1BB74FEF67EE1" class="no-quick-link"></a>Distributed, Non-Replicated Regions
 
 Distributed regions provide the same performance as replicated regions, but each member stores only  data in which it has expressed an interest, either by subscribing to events from other members or by defining the data entries in its cache.
 
@@ -121,9 +115,7 @@ Use distributed, non-replicated regions for:
 -   **Data sets where individual members need only notification and updates for changes to a subset of the data**. In non-replicated regions, each member receives only update events for the data entries it has defined in the local cache.
 -   **Asynchronous distribution**. All distributed regions, replicated and non-replicated, provide the fastest distribution speeds.
 
-<a id="region_types__section_A8150BDBC74E4019B1942481877A4370"></a>
-
-## Local Regions
+## <a id="region_types__section_A8150BDBC74E4019B1942481877A4370" class="no-quick-link"></a>Local Regions
 
 **Note:**
 When created using the `ClientRegionShortcut` settings, client regions are automatically defined as local, since all client distribution activities go to and come from the server tier.

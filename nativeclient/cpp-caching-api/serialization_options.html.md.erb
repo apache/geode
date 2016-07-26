@@ -4,7 +4,7 @@ title:  Data Serialization Options
 
 The native client C++ API gives you two serialization options: the `GemFire::Serializable` interface and GemFire PDX serialization.
 
-<span class="keyword">Geode</span> Portable Data eXchange (PDX) serialization is the recommended option. PDX serialization provides portability for PDX serializable objects so that clients can share data with Java servers and other non-C++ clients. PDX is a cross-language data format that can reduce the cost of distributing and serializing your objects. PDX stores data in named fields that you can access individually in order to avoid the cost of deserializing the entire data object. PDX also allows you to mix versions of objects where you have added or removed fields.
+Geode Portable Data eXchange (PDX) serialization is the recommended option. PDX serialization provides portability for PDX serializable objects so that clients can share data with Java servers and other non-C++ clients. PDX is a cross-language data format that can reduce the cost of distributing and serializing your objects. PDX stores data in named fields that you can access individually in order to avoid the cost of deserializing the entire data object. PDX also allows you to mix versions of objects where you have added or removed fields.
 
 When using PDX serialization, you can use either `PdxSerializer` (for all your domain objects) or `PdxSerializable` (for a specific domain object).
 
@@ -42,7 +42,7 @@ The non-PDX serialization option is to use the `GemFire::Serializable` interface
 <td>X</td>
 </tr>
 <tr class="odd">
-<td><p>Automatically ported to other languages by <span class="keyword">Geode</span> - no need to program Java-side implementation</p></td>
+<td><p>Automatically ported to other languages by Geode - no need to program Java-side implementation</p></td>
 <td></td>
 <td>X</td>
 </tr>

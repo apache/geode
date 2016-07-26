@@ -13,9 +13,7 @@ These are the high-level tasks described in this topic:
 2.  Decide which subscriptions should be durable and configure accordingly
 3.  Program your client to manage durable messaging for disconnect, reconnect, and event handling
 
-<a id="implementing_durable_client_server_messaging__section_643EB5FA6F09463C80646786394F1E02"></a>
-
-## Configure the Client as Durable
+## <a id="implementing_durable_client_server_messaging__section_643EB5FA6F09463C80646786394F1E02" class="no-quick-link"></a>Configure the Client as Durable
 
 Use one of the following methods:
 
@@ -39,11 +37,9 @@ Use one of the following methods:
 
 The `durable-client-id` indicates that the client is durable and gives the server an identifier to correlate the client to its durable messages. For a non-durable client, this id is an empty string. The ID can be any number that is unique among the clients attached to servers in the same distributed system.
 
-The `durable-client-timeout` tells the server how long to wait for client reconnect. When this timeout is reached, the server stops storing to the client's message queue and discards any stored messages. The default is 300 seconds. This is a tuning parameter. If you change it, take into account the normal activity of your application, the average size of your messages, and the level of risk you can handle, both in lost messages and in the servers' capacity to store enqueued messages. Assuming that no messages are being removed from the queue, how long can the server run before the queue reaches the maximum capacity? How many durable clients can the server handle? To assist with tuning, use the <span class="keyword">Geode</span> message queue statistics for durable clients through the disconnect and reconnect cycles.
+The `durable-client-timeout` tells the server how long to wait for client reconnect. When this timeout is reached, the server stops storing to the client's message queue and discards any stored messages. The default is 300 seconds. This is a tuning parameter. If you change it, take into account the normal activity of your application, the average size of your messages, and the level of risk you can handle, both in lost messages and in the servers' capacity to store enqueued messages. Assuming that no messages are being removed from the queue, how long can the server run before the queue reaches the maximum capacity? How many durable clients can the server handle? To assist with tuning, use the Geode message queue statistics for durable clients through the disconnect and reconnect cycles.
 
-<a id="implementing_durable_client_server_messaging__section_BB5DCCE0582E4FE8B62DE473512FC704"></a>
-
-## Configure Durable Subscriptions and Continuous Queries
+## <a id="implementing_durable_client_server_messaging__section_BB5DCCE0582E4FE8B62DE473512FC704" class="no-quick-link"></a>Configure Durable Subscriptions and Continuous Queries
 
 The register interest and query creation methods all have an optional boolean parameter for indicating durability. By default all are non-durable.
 
@@ -62,9 +58,7 @@ Save only critical messages while the client is disconnected by only indicating 
 **Note:**
 For a single durable client ID, you must maintain the same durability of your registrations and queries between client runs.
 
-<a id="implementing_durable_client_server_messaging__section_0FBD23CC79784E588135FE93306EC0A4"></a>
-
-## Program the Client to Manage Durable Messaging
+## <a id="implementing_durable_client_server_messaging__section_0FBD23CC79784E588135FE93306EC0A4" class="no-quick-link"></a>Program the Client to Manage Durable Messaging
 
 Program your durable client to be durable-messaging aware when it disconnects, reconnects, and handles events from the server.
 
@@ -141,9 +135,7 @@ Program your durable client to be durable-messaging aware when it disconnects, r
 
 The initial startup of a durable client is similar to the startup of any other client, except that it specifically calls the `ClientCache.readyForEvents` method when all regions and listeners on the client are ready to process messages from the server.
 
-<a id="implementing_durable_client_server_messaging__section_9B9A9EE8C7FF47948C8108A0F7F4E32E"></a>
-
-## Disconnection
+## <a id="implementing_durable_client_server_messaging__section_9B9A9EE8C7FF47948C8108A0F7F4E32E" class="no-quick-link"></a>Disconnection
 
 While the client and servers are disconnected, their operation varies depending on the circumstances.
 
@@ -152,9 +144,7 @@ While the client and servers are disconnected, their operation varies depending 
 -   **Client disconnected but operational**. If the client operates while it is disconnected, it gets what data it can from the local client cache. Since updates are not allowed, the data can become stale. An `UnconnectedException` occurs if an update is attempted.
 -   **Client stays disconnected past timeout period**. The servers track how long to keep a durable subscription queue alive based on the `durable-client-timeout` setting. If the client remains disconnected longer than the timeout, the servers unregister the client and do the same cleanup that is performed for a non-durable client. The servers also log an alert. When a timed-out client reconnects, the servers treat it as a new client making its initial connection.
 
-<a id="implementing_durable_client_server_messaging__section_E3C42A6FDC884FC38ECC121955C06BDC"></a>
-
-## Reconnection
+## <a id="implementing_durable_client_server_messaging__section_E3C42A6FDC884FC38ECC121955C06BDC" class="no-quick-link"></a>Reconnection
 
 During initialization, the client cache is not blocked from doing operations, so you might be receiving old stored events from the server at the same time that your client cache is being updated by much more current events. These are the things that can act on the cache concurrently:
 
@@ -162,15 +152,13 @@ During initialization, the client cache is not blocked from doing operations, so
 -   Client cache operations by the application.
 -   Callbacks triggered by replaying old events from the queue
 
-<span class="keyword">Geode</span> handles the conflicts between the application and interest registrations so they do not create cache update conflicts. But you must program your event handlers so they don't conflict with current operations. This is true for all event handlers, but it is especially important for those used in durable clients. Your handlers may receive events well after the fact and you must ensure your programming takes that into account.
+Geode handles the conflicts between the application and interest registrations so they do not create cache update conflicts. But you must program your event handlers so they don't conflict with current operations. This is true for all event handlers, but it is especially important for those used in durable clients. Your handlers may receive events well after the fact and you must ensure your programming takes that into account.
 
 This figure shows the three concurrent procedures during the initialization process. The application begins operations immediately on the client (step 1), while the client’s cache ready message (also step 1) triggers a series of queue operations on the servers (starting with step 2 on the primary server). At the same time, the client registers interest (step 2 on the client) and receives a response from the server. Message B2 applies to an entry in Region A, so the cache listener handles B2’s event. Because B2 comes before the marker, the client does not apply the update to the cache.
 
 <img src="../../images/ClientServerAdvancedTopics-6.gif" alt="Durable client reconnection. " id="implementing_durable_client_server_messaging__image_068A59FA019E46FA9DE0BC7FA60AAADD" class="image" />
 
-<a id="implementing_durable_client_server_messaging__section_C848DF6D649F4DCAA2B895F5439BAA97"></a>
-
-## Durable Event Replay
+## <a id="implementing_durable_client_server_messaging__section_C848DF6D649F4DCAA2B895F5439BAA97" class="no-quick-link"></a>Durable Event Replay
 
 When a durable client reconnects before the timeout period, the servers replay the events that were stored while the client was gone and then resume normal event messaging to the client. To avoid overwriting current entries with old data, the stored events are not applied to the client cache. Stored events are distinguished from new normal events by a marker that is sent to the client once all old events are replayed.
 
@@ -183,9 +171,7 @@ When a durable client reconnects before the timeout period, the servers replay t
 
 Even when a new client starts up for the first time, the client cache ready markers are inserted in the queues. If messages start coming into the new queues before the servers insert the marker, those messages are considered as having happened while the client was disconnected, and their events are replayed the same as in the reconnect case.
 
-<a id="implementing_durable_client_server_messaging__section_E519D541E2844292ABD2E0BDF5FB5798"></a>
-
-## Application Operations During Interest Registration
+## <a id="implementing_durable_client_server_messaging__section_E519D541E2844292ABD2E0BDF5FB5798" class="no-quick-link"></a>Application Operations During Interest Registration
 
 Application operations take precedence over interest registration responses. The client can perform operations while it is receiving its interest registration responses. When adding register interest responses to the client cache, the following rules are applied:
 

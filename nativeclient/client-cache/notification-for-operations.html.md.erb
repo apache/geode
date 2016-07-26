@@ -7,9 +7,7 @@ Listeners are invoked for client-initiated operations only after the client oper
 
 If a client operation fails on the server, the operation is rolled back, assuming that no other thread has modified the data in the intervening period. Rollback may not be possible in cases where the entry has been evicted by LRU or expiration during this period. Thus when an exception is received from the server for an operation, local changes may not have been rolled back
 
-<a id="notification-for-operations__section_48240559E20D4FAF8FDEC8D62C098357"></a>
-
-## Event Notification Sequence
+## <a id="notification-for-operations__section_48240559E20D4FAF8FDEC8D62C098357" class="no-quick-link"></a>Event Notification Sequence
 
 Events received on the clients that originated on the server invoke the subscription for the event as seen by the server. Events originating on the client invoke the subscription as seen by the client.
 

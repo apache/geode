@@ -19,9 +19,7 @@ In the next example query, the collection specified in the first FROM clause exp
 SELECT DISTINCT * FROM /exampleRegion, positions.values p WHERE p.qty > 1000.00
 ```
 
-<a id="the_where_clause__section_99CA3FA508B740DCBAB4F01F8F9B1390"></a>
-
-## Implementing equals and hashCode Methods
+## <a id="the_where_clause__section_99CA3FA508B740DCBAB4F01F8F9B1390" class="no-quick-link"></a>Implementing equals and hashCode Methods
 
 You must implement the `equals` and `hashCode` methods in your custom objects if you are doing ORDER BY and DISTINCT queries on the objects. The methods must conform to the properties and behavior documented in the online Java API documentation for `java.lang.Object`. Inconsistent query results may occur if these methods are absent.
 
@@ -74,9 +72,7 @@ To avoid unpredictable querying behavior, implement detailed versions of the `eq
 
 If you are comparing a non-primitive field of the object in the WHERE clause, use the `equals` method instead of the `=` operator. For example instead of `nonPrimitiveObj = objToBeCompared` use `nonPrimitiveObj.equals(objToBeCompared)`.
 
-<a id="the_where_clause__section_7484AD999D01473385628246697F37F6"></a>
-
-## Querying Serialized Objects
+## <a id="the_where_clause__section_7484AD999D01473385628246697F37F6" class="no-quick-link"></a>Querying Serialized Objects
 
 Objects must implement serializable if you will be querying partitioned regions or if you are performing client-server querying.
 
@@ -101,9 +97,7 @@ In cache.xml, set the following:
 </cache>
 ```
 
-<a id="the_where_clause__section_75A114F9FEBF40A586621CAA1780DBD3"></a>
-
-## Attribute Visibility
+## <a id="the_where_clause__section_75A114F9FEBF40A586621CAA1780DBD3" class="no-quick-link"></a>Attribute Visibility
 
 You can access any object or object attribute that is available in the current scope of a query. In querying, an object's attribute is any identifier that can be mapped to a public field or method in the object. In the FROM specification, any object that is in scope is valid. Therefore, at the beginning of a query, all locally cached regions and their attributes are in scope.
 
@@ -117,9 +111,7 @@ SELECT DISTINCT * FROM /exampleRegion p WHERE p.position1.getSecId() = '1'
 
 The query engine tries to evaluate the value using the public field value. If a public field value is not found, it makes a get call using field name (note that the first character is uppercase.)
 
-<a id="the_where_clause__section_EB7B976238104C0EACD959C52E5BD75B"></a>
-
-## Joins
+## <a id="the_where_clause__section_EB7B976238104C0EACD959C52E5BD75B" class="no-quick-link"></a>Joins
 
 If collections in the FROM clause are not related to each other, the WHERE clause can be used to join them.
 
@@ -151,11 +143,9 @@ Same query as the previous example, with the additional constraint that matches 
 SELECT * FROM /exampleRegion portfolio1, portfolio1.positions.values positions1, /exampleRegion2 portfolio2, portfolio2.positions.values positions2 WHERE portfolio1.ID = 1 AND positions1.secId = positions2.secId
 ```
 
-<a id="the_where_clause__section_D91E0B06FFF6431490CC0BFA369425AD"></a>
+## <a id="the_where_clause__section_D91E0B06FFF6431490CC0BFA369425AD" class="no-quick-link"></a>LIKE
 
-## LIKE
-
-<span class="keyword">Geode</span> offers limited support for the LIKE predicate. LIKE can be used to mean 'equals to'. If you terminate the string with a wildcard ('%'), it behaves like 'starts with'. You can also place a wildcard (either '%' or '\_') at any other position in the comparison string. You can escape the wildcard characters to represent the characters themselves.
+Geode offers limited support for the LIKE predicate. LIKE can be used to mean 'equals to'. If you terminate the string with a wildcard ('%'), it behaves like 'starts with'. You can also place a wildcard (either '%' or '\_') at any other position in the comparison string. You can escape the wildcard characters to represent the characters themselves.
 
 **Note:**
 The '\*' wildcard is not supported in OQL LIKE predicates.
@@ -190,9 +180,7 @@ or
 SELECT * FROM /exampleRegion WHERE foo.toLowerCase LIKE '%bar%'
 ```
 
-<a id="the_where_clause__section_D2F8D17B52B04895B672E2FCD675A676"></a>
-
-## Method Invocations
+## <a id="the_where_clause__section_D2F8D17B52B04895B672E2FCD675A676" class="no-quick-link"></a>Method Invocations
 
 To use a method in a query, use the attribute name that maps to the public method you want to invoke.
 
@@ -230,9 +218,7 @@ If more than one method can be invoked, the query processor chooses the method w
 
 The query processor uses the runtime types of the parameters and the receiver to determine the proper method to invoke. Because runtime types are used, an argument with a null value has no typing information, and so can be matched with any object type parameter. When a null argument is used, if the query processor cannot determine the proper method to invoke based on the non-null arguments, it throws an `AmbiguousNameException`.
 
-<a id="the_where_clause__section_59E7D64746AE495D942F2F09EF7DB9B5"></a>
-
-## Enum Objects
+## <a id="the_where_clause__section_59E7D64746AE495D942F2F09EF7DB9B5" class="no-quick-link"></a>Enum Objects
 
 To write a query based on the value of an Enum object field, you must use the `toString` method of the enum object or use a query bind parameter.
 
@@ -262,9 +248,7 @@ Query enum type using a bind parameter. The value of the desired Enum field ( Da
 select distinct * from /QueryRegion0 where aDay = $1
 ```
 
-<a id="the_where_clause__section_AC12146509F141378E493078540950C7"></a>
-
-## IN and SET
+## <a id="the_where_clause__section_AC12146509F141378E493078540950C7" class="no-quick-link"></a>IN and SET
 
 The IN expression is a boolean indicating if one expression is present inside a collection of expressions of compatible type. The determination is based on the expressions' equals semantics.
 
@@ -315,11 +299,9 @@ where a set value is searched in collection of set values.
 
 One problem is that you cannot create indexes on Set or List types (collection types) that are not comparable. To workaround this, you can create an index on a custom collection type that implements Comparable.
 
-<a id="the_where_clause__section_E7206D045BEC4F67A8D2B793922BF213"></a>
+## <a id="the_where_clause__section_E7206D045BEC4F67A8D2B793922BF213" class="no-quick-link"></a>Double.NaN and Float.NaN Comparisons
 
-## Double.NaN and Float.NaN Comparisons
-
-The comparison behavior of Double.NaN and Float.NaN within <span class="keyword">Geode</span> queries follow the semantics of the JDK methods Float.compareTo and Double.compareTo.
+The comparison behavior of Double.NaN and Float.NaN within Geode queries follow the semantics of the JDK methods Float.compareTo and Double.compareTo.
 
 In summary, the comparisons differ in the following ways from those performed by the Java language numerical comparison operators (<, <=, ==, >= >) when applied to primitive double [float] values:
 

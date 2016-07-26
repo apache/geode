@@ -2,10 +2,9 @@
 title:  Multi-Site (WAN) Event Distribution
 ---
 
-<span class="keyword">Geode</span> distributes a subset of cache events between distributed systems, with a minimum impact on each system's performance. Events are distributed only for regions that you configure to use a gateway sender for distribution.
+Geode distributes a subset of cache events between distributed systems, with a minimum impact on each system's performance. Events are distributed only for regions that you configure to use a gateway sender for distribution.
 
-<a id="how_multisite_distribution_works__section_A16562611E094C88B12BC149D5EEEEBA"></a>
-## Queuing Events for Distribution
+## <a id="how_multisite_distribution_works__section_A16562611E094C88B12BC149D5EEEEBA" class="no-quick-link"></a>Queuing Events for Distribution
 
 In regions that are configured with one or more gateway senders (`gateway-sender-ids` attribute), events are automatically added to a gateway sender queue for distribution to other sites. Events that are placed in a gateway sender queue are distributed asynchronously to remote sites. For serial gateway queues, the ordering of events sent between sites can be preserved using the `order-policy` attribute.
 
@@ -29,9 +28,7 @@ These operations are not distributed:
 -   expiration actions of any kind
 -   region operations
 
-<a id="how_multisite_distribution_works__section_EE819CBF41274312BD5C3EA4A660475C"></a>
-
-## How a Gateway Sender Processes Its Queue
+## <a id="how_multisite_distribution_works__section_EE819CBF41274312BD5C3EA4A660475C" class="no-quick-link"></a>How a Gateway Sender Processes Its Queue
 
 Each primary gateway sender contains a processor thread that reads messages from the queue, batches them, and distributes the batches to a gateway receiver in a remote site. To process the queue, a gateway sender thread takes the following actions:
 
@@ -44,9 +41,7 @@ Because the batch is not removed from the queue until after the other site has r
 
 You can configure the batch size for messages as well as the batch time interval settings. A gateway sender processes a batch of messages from the queue when either the batch size or the time interval is reached. In an active network, it is likely that the batch size will be reached before the time interval. In an idle network, the time interval will most likely be reached before the batch size. This may result in some network latency that corresponds to the time interval.
 
-<a id="how_multisite_distribution_works__section_EF240AB26CF242F99689222E9E1D2512"></a>
-
-## How a Gateway Sender Handles Batch Processing Failure
+## <a id="how_multisite_distribution_works__section_EF240AB26CF242F99689222E9E1D2512" class="no-quick-link"></a>How a Gateway Sender Handles Batch Processing Failure
 
 Exceptions can occur at different points during batch processing:
 

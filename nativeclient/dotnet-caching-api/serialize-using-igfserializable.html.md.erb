@@ -1,22 +1,22 @@
 ---
-title:  Serialize with the <span class="keyword">Geode</span> IGFSerializable Interface
+title:  Serialize with the Geode IGFSerializable Interface
 ---
 
 The .NET `IGFSerializable` interface provides fast and compact data serialization.
 
--   **[Generic and Custom Serializable Types](../../nativeclient/dotnet-caching-api/serializable-types.html)**
+-   **[Generic and Custom Serializable Types](serializable-types.html)**
 
     All built-in generics are automatically registered at initialization. You have a couple of options for complex key types.
 
--   **[How Serialization Works with IGFSerializable](../../nativeclient/dotnet-caching-api/how-igfserializable-works.html)**
+-   **[How Serialization Works with IGFSerializable](how-igfserializable-works.html)**
 
-    When your application puts an object into the cache for distribution, <span class="keyword">Geode</span> serializes the data by taking these steps.
+    When your application puts an object into the cache for distribution, Geode serializes the data by taking these steps.
 
--   **[Implement the IGFSerializable Interface](../../nativeclient/dotnet-caching-api/implementing-igfserializable.html)**
+-   **[Implement the IGFSerializable Interface](implementing-igfserializable.html)**
 
-    To store your own data types in the cache, you implement the <span class="keyword">Geode</span> `IGFSerializable` interface.
+    To store your own data types in the cache, you implement the Geode `IGFSerializable` interface.
 
--   **[Register the Type](../../nativeclient/dotnet-caching-api/registering-the-type.html)**
+-   **[Register the Type](registering-the-type.html)**
 
     To use the `BankAccount` type, you must register it with the type system. Then, when an incoming stream contains a `BankAccount`, it can be manufactured from the associated `TypeFactoryMethod.`
 

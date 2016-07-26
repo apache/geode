@@ -33,22 +33,16 @@ Because `p` (the original `SharedPtr`) and `p2` point to the same object in memo
 **Note:**
 Once you have put an object into the cache, do not delete it explicitly. Attempting to do so can produce undesirable results.
 
-<a id="managing-lifetime-cached-object__section_8753DE6DF3864BEC806D39F623CBE3E0"></a>
-
-## Changed Objects
+## <a id="managing-lifetime-cached-object__section_8753DE6DF3864BEC806D39F623CBE3E0" class="no-quick-link"></a>Changed Objects
 
 If an object update is received, the cache no longer holds the same object. Rather, it holds a completely different instance of the object. The client does not see the updates until it calls a `get` to fetch the object again from the local cache, or (in a cache plug-in) calls `EntryEvent::getNewValue`.
 
 For more about plug-ins, see [Application Plug-Ins](application-plugins.html#application-plugins).
 
-<a id="managing-lifetime-cached-object__section_065526A7FFBB464591A5E119EB8D6CA6"></a>
-
-## Object Expiration
+## <a id="managing-lifetime-cached-object__section_065526A7FFBB464591A5E119EB8D6CA6" class="no-quick-link"></a>Object Expiration
 
 When a cache automatically deletes an object as a result of an expiration action, the reference counting pointers protect the client from situations that might otherwise result if the cache actually freed the object's memory. Instead, the client disconnects the object from the cache by deleting the cache's `SharedPtr` reference, while leaving untouched any client threads with a `SharedPtr` to that object.
 
-<a id="managing-lifetime-cached-object__section_6D700999EE534BD7999D5B428301F5A6"></a>
-
-## Object Lifetime Across the Distributed Cache
+## <a id="managing-lifetime-cached-object__section_6D700999EE534BD7999D5B428301F5A6" class="no-quick-link"></a>Object Lifetime Across the Distributed Cache
 
 An object remains alive until every copy of the object is gone. In distributed regions, expiration activities can be local or distributed, depending on a region's distribution settings. One cache could control the expiration of all copies of an object in all the caches in the distributed system. Alternatively, each cache could control the expiration of its own local copy of the object. If the configuration gives each cache local control, and the expiration parameters are set to different lengths of time in different caches, some copies of an object may still exist after it has disappeared in other caches. See [Expiration Attributes](expiration-attributes.html#expiration-attributes) for more information.

@@ -12,8 +12,7 @@ You can configure authorization for all server region operations on a per-region
 
 Information such as the region reference, arguments, the operation being invoked, and a reference to the cache instance can be made available to the `XmlAuthorization` callback. If an authenticated client is not authorized to perform an operation, the operation fails with a `NotAuthorizedException`.
 
-<a id="authorization_example__section_076277507223430E9455E3DE5150D656"></a>
-## Server Settings
+## <a id="authorization_example__section_076277507223430E9455E3DE5150D656" class="no-quick-link"></a>Server Settings
 
 These are the `gemfire.properties` file (or `gfsecurity.properties` file if you are creating a special restricted access file for security configuration) settings for each server:
 
@@ -22,9 +21,7 @@ security-client-accessor=templates.security.XmlAuthorization.create
 security-authz-xml-uri=<URI of XML file>
 ```
 
-<a id="authorization_example__section_85F79DD53FD7453D87DF915A91595218"></a>
-
-## XML File Sample Settings
+## <a id="authorization_example__section_85F79DD53FD7453D87DF915A91595218" class="no-quick-link"></a>XML File Sample Settings
 
 The `XmlAuthorization` sample is configured through an XML file, which is described in the `authz6_0.dtd` in the security templates directory. See the dtd for documentation about the elements and attributes you use to configure `XmlAuthorization`. To run the example, create an XML file following the dtd specifications.
 

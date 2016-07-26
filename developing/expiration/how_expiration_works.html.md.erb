@@ -11,29 +11,23 @@ This figure shows two basic expiration settings for a producer/consumer system. 
 
 <img src="../../images_svg/expiration.svg" id="how_expiration_works__image_3D674825D1434830A8242D77CC89289F" class="image" />
 
-<a id="how_expiration_works__section_B6C55A610F4243ED8F1986E8A98858CF"></a>
+## <a id="how_expiration_works__section_B6C55A610F4243ED8F1986E8A98858CF" class="no-quick-link"></a>Expiration Types
 
-## Expiration Types
-
-<span class="keyword">Apache Geode</span> uses the following expiration types:
+Apache Geode uses the following expiration types:
 
 -   **Time to live (TTL)**. The amount of time, in seconds, the object may remain in the cache after the last creation or update. For entries, the counter is set to zero for create and put operations. Region counters are reset when the region is created and when an entry has its counter reset. The TTL expiration attributes are `region-time-to-live` and `entry-time-to-live`.
 -   **Idle timeout**. The amount of time, in seconds, the object may remain in the cache after the last access. The idle timeout counter for an object is reset any time its TTL counter is reset. In addition, an entry’s idle timeout counter is reset any time the entry is accessed through a get operation or a netSearch . The idle timeout counter for a region is reset whenever the idle timeout is reset for one of its entries. Idle timeout expiration attributes are: `region-idle-time` and `entry-idle-time`.
 
-<a id="how_expiration_works__section_BA995343EF584104B9853CFE4CAD88AD"></a>
+## <a id="how_expiration_works__section_BA995343EF584104B9853CFE4CAD88AD" class="no-quick-link"></a>Expiration Actions
 
-## Expiration Actions
-
-<span class="keyword">Apache Geode</span> uses the following expiration actions:
+Apache Geode uses the following expiration actions:
 
 -   destroy
 -   local destroy
 -   invalidate (default)
 -   local invalidate
 
-<a id="how_expiration_works__section_AB4AB9E57D434159AA6E9B402E5E599D"></a>
-
-## Partitioned Regions and Entry Expiration
+## <a id="how_expiration_works__section_AB4AB9E57D434159AA6E9B402E5E599D" class="no-quick-link"></a>Partitioned Regions and Entry Expiration
 
 For overall region performance, idle time expiration in partitioned regions may expire some entries sooner than expected. To ensure reliable read behavior across the partitioned region, we recommend that you use `entry-time-to-live` for entry expiration in partitioned regions instead of `entry-idle-time`.
 
@@ -46,9 +40,7 @@ When the primary expires entries, it does not request last accessed statistics f
 
 You cannot use `local-destroy` or `local-invalidate` expiration actions in a partitioned region.
 
-<a id="how_expiration_works__section_expiration_settings_and_netSearch"></a>
-
-## Interaction Between Expiration Settings and `netSearch`
+## <a id="how_expiration_works__section_expiration_settings_and_netSearch" class="no-quick-link"></a>Interaction Between Expiration Settings and `netSearch`
 
 Before `netSearch` retrieves an entry value from a remote cache, it validates the *remote* entry’s statistics against the *local* region’s expiration settings. Entries that would have already expired in the local cache are passed over. Once validated, the entry is brought into the local cache and the local access and update statistics are updated for the local copy. The last accessed time is reset and the last modified time is updated to the time in the remote cache, with corrections made for system clock differences. Thus the local entry is assigned the true last time the entry was modified in the distributed system. The `netSearch` operation has no effect on the expiration counters in remote caches.
 

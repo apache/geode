@@ -2,7 +2,7 @@
 title:  Data Region Management
 ---
 
-<span class="keyword">Apache Geode</span> provides different APIs and XML configuration models to support configuration and management of your data regions.
+Apache Geode provides different APIs and XML configuration models to support configuration and management of your data regions.
 
 <a id="data_regions__section_18A9481217204613958897FE64105097"></a>
 You store your data in region entry key/value pairs, with keys and values being any object types your application needs.
@@ -16,11 +16,9 @@ You can create regions in the `cache.xml` file, by using the API, or with the gf
 **Note:**
 If you change attributes that define a region, you must restart the member for the changes to take effect.
 
-<a id="data_regions__section_028F2602395646818680C906F205526B"></a>
+## <a id="data_regions__section_028F2602395646818680C906F205526B" class="no-quick-link"></a>The Region APIs
 
-## The Region APIs
-
-<span class="keyword">Geode</span>'s regions APIs provide specialized behavior for different system member types.
+Geode's regions APIs provide specialized behavior for different system member types.
 
 -   **Peer/Server Region APIs**. Use these methods, interfaces, and classes for peer/server region creation. These are in the `com.gemstone.gemfire.cache` package. They correspond to declarations in the `<cache>` element for creating and configuring regions.
     -   **`com.gemstone.gemfire.cache.Cache.createRegionFactory`** . This method takes a `RegionShortcut` `enum` to initiate region configuration, and returns a `RegionFactory`. Use `createRegionFactory()`, not "`new                                     RegionFactory`," to create a RegionFactory.
@@ -38,9 +36,7 @@ If you change attributes that define a region, you must restart the member for t
     -   **`com.gemstone.gemfire.cache.RegionAttributes`** . Object holding region configuration settings.
     -   **`com.gemstone.gemfire.cache.createRegionFactory`**. Can be used to create `RegionAttributes` to pass to `RegionFactory` and `ClientRegionFactory`.
 
-<a id="data_regions__section_9F898C23D2164ED5BB3789FD8B1F68C3"></a>
-
-## Create and Access Data Regions
+## <a id="data_regions__section_9F898C23D2164ED5BB3789FD8B1F68C3" class="no-quick-link"></a>Create and Access Data Regions
 
 Before you start, have your cache configuration defined, along with any cache-wide configuration your region requires, like disk store configuration and client server pool configuration.
 
@@ -74,9 +70,7 @@ Before you start, have your cache configuration defined, along with any cache-wi
 
 Once you have created your regions, you can access them through the `Cache` and `Region` APIs as full region lists or individually.
 
-<a id="data_regions__section_jn1_sry_5m"></a>
-
-## Create and Access Data Subregions
+## <a id="data_regions__section_jn1_sry_5m" class="no-quick-link"></a>Create and Access Data Subregions
 
 An individual region can contain multiple subregions.
 Subregions are an older feature that will not be useful in new designs
@@ -123,9 +117,7 @@ You can create subregions using one of the following methods:
 `Region` method calls with a `recursive` parameter operate on the given
 region(s) and then recursively on all contained subregions. 
 
-<a id="data_regions__section_7AD53DCC71064883BFA9C53E6040D85A"></a>
-
-## Update Data Regions
+## <a id="data_regions__section_7AD53DCC71064883BFA9C53E6040D85A" class="no-quick-link"></a>Update Data Regions
 
 Update your region properties and contents through `alter region` command, the API or from `cache.xml` file declarations.
 
@@ -133,9 +125,7 @@ Update your region properties and contents through `alter region` command, the A
 -   In the API, use `Cache` and `Region` methods to change configuration parameters and modify region structure and data.
 -   Load new XML declarations using the `Cache.loadCacheXml` method. Where possible, declarations in the new `cache.xml` file supersede existing definitions. For example, if a region declared in the `cache.xml` file already exists in the cache, its mutable attributes are modified according to the file declarations. Immutable attributes are not affected. If a region does not already exist, it is created. Entries and indexes are created or updated according to the state of the cache and the file declarations.
 
-<a id="data_regions__section_953E19F03F4541BAA3AE58118E7EA7E4"></a>
-
-## Invalidate a Region
+## <a id="data_regions__section_953E19F03F4541BAA3AE58118E7EA7E4" class="no-quick-link"></a>Invalidate a Region
 
 An invalidate region operation removes all entry values for a region, while leaving the entry keys intact. This operation can be invoked only through the API on a `Region` instance. Event notification occurs.
 
@@ -187,15 +177,13 @@ Event notification occurs for a destroy region operation.
 
 A region can be destroyed by removing the region's specification from the `cache.xml` file.
 
-Destroying the region by an API invocation or by using the `gfsh                     destroy` command while all members are online is the best way to remove a region, as <span class="keyword">Geode</span> handles all aspects of the removal, including removing the region's persistent disk stores across the online members hosting the region. Destroying the region by removing its specification from the `cache.xml` file does not remove the region's existing persistent disk stores.
+Destroying the region by an API invocation or by using the `gfsh                     destroy` command while all members are online is the best way to remove a region, as Geode handles all aspects of the removal, including removing the region's persistent disk stores across the online members hosting the region. Destroying the region by removing its specification from the `cache.xml` file does not remove the region's existing persistent disk stores.
 
 The destroy operation can be propagated only to online members. The system will encounter restart issues if a region is destroyed while some members are online and others are offline. As those members that were offline restart, they will block indefinitely, waiting for persistent region data that no longer exists. To fix this issue, shut down all members that are blocked waiting for the removed region. Once those members are in the offline state, use the `gfsh alter                     disk-store` command with the `--remove` option on each offline member to remove the region. Then, restart each member.
 
 An edge case results in issues when destroying a persistent region (R-removed) by removing its specification from the `cache.xml` file, and region R-removed was colocated with another persistent region (R-remains). The issue occurs because the persistent information contained within R-remains is inconsistent with the (lack of) specification of R-removed. Upon restart of R-remains, its persisted metadata refers to R-removed as a colocated region, and the startup of R-remains is dependent on that removed region. Thus, the startup of R-remains blocks, unable to complete. The issue may manifest with operations on the R-remains region such as a query, put, or get, that never finishes. To fix this issue, shut down all members with the persisted metadata that refers to the removed region. Once those members are in the offline state, use the `gfsh alter disk-store` command with the `--remove` option on each offline member to remove the region. Then, restart each member.
 
-<a id="data_regions__section_3C0A7E088FDB413297ED8C0CD606968D"></a>
-
-## Close a Region
+## <a id="data_regions__section_3C0A7E088FDB413297ED8C0CD606968D" class="no-quick-link"></a>Close a Region
 
 Use this to stop local caching of persistent and partitioned regions without closing the entire cache:
 

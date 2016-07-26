@@ -4,35 +4,33 @@ title: Developing REST Applications
 <a id="topic_lvp_cd5_m4"></a>
 
 
-This section provides guidelines on writing REST client applications for <span class="keyword">Geode</span>.
+This section provides guidelines on writing REST client applications for Geode.
 
-You can browse, query, update and delete data stored in your <span class="keyword">Geode</span> deployment. You can also manage and execute pre-deployed functions on <span class="keyword">Geode</span> members.
+You can browse, query, update and delete data stored in your Geode deployment. You can also manage and execute pre-deployed functions on Geode members.
 
 -   **[Working with Regions](../rest_apps/develop_rest_apps.html#topic_qhs_f25_m4)**
 
-    The <span class="keyword">Geode</span> REST APIs provide basic CRUD (create, read, update and delete) operations for data entries stored in your regions.
+    The Geode REST APIs provide basic CRUD (create, read, update and delete) operations for data entries stored in your regions.
 
 -   **[Working with Queries](../rest_apps/develop_rest_apps.html#topic_fcn_g25_m4)**
 
-    <span class="keyword">Geode</span> supports the use of queries to extract data from its regions. Using REST APIs, you can create and execute either prepared or ad-hoc queries on <span class="keyword">Geode</span> regions. You can also update and delete prepared queries.
+    Geode supports the use of queries to extract data from its regions. Using REST APIs, you can create and execute either prepared or ad-hoc queries on Geode regions. You can also update and delete prepared queries.
 
 -   **[Working with Functions](../rest_apps/develop_rest_apps.html#topic_rbc_h25_m4)**
 
-    <span class="keyword">Geode</span> REST APIs support the discovery and execution of predefined <span class="keyword">Geode</span> functions on your cluster deployments.
+    Geode REST APIs support the discovery and execution of predefined Geode functions on your cluster deployments.
 
-<a id="topic_qhs_f25_m4"></a>
+## <a id="topic_qhs_f25_m4" class="no-quick-link"></a>Working with Regions
 
-## Working with Regions
+The Geode REST APIs provide basic CRUD (create, read, update and delete) operations for data entries stored in your regions.
 
-The <span class="keyword">Geode</span> REST APIs provide basic CRUD (create, read, update and delete) operations for data entries stored in your regions.
+Regions are the resources of the Geode REST API. Each region represents a resource or a collection of resources.
 
-Regions are the resources of the <span class="keyword">Geode</span> REST API. Each region represents a resource or a collection of resources.
-
-You cannot create or delete the regions themselves with the REST APIs, but you can work with the data stored within predefined <span class="keyword">Geode</span> regions. Use the [gfsh](../tools_modules/gfsh/chapter_overview.html) command utility to add, configure or delete regions in your <span class="keyword">Geode</span> deployment. Any additions or modifications to regions made through `gfsh` are then accessible by the REST APIs.
+You cannot create or delete the regions themselves with the REST APIs, but you can work with the data stored within predefined Geode regions. Use the [gfsh](../tools_modules/gfsh/chapter_overview.html) command utility to add, configure or delete regions in your Geode deployment. Any additions or modifications to regions made through `gfsh` are then accessible by the REST APIs.
 
 ## Listing Available Regions
 
-The main resource endpoint to the <span class="keyword">Geode</span> API is [GET /gemfire-api/v1](get_regions.html#topic_itv_mg5_m4). Use this endpoint to discover which regions are available in your cluster.
+The main resource endpoint to the Geode API is [GET /gemfire-api/v1](get_regions.html#topic_itv_mg5_m4). Use this endpoint to discover which regions are available in your cluster.
 
 Example call:
 
@@ -292,7 +290,7 @@ Accept: application/json
 
 **Modifying existing entries**
 
-<span class="keyword">Geode</span> provides three different options for this type of operation. To update a value for the key, you can use:
+Geode provides three different options for this type of operation. To update a value for the key, you can use:
 
 ``` pre
 PUT /gemfire/v1/{region}/{key}
@@ -421,11 +419,9 @@ DELETE /gemfire-api/v1/{region}/{key}{key1},{key2},...{keyN}
 
 If any of the supplied keys are not found in the region, the request will fail and return a 404 NOT FOUND ERROR.
 
-<a id="topic_fcn_g25_m4"></a>
+## <a id="topic_fcn_g25_m4" class="no-quick-link"></a>Working with Queries
 
-## Working with Queries
-
-<span class="keyword">Geode</span> supports the use of queries to extract data from its regions. Using REST APIs, you can create and execute either prepared or ad-hoc queries on <span class="keyword">Geode</span> regions. You can also update and delete prepared queries.
+Geode supports the use of queries to extract data from its regions. Using REST APIs, you can create and execute either prepared or ad-hoc queries on Geode regions. You can also update and delete prepared queries.
 
 ## Listing Queries
 
@@ -435,10 +431,9 @@ To find out which predefined and named queries are available in your deployment,
 GET /gemfire-api/v1/queries
 ```
 
-All queries that have been predefined and assigned IDs in <span class="keyword">Geode</span> are listed.
+All queries that have been predefined and assigned IDs in Geode are listed.
 
-<a id="topic_fcn_g25_m4__section_t4h_wtp_y4"></a>
-## Creating a New Query
+## <a id="topic_fcn_g25_m4__section_t4h_wtp_y4" class="no-quick-link"></a>Creating a New Query
 
 To create a query, use the following endpoint:
 
@@ -459,9 +454,7 @@ You can specify query bind parameters ($1) in your predefined queries and then p
 
 To update this query at a later time, use the [PUT operation](#topic_fcn_g25_m4__section_oj1_b5p_y4) described below.
 
-<a id="topic_fcn_g25_m4__section_b1p_wtp_y4"></a>
-
-## Executing a Prepared Query
+## <a id="topic_fcn_g25_m4__section_b1p_wtp_y4" class="no-quick-link"></a>Executing a Prepared Query
 
 To run a prepared query, use:
 
@@ -569,9 +562,7 @@ Content-Type: application/json
 ]
 ```
 
-<a id="topic_fcn_g25_m4__section_oj1_b5p_y4"></a>
-
-## Modifying a Prepared Query
+## <a id="topic_fcn_g25_m4__section_oj1_b5p_y4" class="no-quick-link"></a>Modifying a Prepared Query
 
 To modify an existing prepared query, use the following endpoint:
 
@@ -589,9 +580,7 @@ You can specify query bind parameters ($1) in your predefined queries, and then 
 
 A PUT operation will only succeed if the specified queryId already exists (for example, created with the [POST operation](#topic_fcn_g25_m4__section_t4h_wtp_y4) above.) If the queryId does already exist, you will receive a 404 response - "Named query (selectKey456) does not exist!"
 
-<a id="topic_fcn_g25_m4__section_igg_b5p_y4"></a>
-
-## Deleting a Prepared Query
+## <a id="topic_fcn_g25_m4__section_igg_b5p_y4" class="no-quick-link"></a>Deleting a Prepared Query
 
 To delete an existing prepared query, use the following endpoint:
 
@@ -599,9 +588,7 @@ To delete an existing prepared query, use the following endpoint:
 DELETE /gemfire-api/v1/queries/{queryId}
 ```
 
-<a id="topic_fcn_g25_m4__section_wbk_b5p_y4"></a>
-
-## Executing an Ad-Hoc Query
+## <a id="topic_fcn_g25_m4__section_wbk_b5p_y4" class="no-quick-link"></a>Executing an Ad-Hoc Query
 
 To run an unnamed query, use the following endpoint:
 
@@ -617,22 +604,20 @@ For example:
 http://localhost:7070/gemfire-api/v1/queries/adhoc?q="SELECT * FROM /customers"
 ```
 
-<a id="topic_rbc_h25_m4"></a>
+## <a id="topic_rbc_h25_m4" class="no-quick-link"></a>Working with Functions
 
-## Working with Functions
+Geode REST APIs support the discovery and execution of predefined Geode functions on your cluster deployments.
 
-<span class="keyword">Geode</span> REST APIs support the discovery and execution of predefined <span class="keyword">Geode</span> functions on your cluster deployments.
-
-Before you can access functions using REST APIs, you must have already defined and registered the functions in your <span class="keyword">Geode</span> deployment. Additionally, any domain objects that are being accessed by the functions must be available on the CLASSPATH of the server running the REST endpoint service.
+Before you can access functions using REST APIs, you must have already defined and registered the functions in your Geode deployment. Additionally, any domain objects that are being accessed by the functions must be available on the CLASSPATH of the server running the REST endpoint service.
 
 You can do the following with functions:
 
--   List all functions available in the <span class="keyword">Geode</span> cluster.
+-   List all functions available in the Geode cluster.
 -   Execute a function, optionally specifying the region and members and/or member groups that are targeted by the function
 
 ## Listing Functions
 
-To list all functions that are currently registered and deployed in the <span class="keyword">Geode</span> cluster, use the following endpoint:
+To list all functions that are currently registered and deployed in the Geode cluster, use the following endpoint:
 
 ``` pre
 GET /gemfire-api/v1/functions
@@ -642,7 +627,7 @@ The list of returned functions includes the functionId, which you can use to exe
 
 ## Executing Functions
 
-To execute a function on a <span class="keyword">Geode</span> cluster, use the following endpoint:
+To execute a function on a Geode cluster, use the following endpoint:
 
 ``` pre
 POST /gemfire-api/v1/functions/{functionId}?[&onRegion=regionname|&onMembers=member1,member2,...,memberN|&onGroups=group1,group2,...,groupN]

@@ -4,7 +4,7 @@ title:  Removing an Entry
 
 The standard `Region::Remove` API removes the entry with specified key and provides a user-defined parameter object to any `CacheWriter` or `CacheListener` invoked in the process.
 
-The `Remove` call not only removes the value, but also the key and entry from this region. The remove operation is propagated to the <span class="keyword">Geode</span> cache server that the native client is connected to. If the destroy operation fails due to an exception on the server (for example, a `CacheServerException` or security exception), then the local entry is still removed.
+The `Remove` call not only removes the value, but also the key and entry from this region. The remove operation is propagated to the Geode cache server that the native client is connected to. If the destroy operation fails due to an exception on the server (for example, a `CacheServerException` or security exception), then the local entry is still removed.
 
 The `Remove` operation updates `CacheStatistics::LastAccessedTime`, `CacheStatistics::HitCount`, and `CacheStatistics::MissCount` for this region and the entry.
 

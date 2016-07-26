@@ -19,9 +19,7 @@ This declaration causes LRU to overflow to disk:
 
 Overflow requires a persistence manager for cache-to-disk and disk-to-cache operations. See [PersistenceManager](persistence-manager.html#persistence-manager).
 
-<a id="disk-policy__section_FE325E59644149ACA43DA2ABB4CF0F7A"></a>
-
-## Overflowing Data to Disk
+## <a id="disk-policy__section_FE325E59644149ACA43DA2ABB4CF0F7A" class="no-quick-link"></a>Overflowing Data to Disk
 
 Region data can be stored to disk using the overflow process to satisfy region capacity restrictions without completely destroying the local cache data. The storage mechanism uses disk files to hold region entry data. When an entry is overflowed, its value is written to disk but its key and entry object remain in the cache. This also uses the region attribute [DiskPolicy](disk-policy.html#disk-policy).
 

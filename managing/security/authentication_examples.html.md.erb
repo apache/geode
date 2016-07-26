@@ -6,8 +6,7 @@ This topic discusses the concepts and configurations for sample LDAP and PKCS im
 
 The security implementation of every installation is unique, so these examples cannot be used as is. These examples intend to provide a starting point. Modify them to handle the implementation-specific needs of your system.
 
-<a id="authentication_examples__section_33A13D8566284AB999B5263844F61133"></a>
-## Using an LDAP Server for Client and Peer Authentication
+## <a id="authentication_examples__section_33A13D8566284AB999B5263844F61133" class="no-quick-link"></a>Using an LDAP Server for Client and Peer Authentication
 
 The LDAP sample code is within the Geode source tree in the `geode-core/src/test/java/com/gemstone/gemfire/security/templates/` directory. The implementation is in files `UserPasswordAuthInit.java`, `LdapUserAuthenticator.java`, and `UsernamePrincipal.java`.
 
@@ -38,9 +37,7 @@ During the client authentication process, a server searches for a specific entry
 
 The sample `LdapUserAuthenticator` class implements the `Authenticator` interface, which verifies the credentials provided in the properties as specified in member ID and returns the principal associated with the client. The `init` method for `LdapUserAuthenticator` gets the LDAP server name from the `security-ldap-server` property in the `gemfire.properties`. It also gets the LDAP server base DN name from the `security-ldap-basedn` property, and SSL usage information from the `security-ldap-usessl` property.
 
-<a id="authentication_examples__section_6CF27B7574224218A4BA372EB6664732"></a>
-
-## Using PKCS for Encrypted Client Authentication
+## <a id="authentication_examples__section_6CF27B7574224218A4BA372EB6664732" class="no-quick-link"></a>Using PKCS for Encrypted Client Authentication
 
 The PKCS sample code is within the Geode source tree in the `geode-core/src/test/java/com/gemstone/gemfire/security/templates/` directory. The implementation is in files `PKCSAuthInit.java`, `PKCSAuthenticator.java`, and `PKCSPrincipal.java`.
 

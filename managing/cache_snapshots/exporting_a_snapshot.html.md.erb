@@ -2,12 +2,11 @@
 title:  Exporting Cache and Region Snapshots
 ---
 
-To save <span class="keyword">Geode</span> cache or region data to a snapshot that you can later load into another distributed system or region, use the `cache.getSnapshotService.save` API, `region.getSnapshotService.save` API, or the `gfsh` command-line interface (`export data`).
+To save Geode cache or region data to a snapshot that you can later load into another distributed system or region, use the `cache.getSnapshotService.save` API, `region.getSnapshotService.save` API, or the `gfsh` command-line interface (`export data`).
 
 If an error occurs during export, the export halts and the snapshot operation is canceled. Typical errors that halt an export include scenarios such as full disk, problems with file permissions, and network partitioning.
 
-<a id="concept_D1A4D9677F4146078F65C73BF436C19D__section_98B33450FD95450EAC027384EE82E00C"></a>
-## Exporting Cache Snapshots
+## <a id="concept_D1A4D9677F4146078F65C73BF436C19D__section_98B33450FD95450EAC027384EE82E00C" class="no-quick-link"></a>Exporting Cache Snapshots
 
 When you export an entire cache, it exports all regions in the cache as individual snapshot files into a directory. If no directory is specified, the default is the current directory. A snapshot file is created for each region, and the export operation automatically names each snapshot filename using the following convention:
 
@@ -26,9 +25,7 @@ cache.getSnapshotService().save(mySnapshotDir, SnapshotFormat.GEMFIRE);
 
 Optionally, you can set a filter on the snapshot entries during the export. See [Filtering Entries During Import or Export](filtering_snapshot_entries.html#concept_7E1F89E70A25465EBEBA584FADFEF353) for an example.
 
-<a id="concept_D1A4D9677F4146078F65C73BF436C19D__section_30C1BBB41C194825A46E49E5756369D6"></a>
-
-## Exporting a Region Snapshot
+## <a id="concept_D1A4D9677F4146078F65C73BF436C19D__section_30C1BBB41C194825A46E49E5756369D6" class="no-quick-link"></a>Exporting a Region Snapshot
 
 You can also export a specific region using the following API or gfsh command:
 
@@ -43,7 +40,7 @@ region.getSnapshotService().save(mySnapshot, SnapshotFormat.GEMFIRE);
 
 **gfsh:**
 
-Open a gfsh prompt. After connecting to a <span class="keyword">Geode</span> distributed system, at the prompt type:
+Open a gfsh prompt. After connecting to a Geode distributed system, at the prompt type:
 
 ``` pre
 gfsh>export data --region=Region --file=filename.gfd 

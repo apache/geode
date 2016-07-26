@@ -17,7 +17,7 @@ If you have transactions running in your system, be careful in planning your reb
 
 Kick off a rebalance using one of the following:
 
--   `gfsh` command. First, starting a `gfsh` prompt and connect to the <span class="keyword">Geode</span> distributed system. Then type the following command:
+-   `gfsh` command. First, starting a `gfsh` prompt and connect to the Geode distributed system. Then type the following command:
 
     ``` pre
     gfsh>rebalance
@@ -47,19 +47,17 @@ System.out.println("Rebalance would transfer " + results.getTotalBucketTransferB
 System.out.println(" and create " + results.getTotalBucketCreatesCompleted() + " buckets.\n");
 ```
 
-<a id="rebalancing_pr_data__section_1592413D533D454D9E5ACFCDC4685DD1"></a>
-
-## How Partitioned Region Rebalancing Works
+## <a id="rebalancing_pr_data__section_1592413D533D454D9E5ACFCDC4685DD1" class="no-quick-link"></a>How Partitioned Region Rebalancing Works
 
 The rebalancing operation runs asynchronously.
 
 By default, rebalancing is performed on one partitioned region at a time. For regions that have colocated data, the rebalancing works on the regions as a group, maintaining the data colocation between the regions.
 
-You can optionally rebalance multiple regions in parallel by setting the `gemfire.resource.manager.threads` system property. Setting this property to a value greater than 1 enables <span class="keyword">Geode</span> to rebalance multiple regions in parallel, any time a rebalance operation is initiated using the API.
+You can optionally rebalance multiple regions in parallel by setting the `gemfire.resource.manager.threads` system property. Setting this property to a value greater than 1 enables Geode to rebalance multiple regions in parallel, any time a rebalance operation is initiated using the API.
 
 You can continue to use your partitioned regions normally while rebalancing is in progress. Read operations, write operations, and function executions continue while data is moving. If a function is executing on a local data set, you may see a performance degradation if that data moves to another host during function execution. Future function invocations are routed to the correct member.
 
-<span class="keyword">Geode</span> tries to ensure that each member has the same percentage of its available space used for each partitioned region. The percentage is configured in the `partition-attributes` `local-max-memory` setting.
+Geode tries to ensure that each member has the same percentage of its available space used for each partitioned region. The percentage is configured in the `partition-attributes` `local-max-memory` setting.
 
 Partitioned region rebalancing:
 
@@ -68,20 +66,16 @@ Partitioned region rebalancing:
 -   Resets entry time to live and idle time statistics during bucket migration.
 -   Replaces offline members.
 
-<a id="rebalancing_pr_data__section_BE71EE52DE1A4275BC7854CA597797F4"></a>
-
-## When to Rebalance a Partitioned Region
+## <a id="rebalancing_pr_data__section_BE71EE52DE1A4275BC7854CA597797F4" class="no-quick-link"></a>When to Rebalance a Partitioned Region
 
 You typically want to trigger rebalancing when capacity is increased or reduced through member startup, shut down or failure.
 
 You may also need to rebalance when:
 
--   You use redundancy for high availability and have configured your region to not automatically recover redundancy after a loss. In this case, <span class="keyword">Geode</span> only restores redundancy when you invoke a rebalance. See [Configure High Availability for a Partitioned Region](configuring_ha_for_pr.html).
+-   You use redundancy for high availability and have configured your region to not automatically recover redundancy after a loss. In this case, Geode only restores redundancy when you invoke a rebalance. See [Configure High Availability for a Partitioned Region](configuring_ha_for_pr.html).
 -   You have uneven hashing of data. Uneven hashing can occur if your keys do not have a hash code method, which ensures uniform distribution, or if you use a `PartitionResolver` to colocate your partitioned region data (see [Colocate Data from Different Partitioned Regions](colocating_partitioned_region_data.html#colocating_partitioned_region_data)). In either case, some buckets may receive more data than others. Rebalancing can be used to even out the load between data stores by putting fewer buckets on members that are hosting large buckets.
 
-<a id="rebalancing_pr_data__section_495FEE48ED60433BADB7D36C73279C89"></a>
-
-## How to Simulate Region Rebalancing
+## <a id="rebalancing_pr_data__section_495FEE48ED60433BADB7D36C73279C89" class="no-quick-link"></a>How to Simulate Region Rebalancing
 
 You can simulate the rebalance operation before moving any actual data around by executing the `rebalance` command with the following option:
 

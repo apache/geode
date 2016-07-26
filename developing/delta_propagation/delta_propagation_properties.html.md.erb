@@ -6,8 +6,7 @@ This topic describes the properties that can be used to configure delta propagat
 
 Delta propagation properties can be configured through the API and through the `gemfire.properties` and `cache.xml` files.
 
-<a id="delta_propagation_properties__section_561D6DA876E24469B7536E98AB12F676"></a>
-## delta-propagation
+## <a id="delta_propagation_properties__section_561D6DA876E24469B7536E98AB12F676" class="no-quick-link"></a>delta-propagation
 
 A `gemfire.properties` boolean that enables or disables delta propagation. When false, full entry values are sent for every update. The default setting is true, which enables delta propagation.
 
@@ -27,9 +26,7 @@ Disable delta propagation as follows:
     this.cache = new ClientCacheFactory(props).create();
     ```
 
-<a id="delta_propagation_properties__section_7D4590512D1548FD94F81C8726A2CA44"></a>
-
-## cloning-enabled
+## <a id="delta_propagation_properties__section_7D4590512D1548FD94F81C8726A2CA44" class="no-quick-link"></a>cloning-enabled
 
 A region attributes boolean that affects how `fromDelta` applies deltas to the local cache. When true, the updates are applied to a clone of the value and then the clone is saved to the cache. When false, the value is modified in place in the cache. The default value is false.
 
@@ -40,12 +37,12 @@ Exceptions to this behavior:
 
 Cloning can be expensive, but it ensures that the new object is fully initialized with the delta before any application code sees it.
 
-When cloning is enabled, by default <span class="keyword">Geode</span> does a deep copy of the object, using serialization. You may be able to improve performance by implementing `java.lang.Cloneable` and then implementing the `clone` method, making a deep copy of anything to which a delta may be applied. The goal is to reduce significantly the overhead of copying the object while still retaining the isolation needed for your deltas.
+When cloning is enabled, by default Geode does a deep copy of the object, using serialization. You may be able to improve performance by implementing `java.lang.Cloneable` and then implementing the `clone` method, making a deep copy of anything to which a delta may be applied. The goal is to reduce significantly the overhead of copying the object while still retaining the isolation needed for your deltas.
 
 Without cloning:
 
 -   It is possible for application code to read the entry value as it is being modified, possibly seeing the value in an intermediate, inconsistent state, with just part of the delta applied. You may choose to resolve this issue by having your application code synchronize on reads and writes.
--   <span class="keyword">Geode</span> loses any reference to the old value because the old value is transformed in place into the new value. Because of this, your `CacheListener` sees the same new value returned for `EntryEvent.getOldValue` and `EntryEvent.getNewValue` .
+-   Geode loses any reference to the old value because the old value is transformed in place into the new value. Because of this, your `CacheListener` sees the same new value returned for `EntryEvent.getOldValue` and `EntryEvent.getNewValue` .
 -   Exceptions thrown from `fromDelta` may leave your cache in an inconsistent state. Without cloning, any interruption of the delta application could leave you with some of the fields in your cached object changed and others unchanged. If you do not use cloning, keep this in mind when you program your error handling in your `fromDelta` implementation.
 
 With cloning:

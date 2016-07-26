@@ -10,8 +10,7 @@ You need to specify the name of a valid symmetric key cipher supported by the JD
 
 Before you begin, you need to understand how to use your security algorithm.
 
-<a id="using_diffie_helman__section_45A9502BDF8E42E1970CEFB132F7424D"></a>
-## Enable Server Authentication of Client with Diffie-Hellman
+## <a id="using_diffie_helman__section_45A9502BDF8E42E1970CEFB132F7424D" class="no-quick-link"></a>Enable Server Authentication of Client with Diffie-Hellman
 
 Set this in property in the client’s `gemfire.properties` (or `gfsecurity.properties` file if you are creating a special restricted access file for security configuration):
 
@@ -19,9 +18,7 @@ Set this in property in the client’s `gemfire.properties` (or `gfsecurity.prop
 
 This causes the server to authenticate the client using the Diffie-Hellman algorithm.
 
-<a id="using_diffie_helman__section_D07F68BE8D3140E99244895F4AF2CC80"></a>
-
-## Enable Client Authentication of Server
+## <a id="using_diffie_helman__section_D07F68BE8D3140E99244895F4AF2CC80" class="no-quick-link"></a>Enable Client Authentication of Server
 
 This requires server authentication of client with Diffie-Hellman to be enabled. To have your client authenticate its servers, in addition to being authenticated:
 
@@ -34,9 +31,7 @@ This requires server authentication of client with Diffie-Hellman to be enabled.
     1.  `security-client-kspasswd`. Password for the public key file store on the client
     2.  `security-client-kspath`. Path to the client public key truststore, the JKS keystore of public keys for all servers the client can use. This keystore should not be password-protected
 
-<a id="using_diffie_helman__section_5FB4437072AC4B4E93210BEA60B67A27"></a>
-
-## Set the Key Size for AES and Blowfish Encryption Keys
+## <a id="using_diffie_helman__section_5FB4437072AC4B4E93210BEA60B67A27" class="no-quick-link"></a>Set the Key Size for AES and Blowfish Encryption Keys
 
 For algorithms like AES, especially if large key sizes are used, you may need Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files from Sun or equivalent for your JDK. This enables encryption of client credentials in combination with challenge-response from server to client to prevent replay and other types of attacks. It also enables challenge-response from client to server to avoid server-side replay attacks.
 

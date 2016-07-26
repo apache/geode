@@ -12,20 +12,15 @@ The native client requires OpenSSL 1.0.1h or later. For Windows platforms, you c
 **Note:**
 If you use Cygwin, it is recommended that you do not use the OpenSSL library that comes with Cygwin because it is built with `cygwin.dll` as a dependency.
 
-<a id="security__section_5C95C2E4D9244B27BF8FD178E402D993"></a>
-### Linux
+### <a id="security__section_5C95C2E4D9244B27BF8FD178E402D993" class="no-quick-link"></a>Linux
 
 Download the OpenSSL tarball archive from the OpenSSL web site at [http://www.openssl.org/source/](http://www.openssl.org/source/). Copy the downloaded tarball file into `NativeClient_xxxx/templates/security/openssl/Linux` and run `buildit.sh`.
 
-<a id="security__section_93651F296C1A4EA5A3FA045EC15FB506"></a>
-
-### Solaris
+### <a id="security__section_93651F296C1A4EA5A3FA045EC15FB506" class="no-quick-link"></a>Solaris
 
 Download the OpenSSL tarball archive from the OpenSSL web site at [http://www.openssl.org/source/](http://www.openssl.org/source/). Copy the downloaded tarball file into `NativeClient_xxxx/templates/security/openssl/SunOS` and run `buildit.sh`.
 
-<a id="security__section_68961A8829D44BFB8F542F3317464E5E"></a>
-
-### Windows
+### <a id="security__section_68961A8829D44BFB8F542F3317464E5E" class="no-quick-link"></a>Windows
 
 Download the installer for OpenSSL from [http://www.openssl.org/related/binaries.html](http://www.openssl.org/related/binaries.html). You can also use the OpenSSL "Light" version.
 
@@ -34,7 +29,7 @@ Use the downloaded OpenSSL installer to install it on Windows. You can usually a
 
 ## Step 2. Create keystores
 
-The <span class="keyword">Geode</span> server requires keys and keystores in the Java Key Store (JKS) format while the native client requires them in the clear PEM format. Thus you need to be able to generate private/public keypairs in either format and convert between the two using the `keytool` utility and the `openssl` command.
+The Geode server requires keys and keystores in the Java Key Store (JKS) format while the native client requires them in the clear PEM format. Thus you need to be able to generate private/public keypairs in either format and convert between the two using the `keytool` utility and the `openssl` command.
 
 There are public third party free tools and source code available to download such as the "KeyTool IUI" tool.
 
@@ -45,8 +40,7 @@ Configure your system environment to build and run OpenSSL. Follow the environme
 
 For all references to the Pivotal\_GemFire\_NativeClient\_*64bit*\_*xxxx* directory, replace *64bit* with the appropriate architecture and *xxxx* with the actual four-digit product build number.
 
-<a id="security__section_6C173D0D8C8343EA92961C954032E2CA"></a>
-### Bourne and Korn shells (sh, ksh, bash)
+### <a id="security__section_6C173D0D8C8343EA92961C954032E2CA" class="no-quick-link"></a>Bourne and Korn shells (sh, ksh, bash)
 
 ``` pre
 % OPENSSL=<parent folder for OpenSSL binaries>; export OPENSSL
@@ -56,9 +50,7 @@ For all references to the Pivotal\_GemFire\_NativeClient\_*64bit*\_*xxxx* direct
 % CLASSPATH=$GEMFIRE/lib/gfSecurityImpl.jar:$CLASSPATH
 ```
 
-<a id="security__section_76CF86EDC2234BA6BF7DA6E253C71F61"></a>
-
-### Windows
+### <a id="security__section_76CF86EDC2234BA6BF7DA6E253C71F61" class="no-quick-link"></a>Windows
 
 ``` pre
 > set GFCPP=<path to installation, typically C:\Pivotal_GemFire_NativeClient_32or64bit_xxxx>

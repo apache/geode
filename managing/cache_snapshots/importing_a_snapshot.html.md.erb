@@ -2,19 +2,16 @@
 title:  Importing Cache and Region Snapshots
 ---
 
-To import a <span class="keyword">Geode</span> cache or region data snapshot that you previously exported into another distributed system or region, use the `cache.getSnapshotService.load` API, `region.getSnapshotService.load` API, or the `gfsh` command-line interface (`import data`).
+To import a Geode cache or region data snapshot that you previously exported into another distributed system or region, use the `cache.getSnapshotService.load` API, `region.getSnapshotService.load` API, or the `gfsh` command-line interface (`import data`).
 
-<a id="concept_62B1E24DA7F342E9BB16C0818F7A7B70__section_4B2C73CA1A734D9D96693A52BF99D75A"></a>
-## Import Requirements
+## <a id="concept_62B1E24DA7F342E9BB16C0818F7A7B70__section_4B2C73CA1A734D9D96693A52BF99D75A" class="no-quick-link"></a>Import Requirements
 
 Before you import a region snapshot:
 
 -   Make sure the cache is configured correctly. Configure all registered PdxSerializers, DataSerializers, and Instantiators; create regions; and ensure the classpath contains any required classes.
 -   When you import a snapshot containing PDX types, you must wait until the exported type definitions are imported into the cache before inserting data that causes type conflicts. It is recommended that you wait for the import to complete before inserting data.
 
-<a id="concept_62B1E24DA7F342E9BB16C0818F7A7B70__section_F5FA11694BFC46D4A813A259FE670C69"></a>
-
-## Import Limitations
+## <a id="concept_62B1E24DA7F342E9BB16C0818F7A7B70__section_F5FA11694BFC46D4A813A259FE670C69" class="no-quick-link"></a>Import Limitations
 
 During an import, the `CacheWriter` and `CacheListener` callbacks are not invoked.
 
@@ -22,9 +19,7 @@ If an error occurs during import, the import is halted and the region will conta
 
 The state of a cache client is indeterminate after an import. It is likely that the data in the client's cache is inconsistent with the imported data. Take the client offline during the import and restart it after the import completes.
 
-<a id="concept_62B1E24DA7F342E9BB16C0818F7A7B70__section_4F1A3A60FABA49A295CA18FBF572998D"></a>
-
-## Importing Cache Snapshots
+## <a id="concept_62B1E24DA7F342E9BB16C0818F7A7B70__section_4F1A3A60FABA49A295CA18FBF572998D" class="no-quick-link"></a>Importing Cache Snapshots
 
 When you import a cache snapshot, the snapshot file is imported into the same region (match determined by name) that was used during snapshot export. When you import a cache, you import all snapshot files located within a directory into the cache. The API attempts to load all files in the specified directory.
 
@@ -37,9 +32,7 @@ Cache cache = ...
 cache.getSnapshotService().load(mySnapshotDir, SnapshotFormat.GEMFIRE);
 ```
 
-<a id="concept_62B1E24DA7F342E9BB16C0818F7A7B70__section_97054643976345A099A7BDDC63DE30E9"></a>
-
-## Importing a Region Snapshot
+## <a id="concept_62B1E24DA7F342E9BB16C0818F7A7B70__section_97054643976345A099A7BDDC63DE30E9" class="no-quick-link"></a>Importing a Region Snapshot
 
 **Java API:**
 
@@ -52,7 +45,7 @@ region.getSnapshotService().load(mySnapshot, SnapshotFormat.GEMFIRE);
 
 **gfsh:**
 
-Open a gfsh prompt. After connecting to a <span class="keyword">Geode</span> distributed system, at the prompt type:
+Open a gfsh prompt. After connecting to a Geode distributed system, at the prompt type:
 
 ``` pre
 gfsh>import data --region=Region --file=filename.gfd 

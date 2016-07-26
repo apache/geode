@@ -10,7 +10,7 @@ When a transaction is resumed, the resuming thread assumes the transactional vie
 
 If the member with the primary copy of the data crashes, the transactional view that applied to that data is lost. The secondary member for the data cannot resume transactions suspended on the crashed member. You need to take remedial steps to retry the transaction on a new primary copy of the data.
 
-If a suspended transaction is not touched for a period of time, <span class="keyword">Geode</span> cleans it up automatically. By default, the timeout for a suspended transaction is 30 minutes and can be configured by using the `suspended-tx-timeout` property of the `gfcpp.properties` file. The suspended transaction timeout value is specified in milliseconds.
+If a suspended transaction is not touched for a period of time, Geode cleans it up automatically. By default, the timeout for a suspended transaction is 30 minutes and can be configured by using the `suspended-tx-timeout` property of the `gfcpp.properties` file. The suspended transaction timeout value is specified in milliseconds.
 
 See [Running a Native Client Transaction](running-native-client-xact.html) for code examples of how to suspend and resume a transaction.
 

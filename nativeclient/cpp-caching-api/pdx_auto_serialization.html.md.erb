@@ -4,15 +4,13 @@ title: Using Automatic PDX Serialization
 
 You can allow your native client C++ applications to automatically PDX serialize and deserialize domain objects without having to add any extra code by using the `pdxautoserializer` command line tool provided with the native client.
 
-When using the native client C++ API, you can automatically serialize and deserialize domain objects without making any code changes to those objects or having to implement a `PdxSerializer` or `PdxSerializable` interface and their related `fromData` and `toData` methods. The <span class="keyword">Geode</span> native client includes a command-line utility, `pdxautoserializer`, that allows you to generate C++ code that will serialize your domain objects in the PDX format for you.
+When using the native client C++ API, you can automatically serialize and deserialize domain objects without making any code changes to those objects or having to implement a `PdxSerializer` or `PdxSerializable` interface and their related `fromData` and `toData` methods. The Geode native client includes a command-line utility, `pdxautoserializer`, that allows you to generate C++ code that will serialize your domain objects in the PDX format for you.
 
-<a id="task_czj_wnw_dl"></a>
-
-## How to Use Automatic PDX Serialization
+## <a id="task_czj_wnw_dl" class="no-quick-link"></a>How to Use Automatic PDX Serialization
 
 **Prerequisites:**
 
--   Understand generally how to configure the <span class="keyword">Geode</span> cache.
+-   Understand generally how to configure the Geode cache.
 
 -   Understand how PDX serialization works and how to configure your application to use PdxSerializer.
 
@@ -101,9 +99,7 @@ namespace testobject
 }
 ```
 
-<a id="task_fs4_vkj_2l"></a>
-
-## Handling Arrays
+## <a id="task_fs4_vkj_2l" class="no-quick-link"></a>Handling Arrays
 
 1.  Define the following macro in your header file:
 
@@ -156,9 +152,7 @@ class ArrayOfSizes?
   };​
 ```
 
-<a id="task_hph_mrw_dl"></a>
-
-## Excluding Member Variables from Serialization
+## <a id="task_hph_mrw_dl" class="no-quick-link"></a>Excluding Member Variables from Serialization
 
 1.  Define the following macro in your header file:
 
@@ -172,9 +166,7 @@ class ArrayOfSizes?
     GFEXCLUDE char* type;
     ```
 
-<a id="task_en2_4rw_dl"></a>
-
-## Marking Identity Fields
+## <a id="task_en2_4rw_dl" class="no-quick-link"></a>Marking Identity Fields
 
 Identity fields are used when comparing objects using the `hashCode` and `equals` methods.
 
@@ -240,9 +232,7 @@ namespace PdxAutoTests {
   class GFIGNORE(TESTOBJECT_EXPORT) PdxAutoMegaType :  public PdxSerializable {
 ```
 
-<a id="topic_d3q_v3c_2l"></a>
-
-## Additional Usage Information for the pdxautoserializer Tool
+## <a id="topic_d3q_v3c_2l" class="no-quick-link"></a>Additional Usage Information for the pdxautoserializer Tool
 
 The `pdxautoserializer` tool takes classes as input and generates code that will serialize the class into the PDX format for you.
 
@@ -326,9 +316,7 @@ The `pdxserializer` tool also provides the option to choose your own suffix for 
 pdxautoserializer --outDir=<outDir> --className=CharTypes --suffix="generated"
 ```
 
-<a id="topic_f33_fsw_dl"></a>
-
-## Example of Using PDX Serialization in Your Application
+## <a id="topic_f33_fsw_dl" class="no-quick-link"></a>Example of Using PDX Serialization in Your Application
 
 ``` pre
 CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory();

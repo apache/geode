@@ -10,7 +10,7 @@ This is the basic syntax for the CQ query:
 SELECT * FROM /fullRegionPath [iterator] [WHERE clause]
 ```
 
-The CQ query must satisfy the standard <span class="keyword">Geode</span> native client querying specifications described in [Remote Querying](../remote-querying/remote-querying.html#security). It also must satisfy these restrictions:
+The CQ query must satisfy the standard Geode native client querying specifications described in [Remote Querying](../remote-querying/remote-querying.html#security). It also must satisfy these restrictions:
 
 -   The `FROM` clause must contain only a single region specification, with optional iterator variable.
 -   The query must be a `SELECT` expression only, preceded by zero or more `IMPORT` statements. This means the query cannot be a statement like `/tradeOrder.name` or `(SELECT * from                     /tradeOrder).size`.

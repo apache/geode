@@ -2,7 +2,7 @@
 title:  Using Query Bind Parameters
 ---
 
-Using query bind parameters in <span class="keyword">Geode</span> queries is similar to using prepared statements in SQL where parameters can be set during query execution. This allows user to build a query once and execute it multiple times by passing the query conditions during run time.
+Using query bind parameters in Geode queries is similar to using prepared statements in SQL where parameters can be set during query execution. This allows user to build a query once and execute it multiple times by passing the query conditions during run time.
 
 Query objects are thread-safe.
 
@@ -16,8 +16,7 @@ The 0th element of the Object array is used for the first query parameter, and s
 
 In the following example, the first parameter, the integer **2**, is bound to the first element in the object array. The second parameter, **active**, is bound to the second element.
 
-<a id="concept_173E775FE46B47DF9D7D1E40680D34DF__section_7F5A800E2DA643F2B30162EF45DBA390"></a>
-## Sample Code
+## <a id="concept_173E775FE46B47DF9D7D1E40680D34DF__section_7F5A800E2DA643F2B30162EF45DBA390" class="no-quick-link"></a>Sample Code
 
 ``` pre
 // specify the query string
@@ -38,9 +37,7 @@ SelectResults results = (SelectResults) query.execute(params);
  int size = results.size();
 ```
 
-<a id="concept_173E775FE46B47DF9D7D1E40680D34DF__section_90B4A0010CDA481581B650AE6D9EBA34"></a>
-
-## Using Query Bind Parameters in the Path Expression
+## <a id="concept_173E775FE46B47DF9D7D1E40680D34DF__section_90B4A0010CDA481581B650AE6D9EBA34" class="no-quick-link"></a>Using Query Bind Parameters in the Path Expression
 
 Additionally the query engine supports the use of query bind parameter in place of a region path. When you specify a bind parameter in the query's FROM clause, the parameter's referenced value must be bound to a collection.
 

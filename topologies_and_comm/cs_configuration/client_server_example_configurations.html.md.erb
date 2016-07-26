@@ -4,8 +4,7 @@ title:  Client/Server Example Configurations
 
 For easy configuration, you can start with these example client/server configurations and modify for your systems.
 
-<a id="client_server_example_configurations__section_556E0D3D72624AD9B27C636BA628ADC0"></a>
-## Examples of Standard Client/Server Configuration
+## <a id="client_server_example_configurations__section_556E0D3D72624AD9B27C636BA628ADC0" class="no-quick-link"></a>Examples of Standard Client/Server Configuration
 
 Generally, locators and servers use the same distributed system properties file, which lists locators as the discovery mechanism for peer members and for connecting clients. For example:
 
@@ -46,7 +45,7 @@ gfsh>start server --name=server1 --server-port=40404
 
 See `start server`.
 
-The client’s `cache.xml` `<client-cache>` declaration automatically configures it as a standalone <span class="keyword">Geode</span> application.
+The client’s `cache.xml` `<client-cache>` declaration automatically configures it as a standalone Geode application.
 
 The client's `cache.xml`:
 
@@ -121,9 +120,7 @@ private static void runSubscriber() throws InterruptedException {
 } 
 ```
 
-<a id="client_server_example_configurations__section_A7759DCB9BFE47448B8E8D72DDCDE058"></a>
-
-## Example of a Static Server List in Client/Server Configuration
+## <a id="client_server_example_configurations__section_A7759DCB9BFE47448B8E8D72DDCDE058" class="no-quick-link"></a>Example of a Static Server List in Client/Server Configuration
 
 You can specify a static server list instead of a locator list in the client configuration. With this configuration, the client’s server information does not change for the life of the client member. You do not get dynamic server discovery, server load conditioning, or the option of logical server grouping. This model is useful for very small deployments, such as test systems, where your server pool is stable. It avoids the administrative overhead of running locators.
 

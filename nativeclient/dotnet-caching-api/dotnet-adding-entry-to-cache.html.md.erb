@@ -6,7 +6,7 @@ You populate a native client region with cache entries by using the generic `IDi
 
 The `Put` function places a new value into a region entry with the specified key, while the `Create` function creates a new entry in the region. The `Put` and `Create` functions provide a user-defined parameter object to any cache writer invoked in the process.
 
-If a value for the entry key already exists in the cache when you add an entry, <span class="keyword">Geode</span> overwrites the previously cached value. New values in the cache are propagated to the connected cache server.
+If a value for the entry key already exists in the cache when you add an entry, Geode overwrites the previously cached value. New values in the cache are propagated to the connected cache server.
 
 The .NET Generics provide type safety, so you cannot change your entry key and value types once you have begun to populate the region. If you need to use different types for the same region, store them all inside objects in the region.
 
@@ -24,7 +24,6 @@ region3.Put(111, "Value1", null);
 region3.Put(222, "Value2", null);
 ```
 
-<a id="concept_51D1C2475B394B10868CE6ED8DC5E542__section_8DAEA246DA464BD1B9654827A84A93BF"></a>
-## Batch Operations—Using PutAll to Add Multiple Entries
+## <a id="concept_51D1C2475B394B10868CE6ED8DC5E542__section_8DAEA246DA464BD1B9654827A84A93BF" class="no-quick-link"></a>Batch Operations—Using PutAll to Add Multiple Entries
 
 You can batch up multiple key/value pairs into a hashmap and put them into the cache with a single operation using the .NET `Region.PutAll` API function. Each entry is processed for interest registration on the server, so each entry requires its own unique event ID. Updates and creates can be mixed in a `PutAll` operation, so those events need to be addressed on the cache server for appropriate cache listener invocation on distributed system members. Map entries retain their original order when they are processed at the server.

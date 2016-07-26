@@ -61,10 +61,9 @@ If possible, your TCP/IP buffer size settings should match across your GemFire i
     ```
 
 **Note:**
-WAN deployments increase the messaging demands on a <span class="keyword">Geode</span> system. To avoid hangs related to WAN messaging, always set `conserve-sockets=false` for GemFire members that participate in a WAN deployment.
+WAN deployments increase the messaging demands on a Geode system. To avoid hangs related to WAN messaging, always set `conserve-sockets=false` for GemFire members that participate in a WAN deployment.
 
-<a id="socket_comm__section_4A7C60D4471A4339884AA5AAC97B4DAA"></a>
-## Multi-site (WAN) Socket Requirements
+## <a id="socket_comm__section_4A7C60D4471A4339884AA5AAC97B4DAA" class="no-quick-link"></a>Multi-site (WAN) Socket Requirements
 
 Each gateway sender and gateway receiver uses a socket to distribute events or to listen for incoming connections from remote sites.
 
@@ -97,9 +96,7 @@ Each gateway sender and gateway receiver uses a socket to distribute events or t
 
 Servers are peers in their own distributed system and have the additional socket requirements as noted in the Peer-to-Peer section above.
 
-<a id="socket_comm__section_66D11C8E84F941B58800EDB52194B087"></a>
-
-## Member produces SocketTimeoutException
+## <a id="socket_comm__section_66D11C8E84F941B58800EDB52194B087" class="no-quick-link"></a>Member produces SocketTimeoutException
 
 A client, server, gateway sender, or gateway receiver produces a SocketTimeoutException when it stops waiting for a response from the other side of the connection and closes the socket. This exception typically happens on the handshake or when establishing a callback connection.
 
