@@ -13,5 +13,20 @@ Each machine that will run <span class="keyword">Apache Geode</span> must meet t
     -   Aggregate product-level and application-level time statistics. 
     -   Accurate monitoring of the <span class="keyword">Geode</span> system with scripts and other tools that read the system statistics and log files.
 -   The host name and host files are properly configured for the machine. The host name and host file configuration can affect `gfsh` and Pulse functionality.
+-   Many default Linux installations use SYN cookies to protect the 
+system against malicious attacks that flood TCP SYN packets.
+The use of SYN cookies dramatically reduces network bandwidth,
+and can be triggered by a running GemFire distributed system.
 
+    To disable SYN cookies permanently:
+    1. Edit the `/etc/sysctl.conf` file to include the following line:
 
+        ``` pre
+        net.ipv4.tcp_syncookies = 0
+        ```
+        Setting this value to zero disables SYN cookies.
+    2. Reload `sysctl.conf`:
+
+        ``` pre
+        sysctl -p
+        ```
