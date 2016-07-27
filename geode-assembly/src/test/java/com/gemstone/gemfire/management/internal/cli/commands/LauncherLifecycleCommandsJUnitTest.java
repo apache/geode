@@ -121,6 +121,47 @@ public class LauncherLifecycleCommandsJUnitTest {
     }
   }
 
+
+  @Test
+  public void testAddGemFireSystemPropertiesToCommandLineWithRestAPI() {
+    final List<String> commandLine = new ArrayList<>();
+
+    assertTrue(commandLine.isEmpty());
+
+    getLauncherLifecycleCommands().addGemFireSystemProperties(commandLine, new Properties());
+
+    assertTrue(commandLine.isEmpty());
+
+    final Properties gemfireProperties = new Properties();
+
+    gemfireProperties.setProperty(LOCATORS, "localhost[11235]");
+    gemfireProperties.setProperty(LOG_LEVEL, "config");
+    gemfireProperties.setProperty(LOG_FILE, StringUtils.EMPTY_STRING);
+    gemfireProperties.setProperty(MCAST_PORT, "0");
+    gemfireProperties.setProperty(NAME, "tidepool");
+
+    gemfireProperties.setProperty(START_DEV_REST_API, "true");
+    gemfireProperties.setProperty(HTTP_SERVICE_PORT,  "8080");
+    gemfireProperties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
+
+
+    getLauncherLifecycleCommands().addGemFireSystemProperties(commandLine, gemfireProperties);
+
+    assertFalse(commandLine.isEmpty());
+    assertEquals(7, commandLine.size());
+
+    for (final String propertyName : gemfireProperties.stringPropertyNames()) {
+      final String propertyValue = gemfireProperties.getProperty(propertyName);
+      if (StringUtils.isBlank(propertyValue)) {
+        for (final String systemProperty : commandLine) {
+          assertFalse(systemProperty.startsWith("-D" + DistributionConfig.GEMFIRE_PREFIX + "".concat(propertyName).concat("=")));
+        }
+      } else {
+        assertTrue(commandLine.contains("-D" + DistributionConfig.GEMFIRE_PREFIX + "".concat(propertyName).concat("=").concat(propertyValue)));
+      }
+    }
+  }
+
   @Test
   public void testAddInitialHeapToCommandLine() {
     final List<String> commandLine = new ArrayList<>();
@@ -443,6 +484,53 @@ public class LauncherLifecycleCommandsJUnitTest {
     assertTrue(String.format("Expected ([]); but was (%1$s)", expectedCommandLineElements),
         expectedCommandLineElements.isEmpty());
   }
+
+  @Test
+  public void testCreateServerCommandLineWithRestAPI() throws Exception {
+    ServerLauncher serverLauncher = new ServerLauncher.Builder().setCommand(
+      ServerLauncher.Command.START).setDisableDefaultServer(true).setMemberName(
+      "testCreateServerCommandLine").setRebalance(true)
+      //.setServerBindAddress("localhost")
+      .setServerPort(41214).setCriticalHeapPercentage(95.5f).setEvictionHeapPercentage(85.0f).build();
+
+    Properties gemfireProperties = new Properties();
+    gemfireProperties.setProperty(START_DEV_REST_API, "true");
+    gemfireProperties.setProperty(HTTP_SERVICE_PORT,  "8080");
+    gemfireProperties.setProperty(HTTP_SERVICE_BIND_ADDRESS,  "localhost");
+
+
+    String[] commandLineElements = launcherCommands.createStartServerCommandLine(serverLauncher, null, null,
+      gemfireProperties, null, false, new String[0], false, null, null);
+
+    assertNotNull(commandLineElements);
+    assertTrue(commandLineElements.length > 0);
+
+    Set<String> expectedCommandLineElements = new HashSet<>(6);
+
+    expectedCommandLineElements.add(serverLauncher.getCommand().getName());
+    expectedCommandLineElements.add("--disable-default-server");
+    expectedCommandLineElements.add(serverLauncher.getMemberName().toLowerCase());
+    expectedCommandLineElements.add("--rebalance");
+    //expectedCommandLineElements.add(String.format("--server-bind-address=%1$s", serverLauncher.getServerBindAddress().getHostName()));
+    expectedCommandLineElements.add(String.format("--server-port=%1$d", serverLauncher.getServerPort()));
+    expectedCommandLineElements.add(
+      String.format("--critical-heap-percentage=%1$s", serverLauncher.getCriticalHeapPercentage()));
+    expectedCommandLineElements.add(
+      String.format("--eviction-heap-percentage=%1$s", serverLauncher.getEvictionHeapPercentage()));
+
+    expectedCommandLineElements.add("-d" + DistributionConfig.GEMFIRE_PREFIX + "" + START_DEV_REST_API + "=" + "true");
+    expectedCommandLineElements.add("-d" + DistributionConfig.GEMFIRE_PREFIX + "" + HTTP_SERVICE_PORT + "=" + "8080");
+    expectedCommandLineElements.add("-d" + DistributionConfig.GEMFIRE_PREFIX + "" + HTTP_SERVICE_BIND_ADDRESS + "=" + "localhost");
+
+
+    for (String commandLineElement : commandLineElements) {
+      expectedCommandLineElements.remove(commandLineElement.toLowerCase());
+    }
+
+    assertTrue(String.format("Expected ([]); but was (%1$s)", expectedCommandLineElements),
+      expectedCommandLineElements.isEmpty());
+  }
+
 
   @Test
   public void testReadPidWithNonExistingFile() {
