@@ -1560,9 +1560,9 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       gemfireProperties.setProperty(LOCK_MEMORY, StringUtils.valueOf(lockMemory, StringUtils.EMPTY_STRING));
       gemfireProperties.setProperty(OFF_HEAP_MEMORY_SIZE, StringUtils.valueOf(offHeapMemorySize, StringUtils.EMPTY_STRING));
 
-      gemfireProperties.setProperty(DistributionConfig.START_DEV_REST_API_NAME, StringUtils.valueOf(startRestApi, StringUtils.EMPTY_STRING));
-      gemfireProperties.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME,  StringUtils.valueOf(httpServicePort, StringUtils.EMPTY_STRING));
-      gemfireProperties.setProperty(DistributionConfig.HTTP_SERVICE_BIND_ADDRESS_NAME,  StringUtils.valueOf(httpServiceBindAddress, StringUtils.EMPTY_STRING));
+      gemfireProperties.setProperty(START_DEV_REST_API, StringUtils.valueOf(startRestApi, StringUtils.EMPTY_STRING));
+      gemfireProperties.setProperty(HTTP_SERVICE_PORT,  StringUtils.valueOf(httpServicePort, StringUtils.EMPTY_STRING));
+      gemfireProperties.setProperty(HTTP_SERVICE_BIND_ADDRESS,  StringUtils.valueOf(httpServiceBindAddress, StringUtils.EMPTY_STRING));
 
 
       // read the OSProcess enable redirect system property here -- TODO: replace with new GFSH argument
