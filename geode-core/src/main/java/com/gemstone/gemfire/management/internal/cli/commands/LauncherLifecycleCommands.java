@@ -72,7 +72,7 @@ import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.internal.DistributionLocator;
 import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.net.SocketCreator;
+import com.gemstone.gemfire.internal.net.*;
 import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberPattern;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.lang.ClassUtils;
@@ -686,13 +686,14 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
     try {
       final InetAddress networkAddress = InetAddress.getByName(locatorHostName);
 
+      TcpClient client = new TcpClient();
       SharedConfigurationStatusResponse statusResponse = (SharedConfigurationStatusResponse)
-          TcpClient.requestToServer(networkAddress, locatorPort, new SharedConfigurationStatusRequest(), 10000, true);
+          client.requestToServer(networkAddress, locatorPort, new SharedConfigurationStatusRequest(), 10000, true);
 
       for (int i = 0; i < NUM_ATTEMPTS_FOR_SHARED_CONFIGURATION_STATUS; i++) {
         if (statusResponse.getStatus().equals(SharedConfigurationStatus.STARTED) || statusResponse.getStatus().equals(SharedConfigurationStatus.NOT_STARTED)) {
-          statusResponse = (SharedConfigurationStatusResponse) TcpClient
-              .requestToServer(networkAddress, locatorPort, new SharedConfigurationStatusRequest(), 10000, true);
+          statusResponse = (SharedConfigurationStatusResponse)
+              client.requestToServer(networkAddress, locatorPort, new SharedConfigurationStatusRequest(), 10000, true);
           try {
             Thread.sleep(5000);
           } catch (InterruptedException e) {

@@ -112,7 +112,7 @@ public class AutoConnectionSourceImplJUnitTest {
     try {
       if(server != null && server.isAlive()) {
         try {
-          TcpClient.stop(InetAddress.getLocalHost(), port);
+          new TcpClient().stop(InetAddress.getLocalHost(), port);
         } catch ( ConnectException ignore ) {
           // must not be running
         }
@@ -167,7 +167,7 @@ public class AutoConnectionSourceImplJUnitTest {
       handler.nextLocatorListResponse = new LocatorListResponse(locators,false);
       Thread.sleep(500);
       try {
-        TcpClient.stop(InetAddress.getLocalHost(), port);
+        new TcpClient().stop(InetAddress.getLocalHost(), port);
       } catch ( ConnectException ignore ) {
         // must not be running
       }
@@ -178,7 +178,7 @@ public class AutoConnectionSourceImplJUnitTest {
       assertEquals(server1, source.findServer(null));
     } finally {
       try {
-        TcpClient.stop(InetAddress.getLocalHost(), secondPort);
+        new TcpClient().stop(InetAddress.getLocalHost(), secondPort);
       } catch ( ConnectException ignore ) {
         // must not be running
       }

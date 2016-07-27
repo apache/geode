@@ -34,7 +34,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.locator.PeerLoca
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpHandler;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpServer;
-import com.gemstone.gemfire.internal.net.SocketCreator;
+import com.gemstone.gemfire.internal.net.*;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.wan.WANServiceProvider;
@@ -446,39 +446,6 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
     DistributionManager distMgr = (DistributionManager)ids.getDistributionManager();
     return distMgr.getDMType() == DistributionManager.LOCATOR_DM_TYPE;
-  }
-  
-  public static LocatorStatusResponse statusLocator(int port, InetAddress bindAddress) throws IOException {
-    //final int timeout = (60 * 2 * 1000); // 2 minutes
-    final int timeout = Integer.MAX_VALUE; // 2 minutes
-
-    try {
-      return (LocatorStatusResponse) TcpClient.requestToServer(bindAddress, port,
-        new LocatorStatusRequest(), timeout, true);
-    }
-    catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * Stops the distribution locator that runs on the given port and
-   * bind address.
-   */
-  public static void stopLocator(int port, InetAddress bindAddress) 
-    throws ConnectException {
-    TcpClient.stop(bindAddress, port);
-  }
-
-  /**
-   * Returns information about the locator running on the given host
-   * and port or <code>null</code> if the information cannot be
-   * obtained.  Two <code>String</code>s are returned: the first
-   * string is the working directory of the locator and the second
-   * string is the product directory of the locator.
-   */
-  public static String[] getLocatorInfo(InetAddress host, int port) {
-    return TcpClient.getInfo(host, port);
   }
 
   ///////////////////////  Constructors  //////////////////////
@@ -950,7 +917,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     if (this.server.isAlive()) {
       logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_STOPPING__0, this));
       try {
-        stopLocator(getPort(), this.bindAddress);
+        new TcpClient().stop(this.bindAddress, getPort());
       } catch ( ConnectException ignore ) {
         // must not be running
       }

@@ -23,6 +23,7 @@ import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.net.*;
 import com.gemstone.gemfire.internal.tcp.ConnectionException;
 import org.apache.logging.log4j.Logger;
 
@@ -47,6 +48,8 @@ public class LocatorDiscovery{
   private LocatorMembershipListener locatorListener;
   
   RemoteLocatorJoinRequest request;
+  
+  TcpClient locatorClient;
 
   public static final int WAN_LOCATOR_CONNECTION_RETRY_ATTEMPT = Integer
       .getInteger("WANLocator.CONNECTION_RETRY_ATTEMPT", 50000).intValue();
@@ -63,6 +66,7 @@ public class LocatorDiscovery{
     this.locatorId = locotor;
     this.request = request; 
     this.locatorListener = locatorListener;
+    this.locatorClient = new TcpClient();
   }
   
   /**
@@ -129,7 +133,7 @@ public class LocatorDiscovery{
     int retryAttempt = 1;
     while (!getDiscoverer().isStopped()) {
       try {
-        RemoteLocatorJoinResponse response = (RemoteLocatorJoinResponse)TcpClient
+        RemoteLocatorJoinResponse response = (RemoteLocatorJoinResponse)locatorClient
             .requestToServer(locatorId.getHost(), locatorId.getPort(), request,
                 WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT);
         if (response != null) {
@@ -176,7 +180,7 @@ public class LocatorDiscovery{
     while (!getDiscoverer().isStopped()) {
       RemoteLocatorJoinResponse response;
       try {
-        response = (RemoteLocatorJoinResponse)TcpClient
+        response = (RemoteLocatorJoinResponse)locatorClient
             .requestToServer(remoteLocator.getHost(), remoteLocator.getPort(),
                 request, WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT);
         if (response != null) {
@@ -187,7 +191,7 @@ public class LocatorDiscovery{
               "");
           while (true) {
             Thread.sleep(WAN_LOCATOR_PING_INTERVAL);
-            RemoteLocatorPingResponse pingResponse = (RemoteLocatorPingResponse) TcpClient
+            RemoteLocatorPingResponse pingResponse = (RemoteLocatorPingResponse)locatorClient
                 .requestToServer(remoteLocator.getHost(),
                     remoteLocator.getPort(), pingRequest,
                     WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT);

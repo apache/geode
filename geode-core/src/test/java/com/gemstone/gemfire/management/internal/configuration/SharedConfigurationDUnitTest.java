@@ -385,7 +385,7 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
         Set<String> groups = new HashSet<String>();
         groups.add(testGroup);
         ConfigurationRequest configRequest = new ConfigurationRequest(groups);
-        ConfigurationResponse configResponse = (ConfigurationResponse) TcpClient.requestToServer(InetAddress.getByName("localhost"), locator2Port, configRequest, 1000);
+        ConfigurationResponse configResponse = (ConfigurationResponse)new TcpClient().requestToServer(InetAddress.getByName("localhost"), locator2Port, configRequest, 1000);
         assertNotNull(configResponse);
         
         Map<String, Configuration> requestedConfiguration = configResponse.getRequestedConfiguration();

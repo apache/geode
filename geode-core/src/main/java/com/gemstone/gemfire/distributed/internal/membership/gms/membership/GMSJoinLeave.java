@@ -37,6 +37,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.*;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.net.*;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import org.apache.logging.log4j.Logger;
 
@@ -460,7 +461,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    * If this is not the coordinator but the coordinator is known, the message
    * is forwarded to the coordinator.
    *
-   * @param incomingRequest
+   * @param incomingRequest the request to be processed
    */
   private void processJoinRequest(JoinRequestMessage incomingRequest) {
 
@@ -502,7 +503,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    * to become the new membership coordinator. If this is the coordinator
    * a new view will be triggered.
    *
-   * @param incomingRequest
+   * @param incomingRequest the request to be processed
    */
   private void processLeaveRequest(LeaveRequestMessage incomingRequest) {
 
@@ -563,7 +564,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    * to become the new membership coordinator. If this is the coordinator
    * a new view will be triggered.
    *
-   * @param incomingRequest
+   * @param incomingRequest the request to process
    */
   private void processRemoveRequest(RemoveMemberMessage incomingRequest) {
     NetView v = currentView;
@@ -935,9 +936,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   private TcpClientWrapper tcpClientWrapper = new TcpClientWrapper();
 
   /***
-   * testing purpose
+   * testing purpose.  Sets the TcpClient that is used by GMSJoinLeave
+   * to communicate with Locators.
    *
-   * @param tcpClientWrapper
+   * @param tcpClientWrapper the wrapper
    */
   void setTcpClientWrapper(TcpClientWrapper tcpClientWrapper) {
     this.tcpClientWrapper = tcpClientWrapper;
@@ -1058,7 +1060,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   protected class TcpClientWrapper {
     protected Object sendCoordinatorFindRequest(InetSocketAddress addr, FindCoordinatorRequest request, int connectTimeout)
         throws ClassNotFoundException, IOException {
-      return TcpClient.requestToServer(
+      TcpClient client = new TcpClient();
+      return client.requestToServer(
           addr.getAddress(), addr.getPort(), request, connectTimeout,
           true);
     }
@@ -1132,7 +1135,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   /**
    * receives a JoinResponse holding a membership view or rejection message
    *
-   * @param rsp
+   * @param rsp the response message to process
    */
   private void processJoinResponse(JoinResponseMessage rsp) {
     synchronized (joinResponse) {
@@ -1153,7 +1156,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   /***
    * for testing purpose
    *
-   * @param jrm
+   * @param jrm the join response message to process
    */
   void setJoinResponseMessage(JoinResponseMessage jrm) {
     joinResponse[0] = jrm;

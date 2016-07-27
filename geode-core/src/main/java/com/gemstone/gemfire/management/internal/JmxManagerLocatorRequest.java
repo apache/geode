@@ -26,6 +26,7 @@ import java.util.Properties;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.net.*;
 
 /**
  * Sent to a locator to request it to find (and possibly start)
@@ -87,7 +88,8 @@ public class JmxManagerLocatorRequest implements DataSerializableFixedID {
         distributionConfigProps.putAll(sslConfigProps);
       }
 
-      Object responseFromServer = TcpClient.requestToServer(networkAddress, locatorPort, SINGLETON, msTimeout);
+      TcpClient client = new TcpClient();
+      Object responseFromServer = client.requestToServer(networkAddress, locatorPort, SINGLETON, msTimeout);
 
       return (JmxManagerLocatorResponse) responseFromServer;
     }

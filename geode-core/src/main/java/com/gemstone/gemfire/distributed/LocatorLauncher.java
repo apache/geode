@@ -19,9 +19,10 @@ package com.gemstone.gemfire.distributed;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
-import com.gemstone.gemfire.cache.client.internal.locator.LocatorStatusResponse;
+import com.gemstone.gemfire.cache.client.internal.locator.*;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.tcpserver.*;
 import com.gemstone.gemfire.internal.DistributionLocator;
 import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.net.SocketCreator;
@@ -238,6 +239,23 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
         return statusInProcess();
       }
     };
+  }
+
+  /**
+   * Returns the status of the locator on the given host & port
+   */
+  public static LocatorStatusResponse statusLocator(int port, InetAddress bindAddress) throws IOException {
+    //final int timeout = (60 * 2 * 1000); // 2 minutes
+    final int timeout = Integer.MAX_VALUE; // 2 minutes
+
+    try {
+      TcpClient client = new TcpClient();
+      return (LocatorStatusResponse) client.requestToServer(bindAddress, port,
+        new LocatorStatusRequest(), timeout, true);
+    }
+    catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
@@ -744,7 +762,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
 
     while (System.currentTimeMillis() < endTimeInMilliseconds) {
       try {
-        LocatorStatusResponse response = InternalLocator.statusLocator(getPort(), getBindAddress());
+        LocatorStatusResponse response = statusLocator(getPort(), getBindAddress());
         return new LocatorState(this, Status.ONLINE, response);
       }
       catch (Exception ignore) {
@@ -867,7 +885,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
 
   private LocatorState statusWithPort() {
     try {
-      LocatorStatusResponse response = InternalLocator.statusLocator(getPort(), getBindAddress());
+      LocatorStatusResponse response = statusLocator(getPort(), getBindAddress());
       return new LocatorState(this, Status.ONLINE, response);
     }
     catch (Exception e) {
@@ -1020,7 +1038,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
   @Deprecated
   private LocatorState stopWithPort() {
     try {
-      InternalLocator.stopLocator(getPort(), getBindAddress());
+      new TcpClient().stop(getBindAddress(), getPort());
       return new LocatorState(this, Status.STOPPED);
     }
     catch (ConnectException e) {

@@ -79,7 +79,7 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
       String localLocator = locatorsOnThisVM.nextToken();
       DistributionLocatorId locatorID = new DistributionLocatorId(localLocator);
       try {
-        RemoteLocatorResponse response = (RemoteLocatorResponse) TcpClient
+        RemoteLocatorResponse response = (RemoteLocatorResponse) new TcpClient()
             .requestToServer(locatorID.getHost(), locatorID.getPort(), request,
                 WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT);
 

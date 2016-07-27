@@ -142,12 +142,12 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
     expected.put(expectedLocation, expectedLoad);
 
     ClientConnectionResponse response;
-    response = (ClientConnectionResponse) TcpClient.requestToServer(InetAddress
+    response = (ClientConnectionResponse) new TcpClient().requestToServer(InetAddress
             .getByName(NetworkUtils.getServerHostName(host)), locatorPort,
         new ClientConnectionRequest(Collections.EMPTY_SET, null), 10000);
     Assert.assertEquals(expectedLocation, response.getServer());
 
-    response = (ClientConnectionResponse) TcpClient.requestToServer(InetAddress
+    response = (ClientConnectionResponse) new TcpClient().requestToServer(InetAddress
             .getByName(NetworkUtils.getServerHostName(host)), locatorPort,
         new ClientConnectionRequest(Collections.EMPTY_SET, null), 10000, true);
     Assert.assertEquals(expectedLocation, response.getServer());
@@ -156,13 +156,13 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
     vm0.invoke("check Locator Load", () -> checkLocatorLoad(expected));
 
     QueueConnectionResponse response2;
-    response2 = (QueueConnectionResponse) TcpClient.requestToServer(InetAddress
+    response2 = (QueueConnectionResponse) new TcpClient().requestToServer(InetAddress
             .getByName(NetworkUtils.getServerHostName(host)), locatorPort,
         new QueueConnectionRequest(null, 2,
             Collections.EMPTY_SET, null, false), 10000, true);
     Assert.assertEquals(Collections.singletonList(expectedLocation), response2.getServers());
 
-    response2 = (QueueConnectionResponse) TcpClient
+    response2 = (QueueConnectionResponse) new TcpClient()
         .requestToServer(InetAddress.getByName(NetworkUtils.getServerHostName(host)),
             locatorPort, new QueueConnectionRequest(null, 5, Collections.EMPTY_SET, null,
                 false), 10000, true);

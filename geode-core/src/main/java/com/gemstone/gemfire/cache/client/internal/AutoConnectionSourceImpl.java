@@ -55,6 +55,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.net.*;
 
 /**
  * A connection source which uses locators to find
@@ -65,6 +66,8 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 public class AutoConnectionSourceImpl implements ConnectionSource {
 
   private static final Logger logger = LogService.getLogger();
+  
+  private TcpClient tcpClient;
   
   protected static final LocatorListRequest LOCATOR_LIST_REQUEST = new LocatorListRequest();
   private static final Comparator<InetSocketAddress> SOCKET_ADDRESS_COMPARATOR = new Comparator<InetSocketAddress>() {
@@ -108,6 +111,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     this.initialLocators = Collections.unmodifiableList(tmpContacts);
     this.connectionTimeout = handshakeTimeout;
     this.serverGroup = serverGroup;
+    this.tcpClient = new TcpClient();
   }
   
   public boolean isBalanced() {
@@ -187,7 +191,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     Object returnObj = null;
     try {
       pool.getStats().incLocatorRequests();
-      returnObj = TcpClient.requestToServer(addr, port, request, connectionTimeout);
+      returnObj = tcpClient.requestToServer(addr, port, request, connectionTimeout);
       ServerLocationResponse response = (ServerLocationResponse)returnObj; 
       pool.getStats().incLocatorResponses();
       if(response != null) {

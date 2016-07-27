@@ -26,6 +26,7 @@ import com.gemstone.gemfire.cache.persistence.PersistentID;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.distributed.internal.tcpserver.*;
 import com.gemstone.gemfire.internal.StatArchiveReader.ResourceInst;
 import com.gemstone.gemfire.internal.StatArchiveReader.StatValue;
 import com.gemstone.gemfire.internal.admin.remote.TailLogResponse;
@@ -254,7 +255,7 @@ public class SystemAdmin {
 //      File infoFile = ManagerInfo.getLocatorInfoFile(directory);
 
       try {
-        InternalLocator.stopLocator(port, addr);
+        new TcpClient().stop(addr, port);
       } 
       catch ( java.net.ConnectException ce ) {
         if( PureJavaMode.isPure() || OSProcess.exists(pid) ) {

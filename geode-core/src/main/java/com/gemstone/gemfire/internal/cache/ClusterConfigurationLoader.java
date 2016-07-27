@@ -28,6 +28,7 @@ import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.net.*;
 import com.gemstone.gemfire.internal.process.ClusterConfigurationNotAvailableException;
 import com.gemstone.gemfire.management.internal.configuration.domain.Configuration;
 import com.gemstone.gemfire.management.internal.configuration.messages.ConfigurationRequest;
@@ -162,7 +163,9 @@ public class ClusterConfigurationLoader {
     ConfigurationResponse response = null;
     //Try talking to all the locators in the list
     //to get the shared configuration.
-    
+
+    TcpClient client = new TcpClient();
+
     for (String locatorInfo : locatorList) {
       DistributionLocatorId dlId = new DistributionLocatorId(locatorInfo);
       String ipaddress = dlId.getBindAddress();
@@ -177,8 +180,7 @@ public class ClusterConfigurationLoader {
       int port = dlId.getPort();
         
       try {
-          response = (ConfigurationResponse) TcpClient
-            .requestToServer(locatorInetAddress, port, request, 10000);
+          response = (ConfigurationResponse)client.requestToServer(locatorInetAddress, port, request, 10000);
         } catch (UnknownHostException e) {
           e.printStackTrace();
         } catch (IOException e) {

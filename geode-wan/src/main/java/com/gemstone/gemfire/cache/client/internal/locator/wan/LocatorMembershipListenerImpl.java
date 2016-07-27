@@ -48,9 +48,12 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
   
   private DistributionConfig config;
   
+  private TcpClient tcpClient;
+  
   private int port;
   
   public LocatorMembershipListenerImpl() {
+    this.tcpClient = new TcpClient();
   }
   
   public void setPort(int port){
@@ -103,7 +106,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
           }
           for (DistributionLocatorId value : entry.getValue()) {
             try {
-              TcpClient.requestToServer(value.getHost(), value.getPort(),
+              tcpClient.requestToServer(value.getHost(), value.getPort(),
                   new LocatorJoinMessage(distributedSystemId, locator, localLocatorId, ""), 1000, false);
             }
             catch (Exception e) {
@@ -113,7 +116,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
               }
             }
             try {
-              TcpClient.requestToServer(locator.getHost(), locator.getPort(),
+              tcpClient.requestToServer(locator.getHost(), locator.getPort(),
                   new LocatorJoinMessage(entry.getKey(), value, localLocatorId, ""), 1000, false);
             }
             catch (Exception e) {

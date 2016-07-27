@@ -20,9 +20,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.net.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,35 +28,51 @@ import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.UnsupportedVersionException;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.cache.client.internal.locator.*;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedDataInputStream;
 import com.gemstone.gemfire.internal.VersionedDataOutputStream;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
+import com.gemstone.gemfire.internal.net.*;
 
 /**
- * Client for the TcpServer. These methods were refactored out of GossipClient,
- * because they are required for the server regardless of whether we are using the
- * GossipServer or the ServerLocator.
- * <p>
- * TODO - refactor this to support keep-alive connections to the server. requestToServer
- * probably shouldn't a static method.
+ * <p>Client for the TcpServer component of the Locator.
+ * </p>
  * @since GemFire 5.7
  */
 public class TcpClient {
 
   private static final Logger logger = LogService.getLogger();
-  private static final int REQUEST_TIMEOUT = 60 * 2 * 1000;
+  
+  private static final int DEFAULT_REQUEST_TIMEOUT = 60 * 2 * 1000;
+
   private static Map<InetSocketAddress, Short> serverVersions = new HashMap<InetSocketAddress, Short>();
+  
+  private final SocketCreator socketCreator;
+  
+  /**
+   * Constructs a new TcpClient using the default (Locator) SocketCreator.
+   * SocketCreatorFactory should be initialized before invoking this method.
+   */
+  public TcpClient() {
+    this(SocketCreatorFactory.getClusterSSLSocketCreator());
+  }
 
   /**
-   * Stops the TcpServer running on a given host and port
+   * Constructs a new TcpClient
+   * @param socketCreator the SocketCreator to use in communicating with the Locator
    */
-  public static void stop(InetAddress addr, int port) throws java.net.ConnectException {
+  public TcpClient(SocketCreator socketCreator) {
+    this.socketCreator = socketCreator;
+  }
+
+  /**
+   * Stops the Locator running on a given host and port
+   */
+  public void stop(InetAddress addr, int port) throws java.net.ConnectException {
     try {
       ShutdownRequest request = new ShutdownRequest();
-      TcpClient.requestToServer(addr, port, request, REQUEST_TIMEOUT);
+      requestToServer(addr, port, request, DEFAULT_REQUEST_TIMEOUT);
     } catch (java.net.ConnectException ce) {
       // must not be running, rethrow so the caller can handle. 
       // In most cases this Exception should be ignored.
@@ -69,16 +83,16 @@ public class TcpClient {
   }
 
   /**
-   * Contacts the gossip server running on the given host,
+   * Contacts the Locator running on the given host,
    * and port and gets information about it.  Two <code>String</code>s
    * are returned: the first string is the working directory of the
    * locator and the second string is the product directory of the
    * locator.
    */
-  public static String[] getInfo(InetAddress addr, int port) {
+  public String[] getInfo(InetAddress addr, int port) {
     try {
       InfoRequest request = new InfoRequest();
-      InfoResponse response = (InfoResponse) TcpClient.requestToServer(addr, port, request, REQUEST_TIMEOUT);
+      InfoResponse response = (InfoResponse) requestToServer(addr, port, request, DEFAULT_REQUEST_TIMEOUT);
       return response.getInfo();
     } catch (java.net.ConnectException ignore) {
       return null;
@@ -89,11 +103,33 @@ public class TcpClient {
 
   }
 
-  public static Object requestToServer(InetAddress addr, int port, Object request, int timeout) throws IOException, ClassNotFoundException {
+  /**
+   * Send a request to a Locator and expect a reply
+   * 
+   * @param addr The locator's address
+   * @param port The locator's tcp/ip port
+   * @param request The request message
+   * @param timeout Timeout for sending the message and receiving a reply
+   * @return the reply
+   * @throws IOException
+   * @throws ClassNotFoundException
+   */
+  public Object requestToServer(InetAddress addr, int port, Object request, int timeout) throws IOException, ClassNotFoundException {
     return requestToServer(addr, port, request, timeout, true);
   }
 
-  public static Object requestToServer(InetAddress addr, int port, Object request, int timeout, boolean replyExpected)
+  /**
+   * Send a request to a Locator
+   * @param addr The locator's address
+   * @param port The locator's tcp/ip port
+   * @param request The request message
+   * @param timeout Timeout for sending the message and receiving a reply
+   * @param replyExpected Whether to wait for a reply
+   * @return The reply, or null if no reply is expected
+   * @throws IOException
+   * @throws ClassNotFoundException
+   */
+  public Object requestToServer(InetAddress addr, int port, Object request, int timeout, boolean replyExpected)
     throws IOException, ClassNotFoundException {
     InetSocketAddress ipAddr;
     if (addr == null) {
@@ -179,7 +215,7 @@ public class TcpClient {
     }
   }
 
-  public static Short getServerVersion(InetSocketAddress ipAddr, int timeout) throws IOException, ClassNotFoundException {
+  private Short getServerVersion(InetSocketAddress ipAddr, int timeout) throws IOException, ClassNotFoundException {
 
     int gossipVersion = TcpServer.getCurrentGossipVersion();
     Short serverVersion = null;
@@ -238,12 +274,14 @@ public class TcpClient {
     return Short.valueOf(Version.GFE_57.ordinal());
   }
 
-  private TcpClient() {
-    //static class
-  }
-
+  /**
+   * Clear static class information concerning Locators.
+   * This is used in unit tests.  It will force TcpClient to
+   * send version-request messages to locators to reestablish
+   * knowledge of their communication protocols.
+   */
   public static void clearStaticData() {
-    synchronized (serverVersions) {
+    synchronized(serverVersions) {
       serverVersions.clear();
     }
   }

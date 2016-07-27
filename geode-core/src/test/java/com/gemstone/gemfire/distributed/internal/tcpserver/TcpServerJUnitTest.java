@@ -64,15 +64,15 @@ public class TcpServerJUnitTest {
     
     TestObject test = new TestObject();
     test.id = 5;
-    TestObject result = (TestObject) TcpClient.requestToServer(localhost, port, test, 60 * 1000 );
+    TestObject result = (TestObject) new TcpClient().requestToServer(localhost, port, test, 60 * 1000 );
     assertEquals(test.id, result.id);
     
-    String[] info = TcpClient.getInfo(localhost, port);
+    String[] info = new TcpClient().getInfo(localhost, port);
     assertNotNull(info);
     assertTrue(info.length > 1);
    
     try { 
-      TcpClient.stop(localhost, port);
+      new TcpClient().stop(localhost, port);
     } catch ( ConnectException ignore ) {
       // must not be running 
     }
@@ -96,7 +96,7 @@ public class TcpServerJUnitTest {
       public void run() {
         Boolean delay = Boolean.valueOf(true);
         try {
-          TcpClient.requestToServer(localhost, port, delay, 60 * 1000 );
+          new TcpClient().requestToServer(localhost, port, delay, 60 * 1000 );
         } catch (IOException e) {
           e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -109,7 +109,7 @@ public class TcpServerJUnitTest {
     try {
       Thread.sleep(500);
       assertFalse(done.get());
-      TcpClient.requestToServer(localhost, port, Boolean.valueOf(false), 60 * 1000 );
+      new TcpClient().requestToServer(localhost, port, Boolean.valueOf(false), 60 * 1000 );
       assertFalse(done.get());
 
       latch.countDown();
@@ -120,7 +120,7 @@ public class TcpServerJUnitTest {
       delayedThread.join(60 * 1000);
       assertTrue(!delayedThread.isAlive()); // GemStoneAddition
       try {
-        TcpClient.stop(localhost, port);
+        new TcpClient().stop(localhost, port);
       } catch ( ConnectException ignore ) {
         // must not be running 
       }

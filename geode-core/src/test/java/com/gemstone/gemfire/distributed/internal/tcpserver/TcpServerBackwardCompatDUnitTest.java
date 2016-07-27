@@ -153,7 +153,7 @@ public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase 
               SocketCreator.getLocalHost(), 1234));
           FindCoordinatorResponse response = null;
           
-          response = (FindCoordinatorResponse)TcpClient.requestToServer(SocketCreator.getLocalHost(), port1, req, 5000);
+          response = (FindCoordinatorResponse)new TcpClient().requestToServer(SocketCreator.getLocalHost(), port1, req, 5000);
           assertNotNull(response);
 
         } catch (Exception e) {
@@ -193,7 +193,7 @@ public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase 
               SocketCreator.getLocalHost(), 1234));
           FindCoordinatorResponse response = null;
           
-          response = (FindCoordinatorResponse)TcpClient.requestToServer(SocketCreator.getLocalHost(), port0, req, 5000);
+          response = (FindCoordinatorResponse)new TcpClient().requestToServer(SocketCreator.getLocalHost(), port0, req, 5000);
           assertNotNull(response);
 
         } catch (Exception e) {

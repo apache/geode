@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRequest
 import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionResponse;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
@@ -126,7 +125,8 @@ public class LocatorJUnitTest {
     assertTrue(locator.isPeerLocator());
     assertFalse(locator.isServerLocator());
     int boundPort = (port == 0) ? locator.getPort() : port;
-    String[] info = InternalLocator.getLocatorInfo(InetAddress.getLocalHost(), boundPort);
+    TcpClient client = new TcpClient();
+    String[] info = client.getInfo(InetAddress.getLocalHost(), boundPort);
     assertNotNull(info);
     assertTrue(info.length > 1);
   }
@@ -203,13 +203,13 @@ public class LocatorJUnitTest {
   private void doServerLocation(int realPort) throws Exception {
     {
       ClientConnectionRequest request = new ClientConnectionRequest(Collections.EMPTY_SET, "group1");
-      ClientConnectionResponse response = (ClientConnectionResponse) TcpClient.requestToServer(InetAddress.getLocalHost(), realPort, request, REQUEST_TIMEOUT);
+      ClientConnectionResponse response = (ClientConnectionResponse) new TcpClient().requestToServer(InetAddress.getLocalHost(), realPort, request, REQUEST_TIMEOUT);
       assertEquals(null, response.getServer());
     }
 
     {
       QueueConnectionRequest request = new QueueConnectionRequest(ClientProxyMembershipID.getNewProxyMembership(InternalDistributedSystem.getAnyInstance()), 3, Collections.EMPTY_SET, "group1",true);
-      QueueConnectionResponse response = (QueueConnectionResponse) TcpClient.requestToServer(InetAddress.getLocalHost(), realPort, request, REQUEST_TIMEOUT);
+      QueueConnectionResponse response = (QueueConnectionResponse) new TcpClient().requestToServer(InetAddress.getLocalHost(), realPort, request, REQUEST_TIMEOUT);
       assertEquals(new ArrayList(), response.getServers());
       assertFalse(response.isDurableQueueFound());
     }

@@ -20,6 +20,7 @@ import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.tcpserver.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
@@ -65,7 +66,7 @@ public class DistributionLocator  {
 
   public static void stop(InetAddress addr, int port) {
     try {
-      InternalLocator.stopLocator(port, addr);
+      new TcpClient().stop(addr, port);
     } catch ( ConnectException ignore ) {
       // must not be running
     }

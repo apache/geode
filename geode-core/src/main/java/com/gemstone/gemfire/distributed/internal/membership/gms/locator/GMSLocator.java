@@ -55,6 +55,7 @@ import com.gemstone.gemfire.distributed.internal.tcpserver.TcpServer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedObjectInput;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.net.*;
 
 import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.LOCATOR_UNABLE_TO_RECOVER_VIEW;
 
@@ -320,7 +321,8 @@ public class GMSLocator implements Locator, NetLocator {
   private boolean recover(InetSocketAddress other) {
     try {
       logger.info("Peer locator attempting to recover from " + other);
-      Object response = TcpClient.requestToServer(other.getAddress(), other.getPort(),
+      TcpClient client = new TcpClient();
+      Object response = client.requestToServer(other.getAddress(), other.getPort(),
           new GetViewRequest(), 20000, true);
       if (response != null && (response instanceof GetViewResponse)) {
         this.view = ((GetViewResponse)response).getView();

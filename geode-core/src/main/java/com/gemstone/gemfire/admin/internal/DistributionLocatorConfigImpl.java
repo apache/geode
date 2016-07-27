@@ -18,7 +18,7 @@ package com.gemstone.gemfire.admin.internal;
 
 import com.gemstone.gemfire.admin.DistributionLocator;
 import com.gemstone.gemfire.admin.DistributionLocatorConfig;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.tcpserver.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 import java.net.InetAddress;
@@ -63,19 +63,19 @@ public class DistributionLocatorConfigImpl
    * Contacts a distribution locator on the given host and port and
    * creates a <code>DistributionLocatorConfig</code> for it.
    *
-   * @see InternalLocator#getLocatorInfo
+   * @see TcpClient#getLocatorInfo
    *
    * @return <code>null</code> if the locator cannot be contacted
    */
   static DistributionLocatorConfig
     createConfigFor(String host, int port, InetAddress bindAddress) {
-
+    TcpClient client = new TcpClient();
     String[] info = null;
     if (bindAddress != null) {
-      info = InternalLocator.getLocatorInfo(bindAddress, port);
+      info = client.getInfo(bindAddress, port);
     }
     else {
-      info = InternalLocator.getLocatorInfo(InetAddressUtil.toInetAddress(host), port);
+      info = client.getInfo(InetAddressUtil.toInetAddress(host), port);
     }
     if (info == null) {
       return null;
