@@ -24,6 +24,7 @@ import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexCreationProfile;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
 import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.CommandManager;
@@ -260,7 +261,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     String resultAsString = executeCommandAndLogResult(csb);
 
     vm1.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      LuceneServiceImpl luceneService = (LuceneServiceImpl) LuceneServiceProvider.get(getCache());
       final ArrayList<LuceneIndexCreationProfile> profiles= new ArrayList<> (luceneService.getAllDefinedIndexes());
       assertEquals(1, profiles.size());
       assertEquals(INDEX_NAME, profiles.get(0).getIndexName());

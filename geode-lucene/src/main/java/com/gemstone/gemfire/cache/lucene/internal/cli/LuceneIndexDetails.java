@@ -36,15 +36,15 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
   private final String[] searchableFieldNames;
   private Map<String, String> fieldAnalyzers=null;
   private final Map<String,Integer> indexStats;
-  private boolean status;
+  private boolean initialized;
 
-  public LuceneIndexDetails(final String indexName, final String regionPath, final String[] searchableFieldNames, final Map<String, Analyzer> fieldAnalyzers, LuceneIndexStats indexStats, boolean status) {
+  public LuceneIndexDetails(final String indexName, final String regionPath, final String[] searchableFieldNames, final Map<String, Analyzer> fieldAnalyzers, LuceneIndexStats indexStats, boolean initialized) {
     this.indexName = indexName;
     this.regionPath = regionPath;
     this.searchableFieldNames = searchableFieldNames;
-    this.fieldAnalyzers = setFieldAnalyzerStrings(fieldAnalyzers);
+    this.fieldAnalyzers = getFieldAnalyzerStrings(fieldAnalyzers);
     this.indexStats=getIndexStatsMap(indexStats);
-    this.status = status;
+    this.initialized = initialized;
   }
 
   public LuceneIndexDetails(LuceneIndexImpl index) {
@@ -53,7 +53,7 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
 
   public LuceneIndexDetails(LuceneIndexCreationProfile indexProfile) {
     this(indexProfile.getIndexName(), indexProfile.getRegionPath(), indexProfile.getFieldNames(), null, null, false);
-    this.fieldAnalyzers=setFieldAnalyzerStringsFromProfile(indexProfile.getFieldAnalyzers());
+    this.fieldAnalyzers=getFieldAnalyzerStringsFromProfile(indexProfile.getFieldAnalyzers());
   }
 
   public Map<String,Integer> getIndexStats() {
@@ -73,7 +73,7 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
     return indexStats.toString();
   }
 
-  private Map<String, String> setFieldAnalyzerStrings(Map<String, Analyzer> fieldAnalyzers) {
+  private Map<String, String> getFieldAnalyzerStrings(Map<String, Analyzer> fieldAnalyzers) {
     if(fieldAnalyzers == null) {
       return Collections.emptyMap();
     }
@@ -89,9 +89,10 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
     return results;
   }
 
-  private Map<String, String> setFieldAnalyzerStringsFromProfile(Map<String, Class <? extends Analyzer>> fieldAnalyzers) {
+  private Map<String, String> getFieldAnalyzerStringsFromProfile(Map<String, Class <? extends Analyzer>> fieldAnalyzers) {
     if(fieldAnalyzers == null) {
       return Collections.emptyMap();
+
     }
 
     Map<String, String> results = new HashMap<>();
@@ -121,14 +122,14 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
     buffer.append(",\tRegion Path = "+regionPath);
     buffer.append(",\tIndexed Fields = "+getSearchableFieldNamesString());
     buffer.append(",\tField Analyzer = "+getFieldAnalyzersString());
-    buffer.append(",\tStatus =\n\t"+getStatus());
+    buffer.append(",\tStatus =\n\t"+ getInitialized());
     buffer.append(",\tIndex Statistics =\n\t"+getIndexStatsString());
     buffer.append("\n}\n");
     return buffer.toString();
   }
 
-  public String getStatus() {
-    return status==true ? "Initialized" : "Defined";
+  public boolean getInitialized() {
+    return initialized;
   }
 
   public String getIndexName() {

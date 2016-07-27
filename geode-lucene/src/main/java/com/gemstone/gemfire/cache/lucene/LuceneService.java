@@ -126,17 +126,4 @@ public interface LuceneService {
    */
   public LuceneQueryFactory createLuceneQueryFactory();
 
-  /**
-   * get all defined lucene indexes (that haven't been initialized)
-   * @return all defined index profiles in a Collection
-   */
-  public Collection<LuceneIndexCreationProfile> getAllDefinedIndexes();
-
-  /**
-   * Get the lucene index creation profile specified by region name and index name
-   * @param indexName index name
-   * @param regionPath region name
-   * @return LuceneIndexCreationProfile object
-   */
-  public LuceneIndexCreationProfile getDefinedIndex(String indexName, String regionPath);
-}
+ }

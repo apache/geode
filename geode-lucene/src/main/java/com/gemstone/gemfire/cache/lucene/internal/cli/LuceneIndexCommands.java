@@ -16,9 +16,6 @@
  */
 package com.gemstone.gemfire.cache.lucene.internal.cli;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,8 +31,6 @@ import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.FunctionAdapter;
 import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
-import com.gemstone.gemfire.cache.lucene.PageableLuceneQueryResults;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneCreateIndexFunction;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
@@ -124,10 +119,10 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
         indexData.accumulate("Region Path", indexDetails.getRegionPath());
         indexData.accumulate("Indexed Fields", indexDetails.getSearchableFieldNamesString());
         indexData.accumulate("Field Analyzer", indexDetails.getFieldAnalyzersString());
-        indexData.accumulate("Status", indexDetails.getStatus());
+        indexData.accumulate("Status", indexDetails.getInitialized() == true ? "Initialized" : "Defined");
 
         if (stats == true) {
-          if (indexDetails.getStatus() == "Defined") {
+          if (!indexDetails.getInitialized()) {
             indexData.accumulate("Query Executions", "NA");
             indexData.accumulate("Updates", "NA");
             indexData.accumulate("Commits", "NA");

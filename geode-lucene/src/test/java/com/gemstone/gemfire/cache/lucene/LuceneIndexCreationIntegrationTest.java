@@ -46,6 +46,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexCreationProfile;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
 import com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities;
 import com.gemstone.gemfire.cache.lucene.test.TestObject;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
@@ -192,9 +193,10 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
   @Test
   public void shouldReturnAllDefinedIndexes()
   {
-    luceneService.createIndex(INDEX_NAME,REGION_NAME,"field1","field2","field3");
-    luceneService.createIndex("index2", "region2", "field4","field5","field6");
-    final Collection<LuceneIndexCreationProfile> indexList = luceneService.getAllDefinedIndexes();
+    LuceneServiceImpl luceneServiceImpl = (LuceneServiceImpl) luceneService;
+    luceneServiceImpl.createIndex(INDEX_NAME,REGION_NAME,"field1","field2","field3");
+    luceneServiceImpl.createIndex("index2", "region2", "field4","field5","field6");
+    final Collection<LuceneIndexCreationProfile> indexList = luceneServiceImpl.getAllDefinedIndexes();
 
     assertEquals(Arrays.asList(INDEX_NAME,"index2"), indexList.stream().map(LuceneIndexCreationProfile::getIndexName)
                                                               .sorted().collect(Collectors.toList()));

@@ -319,12 +319,10 @@ public class LuceneServiceImpl implements InternalLuceneService {
         TopEntriesCollector.class);
   }
 
-  @Override
   public Collection<LuceneIndexCreationProfile> getAllDefinedIndexes() {
     return definedIndexMap.values();
   }
 
-  @Override
   public LuceneIndexCreationProfile getDefinedIndex(String indexName, String regionPath) {
     return definedIndexMap.get(getUniqueIndexName(indexName , regionPath));
   }
