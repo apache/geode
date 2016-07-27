@@ -36,6 +36,7 @@ import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 import com.gemstone.gemfire.pdx.internal.PdxInstanceEnum;
+import com.gemstone.gemfire.pdx.internal.PdxString;
 
 
 /**
@@ -166,13 +167,18 @@ public class TypeUtils implements OQLLexerTokenTypes
           return QueryService.UNDEFINED;
         }
       }
-      
-    if (obj1 instanceof PdxInstanceEnumInfo && obj2 instanceof Enum) {
-      obj2 = new PdxInstanceEnum((Enum<?>) obj2);
-    } else if (obj1 instanceof Enum && obj2 instanceof PdxInstanceEnumInfo) {
-      obj1 = new PdxInstanceEnum((Enum<?>) obj1);
-    }
-      
+
+      if (obj1 instanceof PdxInstanceEnumInfo && obj2 instanceof Enum) {
+        obj2 = new PdxInstanceEnum((Enum<?>) obj2);
+      } else if (obj1 instanceof Enum && obj2 instanceof PdxInstanceEnumInfo) {
+        obj1 = new PdxInstanceEnum((Enum<?>) obj1);
+      }
+
+      if (obj1 instanceof PdxString && obj2 instanceof String) {
+        obj2 = new PdxString((String) obj2);
+      } else if (obj1 instanceof String && obj2 instanceof PdxString) {
+        obj1 = new PdxString((String) obj1);
+      }
       try {
         int r;
         
