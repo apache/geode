@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.cache.lucene.internal.cli;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,9 +47,11 @@ import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.commands.AbstractCommandsSupport;
 import com.gemstone.gemfire.management.internal.cli.functions.CliFunctionResult;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResultException;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
+import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
@@ -64,6 +67,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
   private static final LuceneCreateIndexFunction createIndexFunction = new LuceneCreateIndexFunction();
   private static final LuceneDescribeIndexFunction describeIndexFunction = new LuceneDescribeIndexFunction();
   private static final LuceneSearchIndexFunction searchIndexFunction = new LuceneSearchIndexFunction();
+  private List<LuceneSearchResults> searchResults=null;
 
   @CliCommand(value = LuceneCliStrings.LUCENE_LIST_INDEX, help = LuceneCliStrings.LUCENE_LIST_INDEX__HELP)
   @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA })
@@ -255,35 +259,43 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = LuceneCliStrings.LUCENE_SEARCH_INDEX, help = LuceneCliStrings.LUCENE_SEARCH_INDEX__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA })
+  @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA })
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result searchIndex(
     @CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME,
-      mandatory=true,
+      mandatory = true,
       help = LuceneCliStrings.LUCENE_SEARCH_INDEX__NAME__HELP) final String indexName,
 
-    @CliOption (key = LuceneCliStrings.LUCENE__REGION_PATH,
+    @CliOption(key = LuceneCliStrings.LUCENE__REGION_PATH,
       mandatory = true,
       optionContext = ConverterHint.REGIONPATH,
       help = LuceneCliStrings.LUCENE_SEARCH_INDEX__REGION_HELP) final String regionPath,
 
-    @CliOption (key = LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING,
+    @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING,
       mandatory = true,
       help = LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING__HELP) final String queryString,
 
-    @CliOption (key = LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD,
+    @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD,
       mandatory = true,
       help = LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD__HELP) final String defaultField,
 
-    @CliOption (key = LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT,
+    @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT,
       mandatory = false,
       unspecifiedDefaultValue = "-1",
-      help = LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT__HELP) final int limit) {
+      help = LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT__HELP) final int limit,
+
+    @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__PAGE_SIZE,
+      mandatory = false,
+      unspecifiedDefaultValue = "-1",
+      help = LuceneCliStrings.LUCENE_SEARCH_INDEX__PAGE_SIZE__HELP) int pageSize)
+  {
     try {
-
-      LuceneQueryInfo queryInfo=new LuceneQueryInfo(indexName,regionPath,queryString, defaultField,limit);
-      return getSearchResults(queryInfo);
-
+      LuceneQueryInfo queryInfo = new LuceneQueryInfo(indexName, regionPath, queryString, defaultField, limit);
+      if (pageSize == -1) {
+        pageSize = Integer.MAX_VALUE;
+      }
+      searchResults = getSearchResults(queryInfo);
+      return displayResults(pageSize);
     }
     catch (FunctionInvocationTargetException ignore) {
       return ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN,
@@ -301,29 +313,109 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     }
   }
 
-  private Result getSearchResults(final LuceneQueryInfo queryInfo) throws Exception {
+  private Result displayResults(int pageSize) throws IOException {
+    if (searchResults.size() == 0) {
+      return ResultBuilder.createInfoResult(LuceneCliStrings.LUCENE_SEARCH_INDEX__NO_RESULTS_MESSAGE);
+    }
+
+    Gfsh gfsh = initGfsh();
+    boolean pagination = searchResults.size() > pageSize;
+    int fromIndex = 0;
+    int toIndex = pageSize < searchResults.size() ? pageSize : searchResults.size();
+    int currentPage = 1;
+    int totalPages = (int) Math.ceil((float) searchResults.size() / pageSize);
+    boolean skipDisplay = false;
+    String step = null;
+    do {
+
+      if (!skipDisplay) {
+        CommandResult commandResult = (CommandResult) getResults(fromIndex, toIndex);
+        if (!pagination) {
+          return commandResult;
+        }
+        Gfsh.println();
+        while (commandResult.hasNextLine()) {
+          gfsh.printAsInfo(commandResult.nextLine());
+        }
+        gfsh.printAsInfo("\t\tPage " + currentPage + " of " + totalPages);
+        String message = ("Press n to move to next page, q to quit and p to previous page : ");
+        step = gfsh.interact(message);
+      }
+
+      switch (step) {
+        case "n":
+        {
+          if (currentPage == totalPages) {
+            //at last page
+            gfsh.printAsInfo("No more results to display.");
+            step = gfsh.interact("Press p to move to previous page and q to quit.");
+            skipDisplay = true;
+            continue;
+          }
+
+          if(skipDisplay) {
+            skipDisplay=false;
+          }
+          else {
+            currentPage++;
+            int current = fromIndex;
+            fromIndex = toIndex;
+            toIndex = (pageSize + fromIndex >= searchResults.size()) ? searchResults.size() : pageSize + fromIndex;
+          }
+          break;
+        }
+        case "p": {
+          if (currentPage == 1) {
+            gfsh.printAsInfo("No more results to display.");
+            step = gfsh.interact("Press n to move to next page and q to quit.");
+            skipDisplay=true;
+            continue;
+          }
+
+          if (skipDisplay) {
+            skipDisplay = false;
+          }
+          else {
+            currentPage--;
+            int current = fromIndex;
+            toIndex = fromIndex;
+            fromIndex = current - pageSize <= 0 ? 0 : current - pageSize;
+          }
+          break;
+        }
+        case "q":
+          return ResultBuilder.createInfoResult("Search complete.");
+        default:
+          Gfsh.println("Invalid option");
+          break;
+      }
+    } while(true);
+  }
+
+  protected Gfsh initGfsh() {
+    return Gfsh.getCurrentInstance();
+  }
+
+  private List<LuceneSearchResults> getSearchResults(final LuceneQueryInfo queryInfo) throws CommandResultException {
     GeodeSecurityUtil.authorizeRegionManage(queryInfo.getRegionPath());
     final String[] groups = {};
     final ResultCollector<?, ?> rc = this.executeFunctionOnGroups(searchIndexFunction, groups, queryInfo);
     final List<Set<LuceneSearchResults>> functionResults = (List<Set<LuceneSearchResults>>) rc.getResult();
 
-    List<LuceneSearchResults> results = functionResults.stream()
+    return functionResults.stream()
       .flatMap(set -> set.stream())
       .sorted()
       .collect(Collectors.toList());
-    if (results.size() != 0) {
-      final TabularResultData data = ResultBuilder.createTabularResultData();
-      for (LuceneSearchResults struct : results) {
-        data.accumulate("key", struct.getKey());
-        data.accumulate("value", struct.getValue());
-        data.accumulate("score", struct.getScore());
-      }
-      return ResultBuilder.buildResult(data);
+  }
+
+  private Result getResults(int fromIndex, int toIndex){
+    final TabularResultData data = ResultBuilder.createTabularResultData();
+    for (int i = fromIndex; i < toIndex; i++) {
+      data.accumulate("key", searchResults.get(i).getKey());
+      data.accumulate("value", searchResults.get(i).getValue());
+      data.accumulate("score", searchResults.get(i).getScore());
     }
-    else {
-      return ResultBuilder.createInfoResult(LuceneCliStrings.LUCENE_SEARCH_INDEX__NO_RESULTS_MESSAGE);
-    }
-    //@TODO : Pagination
+    return ResultBuilder.buildResult(data);
   }
 
   protected ResultCollector<?, ?> executeFunctionOnGroups(FunctionAdapter function, String[]groups, final LuceneIndexInfo indexInfo) throws CommandResultException {

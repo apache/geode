@@ -318,6 +318,8 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH,REGION_NAME);
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING,"field1:value1");
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD,"field1");
+    executeCommandAndLogResult(csb);
+
     TabularResultData data = (TabularResultData) executeCommandAndGetResult(csb).getResultData();
     assertEquals(4,data.retrieveAllValues("key").size());
   }
@@ -343,6 +345,8 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH,REGION_NAME);
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING,"NotAnExistingValue");
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD,"field1");
+    executeCommandAndLogResult(csb);
+
     String resultAsString = executeCommandAndLogResult(csb);
     assertTrue(resultAsString.contains(LuceneCliStrings.LUCENE_SEARCH_INDEX__NO_RESULTS_MESSAGE));
   }
@@ -369,6 +373,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING,"field1:value1");
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD,"field1");
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT,"2");
+    executeCommandAndLogResult(csb);
     TabularResultData data = (TabularResultData) executeCommandAndGetResult(csb).getResultData();
     assertEquals(2,data.retrieveAllValues("key").size());
   }

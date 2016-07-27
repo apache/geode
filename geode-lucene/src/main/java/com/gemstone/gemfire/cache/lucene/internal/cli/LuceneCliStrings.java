@@ -18,8 +18,6 @@
  */
 package com.gemstone.gemfire.cache.lucene.internal.cli;
 
-import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
-
 public class LuceneCliStrings {
   //Common parameters/options
   public static final String LUCENE__INDEX_NAME = "name";
@@ -73,4 +71,6 @@ public class LuceneCliStrings {
   public static final String LUCENE_SEARCH_INDEX__DEFAULT_FIELD="defaultField";
   public static final String LUCENE_SEARCH_INDEX__DEFAULT_FIELD__HELP="Default field to search in";
   public static final String LUCENE_SEARCH_INDEX__NO_RESULTS_MESSAGE="No results";
+  public static final String LUCENE_SEARCH_INDEX__PAGE_SIZE="pageSize";
+  public static final String LUCENE_SEARCH_INDEX__PAGE_SIZE__HELP="Number of results to be returned in a page";
 }
