@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
@@ -91,7 +90,6 @@ import com.gemstone.gemfire.internal.cache.tier.ConnectionProxy;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
 import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
@@ -1603,7 +1601,7 @@ public class HandShake implements ClientHandShake
     Properties credentials = null;
     try {
       if (authInitMethod != null && authInitMethod.length() > 0) {
-        AuthInitialize auth = GeodeSecurityUtil.getObjectOfType(authInitMethod, AuthInitialize.class);
+        AuthInitialize auth = SecurityService.getObjectOfType(authInitMethod, AuthInitialize.class);
         auth.init(logWriter, securityLogWriter);
         try {
           credentials = auth.getCredentials(securityProperties, server, isPeer);
