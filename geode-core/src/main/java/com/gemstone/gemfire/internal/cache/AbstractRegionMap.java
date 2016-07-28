@@ -565,13 +565,19 @@ public abstract class AbstractRegionMap implements RegionMap {
             continue;
           }
           RegionEntry newRe = getEntryFactory().createEntry((RegionEntryContext) _getOwnerObject(), key, value);
+          // TODO: passing value to createEntry causes a problem with the disk stats.
+          //   The disk stats have already been set to track oldRe.
+          //   So when we call createEntry we probably want to give it REMOVED_PHASE1
+          //   and then set the value in copyRecoveredEntry it a way that does not
+          //   change the disk stats. This also depends on DiskEntry.Helper.initialize not changing the stats for REMOVED_PHASE1
           copyRecoveredEntry(oldRe, newRe);
           // newRe is now in this._getMap().
           if (newRe.isTombstone()) {
             VersionTag tag = newRe.getVersionStamp().asVersionTag();
             tombstones.put(tag, newRe);
+          } else {
+            _getOwner().updateSizeOnCreate(key, _getOwner().calculateRegionEntryValueSize(newRe));
           }
-          _getOwner().updateSizeOnCreate(key, _getOwner().calculateRegionEntryValueSize(newRe));
           incEntryCount(1);
           lruEntryUpdate(newRe);
         } finally {
@@ -583,20 +589,20 @@ public abstract class AbstractRegionMap implements RegionMap {
         lruUpdateCallback();
       }
     } else {
-      incEntryCount(size());
       for (Iterator<RegionEntry> iter = regionEntries().iterator(); iter.hasNext(); ) {
         RegionEntry re = iter.next();
         if (re.isTombstone()) {
           if (re.getVersionStamp() == null) { // bug #50992 - recovery from versioned to non-versioned
-            incEntryCount(-1);
             iter.remove();
             continue;
           } else {
             tombstones.put(re.getVersionStamp().asVersionTag(), re);
           }
+        } else {
+          _getOwner().updateSizeOnCreate(re.getKey(), _getOwner().calculateRegionEntryValueSize(re));
         }
-        _getOwner().updateSizeOnCreate(re.getKey(), _getOwner().calculateRegionEntryValueSize(re));
       }
+      incEntryCount(size());
       // Since lru was not being done during recovery call it now.
       lruUpdateCallback();
     }
@@ -657,12 +663,13 @@ public abstract class AbstractRegionMap implements RegionMap {
         } // synchronized
       }
       if (_isOwnerALocalRegion()) {
-        _getOwner().updateSizeOnCreate(key, _getOwner().calculateRegionEntryValueSize(newRe));
         if (newRe.isTombstone()) {
           // refresh the tombstone so it doesn't time out too soon
           _getOwner().scheduleTombstone(newRe, newRe.getVersionStamp().asVersionTag());
+        } else {
+          _getOwner().updateSizeOnCreate(key, _getOwner().calculateRegionEntryValueSize(newRe));
         }
-        
+        // incEntryCount is called for a tombstone because scheduleTombstone does entryCount--.
         incEntryCount(1); // we are creating an entry that was recovered from disk including tombstone
       }
       lruEntryUpdate(newRe);
@@ -692,16 +699,25 @@ public abstract class AbstractRegionMap implements RegionMap {
       }
       try {
         if (_isOwnerALocalRegion()) {
-          if (re.isTombstone()) {
+          boolean oldValueWasTombstone = re.isTombstone();
+          if (oldValueWasTombstone) {
             // when a tombstone is to be overwritten, unschedule it first
             _getOwner().unscheduleTombstone(re);
+            // unscheduleTombstone incs entryCount which is ok
+            // because we either set the value after this so that
+            // the entry exists or we call scheduleTombstone which
+            // will dec entryCount.
           }
           final int oldSize = _getOwner().calculateRegionEntryValueSize(re);
           re.setValue(_getOwner(), value); // OFFHEAP no need to call AbstractRegionMap.prepareValueForCache because setValue is overridden for disk and that code takes apart value (RecoveredEntry) and prepares its nested value for the cache
           if (re.isTombstone()) {
             _getOwner().scheduleTombstone(re, re.getVersionStamp().asVersionTag());
+            _getOwner().updateSizeOnRemove(key, oldSize);
+          } else if (oldValueWasTombstone) {
+            _getOwner().updateSizeOnCreate(key, _getOwner().calculateRegionEntryValueSize(re));
+          } else {
+            _getOwner().updateSizeOnPut(key, oldSize, _getOwner().calculateRegionEntryValueSize(re));
           }
-          _getOwner().updateSizeOnPut(key, oldSize, _getOwner().calculateRegionEntryValueSize(re));
         } else {
           DiskEntry.Helper.updateRecoveredEntry((PlaceHolderDiskRegion)_getOwnerObject(),
               (DiskEntry)re, value, (RegionEntryContext) _getOwnerObject());
@@ -867,6 +883,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                       }
                     }
                     if (newValue == Token.TOMBSTONE) {
+                      owner.updateSizeOnRemove(key, oldSize);
                       if (owner.getServerProxy() == null &&
                           owner.getVersionVector().isTombstoneTooOld(entryVersion.getMemberID(), entryVersion.getRegionVersion())) {
                         // the received tombstone has already been reaped, so don't retain it
@@ -1628,6 +1645,7 @@ public abstract class AbstractRegionMap implements RegionMap {
         // generate versions and Tombstones for destroys
         boolean dispatchListenerEvent = inTokenMode;
         boolean opCompleted = false;
+        // TODO: if inTokenMode then Token.DESTROYED is ok but what about !inTokenMode because owner.concurrencyChecksEnabled? In that case we do not want a DESTROYED token.
         RegionEntry newRe = getEntryFactory().createEntry(owner, key,
             Token.DESTROYED);
         if ( oqlIndexManager != null) {

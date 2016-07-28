@@ -293,11 +293,18 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
         }
 
         // Do the following check while synchronized to fix bug 31761
-        if (entry.isInvalidOrRemoved()) {
+        Token entryVal = entry.getValueAsToken();
+        if (entryVal == null) {
+          if (logger.isTraceEnabled(LogMarker.LRU)) {
+            logger.trace(LogMarker.LRU, "no need to evict already evicted key={}", entry.getKey());
+          }
+          return 0;
+        }
+        if (Token.isInvalidOrRemoved(entryVal)) {
           // no need to evict these; it will not save any space
           // and the destroyed token needs to stay in memory
           if (logger.isTraceEnabled(LogMarker.LRU)) {
-            logger.trace(LogMarker.LRU, "no need to evict invalid/localInvalid/destroyed token for key={}", entry.getKey());
+            logger.trace(LogMarker.LRU, "no need to evict {} token for key={}", entryVal, entry.getKey());
           }
           return 0;
         }

@@ -12741,4 +12741,24 @@ public class LocalRegion extends AbstractRegion
     
   }
   
+  public int testHookGetValuesInVM() {
+    int result = 0;
+    for (RegionEntry re: getRegionMap().regionEntries()) {
+      if (re.getValueAsToken() == Token.NOT_A_TOKEN) {
+        result++;
+      }
+    }
+    return result;
+  }
+  
+  public int testHookGetValuesOnDisk() {
+    int result = 0;
+    for (RegionEntry re: getRegionMap().regionEntries()) {
+      if (re.getValueAsToken() == null) {
+        result++;
+      }
+    }
+    return result;
+  }
+  
 }

@@ -26,7 +26,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
+import com.jayway.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -1368,7 +1370,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
 
       DiskRegion dr = ((LocalRegion)region).getDiskRegion();
       if (recovValues) {
-        assertEquals(1, dr.getNumEntriesInVM());
+        waitForInVMToBe(dr, 1);
         assertEquals(0, dr.getNumOverflowOnDisk());
       } else {
         assertEquals(0, dr.getNumEntriesInVM());
@@ -1384,13 +1386,10 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       region.close();
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
       dr = ((LocalRegion)region).getDiskRegion();
-      if (recovValues) {
-        assertEquals(1, dr.getNumEntriesInVM());
-        assertEquals(0, dr.getNumOverflowOnDisk());
-      } else {
-        assertEquals(1, dr.getNumEntriesInVM());
-        assertEquals(0, dr.getNumOverflowOnDisk());
-      }
+      assertEquals(1, region.size());
+      // invalid entries are not inVM since they have no value
+      assertEquals(0, dr.getNumEntriesInVM());
+      assertEquals(0, dr.getNumOverflowOnDisk());
 
       region.clear();
       assertEquals(0, dr.getNumEntriesInVM());
@@ -1402,7 +1401,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
       dr = ((LocalRegion)region).getDiskRegion();
       if (recovValues) {
-        assertEquals(1, dr.getNumEntriesInVM());
+        waitForInVMToBe(dr, 1);
         assertEquals(0, dr.getNumOverflowOnDisk());
       } else {
         assertEquals(0, dr.getNumEntriesInVM());
@@ -1418,13 +1417,9 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       region.close();
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
       dr = ((LocalRegion)region).getDiskRegion();
-      if (recovValues) {
-        assertEquals(1, dr.getNumEntriesInVM());
-        assertEquals(0, dr.getNumOverflowOnDisk());
-      } else {
-        assertEquals(1, dr.getNumEntriesInVM());
-        assertEquals(0, dr.getNumOverflowOnDisk());
-      }
+      // invalid entries have not value so the are not inVM or onDisk
+      assertEquals(0, dr.getNumEntriesInVM());
+      assertEquals(0, dr.getNumOverflowOnDisk());
 
     } finally {
       if (oldValue != null) {
@@ -1433,6 +1428,12 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
         System.clearProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME);
       }
     }
+  }
+
+  private void waitForInVMToBe(final DiskRegion dr, final int expected) {
+    // values are recovered async from disk
+    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
+    .atMost(30, TimeUnit.SECONDS).until(() -> assertEquals(expected, dr.getNumEntriesInVM())); 
   }
 
   @Test
