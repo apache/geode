@@ -297,7 +297,7 @@ public class LuceneIndexCommandsJUnitTest {
     assertEquals(expectedPage1,actualPageResults.get(15));
     assertEquals("\t\tPage 1 of 4",actualPageResults.get(16));
 
-    assertEquals("No more results to display.", actualPageResults.get(17));
+    assertEquals("At the top of the search results.", actualPageResults.get(17));
 
     assertEquals(expectedPage1,actualPageResults.get(18));
     assertEquals("\t\tPage 1 of 4",actualPageResults.get(19));

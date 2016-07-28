@@ -346,9 +346,8 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
         case "n":
         {
           if (currentPage == totalPages) {
-            //at last page
             gfsh.printAsInfo("No more results to display.");
-            step = gfsh.interact("Press p to move to previous page and q to quit.");
+            step = gfsh.interact("Press p to move to last page and q to quit.");
             skipDisplay = true;
             continue;
           }
@@ -366,8 +365,8 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
         }
         case "p": {
           if (currentPage == 1) {
-            gfsh.printAsInfo("No more results to display.");
-            step = gfsh.interact("Press n to move to next page and q to quit.");
+            gfsh.printAsInfo("At the top of the search results.");
+            step = gfsh.interact("Press n to move to the first page and q to quit.");
             skipDisplay=true;
             continue;
           }
