@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 
-
 public class GetDurableCQs extends BaseCQCommand {
 
   private final static GetDurableCQs singleton = new GetDurableCQs();

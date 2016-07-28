@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
-
 import java.io.IOException;
 
 import com.gemstone.gemfire.cache.query.CqException;

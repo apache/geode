@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 
-
 public class StopCQ extends BaseCQCommand {
 
   private final static StopCQ singleton = new StopCQ();

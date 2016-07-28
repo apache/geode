@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
-
 import java.io.IOException;
 
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
@@ -27,7 +26,6 @@ import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerStats;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
-
 
 public class GetCQStats extends BaseCQCommand {
 
