@@ -749,23 +749,19 @@ public class BucketAdvisor extends CacheDistributionAdvisor  {
     }
   }
 
+  /**
+   * repopulates the RegionAdvisor's location information
+   * for this bucket
+   */
   private void updateServerBucketProfile() {
-    // check to see if it is clientBucketProfile add it to the RegionAdvisor
-    // data structure which maintains the newly created clientBucketProfile
-    // don't add more than once, but replace existing profile
     int bucketId = this.getBucket().getId();
-    Set<ServerBucketProfile> serverProfiles = this.regionAdvisor
-        .getClientBucketProfiles(bucketId);
-    if (serverProfiles == null) {
-      serverProfiles = newSetFromMap(new ConcurrentHashMap<ServerBucketProfile, Boolean>());
-      this.regionAdvisor.setClientBucketProfiles(bucketId, serverProfiles);
-    }
-    serverProfiles.clear();
+    Set<ServerBucketProfile> serverProfiles = newSetFromMap(new HashMap<ServerBucketProfile, Boolean>());
     for (Profile p : this.profiles) {
       if (p instanceof ServerBucketProfile) {
         serverProfiles.add((ServerBucketProfile)p);
       }
     }
+    this.regionAdvisor.setClientBucketProfiles(bucketId, serverProfiles);
   }
 
   /**
