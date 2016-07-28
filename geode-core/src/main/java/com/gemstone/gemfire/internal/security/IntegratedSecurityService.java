@@ -4,6 +4,7 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.SecurityManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
@@ -154,5 +155,10 @@ public class IntegratedSecurityService implements SecurityService {
   @Override
   public boolean isIntegratedSecurity() {
     return GeodeSecurityUtil.isIntegratedSecurity();
+  }
+
+  @Override
+  public SecurityManager getSecurityManager() {
+    return GeodeSecurityUtil.getSecurityManager();
   }
 }

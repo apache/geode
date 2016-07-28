@@ -27,7 +27,8 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
@@ -40,11 +41,14 @@ import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4CacheTestCase {
 
   private VM locator;
+  private SecurityService securityService;
 
   @Override
   public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     locator = host.getVM(0);
+
+    securityService = IntegratedSecurityService.getSecurityService();
 
     int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     String locators =  NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]";
@@ -93,7 +97,7 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
   }
 
   private void verifyInitCloseInvoked() {
-    SpySecurityManager ssm = (SpySecurityManager) GeodeSecurityUtil.getSecurityManager();
+    SpySecurityManager ssm = (SpySecurityManager) this.securityService.getSecurityManager();
     assertThat(ssm.initInvoked).isEqualTo(1);
     getCache().close();
     assertThat(ssm.closeInvoked).isEqualTo(1);
