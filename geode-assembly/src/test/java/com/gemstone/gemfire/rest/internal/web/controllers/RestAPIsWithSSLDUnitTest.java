@@ -16,14 +16,48 @@
  */
 package com.gemstone.gemfire.rest.internal.web.controllers;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.BindException;
+import java.security.KeyStore;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
-import com.gemstone.gemfire.cache.*;
+import javax.net.ssl.SSLContext;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.json.JSONObject;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
@@ -39,38 +73,30 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import com.gemstone.gemfire.util.test.TestUtil;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContexts;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.json.JSONObject;
-
-import javax.net.ssl.SSLContext;
-import java.io.*;
-import java.net.BindException;
-import java.security.KeyStore;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * 
  * @since GemFire 8.0
  */
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
   private static final long serialVersionUID = -254776154266339226L;
 
   private final String PEOPLE_REGION_NAME = "People";
+
+  @Parameterized.Parameter
+  public String urlContext;
+
+  @Parameterized.Parameters
+  public static Collection<String> data() {
+    return Arrays.asList("/geode", "/gemfire-api");
+  }
 
   private File jks;
 
@@ -131,7 +157,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
       e.printStackTrace();
     }
     remoteObjects.put(CACHE_KEY, cache);
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   public void doPutsInClientCache() {
@@ -161,8 +187,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
     region.putAll(userMap);
 
-    if (clientCache != null)
-      clientCache.getLogger().info("Gemfire Cache Client: Puts successfully done");
+    clientCache.getLogger().info("Gemfire Cache Client: Puts successfully done");
 
   }
 
@@ -193,7 +218,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
       final String hostName = server.getHost().getHostName();
       final int restServicePort = AvailablePortHelper.getRandomAvailableTCPPort();
       startBridgeServer(hostName, restServicePort, locators, new String[] { REGION_NAME }, sslProperties, clusterLevel);
-      return "https://" + hostName + ":" + restServicePort + "/gemfire-api/v1";
+      return "https://" + hostName + ":" + restServicePort + urlContext + "/v1";
     });
 
     // create a client cache
@@ -366,9 +391,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext,
         SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 
-    CloseableHttpClient httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
-
-    return httpclient;
+    return HttpClients.custom().setSSLSocketFactory(sslsf).build();
   }
 
   private void validateConnection(String restEndpoint, String algo) {
@@ -388,7 +411,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
         InputStream content = entity.getContent();
         BufferedReader reader = new BufferedReader(new InputStreamReader(content));
         String line;
-        StringBuffer str = new StringBuffer();
+        StringBuilder str = new StringBuilder();
         while ((line = reader.readLine()) != null) {
           str.append(line);
         }

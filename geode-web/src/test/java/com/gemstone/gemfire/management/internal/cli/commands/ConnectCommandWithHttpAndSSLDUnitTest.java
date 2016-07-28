@@ -16,13 +16,16 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static com.gemstone.gemfire.management.internal.cli.i18n.CliStrings.*;
 import static com.gemstone.gemfire.util.test.TestUtil.*;
 import static org.junit.Assert.*;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Properties;
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
@@ -30,24 +33,35 @@ import javax.net.ssl.SSLSession;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+import com.gemstone.gemfire.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
  * @since GemFire  8.1
  */
 @Category({ DistributedTest.class, SecurityTest.class })
+@RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
 
   private static final ThreadLocal<Properties> sslInfoHolder = new ThreadLocal<>();
 
   private File jks;
 
-  // TODO: should this test use @RunWith(Parameterized.class)?
+  @Parameterized.Parameter
+  public String urlContext;
+
+  @Parameterized.Parameters
+  public static Collection<String> data() {
+    return Arrays.asList("/geode-mgmt", "/gemfire");
+  }
 
   @Override
   public final void postSetUpCliCommandTestBase() throws Exception {
@@ -267,7 +281,7 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
       }
     });
     
-    endpoint = "https://" + host + ":" + httpPort + "/gemfire/v1";
+    endpoint = "https://" + host + ":" + httpPort + urlContext + "/v1";
     
     command.addOption(CONNECT__USE_HTTP, Boolean.TRUE.toString());
     command.addOption(CONNECT__URL, endpoint);
