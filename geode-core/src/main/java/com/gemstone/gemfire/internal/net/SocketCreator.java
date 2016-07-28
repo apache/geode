@@ -62,6 +62,7 @@ import javax.net.SocketFactory;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLServerSocket;
@@ -157,26 +158,6 @@ public class SocketCreator {
    * True if this SocketCreator has been initialized and is ready to use
    */
   private boolean ready = false;
-
-  //  /**
-  //   * True if configured to use SSL
-  //   */
-  //  private boolean useSSL;
-  //
-  //  /**
-  //   * True if configured to require client authentication
-  //   */
-  //  private boolean needClientAuth;
-  //
-  //  /**
-  //   * Space-delimited list of SSL protocols to use, 'any' allows any
-  //   */
-  //  private String[] protocols;
-  //
-  //  /**
-  //   * Space-delimited list of SSL ciphers to use, 'any' allows any
-  //   */
-  //  private String[] ciphers;
 
   /**
    * Only print this SocketCreator's config once
@@ -348,7 +329,7 @@ public class SocketCreator {
   private void initialize() {
     try {
       // set p2p values...
-      if(SSLEnabledComponent.CLUSTER.equals(sslConfig.getSslEnabledComponent())){
+      if (SSLEnabledComponent.CLUSTER.equals(sslConfig.getSslEnabledComponent())) {
         if (this.sslConfig.isEnabled()) {
           System.setProperty("p2p.useSSL", "true");
           System.setProperty("p2p.oldIO", "true");
@@ -623,41 +604,64 @@ public class SocketCreator {
 
 
     @Override
-    public String chooseClientAlias(String[] arg0, Principal[] arg1, Socket arg2) {
-      // TODO Auto-generated method stub
-      return this.delegate.chooseClientAlias(arg0, arg1, arg2);
+    public String[] getClientAliases(final String s, final Principal[] principals) {
+      return delegate.getClientAliases(s, principals);
     }
 
     @Override
-    public String chooseServerAlias(String arg0, Principal[] arg1, Socket arg2) {
-      // TODO Auto-generated method stub
-      return this.delegate.chooseServerAlias(arg0, arg1, arg2);
+    public String chooseClientAlias(final String[] strings, final Principal[] principals, final Socket socket) {
+      return delegate.chooseClientAlias(strings, principals, socket);
     }
 
     @Override
-    public X509Certificate[] getCertificateChain(String arg0) {
-      // TODO Auto-generated method stub
-      return this.delegate.getCertificateChain(arg0);
+    public String[] getServerAliases(final String s, final Principal[] principals) {
+      return delegate.getServerAliases(s, principals);
     }
 
     @Override
-    public String[] getClientAliases(String arg0, Principal[] arg1) {
-      // TODO Auto-generated method stub
-      return delegate.getClientAliases(arg0, arg1);
+    public String chooseServerAlias(String keyType, Principal[] issuers, Socket socket) {
+      //      if (!StringUtils.isEmpty(this.keyAlias)) {
+      //        PrivateKey key = this.delegate.getPrivateKey(this.keyAlias);
+      //        return getKeyAlias(keyType, key);
+      //      }
+      return this.delegate.chooseServerAlias(keyType, issuers, socket);
+
     }
 
     @Override
-    public PrivateKey getPrivateKey(String arg0) {
-      // TODO Auto-generated method stub
-      return delegate.getPrivateKey(arg0);
+    public X509Certificate[] getCertificateChain(final String s) {
+      //      if (!StringUtils.isEmpty(this.keyAlias)) {
+      //        return delegate.getCertificateChain(keyAlias);
+      //      }
+      return delegate.getCertificateChain(s);
     }
 
     @Override
-    public String[] getServerAliases(String arg0, Principal[] arg1) {
-      // TODO Auto-generated method stub
-      return delegate.getServerAliases(arg0, arg1);
+    public PrivateKey getPrivateKey(final String alias) {
+      return delegate.getPrivateKey(alias);
     }
 
+    @Override
+    public String chooseEngineServerAlias(final String keyType, final Principal[] principals, final SSLEngine sslEngine) {
+      //      if (!StringUtils.isEmpty(this.keyAlias)) {
+      //        PrivateKey key = this.delegate.getPrivateKey(this.keyAlias);
+      //        return getKeyAlias(keyType, key);
+      //      }
+      return this.delegate.chooseEngineServerAlias(keyType, principals, sslEngine);
+
+    }
+
+    private String getKeyAlias(final String keyType, final PrivateKey key) {
+      if (key != null) {
+        if (key.getAlgorithm().equals(keyType)) {
+          return this.keyAlias;
+        } else {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    }
   }
 
   // -------------------------------------------------------------------------

@@ -52,8 +52,13 @@ public class SSLConfigurationFactory {
     SSLConfig sslConfig = getInstance().getRegisteredSSLConfigForComponent(sslEnabledComponent);
     if (sslConfig == null) {
       sslConfig = getInstance().createSSLConfigForComponent(sslEnabledComponent);
+      getInstance().registeredSSLConfigForComponent(sslEnabledComponent, sslConfig);
     }
     return sslConfig;
+  }
+
+  private synchronized void registeredSSLConfigForComponent(final SSLEnabledComponent sslEnabledComponent, final SSLConfig sslConfig) {
+    registeredSSLConfig.put(sslEnabledComponent, sslConfig);
   }
 
   private SSLConfig createSSLConfigForComponent(final SSLEnabledComponent sslEnabledComponent) {

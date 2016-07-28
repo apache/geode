@@ -14,19 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+allprojects {
+  apply plugin: 'java'
+  sourceCompatibility = 1.8
+  targetCompatibility = 1.8
+  compileJava.options.encoding = 'UTF-8'
+}
 subprojects {
   apply plugin: 'java'
   
   // apply compiler options
-  gradle.taskGraph.whenReady( { graph ->
-    tasks.withType(JavaCompile).each { javac ->
-      javac.configure {
-        sourceCompatibility '1.8'
-        targetCompatibility '1.8'
-        options.encoding = 'UTF-8'
-      }
-    }
-  })
+//  gradle.taskGraph.whenReady( { graph ->
+//    tasks.withType(JavaCompile).each { javac ->
+//      javac.configure {
+//        sourceCompatibility '1.8'
+//        targetCompatibility '1.8'
+//        options.encoding = 'UTF-8'
+//      }
+//    }
+//  })
   
   // apply default manifest
   gradle.taskGraph.whenReady( { graph ->

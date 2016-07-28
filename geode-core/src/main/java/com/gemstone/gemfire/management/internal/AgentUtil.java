@@ -41,6 +41,7 @@ public class AgentUtil {
 
   public AgentUtil(String gemfireVersion) {
     this.gemfireVersion = gemfireVersion;
+    this.gemfireVersion = "1.0.0-incubating-SNAPSHOT";
   }
 
   /**

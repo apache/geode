@@ -245,14 +245,18 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     boolean cacheClientSslenabled = true;
     boolean cacheClientSslRequireAuth = true;
 
-    serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled));
-    int port = serverVM.invoke(() -> createServerTask());
+//    serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled));
+//    int port = serverVM.invoke(() -> createServerTask());
+
+        setUpServerVMTask(cacheServerSslenabled);
+        int port = createServerTask();
 
     String hostName = host.getHostName();
 
     clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled, cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
     clientVM.invoke(() -> doClientRegionTestTask());
-    serverVM.invoke(() -> doServerRegionTestTask());
+//    serverVM.invoke(() -> doServerRegionTestTask());
+    doServerRegionTestTask();
   }
 
   @Test

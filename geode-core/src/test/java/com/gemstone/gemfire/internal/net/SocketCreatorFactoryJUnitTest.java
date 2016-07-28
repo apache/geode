@@ -30,6 +30,7 @@ import com.gemstone.gemfire.distributed.SSLEnabledComponents;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.util.test.TestUtil;
 
 @Category(UnitTest.class)
 public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
@@ -135,7 +136,7 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
 
   @Test
   public void testNewSSLConfigSSLComponentCombinations1() {
-    Properties properties = configureSSLProperties(commaDelimetedString(SSLEnabledComponents.CLUSTER, SSLEnabledComponents.SERVER));
+    Properties properties = configureSSLProperties(commaDelimitedString(SSLEnabledComponents.CLUSTER, SSLEnabledComponents.SERVER));
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
@@ -149,13 +150,34 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
 
   @Test
   public void testNewSSLConfigSSLComponentCombinations2() {
-    Properties properties = configureSSLProperties(commaDelimetedString(SSLEnabledComponents.CLUSTER, SSLEnabledComponents.SERVER, SSLEnabledComponents.HTTP_SERVICE, SSLEnabledComponents.JMX));
+    Properties properties = configureSSLProperties(commaDelimitedString(SSLEnabledComponents.CLUSTER, SSLEnabledComponents.SERVER, SSLEnabledComponents
+      .HTTP_SERVICE, SSLEnabledComponents.JMX));
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
     Assert.assertTrue(SocketCreatorFactory.getClusterSSLSocketCreator().useSSL());
     Assert.assertFalse(SocketCreatorFactory.getGatewaySSLSocketCreator().useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getJMXManagerSSLSocketCreator().useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getServerSSLSocketCreator().useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getHTTPServiceSSLSocketCreator().useSSL());
+  }
+
+  @Test
+  public void testNewSSLConfigSSLComponentSingleKeyStoreWithAlias() {
+    Properties properties = configureSSLProperties(SSLEnabledComponent.ALL.getConstant());
+
+    properties.setProperty(CLUSTER_SSL_KEYSTORE, TestUtil.getResourcePath(getClass(), "/com/gemstone/gemfire/internal/net/multiKey.jks"));
+    properties.setProperty(CLUSTER_SSL_TRUSTSTORE, TestUtil.getResourcePath(getClass(), "/com/gemstone/gemfire/internal/net/multiKeyTrust.jks"));
+
+    properties.setProperty(CLUSTER_SSL_ALIAS,"clusterKey");
+
+    DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
+    SocketCreatorFactory.setDistributionConfig(distributionConfig);
+
+    Assert.assertTrue(SocketCreatorFactory.getClusterSSLSocketCreator().useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getClusterSSLSocketCreator().useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getGatewaySSLSocketCreator().useSSL());
     Assert.assertTrue(SocketCreatorFactory.getJMXManagerSSLSocketCreator().useSSL());
     Assert.assertTrue(SocketCreatorFactory.getServerSSLSocketCreator().useSSL());
     Assert.assertTrue(SocketCreatorFactory.getHTTPServiceSSLSocketCreator().useSSL());
@@ -184,7 +206,7 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
   }
 
 
-  private String commaDelimetedString(final String... sslComponents) {
+  private String commaDelimitedString(final String... sslComponents) {
     StringBuilder stringBuilder = new StringBuilder();
     for (String sslComponent : sslComponents) {
       stringBuilder.append(sslComponent);

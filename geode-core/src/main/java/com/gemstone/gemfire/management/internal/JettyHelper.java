@@ -74,6 +74,10 @@ public class JettyHelper {
     if (sslConfig.isEnabled()) {
       SslContextFactory sslContextFactory = new SslContextFactory();
 
+      if (!StringUtils.isBlank(sslConfig.getAlias())) {
+        sslContextFactory.setCertAlias(sslConfig.getAlias());
+      }
+
       sslContextFactory.setNeedClientAuth(sslConfig.isRequireAuth());
 
       if (!StringUtils.isBlank(sslConfig.getCiphers()) && !"any".equalsIgnoreCase(sslConfig.getCiphers())) {

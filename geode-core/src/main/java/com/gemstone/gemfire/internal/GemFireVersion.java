@@ -109,7 +109,6 @@ public class GemFireVersion {
     if (instance == null) {
       instance = new GemFireVersion();
     }
-
     return instance;
   }
 

@@ -24,12 +24,12 @@ import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
+import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 
@@ -69,7 +69,7 @@ public class HTTPServiceSSLSupportJUnitTest {
     return sb.toString();
   }
 
-  @Ignore("disabled for unknown reason")
+  //  @Ignore("disabled for unknown reason")
   @Test
   public void testSSLWithClusterSSL() throws Exception {
 
@@ -94,7 +94,6 @@ public class HTTPServiceSSLSupportJUnitTest {
     assertEquals(config.getHttpServiceSSLRequireAuthentication(), true);
     assertEquals(config.getHttpServiceSSLTrustStore(), jks.getCanonicalPath());
     assertEquals(config.getHttpServiceSSLTrustStorePassword(), "password");
-
   }
 
   @Test
