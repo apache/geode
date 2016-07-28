@@ -30,7 +30,6 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Authenticator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
 import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.security.AuthInitialize;
@@ -146,7 +145,7 @@ public class GMSAuthenticator implements Authenticator {
       String authMethod = securityProps.getProperty(SECURITY_PEER_AUTHENTICATOR);
     com.gemstone.gemfire.security.Authenticator auth = null;
     try {
-      auth = GeodeSecurityUtil.getObjectOfTypeFromFactoryMethod(authMethod, com.gemstone.gemfire.security.Authenticator.class);
+      auth = SecurityService.getObjectOfTypeFromFactoryMethod(authMethod, com.gemstone.gemfire.security.Authenticator.class);
 
       LogWriter logWriter = this.services.getLogWriter();
       LogWriter securityLogWriter = this.services.getSecurityLogWriter();
@@ -193,7 +192,7 @@ public class GMSAuthenticator implements Authenticator {
 
     try {
       if (authMethod != null && authMethod.length() > 0) {
-        AuthInitialize auth = GeodeSecurityUtil.getObjectOfType(authMethod, AuthInitialize.class);
+        AuthInitialize auth = SecurityService.getObjectOfType(authMethod, AuthInitialize.class);
         assert auth != null;
         try {
           LogWriter logWriter = services.getLogWriter();

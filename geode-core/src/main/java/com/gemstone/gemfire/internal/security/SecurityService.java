@@ -22,6 +22,7 @@ import java.util.concurrent.Callable;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.SecurityManager;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
 
@@ -54,4 +55,17 @@ public interface SecurityService {
   boolean isClientSecurityRequired();
   boolean isPeerSecurityRequired();
   boolean isIntegratedSecurity();
+  SecurityManager getSecurityManager();
+
+  static <T> T getObjectOfType(String factoryName, Class<T> clazz) {
+    return GeodeSecurityUtil.getObjectOfType(factoryName, clazz);
+  }
+
+  static <T> T getObjectOfTypeFromFactoryMethod(String factoryMethodName, Class<T> expectedClazz) {
+    return GeodeSecurityUtil.getObjectOfTypeFromFactoryMethod(factoryMethodName, expectedClazz);
+  }
+
+  static <T> T getObjectOfTypeFromClassName(String className, Class<T> expectedClazz) {
+    return GeodeSecurityUtil.getObjectOfTypeFromClassName(className, expectedClazz);
+  }
 }
