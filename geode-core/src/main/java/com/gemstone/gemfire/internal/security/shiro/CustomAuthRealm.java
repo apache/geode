@@ -19,7 +19,7 @@ package com.gemstone.gemfire.internal.security.shiro;
 import java.security.Principal;
 import java.util.Properties;
 
-import org.apache.geode.security.GeodePermission;
+import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -84,7 +84,7 @@ public class CustomAuthRealm extends AuthorizingRealm {
 
   @Override
   public boolean isPermitted(PrincipalCollection principals, Permission permission) {
-    GeodePermission context = (GeodePermission) permission;
+    ResourcePermission context = (ResourcePermission) permission;
     Principal principal = (Principal) principals.getPrimaryPrincipal();
     return securityManager.authorize(principal, context);
   }

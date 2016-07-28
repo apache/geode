@@ -38,7 +38,7 @@ import javax.management.remote.JMXPrincipal;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.apache.geode.security.GeodePermission;
+import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 import org.apache.shiro.authz.Permission;
 
@@ -106,7 +106,7 @@ public class SampleSecurityManager implements SecurityManager {
   private Map<String, User> userNameToUser;
 
   @Override
-  public boolean authorize(final Principal principal, final GeodePermission context) {
+  public boolean authorize(final Principal principal, final ResourcePermission context) {
     if (principal == null) return false;
 
     User user = this.userNameToUser.get(principal.getName());
@@ -269,7 +269,7 @@ public class SampleSecurityManager implements SecurityManager {
         String regionPart = (regionNames != null) ? regionNames : "*";
         String keyPart = (keys !=null) ? keys : "*";
 
-        role.permissions.add(new GeodePermission(resourcePart, operationPart, regionPart, keyPart));
+        role.permissions.add(new ResourcePermission(resourcePart, operationPart, regionPart, keyPart));
       }
 
       roleMap.put(role.name, role);
@@ -283,7 +283,7 @@ public class SampleSecurityManager implements SecurityManager {
   }
 
   static class Role {
-    List<GeodePermission> permissions = new ArrayList<>();
+    List<ResourcePermission> permissions = new ArrayList<>();
     String name;
     String serverGroup;
   }

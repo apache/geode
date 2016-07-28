@@ -28,8 +28,8 @@ import com.gemstone.gemfire.management.internal.cli.GfshParser;
 import com.gemstone.gemfire.management.internal.cli.annotation.CliArgument;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-import org.apache.geode.security.GeodePermission.Operation;
-import org.apache.geode.security.GeodePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.junit.After;

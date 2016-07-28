@@ -19,24 +19,24 @@ package com.gemstone.gemfire.management.internal.security;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.security.GeodePermission;
+import org.apache.geode.security.ResourcePermission;
 import org.apache.shiro.authz.Permission;
 
 public class TestCommand {
 
-  public static GeodePermission none = null;
-  public static GeodePermission everyOneAllowed = new GeodePermission();
-  public static GeodePermission dataRead = new GeodePermission("DATA", "READ");
-  public static GeodePermission dataWrite = new GeodePermission("DATA", "WRITE");
-  public static GeodePermission dataManage = new GeodePermission("DATA", "MANAGE");
+  public static ResourcePermission none = null;
+  public static ResourcePermission everyOneAllowed = new ResourcePermission();
+  public static ResourcePermission dataRead = new ResourcePermission("DATA", "READ");
+  public static ResourcePermission dataWrite = new ResourcePermission("DATA", "WRITE");
+  public static ResourcePermission dataManage = new ResourcePermission("DATA", "MANAGE");
 
-  public static GeodePermission regionARead = new GeodePermission("DATA", "READ", "RegionA");
-  public static GeodePermission regionAWrite = new GeodePermission("DATA", "WRITE", "RegionA");
-  public static GeodePermission regionAManage = new GeodePermission("DATA", "MANAGE", "RegionA");
+  public static ResourcePermission regionARead = new ResourcePermission("DATA", "READ", "RegionA");
+  public static ResourcePermission regionAWrite = new ResourcePermission("DATA", "WRITE", "RegionA");
+  public static ResourcePermission regionAManage = new ResourcePermission("DATA", "MANAGE", "RegionA");
 
-  public static GeodePermission clusterRead = new GeodePermission("CLUSTER", "READ");
-  public static GeodePermission clusterWrite = new GeodePermission("CLUSTER", "WRITE");
-  public static GeodePermission clusterManage = new GeodePermission("CLUSTER", "MANAGE");
+  public static ResourcePermission clusterRead = new ResourcePermission("CLUSTER", "READ");
+  public static ResourcePermission clusterWrite = new ResourcePermission("CLUSTER", "WRITE");
+  public static ResourcePermission clusterManage = new ResourcePermission("CLUSTER", "MANAGE");
 
   private static List<TestCommand> testCommands = new ArrayList<>();
 
@@ -45,14 +45,14 @@ public class TestCommand {
   }
 
   private final String command;
-  private final GeodePermission permission;
+  private final ResourcePermission permission;
 
-  public TestCommand(String command, GeodePermission permission) {
+  public TestCommand(String command, ResourcePermission permission) {
     this.command = command;
     this.permission = permission;
   }
 
-  private static void createTestCommand(String command, GeodePermission permission) {
+  private static void createTestCommand(String command, ResourcePermission permission) {
     TestCommand instance = new TestCommand(command, permission);
     testCommands.add(instance);
   }
@@ -61,7 +61,7 @@ public class TestCommand {
     return this.command;
   }
 
-  public GeodePermission getPermission() {
+  public ResourcePermission getPermission() {
     return this.permission;
   }
 
@@ -72,7 +72,7 @@ public class TestCommand {
   public static List<TestCommand> getPermittedCommands(Permission permission){
     List<TestCommand> result = new ArrayList<>();
     for (TestCommand testCommand : testCommands) {
-      GeodePermission cPerm = testCommand.getPermission();
+      ResourcePermission cPerm = testCommand.getPermission();
       if(cPerm!=null && permission.implies(cPerm)){
         result.add(testCommand);
       }

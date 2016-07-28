@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Properties;
 
-import org.apache.geode.security.GeodePermission;
+import org.apache.geode.security.ResourcePermission;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -133,7 +133,7 @@ public class GeodeSecurityUtilWithIniFileJUnitTest {
     GeodeSecurityUtil.logout();
   }
 
-  private void assertNotAuthorized(GeodePermission context){
+  private void assertNotAuthorized(ResourcePermission context){
     assertThatThrownBy(()-> GeodeSecurityUtil.authorize(context)).isInstanceOf(GemFireSecurityException.class).hasMessageContaining(context.toString());
   }
 }

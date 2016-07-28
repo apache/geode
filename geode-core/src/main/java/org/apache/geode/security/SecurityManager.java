@@ -52,7 +52,7 @@ public interface SecurityManager {
   Principal authenticate(Properties credentials) throws AuthenticationFailedException;
 
   /**
-   * Authorize the GeodePermission for a given Principal
+   * Authorize the ResourcePermission for a given Principal
    * @param principal
    *        The principal that's requesting the permission
    * @param permission
@@ -60,7 +60,7 @@ public interface SecurityManager {
    * @return
    *        true if authorized, false if not
    */
-  default boolean authorize(Principal principal, GeodePermission permission) {
+  default boolean authorize(Principal principal, ResourcePermission permission) {
     return true;
   }
 

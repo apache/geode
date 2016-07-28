@@ -26,9 +26,9 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.geode.security.GeodePermission;
-import org.apache.geode.security.GeodePermission.Operation;
-import org.apache.geode.security.GeodePermission.Resource;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
 import org.apache.logging.log4j.Logger;
@@ -248,10 +248,10 @@ public class GeodeSecurityUtil {
 
   private static void authorize(String resource, String operation, String regionName, String key) {
     regionName = StringUtils.stripStart(regionName, "/");
-    authorize(new GeodePermission(resource, operation, regionName, key));
+    authorize(new ResourcePermission(resource, operation, regionName, key));
   }
 
-  public static void authorize(GeodePermission context) {
+  public static void authorize(ResourcePermission context) {
     Subject currentUser = getSubject();
     if (currentUser == null) {
       return;
