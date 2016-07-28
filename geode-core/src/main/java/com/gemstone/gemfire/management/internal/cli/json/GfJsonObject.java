@@ -51,6 +51,22 @@ public class GfJsonObject {
       this.jsonObject = (JSONObject) bean;
     } else {
       this.jsonObject = new JSONObject(bean);
+      // If we want to print out the values of the primitive arrays and report back
+//      Class klass = bean.getClass();
+//      if(klass.isArray() && klass.getComponentType().isPrimitive()){
+//        String str = "";
+//        int length = Array.getLength(bean);
+//        for (int i = 0; i < length; i++) {
+//          if(i==0)
+//            str += (Array.get(bean, i));
+//          else
+//            str +=(","+Array.get(bean, i));
+//        }
+//        try {
+//          this.jsonObject.put("Value", str);
+//        } catch (JSONException ignore) {
+//        }
+//      }
     }
     if (checkCyclicDep) {
       JSONObject.cyclicDepChkEnabled.set(false);

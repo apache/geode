@@ -18,8 +18,10 @@ package com.gemstone.gemfire.security;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assert.*;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.geode.security.templates.SampleSecurityManager;
@@ -27,6 +29,7 @@ import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.Before;
 
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.client.ClientCache;
@@ -48,9 +51,19 @@ public class AbstractIntegratedClientAuthDistributedTest extends JUnit4CacheTest
   protected VM client3 = null;
   protected int serverPort;
   protected Class postProcessor = null;
+  protected boolean pdxPersistent = false;
+  protected int jmxPort = 0;
+  protected Map<String, Object> values;
+
+  public AbstractIntegratedClientAuthDistributedTest(){
+    values = new HashMap();
+    for(int i=0; i<5; i++){
+      values.put("key"+i, "value"+i);
+    }
+  }
 
   @Before
-  public void before() throws Exception{
+  public void before() throws Exception {
     final Host host = Host.getHost(0);
     this.client1 = host.getVM(1);
     this.client2 = host.getVM(2);
@@ -58,17 +71,28 @@ public class AbstractIntegratedClientAuthDistributedTest extends JUnit4CacheTest
 
     Properties props = new Properties();
     props.setProperty(SampleSecurityManager.SECURITY_JSON, "com/gemstone/gemfire/management/internal/security/clientServer.json");
+    props.setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
     props.setProperty(LOCATORS, "");
     props.setProperty(MCAST_PORT, "0");
     if (postProcessor!=null) {
       props.setProperty(SECURITY_POST_PROCESSOR, postProcessor.getName());
     }
     props.setProperty(SECURITY_LOG_LEVEL, "finest");
-    props.setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+
+    props.setProperty("security-pdx", pdxPersistent+"");
+    if(jmxPort>0){
+      props.put(JMX_MANAGER, "true");
+      props.put(JMX_MANAGER_START, "true");
+      props.put(JMX_MANAGER_PORT, String.valueOf(jmxPort));
+    }
 
     getSystem(props);
 
-    Cache cache = getCache();
+    CacheFactory cf = null;
+    cf = new CacheFactory();
+    cf.setPdxPersistent(pdxPersistent);
+    cf.setPdxReadSerialized(pdxPersistent);
+    Cache cache = getCache(cf);
 
     Region region = cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
 
@@ -78,12 +102,9 @@ public class AbstractIntegratedClientAuthDistributedTest extends JUnit4CacheTest
 
     this.serverPort = server1.getPort();
 
-    for (int i = 0; i < 5; i++) {
-      String key = "key" + i;
-      String value = "value" + i;
-      region.put(key, value);
+    for(Entry entry:values.entrySet()){
+      region.put(entry.getKey(), entry.getValue());
     }
-    assertEquals(5, region.size());
   }
 
   @Override

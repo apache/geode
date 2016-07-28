@@ -217,7 +217,7 @@ public class Get70 extends BaseCommand {
       }
 
       // post process
-      data = GeodeSecurityUtil.postProcess(regionName, key, data);
+      data = GeodeSecurityUtil.postProcess(regionName, key, data, entry.isObject);
 
       long oldStart = start;
       start = DistributionStats.getStatTime();
