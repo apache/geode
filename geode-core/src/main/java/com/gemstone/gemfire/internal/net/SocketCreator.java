@@ -620,19 +620,19 @@ public class SocketCreator {
 
     @Override
     public String chooseServerAlias(String keyType, Principal[] issuers, Socket socket) {
-      //      if (!StringUtils.isEmpty(this.keyAlias)) {
-      //        PrivateKey key = this.delegate.getPrivateKey(this.keyAlias);
-      //        return getKeyAlias(keyType, key);
-      //      }
+      if (!StringUtils.isEmpty(this.keyAlias)) {
+        PrivateKey key = this.delegate.getPrivateKey(this.keyAlias);
+        return getKeyAlias(keyType, key);
+      }
       return this.delegate.chooseServerAlias(keyType, issuers, socket);
 
     }
 
     @Override
     public X509Certificate[] getCertificateChain(final String s) {
-      //      if (!StringUtils.isEmpty(this.keyAlias)) {
-      //        return delegate.getCertificateChain(keyAlias);
-      //      }
+      if (!StringUtils.isEmpty(this.keyAlias)) {
+        return delegate.getCertificateChain(keyAlias);
+      }
       return delegate.getCertificateChain(s);
     }
 
@@ -643,10 +643,10 @@ public class SocketCreator {
 
     @Override
     public String chooseEngineServerAlias(final String keyType, final Principal[] principals, final SSLEngine sslEngine) {
-      //      if (!StringUtils.isEmpty(this.keyAlias)) {
-      //        PrivateKey key = this.delegate.getPrivateKey(this.keyAlias);
-      //        return getKeyAlias(keyType, key);
-      //      }
+      if (!StringUtils.isEmpty(this.keyAlias)) {
+        PrivateKey key = this.delegate.getPrivateKey(this.keyAlias);
+        return getKeyAlias(keyType, key);
+      }
       return this.delegate.chooseEngineServerAlias(keyType, principals, sslEngine);
 
     }
