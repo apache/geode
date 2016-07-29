@@ -73,4 +73,7 @@ public class LuceneCliStrings {
   public static final String LUCENE_SEARCH_INDEX__NO_RESULTS_MESSAGE="No results";
   public static final String LUCENE_SEARCH_INDEX__PAGE_SIZE="pageSize";
   public static final String LUCENE_SEARCH_INDEX__PAGE_SIZE__HELP="Number of results to be returned in a page";
+  public static final String LUCENE_SEARCH_INDEX__KEYSONLY="keys-only";
+  public static final String LUCENE_SEARCH_INDEX__KEYSONLY__HELP="Return only keys of search results.";
+
 }

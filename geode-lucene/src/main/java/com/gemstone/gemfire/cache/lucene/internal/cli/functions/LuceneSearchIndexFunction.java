@@ -52,7 +52,7 @@ import com.gemstone.gemfire.internal.InternalEntity;
  * @see LuceneIndexInfo
  */
 @SuppressWarnings("unused")
-public class LuceneSearchIndexFunction<K,V> extends FunctionAdapter implements InternalEntity {
+public class LuceneSearchIndexFunction<K, V> extends FunctionAdapter implements InternalEntity {
 
   protected Cache getCache() {
     return CacheFactory.getAnyInstance();
@@ -62,30 +62,46 @@ public class LuceneSearchIndexFunction<K,V> extends FunctionAdapter implements I
     return LuceneSearchIndexFunction.class.getName();
   }
 
-  public void execute(final FunctionContext context)   {
-
-    Set<LuceneSearchResults> result=new HashSet<>();
+  public void execute(final FunctionContext context) {
+    Set<LuceneSearchResults> result = new HashSet<>();
     final Cache cache = getCache();
     final LuceneQueryInfo queryInfo = (LuceneQueryInfo) context.getArguments();
 
     LuceneService luceneService = LuceneServiceProvider.get(getCache());
     try {
-      if (cache.getRegion(queryInfo.getRegionPath())!=null) {
-        final LuceneQuery<K, V> query = luceneService.createLuceneQueryFactory()
-          .setResultLimit(queryInfo.getLimit())
-          .create(queryInfo.getIndexName(), queryInfo.getRegionPath(), queryInfo.getQueryString(), queryInfo.getDefaultField());
+      if (luceneService.getIndex(queryInfo.getIndexName(), queryInfo.getRegionPath()) == null) {
+        throw new Exception("Index " + queryInfo.getIndexName() + " not found on region " + queryInfo.getRegionPath());
+      }
+      final LuceneQuery<K, V> query = luceneService.createLuceneQueryFactory()
+        .setResultLimit(queryInfo.getLimit())
+        .create(queryInfo.getIndexName(), queryInfo.getRegionPath(), queryInfo.getQueryString(),
+          queryInfo.getDefaultField());
+      if (queryInfo.getKeysOnly()) {
+        query.findKeys().forEach(key -> result.add(new LuceneSearchResults(key.toString())));
+      }
+      else {
         PageableLuceneQueryResults pageableLuceneQueryResults = query.findPages();
         while (pageableLuceneQueryResults.hasNext()) {
           List<LuceneResultStruct> page = pageableLuceneQueryResults.next();
           page.stream()
             .forEach(searchResult ->
-              result.add(new LuceneSearchResults<K,V>(searchResult.getKey().toString(),searchResult.getValue().toString(),searchResult.getScore())));
+              result.add(
+                new LuceneSearchResults<K, V>(searchResult.getKey().toString(), searchResult.getValue().toString(),
+                  searchResult.getScore())));
         }
       }
-      context.getResultSender().lastResult(result);
+      if (result != null) {
+        context.getResultSender().lastResult(result);
+      }
     }
     catch (LuceneQueryException e) {
-      context.getResultSender().lastResult(e);
+      result.add(new LuceneSearchResults(true, e.getRootCause().getMessage()));
+      context.getResultSender().lastResult(result);
+    }
+    catch (Exception e) {
+      result.add(new LuceneSearchResults(true, e.getMessage()));
+      context.getResultSender().lastResult(result);
     }
   }
 }
+

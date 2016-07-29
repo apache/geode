@@ -26,6 +26,7 @@ import java.util.Set;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.ResultSender;
+import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneQuery;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryException;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
@@ -82,13 +83,13 @@ public class LuceneSearchIndexFunctionJUnitTest {
   private InternalLuceneService getMockLuceneService(String resultKey, String resultValue, String resultScore) throws LuceneQueryException{
     InternalLuceneService service=mock(InternalLuceneService.class);
     LuceneQueryFactory mockQueryFactory = spy(LuceneQueryFactory.class);
-    LuceneQueryFactory mockQueryFactory2 = mock(LuceneQueryFactory.class);
     LuceneQuery mockQuery=mock(LuceneQuery.class);
     PageableLuceneQueryResults pageableLuceneQueryResults = mock(PageableLuceneQueryResults.class);
     LuceneResultStruct<String,String> resultStruct = new LuceneResultStructImpl(resultKey,resultValue,Float.valueOf(resultScore));
     List<LuceneResultStruct<String,String>> queryResults= new ArrayList<>();
     queryResults.add(resultStruct);
 
+    doReturn(mock(LuceneIndex.class)).when(service).getIndex(anyString(),anyString());
     doReturn(mockQueryFactory).when(service).createLuceneQueryFactory();
     doReturn(mockQueryFactory).when(mockQueryFactory).setResultLimit(anyInt());
     doReturn(mockQuery).when(mockQueryFactory).create(any(),any(),any(),any());
