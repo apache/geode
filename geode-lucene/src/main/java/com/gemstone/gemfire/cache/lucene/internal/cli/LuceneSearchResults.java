@@ -34,6 +34,10 @@ public class LuceneSearchResults<K,V> implements Comparable<LuceneSearchResults>
     this.score = score;
   }
 
+  public LuceneSearchResults(final String key) {
+    this.key = key;
+  }
+
   public LuceneSearchResults(final boolean exceptionFlag, final String exceptionMessage) {
     this.exceptionFlag=exceptionFlag;
     this.exceptionMessage=exceptionMessage;
