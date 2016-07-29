@@ -330,8 +330,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
             it.remove();
             boolean queuedEvent = false;
             try {
-              queuePrimaryEvent(gatewayEvent);
-              queuedEvent = true;
+              queuedEvent = queuePrimaryEvent(gatewayEvent);
             } catch (IOException ex) {
               if (!stopped()) {
                 logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayImpl_EVENT_DROPPED_DURING_FAILOVER_0, gatewayEvent), ex);
@@ -431,11 +430,24 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       }
       // If it is, create and enqueue an initialized GatewayEventImpl
       senderEvent = new GatewaySenderEventImpl(operation, event, substituteValue); // OFFHEAP ok
-      queuePrimaryEvent(senderEvent);
+      
+      boolean queuedEvent =false;
+      try {
+        queuedEvent = queuePrimaryEvent(senderEvent);
+      } finally {
+        //When queuePrimaryEvent() failed with some exception, it could
+        //occur after the GatewaySenderEventImpl is put onto the queue.
+        //In that case, the GatewaySenderEventImpl could be released here,
+        //and IllegalStateException could be thrown if getDeserializedValue is called
+        //when the event is accessed through the region queue.
+        if (!queuedEvent) {
+          GatewaySenderEventImpl.release(senderEvent);
+        }
+      }
     }
   }
 
-  private void queuePrimaryEvent(GatewaySenderEventImpl gatewayEvent)
+  private boolean queuePrimaryEvent(GatewaySenderEventImpl gatewayEvent)
       throws IOException, CacheException {
     // Queue the event
     GatewaySenderStats statistics = this.sender.getStatistics();
@@ -447,11 +459,12 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         logger.debug("Event {} is not added to queue.", gatewayEvent);
       }
       statistics.incEventsFiltered();
-      return;
+      return false;
     }
     long start = statistics.startTime();
+    boolean putDone = false;
     try {
-      this.queue.put(gatewayEvent);
+      putDone = this.queue.put(gatewayEvent);      
     } catch (InterruptedException e) {
       // Asif Not expected from SingleWriteSingleReadRegionQueue as it does not
       // throw
@@ -480,6 +493,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
               new Object[] { sender.getId(), Integer.valueOf(AbstractGatewaySender.QUEUE_SIZE_THRESHOLD) }));
       this.eventQueueSizeWarning = true;
     }
+    return putDone;
   }
 
   protected void waitForFailoverCompletion() {

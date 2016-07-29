@@ -573,7 +573,7 @@ public class HARegionQueue implements RegionQueue
   }
   
   /**
-   * Adds an object at the queue's tail. The implemetation supports concurrent
+   * Adds an object at the queue's tail. The implementation supports concurrent
    * put operations in a performant manner. This is done in following steps:
    * <br>
    * 1)Check if the Event being added has a sequence ID less than the Last
@@ -593,9 +593,9 @@ public class HARegionQueue implements RegionQueue
    *          object to put onto the queue
    * @throws InterruptedException
    * @throws CacheException
-   * 
+   * @return boolean 
    */
-  public void put(Object object) throws CacheException, InterruptedException {
+  public boolean put(Object object) throws CacheException, InterruptedException {
     this.giiLock.readLock().lock(); // fix for bug #41681 - durable client misses event
     try {
       if (this.giiCount > 0) {
@@ -616,6 +616,16 @@ public class HARegionQueue implements RegionQueue
     } finally {
       this.giiLock.readLock().unlock();
     }
+    
+    //basicPut() invokes dace.putObject() to put onto HARegionQueue
+    //However, dace.putObject could return true even though 
+    //the event is not put onto the HARegionQueue due to eliding events etc. 
+    //So it is not reliable to be used whether offheap ref ownership is passed over to 
+    //the queue (if and when HARegionQueue uses offheap). The probable 
+    //solution could be that to let dace.putObject() to increase offheap REF count
+    //when it puts the event onto the region queue. Also always release (dec)
+    //the offheap REF count from the caller.
+    return true;
   }
   
 
