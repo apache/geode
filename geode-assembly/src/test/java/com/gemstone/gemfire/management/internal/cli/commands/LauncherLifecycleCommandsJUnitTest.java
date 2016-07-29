@@ -456,7 +456,8 @@ public class LauncherLifecycleCommandsJUnitTest {
         ServerLauncher.Command.START).setDisableDefaultServer(true).setMemberName(
         "testCreateServerCommandLine").setRebalance(true)
         //.setServerBindAddress("localhost")
-        .setServerPort(41214).setCriticalHeapPercentage(95.5f).setEvictionHeapPercentage(85.0f).build();
+        .setServerPort(41214).setCriticalHeapPercentage(95.5f).setEvictionHeapPercentage(85.0f)
+        .setSocketBufferSize(1024*1024).setMessageTimeToLive(93).build();
 
     String[] commandLineElements = launcherCommands.createStartServerCommandLine(serverLauncher, null, null,
         new Properties(), null, false, new String[0], false, null, null);
@@ -476,6 +477,8 @@ public class LauncherLifecycleCommandsJUnitTest {
         String.format("--critical-heap-percentage=%1$s", serverLauncher.getCriticalHeapPercentage()));
     expectedCommandLineElements.add(
         String.format("--eviction-heap-percentage=%1$s", serverLauncher.getEvictionHeapPercentage()));
+    expectedCommandLineElements.add(String.format("--socket-buffer-size=%1$d", serverLauncher.getSocketBufferSize()));
+    expectedCommandLineElements.add(String.format("--message-time-to-live=%1$d", serverLauncher.getMessageTimeToLive()));
 
     for (String commandLineElement : commandLineElements) {
       expectedCommandLineElements.remove(commandLineElement.toLowerCase());
