@@ -910,7 +910,6 @@ public class SerialWANPropogationDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.checkMinimumGatewayReceiverStats( 1, 1 ));
   }
 
-  @Category(FlakyTest.class) // GEODE-975 AND GEODE-1032: random ports, waitForCriterion, short timeouts, async actions
   @Test
   public void testReplicatedSerialPropagationWithRemoteReceiverRestartedOnOtherNode() throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
