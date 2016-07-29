@@ -98,9 +98,9 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
     Map<String, String> results = new HashMap<>();
 
     for (Entry<String, Class<? extends Analyzer>> entry : fieldAnalyzers.entrySet()) {
-      final String analyzer = entry.getValue().getSimpleName();
+      final Class analyzer = entry.getValue();
       if(analyzer != null) {
-        results.put(entry.getKey(), analyzer);
+        results.put(entry.getKey(), analyzer.getSimpleName());
       }
     }
     return results;

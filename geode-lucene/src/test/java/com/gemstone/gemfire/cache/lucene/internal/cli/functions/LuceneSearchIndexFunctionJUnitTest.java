@@ -82,7 +82,6 @@ public class LuceneSearchIndexFunctionJUnitTest {
   private InternalLuceneService getMockLuceneService(String resultKey, String resultValue, String resultScore) throws LuceneQueryException{
     InternalLuceneService service=mock(InternalLuceneService.class);
     LuceneQueryFactory mockQueryFactory = spy(LuceneQueryFactory.class);
-    LuceneQueryFactory mockQueryFactory2 = mock(LuceneQueryFactory.class);
     LuceneQuery mockQuery=mock(LuceneQuery.class);
     PageableLuceneQueryResults pageableLuceneQueryResults = mock(PageableLuceneQueryResults.class);
     LuceneResultStruct<String,String> resultStruct = new LuceneResultStructImpl(resultKey,resultValue,Float.valueOf(resultScore));

@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.cache.lucene.internal.cli;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -92,7 +91,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     }
     catch (Throwable t) {
       SystemFailure.checkFailure();
-      getCache().getLogger().error(t);
+      getCache().getLogger().info(t);
       return ResultBuilder.createGemFireErrorResult(String.format(LuceneCliStrings.LUCENE_LIST_INDEX__ERROR_MESSAGE,
         toString(t, isDebugging())));
     }
@@ -243,7 +242,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     }
     catch (Throwable t) {
       SystemFailure.checkFailure();
-      getCache().getLogger().error(t);
+      getCache().getLogger().info(t);
       return ResultBuilder.createGemFireErrorResult(String.format(LuceneCliStrings.LUCENE_DESCRIBE_INDEX__ERROR_MESSAGE,
         toString(t, isDebugging())));
     }
@@ -252,8 +251,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
   @SuppressWarnings("unchecked")
   protected List<LuceneIndexDetails> getIndexDetails(LuceneIndexInfo indexInfo) throws Exception {
     GeodeSecurityUtil.authorizeRegionManage(indexInfo.getRegionPath());
-    final String[] groups = {};
-    final ResultCollector<?, ?> rc = this.executeFunctionOnGroups(describeIndexFunction, groups, indexInfo);
+    final ResultCollector<?, ?> rc = this.executeFunctionOnGroups(describeIndexFunction, new String[] {}, indexInfo);
     final List<LuceneIndexDetails> funcResults = (List<LuceneIndexDetails>) rc.getResult();
     return funcResults.stream().filter(indexDetails -> indexDetails != null).collect(Collectors.toList());
   }
@@ -307,13 +305,13 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     }
     catch (Throwable t) {
       SystemFailure.checkFailure();
-      getCache().getLogger().error(t);
+      getCache().getLogger().info(t);
       return ResultBuilder.createGemFireErrorResult(String.format(LuceneCliStrings.LUCENE_SEARCH_INDEX__ERROR_MESSAGE,
         toString(t, isDebugging())));
     }
   }
 
-  private Result displayResults(int pageSize) throws IOException {
+  private Result displayResults(int pageSize) throws Exception {
     if (searchResults.size() == 0) {
       return ResultBuilder.createInfoResult(LuceneCliStrings.LUCENE_SEARCH_INDEX__NO_RESULTS_MESSAGE);
     }
@@ -395,10 +393,10 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     return Gfsh.getCurrentInstance();
   }
 
-  private List<LuceneSearchResults> getSearchResults(final LuceneQueryInfo queryInfo) throws CommandResultException {
+  private List<LuceneSearchResults> getSearchResults(final LuceneQueryInfo queryInfo) throws Exception {
     GeodeSecurityUtil.authorizeRegionManage(queryInfo.getRegionPath());
     final String[] groups = {};
-    final ResultCollector<?, ?> rc = this.executeFunctionOnGroups(searchIndexFunction, groups, queryInfo);
+    final ResultCollector<?, ?> rc = this.executeSearch(queryInfo);
     final List<Set<LuceneSearchResults>> functionResults = (List<Set<LuceneSearchResults>>) rc.getResult();
 
     return functionResults.stream()
@@ -407,23 +405,40 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       .collect(Collectors.toList());
   }
 
-  private Result getResults(int fromIndex, int toIndex){
+  private Result getResults(int fromIndex, int toIndex)throws Exception{
     final TabularResultData data = ResultBuilder.createTabularResultData();
     for (int i = fromIndex; i < toIndex; i++) {
+      if (!searchResults.get(i).getExeptionFlag()) {
       data.accumulate("key", searchResults.get(i).getKey());
       data.accumulate("value", searchResults.get(i).getValue());
       data.accumulate("score", searchResults.get(i).getScore());
+      }
+      else throw new Exception(searchResults.get(i).getExceptionMessage());
     }
     return ResultBuilder.buildResult(data);
   }
 
-  protected ResultCollector<?, ?> executeFunctionOnGroups(FunctionAdapter function, String[]groups, final LuceneIndexInfo indexInfo) throws CommandResultException {
-    final Set<DistributedMember> targetMembers = CliUtil.findAllMatchingMembers(groups, null);
+  protected ResultCollector<?, ?> executeFunctionOnGroups(FunctionAdapter function,
+                                                          String[] groups,
+                                                          final LuceneIndexInfo indexInfo) throws Exception
+  {
+    final Set<DistributedMember> targetMembers;
+    if (function != createIndexFunction) {
+      targetMembers = CliUtil.getMembersForeRegionViaFunction(getCache(), indexInfo.getRegionPath());
+      if (targetMembers.isEmpty()) {
+        throw new Exception("Region not found.");
+      }
+    }
+    else {
+      targetMembers = CliUtil.findAllMatchingMembers(groups, null);
+    }
     return CliUtil.executeFunction(function, indexInfo, targetMembers);
   }
 
-  protected ResultCollector<?, ?> executeFunctionOnGroups(FunctionAdapter function, String[]groups, final LuceneQueryInfo queryInfo) throws CommandResultException {
-    final Set<DistributedMember> targetMembers = CliUtil.findAllMatchingMembers(groups, null);
-    return CliUtil.executeFunction(function, queryInfo, targetMembers);
+  protected ResultCollector<?, ?> executeSearch(final LuceneQueryInfo queryInfo) throws Exception {
+    final Set<DistributedMember> targetMembers = CliUtil.getMembersForeRegionViaFunction(getCache(),queryInfo.getRegionPath());
+    if (targetMembers.isEmpty())
+      throw new Exception("Region not found.");
+    return CliUtil.executeFunction(searchIndexFunction, queryInfo, targetMembers);
   }
 }

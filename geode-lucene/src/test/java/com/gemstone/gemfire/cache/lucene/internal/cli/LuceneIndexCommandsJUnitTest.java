@@ -19,8 +19,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,7 +43,6 @@ import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneCreateIndexFunction;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
-import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneSearchIndexFunction;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
 import com.gemstone.gemfire.internal.util.CollectionUtils;
@@ -154,7 +151,7 @@ public class LuceneIndexCommandsJUnitTest {
   }
 
   @Test
-  public void testCreateIndex() throws CommandResultException {
+  public void testCreateIndex() throws Exception {
     final Cache mockCache=mock(Cache.class);
     final ResultCollector mockResultCollector = mock(ResultCollector.class);
     final LuceneIndexCommands commands=spy(createIndexCommands(mockCache,null));
@@ -181,7 +178,7 @@ public class LuceneIndexCommandsJUnitTest {
   }
 
   @Test
-  public void testDescribeIndex() throws CommandResultException {
+  public void testDescribeIndex() throws Exception {
 
     final Cache mockCache = mock(Cache.class, "Cache");
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
@@ -214,7 +211,7 @@ public class LuceneIndexCommandsJUnitTest {
   }
 
   @Test
-  public void testSearchIndex() throws CommandResultException {
+  public void testSearchIndex() throws Exception {
 
     final Cache mockCache = mock(Cache.class, "Cache");
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
@@ -226,7 +223,7 @@ public class LuceneIndexCommandsJUnitTest {
     queryResults.add(createQueryResults("B","Result1",Float.valueOf("1.2")));
     queryResults.add(createQueryResults("C","Result1",Float.valueOf("1.1")));
     queryResultsList.add(queryResults);
-    doReturn(mockResultCollector).when(commands).executeFunctionOnGroups(isA(LuceneSearchIndexFunction.class),any(),any(LuceneQueryInfo.class));
+    doReturn(mockResultCollector).when(commands).executeSearch(isA(LuceneQueryInfo.class));
     doReturn(queryResultsList).when(mockResultCollector).getResult();
 
     CommandResult result = (CommandResult) commands.searchIndex("index","region","Result1","field1",-1,-1);
@@ -255,7 +252,7 @@ public class LuceneIndexCommandsJUnitTest {
     LuceneSearchResults result7=createQueryResults("G","Result1",Float.valueOf("1.1"));
     final List<Set<LuceneSearchResults>> queryResultsList = getSearchResults(result1, result2, result3, result4, result5, result6, result7);
 
-    doReturn(mockResultCollector).when(commands).executeFunctionOnGroups(isA(LuceneSearchIndexFunction.class),any(),any(LuceneQueryInfo.class));
+    doReturn(mockResultCollector).when(commands).executeSearch(any(LuceneQueryInfo.class));
     doReturn(queryResultsList).when(mockResultCollector).getResult();
     doReturn(mockGfsh).when(commands).initGfsh();
     when(mockGfsh.interact(anyString())).thenReturn("n").thenReturn("n").thenReturn("n").thenReturn("n")
