@@ -285,15 +285,20 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__PAGE_SIZE,
       mandatory = false,
       unspecifiedDefaultValue = "-1",
-      help = LuceneCliStrings.LUCENE_SEARCH_INDEX__PAGE_SIZE__HELP) int pageSize)
+      help = LuceneCliStrings.LUCENE_SEARCH_INDEX__PAGE_SIZE__HELP) int pageSize,
+
+    @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY,
+      mandatory = false,
+      unspecifiedDefaultValue = "false",
+      help = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY__HELP) boolean keysOnly)
   {
     try {
-      LuceneQueryInfo queryInfo = new LuceneQueryInfo(indexName, regionPath, queryString, defaultField, limit);
+      LuceneQueryInfo queryInfo = new LuceneQueryInfo(indexName, regionPath, queryString, defaultField, limit, keysOnly);
       if (pageSize == -1) {
         pageSize = Integer.MAX_VALUE;
       }
       searchResults = getSearchResults(queryInfo);
-      return displayResults(pageSize);
+      return displayResults(pageSize, keysOnly);
     }
     catch (FunctionInvocationTargetException ignore) {
       return ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN,
@@ -311,7 +316,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     }
   }
 
-  private Result displayResults(int pageSize) throws Exception {
+  private Result displayResults(int pageSize, boolean keysOnly) throws Exception {
     if (searchResults.size() == 0) {
       return ResultBuilder.createInfoResult(LuceneCliStrings.LUCENE_SEARCH_INDEX__NO_RESULTS_MESSAGE);
     }
@@ -327,7 +332,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     do {
 
       if (!skipDisplay) {
-        CommandResult commandResult = (CommandResult) getResults(fromIndex, toIndex);
+        CommandResult commandResult = (CommandResult) getResults(fromIndex, toIndex, keysOnly);
         if (!pagination) {
           return commandResult;
         }
@@ -405,15 +410,19 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       .collect(Collectors.toList());
   }
 
-  private Result getResults(int fromIndex, int toIndex)throws Exception{
+  private Result getResults(int fromIndex, int toIndex, boolean keysonly) throws Exception {
     final TabularResultData data = ResultBuilder.createTabularResultData();
     for (int i = fromIndex; i < toIndex; i++) {
       if (!searchResults.get(i).getExeptionFlag()) {
-      data.accumulate("key", searchResults.get(i).getKey());
-      data.accumulate("value", searchResults.get(i).getValue());
-      data.accumulate("score", searchResults.get(i).getScore());
+        data.accumulate("key", searchResults.get(i).getKey());
+        if (!keysonly) {
+          data.accumulate("value", searchResults.get(i).getValue());
+          data.accumulate("score", searchResults.get(i).getScore());
+        }
       }
-      else throw new Exception(searchResults.get(i).getExceptionMessage());
+      else {
+        throw new Exception(searchResults.get(i).getExceptionMessage());
+      }
     }
     return ResultBuilder.buildResult(data);
   }
