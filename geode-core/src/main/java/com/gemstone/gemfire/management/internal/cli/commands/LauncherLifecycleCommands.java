@@ -1802,6 +1802,14 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       commandLine.add("--" + CliStrings.START_SERVER__MAX__THREADS + "=" + launcher.getMaxThreads());
     }
 
+    if (launcher.getMessageTimeToLive() != null) {
+      commandLine.add("--" + CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE + "=" + launcher.getMessageTimeToLive());
+    }
+
+    if (launcher.getSocketBufferSize() != null) {
+      commandLine.add("--" + CliStrings.START_SERVER__SOCKET__BUFFER__SIZE + "=" + launcher.getSocketBufferSize());
+    }
+
     if (launcher.getHostNameForClients() != null) {
       commandLine.add("--" + CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS + "=" + launcher.getHostNameForClients());
     }
