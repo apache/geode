@@ -166,20 +166,28 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
 
   @Test
   public void cannotCreateLuceneIndexForReplicateRegion() throws IOException, ParseException {
-    expectedException.expect(UnsupportedOperationException.class);
-    expectedException.expectMessage("Lucene indexes on replicated regions are not supported");
-    createIndex("field1", "field2", "field3");
-    this.cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+    try {
+      createIndex("field1", "field2", "field3");
+      this.cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+      fail("Should not have been able to create index");
+    } catch (UnsupportedOperationException e) {
+      assertEquals("Lucene indexes on replicated regions are not supported", e.getMessage());
+      assertNull(cache.getRegion(REGION_NAME));
+    }
   }
 
   @Test
   public void cannotCreateLuceneIndexForRegionWithEviction() throws IOException, ParseException {
-    expectedException.expect(UnsupportedOperationException.class);
-    expectedException.expectMessage("Lucene indexes on regions with eviction and action local destroy are not supported");
-    createIndex("field1", "field2", "field3");
-    RegionFactory regionFactory = this.cache.createRegionFactory(RegionShortcut.PARTITION);
-    regionFactory.setEvictionAttributes(EvictionAttributes.createLIFOEntryAttributes(100, EvictionAction.LOCAL_DESTROY));
-    regionFactory.create(REGION_NAME);
+    try {
+      createIndex("field1", "field2", "field3");
+      RegionFactory regionFactory = this.cache.createRegionFactory(RegionShortcut.PARTITION);
+      regionFactory.setEvictionAttributes(
+        EvictionAttributes.createLIFOEntryAttributes(100, EvictionAction.LOCAL_DESTROY));
+      regionFactory.create(REGION_NAME);
+    } catch (UnsupportedOperationException e) {
+      assertEquals("Lucene indexes on regions with eviction and action local destroy are not supported", e.getMessage());
+      assertNull(cache.getRegion(REGION_NAME));
+    }
   }
 
   @Test
