@@ -57,7 +57,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("*.Test")
+@PowerMockIgnore("*.UnitTest")
 @PrepareForTest({ FunctionService.class })
 public class ExecuteFunction66Test {
   private static final String FUNCTION = "function";
@@ -195,7 +195,7 @@ public class ExecuteFunction66Test {
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
     doThrow(new NotAuthorizedException("")).when(this.authzRequest).executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(), eq(false));
 
-    this.executeFunction66.cmdExecute(this.message, this.serverConnection, 0);
+    assertThatThrownBy(() -> this.executeFunction66.cmdExecute(this.message, this.serverConnection, 0)).isExactlyInstanceOf(NullPointerException.class);
 
     verify(this.securityService).authorizeDataWrite();
     //verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);

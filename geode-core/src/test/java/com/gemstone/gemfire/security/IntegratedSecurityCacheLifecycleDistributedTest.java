@@ -41,7 +41,7 @@ import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4CacheTestCase {
 
   private VM locator;
-  private SecurityService securityService;
+  private transient SecurityService securityService;
 
   @Override
   public final void postSetUp() throws Exception {
