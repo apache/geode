@@ -153,7 +153,22 @@ public class LuceneServiceImpl implements InternalLuceneService {
           RegionAttributes attrs, InternalRegionArguments internalRegionArgs) {
         RegionAttributes updatedRA = attrs;
         String path = parent == null ? "/" + regionName : parent.getFullPath() + "/" + regionName;
+
         if(path.equals(dataRegionPath)) {
+
+          if (!attrs.getDataPolicy().withPartitioning()) {
+            // replicated region
+            throw new UnsupportedOperationException("Lucene indexes on replicated regions are not supported");
+          }
+
+          //For now we cannot support eviction with local destroy.
+          //Eviction with overflow to disk still needs to be supported
+          EvictionAttributes evictionAttributes = attrs.getEvictionAttributes();
+          EvictionAlgorithm evictionAlgorithm = evictionAttributes.getAlgorithm();
+          if (evictionAlgorithm != EvictionAlgorithm.NONE && evictionAttributes.getAction().isLocalDestroy()) {
+            throw new UnsupportedOperationException("Lucene indexes on regions with eviction and action local destroy are not supported");
+          }
+
           String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, dataRegionPath);
           if (!attrs.getAsyncEventQueueIds().contains(aeqId)) {
             AttributesFactory af = new AttributesFactory(attrs);
@@ -175,7 +190,6 @@ public class LuceneServiceImpl implements InternalLuceneService {
         }
       }
     });
-    
   }
 
 
@@ -202,26 +216,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
       return null;
     }
     //Convert the region name into a canonical form
-    
     regionPath = dataregion.getFullPath();
-    LuceneIndexImpl index = null;
-
-    //For now we cannot support eviction with local destroy.
-    //Eviction with overflow to disk still needs to be supported
-    EvictionAttributes evictionAttributes = dataregion.getAttributes().getEvictionAttributes();
-    EvictionAlgorithm evictionAlgorithm = evictionAttributes.getAlgorithm();
-    if (evictionAlgorithm != EvictionAlgorithm.NONE && evictionAttributes.getAction().isLocalDestroy()) {
-      throw new UnsupportedOperationException("Lucene indexes on regions with eviction and action local destroy are not supported");
-    }
-
-    if (dataregion instanceof PartitionedRegion) {
-      // partitioned region
-      index = new LuceneIndexForPartitionedRegion(indexName, regionPath, cache);
-    } else {
-      // replicated region
-      throw new UnsupportedOperationException("Lucene indexes on replicated regions are not supported");
-    }
-    return index;
+    return new LuceneIndexForPartitionedRegion(indexName, regionPath, cache);
   }
 
   private void registerDefinedIndex(final String regionAndIndex, final LuceneIndexCreationProfile luceneIndexCreationProfile) {
