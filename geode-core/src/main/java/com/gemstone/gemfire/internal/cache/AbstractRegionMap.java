@@ -2844,17 +2844,14 @@ public abstract class AbstractRegionMap implements RegionMap {
     // replace is propagated to server, so no need to check
     // satisfiesOldValue on client
     if (expectedOldValue != null && !replaceOnClient) {
-      ReferenceCountHelper.skipRefCountTracking();
-      
-      @Retained @Released Object v = re._getValueRetain(event.getLocalRegion(), true);
-      
-      ReferenceCountHelper.unskipRefCountTracking();
-      try {
-        if (!AbstractRegionEntry.checkExpectedOldValue(expectedOldValue, v, event.getLocalRegion())) {
-          return false;
-        }
-      } finally {
-        OffHeapHelper.releaseWithNoTracking(v);
+      assert event.getOperation().guaranteesOldValue();
+      // We already called setOldValueInEvent so the event will have the old value.
+      @Unretained Object v = event.getRawOldValue();
+      // Note that v will be null instead of INVALID because setOldValue
+      // converts INVALID to null.
+      // But checkExpectedOldValue handle this and says INVALID equals null.
+      if (!AbstractRegionEntry.checkExpectedOldValue(expectedOldValue, v, event.getLocalRegion())) {
+        return false;
       }
     }
     return true;
@@ -2870,7 +2867,7 @@ public abstract class AbstractRegionMap implements RegionMap {
         @Released Object oldValueInVMOrDisk = re.getValueOffHeapOrDiskWithoutFaultIn(event.getLocalRegion());
         ReferenceCountHelper.unskipRefCountTracking();
         try {
-          event.setOldValue(oldValueInVMOrDisk, requireOldValue);
+          event.setOldValue(oldValueInVMOrDisk, needToSetOldValue);
         } finally {
           OffHeapHelper.releaseWithNoTracking(oldValueInVMOrDisk);
         }
@@ -2882,7 +2879,7 @@ public abstract class AbstractRegionMap implements RegionMap {
         
         ReferenceCountHelper.unskipRefCountTracking();
         try {
-          event.setOldValue(oldValueInVM, requireOldValue);
+          event.setOldValue(oldValueInVM, needToSetOldValue);
         } finally {
           OffHeapHelper.releaseWithNoTracking(oldValueInVM);
         }

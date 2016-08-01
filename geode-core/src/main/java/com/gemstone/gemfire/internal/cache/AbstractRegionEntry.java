@@ -1072,7 +1072,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
           obj = cdVal;
         }
       }
-      if (obj.getClass().getName().equals(pdx.getClassName())) {
+      if (obj != null && obj.getClass().getName().equals(pdx.getClassName())) {
         GemFireCacheImpl gfc = GemFireCacheImpl.getForPdx("Could not access Pdx registry");
         if (gfc != null) {
           PdxSerializer pdxSerializer;
