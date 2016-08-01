@@ -133,8 +133,7 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     assertEquals(1, createList1.size());
     assertEquals(1, createList2.size());
   }
-  
-  @Category(FlakyTest.class) // GEODE-1148: random ports, eats exceptions (fixed 1), time sensitive, thread sleeps, waitForCriterion
+
   @Test
   public void testReplicatedSerialPropagationLoopBack3SitesLoop() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -145,12 +144,22 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm4, vm7);
     createCacheInVMs(tkPort, vm5);
 
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", isOffHeap()));
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ny", isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "tk", isOffHeap()));
+
+    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", isOffHeap() ));
+    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ny", isOffHeap() ));
+
     vm3.invoke(() -> WANTestBase.createReceiver());
     vm4.invoke(() -> WANTestBase.createReceiver());
     vm5.invoke(() -> WANTestBase.createReceiver());
 
-    // using vm5 for sender in ds 3. cache is already created.
-    
     vm6.invoke(() -> WANTestBase.createSender( "ln", 2,
         false, 100, 10, false, false, null, true ));
     vm7.invoke(() -> WANTestBase.createSender( "ny", 3,
@@ -158,48 +167,37 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.createSender( "tk", 1,
       false, 100, 10, false, false, null, true ));
 
-    
-    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", "ln", isOffHeap()));
-    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", "ny", isOffHeap()));
-    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", "tk", isOffHeap()));
-
     vm6.invoke(() -> WANTestBase.startSender( "ln" ));
     vm7.invoke(() -> WANTestBase.startSender( "ny" ));
     vm5.invoke(() -> WANTestBase.startSender( "tk" ));
-    
+
+    // using vm5 for sender in ds 3. cache is already created.
     vm6.invoke(() -> WANTestBase.addQueueListener( "ln",
       false ));
     vm7.invoke(() -> WANTestBase.addQueueListener( "ny",
       false ));
     vm5.invoke(() -> WANTestBase.addQueueListener( "tk",
       false ));
-  
-    
-    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", "ln", isOffHeap() ));
-    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", "ny", isOffHeap() ));
 
+    int totalSize = 3;
+    int increament = 1;
 
     final Map keyValues = new HashMap();
-    for(int i=0; i< 1; i++) {
+    for(int i=0; i< increament; i++) {
       keyValues.put(i, i);
     }
     vm3.invoke(() -> WANTestBase.putGivenKeyValue( getTestMethodName() + "_RR",
       keyValues ));
     
     keyValues.clear();
-    for(int i=1; i< 2; i++) {
+    for(int i = increament; i< 2*increament; i++) {
       keyValues.put(i, i);
     }
     vm4.invoke(() -> WANTestBase.putGivenKeyValue( getTestMethodName() + "_RR",
       keyValues ));
     
     keyValues.clear();
-    for(int i=2; i< 3; i++) {
+    for(int i=2*increament; i< totalSize; i++) {
       keyValues.put(i, i);
     }
     vm5.invoke(() -> WANTestBase.putGivenKeyValue( getTestMethodName() + "_RR",
@@ -207,14 +205,17 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     
         
     vm5.invoke(() -> WANTestBase.validateRegionSize(
-        getTestMethodName() + "_RR", 3 ));
+        getTestMethodName() + "_RR", totalSize ));
     vm6.invoke(() -> WANTestBase.validateRegionSize(
-        getTestMethodName() + "_RR", 3 ));
+        getTestMethodName() + "_RR", totalSize ));
     vm7.invoke(() -> WANTestBase.validateRegionSize(
-        getTestMethodName() + "_RR", 3 ));
+        getTestMethodName() + "_RR", totalSize ));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_RR", totalSize ));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_RR", totalSize ));
     
     
-    Wait.pause(5000);
     vm6.invoke(() -> WANTestBase.verifyQueueSize( "ln", 0 ));
     vm7.invoke(() -> WANTestBase.verifyQueueSize( "ny", 0 ));
     vm5.invoke(() -> WANTestBase.verifyQueueSize( "tk", 0 ));
