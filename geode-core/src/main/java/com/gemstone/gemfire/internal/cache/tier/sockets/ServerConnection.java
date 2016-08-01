@@ -772,7 +772,7 @@ public class ServerConnection implements Runnable {
         }
 
         // if a subject exists for this uniqueId, binds the subject to this thread so that we can do authorization later
-        if(AcceptorImpl.isIntegratedSecurity() && !isInternalMessage()) {
+        if(AcceptorImpl.isIntegratedSecurity() && !isInternalMessage() && this.communicationMode != Acceptor.GATEWAY_TO_GATEWAY) {
           long uniqueId = getUniqueId();
           Subject subject = this.clientUserAuths.getSubject(uniqueId);
           if(subject!=null) {
