@@ -1335,6 +1335,7 @@ public interface ConfigurationProperties {
    * <U>Since</U>: GemFire 8.0
    * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_ENABLED} with optional {@link #SERVER_SSL_ALIAS}
    */
+  @Deprecated
   String SERVER_SSL_ENABLED = "server-ssl-enabled";
   /**
    * The static String definition of the <i>"server-ssl-keystore"</i> property

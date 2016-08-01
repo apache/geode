@@ -24,6 +24,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
+import java.rmi.Remote;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.RMIClientSocketFactory;
@@ -31,7 +32,6 @@ import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.Set;
-
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
@@ -53,7 +53,6 @@ import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.lang.StringUtils;
@@ -93,7 +92,7 @@ public class ManagementAgent {
    */
   private boolean running = false;
   private Registry registry;
-  private JMXConnectorServer cs;
+  private JMXConnectorServer jmxConnectorServer;
   private JMXShiroAuthenticator shiroAuthenticator;
   private final DistributionConfig config;
   private boolean isHttpServiceRunning = false;
@@ -165,9 +164,9 @@ public class ManagementAgent {
       logger.debug("Stopping jmx manager agent");
     }
     try {
-      cs.stop();
+      jmxConnectorServer.stop();
       UnicastRemoteObject.unexportObject(registry, true);
-    } catch (IOException e) {
+    } catch (Exception e) {
       throw new ManagementException(e);
     }
 
@@ -205,8 +204,7 @@ public class ManagementAgent {
         if (logger.isDebugEnabled()) {
           logger.debug(message);
         }
-      }
-      else if (isIntegratedSecurity()){
+      } else if (isIntegratedSecurity()) {
         System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
       }
 
@@ -353,16 +351,16 @@ public class ManagementAgent {
       bindAddr = InetAddress.getByName(hostname);
     }
 
-    final boolean ssl = this.config.getJmxManagerSSLEnabled();
+    final SocketCreator socketCreator = SocketCreatorFactory.getJMXManagerSSLSocketCreator();
+
+    final boolean ssl = socketCreator.useSSL();
 
     if (logger.isDebugEnabled()) {
       logger.debug("Starting jmx manager agent on port {}{}", port, (bindAddr != null ? (" bound to " + bindAddr) : "") + (ssl ? " using SSL" : ""));
     }
-
-    final SocketCreator sc = SocketCreatorFactory.getJMXManagerSSLSocketCreator();
-    RMIClientSocketFactory csf = ssl ? new SslRMIClientSocketFactory() : null;// RMISocketFactory.getDefaultSocketFactory();
+    RMIClientSocketFactory rmiClientSocketFactory = ssl ? new SslRMIClientSocketFactory() : null;// RMISocketFactory.getDefaultSocketFactory();
     // new GemFireRMIClientSocketFactory(sc, getLogger());
-    RMIServerSocketFactory ssf = new GemFireRMIServerSocketFactory(sc, bindAddr);
+    RMIServerSocketFactory rmiServerSocketFactory = new GemFireRMIServerSocketFactory(socketCreator, bindAddr);
 
     // Following is done to prevent rmi causing stop the world gcs
     System.setProperty("sun.rmi.dgc.server.gcInterval", Long.toString(Long.MAX_VALUE - 1));
@@ -374,7 +372,7 @@ public class ManagementAgent {
     // Otherwise, we wouldn't be able to use a single port.
     //
     // Start an RMI registry on port <port>.
-    registry = LocateRegistry.createRegistry(port, csf, ssf);
+    registry = LocateRegistry.createRegistry(port, rmiClientSocketFactory, rmiServerSocketFactory);
 
     // Retrieve the PlatformMBeanServer.
     MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
@@ -390,7 +388,7 @@ public class ManagementAgent {
     // RMI Registry. We can do so because we're using \*the same\* client
     // and server socket factories, for the registry itself \*and\* for this
     // object.
-    final RMIServerImpl stub = new RMIJRMPServerImpl(port, csf, ssf, env);
+    final RMIServerImpl stub = new RMIJRMPServerImpl(port, rmiClientSocketFactory, rmiServerSocketFactory, env);
 
     // Create an RMI connector server.
     //
@@ -415,7 +413,7 @@ public class ManagementAgent {
     // KIRK: JDK 1.5 cannot use JMXConnectorServerFactory because of
     // http://bugs.sun.com/view_bug.do?bug_id=5107423
     // but we're using JDK 1.6
-    cs = new RMIConnectorServer(new JMXServiceURL("rmi", hostname, port), env, stub, mbs) {
+    jmxConnectorServer = new RMIConnectorServer(new JMXServiceURL("rmi", hostname, port), env, stub, mbs) {
       @Override
       public JMXServiceURL getAddress() {
         return url;
@@ -435,14 +433,14 @@ public class ManagementAgent {
     };
 
     String shiroConfig = this.config.getShiroInit();
-    if (! StringUtils.isBlank(shiroConfig) || isIntegratedSecurity()) {
+    if (!StringUtils.isBlank(shiroConfig) || isIntegratedSecurity()) {
       shiroAuthenticator = new JMXShiroAuthenticator();
       env.put(JMXConnectorServer.AUTHENTICATOR, shiroAuthenticator);
-      cs.addNotificationListener(shiroAuthenticator, null, cs.getAttributes());
+      jmxConnectorServer.addNotificationListener(shiroAuthenticator, null, jmxConnectorServer.getAttributes());
       // always going to assume authorization is needed as well, if no custom AccessControl, then the CustomAuthRealm
       // should take care of that
       MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper();
-      cs.setMBeanServerForwarder(mBeanServerWrapper);
+      jmxConnectorServer.setMBeanServerForwarder(mBeanServerWrapper);
       registerAccessControlMBean();
     } else {
       /* Disable the old authenticator mechanism */
@@ -462,7 +460,7 @@ public class ManagementAgent {
       }
     }
 
-    cs.start();
+    jmxConnectorServer.start();
     if (logger.isDebugEnabled()) {
       logger.debug("Finished starting jmx manager agent.");
     }

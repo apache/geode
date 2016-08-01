@@ -50,4 +50,9 @@ public enum SSLEnabledComponent {
   public String getConstant() {
     return constant;
   }
+
+  @Override
+  public String toString() {
+    return getConstant();
+  }
 }
