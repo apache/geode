@@ -40,9 +40,9 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
-public class IntegratedSecurityPostProcessorDUnitTest extends AbstractIntegratedClientAuthDistributedTest {
+public class PostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
 
-  public IntegratedSecurityPostProcessorDUnitTest(){
+  public PostProcessorDUnitTest(){
     this.postProcessor = SamplePostProcessor.class;
   }
 

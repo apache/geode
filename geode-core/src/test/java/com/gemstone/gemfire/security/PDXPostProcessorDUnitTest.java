@@ -19,16 +19,13 @@ package com.gemstone.gemfire.security;
 
 import static org.junit.Assert.*;
 
-import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import com.jayway.awaitility.Awaitility;
-import org.apache.geode.security.PostProcessor;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -40,16 +37,7 @@ import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.query.CqAttributes;
-import com.gemstone.gemfire.cache.query.CqAttributesFactory;
-import com.gemstone.gemfire.cache.query.CqEvent;
-import com.gemstone.gemfire.cache.query.CqQuery;
-import com.gemstone.gemfire.cache.query.CqResults;
-import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.internal.cq.CqListenerImpl;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
@@ -61,7 +49,6 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.pdx.SimpleClass;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import com.gemstone.gemfire.test.junit.runners.CategoryWithParameterizedRunnerFactory;
@@ -69,8 +56,8 @@ import com.gemstone.gemfire.test.junit.runners.CategoryWithParameterizedRunnerFa
 @Category({ DistributedTest.class, SecurityTest.class })
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class PDXPostProcessorDUnitTest extends AbstractIntegratedClientAuthDistributedTest {
-  private static byte[] BYTES = {1,0};
+public class PDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
+  private static byte[] BYTES = PDXPostProcessor.BYTES;
 
   @Parameterized.Parameters
   public static Collection<Object[]> parameters(){
@@ -193,52 +180,6 @@ public class PDXPostProcessorDUnitTest extends AbstractIntegratedClientAuthDistr
   }
 
   @Test
-  public void testCQ() {
-    String query = "select * from /AuthRegion";
-    client1.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
-
-      Pool pool = PoolManager.find(region);
-      QueryService qs = pool.getQueryService();
-
-      CqAttributesFactory factory = new CqAttributesFactory();
-
-      factory.addCqListener(new CqListenerImpl() {
-        @Override
-        public void onEvent(final CqEvent aCqEvent) {
-          Object key = aCqEvent.getKey();
-          Object value = aCqEvent.getNewValue();
-          if(key.equals("key1")) {
-            assertTrue(value instanceof SimpleClass);
-          }
-          else if(key.equals("key2")){
-            assertTrue(Arrays.equals(BYTES, (byte[])value));
-          }
-        }
-      });
-
-      CqAttributes cqa = factory.create();
-
-      // Create the CqQuery
-      CqQuery cq = qs.newCq("CQ1", query, cqa);
-      CqResults results = cq.executeWithInitialResults();
-    });
-
-    client2.invoke(() -> {
-      ClientCache cache = createClientCache("authRegionUser", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
-      region.put("key1", new SimpleClass(1, (byte) 1));
-      region.put("key2", BYTES);
-    });
-
-    // wait for events to fire
-    Awaitility.await().atMost(1, TimeUnit.SECONDS);
-    PDXPostProcessor pp = (PDXPostProcessor) GeodeSecurityUtil.getPostProcessor();
-    assertEquals(pp.getCount(), 2);
-  }
-
-  @Test
   public void testGfshCommand(){
     // have client2 input some domain data into the region
     client2.invoke(()->{
@@ -287,37 +228,6 @@ public class PDXPostProcessorDUnitTest extends AbstractIntegratedClientAuthDistr
 
     PDXPostProcessor pp = (PDXPostProcessor) GeodeSecurityUtil.getPostProcessor();
     assertEquals(pp.getCount(), 4);
-  }
-
-  public static class PDXPostProcessor implements PostProcessor{
-    private boolean pdx = false;
-    private int count = 0;
-
-    public void init(Properties props){
-      pdx = Boolean.parseBoolean(props.getProperty("security-pdx"));
-      count = 0;
-    }
-    @Override
-    public Object processRegionValue(final Principal principal,
-                                     final String regionName,
-                                     final Object key,
-                                     final Object value) {
-      count ++;
-      if(value instanceof byte[]){
-        assertTrue(Arrays.equals(BYTES, (byte[])value));
-      }
-      else if(pdx){
-        assertTrue(value instanceof PdxInstanceImpl);
-      }
-      else {
-        assertTrue(value instanceof SimpleClass);
-      }
-      return value;
-    }
-
-    public int getCount(){
-      return count;
-    }
   }
 
 }

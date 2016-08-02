@@ -29,7 +29,7 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
-public class IntegratedClientGetEntryAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
+public class IntegratedClientGetEntryAuthDistributedTest extends AbstractSecureServerDUnitTest {
 
   @Test
   public void testGetEntry() throws InterruptedException {

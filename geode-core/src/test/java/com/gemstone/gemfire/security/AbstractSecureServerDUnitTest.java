@@ -42,7 +42,7 @@ import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 
-public class AbstractIntegratedClientAuthDistributedTest extends JUnit4CacheTestCase {
+public class AbstractSecureServerDUnitTest extends JUnit4CacheTestCase {
 
   protected static final String REGION_NAME = "AuthRegion";
 
@@ -50,12 +50,15 @@ public class AbstractIntegratedClientAuthDistributedTest extends JUnit4CacheTest
   protected VM client2 = null;
   protected VM client3 = null;
   protected int serverPort;
+
+  // child classes can customize these parameters
   protected Class postProcessor = null;
   protected boolean pdxPersistent = false;
   protected int jmxPort = 0;
+  protected int restPort = 0;
   protected Map<String, Object> values;
 
-  public AbstractIntegratedClientAuthDistributedTest(){
+  public AbstractSecureServerDUnitTest(){
     values = new HashMap();
     for(int i=0; i<5; i++){
       values.put("key"+i, "value"+i);
@@ -84,6 +87,12 @@ public class AbstractIntegratedClientAuthDistributedTest extends JUnit4CacheTest
       props.put(JMX_MANAGER, "true");
       props.put(JMX_MANAGER_START, "true");
       props.put(JMX_MANAGER_PORT, String.valueOf(jmxPort));
+    }
+
+    if(restPort>0){
+      props.setProperty(START_DEV_REST_API, "true");
+      props.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
+      props.setProperty(HTTP_SERVICE_PORT, restPort+"");
     }
 
     getSystem(props);
