@@ -123,7 +123,11 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * avoid deadlock when conserve-sockets=true.  Use of this should be removed
    * when connection pools are implemented in the direct-channel 
    */
-  private ThreadLocal<Boolean> forceUseUDPMessaging = new ThreadLocal<Boolean>();
+  private ThreadLocal<Boolean> forceUseUDPMessaging = new ThreadLocal<Boolean>() {
+    @Override protected Boolean initialValue() {
+      return Boolean.FALSE;
+    }
+  };
   
   /**
    * Trick class to make the startup synch more
@@ -1943,12 +1947,6 @@ public class GMSMembershipManager implements MembershipManager, Manager
     }
   }
   
-  // MembershipManager method
-  @Override
-  public void forceUDPMessagingForCurrentThread() {
-    forceUseUDPMessaging.set(null);
-  }
-  
   void checkAddressesForUUIDs(InternalDistributedMember[] addresses) {
     for (int i=0; i<addresses.length; i++) {
       InternalDistributedMember m = addresses[i];
@@ -1965,18 +1963,23 @@ public class GMSMembershipManager implements MembershipManager, Manager
       }
     }
   }
-  
-  private boolean isForceUDPCommunications() {
-    Boolean forced = forceUseUDPMessaging.get();
-    return forced == Boolean.TRUE;
+
+  // MembershipManager method
+  @Override
+  public void forceUDPMessagingForCurrentThread() {
+    forceUseUDPMessaging.set(Boolean.TRUE);
   }
 
   // MembershipManager method
   @Override
   public void releaseUDPMessagingForCurrentThread() {
-    // not currently supported by this manager
+    forceUseUDPMessaging.set(Boolean.FALSE);
   }
-  
+
+  private boolean isForceUDPCommunications() {
+    return forceUseUDPMessaging.get();
+  }
+
   public void setShutdown()
   {
     latestViewWriteLock.lock();
