@@ -65,8 +65,15 @@ public class LuceneCliStrings {
   public static final String LUCENE_SEARCH_INDEX__NAME__HELP = "Name of the lucene index to search.";
   public static final String LUCENE_SEARCH_INDEX__REGION_HELP = "Name/Path of the region where the lucene index exists.";
   public static final String LUCENE_SEARCH_INDEX__QUERY_STRING="queryStrings";
+  public static final String LUCENE_SEARCH_INDEX__LIMIT="limit";
+  public static final String LUCENE_SEARCH_INDEX__LIMIT__HELP="Number of search results needed";
   public static final String LUCENE_SEARCH_INDEX__QUERY_STRING__HELP="Query string to search the lucene index";
   public static final String LUCENE_SEARCH_INDEX__DEFAULT_FIELD="defaultField";
   public static final String LUCENE_SEARCH_INDEX__DEFAULT_FIELD__HELP="Default field to search in";
   public static final String LUCENE_SEARCH_INDEX__NO_RESULTS_MESSAGE="No results";
+  public static final String LUCENE_SEARCH_INDEX__PAGE_SIZE="pageSize";
+  public static final String LUCENE_SEARCH_INDEX__PAGE_SIZE__HELP="Number of results to be returned in a page";
+  public static final String LUCENE_SEARCH_INDEX__KEYSONLY="keys-only";
+  public static final String LUCENE_SEARCH_INDEX__KEYSONLY__HELP="Return only keys of search results.";
+
 }

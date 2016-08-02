@@ -272,7 +272,7 @@ public class GetAll70 extends BaseCommand {
             }
           }
 
-          data = GeodeSecurityUtil.postProcess(regionName, key, data);
+          data = GeodeSecurityUtil.postProcess(regionName, key, data, entry.isObject);
 
           // Add the entry to the list that will be returned to the client
           if (keyNotPresent) {

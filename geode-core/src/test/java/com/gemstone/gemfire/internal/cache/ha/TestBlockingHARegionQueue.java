@@ -56,12 +56,12 @@ public class TestBlockingHARegionQueue extends HARegionQueue.TestOnlyHARegionQue
    * @throws CacheException
    * @throws InterruptedException
    * 
-   * @throws InterruptedException
+   * @return boolean whether object was successfully put onto the queue
    */
 
-  public void put(Object object) throws CacheException, InterruptedException
+  public boolean put(Object object) throws CacheException, InterruptedException
   {
-    super.put(object);
+    boolean putDone = super.put(object);
 
     if (takeFirst) {
       this.take();
@@ -71,6 +71,7 @@ public class TestBlockingHARegionQueue extends HARegionQueue.TestOnlyHARegionQue
     synchronized (forWaiting) {
       forWaiting.notifyAll();
     }
+    return putDone;
   }
 
   /**

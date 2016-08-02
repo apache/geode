@@ -2005,7 +2005,7 @@ public final class CqServiceImpl implements CqService  {
   
           //Check cq pool to determine if the pool matches, if not continue.
           //Also if the connected state is already the same, we do not have to send status again.
-	  if (cQuery == null) {
+	  if (cQuery == null || cQuery.getCQProxy() == null) {
             continue;
           }
           Pool cqPool = cQuery.getCQProxy().getPool();

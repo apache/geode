@@ -32,7 +32,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -95,7 +94,6 @@ import java.util.Set;
  * @version 2012-05-29
  */
 public class JSONObject {
-
     /**
      * JSONObject.NULL is equivalent to the value that JavaScript calls null,
      * whilst Java's null is equivalent to the value that JavaScript calls
@@ -1481,9 +1479,8 @@ public class JSONObject {
                  return object.toString();
              }
              
-            if(cyclicDepChkEnabled.get() != null){              
-              if (cyclicDepChkEnabled.get()
-                  && cyclicDependencySet.get().contains(object)) {
+            if(cyclicDepChkEnabled.get()!=null && cyclicDependencySet.get()!=null){
+              if (cyclicDepChkEnabled.get() && cyclicDependencySet.get().contains(object)) {
                 //break cyclic reference
                 return object.getClass().getCanonicalName();
               }else {

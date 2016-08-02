@@ -100,11 +100,13 @@ public class LuceneQueriesPeerPRRedundancyDUnitTest extends LuceneQueriesPRBase 
     accessor.invoke(() -> initAccessor(createIndex));
     dataStore1.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     dataStore2.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
+    accessor.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
 
     putEntryInEachBucket();
 
     dataStore1.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
     dataStore2.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
+    accessor.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
 
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore2, 60000));
 

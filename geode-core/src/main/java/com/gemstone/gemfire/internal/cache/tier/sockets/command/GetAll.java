@@ -242,7 +242,7 @@ public class GetAll extends BaseCommand {
       }
 
       // post process
-      value = GeodeSecurityUtil.postProcess(regionName, key, value);
+      value = GeodeSecurityUtil.postProcess(regionName, key, value, isObject);
 
       if (logger.isDebugEnabled()) {
         logger.debug("{}: Returning value for key={}: {}", servConn.getName(), key, value);

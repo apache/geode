@@ -1070,9 +1070,6 @@ public class DataCommands implements CommandMarker {
     if (valueClass != null)
       dataResult.setValueClass(valueClass);
 
-    Object result = GeodeSecurityUtil.postProcess(regionPath, key, dataResult.getGetResult());
-    dataResult.setGetResult(result);
-
     return makePresentationResult(dataResult);
   }
 

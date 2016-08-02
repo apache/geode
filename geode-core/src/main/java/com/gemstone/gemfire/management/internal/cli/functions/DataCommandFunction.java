@@ -251,6 +251,9 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
           SelectResults selectResults = (SelectResults) results;
           for (Iterator iter = selectResults.iterator(); iter.hasNext();) {
             Object object = iter.next();
+            // Post processing
+            object = GeodeSecurityUtil.postProcess(null, null, object, false);
+
             if (object instanceof Struct) {
               StructImpl impl = (StructImpl) object;
               GfJsonObject jsonStruct = getJSONForStruct(impl, nestedObjectCount);
@@ -451,6 +454,11 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
 
       if (doGet || region.containsKey(keyObject)) {
         Object value= region.get(keyObject);
+
+        // run it through post processor. region.get will return the deserialized object already, so we don't need to
+        // deserialize it anymore to pass it to the postProcessor
+        value = GeodeSecurityUtil.postProcess(regionName, keyObject, value, false);
+
         if (logger.isDebugEnabled()) 
           logger.debug("Get for key {} value {}", key, value);
         //return DataCommandResult.createGetResult(key, value, null, null);
@@ -676,8 +684,9 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
     else{     
       array[0] = obj.getClass().getCanonicalName();
       Class klass = obj.getClass();
-      if(JsonUtil.isPrimitiveOrWrapper(klass))
+      if(JsonUtil.isPrimitiveOrWrapper(klass)) {
         array[1] = obj;
+      }
       else if (obj instanceof PdxInstance){
         String str = pdxToJson((PdxInstance)obj);
         array[1] =  str;
@@ -933,22 +942,6 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
             request.setQuery(query);
             dataResult = DataCommands.callFunctionForRegion(request, function, members);
             dataResult.setInputQuery(query);
-
-            // post process, iterate through the result for post processing
-            if(GeodeSecurityUtil.needPostProcess()) {
-              List<SelectResultRow> rows = dataResult.getSelectResult();
-              for (Iterator<SelectResultRow> itr = rows.iterator(); itr.hasNext(); ) {
-                SelectResultRow row = itr.next();
-                Object newValue = GeodeSecurityUtil.postProcess(null, null, row.getValue());
-                // user is not supposed to see this row
-                if (newValue == null) {
-                  itr.remove();
-                } else {
-                  row.setValue(newValue);
-                }
-              }
-            }
-
             return (dataResult);
           } else {
             return (dataResult = DataCommandResult.createSelectInfoResult(null, null, -1, null,

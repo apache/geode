@@ -249,50 +249,79 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
   /**
    * Normal scenario in which a sender is stopped and then started again.
    */
-  @Category(FlakyTest.class) // GEODE-933: thread sleeps, random ports, async actions, time sensitive
   @Test
   public void testParallelPropagationSenderStartAfterStop() throws Exception {
     IgnoredException.addIgnoredException("Broken pipe");
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
+    String regionName = getTestMethodName() + "_PR";
 
-    createSendersReceiversAndPartitionedRegion(lnPort, nyPort, false, true);
+
+    createCacheInVMs(nyPort, vm2, vm3);
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+
+    vm2.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
+    vm3.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
+
+    createReceiverInVMs(vm2, vm3);
+
+    vm4.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
+    vm5.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
+    vm6.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
+    vm7.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
+
+    vm4.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm5.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm6.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm7.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, true));
+
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
     //make sure all the senders are running before doing any puts
-    waitForSendersRunning();
+    vm4.invoke(() -> waitForSenderRunningState("ln"));
+    vm5.invoke(() -> waitForSenderRunningState("ln"));
+    vm6.invoke(() -> waitForSenderRunningState("ln"));
+    vm7.invoke(() -> waitForSenderRunningState("ln"));
     
     //FIRST RUN: now, the senders are started. So, do some of the puts
-    vm4.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_PR", 200 ));
+    vm4.invoke(() -> WANTestBase.doPuts( regionName, 200 ));
     
     //now, stop all of the senders
-    stopSenders();
-    
-    Wait.pause(2000);
-    
+    vm4.invoke(() -> stopSender("ln"));
+    vm5.invoke(() -> stopSender("ln"));
+    vm6.invoke(() -> stopSender("ln"));
+    vm7.invoke(() -> stopSender("ln"));
+
+    //Region size on remote site should remain same and below the number of puts done in the FIRST RUN
+    vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(regionName, 200 ));
+
     //SECOND RUN: do some of the puts after the senders are stopped
-    vm4.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_PR", 1000 ));
+    vm4.invoke(() -> WANTestBase.doPuts( regionName, 1000 ));
     
     //Region size on remote site should remain same and below the number of puts done in the FIRST RUN
-    vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(getTestMethodName() + "_PR", 200 ));
+    vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(regionName, 200 ));
     
     //start the senders again
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
+    vm4.invoke(() -> waitForSenderRunningState("ln"));
+    vm5.invoke(() -> waitForSenderRunningState("ln"));
+    vm6.invoke(() -> waitForSenderRunningState("ln"));
+    vm7.invoke(() -> waitForSenderRunningState("ln"));
+
     //Region size on remote site should remain same and below the number of puts done in the FIRST RUN
-    vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(getTestMethodName() + "_PR", 200 ));
+    vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(regionName, 200 ));
 
     //SECOND RUN: do some more puts
-    AsyncInvocation async = vm4.invokeAsync(() -> WANTestBase.doPuts( getTestMethodName() + "_PR", 1000 ));
+    AsyncInvocation async = vm4.invokeAsync(() -> WANTestBase.doPuts( regionName, 1000 ));
     async.join();
-    
-    Wait.pause(2000);
     
     //verify all the buckets on all the sender nodes are drained
     validateParallelSenderQueueAllBucketsDrained();
     
     //verify the events propagate to remote site
-    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000 ));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(regionName, 1000 ));
     
     vm4.invoke(() -> WANTestBase.validateQueueSizeStat( "ln", 0 ));
     vm5.invoke(() -> WANTestBase.validateQueueSizeStat( "ln", 0 ));

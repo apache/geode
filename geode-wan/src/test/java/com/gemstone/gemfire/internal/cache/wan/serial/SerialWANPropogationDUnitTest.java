@@ -105,7 +105,6 @@ public class SerialWANPropogationDUnitTest extends WANTestBase {
         getTestMethodName() + "_RR", "ln", isOffHeap()   );
   }
 
-  @Category(FlakyTest.class) // GEODE-935 AND GEODE-1062: time sensitive, random ports, thread sleeps
   @Test
   public void testReplicatedSerialPropagation_withoutRemoteSite() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -910,7 +909,6 @@ public class SerialWANPropogationDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.checkMinimumGatewayReceiverStats( 1, 1 ));
   }
 
-  @Category(FlakyTest.class) // GEODE-975 AND GEODE-1032: random ports, waitForCriterion, short timeouts, async actions
   @Test
   public void testReplicatedSerialPropagationWithRemoteReceiverRestartedOnOtherNode() throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));

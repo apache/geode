@@ -34,6 +34,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.execute.Execution;
@@ -42,7 +43,6 @@ import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneCreateIndexFunction;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
 import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
-import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneSearchIndexFunction;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
 import com.gemstone.gemfire.internal.util.CollectionUtils;
@@ -50,7 +50,9 @@ import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.functions.CliFunctionResult;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResultException;
+import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
+import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
@@ -125,7 +127,6 @@ public class LuceneIndexCommandsJUnitTest {
     final LuceneIndexDetails indexDetails2 = createIndexDetails("memberSix", "/Employees", searchableFields, fieldAnalyzers,mockIndexStats2, true);
     final LuceneIndexDetails indexDetails3 = createIndexDetails("memberTen", "/Employees", searchableFields, fieldAnalyzers,mockIndexStats3, true);
 
-
     final List<Set<LuceneIndexDetails>> results = new ArrayList<>();
 
     results.add(CollectionUtils.asSet(indexDetails2, indexDetails1,indexDetails3));
@@ -150,7 +151,7 @@ public class LuceneIndexCommandsJUnitTest {
   }
 
   @Test
-  public void testCreateIndex() throws CommandResultException {
+  public void testCreateIndex() throws Exception {
     final Cache mockCache=mock(Cache.class);
     final ResultCollector mockResultCollector = mock(ResultCollector.class);
     final LuceneIndexCommands commands=spy(createIndexCommands(mockCache,null));
@@ -177,7 +178,7 @@ public class LuceneIndexCommandsJUnitTest {
   }
 
   @Test
-  public void testDescribeIndex() throws CommandResultException {
+  public void testDescribeIndex() throws Exception {
 
     final Cache mockCache = mock(Cache.class, "Cache");
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
@@ -210,7 +211,7 @@ public class LuceneIndexCommandsJUnitTest {
   }
 
   @Test
-  public void testSearchIndex() throws CommandResultException {
+  public void testSearchIndex() throws Exception {
 
     final Cache mockCache = mock(Cache.class, "Cache");
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
@@ -222,16 +223,129 @@ public class LuceneIndexCommandsJUnitTest {
     queryResults.add(createQueryResults("B","Result1",Float.valueOf("1.2")));
     queryResults.add(createQueryResults("C","Result1",Float.valueOf("1.1")));
     queryResultsList.add(queryResults);
-    doReturn(mockResultCollector).when(commands).executeFunctionOnGroups(isA(LuceneSearchIndexFunction.class),any(),any(LuceneQueryInfo.class));
+    doReturn(mockResultCollector).when(commands).executeSearch(isA(LuceneQueryInfo.class));
     doReturn(queryResultsList).when(mockResultCollector).getResult();
 
-    CommandResult result = (CommandResult) commands.searchIndex("index","region","Result1","field1");
+    CommandResult result = (CommandResult) commands.searchIndex("index","region","Result1","field1",-1,-1, false);
 
     TabularResultData data = (TabularResultData) result.getResultData();
 
     assertEquals(Arrays.asList("C","B","A"), data.retrieveAllValues("key"));
     assertEquals(Arrays.asList("Result1","Result1","Result1"), data.retrieveAllValues("value"));
     assertEquals(Arrays.asList("1.1","1.2","1.3"), data.retrieveAllValues("score"));
+  }
+
+  @Test
+  public void testSearchIndexWithPaging() throws Exception {
+    final Cache mockCache = mock(Cache.class, "Cache");
+    final Gfsh mockGfsh = mock(Gfsh.class);
+    final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
+    final LuceneIndexCommands commands=spy(createIndexCommands(mockCache,null));
+    ArgumentCaptor<String> resultCaptor  = ArgumentCaptor.forClass(String.class);
+
+    LuceneSearchResults result1=createQueryResults("A","Result1",Float.valueOf("1.7"));
+    LuceneSearchResults result2=createQueryResults("B","Result1",Float.valueOf("1.6"));
+    LuceneSearchResults result3=createQueryResults("C","Result1",Float.valueOf("1.5"));
+    LuceneSearchResults result4=createQueryResults("D","Result1",Float.valueOf("1.4"));
+    LuceneSearchResults result5=createQueryResults("E","Result1",Float.valueOf("1.3"));
+    LuceneSearchResults result6=createQueryResults("F","Result1",Float.valueOf("1.2"));
+    LuceneSearchResults result7=createQueryResults("G","Result1",Float.valueOf("1.1"));
+    final List<Set<LuceneSearchResults>> queryResultsList = getSearchResults(result1, result2, result3, result4, result5, result6, result7);
+
+    doReturn(mockResultCollector).when(commands).executeSearch(any(LuceneQueryInfo.class));
+    doReturn(queryResultsList).when(mockResultCollector).getResult();
+    doReturn(mockGfsh).when(commands).initGfsh();
+    when(mockGfsh.interact(anyString())).thenReturn("n").thenReturn("n").thenReturn("n").thenReturn("n")
+      .thenReturn("p").thenReturn("p").thenReturn("p").thenReturn("p").thenReturn("p").thenReturn("n").thenReturn("q");
+
+    LuceneSearchResults[] expectedResults = new LuceneSearchResults[] {result7,result6,result5,result4,result3,result2,result1};
+    String expectedPage1 = getPage(expectedResults, new int[] {0,1});
+    String expectedPage2 = getPage(expectedResults, new int[] {2,3});
+    String expectedPage3 = getPage(expectedResults, new int[] {4,5});
+    String expectedPage4 = getPage(expectedResults, new int[] {6});
+
+    commands.searchIndex("index","region","Result1","field1",-1,2,false);
+    verify(mockGfsh, times(20)).printAsInfo(resultCaptor.capture());
+    List<String> actualPageResults=resultCaptor.getAllValues();
+
+    assertEquals(expectedPage1,actualPageResults.get(0));
+    assertEquals("\t\tPage 1 of 4",actualPageResults.get(1));
+
+    assertEquals(expectedPage2,actualPageResults.get(2));
+    assertEquals("\t\tPage 2 of 4",actualPageResults.get(3));
+
+    assertEquals(expectedPage3,actualPageResults.get(4));
+    assertEquals("\t\tPage 3 of 4",actualPageResults.get(5));
+
+    assertEquals(expectedPage4,actualPageResults.get(6));
+    assertEquals("\t\tPage 4 of 4",actualPageResults.get(7));
+
+    assertEquals("No more results to display.", actualPageResults.get(8));
+
+    assertEquals(expectedPage4,actualPageResults.get(9));
+    assertEquals("\t\tPage 4 of 4",actualPageResults.get(10));
+
+    assertEquals(expectedPage3,actualPageResults.get(11));
+    assertEquals("\t\tPage 3 of 4",actualPageResults.get(12));
+
+    assertEquals(expectedPage2,actualPageResults.get(13));
+    assertEquals("\t\tPage 2 of 4",actualPageResults.get(14));
+
+    assertEquals(expectedPage1,actualPageResults.get(15));
+    assertEquals("\t\tPage 1 of 4",actualPageResults.get(16));
+
+    assertEquals("At the top of the search results.", actualPageResults.get(17));
+
+    assertEquals(expectedPage1,actualPageResults.get(18));
+    assertEquals("\t\tPage 1 of 4",actualPageResults.get(19));
+
+  }
+
+  @Test
+  public void testSearchIndexWithKeysOnly() throws Exception {
+
+    final Cache mockCache = mock(Cache.class, "Cache");
+    final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
+    final LuceneIndexCommands commands=spy(createIndexCommands(mockCache,null));
+
+    final List<Set<LuceneSearchResults>> queryResultsList = new ArrayList<>();
+    HashSet<LuceneSearchResults> queryResults = new HashSet<>();
+    queryResults.add(createQueryResults("A","Result1",Float.valueOf("1.3")));
+    queryResults.add(createQueryResults("B","Result1",Float.valueOf("1.2")));
+    queryResults.add(createQueryResults("C","Result1",Float.valueOf("1.1")));
+    queryResultsList.add(queryResults);
+    doReturn(mockResultCollector).when(commands).executeSearch(isA(LuceneQueryInfo.class));
+    doReturn(queryResultsList).when(mockResultCollector).getResult();
+
+    CommandResult result = (CommandResult) commands.searchIndex("index","region","Result1","field1",-1,-1, true);
+
+    TabularResultData data = (TabularResultData) result.getResultData();
+
+    assertEquals(Arrays.asList("C","B","A"), data.retrieveAllValues("key"));
+  }
+
+  private String getPage(final LuceneSearchResults[] expectedResults, int[] indexList) {
+    final TabularResultData data = ResultBuilder.createTabularResultData();
+    for (int i:indexList) {
+      data.accumulate("key", expectedResults[i].getKey());
+      data.accumulate("value", expectedResults[i].getValue());
+      data.accumulate("score", expectedResults[i].getScore());
+    }
+    CommandResult commandResult = (CommandResult) ResultBuilder.buildResult(data);
+    StringBuffer buffer = new StringBuffer();
+    while (commandResult.hasNextLine())
+      buffer.append(commandResult.nextLine());
+    return buffer.toString();
+  }
+
+  private List<Set<LuceneSearchResults>> getSearchResults(LuceneSearchResults ... results)
+  {
+    final List<Set<LuceneSearchResults>> queryResultsList = new ArrayList<>();
+    HashSet<LuceneSearchResults> queryResults = new HashSet<>();
+    for(LuceneSearchResults result : results)
+      queryResults.add(result);
+    queryResultsList.add(queryResults);
+    return queryResultsList;
   }
 
 
