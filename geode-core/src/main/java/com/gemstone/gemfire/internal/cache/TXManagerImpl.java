@@ -548,7 +548,7 @@ public class TXManagerImpl implements CacheTransactionManager,
   /** 
    * Returns the TXStateProxyInterface of the current thread; null if no transaction.
    */
-  public final TXStateProxy getTXState() {
+  public TXStateProxy getTXState() {
     TXStateProxy tsp = txContext.get();
     if (tsp != null && !tsp.isInProgress()) {
       this.txContext.set(null);

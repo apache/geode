@@ -61,7 +61,8 @@ import com.gemstone.gemfire.internal.InternalEntity;
 import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.commands.DataCommands;
@@ -81,11 +82,9 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.JsonUtil;
 import com.gemstone.gemfire.pdx.PdxInstance;
 
-/***
- * 
- * since 7.0
+/**
+ * @since GemFire 7.0
  */
-
 public class DataCommandFunction extends FunctionAdapter implements  InternalEntity {
   private static final Logger logger = LogService.getLogger();
   
@@ -98,6 +97,8 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
   protected static final String SELECT_STEP_EXEC = "SELECT_EXEC";
   private static final int NESTED_JSON_LENGTH = 20;
 
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
+  
   @Override
   public String getId() {
     return DataCommandFunction.class.getName();
@@ -252,7 +253,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
           for (Iterator iter = selectResults.iterator(); iter.hasNext();) {
             Object object = iter.next();
             // Post processing
-            object = GeodeSecurityUtil.postProcess(null, null, object, false);
+            object = this.securityService.postProcess(null, null, object, false);
 
             if (object instanceof Struct) {
               StructImpl impl = (StructImpl) object;
@@ -457,7 +458,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
 
         // run it through post processor. region.get will return the deserialized object already, so we don't need to
         // deserialize it anymore to pass it to the postProcessor
-        value = GeodeSecurityUtil.postProcess(regionName, keyObject, value, false);
+        value = this.securityService.postProcess(regionName, keyObject, value, false);
 
         if (logger.isDebugEnabled()) 
           logger.debug("Get for key {} value {}", key, value);
@@ -876,6 +877,8 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
     
     private static final long serialVersionUID = 1L;
 
+    private transient SecurityService securityService = IntegratedSecurityService.getSecurityService();
+
     public SelectExecStep(Object[] arguments) {
       super(SELECT_STEP_EXEC, arguments);
     }
@@ -929,7 +932,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
 
         // authorize data read on these regions
         for(String region:regions){
-          GeodeSecurityUtil.authorizeRegionRead(region);
+          this.securityService.authorizeRegionRead(region);
         }
 
         regionsInQuery = Collections.unmodifiableSet(regions);

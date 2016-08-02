@@ -60,7 +60,7 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
 
 public class GeodeSecurityUtil {
 
-  private static Logger logger = LogService.getLogger();
+  private static Logger logger = LogService.getLogger(LogService.SECURITY_LOGGER_NAME);
 
   private static PostProcessor postProcessor;
   private static SecurityManager securityManager;

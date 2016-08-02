@@ -14,9 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- *
- */
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
@@ -42,17 +39,12 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-
 
 public class Invalidate extends BaseCommand {
 
   private final static Invalidate singleton = new Invalidate();
-
-  Invalidate() {
-  }
 
   public static Command getCommand() {
     return singleton;
@@ -65,7 +57,6 @@ public class Invalidate extends BaseCommand {
     Object callbackArg = null, key = null;
     Part eventPart = null;
     StringBuffer errMessage = new StringBuffer();
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
     CacheServerStats stats = servConn.getCacheServerStats();
     servConn.setAsTrue(REQUIRES_RESPONSE);
 
@@ -116,7 +107,7 @@ public class Invalidate extends BaseCommand {
       servConn.setAsTrue(RESPONDED);
       return;
     }
-    LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
+    LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
     if (region == null) {
       String reason = LocalizedStrings.BaseCommand__0_WAS_NOT_FOUND_DURING_1_REQUEST.toLocalizedString(regionName, "invalidate");
       writeRegionDestroyedEx(msg, regionName, reason, servConn);
@@ -133,10 +124,10 @@ public class Invalidate extends BaseCommand {
 
     VersionTag tag = null;
 
-    // for integrated security
-    GeodeSecurityUtil.authorizeRegionWrite(regionName, key.toString());
-
     try {
+      // for integrated security
+      this.securityService.authorizeRegionWrite(regionName, key.toString());
+
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {
         InvalidateOperationContext invalidateContext = authzRequest.invalidateAuthorize(regionName, key, callbackArg);

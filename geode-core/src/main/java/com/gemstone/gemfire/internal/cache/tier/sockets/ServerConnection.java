@@ -65,7 +65,8 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
@@ -92,6 +93,7 @@ public class ServerConnection implements Runnable {
  // private static final CM commands = CFactory.createCM();
   private Map commands;
 
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   final protected CacheServerStats stats;
 
@@ -776,7 +778,7 @@ public class ServerConnection implements Runnable {
           long uniqueId = getUniqueId();
           Subject subject = this.clientUserAuths.getSubject(uniqueId);
           if(subject!=null) {
-            threadState = GeodeSecurityUtil.bindSubject(subject);
+            threadState = securityService.bindSubject(subject);
           }
         }
 

@@ -31,7 +31,7 @@ import org.apache.shiro.authz.Permission;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 
 public class CustomAuthRealm extends AuthorizingRealm {
@@ -57,7 +57,7 @@ public class CustomAuthRealm extends AuthorizingRealm {
    * @param securityProperties the security properties to initialize SecurityManager with
    */
   public CustomAuthRealm(String authenticatorFactory, Properties securityProperties) {
-    this.securityManager = GeodeSecurityUtil.getObjectOfTypeFromClassName(authenticatorFactory, SecurityManager.class);
+    this.securityManager = SecurityService.getObjectOfTypeFromClassName(authenticatorFactory, SecurityManager.class);
     this.securityManager.init(securityProperties);
   }
 
@@ -73,7 +73,11 @@ public class CustomAuthRealm extends AuthorizingRealm {
 
     Principal principal  = securityManager.authenticate(credentialProps);
 
-    return new SimpleAuthenticationInfo(principal, authToken.getPassword(), REALM_NAME);
+    try {
+      return new SimpleAuthenticationInfo(principal, authToken.getPassword(), REALM_NAME);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("failed for " + username + " " + password, e);
+    }
   }
 
   @Override

@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -54,7 +55,8 @@ import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.partition.PartitionRebalanceInfo;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.management.DistributedRegionMXBean;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.cli.CliMetaData;
@@ -89,6 +91,8 @@ public class DataCommands implements CommandMarker {
   final int resultItemCount = 9;
   private final ExportDataFunction exportDataFunction = new ExportDataFunction();
   private final ImportDataFunction importDataFunction = new ImportDataFunction();
+
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   private Gfsh getGfsh() {
     return Gfsh.getCurrentInstance();
@@ -841,7 +845,7 @@ public class DataCommands implements CommandMarker {
       @CliOption(key = CliStrings.EXPORT_DATA__FILE, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, mandatory = true, help = CliStrings.EXPORT_DATA__FILE__HELP) String filePath,
       @CliOption(key = CliStrings.EXPORT_DATA__MEMBER, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, optionContext = ConverterHint.MEMBERIDNAME, mandatory = true, help = CliStrings.EXPORT_DATA__MEMBER__HELP) String memberNameOrId) {
 
-    GeodeSecurityUtil.authorizeRegionRead(regionName);
+    this.securityService.authorizeRegionRead(regionName);
     final Cache cache = CacheFactory.getAnyInstance();
     final DistributedMember targetMember = CliUtil
         .getDistributedMemberByNameOrId(memberNameOrId);
@@ -898,7 +902,7 @@ public class DataCommands implements CommandMarker {
       @CliOption(key = CliStrings.IMPORT_DATA__FILE, mandatory = true, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, help = CliStrings.IMPORT_DATA__FILE__HELP) String filePath,
       @CliOption(key = CliStrings.IMPORT_DATA__MEMBER, mandatory = true, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, optionContext = ConverterHint.MEMBERIDNAME, help = CliStrings.IMPORT_DATA__MEMBER__HELP) String memberNameOrId) {
 
-    GeodeSecurityUtil.authorizeRegionWrite(regionName);
+    this.securityService.authorizeRegionWrite(regionName);
 
     Result result = null;
 
@@ -959,7 +963,7 @@ public class DataCommands implements CommandMarker {
       @CliOption(key = { CliStrings.PUT__VALUEKLASS }, help = CliStrings.PUT__VALUEKLASS__HELP) String valueClass,
       @CliOption(key = { CliStrings.PUT__PUTIFABSENT }, help = CliStrings.PUT__PUTIFABSENT__HELP, unspecifiedDefaultValue = "false") boolean putIfAbsent) {
 
-    GeodeSecurityUtil.authorizeRegionWrite(regionPath);
+    this.securityService.authorizeRegionWrite(regionPath);
     Cache cache = CacheFactory.getAnyInstance();
     DataCommandResult dataResult = null;
     if (regionPath == null || regionPath.isEmpty()) {
@@ -1027,7 +1031,7 @@ public class DataCommands implements CommandMarker {
       @CliOption(key = { CliStrings.GET__VALUEKLASS }, help = CliStrings.GET__VALUEKLASS__HELP) String valueClass,
       @CliOption(key = CliStrings.GET__LOAD, unspecifiedDefaultValue = "true", specifiedDefaultValue = "true", help = CliStrings.GET__LOAD__HELP) Boolean loadOnCacheMiss)
   {
-    GeodeSecurityUtil.authorizeRegionRead(regionPath, key);
+    this.securityService.authorizeRegionRead(regionPath, key);
 
     Cache cache = CacheFactory.getAnyInstance();
     DataCommandResult dataResult = null;
@@ -1084,7 +1088,7 @@ public class DataCommands implements CommandMarker {
       @CliOption(key = { CliStrings.LOCATE_ENTRY__VALUEKLASS }, help = CliStrings.LOCATE_ENTRY__VALUEKLASS__HELP) String valueClass,
       @CliOption(key = { CliStrings.LOCATE_ENTRY__RECURSIVE }, help = CliStrings.LOCATE_ENTRY__RECURSIVE__HELP, unspecifiedDefaultValue = "false") boolean recursive) {
 
-    GeodeSecurityUtil.authorizeRegionRead(regionPath, key);
+    this.securityService.authorizeRegionRead(regionPath, key);
 
     DataCommandResult dataResult = null;
 
@@ -1148,10 +1152,10 @@ public class DataCommands implements CommandMarker {
     }
 
     if(removeAllKeys){
-      GeodeSecurityUtil.authorizeRegionWrite(regionPath);
+      this.securityService.authorizeRegionWrite(regionPath);
     }
     else {
-      GeodeSecurityUtil.authorizeRegionWrite(regionPath, key);
+      this.securityService.authorizeRegionWrite(regionPath, key);
     }
 
     @SuppressWarnings("rawtypes")

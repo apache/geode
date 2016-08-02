@@ -90,7 +90,8 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
 import com.gemstone.gemfire.internal.util.ArrayUtils;
 
@@ -197,7 +198,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
   private final int socketBufferSize;
 
   /** Notifies clients of updates */
-  private final CacheClientNotifier clientNotifier;
+  private CacheClientNotifier clientNotifier;
 
   /**
    * The default value of the {@link ServerSocket}
@@ -275,6 +276,9 @@ public class AcceptorImpl extends Acceptor implements Runnable
   private boolean isGatewayReceiver;
   private List<GatewayTransportFilter> gatewayTransportFilters;
   private final SocketCreator socketCreator; 
+  
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
+  
   /**
    * Initializes this acceptor thread to listen for connections on the given
    * port.
@@ -638,9 +642,9 @@ public class AcceptorImpl extends Acceptor implements Runnable
       this.hsPool = tmp_hsPool;
     }
 
-    isAuthenticationRequired = GeodeSecurityUtil.isClientSecurityRequired();
+    isAuthenticationRequired = this.securityService.isClientSecurityRequired();
 
-    isIntegratedSecurity = GeodeSecurityUtil.isIntegratedSecurity();
+    isIntegratedSecurity = this.securityService.isIntegratedSecurity();
 
     String postAuthzFactoryName = this.cache.getDistributedSystem()
         .getProperties().getProperty(SECURITY_CLIENT_ACCESSOR_PP);

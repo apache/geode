@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
@@ -24,7 +23,6 @@ import java.util.Set;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.operations.GetOperationContext;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
@@ -37,7 +35,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 
 public class GetAll extends BaseCommand {
@@ -48,15 +45,11 @@ public class GetAll extends BaseCommand {
     return singleton;
   }
 
-  private GetAll() {
-  }
-
   @Override
   public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException, InterruptedException {
     Part regionNamePart = null, keysPart = null;
     String regionName = null;
     Object[] keys = null;
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
     servConn.setAsTrue(REQUIRES_RESPONSE);
     servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
 
@@ -109,7 +102,7 @@ public class GetAll extends BaseCommand {
       return;
     }
 
-    LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
+    LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
     if (region == null) {
       String reason = " was not found during getAll request";
       writeRegionDestroyedEx(msg, regionName, reason, servConn);
@@ -197,7 +190,7 @@ public class GetAll extends BaseCommand {
       }
 
       try {
-        GeodeSecurityUtil.authorizeRegionRead(regionName, key.toString());
+        this.securityService.authorizeRegionRead(regionName, key.toString());
       } catch (NotAuthorizedException ex) {
         logger.warn(LocalizedMessage.create(LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1, new Object[] {
           servConn.getName(),
@@ -242,7 +235,7 @@ public class GetAll extends BaseCommand {
       }
 
       // post process
-      value = GeodeSecurityUtil.postProcess(regionName, key, value, isObject);
+      value = this.securityService.postProcess(regionName, key, value, isObject);
 
       if (logger.isDebugEnabled()) {
         logger.debug("{}: Returning value for key={}: {}", servConn.getName(), key, value);
