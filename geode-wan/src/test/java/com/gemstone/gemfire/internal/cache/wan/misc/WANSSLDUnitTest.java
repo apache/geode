@@ -41,7 +41,6 @@ public class WANSSLDUnitTest extends WANTestBase{
     super();
   }
 
-  @Category(FlakyTest.class) // GEODE-1207: random ports, eats exceptions, time sensitive, waitForCriterion
   @Test
   public void testSenderSSLReceiverSSL(){
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
