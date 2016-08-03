@@ -59,7 +59,7 @@ import com.gemstone.gemfire.cache.execute.Function;
 
 @Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("*.Test")
+@PowerMockIgnore("*.UnitTest")
 @PrepareForTest({ FunctionService.class })
 public class ExecuteFunctionTest {
   private static final String FUNCTION = "function";

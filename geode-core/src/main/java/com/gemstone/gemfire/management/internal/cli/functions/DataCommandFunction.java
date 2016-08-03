@@ -82,11 +82,9 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.JsonUtil;
 import com.gemstone.gemfire.pdx.PdxInstance;
 
-/***
- * 
- * since 7.0
+/**
+ * @since GemFire 7.0
  */
-
 public class DataCommandFunction extends FunctionAdapter implements  InternalEntity {
   private static final Logger logger = LogService.getLogger();
   
@@ -98,9 +96,9 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
   protected static final String SELECT_STEP_END = "SELECT_END";
   protected static final String SELECT_STEP_EXEC = "SELECT_EXEC";
   private static final int NESTED_JSON_LENGTH = 20;
-  
-  protected SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
+  private transient SecurityService securityService = IntegratedSecurityService.getSecurityService();
+  
   @Override
   public String getId() {
     return DataCommandFunction.class.getName();
@@ -879,7 +877,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
     
     private static final long serialVersionUID = 1L;
 
-    private SecurityService securityService = IntegratedSecurityService.getSecurityService();
+    private transient SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
     public SelectExecStep(Object[] arguments) {
       super(SELECT_STEP_EXEC, arguments);
