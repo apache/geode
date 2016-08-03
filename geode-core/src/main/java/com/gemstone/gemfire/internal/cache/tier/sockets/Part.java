@@ -23,6 +23,8 @@ import com.gemstone.gemfire.internal.offheap.StoredObject;
 import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Represents one unit of information (essentially a <code>byte</code>
@@ -185,9 +187,16 @@ public class Part {
         | ((bytes[offset + 3]) & 0x000000FF);
   }
 
+  //TODO Check non-enum callers. Don't want to cache all ints, just known ones.
+  private static final Map<Integer,byte[]> CACHED_INTS = new ConcurrentHashMap<Integer,byte[]>();
+  
   public void setInt(int v) {
-    byte[] bytes = new byte[4];
-    encodeInt(v, bytes);
+    byte[] bytes = CACHED_INTS.get(v);
+    if (bytes == null) {
+      bytes = new byte[4];
+      encodeInt(v, bytes);
+      CACHED_INTS.put(v, bytes);
+    }
     this.typeCode = BYTE_CODE;
     this.part = bytes;
   }

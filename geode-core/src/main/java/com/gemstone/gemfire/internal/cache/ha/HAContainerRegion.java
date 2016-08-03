@@ -37,7 +37,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.HAEventWrapper;
  */
 public class HAContainerRegion implements HAContainerWrapper {
 
-  private Map map;
+  private Region map;
   
   private final Map<String, CacheClientProxy> haRegionNameToProxy;
   
@@ -83,9 +83,7 @@ public class HAContainerRegion implements HAContainerWrapper {
         return null;
       }
     }
-    else {
-      return null;
-    }
+    return null;
   }
 
   public String getName() {
@@ -121,23 +119,23 @@ public class HAContainerRegion implements HAContainerWrapper {
   }
 
   public Object get(Object key) {
-    ClientUpdateMessageImpl cum = (ClientUpdateMessageImpl)map.get(key);
-    if (cum != null) {
-      cum.setEventIdentifier(((HAEventWrapper)key).getEventId());
-      if (cum.hasCqs()) {
-        cum.setClientCqs(((HAEventWrapper)key).getClientCqs());
+    ClientUpdateMessageImpl msg = (ClientUpdateMessageImpl)map.get(key);
+    if (msg != null) {
+      msg.setEventIdentifier(((HAEventWrapper)key).getEventId());
+      if (msg.hasCqs()) {
+        msg.setClientCqs(((HAEventWrapper)key).getClientCqs());
       }
     }
-    return cum;
+    return msg;
   }
   
   public Object getEntry(Object key) {
     Region.Entry entry = ((Region)map).getEntry(key);
     if(entry != null) {
-      ClientUpdateMessageImpl cum = (ClientUpdateMessageImpl)entry.getValue();
-      cum.setEventIdentifier(((HAEventWrapper)key).getEventId());
-      if(cum.hasCqs()) {
-        cum.setClientCqs(((HAEventWrapper)key).getClientCqs());
+      ClientUpdateMessageImpl msg = (ClientUpdateMessageImpl)entry.getValue();
+      msg.setEventIdentifier(((HAEventWrapper)key).getEventId());
+      if(msg.hasCqs()) {
+        msg.setClientCqs(((HAEventWrapper)key).getClientCqs());
       }      
     }
     return entry;
@@ -155,6 +153,11 @@ public class HAContainerRegion implements HAContainerWrapper {
     return map.put(key, value);
   }
 
+  @SuppressWarnings("unchecked")
+  public Object putIfAbsent(Object key, Object value) {
+    return map.putIfAbsent(key, value);
+  }
+  
   public void putAll(Map t) {
     map.putAll(t);
   }

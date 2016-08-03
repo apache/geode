@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.junit.experimental.categories.Category;
 
@@ -995,7 +996,7 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
           Assert.fail ("Failed to get the internal CqService.", ex);
         }
 
-        HashMap matchedCqMap = cqService.getMatchingCqMap();
+        Map matchedCqMap = cqService.getMatchingCqMap();
         assertEquals("The number of matched cq is not as expected.", mapSize, matchedCqMap.size());
 
         if (query != null) {        

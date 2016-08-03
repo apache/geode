@@ -381,6 +381,7 @@ implements Bucket
           if (isDebugEnabled) {
             logger.debug("LockKeys: found key: {}:{}", keys[i], foundLock.lockedTimeStamp);
           }
+          foundLock.waiting();
           break;
         }
       }
@@ -421,7 +422,9 @@ implements Bucket
               long waitTime = System.currentTimeMillis()-lockValue.lockedTimeStamp;
               logger.trace("LockKeys: remove key {}, notifyAll for {}. It waited", keys[i], lockValue, waitTime);
             }
-            lockValue.notifyAll();
+            if (lockValue.isSomeoneWaiting()) {
+              lockValue.notifyAll();
+            }
           }
         }
       } // for

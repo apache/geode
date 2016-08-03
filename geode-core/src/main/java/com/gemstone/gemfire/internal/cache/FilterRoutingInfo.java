@@ -362,24 +362,29 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
     }
     
     public void toData(DataOutput out) throws IOException {
-        HeapDataOutputStream hdos = new HeapDataOutputStream(1000, null);
-        if (this.cqs == null) {
-          hdos.writeBoolean(false);
-        } else {
-          hdos.writeBoolean(true);
-          InternalDataSerializer.writeArrayLength(cqs.size(), hdos);
-          for (Iterator it=this.cqs.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry e = (Map.Entry)it.next();
-            // most cq IDs and all event types are small ints, so we use an optimized
-            // write that serializes 7 bits at a time in a compact form
-            InternalDataSerializer.writeUnsignedVL(((Long)e.getKey()).longValue(), hdos);
-            InternalDataSerializer.writeUnsignedVL(((Integer)e.getValue()).intValue(), hdos);
-          }
+      HeapDataOutputStream hdos;
+      int size = 9;
+      size += interestedClients == null ? 4 : interestedClients.size() * 8 + 5;
+      size += interestedClientsInv == null ? 4 : interestedClientsInv.size() * 8 + 5;
+      size += cqs == null ? 0 : cqs.size() * 12;
+      hdos = new HeapDataOutputStream(size, null);
+      if (this.cqs == null) {
+        hdos.writeBoolean(false);
+      } else {
+        hdos.writeBoolean(true);
+        InternalDataSerializer.writeArrayLength(cqs.size(), hdos);
+        for (Iterator it = this.cqs.entrySet().iterator(); it.hasNext();) {
+          Map.Entry e = (Map.Entry) it.next();
+          // most cq IDs and all event types are small ints, so we use an optimized
+          // write that serializes 7 bits at a time in a compact form
+          InternalDataSerializer.writeUnsignedVL(((Long) e.getKey()).longValue(), hdos);
+          InternalDataSerializer.writeUnsignedVL(((Integer) e.getValue()).intValue(), hdos);
         }
-        InternalDataSerializer.writeSetOfLongs(this.interestedClients, this.longIDs, hdos);
-        InternalDataSerializer.writeSetOfLongs(this.interestedClientsInv, this.longIDs, hdos);
-        byte[] myData = hdos.toByteArray();
-        DataSerializer.writeByteArray(myData, out);
+      }
+      InternalDataSerializer.writeSetOfLongs(this.interestedClients, this.longIDs, hdos);
+      InternalDataSerializer.writeSetOfLongs(this.interestedClientsInv, this.longIDs, hdos);
+      byte[] myData = hdos.toByteArray();
+      DataSerializer.writeByteArray(myData, out);
     }
     
 

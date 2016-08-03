@@ -20,23 +20,33 @@ public class LockObject {
   public Object key;
   public long lockedTimeStamp;
   private boolean removed;
-    
+  private boolean waiting = false;
+
   public LockObject(Object key, long lockedTimeStamp) {
     this.key = key;
     this.lockedTimeStamp = lockedTimeStamp;
   }
-  
-  /**Always updated when the monitor is held on this object */
+
+  public void waiting() {
+    waiting = true;
+  }
+
+  public boolean isSomeoneWaiting() {
+    return waiting;
+  }
+
+  /** Always updated when the monitor is held on this object */
   public void setRemoved() {
     this.removed = true;
   }
 
-  /**Always checked when the monitor is held on this object */
+  /** Always checked when the monitor is held on this object */
   public boolean isRemoved() {
     return this.removed;
   }
-  
+
+  @Override
   public String toString() {
-    return "{LockObject="+key+"("+lockedTimeStamp+")}";
+    return "LockObject [key=" + key + ", lockedTimeStamp=" + lockedTimeStamp + ", removed=" + removed + ", waiting=" + waiting + "]";
   }
 }
