@@ -2,14 +2,14 @@
 title:  Region Naming
 ---
 
-To get the full range of Apache Geode capabilities for your cached data regions, follow Geode's region naming guidelines.
+To be able to perform all available operations on your data regions,
+follow these region naming guidelines.
 
-The safest approach when naming your regions is to use only alphanumeric characters and the underscore character and to keep your region names short. This permits you the full range of Geode region configurations and allow you to perform all available Geode operations on the region.
-
-Following these guidelines for naming regions:
-
--   Do not use the separator slash character ‘ / ’.
--   Do not begin region names with two underscore characters "\_\_" as this is reserved for internal Geode use.
--   To run queries against your data, restrict your region names to alphanumeric characters and the underscore character.
-
+-   Permitted characters within region names are alphanumeric characters
+(`ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`),
+the underscore character (`_`), and the hyphen character (`-`).
+-   Keep region names short.
+-   Do not use the slash character (`/`).
+-   Do not begin region names with two underscore characters (`__`),
+as this is reserved for internal Geode use.
 
