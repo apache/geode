@@ -1919,7 +1919,13 @@ public class HARegionQueue implements RegionQueue
     if (cqService != null) {
       try {
         if (event instanceof HAEventWrapper) {
-          event = (Conflatable)this.haContainer.get(event);
+          HAEventWrapper hw = (HAEventWrapper) event;
+          if (hw.getClientUpdateMessage() != null) {
+            event = hw.getClientUpdateMessage();
+          } else {
+            event = (Conflatable) this.haContainer.get(event);
+          }
+          
           
           if (event instanceof ClientUpdateMessage) {
             if (((ClientUpdateMessage) event).hasCqs() && ((ClientUpdateMessage) event).hasCqs(clientProxyID)) {
