@@ -833,8 +833,6 @@ public class GMSJoinLeaveJUnitTest {
   }
   
   private void installView(int viewId,InternalDistributedMember coordinator, List<InternalDistributedMember> members) throws IOException {
-    when(services.getMessenger()).thenReturn(messenger);
-    
     //prepare the view
     NetView netView = new NetView(coordinator, viewId, members);
     InstallViewMessage installViewMessage = getInstallViewMessage(netView, credentials, false);
