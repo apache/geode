@@ -38,7 +38,18 @@ public class AvailablePortHelper {
    * Returns array of unique randomly available tcp ports of specified count.
    */
   public static int[] getRandomAvailableTCPPorts(int count) {
-    List<Keeper> list = getRandomAvailableTCPPortKeepers(count);
+    return getRandomAvailableTCPPorts(count, false);
+  }
+
+  /**
+   * Returns an array of unique randomly available tcp ports
+   * 
+   * @param count number of desired ports
+   * @param useMembershipPortRange whether to use the configured membership-port-range
+   * @return the ports
+   */
+  public static int[] getRandomAvailableTCPPorts(int count, boolean useMembershipPortRange) {
+    List<Keeper> list = getRandomAvailableTCPPortKeepers(count, useMembershipPortRange);
     int[] ports = new int[list.size()];
     int i = 0;
     for (Keeper k: list) {
@@ -48,10 +59,16 @@ public class AvailablePortHelper {
     }
     return ports;
   }
+
   public static List<Keeper> getRandomAvailableTCPPortKeepers(int count) {
+    return getRandomAvailableTCPPortKeepers(count, false);
+  }
+  
+  public static List<Keeper> getRandomAvailableTCPPortKeepers(int count, boolean useMembershipPortRange) {
     List<Keeper> result = new ArrayList<Keeper>();
     while (result.size() < count) {
-      result.add(AvailablePort.getRandomAvailablePortKeeper(AvailablePort.SOCKET));
+      result.add(AvailablePort.getRandomAvailablePortKeeper(AvailablePort.SOCKET, 
+        AvailablePort.getAddress(AvailablePort.SOCKET), useMembershipPortRange));
     }
     return result;
   }
