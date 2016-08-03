@@ -266,26 +266,26 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
         //exercise region and gateway operations
         vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 100));
         vm5.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 100));
-        Wait.pause(2000); //wait for events to propogate
+        Wait.pause(2000); //wait for events to propagate
         vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 100));
         vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 100));
         vm5.invoke(() -> WANTestBase.doDestroys(getTestMethodName() + "_RR", 100));
-        Wait.pause(2000);//wait for events to propogate
+        Wait.pause(2000);//wait for events to propagate
         vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 0));
         vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 0));
         vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 100));
         vm5.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 100));
-        Wait.pause(2000); //wait for events to propogate
+        Wait.pause(2000); //wait for events to propagate
         vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 100));
         vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 100));
         vm4.invoke(() -> SerialGatewaySenderDistributedDeadlockDUnitTest.doInvalidates(getTestMethodName() + "_RR", 100, 100));
         vm4.invoke(() -> WANTestBase.doPutAll(getTestMethodName() + "_RR", 100, 10));
         vm5.invoke(() -> WANTestBase.doPutAll(getTestMethodName() + "_RR", 100, 10));
-        Wait.pause(2000);//wait for events to propogate
+        Wait.pause(2000);//wait for events to propagate
         vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
         vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
         vm4.invoke(() -> WANTestBase.doDestroys(getTestMethodName() + "_RR", 1000));
-        Wait.pause(2000);//wait for events to propogate
+        Wait.pause(2000);//wait for events to propagate
         vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 0));
         vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 0));
         vm4.invoke(() -> WANTestBase.doPutsPDXSerializable(getTestMethodName() + "_RR", 100));
@@ -357,7 +357,7 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
                 if (r.containsValueForKey(temp)) {
                     r.invalidate(temp);
                 }
-            } catch (com.gemstone.gemfire.cache.EntryNotFoundException enfe) {
+            } catch (com.gemstone.gemfire.cache.EntryNotFoundException entryNotFoundException) {
                 //ignore as an entry may not exist
             }
         }

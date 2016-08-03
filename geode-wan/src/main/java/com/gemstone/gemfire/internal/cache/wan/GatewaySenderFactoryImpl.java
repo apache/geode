@@ -228,7 +228,7 @@ public class GatewaySenderFactoryImpl implements
     if (this.attrs.isParallel()) {
 //      if(this.attrs.getDispatcherThreads() != 1){
 //        throw new GatewaySenderException(
-//            LocalizedStrings.GatewaySenderImpl_PARALLEL_GATEWAY_SENDER_0_CANNOT_BE_CREATED_WITH_DISPATHER_THREADS_OTHER_THAN_1
+//            LocalizedStrings.GatewaySenderImpl_PARALLEL_GATEWAY_SENDER_0_CANNOT_BE_CREATED_WITH_DISPATCHER_THREADS_OTHER_THAN_1
 //                .toLocalizedString(id));
 //      }
       if ((this.attrs.getOrderPolicy() != null)

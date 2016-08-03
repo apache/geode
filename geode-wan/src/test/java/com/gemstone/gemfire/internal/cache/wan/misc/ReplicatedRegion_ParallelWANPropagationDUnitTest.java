@@ -22,8 +22,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import com.gemstone.gemfire.cache.CacheClosedException;
@@ -39,9 +37,9 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 
 @Category(DistributedTest.class)
-public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBase{
+public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBase{
 
-  public ReplicatedRegion_ParallelWANPropogationDUnitTest() {
+  public ReplicatedRegion_ParallelWANPropagationDUnitTest() {
     super();
     // TODO Auto-generated constructor stub
   }
@@ -84,7 +82,7 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
     }
   }
   
-  /*1. Validate that parallelGAtewaySenderId can be added to distributed region
+  /*1. Validate that parallelGatewaySenderId can be added to distributed region
    *Region distributed ack/noack + PGS
    *1. Find out the restrictions on totalNumBuckets on shadowPR
    *2. Find out the restrictions on redundancy on shadowPR
@@ -95,8 +93,8 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
    *7. put on region reaches to remote site. Dispatcher works as expected
    *8. m1 and m2 has DR(ack/noack). put on DR from m1 populates queue on both m1 and m2. Validate that remote site got all the events
    *9. m1 and m2 has DR(ack/noack). create/put/destroy/operations populates the queue. Validate that remote site got correct events
-   *10. m1 and m2 has DR(ack/noack). localDestory is called on m1's DR. This locally destroys M1's shadowPr
-   *11. m1 and m2 has DR(ack/noack). destory is called on m1's DR. This destroys entire shadowPr on m1 and m2
+   *10. m1 and m2 has DR(ack/noack). localDestroy is called on m1's DR. This locally destroys M1's shadowPr
+   *11. m1 and m2 has DR(ack/noack). destroy is called on m1's DR. This destroys entire shadowPr on m1 and m2
    *12. m1 and m2 has DR(ack/noack). close Region is called on m1's DR. This locally destroys shadowPr on m1
    *13. m1 and m2 has DR(ack/noack). cache.close on m1'. This locally destroys shadowPr on m1
    *14. Validate HA scenario does not cause any event loss
@@ -104,16 +102,16 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
    *16. validate stats
    *17: PR and DR regions with same name.. Can this be created. If yes then how to differentiate these 2 different shadowPR. 
    *18. test for redundancy. FOR SPR's redundancy will be equal to the number of nodes where DR is present. Max is 3. I know this needs to be figure it out at runtime. 
-   *19. test without prviding diskstorename..I suspect some problem with this code. diskStoreName=null looks like this is not handled very well. need to verify
-   *20. PAralleGatewaySenderQueue#addPR method has multiple check for inPersistenceEnabled. Can's we do it with only one check.  
+   *19. test without providing diskStoreName..I suspect some problem with this code. diskStoreName=null looks like this is not handled very well. need to verify
+   *20. ParallelGatewaySenderQueue#addPR method has multiple check for inPersistenceEnabled. Can's we do it with only one check.
   */
   
   /**
-   * Test to validate that created parallel gatewaySenderls id can be added to
+   * Test to validate that created parallel gatewaySenders id can be added to
    * distributed region
    * Below test is disabled intentionally
     1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-    2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+    2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
     3> We have to enabled it in next release
     4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -153,12 +151,12 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   }
 
   /**
-   * Test to validate that distributed region with given paralleGAtewaySender id
+   * Test to validate that distributed region with given parallelGatewaySender id
    * is created first and then a same parallelGatewaySender is created
    * a single put in DR is enqueued in parallelQueue
    * Below test is disabled intentionally
     1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-    2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+    2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
     3> We have to enabled it in next release
     4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -198,7 +196,7 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
 
   /**Below test is disabled intentionally
   1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-  2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+  2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -245,7 +243,7 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   
   /**Below test is disabled intentionally
   1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-  2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+  2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -333,7 +331,7 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
 
   /**Below test is disabled intentionally
   1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-  2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+  2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -379,7 +377,7 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   
   /**Below test is disabled intentionally
   1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-  2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+  2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -433,7 +431,7 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   
   /**Below test is disabled intentionally
   1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-  2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+  2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -488,7 +486,7 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   
   /**Below test is disabled intentionally
   1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-  2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+  2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -588,7 +586,7 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   
   /**Below test is disabled intentionally
   1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-  2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+  2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -664,7 +662,7 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   
   /**Below test is disabled intentionally
   1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-  2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+  2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -788,7 +786,7 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   
   /**Below test is disabled intentionally
   1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-  2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+  2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -842,7 +840,7 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   
   /**Below test is disabled intentionally
   1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-  2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+  2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -884,7 +882,7 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
 /*    ExpectedException exp1 = addExpectedException(CacheClosedException.class
         .getName());
     try {*/
-      AsyncInvocation inv1 = vm4.invokeAsync(() -> ReplicatedRegion_ParallelWANPropogationDUnitTest.doPuts0(
+      AsyncInvocation inv1 = vm4.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest.doPuts0(
               getTestMethodName() + "_RR", 1000 ));
       Wait.pause(1000);
       AsyncInvocation inv2 = vm5.invokeAsync(() -> WANTestBase.killSender());
@@ -915,7 +913,7 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   
   /**Below test is disabled intentionally
   1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-  2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+  2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -966,12 +964,12 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
 /*    ExpectedException exp1 = addExpectedException(CacheClosedException.class
         .getName());
     try */{
-      AsyncInvocation inv1 = vm7.invokeAsync(() -> ReplicatedRegion_ParallelWANPropogationDUnitTest.doPuts0(
+      AsyncInvocation inv1 = vm7.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest.doPuts0(
               getTestMethodName() + "_RR", 10000 ));
       Thread.sleep(1000);
       AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
       Thread.sleep(2000);
-      AsyncInvocation inv3 = vm6.invokeAsync(() -> ReplicatedRegion_ParallelWANPropogationDUnitTest.doPuts1(
+      AsyncInvocation inv3 = vm6.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest.doPuts1(
               getTestMethodName() + "_RR", 10000 ));
       Thread.sleep(1500);
       AsyncInvocation inv4 = vm5.invokeAsync(() -> WANTestBase.killSender());
@@ -1054,11 +1052,11 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
   }
     
   /**
-   * Test to validate that put on DR with no ack on multiple nodes are propogated to parallelqueue on multiple nodes 
+   * Test to validate that put on DR with no ack on multiple nodes are propagated to parallelQueue on multiple nodes
    */
   
   /**
-   * Test to validate that the single put in DR is propoagted to remote site through paralleHatewaySender
+   * Test to validate that the single put in DR is propagated to remote site through parallelGatewaySender
    */
   
   

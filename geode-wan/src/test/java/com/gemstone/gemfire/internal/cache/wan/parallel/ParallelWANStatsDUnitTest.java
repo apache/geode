@@ -91,7 +91,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
   }
 
   @Test
-  public void testPartitionedRegionParallelPropagation_AfterDispatch_NoRedundacny() throws Exception {
+  public void testPartitionedRegionParallelPropagation_AfterDispatch_NoRedundancy() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
@@ -274,7 +274,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
    * @throws Exception
    */
   @Test
-  public void testParallePropagationWithRemoteRegionDestroy() throws Exception {
+  public void testParallelPropagationWithRemoteRegionDestroy() throws Exception {
     addIgnoredException("RegionDestroyedException");
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -310,7 +310,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
   }
 
   @Test
-  public void testParallelPropogationWithFilter() throws Exception {
+  public void testParallelPropagationWithFilter() throws Exception {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2,lnPort ));

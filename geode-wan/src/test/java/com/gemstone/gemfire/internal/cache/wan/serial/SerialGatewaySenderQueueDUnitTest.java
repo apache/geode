@@ -134,7 +134,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     assertEquals(primarySenderUpdates.get("Destroy"), receiverUpdates.get("Create"));
     
     Wait.pause(5000);
-    // We expect that after this much time secondary would have got batchremoval message
+    // We expect that after this much time secondary would have got batch removal message
     // removing all the keys.
     secondarySenderUpdates = (HashMap)vm5.invoke(() -> WANTestBase.checkQueue());
     assertEquals(secondarySenderUpdates.get("Destroy"), receiverUpdates.get("Create"));
@@ -240,12 +240,12 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     fact.setDiskStoreName("FORNY");
     fact.setMaximumQueueMemory(200);
     fact.setAlertThreshold(1200);
-    GatewayEventFilter myeventfilter1 = new MyGatewayEventFilter1();
-    fact.addGatewayEventFilter(myeventfilter1);
-    GatewayTransportFilter myStreamfilter1 = new MyGatewayTransportFilter1();
-    fact.addGatewayTransportFilter(myStreamfilter1);
-    GatewayTransportFilter myStreamfilter2 = new MyGatewayTransportFilter2();
-    fact.addGatewayTransportFilter(myStreamfilter2);
+    GatewayEventFilter myEventFilter1 = new MyGatewayEventFilter1();
+    fact.addGatewayEventFilter(myEventFilter1);
+    GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
+    fact.addGatewayTransportFilter(myStreamFilter1);
+    GatewayTransportFilter myStreamFilter2 = new MyGatewayTransportFilter2();
+    fact.addGatewayTransportFilter(myStreamFilter2);
     final IgnoredException exTKSender = IgnoredException.addIgnoredException("Could not connect");
     try {
       GatewaySender sender1 = fact.create("TKSender", 2);
@@ -294,12 +294,12 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     fact.setDiskSynchronous(true);
     fact.setMaximumQueueMemory(200);
     fact.setAlertThreshold(1200);
-    GatewayEventFilter myeventfilter1 = new MyGatewayEventFilter1();
-    fact.addGatewayEventFilter(myeventfilter1);
-    GatewayTransportFilter myStreamfilter1 = new MyGatewayTransportFilter1();
-    fact.addGatewayTransportFilter(myStreamfilter1);
-    GatewayTransportFilter myStreamfilter2 = new MyGatewayTransportFilter2();
-    fact.addGatewayTransportFilter(myStreamfilter2);
+    GatewayEventFilter myEventFilter1 = new MyGatewayEventFilter1();
+    fact.addGatewayEventFilter(myEventFilter1);
+    GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
+    fact.addGatewayTransportFilter(myStreamFilter1);
+    GatewayTransportFilter myStreamFilter2 = new MyGatewayTransportFilter2();
+    fact.addGatewayTransportFilter(myStreamFilter2);
     final IgnoredException exp = IgnoredException.addIgnoredException("Could not connect");
     try {
       GatewaySender sender1 = fact.create("TKSender", 2);

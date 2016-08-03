@@ -551,7 +551,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testSerialReplicatedAndParallePartitionedPropagation()
+  public void testSerialReplicatedAndParallelPartitionedPropagation()
       throws Exception {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));

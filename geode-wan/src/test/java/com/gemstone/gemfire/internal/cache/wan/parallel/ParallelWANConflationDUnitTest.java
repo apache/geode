@@ -80,7 +80,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
   }
 
   /**
-   * This test is desabled as it is not guaranteed to pass it everytime. This
+   * This test is disabled as it is not guaranteed to pass it everytime. This
    * test is related to the conflation in batch. yet did find any way to
    * ascertain that the vents in the batch will always be conflated.
    * 
@@ -292,7 +292,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
   //
   //This is the same as the previous test, except for the UsingCustId methods
   @Test
-  public void testParallelPropagationColoatedRegionConflationSameKey()
+  public void testParallelPropagationColocatedRegionConflationSameKey()
       throws Exception {
     initialSetUp();
 

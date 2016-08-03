@@ -38,24 +38,24 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 
 /**
- * All the test cases are similar to SerialWANPropogationDUnitTest except that
+ * All the test cases are similar to SerialWANPropagationDUnitTest except that
  * the we create concurrent serial GatewaySender with concurrency of 4
  *
  */
 @Category(DistributedTest.class)
-public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
+public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
 
   /**
    * @param name
    */
-  public ConcurrentWANPropogation_1_DUnitTest() {
+  public ConcurrentWANPropagation_1_DUnitTest() {
     super();
   }
 
   private static final long serialVersionUID = 1L;
   
   /**
-   * All the test cases are similar to SerialWANPropogationDUnitTest
+   * All the test cases are similar to SerialWANPropagationDUnitTest
    * @throws Exception
    */
   @Test

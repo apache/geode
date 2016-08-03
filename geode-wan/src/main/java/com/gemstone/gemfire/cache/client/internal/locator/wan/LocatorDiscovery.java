@@ -57,10 +57,10 @@ public class LocatorDiscovery{
   public static final int WAN_LOCATOR_PING_INTERVAL = Integer.getInteger(
       "WANLocator.PING_INTERVAL", 10000).intValue();
 
-  public LocatorDiscovery(WanLocatorDiscoverer discoverer, DistributionLocatorId locotor,RemoteLocatorJoinRequest request,
+  public LocatorDiscovery(WanLocatorDiscoverer discoverer, DistributionLocatorId locator,RemoteLocatorJoinRequest request,
       LocatorMembershipListener locatorListener) {
     this.discoverer = discoverer;
-    this.locatorId = locotor;
+    this.locatorId = locator;
     this.request = request; 
     this.locatorListener = locatorListener;
   }
@@ -133,7 +133,7 @@ public class LocatorDiscovery{
             .requestToServer(locatorId.getHost(), locatorId.getPort(), request,
                 WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT);
         if (response != null) {
-          LocatorHelper.addExchnagedLocators(response.getLocators(),
+          LocatorHelper.addExchangedLocators(response.getLocators(),
               this.locatorListener);
           logger.info(LocalizedMessage.create(LocalizedStrings.LOCATOR_DISCOVERY_TASK_EXCHANGED_LOCATOR_INFORMATION_0_WITH_1,
               new Object[] { request.getLocator(), locatorId }));
@@ -163,8 +163,8 @@ public class LocatorDiscovery{
         retryAttempt++;
         continue;
       }
-      catch (ClassNotFoundException cnfe) {
-        logger.fatal(LocalizedMessage.create(LocalizedStrings.LOCATOR_DISCOVERY_TASK_ENCOUNTERED_UNEXPECTED_EXCEPTION), cnfe);
+      catch (ClassNotFoundException classNotFoundException) {
+        logger.fatal(LocalizedMessage.create(LocalizedStrings.LOCATOR_DISCOVERY_TASK_ENCOUNTERED_UNEXPECTED_EXCEPTION), classNotFoundException);
         break;
       }
     }
@@ -180,7 +180,7 @@ public class LocatorDiscovery{
             .requestToServer(remoteLocator.getHost(), remoteLocator.getPort(),
                 request, WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT);
         if (response != null) {
-          LocatorHelper.addExchnagedLocators(response.getLocators(), this.locatorListener);
+          LocatorHelper.addExchangedLocators(response.getLocators(), this.locatorListener);
           logger.info(LocalizedMessage.create(LocalizedStrings.LOCATOR_DISCOVERY_TASK_EXCHANGED_LOCATOR_INFORMATION_0_WITH_1,
               new Object[] { request.getLocator(), locatorId }));
           RemoteLocatorPingRequest pingRequest = new RemoteLocatorPingRequest(
@@ -217,8 +217,8 @@ public class LocatorDiscovery{
         retryAttempt++;
         continue;
       }
-      catch (ClassNotFoundException cnfe) {
-        logger.fatal(LocalizedMessage.create(LocalizedStrings.LOCATOR_DISCOVERY_TASK_ENCOUNTERED_UNEXPECTED_EXCEPTION), cnfe);
+      catch (ClassNotFoundException classNotFoundException) {
+        logger.fatal(LocalizedMessage.create(LocalizedStrings.LOCATOR_DISCOVERY_TASK_ENCOUNTERED_UNEXPECTED_EXCEPTION), classNotFoundException);
         break;
       }
       catch (InterruptedException e) {

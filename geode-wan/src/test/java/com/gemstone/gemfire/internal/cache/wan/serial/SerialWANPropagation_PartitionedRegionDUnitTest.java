@@ -36,11 +36,11 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
-public class SerialWANPropogation_PartitionedRegionDUnitTest extends WANTestBase {
+public class SerialWANPropagation_PartitionedRegionDUnitTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public SerialWANPropogation_PartitionedRegionDUnitTest() {
+  public SerialWANPropagation_PartitionedRegionDUnitTest() {
     super();
   }
 

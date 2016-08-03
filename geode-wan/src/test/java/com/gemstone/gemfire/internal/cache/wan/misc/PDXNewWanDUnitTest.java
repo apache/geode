@@ -90,7 +90,7 @@ public class PDXNewWanDUnitTest extends WANTestBase{
    *   and can deserialize entries.     
    */
   @Test
-  public void testWANPDX_RemoveRomoteData() {
+  public void testWANPDX_RemoveRemoteData() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 

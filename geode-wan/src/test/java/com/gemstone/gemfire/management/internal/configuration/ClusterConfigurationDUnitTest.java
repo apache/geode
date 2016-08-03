@@ -200,7 +200,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         Region region3 = cache.getRegion(DESTROY_REGION);
         assertNull(region3);
 
-        //Index verfication
+        //Index verification
         Index index1 = cache.getQueryService().getIndex(region1, INDEX1);
         assertNotNull(index1);
         assertNull(cache.getQueryService().getIndex(region2, INDEX2));
@@ -327,7 +327,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
   /**
    * Tests for {@link Extension}, {@link Extensible}, {@link XmlParser},
    * {@link XmlGenerator}, {@link XmlEntity} as it applies to Extensions.
-   * Asserts that Mock Entension is created and destroyed on region and cache.
+   * Asserts that Mock Extension is created and destroyed on region and cache.
    * 
    * @since GemFire 8.1
    */
@@ -402,7 +402,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     final String diskDirs = "dir1";
 
     //final String
-    //createPersistentRegion(persRegion, RegionShortcut.PARTITION_PERSISTENT, "", diskStoreName);
+    //createPersistentRegion(peersRegion, RegionShortcut.PARTITION_PERSISTENT, "", diskStoreName);
 
     final String autoCompact = "true";
     final String allowForceCompaction = "true";

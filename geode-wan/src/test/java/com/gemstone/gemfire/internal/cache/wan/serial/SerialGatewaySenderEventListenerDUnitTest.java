@@ -162,7 +162,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
 
   /**
    * Test validates whether the listener attached receives all the events. 
-   * When there are 2 listeners attcahed to the GatewaySender.
+   * When there are 2 listeners attached to the GatewaySender.
    */
   @Category(FlakyTest.class) // GEODE-1066: random ports, waitForCriterion, time sensitive
   @Test
@@ -215,7 +215,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
   }
   
   /**
-   * Test vaildates whether the PoolImpl is created. Ideally when a listener is attached
+   * Test validates whether the PoolImpl is created. Ideally when a listener is attached
    * pool should not be created.
    */
   @Test

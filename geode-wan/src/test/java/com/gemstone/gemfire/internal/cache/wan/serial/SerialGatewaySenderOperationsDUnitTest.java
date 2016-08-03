@@ -590,14 +590,14 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     SerializableRunnable check = new SerializableRunnable("assert no cache servers") {
       public void run() {
         InternalLocator inl = (InternalLocator)Locator.getLocator();
-        ServerLocator servel = inl.getServerLocatorAdvisee();
-        LogWriterUtils.getLogWriter().info("Server load map is " + servel.getLoadMap());
-        assertTrue("expected an empty map but found " + servel.getLoadMap(),
-            servel.getLoadMap().isEmpty());
+        ServerLocator server = inl.getServerLocatorAdvisee();
+        LogWriterUtils.getLogWriter().info("Server load map is " + server.getLoadMap());
+        assertTrue("expected an empty map but found " + server.getLoadMap(),
+            server.getLoadMap().isEmpty());
         QueueConnectionRequest request = new QueueConnectionRequest(
             ClientProxyMembershipID.getNewProxyMembership(InternalDistributedSystem.getConnectedInstance()),
             1, new HashSet<>(), "", false);
-        QueueConnectionResponse response = (QueueConnectionResponse)servel.processRequest(request);
+        QueueConnectionResponse response = (QueueConnectionResponse)server.processRequest(request);
         assertTrue("expected no servers but found " + response.getServers(),
             response.getServers().isEmpty());
       }

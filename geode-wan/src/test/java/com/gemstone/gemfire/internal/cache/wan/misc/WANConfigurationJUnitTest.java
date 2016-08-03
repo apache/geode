@@ -62,7 +62,7 @@ public class WANConfigurationJUnitTest {
       fact.setParallel(true);
       GatewaySender sender1 = fact.create("NYSender", 2);
       sender1.start();
-      fail("Expectd IllegalStateException but not thrown");
+      fail("Expected IllegalStateException but not thrown");
     }
     catch (Exception e) {
       if ((e instanceof IllegalStateException && e
@@ -72,7 +72,7 @@ public class WANConfigurationJUnitTest {
                   .toLocalizedString()))) {
       }
       else {
-        fail("Expectd IllegalStateException but received :" + e);
+        fail("Expected IllegalStateException but received :" + e);
       }
     }
   }
@@ -89,7 +89,7 @@ public class WANConfigurationJUnitTest {
       fact.setManualStart(true);
       fact.create("NYSender", 2);
       fact.create("NYSender", 2);
-      fail("Expectd IllegalStateException but not thrown");
+      fail("Expected IllegalStateException but not thrown");
     }
     catch (Exception e) {
       if (e instanceof IllegalStateException
@@ -97,7 +97,7 @@ public class WANConfigurationJUnitTest {
 
       }
       else {
-        fail("Expectd IllegalStateException but received :" + e);
+        fail("Expected IllegalStateException but received :" + e);
       }
     }
   }
@@ -116,7 +116,7 @@ public class WANConfigurationJUnitTest {
       AttributesFactory factory = new AttributesFactory();
       factory.addGatewaySenderId(sender1.getId());
       factory.addGatewaySenderId(sender1.getId());
-      fail("Expectd IllegalArgumentException but not thrown");
+      fail("Expected IllegalArgumentException but not thrown");
     }
     catch (Exception e) {
       if (e instanceof IllegalArgumentException
@@ -124,7 +124,7 @@ public class WANConfigurationJUnitTest {
 
       }
       else {
-        fail("Expectd IllegalStateException but received :" + e);
+        fail("Expected IllegalStateException but received :" + e);
       }
     }
   }
@@ -170,12 +170,12 @@ public class WANConfigurationJUnitTest {
           .create("test_GatewaySender_Parallel_DistributedRegion");
     }
     catch (Exception e) {
-      fail("Unexpectd Exception :" + e);
+      fail("Unexpected Exception :" + e);
     }
   }
   
   @Test
-  public void test_GatewaySender_Parallel_MultipleDispatherThread() {
+  public void test_GatewaySender_Parallel_MultipleDispatcherThread() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewaySenderFactory fact = cache.createGatewaySenderFactory();
     fact.setParallel(true);
@@ -185,25 +185,25 @@ public class WANConfigurationJUnitTest {
       GatewaySender sender1 = fact.create("NYSender", 2);
     }
     catch (GatewaySenderException e) {
-       fail("UnExpectd Exception " + e);
+       fail("UnExpected Exception " + e);
     }
   }
   
   @Test
-  public void test_GatewaySender_Serial_ZERO_DispatherThread() {
+  public void test_GatewaySender_Serial_ZERO_DispatcherThread() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewaySenderFactory fact = cache.createGatewaySenderFactory();
     fact.setManualStart(true);
     fact.setDispatcherThreads(0);
     try {
       GatewaySender sender1 = fact.create("NYSender", 2);
-      fail("Expectd GatewaySenderException but not thrown");
+      fail("Expected GatewaySenderException but not thrown");
     }
     catch (GatewaySenderException e) {
       if (e.getMessage().contains("can not be created with dispatcher threads less than 1")) {
       }
       else {
-        fail("Expectd IllegalStateException but received :" + e);
+        fail("Expected IllegalStateException but received :" + e);
       }
     }
   }
@@ -229,10 +229,10 @@ public class WANConfigurationJUnitTest {
     
     fact.setMaximumTimeBetweenPings(2000);
     fact.setSocketBufferSize(200);
-    GatewayTransportFilter myStreamfilter1 = new MyGatewayTransportFilter1();
-    GatewayTransportFilter myStreamfilter2 = new MyGatewayTransportFilter2();
-    fact.addGatewayTransportFilter(myStreamfilter2);
-    fact.addGatewayTransportFilter(myStreamfilter1);
+    GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
+    GatewayTransportFilter myStreamFilter2 = new MyGatewayTransportFilter2();
+    fact.addGatewayTransportFilter(myStreamFilter2);
+    fact.addGatewayTransportFilter(myStreamFilter1);
     GatewayReceiver receiver1 = fact.create();
     
 
@@ -271,10 +271,10 @@ public class WANConfigurationJUnitTest {
     
     fact.setMaximumTimeBetweenPings(2000);
     fact.setSocketBufferSize(200);
-    GatewayTransportFilter myStreamfilter1 = new MyGatewayTransportFilter1();
-    GatewayTransportFilter myStreamfilter2 = new MyGatewayTransportFilter2();
-    fact.addGatewayTransportFilter(myStreamfilter2);
-    fact.addGatewayTransportFilter(myStreamfilter1);
+    GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
+    GatewayTransportFilter myStreamFilter2 = new MyGatewayTransportFilter2();
+    fact.addGatewayTransportFilter(myStreamFilter2);
+    fact.addGatewayTransportFilter(myStreamFilter1);
     GatewayReceiver receiver1 = fact.create();
     assertTrue(receiver1.isRunning());
   }
@@ -294,12 +294,12 @@ public class WANConfigurationJUnitTest {
     fact.setDiskStoreName("FORNY");
     fact.setMaximumQueueMemory(200);
     fact.setAlertThreshold(1200);
-    GatewayEventFilter myeventfilter1 = new MyGatewayEventFilter1();
-    fact.addGatewayEventFilter(myeventfilter1);
-    GatewayTransportFilter myStreamfilter1 = new MyGatewayTransportFilter1();
-    fact.addGatewayTransportFilter(myStreamfilter1);
-    GatewayTransportFilter myStreamfilter2 = new MyGatewayTransportFilter2();
-    fact.addGatewayTransportFilter(myStreamfilter2);
+    GatewayEventFilter myEventFilter1 = new MyGatewayEventFilter1();
+    fact.addGatewayEventFilter(myEventFilter1);
+    GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
+    fact.addGatewayTransportFilter(myStreamFilter1);
+    GatewayTransportFilter myStreamFilter2 = new MyGatewayTransportFilter2();
+    fact.addGatewayTransportFilter(myStreamFilter2);
     GatewaySender sender1 = fact.create("TKSender", 2);
     
 
@@ -349,12 +349,12 @@ public class WANConfigurationJUnitTest {
     fact.setDiskStoreName("FORNY");
     fact.setMaximumQueueMemory(200);
     fact.setAlertThreshold(1200);
-    GatewayEventFilter myeventfilter1 = new MyGatewayEventFilter1();
-    fact.addGatewayEventFilter(myeventfilter1);
-    GatewayTransportFilter myStreamfilter1 = new MyGatewayTransportFilter1();
-    fact.addGatewayTransportFilter(myStreamfilter1);
-    GatewayTransportFilter myStreamfilter2 = new MyGatewayTransportFilter2();
-    fact.addGatewayTransportFilter(myStreamfilter2);
+    GatewayEventFilter myEventFilter1 = new MyGatewayEventFilter1();
+    fact.addGatewayEventFilter(myEventFilter1);
+    GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
+    fact.addGatewayTransportFilter(myStreamFilter1);
+    GatewayTransportFilter myStreamFilter2 = new MyGatewayTransportFilter2();
+    fact.addGatewayTransportFilter(myStreamFilter2);
     GatewaySender sender1 = fact.create("TKSender", 2);
     
 
@@ -423,7 +423,7 @@ public class WANConfigurationJUnitTest {
   }
   
   @Test
-  public void test_ValidateGatwayReceiverAttributes() {
+  public void test_ValidateGatewayReceiverAttributes_2() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     fact.setStartPort(50504);
@@ -431,8 +431,8 @@ public class WANConfigurationJUnitTest {
     fact.setSocketBufferSize(4000);
     fact.setEndPort(70707);
     fact.setManualStart(true);
-    GatewayTransportFilter myStreamfilter1 = new MyGatewayTransportFilter1();
-    fact.addGatewayTransportFilter(myStreamfilter1);
+    GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
+    fact.addGatewayTransportFilter(myStreamFilter1);
     
     GatewayReceiver receiver = fact.create();
     try {
@@ -451,13 +451,13 @@ public class WANConfigurationJUnitTest {
   /**
    * This test takes a minimum of 120s to execute. It is known to hang on Mac OS
    * X Yosemite do to changes in the the message string checked in
-   * GatewayRecieverImpl around line 167. Expects
+   * GatewayReceiverImpl around line 167. Expects
    * "Cannot assign requested address" but gets
-   * "Can't assign requested address". Timout after 150s to safeguard against
+   * "Can't assign requested address". Timeout after 150s to safeguard against
    * hanging on other platforms that may differ.
    */
   @Test(timeout = 150000)
-  public void test_ValidateGatwayReceiverAttributes_WrongBindAddress() {
+  public void test_ValidateGatewayReceiverAttributes_WrongBindAddress() {
     if (System.getProperty("os.name").equals("Mac OS X")) {
      fail("Failing to avoid known hang on Mac OS X.");
     }
@@ -469,13 +469,13 @@ public class WANConfigurationJUnitTest {
     fact.setEndPort(70707);
     fact.setManualStart(true);
     fact.setBindAddress("200.112.204.10");
-    GatewayTransportFilter myStreamfilter1 = new MyGatewayTransportFilter1();
-    fact.addGatewayTransportFilter(myStreamfilter1);
+    GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
+    fact.addGatewayTransportFilter(myStreamFilter1);
     
     GatewayReceiver receiver = fact.create();
     try {
       receiver.start();
-      fail("Expected GAtewayReceiverException");
+      fail("Expected GatewayReceiverException");
     }
     catch (GatewayReceiverException gRE){
       assertTrue(gRE.getMessage().contains("Failed to create server socket on"));
@@ -487,14 +487,14 @@ public class WANConfigurationJUnitTest {
   }
   
   @Test
-  public void test_ValidateGatwayReceiverDefaultStartPortAndDefaultEndPort() {
+  public void test_ValidateGatewayReceiverDefaultStartPortAndDefaultEndPort() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     fact.setMaximumTimeBetweenPings(1000);
     fact.setSocketBufferSize(4000);
     fact.setManualStart(true);
-    GatewayTransportFilter myStreamfilter1 = new MyGatewayTransportFilter1();
-    fact.addGatewayTransportFilter(myStreamfilter1);
+    GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
+    fact.addGatewayTransportFilter(myStreamFilter1);
     
     GatewayReceiver receiver = fact.create();
     try {
@@ -504,22 +504,21 @@ public class WANConfigurationJUnitTest {
       fail("The test failed with IOException");
     }
     int port = receiver.getPort();
-    System.out.println("SKSKSK The port of receiver is " + port);
     if((port < 5000) || (port > 5500)) {
       fail("GatewayReceiver started on out of range port");
     }
   }
   
   @Test
-  public void test_ValidateGatwayReceiverDefaultStartPortAndEndPortProvided() {
+  public void test_ValidateGatewayReceiverDefaultStartPortAndEndPortProvided() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     fact.setMaximumTimeBetweenPings(1000);
     fact.setSocketBufferSize(4000);
     fact.setEndPort(50707);
     fact.setManualStart(true);
-    GatewayTransportFilter myStreamfilter1 = new MyGatewayTransportFilter1();
-    fact.addGatewayTransportFilter(myStreamfilter1);
+    GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
+    fact.addGatewayTransportFilter(myStreamFilter1);
     
     GatewayReceiver receiver = fact.create();
     try {
@@ -535,15 +534,15 @@ public class WANConfigurationJUnitTest {
   }
   
   @Test
-  public void test_ValidateGatwayReceiverWithManualStartFALSE() {
+  public void test_ValidateGatewayReceiverWithManualStartFALSE() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     fact.setMaximumTimeBetweenPings(1000);
     fact.setSocketBufferSize(4000);
     fact.setStartPort(5303);
     fact.setManualStart(false);
-    GatewayTransportFilter myStreamfilter1 = new MyGatewayTransportFilter1();
-    fact.addGatewayTransportFilter(myStreamfilter1);
+    GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
+    fact.addGatewayTransportFilter(myStreamFilter1);
     GatewayReceiver receiver = fact.create();
     int port = receiver.getPort();
     if ((port < 5303) || (port > GatewayReceiver.DEFAULT_END_PORT)) {
@@ -552,15 +551,15 @@ public class WANConfigurationJUnitTest {
   }
   
   @Test
-  public void test_ValidateGatwayReceiverWithStartPortAndDefaultEndPort() {
+  public void test_ValidateGatewayReceiverWithStartPortAndDefaultEndPort() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     fact.setMaximumTimeBetweenPings(1000);
     fact.setSocketBufferSize(4000);
     fact.setStartPort(5303);
     fact.setManualStart(true);
-    GatewayTransportFilter myStreamfilter1 = new MyGatewayTransportFilter1();
-    fact.addGatewayTransportFilter(myStreamfilter1);
+    GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
+    fact.addGatewayTransportFilter(myStreamFilter1);
 
     GatewayReceiver receiver = fact.create();
     try {
@@ -576,7 +575,7 @@ public class WANConfigurationJUnitTest {
   }
   
   @Test
-  public void test_ValidateGatwayReceiverWithWrongEndPortProvided() {
+  public void test_ValidateGatewayReceiverWithWrongEndPortProvided() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     try {
       GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();

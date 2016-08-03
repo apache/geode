@@ -102,8 +102,8 @@ public class LocatorHelper {
    * @param locators
    * @param locatorListener
    */
-  public static boolean addExchnagedLocators(Map<Integer, Set<DistributionLocatorId>> locators,
-      LocatorMembershipListener locatorListener) {
+  public static boolean addExchangedLocators(Map<Integer, Set<DistributionLocatorId>> locators,
+                                             LocatorMembershipListener locatorListener) {
 
     ConcurrentHashMap<Integer, Set<DistributionLocatorId>> allLocators = (ConcurrentHashMap<Integer, Set<DistributionLocatorId>>)locatorListener
         .getAllLocatorsInfo();

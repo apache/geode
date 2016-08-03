@@ -68,15 +68,7 @@ public class GatewaySenderBatchOp {
   
   public static Object executeOn(Connection con, ExecutablePool pool)
   {
-    AbstractOp op = null;
-    //System.out.println("Version: "+con.getWanSiteVersion());
-    // [sumedh] both cases are now same; why switch-case?
-    if (Version.GFE_651.compareTo(con.getWanSiteVersion()) >= 0) {
-      op = new GatewaySenderGFEBatchOpImpl();
-    } else {
-      // Default should create a batch of server version (ACCEPTOR.VERSION)
-      op = new GatewaySenderGFEBatchOpImpl();
-    }
+    AbstractOp op = new GatewaySenderGFEBatchOpImpl();
     return pool.executeOn(con, op, true/*timeoutFatal*/);
   }
                                                                

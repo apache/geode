@@ -762,7 +762,7 @@ public class GatewaySenderEventRemoteDispatcher implements
 
     private void shutDownAckReaderConnection() {
       Connection conn = connection;
-      //attempt to unblock the ackreader thread by shutting down the inputStream, if it was stuck on a read
+      //attempt to unblock the ackReader thread by shutting down the inputStream, if it was stuck on a read
       try {
         if (conn != null && conn.getInputStream() != null) {
           conn.getInputStream().close();

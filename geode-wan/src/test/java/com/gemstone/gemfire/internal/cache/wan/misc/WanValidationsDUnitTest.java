@@ -107,7 +107,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
    * 
    * Below test is disabled intentionally Replicated region with Parallel Async
    * Event queue is not supported. Test is added for the same
-   * ReplicatedRegion_ParallelWANPropogationDUnitTest#test_DR_PGS_1Nodes_Put_Receiver
+   * ReplicatedRegion_ParallelWANPropagationDUnitTest#test_DR_PGS_1Nodes_Put_Receiver
    * 
    * We are gone support this configuration in upcoming releases
    */
@@ -176,7 +176,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
   
   
   @Test
-  public void testReplicatedSerialAsyncEventQueueWithPeristenceEnabled() {
+  public void testReplicatedSerialAsyncEventQueueWithPersistenceEnabled() {
     IgnoredException.addIgnoredException("another cache has the same region defined");
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -405,7 +405,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
     try {
       vm1.invoke(() -> WANTestBase.createSenderForValidations(
           "ln", 2, true, 100, false, false, null, null, true, false ));
-      fail("Expected IllegateStateException : Sender names should be different.");
+      fail("Expected IllegalStateException : Sender names should be different.");
     } catch (Exception e) {
       if (!(e.getCause() instanceof IllegalStateException)
           || !(e.getCause().getMessage()
@@ -430,7 +430,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
       vm2.invoke(() -> WANTestBase.createSenderForValidations(
           "ln", 3, false, 100, false, false, null, null,
           true, false  ));
-      fail("Expected IllegateStateException : Remote Ds Ids should match");
+      fail("Expected IllegalStateException : Remote Ds Ids should match");
     }
     catch (Exception e) {
       if (!(e.getCause() instanceof IllegalStateException)
@@ -455,7 +455,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
     try {
       vm2.invoke(() -> WANTestBase.createSenderForValidations(
           "ln", 2, true, 100, false, false, null, null, true, false  ));
-      fail("Expected IllegateStateException : is not serial Gateway Sender");
+      fail("Expected IllegalStateException : is not serial Gateway Sender");
     }
     catch (Exception e) {
       if (!(e.getCause() instanceof IllegalStateException)
@@ -482,7 +482,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
           .invoke(() -> WANTestBase.createSenderForValidations( "ln", 2,
               false, 100, false, false,null, null,
               true, false  ));
-      fail("Expected IllegateStateException : is not parallel Gateway Sender");
+      fail("Expected IllegalStateException : is not parallel Gateway Sender");
     }
     catch (Exception e) {
       if (!(e.getCause() instanceof IllegalStateException)
@@ -508,11 +508,11 @@ public class WanValidationsDUnitTest extends WANTestBase {
       vm2.invoke(() -> WANTestBase.createSenderForValidations( "ln", 2,
           false, 100,true, false,
           null, null, true, false  ));
-      fail("Expected IllegateStateException : isBatchConflation Should match");
+      fail("Expected IllegalStateException : isBatchConflation Should match");
     }
     catch (Exception e) {
       if (!(e.getCause() instanceof IllegalStateException)
-          || !(e.getCause().getMessage().contains("another cache has the same Gateway Sender defined with isBatchConfaltionEnabled"))) {
+          || !(e.getCause().getMessage().contains("another cache has the same Gateway Sender defined with isBatchConflationEnabled"))) {
         Assert.fail("Expected IllegalStateException", e);
       }
     }
@@ -531,7 +531,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
     try {
       vm2.invoke(() -> WANTestBase.createSenderForValidations( "ln", 2,
         false, 100,false, true, null, null, true, false  ));
-      fail("Expected IllegateStateException : isPersistentEnabled Should match");
+      fail("Expected IllegalStateException : isPersistentEnabled Should match");
     }
     catch (Exception e) {
       if (!(e.getCause() instanceof IllegalStateException)
@@ -553,7 +553,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
     try {
       vm2.invoke(() -> WANTestBase.createSenderForValidations( "ln", 2,
         false, 50, false, false, null, null, true, false  ));
-      fail("Expected IllegateStateException : alertThreshold Should match");
+      fail("Expected IllegalStateException : alertThreshold Should match");
     }
     catch (Exception e) {
       if (!(e.getCause() instanceof IllegalStateException)
@@ -575,7 +575,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
     try {
       vm2.invoke(() -> WANTestBase.createSenderForValidations( "ln", 2,
         false, 100, false, false, null, null, false, false  ));
-      fail("Expected IllegateStateException : manualStart Should match");
+      fail("Expected IllegalStateException : manualStart Should match");
     }
     catch (Exception e) {
       if (!(e.getCause() instanceof IllegalStateException)
@@ -591,18 +591,18 @@ public class WanValidationsDUnitTest extends WANTestBase {
 
     createCacheInVMs(lnPort, vm1, vm2);
 
-    ArrayList<GatewayEventFilter> eventFiletrs = new ArrayList<GatewayEventFilter>();
-    eventFiletrs.add(new MyGatewayEventFilter());
+    ArrayList<GatewayEventFilter> eventFilters = new ArrayList<GatewayEventFilter>();
+    eventFilters.add(new MyGatewayEventFilter());
     vm1.invoke(() -> WANTestBase.createSenderForValidations(
-        "ln", 2, false, 100, false, false, eventFiletrs,
+        "ln", 2, false, 100, false, false, eventFilters,
         null, true, false  ));
     try {
-      eventFiletrs.clear();
-      eventFiletrs.add(new Filter70());
+      eventFilters.clear();
+      eventFilters.add(new Filter70());
       vm2.invoke(() -> WANTestBase.createSenderForValidations(
           "ln", 2, false, 100, false, false,
-          eventFiletrs, null, true, false  ));
-      fail("Expected IllegateStateException : GatewayEventFileters Should match");
+          eventFilters, null, true, false  ));
+      fail("Expected IllegalStateException : GatewayEventFilters Should match");
     }
     catch (Exception e) {
       if (!(e.getCause() instanceof IllegalStateException)
@@ -619,19 +619,19 @@ public class WanValidationsDUnitTest extends WANTestBase {
 
     createCacheInVMs(lnPort, vm1, vm2);
 
-    ArrayList<GatewayEventFilter> eventFiletrs = new ArrayList<GatewayEventFilter>();
-    eventFiletrs.add(new MyGatewayEventFilter());
+    ArrayList<GatewayEventFilter> eventFilters = new ArrayList<GatewayEventFilter>();
+    eventFilters.add(new MyGatewayEventFilter());
     vm1.invoke(() -> WANTestBase.createSenderForValidations(
-        "ln", 2, false, 100, false, false, eventFiletrs,
+        "ln", 2, false, 100, false, false, eventFilters,
         null, true, false  ));
     try {
-      eventFiletrs.clear();
-      eventFiletrs.add(new MyGatewayEventFilter());
-      eventFiletrs.add(new Filter70());
+      eventFilters.clear();
+      eventFilters.add(new MyGatewayEventFilter());
+      eventFilters.add(new Filter70());
       vm2.invoke(() -> WANTestBase.createSenderForValidations(
           "ln", 2, false, 100, false, false,
-          eventFiletrs, null, true, false  ));
-      fail("Expected IllegateStateException : GatewayEventFileters Should match");
+          eventFilters, null, true, false  ));
+      fail("Expected IllegalStateException : GatewayEventFilters Should match");
     }
     catch (Exception e) {
       if (!(e.getCause() instanceof IllegalStateException)
@@ -648,20 +648,20 @@ public class WanValidationsDUnitTest extends WANTestBase {
 
     createCacheInVMs(lnPort, vm1, vm2);
 
-    ArrayList<GatewayTransportFilter> transportFiletrs = new ArrayList<GatewayTransportFilter>();
-    transportFiletrs.add(new MyGatewayTransportFilter1());
-    transportFiletrs.add(new MyGatewayTransportFilter2());
+    ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
+    transportFilters.add(new MyGatewayTransportFilter1());
+    transportFilters.add(new MyGatewayTransportFilter2());
     vm1.invoke(() -> WANTestBase.createSenderForValidations(
         "ln", 2, false, 100, false, false, null,
-        transportFiletrs, true, false  ));
+        transportFilters, true, false  ));
    try {
-      transportFiletrs.clear();
-      transportFiletrs.add(new MyGatewayTransportFilter3());
-      transportFiletrs.add(new MyGatewayTransportFilter4());
+      transportFilters.clear();
+      transportFilters.add(new MyGatewayTransportFilter3());
+      transportFilters.add(new MyGatewayTransportFilter4());
       vm2.invoke(() -> WANTestBase.createSenderForValidations(
           "ln", 2, false, 100, false, false,
-          null, transportFiletrs, true, false  ));
-      fail("Expected IllegateStateException : GatewayEventFileters Should match");
+          null, transportFilters, true, false  ));
+      fail("Expected IllegalStateException : GatewayEventFilters Should match");
     }
     catch (Exception e) {
       if (!(e.getCause() instanceof IllegalStateException)
@@ -678,20 +678,20 @@ public class WanValidationsDUnitTest extends WANTestBase {
 
     createCacheInVMs(lnPort, vm1, vm2);
 
-    ArrayList<GatewayTransportFilter> transportFiletrs = new ArrayList<GatewayTransportFilter>();
-    transportFiletrs.add(new MyGatewayTransportFilter1());
-    transportFiletrs.add(new MyGatewayTransportFilter2());
+    ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
+    transportFilters.add(new MyGatewayTransportFilter1());
+    transportFilters.add(new MyGatewayTransportFilter2());
     vm1.invoke(() -> WANTestBase.createSenderForValidations(
         "ln", 2, false, 100, false, false, null,
-        transportFiletrs, true, false  ));
+        transportFilters, true, false  ));
    try {
-      transportFiletrs.clear();
-      transportFiletrs.add(new MyGatewayTransportFilter2());
-      transportFiletrs.add(new MyGatewayTransportFilter1());
+      transportFilters.clear();
+      transportFilters.add(new MyGatewayTransportFilter2());
+      transportFilters.add(new MyGatewayTransportFilter1());
       vm2.invoke(() -> WANTestBase.createSenderForValidations(
           "ln", 2, false, 100, false, false,
-          null, transportFiletrs, true, false ));
-      fail("Expected IllegateStateException : GatewayEventFileters Should match");
+          null, transportFilters, true, false ));
+      fail("Expected IllegalStateException : GatewayEventFilters Should match");
     }
     catch (Exception e) {
       if (!(e.getCause() instanceof IllegalStateException)
@@ -717,7 +717,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
       vm2.invoke(() -> WANTestBase.createSenderForValidations(
         "ln", 2, false, 100, false, false, null,
         null, true, true ));
-      fail("Expected IllegateStateException : isDiskSynchronous Should match");
+      fail("Expected IllegalStateException : isDiskSynchronous Should match");
     }
     catch (Exception e) {
       if (!(e.getCause() instanceof IllegalStateException)
@@ -794,7 +794,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
     try {
       vm2.invoke(() -> WANTestBase.createConcurrentSender( "ln", 2,
         true, 100, 10, false, false, null, true, 4, OrderPolicy.KEY ));
-      fail("Expected IllegateStateException : dispatcher threads Should match");
+      fail("Expected IllegalStateException : dispatcher threads Should match");
     }
     catch (Exception e) {
       if (!(e.getCause() instanceof IllegalStateException)
@@ -807,7 +807,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
   
   // dispatcher threads are same across all the nodes for ParallelGatewaySender
   /*
-   * For Parallel sender, thread policy is not supported whcih is checked at the
+   * For Parallel sender, thread policy is not supported which is checked at the
    * time of sender creation. policy KEY and Partition are same for PGS. Hence
    * disabling the tests
    */
@@ -825,7 +825,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
     try {
       vm2.invoke(() -> WANTestBase.createConcurrentSender( "ln", 2,
         true, 100, 10, false, false, null, true, 5, OrderPolicy.PARTITION ));
-      fail("Expected IllegateStateException : order policy Should match");
+      fail("Expected IllegalStateException : order policy Should match");
     }
     catch (Exception e) {
       if (!(e.getCause() instanceof IllegalStateException)

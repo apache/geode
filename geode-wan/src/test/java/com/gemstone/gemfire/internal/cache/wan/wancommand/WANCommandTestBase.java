@@ -119,7 +119,7 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
   public void createSender(String dsName, int remoteDsId,
       boolean isParallel, Integer maxMemory,
       Integer batchSize, boolean isConflation, boolean isPersistent,
-      GatewayEventFilter filter, boolean isManulaStart) {
+      GatewayEventFilter filter, boolean isManualStart) {
     File persistentDirectory = new File(dsName +"_disk_"+System.currentTimeMillis()+"_" + VM.getCurrentVMNum());
     persistentDirectory.mkdir();
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
@@ -129,7 +129,7 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
       gateway.setParallel(true);
       gateway.setMaximumQueueMemory(maxMemory);
       gateway.setBatchSize(batchSize);
-      gateway.setManualStart(isManulaStart);
+      gateway.setManualStart(isManualStart);
       if (filter != null) {
         gateway.addGatewayEventFilter(filter);
       }
@@ -148,7 +148,7 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
       GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
       gateway.setMaximumQueueMemory(maxMemory);
       gateway.setBatchSize(batchSize);
-      gateway.setManualStart(isManulaStart);
+      gateway.setManualStart(isManualStart);
       if (filter != null) {
         gateway.addGatewayEventFilter(filter);
       }
@@ -217,7 +217,7 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
          receiver.start();
     } catch (IOException e) {
       e.printStackTrace();
-      fail("Test " + getName() + " failed to start GatewayRecevier");
+      fail("Test " + getName() + " failed to start GatewayReceiver");
     }
     return port;
   }
@@ -264,7 +264,7 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
       }
     } catch (IOException e) {
       e.printStackTrace();
-      fail("Test " + getName() + " failed to start GatewayRecevier");
+      fail("Test " + getName() + " failed to start GatewayReceiver");
     }
   }
 
@@ -294,7 +294,7 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
       receiver.start();
     } catch (IOException e) {
       e.printStackTrace();
-      fail("Test " + getName() + " failed to start GatewayRecevier on port " + port);
+      fail("Test " + getName() + " failed to start GatewayReceiver on port " + port);
     }
     return port;
   }
@@ -386,14 +386,14 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
 
       List<GatewayEventFilter> actualGatewayEventFilters = sender
           .getGatewayEventFilters();
-      List<String> actualEventFilterClassnames = new ArrayList<String>(
+      List<String> actualEventFilterClassNames = new ArrayList<String>(
           actualGatewayEventFilters.size());
       for (GatewayEventFilter filter : actualGatewayEventFilters) {
-        actualEventFilterClassnames.add(filter.getClass().getName());
+        actualEventFilterClassNames.add(filter.getClass().getName());
       }
 
       for (String expectedGatewayEventFilter : expectedGatewayEventFilters) {
-        if (!actualEventFilterClassnames.contains(expectedGatewayEventFilter)) {
+        if (!actualEventFilterClassNames.contains(expectedGatewayEventFilter)) {
           fail("GatewayEventFilter " + expectedGatewayEventFilter
               + " is not added to the GatewaySender");
         }
@@ -406,14 +406,14 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
           .size(), sender.getGatewayTransportFilters().size());
       List<GatewayTransportFilter> actualGatewayTransportFilters = sender
           .getGatewayTransportFilters();
-      List<String> actualTransportFilterClassnames = new ArrayList<String>(
+      List<String> actualTransportFilterClassNames = new ArrayList<String>(
           actualGatewayTransportFilters.size());
       for (GatewayTransportFilter filter : actualGatewayTransportFilters) {
-        actualTransportFilterClassnames.add(filter.getClass().getName());
+        actualTransportFilterClassNames.add(filter.getClass().getName());
       }
 
       for (String expectedGatewayTransportFilter : expectedGatewayTransportFilters) {
-        if (!actualTransportFilterClassnames
+        if (!actualTransportFilterClassNames
             .contains(expectedGatewayTransportFilter)) {
           fail("GatewayTransportFilter " + expectedGatewayTransportFilter
               + " is not added to the GatewaySender.");
@@ -451,14 +451,14 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
             .size(), receiver.getGatewayTransportFilters().size());
         List<GatewayTransportFilter> actualGatewayTransportFilters = receiver
             .getGatewayTransportFilters();
-        List<String> actualTransportFilterClassnames = new ArrayList<String>(
+        List<String> actualTransportFilterClassNames = new ArrayList<String>(
             actualGatewayTransportFilters.size());
         for (GatewayTransportFilter filter : actualGatewayTransportFilters) {
-          actualTransportFilterClassnames.add(filter.getClass().getName());
+          actualTransportFilterClassNames.add(filter.getClass().getName());
         }
 
         for (String expectedGatewayTransportFilter : expectedGatewayTransportFilters) {
-          if (!actualTransportFilterClassnames
+          if (!actualTransportFilterClassNames
               .contains(expectedGatewayTransportFilter)) {
             fail("GatewayTransportFilter " + expectedGatewayTransportFilter
                 + " is not added to the GatewayReceiver.");

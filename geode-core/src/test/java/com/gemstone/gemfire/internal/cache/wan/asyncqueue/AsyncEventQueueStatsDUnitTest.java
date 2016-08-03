@@ -188,7 +188,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
    * Two regions attached to same AsyncEventQueue
    */
   @Test
-  public void testReplicatedSerialPropagationUNPorcessedEvents() throws Exception {
+  public void testReplicatedSerialPropagationUnprocessedEvents() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));

@@ -36,13 +36,13 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
- * All the test cases are similar to SerialWANPropogationDUnitTest except that
+ * All the test cases are similar to SerialWANPropagationDUnitTest except that
  * the we create concurrent serial GatewaySender with concurrency of 4
  */
 @Category(DistributedTest.class)
-public class ConcurrentWANPropogation_2_DUnitTest extends WANTestBase {
+public class ConcurrentWANPropagation_2_DUnitTest extends WANTestBase {
 
-  public ConcurrentWANPropogation_2_DUnitTest() {
+  public ConcurrentWANPropagation_2_DUnitTest() {
     super();
   }
 
@@ -318,7 +318,7 @@ public class ConcurrentWANPropogation_2_DUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testSerialPropogationWithFilter() throws Exception {
+  public void testSerialPropagationWithFilter() throws Exception {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2,lnPort ));

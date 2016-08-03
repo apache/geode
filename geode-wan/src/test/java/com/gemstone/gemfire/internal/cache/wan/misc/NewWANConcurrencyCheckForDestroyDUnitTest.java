@@ -138,7 +138,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     //wait for vm1 to propagate destroyed entry's new version tag to vm5
     Wait.pause(2000); 
 
-    vm5.invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.verifyTimestampAfterOp(destroyTimeStamp, 1 /* ds 3 receives gatway event only from ds 1*/));
+    vm5.invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.verifyTimestampAfterOp(destroyTimeStamp, 1 /* ds 3 receives gateway event only from ds 1*/));
   }
 
   /**
@@ -362,7 +362,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
    * version tag is generated in local distributed system.
    */
   @Test
-  public void testConflicChecksBasedOnDsidAndTimeStamp() {
+  public void testConflictChecksBasedOnDsidAndTimeStamp() {
 
     
     // create two distributed systems with each having a cache containing

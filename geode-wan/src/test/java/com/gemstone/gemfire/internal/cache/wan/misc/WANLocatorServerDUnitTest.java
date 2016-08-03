@@ -126,7 +126,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
       receiver.start();
     }
     catch (IOException e) {
-      fail("Test " + test.getName() + " failed to start GatewayRecevier on port " + port, e);
+      fail("Test " + test.getName() + " failed to start GatewayReceiver on port " + port, e);
     }
   }
 

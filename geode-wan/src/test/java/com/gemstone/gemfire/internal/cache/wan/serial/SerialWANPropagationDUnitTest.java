@@ -41,7 +41,7 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
-public class SerialWANPropogationDUnitTest extends WANTestBase {
+public class SerialWANPropagationDUnitTest extends WANTestBase {
 
   @Override
   public final void postSetUpWANTestBase() throws Exception {

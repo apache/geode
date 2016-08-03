@@ -248,19 +248,19 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
 
     vm6.invoke(() -> createAndStartReceiver( nyPort ));
 
-    vm3.invoke(() -> createCacheWithGroups( lnPort, "Serial_Sender, Paralle_Sender"));
+    vm3.invoke(() -> createCacheWithGroups( lnPort, "Serial_Sender, Parallel_Sender"));
     vm3.invoke(() -> createSender(
         "ln_Serial", 2, false, 100, 400, false, false, null, false ));
     vm3.invoke(() -> createSender(
         "ln_Parallel", 2, true, 100, 400, false, false, null, false ));
 
-    vm4.invoke(() -> createCacheWithGroups( lnPort,"Serial_Sender, Paralle_Sender"));
+    vm4.invoke(() -> createCacheWithGroups( lnPort,"Serial_Sender, Parallel_Sender"));
     vm4.invoke(() -> createSender(
         "ln_Parallel", 2, true, 100, 400, false, false, null, false ));
     vm4.invoke(() -> createSender(
         "ln_Serial", 2, false, 100, 400, false, false, null, false ));
 
-    vm5.invoke(() -> createAndStartReceiverWithGroup( lnPort, "Paralle_Sender,Receiver_Group" ));
+    vm5.invoke(() -> createAndStartReceiverWithGroup( lnPort, "Parallel_Sender,Receiver_Group" ));
     vm5.invoke(() -> createSender(
       "ln_Parallel", 2, true, 100, 400, false, false, null, false ));
     
@@ -291,7 +291,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
       fail("testListGatewaySenderGatewayReceiver_group failed as did not get CommandResult");
     }
     
-    command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__GROUP + "=Paralle_Sender";
+    command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__GROUP + "=Parallel_Sender";
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
       TabularResultData tableSenderResultData =
@@ -334,7 +334,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
       fail("testListGatewaySenderGatewayReceiver_group failed as did not get CommandResult");
     }
 
-    command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__GROUP + "=Serial_Sender,Paralle_Sender";
+    command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__GROUP + "=Serial_Sender,Parallel_Sender";
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
@@ -355,7 +355,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
       fail("testListGatewaySenderGatewayReceiver_group failed as did not get CommandResult");
     }
 
-    command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__GROUP + "=Serial_Sender,Paralle_Sender,Receiver_Group";
+    command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__GROUP + "=Serial_Sender,Parallel_Sender,Receiver_Group";
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);

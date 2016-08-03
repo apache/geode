@@ -742,11 +742,11 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
         fact.addGatewaySenderId(senderId);
       }
     }
-    PartitionAttributesFactory pfact = new PartitionAttributesFactory();
-    pfact.setTotalNumBuckets(totalNumBuckets);
-    pfact.setRedundantCopies(redundantCopies);
-    pfact.setRecoveryDelay(0);
-    fact.setPartitionAttributes(pfact.create());
+    PartitionAttributesFactory pFact = new PartitionAttributesFactory();
+    pFact.setTotalNumBuckets(totalNumBuckets);
+    pFact.setRedundantCopies(redundantCopies);
+    pFact.setRecoveryDelay(0);
+    fact.setPartitionAttributes(pFact.create());
     Region r = cache.createRegionFactory(fact.create()).create(regionName);
     assertNotNull(r);
   }
@@ -803,7 +803,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
   public static void createConcurrentSender(String dsName, int remoteDsId,
       boolean isParallel, Integer maxMemory,
       Integer batchSize, boolean isConflation, boolean isPersistent,
-      GatewayEventFilter filter, boolean isManulaStart, int concurrencyLevel) {
+      GatewayEventFilter filter, boolean isManualStart, int concurrencyLevel) {
     File persistentDirectory = new File(dsName +"_disk_"+System.currentTimeMillis()+"_" + VM.getCurrentVMNum());
     persistentDirectory.mkdir();
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
@@ -814,7 +814,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
       gateway.setParallel(true);
       gateway.setMaximumQueueMemory(maxMemory);
       gateway.setBatchSize(batchSize);
-      gateway.setManualStart(isManulaStart);
+      gateway.setManualStart(isManualStart);
       ((InternalGatewaySenderFactory)gateway).setLocatorDiscoveryCallback(new MyLocatorCallback());
       if (filter != null) {
         gateway.addGatewayEventFilter(filter);
@@ -834,7 +834,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
       GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
       gateway.setMaximumQueueMemory(maxMemory);
       gateway.setBatchSize(batchSize);
-      gateway.setManualStart(isManulaStart);
+      gateway.setManualStart(isManualStart);
       ((InternalGatewaySenderFactory)gateway).setLocatorDiscoveryCallback(new MyLocatorCallback());
       if (filter != null) {
         gateway.addGatewayEventFilter(filter);
@@ -871,7 +871,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
       receiver.start();
     } catch (IOException e) {
       e.printStackTrace();
-      fail("Test " + test.getName() + " failed to start GatewayRecevier on port " + port);
+      fail("Test " + test.getName() + " failed to start GatewayReceiver on port " + port);
     }
     return port;
   }
@@ -942,7 +942,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
         return s;
       }
     }
-    //if none of the senders matches with the supplied senderid, return null
+    //if none of the senders matches with the supplied senderId, return null
     return null;
   }
 

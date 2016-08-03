@@ -180,24 +180,24 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
       false ));
 
     int totalSize = 3;
-    int increament = 1;
+    int increment = 1;
 
     final Map keyValues = new HashMap();
-    for(int i=0; i< increament; i++) {
+    for(int i=0; i< increment; i++) {
       keyValues.put(i, i);
     }
     vm3.invoke(() -> WANTestBase.putGivenKeyValue( getTestMethodName() + "_RR",
       keyValues ));
     
     keyValues.clear();
-    for(int i = increament; i< 2*increament; i++) {
+    for(int i = increment; i< 2*increment; i++) {
       keyValues.put(i, i);
     }
     vm4.invoke(() -> WANTestBase.putGivenKeyValue( getTestMethodName() + "_RR",
       keyValues ));
     
     keyValues.clear();
-    for(int i=2*increament; i< totalSize; i++) {
+    for(int i=2*increment; i< totalSize; i++) {
       keyValues.put(i, i);
     }
     vm5.invoke(() -> WANTestBase.putGivenKeyValue( getTestMethodName() + "_RR",

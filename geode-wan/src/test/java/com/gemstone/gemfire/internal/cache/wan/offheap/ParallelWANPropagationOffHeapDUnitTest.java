@@ -25,14 +25,13 @@ import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelWANPropagationConcurrentOpsDUnitTest;
+import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelWANPropagationDUnitTest;
 
 @SuppressWarnings("serial")
 @Category(DistributedTest.class)
-public class ParallelWANPropogationConcurrentOpsOffHeapDUnitTest extends
-    ParallelWANPropagationConcurrentOpsDUnitTest {
+public class ParallelWANPropagationOffHeapDUnitTest extends ParallelWANPropagationDUnitTest {
 
-  public ParallelWANPropogationConcurrentOpsOffHeapDUnitTest() {
+  public ParallelWANPropagationOffHeapDUnitTest() {
     super();
   }
 

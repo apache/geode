@@ -129,7 +129,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
       public void run() {
         final Region region = cache.getRegion(getTestMethodName() + "_PR");
         cache.getLogger().info(
-            "vm1's region size before restart gatewayhub is " + region.size());
+            "vm1's region size before restart gatewayHub is " + region.size());
       }
     });
     vm2.invoke(() -> WANTestBase.createReceiver());
@@ -149,13 +149,13 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
         final Region region = cache.getRegion(getTestMethodName() + "_PR");
 
         cache.getLogger().info(
-            "vm1's region size after restart gatewayhub is " + region.size());
+            "vm1's region size after restart gatewayHub is " + region.size());
         Wait.waitForCriterion(new WaitCriterion() {
           public boolean done() {
-            Object lastvalue = region.get(NUM_KEYS - 1);
-            if (lastvalue != null && lastvalue.equals(NUM_KEYS - 1)) {
+            Object lastValue = region.get(NUM_KEYS - 1);
+            if (lastValue != null && lastValue.equals(NUM_KEYS - 1)) {
               region.getCache().getLogger().info(
-                  "Last key has arrived, its value is " + lastvalue
+                  "Last key has arrived, its value is " + lastValue
                       + ", end of wait.");
               return true;
             }
@@ -174,7 +174,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
 
   }
 
-  private AsyncInvocation shutDownAllMembers(VM vm, final int expnum, final long timeout) {
+  private AsyncInvocation shutDownAllMembers(VM vm, final int expectedNumber, final long timeout) {
       AsyncInvocation future = vm.invokeAsync(new SerializableRunnable("Shutdown all the members") {
 
       public void run() {
@@ -188,7 +188,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
           adminDS.connect();
           Set members = adminDS.shutDownAllMembers(timeout);
           int num = members == null ? 0 : members.size();
-          assertEquals(expnum, num);
+          assertEquals(expectedNumber, num);
         }
         catch (AdminException e) {
           throw new RuntimeException(e);

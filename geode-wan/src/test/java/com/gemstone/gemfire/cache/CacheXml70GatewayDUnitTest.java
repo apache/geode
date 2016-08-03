@@ -111,10 +111,10 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
     gatewayReceiverFactory.setEndPort(29999);
     gatewayReceiverFactory.setMaximumTimeBetweenPings(2000);
     gatewayReceiverFactory.setSocketBufferSize(1500);
-    GatewayTransportFilter myStreamfilter1 = new MyGatewayTransportFilter1();
-    gatewayReceiverFactory.addGatewayTransportFilter(myStreamfilter1);
-    GatewayTransportFilter myStreamfilter2 = new MyGatewayTransportFilter2();
-    gatewayReceiverFactory.addGatewayTransportFilter(myStreamfilter2);
+    GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
+    gatewayReceiverFactory.addGatewayTransportFilter(myStreamFilter1);
+    GatewayTransportFilter myStreamFilter2 = new MyGatewayTransportFilter2();
+    gatewayReceiverFactory.addGatewayTransportFilter(myStreamFilter2);
     GatewayReceiver receiver1 = gatewayReceiverFactory.create();
 
     receiver1.start();
@@ -148,12 +148,12 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
     gatewaySenderFactory.setMaximumQueueMemory(211);           
     gatewaySenderFactory.setAlertThreshold(35);
     
-    GatewayEventFilter myeventfilter1 = new MyGatewayEventFilter1();
-    gatewaySenderFactory.addGatewayEventFilter(myeventfilter1);
-    GatewayTransportFilter myStreamfilter1 = new MyGatewayTransportFilter1();
-    gatewaySenderFactory.addGatewayTransportFilter(myStreamfilter1);
-    GatewayTransportFilter myStreamfilter2 = new MyGatewayTransportFilter2();
-    gatewaySenderFactory.addGatewayTransportFilter(myStreamfilter2);
+    GatewayEventFilter myEventFilter1 = new MyGatewayEventFilter1();
+    gatewaySenderFactory.addGatewayEventFilter(myEventFilter1);
+    GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
+    gatewaySenderFactory.addGatewayTransportFilter(myStreamFilter1);
+    GatewayTransportFilter myStreamFilter2 = new MyGatewayTransportFilter2();
+    gatewaySenderFactory.addGatewayTransportFilter(myStreamFilter2);
     GatewaySender parallelGatewaySender = gatewaySenderFactory.create("LN", 2);
     
     testXml(cache);
@@ -184,12 +184,12 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
     gatewaySenderFactory.setMaximumQueueMemory(200);           
     gatewaySenderFactory.setAlertThreshold(30);
     
-    GatewayEventFilter myeventfilter1 = new MyGatewayEventFilter1();
-    gatewaySenderFactory.addGatewayEventFilter(myeventfilter1);
-    GatewayTransportFilter myStreamfilter1 = new MyGatewayTransportFilter1();
-    gatewaySenderFactory.addGatewayTransportFilter(myStreamfilter1);
-    GatewayTransportFilter myStreamfilter2 = new MyGatewayTransportFilter2();
-    gatewaySenderFactory.addGatewayTransportFilter(myStreamfilter2);
+    GatewayEventFilter myEventFilter1 = new MyGatewayEventFilter1();
+    gatewaySenderFactory.addGatewayEventFilter(myEventFilter1);
+    GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
+    gatewaySenderFactory.addGatewayTransportFilter(myStreamFilter1);
+    GatewayTransportFilter myStreamFilter2 = new MyGatewayTransportFilter2();
+    gatewaySenderFactory.addGatewayTransportFilter(myStreamFilter2);
     GatewaySender serialGatewaySender = gatewaySenderFactory.create("LN", 2);
     
     RegionAttributesCreation attrs = new RegionAttributesCreation();

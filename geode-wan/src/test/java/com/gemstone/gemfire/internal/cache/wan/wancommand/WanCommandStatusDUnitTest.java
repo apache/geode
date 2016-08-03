@@ -245,19 +245,19 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
 
     vm7.invoke(() -> createAndStartReceiver( nyPort ));
 
-    vm3.invoke(() -> createCacheWithGroups( lnPort, "Serial_Sender, Paralle_Sender"));
+    vm3.invoke(() -> createCacheWithGroups( lnPort, "Serial_Sender, Parallel_Sender"));
     vm3.invoke(() -> createSender(
         "ln_Serial", 2, false, 100, 400, false, false, null, true ));
     vm3.invoke(() -> createSender(
         "ln_Parallel", 2, true, 100, 400, false, false, null, true));
 
-    vm4.invoke(() -> createCacheWithGroups( lnPort,"Serial_Sender, Paralle_Sender"));
+    vm4.invoke(() -> createCacheWithGroups( lnPort,"Serial_Sender, Parallel_Sender"));
     vm4.invoke(() -> createSender(
       "ln_Serial", 2, false, 100, 400, false, false, null, true));
     vm4.invoke(() -> createSender(
         "ln_Parallel", 2, true, 100, 400, false, false, null, true));
     
-    vm5.invoke(() -> createCacheWithGroups( lnPort,"Paralle_Sender"));
+    vm5.invoke(() -> createCacheWithGroups( lnPort,"Parallel_Sender"));
     vm5.invoke(() -> createSender(
       "ln_Serial", 2, false, 100, 400, false, false, null, true));
     vm5.invoke(() -> createSender(

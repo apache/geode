@@ -240,11 +240,11 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
     vm4.invoke(() -> WANTestBase.createSenderWithDiskStore(
         "ln", 2, false, 100, 10, false, true, null,
         firstDStore, true ));
-    LogWriterUtils.getLogWriter().info("Creted the sender.... in vm4 ");
+    LogWriterUtils.getLogWriter().info("Created the sender.... in vm4 ");
     vm5.invoke(() -> WANTestBase.createSenderWithDiskStore(
         "ln", 2, false, 100, 10, false, true, null,
         secondDStore, true ));
-    LogWriterUtils.getLogWriter().info("Creted the sender.... in vm5 ");
+    LogWriterUtils.getLogWriter().info("Created the sender.... in vm5 ");
     AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.startSender( "ln" ));
     LogWriterUtils.getLogWriter().info("Started the sender in vm 4");
 
@@ -343,7 +343,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
     try {
       inv1.join();
     } catch (InterruptedException e) {
-      fail("Got interrupted exception while waiting for startSedner to finish.");
+      fail("Got interrupted exception while waiting for startSender to finish.");
     }
 
     Wait.pause(5000);
@@ -421,10 +421,10 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
     vm5.invoke(() -> WANTestBase.createCache( lnPort ));
     vm4.invoke(() -> WANTestBase.createSender(
         "ln", 2, false, 100, 10, false, false, null, true));
-    LogWriterUtils.getLogWriter().info("Creted the sender.... in vm4 ");
+    LogWriterUtils.getLogWriter().info("Created the sender.... in vm4 ");
     vm5.invoke(() -> WANTestBase.createSender(
         "ln", 2, false, 100, 10, false, false, null, true));
-    LogWriterUtils.getLogWriter().info("Creted the sender.... in vm5 ");
+    LogWriterUtils.getLogWriter().info("Created the sender.... in vm5 ");
     
     vm4.invoke(() -> WANTestBase.startSender( "ln" ));
     LogWriterUtils.getLogWriter().info("Started the sender in vm 4");
@@ -440,7 +440,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
     try {
       inv1.join();
     } catch (InterruptedException e) {
-      fail("Got interrupted exception while waiting for startSedner to finish.");
+      fail("Got interrupted exception while waiting for startSender to finish.");
     }
 
     Wait.pause(5000);
@@ -533,7 +533,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
     try {
       inv1.join();
     } catch (InterruptedException e) {
-      fail("Got interrupted exception while waiting for startSedner to finish.");
+      fail("Got interrupted exception while waiting for startSender to finish.");
     }
 
     Wait.pause(5000);

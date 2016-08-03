@@ -29,11 +29,11 @@ import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 
 
 @Category(DistributedTest.class)
-public class SerialWANPropogationsFeatureDUnitTest extends WANTestBase{
+public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase{
 
   private static final long serialVersionUID = 1L;
 
-  public SerialWANPropogationsFeatureDUnitTest() {
+  public SerialWANPropagationsFeatureDUnitTest() {
     super();
   }
 
@@ -206,7 +206,7 @@ public class SerialWANPropogationsFeatureDUnitTest extends WANTestBase{
   }
   
   @Test
-  public void testSerialPropogationWithFilter() throws Exception {
+  public void testSerialPropagationWithFilter() throws Exception {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2,lnPort ));

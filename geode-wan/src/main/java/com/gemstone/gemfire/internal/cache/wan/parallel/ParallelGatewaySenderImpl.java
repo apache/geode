@@ -236,7 +236,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
         originatingThreadId, getEventIdIndex());
     
     // In case of parallel as all events go through primary buckets
-    // we don't neet to generate different threadId for secondary buckets
+    // we don't need to generate different threadId for secondary buckets
     // as they will be rejected if seen at PR level itself
     
 //    boolean isPrimary = ((PartitionedRegion)getQueue().getRegion())
