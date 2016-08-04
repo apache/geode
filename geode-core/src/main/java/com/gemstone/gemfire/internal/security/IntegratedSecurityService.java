@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.security;
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
@@ -168,6 +167,11 @@ public class IntegratedSecurityService implements SecurityService, Serializable 
   @Override
   public Object postProcess(final String regionPath, final Object key, final Object value, final boolean valueIsSerialized) {
     return GeodeSecurityUtil.postProcess(regionPath, key, value, valueIsSerialized);
+  }
+
+  @Override
+  public Object postProcess(final Serializable principal, final String regionPath, final Object key, final Object value, final boolean valueIsSerialized) {
+    return GeodeSecurityUtil.postProcess(principal, regionPath, key, value, valueIsSerialized);
   }
 
   @Override

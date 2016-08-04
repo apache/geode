@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.management.internal.cli.functions;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
 import org.json.JSONArray;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -98,7 +100,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
   private static final int NESTED_JSON_LENGTH = 20;
 
   private SecurityService securityService = IntegratedSecurityService.getSecurityService();
-  
+
   @Override
   public String getId() {
     return DataCommandFunction.class.getName();
@@ -177,7 +179,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
     String valueClass = request.getValueClass();
     String regionName = request.getRegionName();
     Boolean loadOnCacheMiss = request.isLoadOnCacheMiss();
-    return get(key, keyClass, valueClass, regionName, loadOnCacheMiss);
+    return get(request.getPrincipal(), key, keyClass, valueClass, regionName, loadOnCacheMiss);
   }
   
   public DataCommandResult locateEntry(DataCommandRequest request) {
@@ -202,7 +204,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
   
   public DataCommandResult select(DataCommandRequest request) {
     String query = request.getQuery();    
-    return select(query);
+    return select(request.getPrincipal(), query);
   }
   
   /**
@@ -221,7 +223,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
   }
   
   @SuppressWarnings("rawtypes")
-  private DataCommandResult select(String queryString) {
+  private DataCommandResult select(Serializable principal, String queryString) {
 
     Cache cache = CacheFactory.getAnyInstance();
     AtomicInteger nestedObjectCount = new AtomicInteger(0);
@@ -253,7 +255,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
           for (Iterator iter = selectResults.iterator(); iter.hasNext();) {
             Object object = iter.next();
             // Post processing
-            object = this.securityService.postProcess(null, null, object, false);
+            object = this.securityService.postProcess(principal, null, null, object, false);
 
             if (object instanceof Struct) {
               StructImpl impl = (StructImpl) object;
@@ -421,7 +423,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
   }
   
   @SuppressWarnings({ "rawtypes" })
-  public DataCommandResult get(String key, String keyClass, String valueClass, String regionName, Boolean loadOnCacheMiss) {
+  public DataCommandResult get(Serializable principal, String key, String keyClass, String valueClass, String regionName, Boolean loadOnCacheMiss) {
     
     Cache cache = CacheFactory.getAnyInstance();
     
@@ -458,7 +460,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
 
         // run it through post processor. region.get will return the deserialized object already, so we don't need to
         // deserialize it anymore to pass it to the postProcessor
-        value = this.securityService.postProcess(regionName, keyObject, value, false);
+        value = this.securityService.postProcess(principal, regionName, keyObject, value, false);
 
         if (logger.isDebugEnabled()) 
           logger.debug("Get for key {} value {}", key, value);
@@ -943,6 +945,10 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
             DataCommandRequest request = new DataCommandRequest();
             request.setCommand(CliStrings.QUERY);
             request.setQuery(query);
+            Subject subject = this.securityService.getSubject();
+            if(subject!=null){
+              request.setPrincipal((Serializable)subject.getPrincipal());
+            }
             dataResult = DataCommands.callFunctionForRegion(request, function, members);
             dataResult.setInputQuery(query);
             return (dataResult);

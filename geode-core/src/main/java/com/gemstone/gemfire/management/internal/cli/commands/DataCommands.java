@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,6 +33,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.shiro.subject.Subject;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -1060,6 +1062,10 @@ public class DataCommands implements CommandMarker {
         request.setRegionName(regionPath);
         request.setValueClass(valueClass);
         request.setLoadOnCacheMiss(loadOnCacheMiss);
+        Subject subject = this.securityService.getSubject();
+        if(subject!=null){
+          request.setPrincipal((Serializable)subject.getPrincipal());
+        }
         dataResult = callFunctionForRegion(request, getfn, memberList);
       } else
         dataResult = DataCommandResult.createGetInfoResult(key, null, null,
@@ -1067,7 +1073,7 @@ public class DataCommands implements CommandMarker {
                 CliStrings.GET__MSG__REGION_NOT_FOUND_ON_ALL_MEMBERS,
                 regionPath), false);
     } else {
-      dataResult = getfn.get(key, keyClass, valueClass, regionPath, loadOnCacheMiss);
+      dataResult = getfn.get(null, key, keyClass, valueClass, regionPath, loadOnCacheMiss);
     }
     dataResult.setKeyClass(keyClass);
     if (valueClass != null)

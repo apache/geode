@@ -19,19 +19,19 @@ package com.gemstone.gemfire.internal.security;
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.security.AccessController;
-import java.security.Principal;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.lang.SerializationException;
 import org.apache.commons.lang.StringUtils;
+import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
@@ -366,13 +366,19 @@ public class GeodeSecurityUtil {
   }
 
   public static Object postProcess(String regionPath, Object key, Object value, boolean valueIsSerialized){
-    if(!needPostProcess())
+    return postProcess(null, regionPath, key, value, valueIsSerialized);
+  }
+
+  public static Object postProcess(Serializable principal, String regionPath, Object key, Object value, boolean valueIsSerialized) {
+    if (!needPostProcess())
       return value;
 
-    Subject subject = getSubject();
-
-    if(subject == null)
-      return value;
+    if (principal == null) {
+      Subject subject = getSubject();
+      if (subject == null)
+        return value;
+      principal = (Serializable) subject.getPrincipal();
+    }
 
     String regionName = StringUtils.stripStart(regionPath, "/");
     Object newValue = null;
@@ -382,14 +388,14 @@ public class GeodeSecurityUtil {
     if (valueIsSerialized && value instanceof byte[]) {
       try {
         Object oldObj = EntryEventImpl.deserialize((byte[]) value);
-        Object newObj = postProcessor.processRegionValue((Principal)subject.getPrincipal(), regionName, key,  oldObj);
+        Object newObj = postProcessor.processRegionValue(principal, regionName, key,  oldObj);
         newValue = BlobHelper.serializeToBlob(newObj);
       } catch (IOException|SerializationException e) {
         throw new GemFireIOException("Exception de/serializing entry value", e);
       }
     }
     else {
-      newValue = postProcessor.processRegionValue((Principal) subject.getPrincipal(), regionName, key, value);
+      newValue = postProcessor.processRegionValue(principal, regionName, key, value);
     }
 
     return newValue;

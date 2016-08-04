@@ -16,14 +16,14 @@
  */
 package com.gemstone.gemfire.security;
 
-import java.security.Principal;
+import java.io.Serializable;
 
 import org.apache.geode.security.PostProcessor;
 
 public class NoShowValue1PostProcessor implements PostProcessor {
 
   @Override
-  public Object processRegionValue(final Principal principal,
+  public Object processRegionValue(final Serializable principal,
                                    final String regionName,
                                    final Object key,
                                    final Object value) {

@@ -16,15 +16,16 @@
  */
 package com.gemstone.gemfire.internal.security;
 
+import java.io.Serializable;
 import java.util.Properties;
 import java.util.concurrent.Callable;
-
-import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
+
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
 public interface SecurityService {
 
@@ -52,6 +53,7 @@ public interface SecurityService {
   void close();
   boolean needPostProcess();
   Object postProcess(String regionPath, Object key, Object value, boolean valueIsSerialized);
+  Object postProcess(Serializable principal, String regionPath, Object key, Object value, boolean valueIsSerialized);
   boolean isClientSecurityRequired();
   boolean isPeerSecurityRequired();
   boolean isIntegratedSecurity();

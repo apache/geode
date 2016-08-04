@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.internal.security.shiro;
 
-import java.security.Principal;
+import java.io.Serializable;
 import java.util.Properties;
 
 import org.apache.geode.security.ResourcePermission;
@@ -71,7 +71,7 @@ public class CustomAuthRealm extends AuthorizingRealm {
     credentialProps.put(ResourceConstants.USER_NAME, username);
     credentialProps.put(ResourceConstants.PASSWORD, password);
 
-    Principal principal  = securityManager.authenticate(credentialProps);
+    Serializable principal  = securityManager.authenticate(credentialProps);
 
     try {
       return new SimpleAuthenticationInfo(principal, authToken.getPassword(), REALM_NAME);
@@ -89,7 +89,7 @@ public class CustomAuthRealm extends AuthorizingRealm {
   @Override
   public boolean isPermitted(PrincipalCollection principals, Permission permission) {
     ResourcePermission context = (ResourcePermission) permission;
-    Principal principal = (Principal) principals.getPrimaryPrincipal();
+    Serializable principal = (Serializable)principals.getPrimaryPrincipal();
     return securityManager.authorize(principal, context);
   }
 

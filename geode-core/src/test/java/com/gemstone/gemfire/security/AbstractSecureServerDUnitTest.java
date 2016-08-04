@@ -75,6 +75,7 @@ public class AbstractSecureServerDUnitTest extends JUnit4CacheTestCase {
     Properties props = new Properties();
     props.setProperty(SampleSecurityManager.SECURITY_JSON, "com/gemstone/gemfire/management/internal/security/clientServer.json");
     props.setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+//    props.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
     props.setProperty(LOCATORS, "");
     props.setProperty(MCAST_PORT, "0");
     if (postProcessor!=null) {
@@ -97,19 +98,18 @@ public class AbstractSecureServerDUnitTest extends JUnit4CacheTestCase {
 
     getSystem(props);
 
-    CacheFactory cf = null;
-    cf = new CacheFactory();
+    CacheFactory cf = new CacheFactory();
     cf.setPdxPersistent(pdxPersistent);
     cf.setPdxReadSerialized(pdxPersistent);
     Cache cache = getCache(cf);
 
     Region region = cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
 
-    CacheServer server1 = cache.addCacheServer();
-    server1.setPort(0);
-    server1.start();
+    CacheServer server = cache.addCacheServer();
+    server.setPort(0);
+    server.start();
 
-    this.serverPort = server1.getPort();
+    this.serverPort = server.getPort();
 
     for(Entry entry:values.entrySet()){
       region.put(entry.getKey(), entry.getValue());
@@ -126,7 +126,7 @@ public class AbstractSecureServerDUnitTest extends JUnit4CacheTestCase {
     assertThatThrownBy(shouldRaiseThrowable).hasMessageContaining(permString);
   }
 
-  protected Properties createClientProperties(String userName, String password) {
+  public static Properties createClientProperties(String userName, String password) {
     Properties props = new Properties();
     props.setProperty(UserPasswordAuthInit.USER_NAME, userName);
     props.setProperty(UserPasswordAuthInit.PASSWORD, password);
@@ -137,7 +137,7 @@ public class AbstractSecureServerDUnitTest extends JUnit4CacheTestCase {
     return props;
   }
 
-  protected ClientCache createClientCache(String username, String password, int serverPort){
+  public static ClientCache createClientCache(String username, String password, int serverPort){
     ClientCache cache = new ClientCacheFactory(createClientProperties(username, password))
       .setPoolSubscriptionEnabled(true)
       .addPoolServer("localhost", serverPort)

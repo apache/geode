@@ -20,8 +20,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.io.StringWriter;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,8 +32,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import javax.management.remote.JMXPrincipal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -106,10 +104,10 @@ public class SampleSecurityManager implements SecurityManager {
   private Map<String, User> userNameToUser;
 
   @Override
-  public boolean authorize(final Principal principal, final ResourcePermission context) {
+  public boolean authorize(final Serializable principal, final ResourcePermission context) {
     if (principal == null) return false;
 
-    User user = this.userNameToUser.get(principal.getName());
+    User user = this.userNameToUser.get(principal.toString());
     if (user == null) return false; // this user is not authorized to do anything
 
     // check if the user has this permission defined in the context
@@ -150,7 +148,7 @@ public class SampleSecurityManager implements SecurityManager {
   }
 
   @Override
-  public Principal authenticate(final Properties credentials) throws AuthenticationFailedException {
+  public Serializable authenticate(final Properties credentials) throws AuthenticationFailedException {
     String user = credentials.getProperty(ResourceConstants.USER_NAME);
     String password = credentials.getProperty(ResourceConstants.PASSWORD);
 
@@ -163,7 +161,7 @@ public class SampleSecurityManager implements SecurityManager {
       throw new AuthenticationFailedException("SampleSecurityManager: wrong username/password");
     }
 
-    return new JMXPrincipal(user);
+    return user;
   }
 
   boolean initializeFromJson(final String json) {//throws IOException {
