@@ -25,6 +25,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.internal.cache.DistributedRegionFunctionStreamingMessage;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
@@ -65,7 +66,6 @@ public final class DistributedRegionFunctionResultSender implements
     this.msg = msg;
     this.dm = dm;
     this.functionObject = function;
-
   }
 
   /**
@@ -139,11 +139,6 @@ public final class DistributedRegionFunctionResultSender implements
       if (isLocal) {
         this.rc.addResult(memberID, oneResult);
         this.rc.endResults();
-        if (this.dm == null) {
-          FunctionStats.getFunctionStats(functionObject.getId()).incResultsReceived();
-        } else {
-          FunctionStats.getFunctionStats(functionObject.getId(), this.dm.getSystem()).incResultsReceived();
-        }
       }
       else {
         try {

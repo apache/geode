@@ -87,7 +87,7 @@ public abstract class AbstractCommandsController {
 
   private MemberMXBean managingMemberMXBeanProxy;
 
-private SecurityService securityService = IntegratedSecurityService.getSecurityService();
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   private Class accessControlKlass;
 

@@ -32,8 +32,6 @@ import com.gemstone.gemfire.cache.DynamicRegionFactory;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.operations.RegisterInterestOperationContext;
 import com.gemstone.gemfire.i18n.StringId;
-import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
-import com.gemstone.gemfire.internal.security.SecurityService;
 
 import java.io.IOException;
 import java.util.ArrayList;

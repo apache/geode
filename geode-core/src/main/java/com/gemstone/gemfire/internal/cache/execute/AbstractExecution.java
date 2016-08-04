@@ -338,7 +338,7 @@ public abstract class AbstractExecution implements InternalExecution {
 
     FunctionStats stats = FunctionStats.getFunctionStats(fn.getId(), dm
         .getSystem());
- 
+
     try {
       long start = stats.startTime();
       stats.startFunctionExecution(fn.hasResult());
