@@ -38,6 +38,8 @@ import com.gemstone.gemfire.internal.cache.FixedPartitionAttributesImpl;
 import com.gemstone.gemfire.internal.cache.BucketServerLocation66;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Stores the information such as partition attributes and meta data details
@@ -47,6 +49,8 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * 
  */
 public class ClientPartitionAdvisor {
+
+  private static final Logger logger = LogService.getLogger();
 
   private final ConcurrentMap<Integer, List<BucketServerLocation66>> bucketServerLocationsMap 
   = new ConcurrentHashMap<Integer, List<BucketServerLocation66>>();
@@ -76,7 +80,9 @@ public class ClientPartitionAdvisor {
       }
     }
     catch (Exception e) {
-      e.printStackTrace();
+      if(logger.isErrorEnabled())
+        logger.error(e.getMessage(), e);
+      
       throw new InternalGemFireException(LocalizedStrings.ClientPartitionAdvisor_CANNOT_CREATE_AN_INSTANCE_OF_PARTITION_RESOLVER_0.toLocalizedString(partitionResolverName));
     }
     if (fpaSet != null) {
