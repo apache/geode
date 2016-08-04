@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.security.Security;
 
 import com.gemstone.gemfire.cache.operations.RegionDestroyOperationContext;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;

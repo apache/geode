@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.web.controllers.support;
 
-import java.awt.PrintGraphics;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
