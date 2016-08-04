@@ -18,13 +18,22 @@ package com.gemstone.gemfire.modules.session.internal.filter;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionAttributeListener;
 
+import com.gemstone.gemfire.modules.session.filter.SessionCachingFilter;
 import com.mockrunner.mock.web.MockHttpServletRequest;
 import com.mockrunner.mock.web.MockHttpServletResponse;
 import com.mockrunner.mock.web.MockHttpSession;
@@ -575,6 +584,39 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
     assertFalse("Session ID should not be from cookie",
         request.isRequestedSessionIdFromCookie());
     assertTrue("Session ID should be from URL", request.isRequestedSessionIdFromURL());
+  }
+
+  @Test
+  public void testOnlyOneSessionWhenSecondFilterWrapsRequest() throws Exception {
+    createFilter(RequestWrappingFilter.class);
+    createFilter(SessionCachingFilter.class);
+    doFilter();
+    HttpServletRequest request = (HttpServletRequest) getFilteredRequest();
+    HttpSession originalSession = (HttpSession) request.getAttribute("original_session");
+    assertEquals(originalSession, request.getSession());
+  }
+
+  public static class RequestWrappingFilter implements Filter {
+
+    @Override public void init(final FilterConfig filterConfig) throws ServletException {
+
+    }
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+      throws IOException, ServletException
+    {
+      final HttpServletRequest httpRequest = (HttpServletRequest) request;
+      httpRequest.getSession();
+      httpRequest.setAttribute("original_session", httpRequest.getSession());
+      request = new HttpServletRequestWrapper(httpRequest);
+      chain.doFilter(request, response);
+
+    }
+
+    @Override public void destroy() {
+
+    }
   }
 
 }
