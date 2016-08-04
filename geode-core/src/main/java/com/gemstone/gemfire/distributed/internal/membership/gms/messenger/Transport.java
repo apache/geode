@@ -127,10 +127,10 @@ public class Transport extends UDP {
    */
   @Override
   public void stop() {
-    super.stop();
     if (!getTimer().isShutdown()) {
       getTimer().stop();
     }
+    super.stop();
   }
 
   // overridden to implement AvailablePort response
