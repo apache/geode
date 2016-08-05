@@ -42,6 +42,7 @@ import org.junit.Test;
 import com.gemstone.gemfire.distributed.AbstractLauncher;
 import com.gemstone.gemfire.distributed.LocatorLauncher;
 import com.gemstone.gemfire.distributed.ServerLauncher;
+import com.gemstone.gemfire.distributed.ServerLauncher.Builder;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;

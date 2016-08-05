@@ -64,6 +64,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSession;
@@ -610,6 +611,9 @@ public class SocketCreator {
 
     @Override
     public String chooseClientAlias(final String[] strings, final Principal[] principals, final Socket socket) {
+      if (!StringUtils.isEmpty(this.keyAlias)) {
+        return keyAlias;
+      }
       return delegate.chooseClientAlias(strings, principals, socket);
     }
 
@@ -1054,6 +1058,11 @@ public class SocketCreator {
         if (logger.isDebugEnabled()) {
           logger.debug(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_CONNECTION_FROM_PEER_0, ((X509Certificate) peer[0]).getSubjectDN()));
         }
+      } catch (SSLHandshakeException ex) {
+        logger.fatal(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_ERROR_IN_CONNECTING_TO_PEER_0_1, new Object[] {
+          socket.getInetAddress(), Integer.valueOf(socket.getPort())
+        }), ex);
+        throw ex;
       } catch (SSLPeerUnverifiedException ex) {
         if (this.sslConfig.isRequireAuth()) {
           logger.fatal(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_ERROR_IN_AUTHENTICATING_PEER), ex);
@@ -1065,6 +1074,7 @@ public class SocketCreator {
         }), ex);
         throw ex;
       }
+
     }
   }
 

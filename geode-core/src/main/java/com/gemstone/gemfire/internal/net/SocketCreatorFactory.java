@@ -65,6 +65,11 @@ public class SocketCreatorFactory {
     getClusterSSLSocketCreator();
   }
 
+  public static SocketCreator getSSLSocketCreatorForComponent(SSLEnabledComponent sslEnabledComponent) {
+    SSLConfig sslConfigForComponent = SSLConfigurationFactory.getSSLConfigForComponent(sslEnabledComponent);
+    return getInstance().getOrCreateSocketCreatorForSSLEnabledComponent(sslEnabledComponent, sslConfigForComponent);
+  }
+
   public static SocketCreator getClusterSSLSocketCreator() {
     SSLConfig sslConfigForComponent = SSLConfigurationFactory.getSSLConfigForComponent(SSLEnabledComponent.CLUSTER);
     return getInstance().getOrCreateSocketCreatorForSSLEnabledComponent(SSLEnabledComponent.CLUSTER, sslConfigForComponent);
@@ -117,8 +122,11 @@ public class SocketCreatorFactory {
       socketCreator = new SocketCreator(sslConfig);
       addSocketCreatorForComponent(sslEnableComponent, socketCreator);
     } else {
-      socketCreator = new SocketCreator(sslConfig);
-      addSocketCreatorForComponent(SSLEnabledComponent.NONE, socketCreator);
+      socketCreator = getSocketCreatorForComponent(SSLEnabledComponent.NONE);
+      if (socketCreator == null) {
+        socketCreator = new SocketCreator(sslConfig);
+        addSocketCreatorForComponent(SSLEnabledComponent.NONE, socketCreator);
+      }
     }
     return socketCreator;
   }
@@ -187,4 +195,6 @@ public class SocketCreatorFactory {
     getInstance().initializeSocketCreators(config);
     return getInstance();
   }
+
+
 }

@@ -28,6 +28,7 @@ public enum SSLEnabledComponent {
   JMX(SSLEnabledComponents.JMX),
   HTTP_SERVICE(SSLEnabledComponents.HTTP_SERVICE),
   GATEWAY(SSLEnabledComponents.GATEWAY),
+  LOCATOR(SSLEnabledComponents.LOCATOR),
   NONE("NO_COMPONENT");
 
   private String constant;

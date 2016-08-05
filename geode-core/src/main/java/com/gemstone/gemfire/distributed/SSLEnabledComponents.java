@@ -54,4 +54,9 @@ public interface SSLEnabledComponents {
    * <U>Since</U>: Geode 1.0
    */
   String GATEWAY = "gateway";
+  /**
+   * This determines that the locator component will use the SSL for its communications between server and locator and client and locator.
+   * <U>Since</U>: Geode 1.0
+   */
+  String LOCATOR = "locator";
 }

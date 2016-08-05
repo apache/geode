@@ -20,20 +20,26 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.net.*;
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.net.ssl.SSLHandshakeException;
 
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.UnsupportedVersionException;
-import com.gemstone.gemfire.cache.client.internal.locator.*;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedDataInputStream;
 import com.gemstone.gemfire.internal.VersionedDataOutputStream;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.net.*;
+import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
+import com.gemstone.gemfire.internal.net.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 
 /**
  * <p>Client for the TcpServer component of the Locator.
@@ -43,19 +49,19 @@ import com.gemstone.gemfire.internal.net.*;
 public class TcpClient {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   private static final int DEFAULT_REQUEST_TIMEOUT = 60 * 2 * 1000;
 
   private static Map<InetSocketAddress, Short> serverVersions = new HashMap<InetSocketAddress, Short>();
-  
+
   private final SocketCreator socketCreator;
-  
+
   /**
    * Constructs a new TcpClient using the default (Locator) SocketCreator.
    * SocketCreatorFactory should be initialized before invoking this method.
    */
   public TcpClient() {
-    this(SocketCreatorFactory.getClusterSSLSocketCreator());
+    this(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.LOCATOR));
   }
 
   /**
@@ -105,12 +111,13 @@ public class TcpClient {
 
   /**
    * Send a request to a Locator and expect a reply
-   * 
    * @param addr The locator's address
    * @param port The locator's tcp/ip port
    * @param request The request message
    * @param timeout Timeout for sending the message and receiving a reply
+   *
    * @return the reply
+   *
    * @throws IOException
    * @throws ClassNotFoundException
    */
@@ -125,12 +132,13 @@ public class TcpClient {
    * @param request The request message
    * @param timeout Timeout for sending the message and receiving a reply
    * @param replyExpected Whether to wait for a reply
+   *
    * @return The reply, or null if no reply is expected
+   *
    * @throws IOException
    * @throws ClassNotFoundException
    */
-  public Object requestToServer(InetAddress addr, int port, Object request, int timeout, boolean replyExpected)
-    throws IOException, ClassNotFoundException {
+  public Object requestToServer(InetAddress addr, int port, Object request, int timeout, boolean replyExpected) throws IOException, ClassNotFoundException {
     InetSocketAddress ipAddr;
     if (addr == null) {
       ipAddr = new InetSocketAddress(port);
@@ -161,7 +169,7 @@ public class TcpClient {
 
     logger.debug("TcpClient sending {} to {}", request, ipAddr);
 
-    Socket sock = SocketCreatorFactory.getClusterSSLSocketCreator().connect(ipAddr.getAddress(), ipAddr.getPort(), (int) newTimeout, null, false);
+    Socket sock = socketCreator.connect(ipAddr.getAddress(), ipAddr.getPort(), (int) newTimeout, null, false);
     sock.setSoTimeout((int) newTimeout);
     DataOutputStream out = null;
     try {
@@ -203,7 +211,9 @@ public class TcpClient {
           // with the socket and is closing it.  Aborting the connection by
           // setting SO_LINGER to zero will clean up the TIME_WAIT socket on
           // the locator's machine.
-          sock.setSoLinger(true, 0);
+          if (!sock.isClosed() && !socketCreator.useSSL()) {
+            sock.setSoLinger(true, 0);
+          }
         }
         sock.close();
       } catch (Exception e) {
@@ -230,8 +240,13 @@ public class TcpClient {
 
     gossipVersion = TcpServer.getOldGossipVersion();
 
-    Socket sock = SocketCreatorFactory.getClusterSSLSocketCreator().connect(ipAddr.getAddress(), ipAddr.getPort(), timeout, null, false);
-    sock.setSoTimeout(timeout);
+    Socket sock = null;
+    try {
+      sock = socketCreator.connect(ipAddr.getAddress(), ipAddr.getPort(), timeout, null, false);
+      sock.setSoTimeout(timeout);
+    } catch (SSLHandshakeException e) {
+      throw new LocatorCancelException("Unrecognisable response received");
+    }
 
     try {
       DataOutputStream out = new DataOutputStream(sock.getOutputStream());
@@ -243,10 +258,16 @@ public class TcpClient {
       DataSerializer.writeObject(verRequest, out);
       out.flush();
 
-      DataInputStream in = new DataInputStream(sock.getInputStream());
+      InputStream inputStream = sock.getInputStream();
+      DataInputStream in = new DataInputStream(inputStream);
       in = new VersionedDataInputStream(in, Version.GFE_57);
       try {
-        VersionResponse response = DataSerializer.readObject(in);
+        Object readObject = DataSerializer.readObject(in);
+        if (!(readObject instanceof VersionResponse)) {
+          throw new LocatorCancelException("Unrecognisable response received");
+          //          throw new IOException("Unexpected response received from locator");
+        }
+        VersionResponse response = (VersionResponse) readObject;
         if (response != null) {
           serverVersion = Short.valueOf(response.getVersionOrdinal());
           synchronized (serverVersions) {
@@ -259,8 +280,8 @@ public class TcpClient {
       }
     } finally {
       try {
-        sock.setSoLinger(true, 0); // initiate an abort on close to shut down the server's socket
-        sock.close();
+          sock.setSoLinger(true, 0); // initiate an abort on close to shut down the server's socket
+          sock.close();
       } catch (Exception e) {
         logger.error("Error closing socket ", e);
       }
@@ -281,7 +302,7 @@ public class TcpClient {
    * knowledge of their communication protocols.
    */
   public static void clearStaticData() {
-    synchronized(serverVersions) {
+    synchronized (serverVersions) {
       serverVersions.clear();
     }
   }

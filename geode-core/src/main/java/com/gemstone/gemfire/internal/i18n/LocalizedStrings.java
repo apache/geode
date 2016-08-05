@@ -3781,4 +3781,7 @@ public class LocalizedStrings {
 
   public static final StringId DistributedRegion_INITIALIZING_REGION_COMPLETED_0 = new StringId(90005, "Initialization of region {0} completed");
 
+  public static StringId AbstractDistributionConfig_LOCATOR_SSL_ALIAS_0 = new StringId(6640,"SSL locator communications uses this alias when determining the " +
+                                                                                            "key to use from the keystore for SSL. Defaults to \"{0}\".");
+
 }

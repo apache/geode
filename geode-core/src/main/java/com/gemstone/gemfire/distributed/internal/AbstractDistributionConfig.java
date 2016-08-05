@@ -485,6 +485,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
           case SSLEnabledComponents.GATEWAY:
           case SSLEnabledComponents.JMX:
           case SSLEnabledComponents.HTTP_SERVICE:
+          case SSLEnabledComponents.LOCATOR:
             continue;
           default:
             throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_0_INVALID_TRY_1.toLocalizedString(new Object[] {
@@ -494,7 +495,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
               SSLEnabledComponents.SERVER,
               SSLEnabledComponents.GATEWAY,
               SSLEnabledComponents.JMX,
-              SSLEnabledComponents.HTTP_SERVICE
+              SSLEnabledComponents.HTTP_SERVICE,
+              SSLEnabledComponents.LOCATOR
             }, ",")
             }));
         }
@@ -891,6 +893,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     m.put(JMX_MANAGER_ACCESS_FILE, "The name of the file the jmx manager will use to define the access level of authenticated clients. Default is \"\" which causes the jmx manager to allow all clients all access. This property is ignored if jmx-manager-port is \"0\".");
     m.put(JMX_MANAGER_HTTP_PORT, "By default when a jmx-manager is started it will also start an http server on this port. This server is used by the GemFire Pulse application. Setting this property to zero disables the http server. It defaults to 8080. Ignored if jmx-manager is false.");
     m.put(JMX_MANAGER_UPDATE_RATE, "The rate in milliseconds at which this member will send updates to each jmx manager. Default is " + DEFAULT_JMX_MANAGER_UPDATE_RATE + ". Values must be in the range " + MIN_JMX_MANAGER_UPDATE_RATE + ".." + MAX_JMX_MANAGER_UPDATE_RATE + ".");
+    m.put(LOCATOR_SSL_ALIAS, LocalizedStrings.AbstractDistributionConfig_LOCATOR_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_CLUSTER_SSL_ALIAS)));
     m.put(MEMCACHED_PORT, "The port GemFireMemcachedServer will listen on. Default is 0. Set to zero to disable GemFireMemcachedServer.");
     m.put(MEMCACHED_PROTOCOL, "The protocol that GemFireMemcachedServer understands. Default is ASCII. Values may be ASCII or BINARY");
     m.put(MEMCACHED_BIND_ADDRESS, "The address the GemFireMemcachedServer will listen on for remote connections. Default is \"\" which causes the GemFireMemcachedServer to listen on the host's default address. This property is ignored if memcached-port is \"0\".");

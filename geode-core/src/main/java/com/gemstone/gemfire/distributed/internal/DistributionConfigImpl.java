@@ -498,7 +498,10 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private String httpServiceSSLAlias = clusterSSLAlias;
 
+  //TODO UDO Clean this up. Move this to an SSLEnabledComponent[]
   private String[] sslEnabledComponents = DEFAULT_SSL_ENABLED_COMPONENTS;
+
+  private String locatorSSLAlias = clusterSSLAlias;
 
   private Map<String, ConfigSource> sourceMap = Collections.synchronizedMap(new HashMap<String, ConfigSource>());
 
@@ -698,6 +701,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.jmxManagerSSLAlias = other.getJMXManagerSSLAlias();
     this.serverSSLAlias = other.getServerSSLAlias();
     this.sslEnabledComponents = ((DistributionConfigImpl) other).sslEnabledComponents;
+
+    this.locatorSSLAlias = other.getLocatorSSLAlias();
   }
 
   /**
@@ -2354,6 +2359,16 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Override
   public void setClusterSSLAlias(final String alias) {
     clusterSSLAlias = alias;
+  }
+
+  @Override
+  public String getLocatorSSLAlias() {
+    return locatorSSLAlias;
+  }
+
+  @Override
+  public void setLocatorSSLAlias(final String locatorSSLAlias) {
+    this.locatorSSLAlias = locatorSSLAlias;
   }
 
   @Override

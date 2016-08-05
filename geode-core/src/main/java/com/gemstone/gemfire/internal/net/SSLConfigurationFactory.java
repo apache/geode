@@ -73,6 +73,12 @@ public class SSLConfigurationFactory {
       case CLUSTER: {
         break;
       }
+      case LOCATOR:{
+        if (sslEnabledComponents.length > 0) {
+          sslConfig.setAlias(distributionConfig.getLocatorSSLAlias());
+        }
+        break;
+      }
       case SERVER: {
         if (sslEnabledComponents.length > 0) {
           sslConfig.setAlias(distributionConfig.getServerSSLAlias());

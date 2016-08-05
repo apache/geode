@@ -934,6 +934,17 @@ public interface ConfigurationProperties {
    */
   String LOAD_CLUSTER_CONFIGURATION_FROM_DIR = "load-cluster-configuration-from-dir";
   /**
+   * The static String definition of the <i>"locator-ssl-alias"</i> property
+   * <a name="locator-ssl-alias"/a></p>
+   * <U>Description</U>: This property is to be used if a specific key is to be used for the SSL communications for the locator.
+   * These Communications would be either locator-client or locator-server
+   * </p>
+   * <U><i>Optional</i></U>
+   * <U>Default</U>: "" </p>
+   * <U>Since</U>: Geode 1.0
+   */
+  String LOCATOR_SSL_ALIAS = "locator-ssl-alias";
+  /**
    * The static String definition of the <i>"locator-wait-time"</i> property
    * <a name="locator-wait-time"/a><p>
    * <U>Description</U>: The number of seconds to wait for a locator to start

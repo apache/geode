@@ -4177,6 +4177,29 @@ public interface DistributionConfig extends Config, LogConfig {
   String CLUSTER_SSL_ALIAS_NAME = CLUSTER_SSL_ALIAS;
 
   /**
+   * Returns the value of the {@link ConfigurationProperties#LOCATOR_SSL_ALIAS}
+   * property.
+   * @since Geode 1.0
+   */
+  @ConfigAttributeGetter(name = LOCATOR_SSL_ALIAS)
+  String getLocatorSSLAlias();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#LOCATOR_SSL_ALIAS}
+   * property.
+   * @since Geode 1.0
+   */
+  @ConfigAttributeSetter(name = LOCATOR_SSL_ALIAS)
+  void setLocatorSSLAlias(String alias);
+
+  /**
+   * The name of the {@link ConfigurationProperties#LOCATOR_SSL_ALIAS} property
+   * @since Geode 1.0
+   */
+  @ConfigAttribute(type = String.class)
+  String LOCATOR_SSL_ALIAS_NAME = LOCATOR_SSL_ALIAS;
+
+  /**
    * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_ALIAS}
    * property.
    * @since Geode 1.0

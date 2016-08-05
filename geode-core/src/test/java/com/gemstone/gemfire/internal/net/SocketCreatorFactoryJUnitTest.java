@@ -46,6 +46,22 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
   }
 
   @Test
+  public void testNewSSLConfigSSLComponentLocator() {
+    Properties properties = configureSSLProperties(SSLEnabledComponents.LOCATOR);
+
+    DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
+    SocketCreatorFactory.setDistributionConfig(distributionConfig);
+
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.LOCATOR).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getClusterSSLSocketCreator().useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getGatewaySSLSocketCreator().useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getJMXManagerSSLSocketCreator().useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getServerSSLSocketCreator().useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getHTTPServiceSSLSocketCreator().useSSL());
+
+  }
+
+  @Test
   public void testNewSSLConfigSSLComponentALL() {
     Properties properties = configureSSLProperties(SSLEnabledComponents.ALL);
 
@@ -53,6 +69,7 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
     Assert.assertTrue(SocketCreatorFactory.getClusterSSLSocketCreator().useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.LOCATOR).useSSL());
     Assert.assertTrue(SocketCreatorFactory.getGatewaySSLSocketCreator().useSSL());
     Assert.assertTrue(SocketCreatorFactory.getJMXManagerSSLSocketCreator().useSSL());
     Assert.assertTrue(SocketCreatorFactory.getServerSSLSocketCreator().useSSL());
