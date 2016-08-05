@@ -4,7 +4,7 @@ title:  Multi-Site (WAN) Deployment Security
 
 In addition to peer and client authentication, Apache Geode can authenticate remote sites.
 
-The following list covres guidelines for implementing security in multi-site (WAN) deployments:
+The following list covers guidelines for implementing security in multi-site (WAN) deployments:
 -   Implement membership authentication. Depending on your installation and security requirements, you may use a combination of peer-to-peer, client/server, and multi-site settings.
 -   Joining members provide credentials to existing members who check the credentials and either reject the joining member or approve it. In terms of multi-site authentication, gateway senders and gateway receivers mutually authenticate each other when they connect.
 -   If you want to use secure socket layer (SSL) protocol for your peer-to-peer and client/server connections, implement that. You can configure SSL separately for peer-to-peer, client/server, JMX, and WAN gateway connections.
