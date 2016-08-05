@@ -72,7 +72,7 @@ public class GMSLocator implements Locator, NetLocator {
   private final LocatorStats stats;
   private InternalDistributedMember localAddress;
   
-  private Set<InternalDistributedMember> registrants = new HashSet<InternalDistributedMember>();
+  private final Set<InternalDistributedMember> registrants = new HashSet<>();
 
   /**
    * The current membership view, or one recovered from disk.
@@ -99,7 +99,7 @@ public class GMSLocator implements Locator, NetLocator {
     this.networkPartitionDetectionEnabled = networkPartitionDetectionEnabled;
     this.locatorString = locatorString;
     if (this.locatorString == null || this.locatorString.length() == 0) {
-      this.locators = new ArrayList<InetSocketAddress>(0);
+      this.locators = new ArrayList<>(0);
     } else {
       this.locators = GMSUtil.parseLocators(locatorString, bindAddress);
     }
@@ -178,7 +178,6 @@ public class GMSLocator implements Locator, NetLocator {
         }
         
         boolean fromView = false;
-        int viewId = -1;
         NetView v = this.view;
         
         if (v != null) {
@@ -193,10 +192,10 @@ public class GMSLocator implements Locator, NetLocator {
               break;
             }
           }
-          viewId = v.getViewId();
+          int viewId = v.getViewId();
           if (viewId > findRequest.getLastViewId()) {
             // ignore the requests rejectedCoordinators if the view has changed
-            coord = v.getCoordinator(Collections.<InternalDistributedMember>emptyList());
+            coord = v.getCoordinator(Collections.emptyList());
           } else {
             coord = v.getCoordinator(findRequest.getRejectedCoordinators());
           }
@@ -229,7 +228,7 @@ public class GMSLocator implements Locator, NetLocator {
         
         synchronized(registrants) {
           response = new FindCoordinatorResponse(coord, localAddress,
-              fromView, view, new HashSet<InternalDistributedMember>(registrants),
+              fromView, view, new HashSet<>(registrants),
               this.networkPartitionDetectionEnabled, this.usePreferredCoordinators);
         }
       }
@@ -240,7 +239,7 @@ public class GMSLocator implements Locator, NetLocator {
     return response;
   }
 
-  public void saveView(NetView view) {
+  private void saveView(NetView view) {
     if (viewFile == null) {
       return;
     }
@@ -287,10 +286,10 @@ public class GMSLocator implements Locator, NetLocator {
   // test hook
   public List<InternalDistributedMember> getMembers() {
     if (view != null) {
-      return new ArrayList<InternalDistributedMember>(view.getMembers());
+      return new ArrayList<>(view.getMembers());
     } else {
       synchronized(registrants) {
-        return new ArrayList<InternalDistributedMember>(registrants);
+        return new ArrayList<>(registrants);
       }
     }
   }
@@ -301,7 +300,7 @@ public class GMSLocator implements Locator, NetLocator {
     setMembershipManager(((InternalDistributedSystem)ds).getDM().getMembershipManager());
   }
 
-  public void recover() throws InternalGemFireException {
+  private void recover() throws InternalGemFireException {
     if (!recoverFromOthers()) {
       recoverFromFile(viewFile);
     }

@@ -41,6 +41,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Timer;
 
+@SuppressWarnings("ConstantConditions")
 public class Services {
 
   private static final Logger logger = LogService.getLogger();
@@ -66,7 +67,7 @@ public class Services {
   private InternalLogWriter logWriter;
   private InternalLogWriter securityLogWriter;
   
-  private Timer timer = new Timer("Geode Membership Timer", true);
+  private final Timer timer = new Timer("Geode Membership Timer", true);
   
   
 

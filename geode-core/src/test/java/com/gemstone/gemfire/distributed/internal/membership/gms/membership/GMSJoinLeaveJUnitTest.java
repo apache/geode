@@ -888,7 +888,7 @@ public class GMSJoinLeaveJUnitTest {
       prepareProcessor.initialize( 1, recips);
       assertTrue("Prepare processor should be waiting ", gmsJoinLeave.testPrepareProcessorWaiting());
       
-      prepareProcessor.memberSuspected(gmsJoinLeaveMemberId, mockMembers[0]);
+      prepareProcessor.memberSuspected(mockMembers[0]);
       prepareProcessor.processLeaveRequest(mockMembers[1]);
       prepareProcessor.processRemoveRequest(mockMembers[2]);
       prepareProcessor.processViewResponse(1, mockMembers[3], null);

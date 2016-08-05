@@ -48,13 +48,13 @@ public class GMSQuorumChecker implements QuorumChecker {
 
   private Set<InternalDistributedMember> receivedAcks;
 
-  private NetView lastView;
+  private final NetView lastView;
 
   // guarded by this
   private boolean quorumAchieved = false;
-  private JChannel channel;
+  private final JChannel channel;
   private JGAddress myAddress;
-  private int partitionThreshold;
+  private final int partitionThreshold;
 
   public GMSQuorumChecker(NetView jgView, int partitionThreshold, JChannel channel) {
     this.lastView = jgView;
@@ -63,7 +63,7 @@ public class GMSQuorumChecker implements QuorumChecker {
   }
 
   public void initialize() {
-    receivedAcks = new ConcurrentHashSet<InternalDistributedMember>();
+    receivedAcks = new ConcurrentHashSet<>();
 
     pingPonger = new GMSPingPonger();
 //    UUID logicalAddress = (UUID) channel.getAddress();
@@ -72,7 +72,7 @@ public class GMSQuorumChecker implements QuorumChecker {
 //    myAddress = new JGAddress(logicalAddress, ipaddr);
     myAddress = (JGAddress)channel.down(new Event(Event.GET_LOCAL_ADDRESS));
 
-    addressConversionMap = new ConcurrentHashMap<SocketAddress, InternalDistributedMember>(this.lastView.size());
+    addressConversionMap = new ConcurrentHashMap<>(this.lastView.size());
     List<InternalDistributedMember> members = this.lastView.getMembers();
     for (InternalDistributedMember addr : members) {
       SocketAddress sockaddr = new InetSocketAddress(addr.getNetMember().getInetAddress(), addr.getPort());
@@ -92,15 +92,11 @@ public class GMSQuorumChecker implements QuorumChecker {
     if (isDebugEnabled) {
       logger.debug("beginning quorum check with {}", this);
     }
-    try {
-      sendPingMessages();
-      quorumAchieved = waitForResponses(lastView.getMembers().size(), timeout);
-      // If we did not achieve full quorum, calculate if we achieved quorum
-      if (!quorumAchieved) {
-        quorumAchieved = calculateQuorum();
-      }
-    } finally {
-
+    sendPingMessages();
+    quorumAchieved = waitForResponses(lastView.getMembers().size(), timeout);
+    // If we did not achieve full quorum, calculate if we achieved quorum
+    if (!quorumAchieved) {
+      quorumAchieved = calculateQuorum();
     }
     return quorumAchieved;
   }
@@ -209,18 +205,15 @@ public class GMSQuorumChecker implements QuorumChecker {
 
     @Override
     public void receive(Message msg) {
-      Object contents = msg.getBuffer();
-      if (contents instanceof byte[]) {
-        byte[] msgBytes = (byte[]) contents;
-        if (pingPonger.isPingMessage(msgBytes)) {
-          try {
-            pingPonger.sendPongMessage(channel, myAddress, msg.getSrc());
-          } catch (Exception e) {
-            logger.debug("Failed sending Pong message to " + msg.getSrc());
-          }
-        } else if (pingPonger.isPongMessage(msgBytes)) {
-          pongReceived(msg.getSrc());
+      byte[] msgBytes = msg.getBuffer();
+      if (pingPonger.isPingMessage(msgBytes)) {
+        try {
+          pingPonger.sendPongMessage(channel, myAddress, msg.getSrc());
+        } catch (Exception e) {
+          logger.debug("Failed sending Pong message to " + msg.getSrc());
         }
+      } else if (pingPonger.isPongMessage(msgBytes)) {
+        pongReceived(msg.getSrc());
       }
     }
 
