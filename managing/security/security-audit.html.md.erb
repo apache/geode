@@ -7,6 +7,7 @@ title: External Interfaces, Ports, and Services
 Geode processes use either UDP or TCP/IP ports to communicate with other processes or clients.
 
 For example:
+
 -   Members can use multicast to communicate with peer members. You specify multicast addresses and multicast ports in your `gemfire.properties` file or as parameters on the command-line when starting the members using `gfsh`.
 -   Clients connect to a locator to discover cache servers.
 -   JMX clients (such as `gfsh` and JConsole) can connect to JMX Managers and other manageable members on the pre-defined RMI port 1099. You can configure a different port if necessary.
@@ -23,9 +24,9 @@ Certain Geode configuration files should be readable and writeable *only* by the
 -   `gemfire.properties`
 -   `cache.xml`
 -   `gfsecurity.properties`
-    **Note:** A default <span class="ph filepath">gfsecurity.properties</span> is not provided in the <span class="ph filepath">defaultConfigs</span> directory. If you choose to use this properties file, you must create it manually. See [Where to Place Security Settings](where_to_place_sec_settings.html#implementing_security) for more information.
+    **Note:** A default `gfsecurity.properties` is not provided in the `defaultConfigs` directory. If you choose to use this properties file, you must create it manually. See [Where to Place Security Settings](where_to_place_sec_settings.html#implementing_security) for more information.
 
-The default location of the <span class="ph filepath">gemfire.properties</span> and <span class="ph filepath">cache.xml</span> configuration files is the `defaultConfigs` child directory of the main installation directory.
+The default location of the `gemfire.properties` and `cache.xml` configuration files is the `defaultConfigs` child directory of the main installation directory.
 
 ## <a id="topic_5B6DF783A14241399DC25C6EE8D0048A" class="no-quick-link"></a>Log File Locations
 
@@ -37,9 +38,9 @@ The log files are as follows:
 
 -   `locator-name.log`: Contains logging information for the locator process.
 -   `server-name.log`: Contains logging information for a cache server process.
--   `gfsh-%u_%g.log`: Contains logging information of an individual gfsh environment and session.
+-   `gfsh-%u_%g.log`: Contains logging information of an individual `gfsh` environment and session.
 
-    **Note:** By default, `gfsh` session logging is disabled. To enable gfsh logging, you must set the Java system property `-Dgfsh.                                 log-level=desired_log_level`. See [Configuring the gfsh Environment](../../tools_modules/gfsh/configuring_gfsh.html#concept_3B9C6CE2F64841E98C33D9F6441DF487) for more information.
+    **Note:** By default, `gfsh` session logging is disabled. To enable `gfsh` logging, you must set the Java system property `-Dgfsh.                                 log-level=desired_log_level`. See [Configuring the gfsh Environment](../../tools_modules/gfsh/configuring_gfsh.html#concept_3B9C6CE2F64841E98C33D9F6441DF487) for more information.
 
 These log files should be readable and writable *only* by the dedicated user who runs the servers.
 
