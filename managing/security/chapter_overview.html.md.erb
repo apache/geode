@@ -5,8 +5,10 @@ title:  Security
 The security framework establishes trust between members and authorizes cache operations from clients based on that trust. You establish trust by verifying credentials when one process connects to another.
 
 For example:
+
 -   New members connect to the locator in a peer-to-peer topology.
 -   Clients connect to cache servers.
+-   One system connects to another in a multi-site system, using mutual authentication.
 -   A Diffie-Hellman key exchange encrypts sensitive credentials.
 
 -   **[Apache Geode Security Features](../../managing/security/security_intro.html)**
@@ -37,4 +39,7 @@ For example:
 
     SSL protects your data in transit between applications.
 
+-   **[Multi-Site (WAN) Deployment Security](../../managing/security/security_multisite.html)**
+
+    In addition to peer and client authentication, Pivotal GemFire can authenticate remote sites.
 

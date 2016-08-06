@@ -5,13 +5,14 @@ title:  Multi-Site (WAN) Deployment Security
 In addition to peer and client authentication, Apache Geode can authenticate remote sites.
 
 The following list covers guidelines for implementing security in multi-site (WAN) deployments:
+
 -   Implement membership authentication. Depending on your installation and security requirements, you may use a combination of peer-to-peer, client/server, and multi-site settings.
 -   Joining members provide credentials to existing members who check the credentials and either reject the joining member or approve it. In terms of multi-site authentication, gateway senders and gateway receivers mutually authenticate each other when they connect.
 -   If you want to use secure socket layer (SSL) protocol for your peer-to-peer and client/server connections, implement that. You can configure SSL separately for peer-to-peer, client/server, JMX, and WAN gateway connections.
 
 ## Gateway SSL Configuration
 
-The following table lists the SSL configuration property names used to configure SSL for peer-to-peer and WAN gateway connections. Remember that if you do not define a client/server, JMX, or WAN property, then GemFire uses the property value defined for peer-to-peer communication (cluster-ssl\*) or the default peer-to-peer property value if unspecified.
+The following table lists the SSL configuration property names used to configure SSL for peer-to-peer and WAN gateway connections. Remember that if you do not define a client/server, JMX, or WAN property, then Geode uses the property value defined for peer-to-peer communication (cluster-ssl\*) or the default peer-to-peer property value if unspecified.
 
 <a id="concept_65874F58A47C4D10B29248BBF0635BFC__table_jpw_wqr_n4"></a>
 
@@ -67,8 +68,6 @@ The following table lists the SSL configuration property names used to configure
 </tr>
 </tbody>
 </table>
-
-: <span class="tablecap">Table 1. SSL Configuration Property Names by Connection Type</span>
 
 If you configure the above peer-to-peer SSL properties, then by default Geode uses the same SSL property values for all stream-socket communication. This includes communication between cache servers and clients, between the JMX manager and JMX clients, and between two Geode distributed systems connected by a WAN gateway.
 
