@@ -25,13 +25,26 @@ import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LuceneServiceBridge {
 
   private LuceneService service;
 
+  private Map<String,LuceneIndexStatsMonitor> monitors;
+
   public LuceneServiceBridge(LuceneService service) {
     this.service = service;
+    this.monitors = new ConcurrentHashMap<>();
+  }
+
+  public void addIndex(LuceneIndex index) {
+    // Create monitor on the index
+    LuceneIndexStatsMonitor monitor = new LuceneIndexStatsMonitor(index);
+
+    // Register the monitor
+    this.monitors.put(getMonitorKey(index), monitor);
   }
 
   public LuceneIndexMetrics[] listIndexMetrics() {
@@ -62,21 +75,12 @@ public class LuceneServiceBridge {
     return index == null ? null : getIndexMetrics(index);
   }
 
+  private String getMonitorKey(LuceneIndex index) {
+    return index.getRegionPath() + "_" + index.getName();
+  }
+
   private LuceneIndexMetrics getIndexMetrics(LuceneIndexImpl index) {
-    LuceneIndexStats indexStats = index.getIndexStats();
-    int queryExecutions = indexStats.getQueryExecutions();
-    long queryExecutionTime = indexStats.getQueryExecutionTime();
-    int queryExecutionsInProgress = indexStats.getQueryExecutionsInProgress();
-    long queryExecutionTotalHits = indexStats.getQueryExecutionTotalHits();
-    int updates = indexStats.getUpdates();
-    long updateTime = indexStats.getUpdateTime();
-    int updatesInProgress = indexStats.getUpdatesInProgress();
-    int commits = indexStats.getCommits();
-    long commitTime = indexStats.getCommitTime();
-    int commitsInProgress = indexStats.getCommitsInProgress();
-    int documents = indexStats.getDocuments();
-    return new LuceneIndexMetrics(index.getRegionPath(), index.getName(), queryExecutions, queryExecutionTime,
-        queryExecutionsInProgress, queryExecutionTotalHits, updates, updateTime, updatesInProgress, commits,
-        commitTime, commitsInProgress, documents);
+    LuceneIndexStatsMonitor monitor = this.monitors.get(getMonitorKey(index));
+    return monitor.getIndexMetrics(index);
   }
 }

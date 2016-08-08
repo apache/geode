@@ -39,7 +39,7 @@ public class LuceneIndexStats {
   private static final int queryExecutionsId;
   private static final int queryExecutionTimeId;
   private static final int queryExecutionsInProgressId;
-  private static final int queryExecutionTotalHits;
+  private static final int queryExecutionTotalHitsId;
   private static final int updatesId;
   private static final int updateTimeId;
   private static final int updatesInProgressId;
@@ -74,7 +74,7 @@ public class LuceneIndexStats {
     queryExecutionsId = statsType.nameToId("queryExecutions");
     queryExecutionTimeId = statsType.nameToId("queryExecutionTime");
     queryExecutionsInProgressId = statsType.nameToId("queryExecutionsInProgress");
-    queryExecutionTotalHits = statsType.nameToId("queryExecutionTotalHits");
+    queryExecutionTotalHitsId = statsType.nameToId("queryExecutionTotalHits");
     updatesId = statsType.nameToId("updates");
     updateTimeId = statsType.nameToId("updateTime");
     updatesInProgressId = statsType.nameToId("updatesInProgress");
@@ -103,7 +103,7 @@ public class LuceneIndexStats {
     stats.incLong(queryExecutionTimeId, getStatTime()-start);
     stats.incInt(queryExecutionsInProgressId, -1);
     stats.incInt(queryExecutionsId, 1);
-    stats.incLong(queryExecutionTotalHits, totalHits);
+    stats.incLong(queryExecutionTotalHitsId, totalHits);
   }
 
   /**
@@ -169,7 +169,7 @@ public class LuceneIndexStats {
   }
 
   public long getQueryExecutionTotalHits() {
-    return stats.getLong(queryExecutionTotalHits);
+    return stats.getLong(queryExecutionTotalHitsId);
   }
 
   public int getUpdates() {
@@ -194,5 +194,9 @@ public class LuceneIndexStats {
 
   public int getCommitsInProgress() {
     return stats.getInt(commitsInProgressId);
+  }
+
+  public Statistics getStats() {
+    return this.stats;
   }
 }

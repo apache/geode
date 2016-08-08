@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.cache.lucene.internal.management;
 
+import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.management.internal.beans.CacheServiceMBeanBase;
 
@@ -53,5 +54,9 @@ public class LuceneServiceMBean extends NotificationBroadcasterSupport
   @Override
   public Class getInterfaceClass() {
     return LuceneServiceMXBean.class;
+  }
+
+  public void addIndex(LuceneIndex index) {
+    this.bridge.addIndex(index);
   }
 }
