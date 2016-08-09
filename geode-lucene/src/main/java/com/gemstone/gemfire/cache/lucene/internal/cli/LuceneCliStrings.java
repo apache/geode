@@ -59,7 +59,7 @@ public class LuceneCliStrings {
 
   
   //Search lucene index commands
-  public static final String LUCENE_SEARCH_INDEX = "lucene search";
+  public static final String LUCENE_SEARCH_INDEX = "search lucene";
   public static final String LUCENE_SEARCH_INDEX__HELP = "Search lucene index";
   public static final String LUCENE_SEARCH_INDEX__ERROR_MESSAGE = "An error occurred while searching lucene index across the Geode cluster: %1$s";
   public static final String LUCENE_SEARCH_INDEX__NAME__HELP = "Name of the lucene index to search.";
