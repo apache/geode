@@ -221,8 +221,9 @@ These examples set the critical threshold to 85 percent of the tenured heap and 
 ## <a id="resource_manager_example_configurations__section_95497FDF114A4DC8AC5D899E05E324E5" class="no-quick-link"></a>Use Case for the Example Code
 
 This is one possible scenario for the configuration used in the examples:
--   A 64-bit Sun Java VM 1.6 JVM, with 8 Gb of heap space on an 4 CPU system running Linux.
+
+-   A 64-bit Java VM with 8 Gb of heap space on a 4 CPU system running Linux.
 -   The data region bigDataStore has approximately 2-3 million small values with average entry size of 512 bytes. So approximately 4-6 Gb of the heap is for region storage.
 -   The member hosting the region also runs an application that may take up to 1 Gb of the heap.
 -   The application must never run out of heap space and has been crafted such that data loss in the region is acceptable if the heap space becomes limited due to application issues, so the default `lru-heap-percentage` action destroy is suitable.
--   The application's service guarantee makes it very intolerant of `OutOfMemoryException`s. Testing has shown that leaving 15% head room above the critical threshold when adding data to the region gives 99.5% uptime with no `OutOfMemoryException`s, when configured with the CMS garbage collector using `-XX:CMSInitiatingOccupancyFraction=70`.
+-   The application's service guarantee makes it very intolerant of `OutOfMemoryException` errors. Testing has shown that leaving 15% head room above the critical threshold when adding data to the region gives 99.5% uptime with no `OutOfMemoryException` errors, when configured with the CMS garbage collector using `-XX:CMSInitiatingOccupancyFraction=70`.
