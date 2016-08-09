@@ -143,6 +143,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
     Region region = cache.getRegion(regionPath);
     if(region != null) {
+      definedIndexMap.remove(LuceneServiceImpl.getUniqueIndexName(indexName, regionPath));
       throw new IllegalStateException("The lucene index must be created before region");
     }
 
