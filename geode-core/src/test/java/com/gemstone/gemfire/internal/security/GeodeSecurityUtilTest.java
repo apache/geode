@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.security.SecurableComponents;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
@@ -45,6 +46,7 @@ public class GeodeSecurityUtilTest {
   public void testGetObjectFromConstructor() {
     String string = GeodeSecurityUtil.getObjectOfType(String.class.getName(), String.class);
     assertNotNull(string);
+
     CharSequence charSequence = GeodeSecurityUtil.getObjectOfType(String.class.getName(), CharSequence.class);
     assertNotNull(charSequence);
 
@@ -63,6 +65,7 @@ public class GeodeSecurityUtilTest {
   public void testGetObjectFromFactoryMethod() {
     String string = GeodeSecurityUtil.getObjectOfType(Factories.class.getName()+".getString", String.class);
     assertNotNull(string);
+
     CharSequence charSequence = GeodeSecurityUtil.getObjectOfType(Factories.class.getName()+".getString", String.class);
     assertNotNull(charSequence);
 
@@ -76,8 +79,12 @@ public class GeodeSecurityUtilTest {
   @Test
   public void testInitialSecurityFlags() {
     // initial state of GeodeSecurityUtil
-    assertFalse(GeodeSecurityUtil.isClientSecurityRequired());
     assertFalse(GeodeSecurityUtil.isIntegratedSecurity());
+
+    assertFalse(GeodeSecurityUtil.isClientSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isGatewaySecurityRequired());
+    assertFalse(GeodeSecurityUtil.isHttpServiceSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isJmxSecurityRequired());
     assertFalse(GeodeSecurityUtil.isPeerSecurityRequired());
   }
 
@@ -85,36 +92,177 @@ public class GeodeSecurityUtilTest {
   public void testInitWithSecurityManager() {
     properties.setProperty(SECURITY_MANAGER, "org.apache.geode.security.templates.SampleSecurityManager");
     properties.setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/security/templates/security.json");
+
     GeodeSecurityUtil.initSecurity(properties);
-    assertTrue(GeodeSecurityUtil.isClientSecurityRequired());
+
     assertTrue(GeodeSecurityUtil.isIntegratedSecurity());
+
+    assertTrue(GeodeSecurityUtil.isClientSecurityRequired());
+    assertTrue(GeodeSecurityUtil.isGatewaySecurityRequired());
+    assertTrue(GeodeSecurityUtil.isHttpServiceSecurityRequired());
+    assertTrue(GeodeSecurityUtil.isJmxSecurityRequired());
     assertTrue(GeodeSecurityUtil.isPeerSecurityRequired());
   }
 
   @Test
   public void testInitWithClientAuthenticator() {
     properties.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "org.abc.test");
+
     GeodeSecurityUtil.initSecurity(properties);
-    assertTrue(GeodeSecurityUtil.isClientSecurityRequired());
+
     assertFalse(GeodeSecurityUtil.isIntegratedSecurity());
+
+    assertTrue(GeodeSecurityUtil.isClientSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isGatewaySecurityRequired());
+    assertFalse(GeodeSecurityUtil.isHttpServiceSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isJmxSecurityRequired());
     assertFalse(GeodeSecurityUtil.isPeerSecurityRequired());
   }
 
   @Test
   public void testInitWithPeerAuthenticator() {
     properties.setProperty(SECURITY_PEER_AUTHENTICATOR, "org.abc.test");
+
     GeodeSecurityUtil.initSecurity(properties);
-    assertFalse(GeodeSecurityUtil.isClientSecurityRequired());
+
     assertFalse(GeodeSecurityUtil.isIntegratedSecurity());
+
+    assertFalse(GeodeSecurityUtil.isClientSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isGatewaySecurityRequired());
+    assertFalse(GeodeSecurityUtil.isHttpServiceSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isJmxSecurityRequired());
     assertTrue(GeodeSecurityUtil.isPeerSecurityRequired());
   }
 
   @Test
   public void testInitWithShiroAuthenticator() {
     properties.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
+
     GeodeSecurityUtil.initSecurity(properties);
-    assertTrue(GeodeSecurityUtil.isClientSecurityRequired());
+
     assertTrue(GeodeSecurityUtil.isIntegratedSecurity());
+
+    assertTrue(GeodeSecurityUtil.isClientSecurityRequired());
+    assertTrue(GeodeSecurityUtil.isGatewaySecurityRequired());
+    assertTrue(GeodeSecurityUtil.isHttpServiceSecurityRequired());
+    assertTrue(GeodeSecurityUtil.isJmxSecurityRequired());
+    assertTrue(GeodeSecurityUtil.isPeerSecurityRequired());
+  }
+
+  @Test
+  public void allEnabledWithSecurityManager() {
+    properties.setProperty(SECURITY_MANAGER, "org.apache.geode.security.templates.SampleSecurityManager");
+    properties.setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/security/templates/security.json");
+    properties.setProperty(SECURITY_ENABLED_COMPONENTS, SecurableComponents.ALL);
+
+    GeodeSecurityUtil.initSecurity(properties);
+
+    assertTrue(GeodeSecurityUtil.isIntegratedSecurity());
+
+    assertTrue(GeodeSecurityUtil.isClientSecurityRequired());
+    assertTrue(GeodeSecurityUtil.isGatewaySecurityRequired());
+    assertTrue(GeodeSecurityUtil.isHttpServiceSecurityRequired());
+    assertTrue(GeodeSecurityUtil.isJmxSecurityRequired());
+    assertTrue(GeodeSecurityUtil.isPeerSecurityRequired());
+  }
+
+  @Test
+  public void emptyEnabledWithSecurityManager() {
+    properties.setProperty(SECURITY_MANAGER, "org.apache.geode.security.templates.SampleSecurityManager");
+    properties.setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/security/templates/security.json");
+    properties.setProperty(SECURITY_ENABLED_COMPONENTS,"");
+
+    GeodeSecurityUtil.initSecurity(properties);
+
+    assertTrue(GeodeSecurityUtil.isIntegratedSecurity());
+
+    assertFalse(GeodeSecurityUtil.isClientSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isGatewaySecurityRequired());
+    assertFalse(GeodeSecurityUtil.isHttpServiceSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isJmxSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isPeerSecurityRequired());
+  }
+
+  @Test
+  public void noneEnabledWithSecurityManager() {
+    properties.setProperty(SECURITY_MANAGER, "org.apache.geode.security.templates.SampleSecurityManager");
+    properties.setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/security/templates/security.json");
+    properties.setProperty(SECURITY_ENABLED_COMPONENTS,"none");
+
+    GeodeSecurityUtil.initSecurity(properties);
+
+    assertTrue(GeodeSecurityUtil.isIntegratedSecurity());
+
+    assertFalse(GeodeSecurityUtil.isClientSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isGatewaySecurityRequired());
+    assertFalse(GeodeSecurityUtil.isHttpServiceSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isJmxSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isPeerSecurityRequired());
+  }
+
+  @Test
+  public void allSecurableComponentsWithoutAnySecurity() {
+    properties.setProperty(SECURITY_ENABLED_COMPONENTS, SecurableComponents.ALL);
+
+    GeodeSecurityUtil.initSecurity(properties);
+
+    assertFalse(GeodeSecurityUtil.isIntegratedSecurity());
+
+    assertFalse(GeodeSecurityUtil.isClientSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isGatewaySecurityRequired());
+    assertFalse(GeodeSecurityUtil.isHttpServiceSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isJmxSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isPeerSecurityRequired());
+  }
+
+  @Test
+  public void oneSecurableComponentEnabledWithSecurityManager() {
+    properties.setProperty(SECURITY_MANAGER, "org.apache.geode.security.templates.SampleSecurityManager");
+    properties.setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/security/templates/security.json");
+    properties.setProperty(SECURITY_ENABLED_COMPONENTS, SecurableComponents.JMX);
+
+    GeodeSecurityUtil.initSecurity(properties);
+
+    assertTrue(GeodeSecurityUtil.isIntegratedSecurity());
+
+    assertFalse(GeodeSecurityUtil.isClientSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isGatewaySecurityRequired());
+    assertFalse(GeodeSecurityUtil.isHttpServiceSecurityRequired());
+    assertTrue(GeodeSecurityUtil.isJmxSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isPeerSecurityRequired());
+  }
+
+  @Test
+  public void twoSecurableComponentEnabledWithSecurityManager() {
+    properties.setProperty(SECURITY_MANAGER, "org.apache.geode.security.templates.SampleSecurityManager");
+    properties.setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/security/templates/security.json");
+    properties.setProperty(SECURITY_ENABLED_COMPONENTS, SecurableComponents.JMX + "," + SecurableComponents.SERVER);
+
+    GeodeSecurityUtil.initSecurity(properties);
+
+    assertTrue(GeodeSecurityUtil.isIntegratedSecurity());
+
+    assertTrue(GeodeSecurityUtil.isClientSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isGatewaySecurityRequired());
+    assertFalse(GeodeSecurityUtil.isHttpServiceSecurityRequired());
+    assertTrue(GeodeSecurityUtil.isJmxSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isPeerSecurityRequired());
+  }
+
+  @Test
+  public void manySecurableComponentEnabledWithSecurityManager() {
+    properties.setProperty(SECURITY_MANAGER, "org.apache.geode.security.templates.SampleSecurityManager");
+    properties.setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/security/templates/security.json");
+    properties.setProperty(SECURITY_ENABLED_COMPONENTS, SecurableComponents.JMX + "," + SecurableComponents.SERVER + "," + SecurableComponents.CLUSTER);
+
+    GeodeSecurityUtil.initSecurity(properties);
+
+    assertTrue(GeodeSecurityUtil.isIntegratedSecurity());
+
+    assertTrue(GeodeSecurityUtil.isClientSecurityRequired());
+    assertFalse(GeodeSecurityUtil.isGatewaySecurityRequired());
+    assertFalse(GeodeSecurityUtil.isHttpServiceSecurityRequired());
+    assertTrue(GeodeSecurityUtil.isJmxSecurityRequired());
     assertTrue(GeodeSecurityUtil.isPeerSecurityRequired());
   }
 

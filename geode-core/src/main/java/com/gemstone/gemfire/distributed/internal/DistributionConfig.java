@@ -3985,6 +3985,35 @@ public interface DistributionConfig extends Config, LogConfig {
   @ConfigAttributeGetter(name = SECURITY_SHIRO_INIT)
   String getShiroInit();
 
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SECURITY_ENABLED_COMPONENTS}
+   * property.
+   * @since Geode 1.0
+   */
+  @ConfigAttributeGetter(name = SECURITY_ENABLED_COMPONENTS)
+  String getSecurityEnabledComponents();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SECURITY_ENABLED_COMPONENTS}
+   * property.
+   * @since Geode 1.0
+   */
+  @ConfigAttributeSetter(name = SECURITY_ENABLED_COMPONENTS)
+  void setSecurityEnabledComponents(String securityEnabledComponents);
+
+  /**
+   * The name of the {@link ConfigurationProperties#SECURITY_ENABLED_COMPONENTS} property
+   * @since Geode 1.0
+   */
+  @ConfigAttribute(type = String.class)
+  String SECURITY_ENABLED_COMPONENTS_NAME = SECURITY_ENABLED_COMPONENTS;
+
+  /**
+   * The default ssl enabled components
+   * @since Geode 1.0
+   */
+  String DEFAULT_SECURITY_ENABLED_COMPONENTS = "all";
+
   //*************** Initializers to gather all the annotations in this class ************************
 
   Map<String, ConfigAttribute> attributes = new HashMap<>();

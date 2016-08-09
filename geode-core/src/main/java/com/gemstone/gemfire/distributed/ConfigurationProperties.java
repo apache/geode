@@ -18,6 +18,7 @@
 package com.gemstone.gemfire.distributed;
 
 import org.apache.geode.redis.GeodeRedisServer;
+import org.apache.geode.security.SecurableComponents;
 
 /**
  * This interface defines all the configuration properties that can be used.
@@ -1225,6 +1226,15 @@ public interface ConfigurationProperties {
    * property
    */
   String SECURITY_PEER_VERIFY_MEMBER_TIMEOUT = SECURITY_PREFIX + "peer-verifymember-timeout";
+  /**
+   * The static String definition of the <i>"ssl-enabled-components"</i> property
+   * <a name="ssl-enabled-components"/a></p>
+   * <U>Description</U>: This setting is a comma delimited fields which works in conjunction with the {@link #SECURITY_PREFIX} properties.
+   * This property will determine which components will use SSL for their communications.</p>
+   * <U>Options</U>: "all","server","cluster","gateway","http","jmx"  -- As described {@link SecurableComponents}
+   * <U>Since</U>: Geode 1.0
+   */
+  String SECURITY_ENABLED_COMPONENTS = SECURITY_PREFIX + "enabled-components";
   /**
    * The static String definition of the <i>"server-bind-address"</i> property
    * <a name="server-bind-address"/a><p>

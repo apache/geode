@@ -180,6 +180,21 @@ public class IntegratedSecurityService implements SecurityService, Serializable 
   }
 
   @Override
+  public boolean isJmxSecurityRequired() {
+    return GeodeSecurityUtil.isJmxSecurityRequired();
+  }
+
+  @Override
+  public boolean isGatewaySecurityRequired() {
+    return GeodeSecurityUtil.isGatewaySecurityRequired();
+  }
+
+  @Override
+  public boolean isHttpSecurityRequired() {
+    return GeodeSecurityUtil.isHttpServiceSecurityRequired();
+  }
+
+  @Override
   public boolean isPeerSecurityRequired() {
     return GeodeSecurityUtil.isPeerSecurityRequired();
   }
