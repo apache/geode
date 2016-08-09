@@ -43,6 +43,7 @@ import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
@@ -177,15 +178,25 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   protected int logDiskSpaceLimit = DEFAULT_LOG_DISK_SPACE_LIMIT;
   protected int logFileSizeLimit = DEFAULT_LOG_FILE_SIZE_LIMIT;
 
-  private boolean clusterSSLEnabled = DEFAULT_CLUSTER_SSL_ENABLED;
-  private String clusterSSLProtocols = DEFAULT_CLUSTER_SSL_PROTOCOLS;
-  private String clusterSSLCiphers = DEFAULT_CLUSTER_SSL_CIPHERS;
-  private boolean clusterSSLRequireAuthentication = DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION;
-  private String clusterSSLKeyStore = DEFAULT_CLUSTER_SSL_KEYSTORE;
+  @Deprecated
+  private boolean clusterSSLEnabled = DEFAULT_SSL_ENABLED;
+  @Deprecated
+  private String clusterSSLProtocols = DEFAULT_SSL_PROTOCOLS;
+  @Deprecated
+  private String clusterSSLCiphers = DEFAULT_SSL_CIPHERS;
+  @Deprecated
+  private boolean clusterSSLRequireAuthentication = DEFAULT_SSL_REQUIRE_AUTHENTICATION;
+  @Deprecated
+  private String clusterSSLKeyStore = DEFAULT_SSL_KEYSTORE;
+  @Deprecated
   private String clusterSSLKeyStoreType = DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE;
-  private String clusterSSLKeyStorePassword = DEFAULT_CLUSTER_SSL_KEYSTORE_PASSWORD;
-  private String clusterSSLTrustStore = DEFAULT_CLUSTER_SSL_TRUSTSTORE;
-  private String clusterSSLTrustStorePassword = DEFAULT_CLUSTER_SSL_TRUSTSTORE_PASSWORD;
+  @Deprecated
+  private String clusterSSLKeyStorePassword = DEFAULT_SSL_KEYSTORE_PASSWORD;
+  @Deprecated
+  private String clusterSSLTrustStore = DEFAULT_SSL_TRUSTSTORE;
+  @Deprecated
+  private String clusterSSLTrustStorePassword = DEFAULT_SSL_TRUSTSTORE_PASSWORD;
+
   private String clusterSSLAlias = DEFAULT_CLUSTER_SSL_ALIAS;
 
   /**
@@ -432,7 +443,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private boolean jmxManager = Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE) ? true : DEFAULT_JMX_MANAGER;
   private boolean jmxManagerStart = DEFAULT_JMX_MANAGER_START;
-
   private int jmxManagerPort = DEFAULT_JMX_MANAGER_PORT;
   private String jmxManagerBindAddress = DEFAULT_JMX_MANAGER_BIND_ADDRESS;
   private String jmxManagerHostnameForClients = DEFAULT_JMX_MANAGER_HOSTNAME_FOR_CLIENTS;
@@ -441,65 +451,109 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private int jmxManagerHttpPort = DEFAULT_HTTP_SERVICE_PORT;
   private int jmxManagerUpdateRate = DEFAULT_JMX_MANAGER_UPDATE_RATE;
 
+  @Deprecated
   private boolean jmxManagerSSLEnabled = DEFAULT_JMX_MANAGER_SSL_ENABLED;
+  @Deprecated
   private boolean jmxManagerSslRequireAuthentication = DEFAULT_JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION;
+  @Deprecated
   private String jmxManagerSslProtocols = DEFAULT_JMX_MANAGER_SSL_PROTOCOLS;
+  @Deprecated
   private String jmxManagerSslCiphers = DEFAULT_JMX_MANAGER_SSL_CIPHERS;
+  @Deprecated
   private Properties jmxManagerSslProperties = new Properties();
-
+  @Deprecated
   private String jmxManagerSSLKeyStore = DEFAULT_JMX_MANAGER_SSL_KEYSTORE;
+  @Deprecated
   private String jmxManagerSSLKeyStoreType = DEFAULT_JMX_MANAGER_SSL_KEYSTORE_TYPE;
+  @Deprecated
   private String jmxManagerSSLKeyStorePassword = DEFAULT_JMX_MANAGER_SSL_KEYSTORE_PASSWORD;
+  @Deprecated
   private String jmxManagerSSLTrustStore = DEFAULT_JMX_MANAGER_SSL_TRUSTSTORE;
+  @Deprecated
   private String jmxManagerSSLTrustStorePassword = DEFAULT_JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD;
 
   private String jmxManagerSSLAlias = clusterSSLAlias;
 
+  @Deprecated
   private boolean serverSSLEnabled = DEFAULT_SERVER_SSL_ENABLED;
+  @Deprecated
   private boolean serverSslRequireAuthentication = DEFAULT_SERVER_SSL_REQUIRE_AUTHENTICATION;
+  @Deprecated
   private String serverSslProtocols = DEFAULT_SERVER_SSL_PROTOCOLS;
+  @Deprecated
   private String serverSslCiphers = DEFAULT_SERVER_SSL_CIPHERS;
+  @Deprecated
   private Properties serverSslProperties = new Properties();
-
+  @Deprecated
   private String serverSSLKeyStore = DEFAULT_SERVER_SSL_KEYSTORE;
+  @Deprecated
   private String serverSSLKeyStoreType = DEFAULT_SERVER_SSL_KEYSTORE_TYPE;
+  @Deprecated
   private String serverSSLKeyStorePassword = DEFAULT_SERVER_SSL_KEYSTORE_PASSWORD;
+  @Deprecated
   private String serverSSLTrustStore = DEFAULT_SERVER_SSL_TRUSTSTORE;
+  @Deprecated
   private String serverSSLTrustStorePassword = DEFAULT_SERVER_SSL_TRUSTSTORE_PASSWORD;
 
   private String serverSSLAlias = clusterSSLAlias;
 
+  @Deprecated
   private boolean gatewaySSLEnabled = DEFAULT_GATEWAY_SSL_ENABLED;
+  @Deprecated
   private boolean gatewaySslRequireAuthentication = DEFAULT_GATEWAY_SSL_REQUIRE_AUTHENTICATION;
+  @Deprecated
   private String gatewaySslProtocols = DEFAULT_GATEWAY_SSL_PROTOCOLS;
+  @Deprecated
   private String gatewaySslCiphers = DEFAULT_GATEWAY_SSL_CIPHERS;
+  @Deprecated
   private Properties gatewaySslProperties = new Properties();
-
+  @Deprecated
   private String gatewaySSLKeyStore = DEFAULT_GATEWAY_SSL_KEYSTORE;
+  @Deprecated
   private String gatewaySSLKeyStoreType = DEFAULT_GATEWAY_SSL_KEYSTORE_TYPE;
+  @Deprecated
   private String gatewaySSLKeyStorePassword = DEFAULT_GATEWAY_SSL_KEYSTORE_PASSWORD;
+  @Deprecated
   private String gatewaySSLTrustStore = DEFAULT_GATEWAY_SSL_TRUSTSTORE;
+  @Deprecated
   private String gatewaySSLTrustStorePassword = DEFAULT_GATEWAY_SSL_TRUSTSTORE_PASSWORD;
+
 
   private String gatewaySSLAlias = clusterSSLAlias;
 
-
+  @Deprecated
   private boolean httpServiceSSLEnabled = DEFAULT_HTTP_SERVICE_SSL_ENABLED;
+  @Deprecated
   private boolean httpServiceSSLRequireAuthentication = DEFAULT_HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION;
+  @Deprecated
   private String httpServiceSSLProtocols = DEFAULT_HTTP_SERVICE_SSL_PROTOCOLS;
+  @Deprecated
   private String httpServiceSSLCiphers = DEFAULT_HTTP_SERVICE_SSL_CIPHERS;
+  @Deprecated
   private Properties httpServiceSSLProperties = new Properties();
-
+  @Deprecated
   private String httpServiceSSLKeyStore = DEFAULT_HTTP_SERVICE_SSL_KEYSTORE;
+  @Deprecated
   private String httpServiceSSLKeyStoreType = DEFAULT_HTTP_SERVICE_SSL_KEYSTORE_TYPE;
+  @Deprecated
   private String httpServiceSSLKeyStorePassword = DEFAULT_HTTP_SERVICE_SSL_KEYSTORE_PASSWORD;
+  @Deprecated
   private String httpServiceSSLTrustStore = DEFAULT_HTTP_SERVICE_SSL_TRUSTSTORE;
+  @Deprecated
   private String httpServiceSSLTrustStorePassword = DEFAULT_HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD;
 
   private String httpServiceSSLAlias = clusterSSLAlias;
 
-  //TODO UDO Clean this up. Move this to an SSLEnabledComponent[]
-  private String[] sslEnabledComponents = DEFAULT_SSL_ENABLED_COMPONENTS;
+  private SSLEnabledComponent[] sslEnabledComponents = DEFAULT_SSL_ENABLED_COMPONENTS;
+
+  private String sslProtocols = DEFAULT_SSL_PROTOCOLS;
+  private String sslCiphers = DEFAULT_SSL_CIPHERS;
+  private boolean sslRequireAuthentication = DEFAULT_SSL_REQUIRE_AUTHENTICATION;
+  private String sslKeyStore = DEFAULT_SSL_KEYSTORE;
+  private String sslKeyStoreType = DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE;
+  private String sslKeyStorePassword = DEFAULT_SSL_KEYSTORE_PASSWORD;
+  private String sslTrustStore = DEFAULT_SSL_TRUSTSTORE;
+  private String sslTrustStorePassword = DEFAULT_SSL_TRUSTSTORE_PASSWORD;
 
   private String locatorSSLAlias = clusterSSLAlias;
 
@@ -700,9 +754,21 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.httpServiceSSLAlias = other.getHTTPServiceSSLAlias();
     this.jmxManagerSSLAlias = other.getJMXManagerSSLAlias();
     this.serverSSLAlias = other.getServerSSLAlias();
+    this.locatorSSLAlias = other.getLocatorSSLAlias();
+
     this.sslEnabledComponents = ((DistributionConfigImpl) other).sslEnabledComponents;
 
-    this.locatorSSLAlias = other.getLocatorSSLAlias();
+    this.sslCiphers = other.getSSLCiphers();
+    this.sslProtocols = other.getSSLProtocols();
+    this.sslRequireAuthentication = other.getSSLRequireAuthentication();
+    this.sslKeyStore = other.getSSLKeyStore();
+    this.sslKeyStorePassword = other.getSSLKeyStorePassword();
+    this.sslKeyStoreType = other.getSSLKeyStoreType();
+    this.sslTrustStore = other.getSSLTrustStore();
+    this.sslTrustStorePassword = other.getSSLTrustStorePassword();
+    this.sslProperties = other.getSSLProperties();
+
+
   }
 
   /**
@@ -1231,14 +1297,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   public static boolean specialPropName(String propName) {
-    return propName.equalsIgnoreCase(CLUSTER_SSL_ENABLED) ||
-           propName.equals(SECURITY_PEER_AUTH_INIT) ||
-           propName.equals(SECURITY_PEER_AUTHENTICATOR) ||
-           propName.equals(LOG_WRITER_NAME) ||
-           propName.equals(DS_CONFIG_NAME) ||
-           propName.equals(SECURITY_LOG_WRITER_NAME) ||
-           propName.equals(LOG_OUTPUTSTREAM_NAME) ||
-           propName.equals(SECURITY_LOG_OUTPUTSTREAM_NAME);
+    return propName.equalsIgnoreCase(CLUSTER_SSL_ENABLED) || propName.equals(SECURITY_PEER_AUTH_INIT) || propName.equals(SECURITY_PEER_AUTHENTICATOR) || propName
+      .equals(LOG_WRITER_NAME) || propName.equals(DS_CONFIG_NAME) || propName.equals(SECURITY_LOG_WRITER_NAME) || propName.equals(LOG_OUTPUTSTREAM_NAME) || propName
+             .equals(SECURITY_LOG_OUTPUTSTREAM_NAME);
   }
 
   @Override
@@ -2412,13 +2473,93 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public String[] getSSLEnabledComponents() {
+  public SSLEnabledComponent[] getSSLEnabledComponents() {
     return sslEnabledComponents;
   }
 
   @Override
-  public void setSSLEnabledComponents(final String[] sslEnabledComponents) {
+  public void setSSLEnabledComponents(final SSLEnabledComponent[] sslEnabledComponents) {
     this.sslEnabledComponents = sslEnabledComponents;
+  }
+
+  @Override
+  public String getSSLProtocols() {
+    return sslProtocols;
+  }
+
+  @Override
+  public void setSSLProtocols(final String sslProtocols) {
+    this.sslProtocols = sslProtocols;
+  }
+
+  @Override
+  public String getSSLCiphers() {
+    return sslCiphers;
+  }
+
+  @Override
+  public void setSSLCiphers(final String sslCiphers) {
+    this.sslCiphers = sslCiphers;
+  }
+
+  @Override
+  public boolean getSSLRequireAuthentication() {
+    return sslRequireAuthentication;
+  }
+
+  @Override
+  public void setSSLRequireAuthentication(final boolean sslRequireAuthentication) {
+    this.sslRequireAuthentication = sslRequireAuthentication;
+  }
+
+  @Override
+  public String getSSLKeyStore() {
+    return sslKeyStore;
+  }
+
+  @Override
+  public void setSSLKeyStore(final String sslKeyStore) {
+    this.sslKeyStore = sslKeyStore;
+  }
+
+  @Override
+  public String getSSLKeyStoreType() {
+    return sslKeyStoreType;
+  }
+
+  @Override
+  public void setSSLKeyStoreType(final String sslKeyStoreType) {
+    this.sslKeyStoreType = sslKeyStoreType;
+  }
+
+  @Override
+  public String getSSLKeyStorePassword() {
+    return sslKeyStorePassword;
+  }
+
+  @Override
+  public void setSSLKeyStorePassword(final String sslKeyStorePassword) {
+    this.sslKeyStorePassword = sslKeyStorePassword;
+  }
+
+  @Override
+  public String getSSLTrustStore() {
+    return sslTrustStore;
+  }
+
+  @Override
+  public void setSSLTrustStore(final String sslTrustStore) {
+    this.sslTrustStore = sslTrustStore;
+  }
+
+  @Override
+  public String getSSLTrustStorePassword() {
+    return sslTrustStorePassword;
+  }
+
+  @Override
+  public void setSSLTrustStorePassword(final String sslTrustStorePassword) {
+    this.sslTrustStorePassword = sslTrustStorePassword;
   }
 
   ///////////////////////  Utility Methods  ///////////////////////

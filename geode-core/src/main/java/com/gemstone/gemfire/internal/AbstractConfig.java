@@ -43,6 +43,7 @@ import com.gemstone.gemfire.UnmodifiableException;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.FlowControlParams;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 
 /**
@@ -305,8 +306,7 @@ public abstract class AbstractConfig implements Config {
     String[] validAttNames = getAttributeNames();
     if (!Arrays.asList(validAttNames).contains(attName.toLowerCase())) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractConfig_UNKNOWN_CONFIGURATION_ATTRIBUTE_NAME_0_VALID_ATTRIBUTE_NAMES_ARE_1.toLocalizedString(new Object[] {
-        attName,
-        SystemAdmin.join(validAttNames)
+        attName, SystemAdmin.join(validAttNames)
       }));
     }
   }
@@ -352,7 +352,7 @@ public abstract class AbstractConfig implements Config {
         attObjectValue = attValue;
       } else if (valueType.equals(String[].class)) {
         attObjectValue = commaDelimitedStringToStringArray(attValue);
-      } else if (valueType.equals(Integer.class)) {
+      }  else if (valueType.equals(Integer.class)) {
         attObjectValue = Integer.valueOf(attValue);
       } else if (valueType.equals(Long.class)) {
         attObjectValue = Long.valueOf(attValue);
@@ -374,9 +374,7 @@ public abstract class AbstractConfig implements Config {
           attObjectValue = InetAddress.getByName(attValue);
         } catch (UnknownHostException ex) {
           throw new IllegalArgumentException(LocalizedStrings.AbstractConfig_0_VALUE_1_MUST_BE_A_VALID_HOST_NAME_2.toLocalizedString(new Object[] {
-            attName,
-            attValue,
-            ex.toString()
+            attName, attValue, ex.toString()
           }));
         }
       } else if (valueType.equals(String[].class)) {
@@ -391,8 +389,7 @@ public abstract class AbstractConfig implements Config {
         String values[] = attValue.split(",");
         if (values.length != 3) {
           throw new IllegalArgumentException(LocalizedStrings.AbstractConfig_0_VALUE_1_MUST_HAVE_THREE_ELEMENTS_SEPARATED_BY_COMMAS.toLocalizedString(new Object[] {
-            attName,
-            attValue
+            attName, attValue
           }));
         }
         int credits = 0;
@@ -404,21 +401,25 @@ public abstract class AbstractConfig implements Config {
           waittime = Integer.parseInt(values[2].trim());
         } catch (NumberFormatException e) {
           throw new IllegalArgumentException(LocalizedStrings.AbstractConfig_0_VALUE_1_MUST_BE_COMPOSED_OF_AN_INTEGER_A_FLOAT_AND_AN_INTEGER.toLocalizedString(new Object[] {
-            attName,
-            attValue
+            attName, attValue
           }));
         }
         attObjectValue = new FlowControlParams(credits, thresh, waittime);
-      } else {
+      } else if (valueType.isArray() && SSLEnabledComponent.class.equals(valueType.getComponentType())) {
+        attObjectValue = commaDelimitedStringToSSLEnabledComponents(attValue);
+      }else {
         throw new InternalGemFireException(LocalizedStrings.AbstractConfig_UNHANDLED_ATTRIBUTE_TYPE_0_FOR_1.toLocalizedString(new Object[] {
-          valueType,
-          attName
+          valueType, attName
         }));
       }
-    } catch (NumberFormatException ex) {
+    } catch (NumberFormatException ex)
+
+    {
       throw new IllegalArgumentException(LocalizedStrings.AbstractConfig_0_VALUE_1_MUST_BE_A_NUMBER.toLocalizedString(new Object[] { attName, attValue }));
     }
+
     setAttributeObject(attName, attObjectValue, source);
+
   }
 
   private String[] commaDelimitedStringToStringArray(final String tokenizeString) {
@@ -428,6 +429,16 @@ public abstract class AbstractConfig implements Config {
       strings[i] = stringTokenizer.nextToken();
     }
     return strings;
+  }
+
+  private SSLEnabledComponent[] commaDelimitedStringToSSLEnabledComponents(final String tokenizeString) {
+    StringTokenizer stringTokenizer = new StringTokenizer(tokenizeString, ",");
+    SSLEnabledComponent[] returnArray = new SSLEnabledComponent[stringTokenizer.countTokens()];
+    for (int i = 0; i < returnArray.length; i++) {
+      String name = stringTokenizer.nextToken();
+      returnArray[i] = SSLEnabledComponent.getEnum(name);
+    }
+    return returnArray;
   }
 
   /**

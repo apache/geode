@@ -187,6 +187,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: "any" </p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #SSL_CIPHERS}
    */
   String CLUSTER_SSL_CIPHERS = "cluster-ssl-ciphers";
   /**
@@ -197,6 +198,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: "false"</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 see {@link #SSL_ENABLED_COMPONENTS}
    */
   String CLUSTER_SSL_ENABLED = "cluster-ssl-enabled";
   /**
@@ -206,6 +208,7 @@ public interface ConfigurationProperties {
    * certificate and private key.</p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #SSL_KEYSTORE}
    */
   String CLUSTER_SSL_KEYSTORE = "cluster-ssl-keystore";
   /**
@@ -216,6 +219,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #SSL_KEYSTORE_PASSWORD}
    */
   String CLUSTER_SSL_KEYSTORE_PASSWORD = "cluster-ssl-keystore-password";
   /**
@@ -226,6 +230,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #SSL_KEYSTORE_TYPE}
    */
   String CLUSTER_SSL_KEYSTORE_TYPE = "cluster-ssl-keystore-type";
   /**
@@ -236,6 +241,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: "any"</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #SSL_PROTOCOLS}
    */
   String CLUSTER_SSL_PROTOCOLS = "cluster-ssl-protocols";
   /**
@@ -246,6 +252,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: "true"</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #SSL_REQUIRE_AUTHENTICATION}
    */
   String CLUSTER_SSL_REQUIRE_AUTHENTICATION = "cluster-ssl-require-authentication";
   /**
@@ -256,6 +263,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #SSL_TRUSTSTORE}
    */
   String CLUSTER_SSL_TRUSTSTORE = "cluster-ssl-truststore";
   /**
@@ -266,6 +274,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #SSL_TRUSTSTORE_PASSWORD}
    */
   String CLUSTER_SSL_TRUSTSTORE_PASSWORD = "cluster-ssl-truststore-password";
   /**
@@ -1657,8 +1666,87 @@ public interface ConfigurationProperties {
    * <a name="ssl-enabled-components"/a></p>
    * <U>Description</U>: This setting is a comma delimited fields which works in conjunction with the {@link #CLUSTER_SSL_PREFIX} properties.
    * This property will determine which components will use SSL for their communications.</p>
-   * <U>Options</U>: "all","server","cluster","gateway","http","jmx"  -- As described {@link SSLEnabledComponents}
+   * <U>Options</U>: "all","server","cluster","gateway","http","jmx","none"  -- As described {@link SSLEnabledComponents}
    * <U>Since</U>: Geode 1.0
    */
   String SSL_ENABLED_COMPONENTS = "ssl-enabled-components";
+  /**
+   * The static String definition of the <i>"ssl-ciphers"</i> property
+   * <a name="ssl-ciphers"/a></p>
+   * <U>Description</U>: A space separated list of the SSL cipher suites to
+   * enable. Those listed must be supported by the available providers.
+   * </p>
+   * <U>Default</U>: "any" </p>
+   * <U>Since</U>: Geode 1.0
+   */
+  String SSL_CIPHERS = "ssl-ciphers";
+  /**
+   * The static String definition of the <i>"ssl-keystore"</i> property
+   * <a name="ssl-keystore"/a></p>
+   * <U>Description</U>Location of the Java keystore file containing
+   * certificate and private key.</p>
+   * <U>Default</U>: ""</p>
+   * <U>Since</U>: Geode 1.0
+   */
+  String SSL_KEYSTORE = "ssl-keystore";
+  /**
+   * The static String definition of the <i>"ssl-keystore-password"</i> property
+   * <a name="ssl-keystore-password"/a></p>
+   * <U>Description</U>Password to access the private key from the keystore
+   * file specified by javax.net.ssl.keyStore.
+   * </p>
+   * <U>Default</U>: ""</p>
+   * <U>Since</U>: Geode 1.0
+   */
+  String SSL_KEYSTORE_PASSWORD = "ssl-keystore-password";
+  /**
+   * The static String definition of the <i>"ssl-keystore-type"</i> property
+   * <a name="ssl-keystore-type"/a></p>
+   * <U>Description</U>For Java keystore file format, this property has the
+   * value jks (or JKS).
+   * </p>
+   * <U>Default</U>: ""</p>
+   * <U>Since</U>: Geode 1.0
+   */
+  String SSL_KEYSTORE_TYPE = "ssl-keystore-type";
+  /**
+   * The static String definition of the <i>"cluster-ssl-protocols"</i> property
+   * <a name="ssl-protocols"/a></p>
+   * <U>Description</U>: A space separated list of the SSL protocols to
+   * enable. Those listed must be supported by the available providers.
+   * </p>
+   * <U>Default</U>: "any"</p>
+   * <U>Since</U>: Geode 1.0
+   */
+  String SSL_PROTOCOLS = "ssl-protocols";
+  /**
+   * The static String definition of the <i>"ssl-require-authentication"</i> property
+   * <a name="ssl-require-authentication"/a></p>
+   * <U>Description</U>: If false, allow ciphers that do not require the
+   * client side of the connection to be authenticated.
+   * </p>
+   * <U>Default</U>: "true"</p>
+   * <U>Since</U>: Geode 1.0
+   */
+  String SSL_REQUIRE_AUTHENTICATION = "ssl-require-authentication";
+  /**
+   * The static String definition of the <i>"ssl-truststore"</i> property
+   * <a name="ssl-truststore"/a></p>
+   * <U>Description</U>Location of the Java keystore file containing the
+   * collection of CA certificates trusted by distributed member (trust store).
+   * </p>
+   * <U>Default</U>: ""</p>
+   * <U>Since</U>: Geode 1.0
+   */
+  String SSL_TRUSTSTORE = "ssl-truststore";
+  /**
+   * The static String definition of the <i>"ssl-truststore-password"</i> property
+   * <a name="ssl-truststore-password"/a></p>
+   * <U>Description</U>Password to unlock the keystore file (store password)
+   * specified by javax.net.ssl.trustStore.
+   * </p>
+   * <U>Default</U>: ""</p>
+   * <U>Since</U>: Geode 1.0
+   */
+  String SSL_TRUSTSTORE_PASSWORD = "ssl-truststore-password";
 }

@@ -78,7 +78,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testGetAttributeNames() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    assertEquals(attNames.length, 144);
+    assertEquals(attNames.length, 153);
 
     List boolList = new ArrayList();
     List intList = new ArrayList();
@@ -111,9 +111,9 @@ public class DistributionConfigJUnitTest {
     System.out.println("otherList: " + otherList);
 
     //TODO - This makes no sense. One has no idea what the correct expected number of attributes are.
-    assertEquals(27, boolList.size());
+    assertEquals(28, boolList.size());
     assertEquals(33, intList.size());
-    assertEquals(75, stringList.size());
+    assertEquals(83, stringList.size());
     assertEquals(5, fileList.size());
     assertEquals(4, otherList.size());
   }
@@ -361,7 +361,6 @@ public class DistributionConfigJUnitTest {
   public void testSSLEnabledComponents() {
     Properties props = new Properties();
     props.put(MCAST_PORT, "0");
-    props.put(CLUSTER_SSL_ENABLED, "true");
     props.put(SSL_ENABLED_COMPONENTS, "all");
 
     DistributionConfig config = new DistributionConfigImpl(props);

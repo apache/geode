@@ -35,13 +35,13 @@ import org.apache.commons.lang.StringUtils;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.InvalidValueException;
 import com.gemstone.gemfire.UnmodifiableException;
-import com.gemstone.gemfire.distributed.SSLEnabledComponents;
 import com.gemstone.gemfire.internal.AbstractConfig;
 import com.gemstone.gemfire.internal.ConfigSource;
-import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
+import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
 
 /**
@@ -148,8 +148,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
   @ConfigAttributeChecker(name = BIND_ADDRESS)
   protected String checkBindAddress(String value) {
-    if (value != null && value.length() > 0 &&
-        !SocketCreator.isLocalHost(value)) {
+    if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1.toLocalizedString(new Object[] {
         value, SocketCreator.getMyAddresses()
       }));
@@ -159,8 +158,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
   @ConfigAttributeChecker(name = SERVER_BIND_ADDRESS)
   protected String checkServerBindAddress(String value) {
-    if (value != null && value.length() > 0 &&
-        !SocketCreator.isLocalHost(value)) {
+    if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1.toLocalizedString(new Object[] {
         value, SocketCreator.getMyAddresses()
       }));
@@ -180,8 +178,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
   @ConfigAttributeChecker(name = HTTP_SERVICE_BIND_ADDRESS)
   protected String checkHttpServiceBindAddress(String value) {
-    if (value != null && value.length() > 0 &&
-        !SocketCreator.isLocalHost(value)) {
+    if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1.toLocalizedString(new Object[] {
         value, SocketCreator.getMyAddresses()
       }));
@@ -305,11 +302,11 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
       int portVal = 0;
       try {
         portVal = Integer.parseInt(port);
-        if(0 == portVal){
+        if (0 == portVal) {
           return "";
-        }
-        else if (portVal < 1 || portVal > 65535) {
-          throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_INVALID_LOCATOR_0_THE_PORT_1_WAS_NOT_GREATER_THAN_ZERO_AND_LESS_THAN_65536.toLocalizedString(new Object[] {value, Integer.valueOf(portVal)}));
+        } else if (portVal < 1 || portVal > 65535) {
+          throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_INVALID_LOCATOR_0_THE_PORT_1_WAS_NOT_GREATER_THAN_ZERO_AND_LESS_THAN_65536
+            .toLocalizedString(new Object[] { value, Integer.valueOf(portVal) }));
         }
       } catch (NumberFormatException ex) {
         throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_INVALID_LOCATOR_0.toLocalizedString(value));
@@ -386,9 +383,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
    */
   @ConfigAttributeChecker(name = CLIENT_CONFLATION_PROP_NAME)
   protected String checkClientConflation(String value) {
-    if (!(value.equals(CLIENT_CONFLATION_PROP_VALUE_DEFAULT) ||
-          value.equals(CLIENT_CONFLATION_PROP_VALUE_ON) ||
-          value.equals(CLIENT_CONFLATION_PROP_VALUE_OFF))) {
+    if (!(value.equals(CLIENT_CONFLATION_PROP_VALUE_DEFAULT) || value.equals(CLIENT_CONFLATION_PROP_VALUE_ON) || value.equals(CLIENT_CONFLATION_PROP_VALUE_OFF))) {
       throw new IllegalArgumentException("Could not set \"" + CONFLATE_EVENTS + "\" to \"" + value + "\" because its value is not recognized");
     }
     return value;
@@ -450,8 +445,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
   @ConfigAttributeChecker(name = MEMCACHED_BIND_ADDRESS)
   protected String checkMemcachedBindAddress(String value) {
-    if (value != null && value.length() > 0 &&
-        !SocketCreator.isLocalHost(value)) {
+    if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_MEMCACHED_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1.toLocalizedString(new Object[] {
         value, SocketCreator.getMyAddresses()
       }));
@@ -461,8 +455,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
   @ConfigAttributeChecker(name = REDIS_BIND_ADDRESS)
   protected String checkRedisBindAddress(String value) {
-    if (value != null && value.length() > 0 &&
-        !SocketCreator.isLocalHost(value)) {
+    if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_REDIS_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1.toLocalizedString(new Object[] {
         value, SocketCreator.getMyAddresses()
       }));
@@ -475,33 +468,33 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
    * This would mean one is mixing the "old" with the "new"
    */
   @ConfigAttributeChecker(name = SSL_ENABLED_COMPONENTS)
-  protected String[] checkLegacySSLWhenSSLEnabledComponentsSet(String[] value) {
-    if (value != null && value.length > 0) {
-      for (String component : value) {
-        switch (component) {
-          case SSLEnabledComponents.ALL:
-          case SSLEnabledComponents.CLUSTER:
-          case SSLEnabledComponents.SERVER:
-          case SSLEnabledComponents.GATEWAY:
-          case SSLEnabledComponents.JMX:
-          case SSLEnabledComponents.HTTP_SERVICE:
-          case SSLEnabledComponents.LOCATOR:
-            continue;
-          default:
-            throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_0_INVALID_TRY_1.toLocalizedString(new Object[] {
-              value, StringUtils.join(new String[] {
-              SSLEnabledComponents.ALL,
-              SSLEnabledComponents.CLUSTER,
-              SSLEnabledComponents.SERVER,
-              SSLEnabledComponents.GATEWAY,
-              SSLEnabledComponents.JMX,
-              SSLEnabledComponents.HTTP_SERVICE,
-              SSLEnabledComponents.LOCATOR
-            }, ",")
-            }));
-        }
+  protected SSLEnabledComponent[] checkLegacySSLWhenSSLEnabledComponentsSet(SSLEnabledComponent[] value) {
+    for (SSLEnabledComponent component : value) {
+      switch (component) {
+        case ALL:
+        case CLUSTER:
+        case SERVER:
+        case GATEWAY:
+        case JMX:
+        case HTTP_SERVICE:
+        case LOCATOR:
+          continue;
+        default:
+          throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_0_INVALID_TRY_1.toLocalizedString(new Object[] {
+            value, StringUtils.join(new String[] {
+            SSLEnabledComponent.ALL.getConstant(),
+            SSLEnabledComponent.CLUSTER.getConstant(),
+            SSLEnabledComponent.SERVER.getConstant(),
+            SSLEnabledComponent.GATEWAY.getConstant(),
+            SSLEnabledComponent.JMX.getConstant(),
+            SSLEnabledComponent.HTTP_SERVICE.getConstant(),
+            SSLEnabledComponent.LOCATOR.getConstant()
+          }, ",")
+          }));
       }
-      if (getJmxManagerSSLEnabled() || getHttpServiceSSLEnabled() || getServerSSLEnabled() || getGatewaySSLEnabled()) {
+    }
+    for (SSLEnabledComponent component : value) {
+      if (getClusterSSLEnabled() || getJmxManagerSSLEnabled() || getHttpServiceSSLEnabled() || getServerSSLEnabled() || getGatewaySSLEnabled()) {
         throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET.toLocalizedString());
       }
     }
@@ -557,9 +550,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     if (setter == null) {
       // if we cann't find the defined setter, but the attributeName starts with these special characters
       // since we already set it in the respecitive properties above, we need to set the source then return
-      if (attName.startsWith(SECURITY_PREFIX) ||
-          attName.startsWith(SSL_SYSTEM_PROPS_NAME) ||
-          attName.startsWith(SYS_PROP_NAME)) {
+      if (attName.startsWith(SECURITY_PREFIX) || attName.startsWith(SSL_SYSTEM_PROPS_NAME) || attName.startsWith(SYS_PROP_NAME)) {
         getAttSourceMap().put(attName, source);
         return;
       }
@@ -572,7 +563,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     }
 
 
-    checkAttribute(attName,attValue);
+    checkAttribute(attName, attValue);
     try {
       setter.invoke(this, attValue);
     } catch (Exception e) {
@@ -769,9 +760,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
     m.put(SERVER_BIND_ADDRESS, LocalizedStrings.AbstractDistributionConfig_SERVER_BIND_ADDRESS_NAME_0.toLocalizedString(DEFAULT_BIND_ADDRESS));
 
-    m.put(NAME, "A name that uniquely identifies a member in its distributed system." +
-                " Multiple members in the same distributed system can not have the same name." +
-                " Defaults to \"\".");
+    m.put(NAME, "A name that uniquely identifies a member in its distributed system." + " Multiple members in the same distributed system can not have the same name." + " Defaults to \"\".");
 
     m.put(STATISTIC_ARCHIVE_FILE, LocalizedStrings.AbstractDistributionConfig_STATISTIC_ARCHIVE_FILE_NAME_0.toLocalizedString(DEFAULT_STATISTIC_ARCHIVE_FILE));
 
@@ -783,13 +772,13 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
     m.put(CLUSTER_SSL_ALIAS, LocalizedStrings.AbstractDistributionConfig_CLUSTER_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_CLUSTER_SSL_ALIAS)));
 
-    m.put(CLUSTER_SSL_ENABLED, LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_NAME_0.toLocalizedString(Boolean.valueOf(DEFAULT_CLUSTER_SSL_ENABLED)));
+    m.put(CLUSTER_SSL_ENABLED, LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_NAME_0.toLocalizedString(Boolean.valueOf(DEFAULT_SSL_ENABLED)));
 
-    m.put(CLUSTER_SSL_PROTOCOLS, LocalizedStrings.AbstractDistributionConfig_SSL_PROTOCOLS_NAME_0.toLocalizedString(DEFAULT_CLUSTER_SSL_PROTOCOLS));
+    m.put(CLUSTER_SSL_PROTOCOLS, LocalizedStrings.AbstractDistributionConfig_SSL_PROTOCOLS_NAME_0.toLocalizedString(DEFAULT_SSL_PROTOCOLS));
 
-    m.put(CLUSTER_SSL_CIPHERS, LocalizedStrings.AbstractDistributionConfig_SSL_CIPHERS_NAME_0.toLocalizedString(DEFAULT_CLUSTER_SSL_CIPHERS));
+    m.put(CLUSTER_SSL_CIPHERS, LocalizedStrings.AbstractDistributionConfig_SSL_CIPHERS_NAME_0.toLocalizedString(DEFAULT_SSL_CIPHERS));
 
-    m.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION, LocalizedStrings.AbstractDistributionConfig_SSL_REQUIRE_AUTHENTICATION_NAME.toLocalizedString(Boolean.valueOf(DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION)));
+    m.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION, LocalizedStrings.AbstractDistributionConfig_SSL_REQUIRE_AUTHENTICATION_NAME.toLocalizedString(Boolean.valueOf(DEFAULT_SSL_REQUIRE_AUTHENTICATION)));
 
     m.put(CLUSTER_SSL_KEYSTORE, "Location of the Java keystore file containing an distributed member's own certificate and private key.");
 
@@ -862,9 +851,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
     m.put(REMOTE_LOCATORS, LocalizedStrings.AbstractDistributionConfig_REMOTE_DISTRIBUTED_SYSTEMS_NAME_0.toLocalizedString(DEFAULT_REMOTE_LOCATORS));
 
-    m.put(DISTRIBUTED_SYSTEM_ID, "An id that uniquely idenitifies this distributed system. " +
-                                 "Required when using portable data exchange objects and the WAN." +
-                                 "Must be the same on each member in this distributed system if set.");
+    m.put(DISTRIBUTED_SYSTEM_ID, "An id that uniquely idenitifies this distributed system. " + "Required when using portable data exchange objects and the WAN." + "Must be the same on each member in this distributed system if set.");
     m.put(ENFORCE_UNIQUE_HOST, "Whether to require partitioned regions to put " + "redundant copies of data on different physical machines");
 
     m.put(REDUNDANCY_ZONE, "The zone that this member is in. When this is set, " + "partitioned regions will not put two copies of the same data in the same zone.");
@@ -965,6 +952,15 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     m.put(SECURITY_POST_PROCESSOR, "User defined fully qualified class name implementing PostProcessor interface for integrated security. Defaults to \"{0}\". Legal values can be any \"class name\" implementing PostProcessor that is present in the classpath.");
 
     m.put(SSL_ENABLED_COMPONENTS, "A comma delimited list of components that require SSL communications");
+
+    m.put(SSL_CIPHERS, "List of available SSL cipher suites that are to be enabled. Defaults to \"" + DEFAULT_SSL_CIPHERS + "\" meaning your provider''s defaults.");
+    m.put(SSL_PROTOCOLS, "List of available SSL protocols that are to be enabled. Defaults to \"" + DEFAULT_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
+    m.put(SSL_REQUIRE_AUTHENTICATION, "If set to false, ciphers and protocols that permit anonymous clients are allowed. Defaults to \"" + DEFAULT_SSL_REQUIRE_AUTHENTICATION + "\".");
+    m.put(SSL_KEYSTORE, "Location of the Java keystore file containing the certificate and private key.");
+    m.put(SSL_KEYSTORE_TYPE, "For Java keystore file format, this property has the value jks (or JKS).");
+    m.put(SSL_KEYSTORE_PASSWORD, "Password to access the private key from the keystore.");
+    m.put(SSL_TRUSTSTORE, "Location of the Java keystore file containing the collection of trusted certificates.");
+    m.put(SSL_TRUSTSTORE_PASSWORD, "Password to unlock the truststore.");
 
     dcAttDescriptions = Collections.unmodifiableMap(m);
 

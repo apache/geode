@@ -36,6 +36,7 @@ import com.gemstone.gemfire.internal.Config;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogConfig;
+import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.tcp.Connection;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
 
@@ -812,6 +813,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_ENABLED}
    * property.
    */
+  @Deprecated
   @ConfigAttributeGetter(name = CLUSTER_SSL_ENABLED)
   boolean getClusterSSLEnabled();
 
@@ -819,6 +821,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_ENABLED}
    * property.
    */
+  @Deprecated
   @ConfigAttributeSetter(name = CLUSTER_SSL_ENABLED)
   void setClusterSSLEnabled(boolean enabled);
 
@@ -826,10 +829,13 @@ public interface DistributionConfig extends Config, LogConfig {
    * The default {@link ConfigurationProperties#CLUSTER_SSL_ENABLED} state.
    * <p> Actual value of this constant is <code>false</code>.
    */
-  boolean DEFAULT_CLUSTER_SSL_ENABLED = false;
+  @Deprecated
+  boolean DEFAULT_SSL_ENABLED = false;
+
   /**
    * The name of the {@link ConfigurationProperties#CLUSTER_SSL_ENABLED} property
    */
+  @Deprecated
   @ConfigAttribute(type = Boolean.class)
   String CLUSTER_SSL_ENABLED_NAME = CLUSTER_SSL_ENABLED;
 
@@ -837,6 +843,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    * property.
    */
+  @Deprecated
   @ConfigAttributeGetter(name = CLUSTER_SSL_PROTOCOLS)
   String getClusterSSLProtocols();
 
@@ -844,6 +851,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    * property.
    */
+  @Deprecated
   @ConfigAttributeSetter(name = CLUSTER_SSL_PROTOCOLS)
   void setClusterSSLProtocols(String protocols);
 
@@ -851,10 +859,12 @@ public interface DistributionConfig extends Config, LogConfig {
    * The default {@link ConfigurationProperties#CLUSTER_SSL_PROTOCOLS} value.
    * <p> Actual value of this constant is <code>any</code>.
    */
-  String DEFAULT_CLUSTER_SSL_PROTOCOLS = "any";
+  String DEFAULT_SSL_PROTOCOLS = "any";
+
   /**
    * The name of the {@link ConfigurationProperties#CLUSTER_SSL_PROTOCOLS} property
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String CLUSTER_SSL_PROTOCOLS_NAME = CLUSTER_SSL_PROTOCOLS;
 
@@ -862,6 +872,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_CIPHERS}
    * property.
    */
+  @Deprecated
   @ConfigAttributeGetter(name = CLUSTER_SSL_CIPHERS)
   String getClusterSSLCiphers();
 
@@ -869,6 +880,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_CIPHERS}
    * property.
    */
+  @Deprecated
   @ConfigAttributeSetter(name = CLUSTER_SSL_CIPHERS)
   void setClusterSSLCiphers(String ciphers);
 
@@ -876,10 +888,12 @@ public interface DistributionConfig extends Config, LogConfig {
    * The default {@link ConfigurationProperties#CLUSTER_SSL_CIPHERS} value.
    * <p> Actual value of this constant is <code>any</code>.
    */
-  String DEFAULT_CLUSTER_SSL_CIPHERS = "any";
+  String DEFAULT_SSL_CIPHERS = "any";
+
   /**
    * The name of the {@link ConfigurationProperties#CLUSTER_SSL_CIPHERS} property
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String CLUSTER_SSL_CIPHERS_NAME = CLUSTER_SSL_CIPHERS;
 
@@ -887,6 +901,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    * property.
    */
+  @Deprecated
   @ConfigAttributeGetter(name = CLUSTER_SSL_REQUIRE_AUTHENTICATION)
   boolean getClusterSSLRequireAuthentication();
 
@@ -894,6 +909,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    * property.
    */
+  @Deprecated
   @ConfigAttributeSetter(name = CLUSTER_SSL_REQUIRE_AUTHENTICATION)
   void setClusterSSLRequireAuthentication(boolean enabled);
 
@@ -901,10 +917,12 @@ public interface DistributionConfig extends Config, LogConfig {
    * The default {@link ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION} value.
    * <p> Actual value of this constant is <code>true</code>.
    */
-  boolean DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION = true;
+  boolean DEFAULT_SSL_REQUIRE_AUTHENTICATION = true;
+
   /**
    * The name of the {@link ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION} property
    */
+  @Deprecated
   @ConfigAttribute(type = Boolean.class)
   String CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME = CLUSTER_SSL_REQUIRE_AUTHENTICATION;
 
@@ -912,6 +930,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
    * property.
    */
+  @Deprecated
   @ConfigAttributeGetter(name = CLUSTER_SSL_KEYSTORE)
   String getClusterSSLKeyStore();
 
@@ -919,6 +938,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
    * property.
    */
+  @Deprecated
   @ConfigAttributeSetter(name = CLUSTER_SSL_KEYSTORE)
   void setClusterSSLKeyStore(String keyStore);
 
@@ -926,11 +946,12 @@ public interface DistributionConfig extends Config, LogConfig {
    * The default {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE} value.
    * <p> Actual value of this constant is "".
    */
-  String DEFAULT_CLUSTER_SSL_KEYSTORE = "";
+  String DEFAULT_SSL_KEYSTORE = "";
 
   /**
    * The name of the {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE} property
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String CLUSTER_SSL_KEYSTORE_NAME = CLUSTER_SSL_KEYSTORE;
 
@@ -938,6 +959,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
    * property.
    */
+  @Deprecated
   @ConfigAttributeGetter(name = CLUSTER_SSL_KEYSTORE_TYPE)
   String getClusterSSLKeyStoreType();
 
@@ -945,6 +967,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
    * property.
    */
+  @Deprecated
   @ConfigAttributeSetter(name = CLUSTER_SSL_KEYSTORE_TYPE)
   void setClusterSSLKeyStoreType(String keyStoreType);
 
@@ -957,6 +980,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE} property
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String CLUSTER_SSL_KEYSTORE_TYPE_NAME = CLUSTER_SSL_KEYSTORE_TYPE;
 
@@ -964,6 +988,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
    * property.
    */
+  @Deprecated
   @ConfigAttributeGetter(name = CLUSTER_SSL_KEYSTORE_PASSWORD)
   String getClusterSSLKeyStorePassword();
 
@@ -971,6 +996,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
    * property.
    */
+  @Deprecated
   @ConfigAttributeSetter(name = CLUSTER_SSL_KEYSTORE_PASSWORD)
   void setClusterSSLKeyStorePassword(String keyStorePassword);
 
@@ -978,11 +1004,12 @@ public interface DistributionConfig extends Config, LogConfig {
    * The default {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD} value.
    * <p> Actual value of this constant is "".
    */
-  String DEFAULT_CLUSTER_SSL_KEYSTORE_PASSWORD = "";
+  String DEFAULT_SSL_KEYSTORE_PASSWORD = "";
 
   /**
    * The name of the {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD} property
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String CLUSTER_SSL_KEYSTORE_PASSWORD_NAME = CLUSTER_SSL_KEYSTORE_PASSWORD;
 
@@ -990,6 +1017,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
    * property.
    */
+  @Deprecated
   @ConfigAttributeGetter(name = CLUSTER_SSL_TRUSTSTORE)
   String getClusterSSLTrustStore();
 
@@ -997,6 +1025,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
    * property.
    */
+  @Deprecated
   @ConfigAttributeSetter(name = CLUSTER_SSL_TRUSTSTORE)
   void setClusterSSLTrustStore(String trustStore);
 
@@ -1004,11 +1033,12 @@ public interface DistributionConfig extends Config, LogConfig {
    * The default {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE} value.
    * <p> Actual value of this constant is "".
    */
-  String DEFAULT_CLUSTER_SSL_TRUSTSTORE = "";
+  String DEFAULT_SSL_TRUSTSTORE = "";
 
   /**
    * The name of the {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE} property
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String CLUSTER_SSL_TRUSTSTORE_NAME = CLUSTER_SSL_TRUSTSTORE;
 
@@ -1016,6 +1046,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    * property.
    */
+  @Deprecated
   @ConfigAttributeGetter(name = CLUSTER_SSL_TRUSTSTORE_PASSWORD)
   String getClusterSSLTrustStorePassword();
 
@@ -1023,6 +1054,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    * property.
    */
+  @Deprecated
   @ConfigAttributeSetter(name = CLUSTER_SSL_TRUSTSTORE_PASSWORD)
   void setClusterSSLTrustStorePassword(String trusStorePassword);
 
@@ -1030,11 +1062,12 @@ public interface DistributionConfig extends Config, LogConfig {
    * The default {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD} value.
    * <p> Actual value of this constant is "".
    */
-  String DEFAULT_CLUSTER_SSL_TRUSTSTORE_PASSWORD = "";
+  String DEFAULT_SSL_TRUSTSTORE_PASSWORD = "";
 
   /**
    * The name of the {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD} property
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME = CLUSTER_SSL_TRUSTSTORE_PASSWORD;
 
@@ -2240,6 +2273,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <a name="cluster-ssl"/a></p>
    * <U>Description</U>: The cluster-ssl property prefix
    */
+  @Deprecated
   String CLUSTER_SSL_PREFIX = "cluster-ssl";
 
   /**
@@ -2494,7 +2528,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_ENABLED} state.
    * <p> Actual value of this constant is <code>false</code>.
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_ENABLED}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_ENABLED}
    */
   @Deprecated
   boolean DEFAULT_JMX_MANAGER_SSL_ENABLED = false;
@@ -2566,7 +2600,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS} value.
    * <p> Actual value of this constant is <code>any</code>.
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_PROTOCOLS}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_PROTOCOLS}
    */
   @Deprecated
   String DEFAULT_JMX_MANAGER_SSL_PROTOCOLS = "any";
@@ -2600,7 +2634,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS} value.
    * <p> Actual value of this constant is <code>any</code>.
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_CIPHERS}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_CIPHERS}
    */
   @Deprecated
   String DEFAULT_JMX_MANAGER_SSL_CIPHERS = "any";
@@ -2634,7 +2668,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION} value.
    * <p> Actual value of this constant is <code>true</code>.
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_REQUIRE_AUTHENTICATION}
    */
   @Deprecated
   boolean DEFAULT_JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION = true;
@@ -2668,7 +2702,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE} value.
    * <p> Actual value of this constant is "".
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE}
    */
   @Deprecated
   String DEFAULT_JMX_MANAGER_SSL_KEYSTORE = "";
@@ -2737,7 +2771,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD} value.
    * <p> Actual value of this constant is "".
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_PASSWORD}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE_PASSWORD}
    */
   @Deprecated
   String DEFAULT_JMX_MANAGER_SSL_KEYSTORE_PASSWORD = "";
@@ -2745,7 +2779,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD} property
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD} propery
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_PASSWORD}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE_PASSWORD}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -2772,7 +2806,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE} value.
    * <p> Actual value of this constant is "".
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_TRUSTSTORE}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE}
    */
   @Deprecated
   String DEFAULT_JMX_MANAGER_SSL_TRUSTSTORE = "";
@@ -2806,7 +2840,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD} value.
    * <p> Actual value of this constant is "".
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE_PASSWORD}
    */
   @Deprecated
   String DEFAULT_JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD = "";
@@ -2964,8 +2998,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * Returns the value of the {@link ConfigurationProperties#REDIS_PORT} property
-   *
    * @return the port on which GeodeRedisServer should be started
+   *
    * @since GemFire 8.0
    */
   @ConfigAttributeGetter(name = REDIS_PORT)
@@ -3113,7 +3147,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED} state.
    * <p> Actual value of this constant is <code>false</code>.
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_ENABLED}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_ENABLED}
    */
   @Deprecated
   boolean DEFAULT_HTTP_SERVICE_SSL_ENABLED = false;
@@ -3148,7 +3182,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION} value.
    * <p> Actual value of this constant is <code>true</code>.
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_REQUIRE_AUTHENTICATION}
    */
   @Deprecated
   boolean DEFAULT_HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION = false;
@@ -3183,7 +3217,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS} value.
    * <p> Actual value of this constant is <code>any</code>.
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_PROTOCOLS}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_PROTOCOLS}
    */
   @Deprecated
   String DEFAULT_HTTP_SERVICE_SSL_PROTOCOLS = "any";
@@ -3218,7 +3252,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS} value.
    * <p> Actual value of this constant is <code>any</code>.
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_CIPHERS}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_CIPHERS}
    */
   @Deprecated
   String DEFAULT_HTTP_SERVICE_SSL_CIPHERS = "any";
@@ -3253,7 +3287,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE} value.
    * <p> Actual value of this constant is "".
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE}
    */
   @Deprecated
   String DEFAULT_HTTP_SERVICE_SSL_KEYSTORE = "";
@@ -3288,7 +3322,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD} value.
    * <p> Actual value of this constant is "".
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_PASSWORD}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE_PASSWORD}
    */
   @Deprecated
   String DEFAULT_HTTP_SERVICE_SSL_KEYSTORE_PASSWORD = "";
@@ -3357,7 +3391,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE} value.
    * <p> Actual value of this constant is "".
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_TRUSTSTORE}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE}
    */
   @Deprecated
   String DEFAULT_HTTP_SERVICE_SSL_TRUSTSTORE = "";
@@ -3392,7 +3426,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD} value.
    * <p> Actual value of this constant is "".
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE_PASSWORD}
    */
   @Deprecated
   String DEFAULT_HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD = "";
@@ -3496,7 +3530,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#SERVER_SSL_ENABLED} state.
    * <p> Actual value of this constant is <code>false</code>.
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_ENABLED}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_ENABLED}
    */
   @Deprecated
   boolean DEFAULT_SERVER_SSL_ENABLED = false;
@@ -3537,7 +3571,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#SERVER_SSL_PROTOCOLS} value.
    * <p> Actual value of this constant is <code>any</code>.
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_PROTOCOLS}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_PROTOCOLS}
    */
   @Deprecated
   String DEFAULT_SERVER_SSL_PROTOCOLS = "any";
@@ -3571,7 +3605,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#SERVER_SSL_CIPHERS} value.
    * <p> Actual value of this constant is <code>any</code>.
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_CIPHERS} 
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_CIPHERS} 
    */
   @Deprecated
   String DEFAULT_SERVER_SSL_CIPHERS = "any";
@@ -3605,7 +3639,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION} value.
    * <p> Actual value of this constant is <code>true</code>.
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_REQUIRE_AUTHENTICATION}
    */
   @Deprecated
   boolean DEFAULT_SERVER_SSL_REQUIRE_AUTHENTICATION = true;
@@ -3639,7 +3673,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#SERVER_SSL_KEYSTORE} value.
    * <p> Actual value of this constant is "".
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE}
    */
   @Deprecated
   String DEFAULT_SERVER_SSL_KEYSTORE = "";
@@ -3709,7 +3743,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD} value.
    * <p> Actual value of this constant is "".
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_PASSWORD}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE_PASSWORD}
    */
   @Deprecated
   String DEFAULT_SERVER_SSL_KEYSTORE_PASSWORD = "";
@@ -3744,7 +3778,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE} value.
    * <p> Actual value of this constant is "".
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_TRUSTSTORE}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE}
    */
   String DEFAULT_SERVER_SSL_TRUSTSTORE = "";
 
@@ -3778,7 +3812,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD} value.
    * <p> Actual value of this constant is "".
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE_PASSWORD}
    */
   @Deprecated
   String DEFAULT_SERVER_SSL_TRUSTSTORE_PASSWORD = "";
@@ -3804,7 +3838,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#GATEWAY_SSL_ENABLED} state.
    * <p> Actual value of this constant is <code>false</code>.
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_ENABLED}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_ENABLED}
    */
   @Deprecated
   boolean DEFAULT_GATEWAY_SSL_ENABLED = false;
@@ -3847,7 +3881,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} value.
    * <p> Actual value of this constant is <code>any</code>.
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_PROTOCOLS}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_PROTOCOLS}
    */
   String DEFAULT_GATEWAY_SSL_PROTOCOLS = "any";
   /**
@@ -3880,7 +3914,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS} value.
    * <p> Actual value of this constant is <code>any</code>.
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_CIPHERS} 
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_CIPHERS} 
    */
   String DEFAULT_GATEWAY_SSL_CIPHERS = "any";
   /**
@@ -3913,7 +3947,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION} value.
    * <p> Actual value of this constant is <code>true</code>.
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_REQUIRE_AUTHENTICATION}
    */
   @Deprecated
   boolean DEFAULT_GATEWAY_SSL_REQUIRE_AUTHENTICATION = true;
@@ -3947,7 +3981,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE} value.
    * <p> Actual value of this constant is "".
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE}
    */
   @Deprecated
   String DEFAULT_GATEWAY_SSL_KEYSTORE = "";
@@ -4017,7 +4051,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD} value.
    * <p> Actual value of this constant is "".
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_PASSWORD}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE_PASSWORD}
    */
   @Deprecated
   String DEFAULT_GATEWAY_SSL_KEYSTORE_PASSWORD = "";
@@ -4052,7 +4086,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} value.
    * <p> Actual value of this constant is "".
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_TRUSTSTORE}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE}
    */
   @Deprecated
   String DEFAULT_GATEWAY_SSL_TRUSTSTORE = "";
@@ -4087,7 +4121,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD} value.
    * <p> Actual value of this constant is "".
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+   * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE_PASSWORD}
    */
   @Deprecated
   String DEFAULT_GATEWAY_SSL_TRUSTSTORE_PASSWORD = "";
@@ -4297,7 +4331,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * @since Geode 1.0
    */
   @ConfigAttributeGetter(name = SSL_ENABLED_COMPONENTS)
-  String[] getSSLEnabledComponents();
+  SSLEnabledComponent[] getSSLEnabledComponents();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS}
@@ -4305,20 +4339,181 @@ public interface DistributionConfig extends Config, LogConfig {
    * @since Geode 1.0
    */
   @ConfigAttributeSetter(name = SSL_ENABLED_COMPONENTS)
-  void setSSLEnabledComponents(String[] sslEnabledComponents);
+  void setSSLEnabledComponents(SSLEnabledComponent[] sslEnabledComponents);
 
   /**
    * The name of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS} property
    * @since Geode 1.0
    */
-  @ConfigAttribute(type = String[].class)
+  @ConfigAttribute(type = SSLEnabledComponent[].class)
   String SSL_ENABLED_COMPONENTS_NAME = SSL_ENABLED_COMPONENTS;
 
   /**
    * The default ssl enabled components
    * @since Geode 1.0
    */
-  String[] DEFAULT_SSL_ENABLED_COMPONENTS = new String[]{};
+  SSLEnabledComponent[] DEFAULT_SSL_ENABLED_COMPONENTS = new SSLEnabledComponent[] {};
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SSL_PROTOCOLS}
+   * property.
+   */
+  @ConfigAttributeGetter(name = SSL_PROTOCOLS)
+  String getSSLProtocols();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SSL_PROTOCOLS}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SSL_PROTOCOLS)
+  void setSSLProtocols(String protocols);
+
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_PROTOCOLS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SSL_PROTOCOLS_NAME = SSL_PROTOCOLS;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SSL_CIPHERS}
+   * property.
+   */
+  @ConfigAttributeGetter(name = SSL_CIPHERS)
+  String getSSLCiphers();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SSL_CIPHERS}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SSL_CIPHERS)
+  void setSSLCiphers(String ciphers);
+
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_CIPHERS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SSL_CIPHERS_NAME = SSL_CIPHERS;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SSL_REQUIRE_AUTHENTICATION}
+   * property.
+   */
+  @ConfigAttributeGetter(name = SSL_REQUIRE_AUTHENTICATION)
+  boolean getSSLRequireAuthentication();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SSL_REQUIRE_AUTHENTICATION}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SSL_REQUIRE_AUTHENTICATION)
+  void setSSLRequireAuthentication(boolean enabled);
+
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_REQUIRE_AUTHENTICATION} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String SSL_REQUIRE_AUTHENTICATION_NAME = SSL_REQUIRE_AUTHENTICATION;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SSL_KEYSTORE}
+   * property.
+   */
+  @ConfigAttributeGetter(name = SSL_KEYSTORE)
+  String getSSLKeyStore();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SSL_KEYSTORE}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SSL_KEYSTORE)
+  void setSSLKeyStore(String keyStore);
+
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_KEYSTORE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SSL_KEYSTORE_NAME = SSL_KEYSTORE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SSL_KEYSTORE_TYPE}
+   * property.
+   */
+  @ConfigAttributeGetter(name = SSL_KEYSTORE_TYPE)
+  String getSSLKeyStoreType();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SSL_KEYSTORE_TYPE}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SSL_KEYSTORE_TYPE)
+  void setSSLKeyStoreType(String keyStoreType);
+
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_KEYSTORE_TYPE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SSL_KEYSTORE_TYPE_NAME = SSL_KEYSTORE_TYPE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SSL_KEYSTORE_PASSWORD}
+   * property.
+   */
+  @ConfigAttributeGetter(name = SSL_KEYSTORE_PASSWORD)
+  String getSSLKeyStorePassword();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SSL_KEYSTORE_PASSWORD}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SSL_KEYSTORE_PASSWORD)
+  void setSSLKeyStorePassword(String keyStorePassword);
+
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_KEYSTORE_PASSWORD} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SSL_KEYSTORE_PASSWORD_NAME = SSL_KEYSTORE_PASSWORD;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SSL_TRUSTSTORE}
+   * property.
+   */
+  @ConfigAttributeGetter(name = SSL_TRUSTSTORE)
+  String getSSLTrustStore();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SSL_TRUSTSTORE}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SSL_TRUSTSTORE)
+  void setSSLTrustStore(String trustStore);
+
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_TRUSTSTORE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SSL_TRUSTSTORE_NAME = SSL_TRUSTSTORE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SSL_TRUSTSTORE_PASSWORD}
+   * property.
+   */
+  @ConfigAttributeGetter(name = SSL_TRUSTSTORE_PASSWORD)
+  String getSSLTrustStorePassword();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SSL_TRUSTSTORE_PASSWORD}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SSL_TRUSTSTORE_PASSWORD)
+  void setSSLTrustStorePassword(String trustStorePassword);
+
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_TRUSTSTORE_PASSWORD} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SSL_TRUSTSTORE_PASSWORD_NAME = SSL_TRUSTSTORE_PASSWORD;
+
 
   //*************** Initializers to gather all the annotations in this class ************************
 

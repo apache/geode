@@ -286,18 +286,17 @@ public class JMXMBeanDUnitTest extends DistributedTestCase {
       properties.setProperty(JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD, "password");
     } else {
       {
-        properties.setProperty(CLUSTER_SSL_ENABLED, "true");
-        properties.setProperty(CLUSTER_SSL_CIPHERS, "any");
-        properties.setProperty(CLUSTER_SSL_PROTOCOLS, "any");
-        properties.setProperty(CLUSTER_SSL_KEYSTORE_PASSWORD, "password");
-        properties.setProperty(CLUSTER_SSL_TRUSTSTORE_PASSWORD, "password");
-        properties.setProperty(CLUSTER_SSL_KEYSTORE, getSimpleSingleKeyKeystore());
-        properties.setProperty(CLUSTER_SSL_TRUSTSTORE, getSimpleSingleKeyKeystore());
+        properties.setProperty(SSL_CIPHERS, "any");
+        properties.setProperty(SSL_PROTOCOLS, "any");
+        properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
+        properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
+        properties.setProperty(SSL_KEYSTORE, getSimpleSingleKeyKeystore());
+        properties.setProperty(SSL_TRUSTSTORE, getSimpleSingleKeyKeystore());
         properties.setProperty(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.JMX.toString());
 
         if (useMultiKey) {
-          properties.setProperty(CLUSTER_SSL_KEYSTORE, getMultiKeyKeystore());
-          properties.setProperty(CLUSTER_SSL_TRUSTSTORE, getMultiKeyTruststore());
+          properties.setProperty(SSL_KEYSTORE, getMultiKeyKeystore());
+          properties.setProperty(SSL_TRUSTSTORE, getMultiKeyTruststore());
           properties.setProperty(JMX_MANAGER_SSL_ALIAS, "jmxkey");
         }
       }

@@ -70,6 +70,7 @@ import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 import com.gemstone.gemfire.distributed.internal.*;
+import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.cache.BucketAdvisor;
@@ -383,9 +384,9 @@ public class AcceptorImpl extends Acceptor implements Runnable
     {
       if(!isGatewayReceiver) {
         //If configured use SSL properties for cache-server
-        this.socketCreator = SocketCreatorFactory.getServerSSLSocketCreator();
+        this.socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.SERVER);
       } else {
-        this.socketCreator = SocketCreatorFactory.getGatewaySSLSocketCreator();
+        this.socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.GATEWAY);
       }
       
       final GemFireCacheImpl gc;

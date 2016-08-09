@@ -80,10 +80,10 @@ implements mx4j.tools.adaptor.AdaptorServerSocketFactory,
                                        String ciphers,
                                        Properties gfsecurityProps) {
     if (protocols == null || protocols.length() == 0) {
-      protocols = DistributionConfig.DEFAULT_CLUSTER_SSL_PROTOCOLS;
+      protocols = DistributionConfig.DEFAULT_SSL_PROTOCOLS;
     }
     if (ciphers == null || ciphers.length() == 0) {
-      ciphers = DistributionConfig.DEFAULT_CLUSTER_SSL_CIPHERS;
+      ciphers = DistributionConfig.DEFAULT_SSL_CIPHERS;
     }
     this.socketCreator = SocketCreatorFactory.createNonDefaultInstance(
         useSSL, needClientAuth, protocols, ciphers, gfsecurityProps);

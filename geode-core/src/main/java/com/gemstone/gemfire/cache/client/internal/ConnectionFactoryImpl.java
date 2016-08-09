@@ -25,6 +25,7 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
+import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.cache.tier.Acceptor;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientUpdater;
@@ -96,13 +97,13 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     this.cancelCriterion = cancelCriterion;
     this.pool = pool;
     if (this.usedByGateway || (this.gatewaySender != null)) {
-      this.socketCreator = SocketCreatorFactory.getGatewaySSLSocketCreator();
+      this.socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.GATEWAY);
       if (sender!= null && !sender.getGatewayTransportFilters().isEmpty()) {
         this.socketCreator.initializeTransportFilterClientSocketFactory(sender);
       }
     } else {
       //If configured use SSL properties for cache-server
-      this.socketCreator = SocketCreatorFactory.getServerSSLSocketCreator();
+      this.socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.SERVER);
     }
   }
   

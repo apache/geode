@@ -659,6 +659,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
     try {
       loc1.invoke("start Locator1", () -> startLocator(port1, properties));
+      loc1.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(1));
       properties.put(CLUSTER_SSL_ENABLED, "false");
       properties.remove(SSL_ENABLED_COMPONENTS);
 
@@ -784,6 +785,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
     try {
       loc1.invoke("start Locator1", () -> startLocator(port1, properties));
+      loc1.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(1));
 
       properties.put(CLUSTER_SSL_KEYSTORE, getMultiKeyKeystore());
       properties.put(CLUSTER_SSL_TRUSTSTORE, getMultiKeyTruststore());

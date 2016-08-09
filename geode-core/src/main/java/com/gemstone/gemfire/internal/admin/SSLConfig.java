@@ -32,15 +32,15 @@ public class SSLConfig {
 
   //private static final String PREFIX = "javax.net.ssl.";
 
-  private boolean enabled = DistributionConfig.DEFAULT_CLUSTER_SSL_ENABLED;
-  private String protocols = DistributionConfig.DEFAULT_CLUSTER_SSL_PROTOCOLS;
-  private String ciphers = DistributionConfig.DEFAULT_CLUSTER_SSL_CIPHERS;
-  private boolean requireAuth = DistributionConfig.DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION;
-  private String keystore = DistributionConfig.DEFAULT_CLUSTER_SSL_KEYSTORE;
+  private boolean enabled = DistributionConfig.DEFAULT_SSL_ENABLED;
+  private String protocols = DistributionConfig.DEFAULT_SSL_PROTOCOLS;
+  private String ciphers = DistributionConfig.DEFAULT_SSL_CIPHERS;
+  private boolean requireAuth = DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
+  private String keystore = DistributionConfig.DEFAULT_SSL_KEYSTORE;
   private String keystoreType = DistributionConfig.DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE;
-  private String keystorePassword = DistributionConfig.DEFAULT_CLUSTER_SSL_KEYSTORE_PASSWORD;
-  private String truststore = DistributionConfig.DEFAULT_CLUSTER_SSL_TRUSTSTORE;
-  private String truststorePassword = DistributionConfig.DEFAULT_CLUSTER_SSL_TRUSTSTORE_PASSWORD;
+  private String keystorePassword = DistributionConfig.DEFAULT_SSL_KEYSTORE_PASSWORD;
+  private String truststore = DistributionConfig.DEFAULT_SSL_TRUSTSTORE;
+  private String truststorePassword = DistributionConfig.DEFAULT_SSL_TRUSTSTORE_PASSWORD;
   private String truststoreType = DistributionConfig.DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE;
   private String alias = null;
   private SSLEnabledComponent sslEnabledComponent = null;
@@ -171,20 +171,9 @@ public class SSLConfig {
     this.sslEnabledComponent = sslEnabledComponent;
   }
 
-  /**
-   * Returns a string representation of the object.
-   * @return a string representation of the object
-   */
   @Override
   public String toString() {
-    final StringBuffer sb = new StringBuffer("[SSLConfig: ");
-    sb.append("enabled=").append(this.enabled);
-    sb.append(", protocols=").append(this.protocols);
-    sb.append(", ciphers=").append(this.ciphers);
-    sb.append(", requireAuth=").append(this.requireAuth);
-    sb.append(", properties=").append(this.properties);
-    sb.append("]");
-    return sb.toString();
+    return "SSLConfig{" + "enabled=" + enabled + ", protocols='" + protocols + '\'' + ", ciphers='" + ciphers + '\'' + ", requireAuth=" + requireAuth + ", keystore='" + keystore + '\'' + ", keystoreType='" + keystoreType + '\'' + ", keystorePassword='" + keystorePassword + '\'' + ", truststore='" + truststore + '\'' + ", truststorePassword='" + truststorePassword + '\'' + ", truststoreType='" + truststoreType + '\'' + ", alias='" + alias + '\'' + ", sslEnabledComponent=" + sslEnabledComponent + ", properties=" + properties + '}';
   }
 
   /**

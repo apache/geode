@@ -64,16 +64,23 @@ public class SSLConfigurationFactory {
   private SSLConfig createSSLConfigForComponent(final SSLEnabledComponent sslEnabledComponent) {
     SSLConfig sslConfig = new SSLConfig();
     configureClusterSSL(sslConfig, sslEnabledComponent);
-    String[] sslEnabledComponents = distributionConfig.getSSLEnabledComponents();
+    SSLEnabledComponent[] sslEnabledComponents = distributionConfig.getSSLEnabledComponents();
+    if(sslEnabledComponents.length == 0)
+    {
+      sslConfig = configureLegacyClusterSSL(sslConfig);
+    }
     sslConfig.setSslEnabledComponent(sslEnabledComponent);
     switch (sslEnabledComponent) {
       case ALL: {
 
       }
       case CLUSTER: {
+        if (sslEnabledComponents.length > 0) {
+          sslConfig.setAlias(distributionConfig.getClusterSSLAlias());
+        }
         break;
       }
-      case LOCATOR:{
+      case LOCATOR: {
         if (sslEnabledComponents.length > 0) {
           sslConfig.setAlias(distributionConfig.getLocatorSSLAlias());
         }
@@ -117,8 +124,36 @@ public class SSLConfigurationFactory {
   }
 
   private void configureClusterSSL(final SSLConfig sslConfig, final SSLEnabledComponent sslEnabledComponent) {
-    sslConfig.setCiphers(distributionConfig.getClusterSSLCiphers());
+    sslConfig.setCiphers(distributionConfig.getSSLCiphers());
     sslConfig.setEnabled(determineIfSSLEnabledForSSLComponent(sslEnabledComponent));
+    sslConfig.setKeystore(distributionConfig.getSSLKeyStore());
+    sslConfig.setKeystorePassword(distributionConfig.getSSLKeyStorePassword());
+    sslConfig.setKeystoreType(distributionConfig.getSSLKeyStoreType());
+    sslConfig.setTruststore(distributionConfig.getSSLTrustStore());
+    sslConfig.setTruststorePassword(distributionConfig.getSSLTrustStorePassword());
+    sslConfig.setProtocols(distributionConfig.getSSLProtocols());
+    sslConfig.setRequireAuth(distributionConfig.getSSLRequireAuthentication());
+  }
+
+  private boolean determineIfSSLEnabledForSSLComponent(final SSLEnabledComponent sslEnabledComponent) {
+    if (ArrayUtils.contains(distributionConfig.getSSLEnabledComponents(), SSLEnabledComponent.NONE)) {
+      return false;
+    }
+    if (ArrayUtils.contains(distributionConfig.getSSLEnabledComponents(), SSLEnabledComponent.ALL)) {
+      return true;
+    }
+    return ArrayUtils.contains(distributionConfig.getSSLEnabledComponents(), sslEnabledComponent) ? true : false;
+  }
+
+  /**
+   * Configure a sslConfig for the cluster using the legacy configuration
+   * @return A sslConfig object describing the ssl config for the server component
+   *
+   * @deprecated as of Geode 1.0
+   */
+  private SSLConfig configureLegacyClusterSSL(SSLConfig sslConfig) {
+    sslConfig.setCiphers(distributionConfig.getClusterSSLCiphers());
+    sslConfig.setEnabled(distributionConfig.getClusterSSLEnabled());
     sslConfig.setKeystore(distributionConfig.getClusterSSLKeyStore());
     sslConfig.setKeystorePassword(distributionConfig.getClusterSSLKeyStorePassword());
     sslConfig.setKeystoreType(distributionConfig.getClusterSSLKeyStoreType());
@@ -126,17 +161,7 @@ public class SSLConfigurationFactory {
     sslConfig.setTruststorePassword(distributionConfig.getClusterSSLTrustStorePassword());
     sslConfig.setProtocols(distributionConfig.getClusterSSLProtocols());
     sslConfig.setRequireAuth(distributionConfig.getClusterSSLRequireAuthentication());
-    sslConfig.setAlias(distributionConfig.getClusterSSLAlias());
-  }
-
-  private boolean determineIfSSLEnabledForSSLComponent(final SSLEnabledComponent sslEnabledComponent) {
-    if (ArrayUtils.contains(distributionConfig.getSSLEnabledComponents(), SSLEnabledComponent.ALL.getConstant().toLowerCase())) {
-      return true;
-    }
-    if (distributionConfig.getSSLEnabledComponents().length == 0 && distributionConfig.getClusterSSLEnabled()) {
-      return true;
-    }
-    return ArrayUtils.contains(distributionConfig.getSSLEnabledComponents(), sslEnabledComponent.getConstant().toLowerCase()) ? true : false;
+    return sslConfig;
   }
 
   /**

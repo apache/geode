@@ -110,20 +110,33 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     String cacheServerSslprotocols = "any";
     String cacheServerSslciphers = "any";
     boolean cacheServerSslRequireAuth = true;
-    gemFireProps.put(CLUSTER_SSL_ENABLED, String.valueOf(cacheServerSslenabled));
-    gemFireProps.put(CLUSTER_SSL_PROTOCOLS, cacheServerSslprotocols);
-    gemFireProps.put(CLUSTER_SSL_CIPHERS, cacheServerSslciphers);
-    gemFireProps.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(cacheServerSslRequireAuth));
-
-    String keyStore = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_KEY_STORE);
-    String trustStore = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_TRUST_STORE);
-    gemFireProps.put(CLUSTER_SSL_KEYSTORE_TYPE, "jks");
-    gemFireProps.put(CLUSTER_SSL_KEYSTORE, keyStore);
-    gemFireProps.put(CLUSTER_SSL_KEYSTORE_PASSWORD, "password");
-    gemFireProps.put(CLUSTER_SSL_TRUSTSTORE, trustStore);
-    gemFireProps.put(CLUSTER_SSL_TRUSTSTORE_PASSWORD, "password");
     if (!legacy) {
       gemFireProps.put(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.CLUSTER+","+SSLEnabledComponent.SERVER);
+      gemFireProps.put(SSL_PROTOCOLS, cacheServerSslprotocols);
+      gemFireProps.put(SSL_CIPHERS, cacheServerSslciphers);
+      gemFireProps.put(SSL_REQUIRE_AUTHENTICATION, String.valueOf(cacheServerSslRequireAuth));
+
+      String keyStore = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_KEY_STORE);
+      String trustStore = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_TRUST_STORE);
+      gemFireProps.put(SSL_KEYSTORE_TYPE, "jks");
+      gemFireProps.put(SSL_KEYSTORE, keyStore);
+      gemFireProps.put(SSL_KEYSTORE_PASSWORD, "password");
+      gemFireProps.put(SSL_TRUSTSTORE, trustStore);
+      gemFireProps.put(SSL_TRUSTSTORE_PASSWORD, "password");
+    }
+    else{
+      gemFireProps.put(CLUSTER_SSL_ENABLED, String.valueOf(cacheServerSslenabled));
+      gemFireProps.put(CLUSTER_SSL_PROTOCOLS, cacheServerSslprotocols);
+      gemFireProps.put(CLUSTER_SSL_CIPHERS, cacheServerSslciphers);
+      gemFireProps.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(cacheServerSslRequireAuth));
+
+      String keyStore = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_KEY_STORE);
+      String trustStore = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_TRUST_STORE);
+      gemFireProps.put(CLUSTER_SSL_KEYSTORE_TYPE, "jks");
+      gemFireProps.put(CLUSTER_SSL_KEYSTORE, keyStore);
+      gemFireProps.put(CLUSTER_SSL_KEYSTORE_PASSWORD, "password");
+      gemFireProps.put(CLUSTER_SSL_TRUSTSTORE, trustStore);
+      gemFireProps.put(CLUSTER_SSL_TRUSTSTORE_PASSWORD, "password");
     }
     StringWriter sw = new StringWriter();
     PrintWriter writer = new PrintWriter(sw);

@@ -351,7 +351,7 @@ public class ManagementAgent {
       bindAddr = InetAddress.getByName(hostname);
     }
 
-    final SocketCreator socketCreator = SocketCreatorFactory.getJMXManagerSSLSocketCreator();
+    final SocketCreator socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.JMX);
 
     final boolean ssl = socketCreator.useSSL();
 

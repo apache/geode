@@ -24,6 +24,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.DistributionLocator;
 import com.gemstone.gemfire.internal.GemFireVersion;
+import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
@@ -400,7 +401,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
 
   @Test
   public void testStartUsingPortInUseFails() throws Throwable {
-    this.socket = SocketCreatorFactory.getClusterSSLSocketCreator().createServerSocket(this.locatorPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).createServerSocket(this.locatorPort, 50, null, -1);
     this.locatorPort = this.socket.getLocalPort();
 
     final List<String> jvmArguments = getJvmArguments();
@@ -472,7 +473,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
     String expectedString = "java.net.BindException";
     AtomicBoolean outputContainedExpectedString = new AtomicBoolean();
 
-    this.socket = SocketCreatorFactory.getClusterSSLSocketCreator().createServerSocket(this.locatorPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).createServerSocket(this.locatorPort, 50, null, -1);
     this.locatorPort = this.socket.getLocalPort();
 
     assertFalse(AvailablePort.isPortAvailable(this.locatorPort, AvailablePort.SOCKET));

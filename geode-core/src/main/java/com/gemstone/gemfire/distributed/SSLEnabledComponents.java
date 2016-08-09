@@ -23,6 +23,12 @@ package com.gemstone.gemfire.distributed;
 public interface SSLEnabledComponents {
 
   /**
+   * This determines that none of the components will use the SSL for their communications.
+   * <U>Since</U>: Geode 1.0
+   */
+  String NONE = "none";
+
+  /**
    * This determines that all components will use the SSL for their communications.
    * <U>Since</U>: Geode 1.0
    */

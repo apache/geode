@@ -64,6 +64,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.Heartbe
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectRequest;
 import com.gemstone.gemfire.internal.ConnectionWatcher;
+import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
@@ -494,7 +495,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     InternalDistributedSystem internalDistributedSystem = InternalDistributedSystem.getConnectedInstance();
     try {
       logger.debug("Checking member {} with TCP socket connection {}:{}.", suspectMember, suspectMember.getInetAddress(), port);
-      clientSocket = SocketCreatorFactory.getClusterSSLSocketCreator().connect(suspectMember.getInetAddress(), port,
+      clientSocket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).connect(suspectMember.getInetAddress(), port,
           (int)memberTimeout, new ConnectTimeoutTask(services.getTimer(), memberTimeout), false, -1, false);
       clientSocket.setTcpNoDelay(true);
       return doTCPCheckMember(suspectMember, clientSocket);
@@ -643,7 +644,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) {
     ServerSocket serverSocket = null;
     try {
-      serverSocket = SocketCreatorFactory.getClusterSSLSocketCreator().createServerSocketUsingPortRange(socketAddress, 50/*backlog*/,
+      serverSocket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).createServerSocketUsingPortRange(socketAddress, 50/*backlog*/,
         true/*isBindAddress*/, false/*useNIO*/, 65536/*tcpBufferSize*/, portRange, false);
       socketPort = serverSocket.getLocalPort();
     } catch (IOException e) {

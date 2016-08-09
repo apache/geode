@@ -239,13 +239,13 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
     props.setProperty(STATE_SAVE_FILE_NAME, String.valueOf(DEFAULT_STATE_SAVE_FILE));
 
-    props.setProperty(CLUSTER_SSL_ENABLED, String.valueOf(DEFAULT_CLUSTER_SSL_ENABLED));
+    props.setProperty(CLUSTER_SSL_ENABLED, String.valueOf(DEFAULT_SSL_ENABLED));
 
-    props.setProperty(CLUSTER_SSL_PROTOCOLS, String.valueOf(DEFAULT_CLUSTER_SSL_PROTOCOLS));
+    props.setProperty(CLUSTER_SSL_PROTOCOLS, String.valueOf(DEFAULT_SSL_PROTOCOLS));
 
-    props.setProperty(CLUSTER_SSL_CIPHERS, String.valueOf(DEFAULT_CLUSTER_SSL_CIPHERS));
+    props.setProperty(CLUSTER_SSL_CIPHERS, String.valueOf(DEFAULT_SSL_CIPHERS));
 
-    props.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION));
+    props.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(DEFAULT_SSL_REQUIRE_AUTHENTICATION));
 
     props.setProperty(ENTITY_CONFIG_XML_FILE_NAME, String.valueOf(DEFAULT_ENTITY_CONFIG_XML_FILE));
 
@@ -935,10 +935,10 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     this.httpAuthUser = validateNonEmptyString(props.getProperty(HTTP_AUTHENTICATION_USER_NAME), DEFAULT_HTTP_AUTHENTICATION_USER);
     this.httpAuthPassword = validateNonEmptyString(props.getProperty(HTTP_AUTHENTICATION_PASSWORD_NAME), DEFAULT_HTTP_AUTHENTICATION_PASSWORD);
 
-    this.sslEnabled = validateBoolean(props.getProperty(CLUSTER_SSL_ENABLED), DEFAULT_CLUSTER_SSL_ENABLED);
-    this.sslProtocols = validateNonEmptyString(props.getProperty(CLUSTER_SSL_PROTOCOLS), DEFAULT_CLUSTER_SSL_PROTOCOLS);
-    this.sslCiphers = validateNonEmptyString(props.getProperty(CLUSTER_SSL_CIPHERS), DEFAULT_CLUSTER_SSL_CIPHERS);
-    this.sslAuthenticationRequired = validateBoolean(props.getProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION), DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION);
+    this.sslEnabled = validateBoolean(props.getProperty(CLUSTER_SSL_ENABLED), DEFAULT_SSL_ENABLED);
+    this.sslProtocols = validateNonEmptyString(props.getProperty(CLUSTER_SSL_PROTOCOLS), DEFAULT_SSL_PROTOCOLS);
+    this.sslCiphers = validateNonEmptyString(props.getProperty(CLUSTER_SSL_CIPHERS), DEFAULT_SSL_CIPHERS);
+    this.sslAuthenticationRequired = validateBoolean(props.getProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION), DEFAULT_SSL_REQUIRE_AUTHENTICATION);
     this.sslProperties = new Properties();
     for (int i = 0; true; i++) {
       String key = "ssl-property-" + i;
@@ -1675,10 +1675,10 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   // -------------------------------------------------------------------------
   //   SSL support...
   // -------------------------------------------------------------------------
-  private boolean sslEnabled = DEFAULT_CLUSTER_SSL_ENABLED;
-  private String sslProtocols = DEFAULT_CLUSTER_SSL_PROTOCOLS;
-  private String sslCiphers = DEFAULT_CLUSTER_SSL_CIPHERS;
-  private boolean sslAuthenticationRequired = DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION;
+  private boolean sslEnabled = DEFAULT_SSL_ENABLED;
+  private String sslProtocols = DEFAULT_SSL_PROTOCOLS;
+  private String sslCiphers = DEFAULT_SSL_CIPHERS;
+  private boolean sslAuthenticationRequired = DEFAULT_SSL_REQUIRE_AUTHENTICATION;
   private Properties sslProperties = new Properties();
 
   @Override

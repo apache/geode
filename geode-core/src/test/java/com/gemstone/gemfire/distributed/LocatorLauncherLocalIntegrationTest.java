@@ -21,6 +21,7 @@ import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
 import com.gemstone.gemfire.distributed.LocatorLauncher.LocatorState;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.internal.*;
+import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
@@ -327,7 +328,7 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
       return;
     }
 
-    this.socket = SocketCreatorFactory.getClusterSSLSocketCreator().createServerSocket(this.locatorPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).createServerSocket(this.locatorPort, 50, null, -1);
     assertTrue(this.socket.isBound());
     assertFalse(this.socket.isClosed());
     assertFalse(AvailablePort.isPortAvailable(this.locatorPort, AvailablePort.SOCKET));
@@ -544,7 +545,7 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
     }
 
     // generate one free port and then use it instead of default
-    this.socket = SocketCreatorFactory.getClusterSSLSocketCreator().createServerSocket(this.locatorPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).createServerSocket(this.locatorPort, 50, null, -1);
     
     this.launcher = new Builder()
         .setMemberName(getUniqueName())

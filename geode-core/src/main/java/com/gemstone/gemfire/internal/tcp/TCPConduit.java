@@ -60,6 +60,7 @@ import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 
@@ -422,19 +423,19 @@ public class TCPConduit implements Runnable {
   private void createServerSocket() {
     int p = this.port;
     int b = BACKLOG;
-    InetAddress ba = this.address;
+    InetAddress bindAddress = this.address;
 
     try {
       if (this.useNIO) {
         if (p <= 0) {
 
-          socket = SocketCreatorFactory.getClusterSSLSocketCreator().createServerSocketUsingPortRange(ba, b, isBindAddress, this.useNIO, 0, tcpPortRange);
+          socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).createServerSocketUsingPortRange(bindAddress, b, isBindAddress, this.useNIO, 0, tcpPortRange);
         } else {
-          ServerSocketChannel channl = ServerSocketChannel.open();
-          socket = channl.socket();
+          ServerSocketChannel channel = ServerSocketChannel.open();
+          socket = channel.socket();
 
-          InetSocketAddress addr = new InetSocketAddress(isBindAddress ? ba : null, p);
-          socket.bind(addr, b);
+          InetSocketAddress inetSocketAddress = new InetSocketAddress(isBindAddress ? bindAddress : null, p);
+          socket.bind(inetSocketAddress, b);
         }
 
         if (useNIO) {
@@ -458,10 +459,10 @@ public class TCPConduit implements Runnable {
       } else {
         try {
           if (p <= 0) {
-            socket = SocketCreatorFactory.getClusterSSLSocketCreator()
-                                         .createServerSocketUsingPortRange(ba, b, isBindAddress, this.useNIO, this.tcpBufferSize, tcpPortRange);
+            socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER)
+                                         .createServerSocketUsingPortRange(bindAddress, b, isBindAddress, this.useNIO, this.tcpBufferSize, tcpPortRange);
           } else {
-            socket = SocketCreatorFactory.getClusterSSLSocketCreator().createServerSocket(p, b, isBindAddress ? ba : null, this.tcpBufferSize);
+            socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).createServerSocket(p, b, isBindAddress ? bindAddress : null, this.tcpBufferSize);
           }
           int newSize = socket.getReceiveBufferSize();
           if (newSize != this.tcpBufferSize) {
@@ -478,7 +479,7 @@ public class TCPConduit implements Runnable {
       }
       port = socket.getLocalPort();
     } catch (IOException io) {
-      throw new ConnectionException(LocalizedStrings.TCPConduit_EXCEPTION_CREATING_SERVERSOCKET.toLocalizedString(new Object[] { Integer.valueOf(p), ba }), io);
+      throw new ConnectionException(LocalizedStrings.TCPConduit_EXCEPTION_CREATING_SERVERSOCKET.toLocalizedString(new Object[] { Integer.valueOf(p), bindAddress }), io);
     }
   }
 
@@ -655,7 +656,7 @@ public class TCPConduit implements Runnable {
             logger.warn(LocalizedMessage.create(LocalizedStrings.TCPConduit_STOPPING_P2P_LISTENER_DUE_TO_SSL_CONFIGURATION_PROBLEM), ex);
             break;
           }
-          SocketCreatorFactory.getClusterSSLSocketCreator().configureServerSSLSocket(othersock);
+          SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).configureServerSSLSocket(othersock);
         }
         if (stopped) {
           try {

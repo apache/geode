@@ -857,13 +857,13 @@ public class DistributedSystemConfigImpl
   //   SSL support...
   // -------------------------------------------------------------------------
   private boolean sslEnabled =
-      DistributionConfig.DEFAULT_CLUSTER_SSL_ENABLED;
+      DistributionConfig.DEFAULT_SSL_ENABLED;
   private String sslProtocols =
-      DistributionConfig.DEFAULT_CLUSTER_SSL_PROTOCOLS;
+      DistributionConfig.DEFAULT_SSL_PROTOCOLS;
   private String sslCiphers =
-      DistributionConfig.DEFAULT_CLUSTER_SSL_CIPHERS;
+      DistributionConfig.DEFAULT_SSL_CIPHERS;
   private boolean sslAuthenticationRequired =
-      DistributionConfig.DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION;
+      DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
   private Properties sslProperties = new Properties();
 
   public boolean isSSLEnabled() {

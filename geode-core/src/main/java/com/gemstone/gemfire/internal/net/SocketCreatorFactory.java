@@ -32,7 +32,6 @@ import com.gemstone.gemfire.internal.admin.SSLConfig;
 public class SocketCreatorFactory {
 
   private static SocketCreatorFactory instance = null;
-  private static final String NON_SSL = "Non_SSL";
   private Map<SSLEnabledComponent, SocketCreator> socketCreators = new HashMap<>();
   private DistributionConfig distributionConfig;
 
@@ -46,7 +45,6 @@ public class SocketCreatorFactory {
       this.distributionConfig = distributionConfig;
     }
     SSLConfigurationFactory.setDistributionConfig(this.distributionConfig);
-    initialize();
   }
 
   private synchronized static SocketCreatorFactory getInstance(boolean closing) {
@@ -60,46 +58,18 @@ public class SocketCreatorFactory {
     return getInstance(false);
   }
 
-  private void initialize() {
-    //Hack... get a default cluster socket creator initialized
-    getClusterSSLSocketCreator();
-  }
-
   public static SocketCreator getSSLSocketCreatorForComponent(SSLEnabledComponent sslEnabledComponent) {
     SSLConfig sslConfigForComponent = SSLConfigurationFactory.getSSLConfigForComponent(sslEnabledComponent);
+    System.out.println("SocketCreatorFactory.getSSLSocketCreatorForComponent SSLEnabledComponent:"+sslEnabledComponent);
+    System.out.println("SocketCreatorFactory.getSSLSocketCreatorForComponent SSLEnabledComponent:"+sslConfigForComponent);
     return getInstance().getOrCreateSocketCreatorForSSLEnabledComponent(sslEnabledComponent, sslConfigForComponent);
-  }
-
-  public static SocketCreator getClusterSSLSocketCreator() {
-    SSLConfig sslConfigForComponent = SSLConfigurationFactory.getSSLConfigForComponent(SSLEnabledComponent.CLUSTER);
-    return getInstance().getOrCreateSocketCreatorForSSLEnabledComponent(SSLEnabledComponent.CLUSTER, sslConfigForComponent);
-  }
-
-  public static SocketCreator getServerSSLSocketCreator() {
-    SSLConfig sslConfigForComponent = SSLConfigurationFactory.getSSLConfigForComponent(SSLEnabledComponent.SERVER);
-    return getInstance().getOrCreateSocketCreatorForSSLEnabledComponent(SSLEnabledComponent.SERVER, sslConfigForComponent);
-  }
-
-  public static SocketCreator getGatewaySSLSocketCreator() {
-    SSLConfig sslConfigForComponent = SSLConfigurationFactory.getSSLConfigForComponent(SSLEnabledComponent.GATEWAY);
-    return getInstance().getOrCreateSocketCreatorForSSLEnabledComponent(SSLEnabledComponent.GATEWAY, sslConfigForComponent);
-  }
-
-  public static SocketCreator getJMXManagerSSLSocketCreator() {
-    SSLConfig sslConfigForComponent = SSLConfigurationFactory.getSSLConfigForComponent(SSLEnabledComponent.JMX);
-    return getInstance().getOrCreateSocketCreatorForSSLEnabledComponent(SSLEnabledComponent.JMX, sslConfigForComponent);
-  }
-
-  public static SocketCreator getHTTPServiceSSLSocketCreator() {
-    SSLConfig sslConfigForComponent = SSLConfigurationFactory.getSSLConfigForComponent(SSLEnabledComponent.HTTP_SERVICE);
-    return getInstance().getOrCreateSocketCreatorForSSLEnabledComponent(SSLEnabledComponent.HTTP_SERVICE, sslConfigForComponent);
   }
 
   private SocketCreator getSSLSocketCreator(final SSLEnabledComponent sslComponent, final DistributionConfig distributionConfig, final SSLConfig sslConfig) {
     if (sslConfig.isEnabled()) {
       if (ArrayUtils.contains(distributionConfig.getSSLEnabledComponents(), SSLEnabledComponents.ALL)) {
         return createSSLSocketCreator(SSLEnabledComponent.ALL, sslConfig);
-      } else if (ArrayUtils.contains(distributionConfig.getSSLEnabledComponents(), sslComponent.getConstant())) {
+      } else if (ArrayUtils.contains(distributionConfig.getSSLEnabledComponents(), sslComponent)) {
         return createSSLSocketCreator(sslComponent, sslConfig);
       }
     }

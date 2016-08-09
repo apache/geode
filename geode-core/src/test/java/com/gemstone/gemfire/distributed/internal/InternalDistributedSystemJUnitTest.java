@@ -34,11 +34,13 @@ import java.util.logging.Level;
 
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
+import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.Locator;
@@ -48,22 +50,6 @@ import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.net.*;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.logging.Level;
-
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
 
 /**
  * Tests the functionality of the {@link InternalDistributedSystem}
@@ -706,6 +692,7 @@ public class InternalDistributedSystemJUnitTest
   @Test
   public void testDeprecatedSSLProps() {
     Properties props = getCommonProperties();
+    props.setProperty(CLUSTER_SSL_ENABLED, "true");
     Config config1 = new DistributionConfigImpl(props, false);
     Properties props1 = config1.toProperties();
     // For the deprecated ssl-* properties a decision was made
@@ -734,7 +721,7 @@ public class InternalDistributedSystemJUnitTest
   @Rule
   public ExpectedException illegalArgumentException = ExpectedException.none();
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = GemFireConfigException.class)
   public void testSSLEnabledComponentsWrongComponentName() {
     Properties props = getCommonProperties();
     props.setProperty(SSL_ENABLED_COMPONENTS, "testing");
@@ -791,7 +778,6 @@ public class InternalDistributedSystemJUnitTest
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.setProperty(CLUSTER_SSL_ENABLED, "true");
     return props;
   }
 

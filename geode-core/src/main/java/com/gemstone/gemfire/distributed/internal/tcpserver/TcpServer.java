@@ -27,13 +27,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.URL;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.LongBuffer;
-import java.nio.ShortBuffer;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -68,7 +61,6 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
-import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteBufferByteSource;
 
 /**
  * TCP server which listens on a port and delegates requests to a request
@@ -176,7 +168,11 @@ public class TcpServer {
 
     //TODO Udo: How would I handle this case where the cfg is empty???
 
-    this.socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.LOCATOR);
+    if (this.socketCreator == null) {
+      this.socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.LOCATOR);
+    } else {
+      throw new RuntimeException("The socket Creator already exists");
+    }
   }
 
   private static PooledExecutorWithDMStats createExecutor(PoolStatHelper poolHelper, final ThreadGroup threadGroup) {
@@ -209,6 +205,13 @@ public class TcpServer {
   }
 
   private void startServerThread() throws IOException {
+    //TODO Udo: clean this up
+    if(srv_sock != null){
+      throw new RuntimeException("TcpServer.startServerThread + SrvSocket not null");
+    }
+    if(srv_sock != null && !srv_sock.isClosed()){
+      throw new RuntimeException("TcpServer.startServerThread + SrvSocket not closed");
+    }
     if (srv_sock == null || srv_sock.isClosed()) {
       if (bind_address == null) {
         srv_sock = socketCreator.createServerSocket(port, BACKLOG);

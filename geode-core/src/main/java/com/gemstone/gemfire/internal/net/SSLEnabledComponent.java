@@ -29,7 +29,7 @@ public enum SSLEnabledComponent {
   HTTP_SERVICE(SSLEnabledComponents.HTTP_SERVICE),
   GATEWAY(SSLEnabledComponents.GATEWAY),
   LOCATOR(SSLEnabledComponents.LOCATOR),
-  NONE("NO_COMPONENT");
+  NONE(SSLEnabledComponents.NONE);
 
   private String constant;
 
