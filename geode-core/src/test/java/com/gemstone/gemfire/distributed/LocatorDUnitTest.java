@@ -416,14 +416,13 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.put(CLUSTER_SSL_ENABLED, "true");
-    properties.put(CLUSTER_SSL_CIPHERS, "any");
-    properties.put(CLUSTER_SSL_PROTOCOLS, "any");
-    properties.put(CLUSTER_SSL_KEYSTORE, getSingleKeyKeystore());
-    properties.put(CLUSTER_SSL_KEYSTORE_PASSWORD, "password");
-    properties.put(CLUSTER_SSL_KEYSTORE_TYPE, "JKS");
-    properties.put(CLUSTER_SSL_TRUSTSTORE, getSingleKeyKeystore());
-    properties.put(CLUSTER_SSL_TRUSTSTORE_PASSWORD, "password");
+    properties.put(SSL_CIPHERS, "any");
+    properties.put(SSL_PROTOCOLS, "any");
+    properties.put(SSL_KEYSTORE, getSingleKeyKeystore());
+    properties.put(SSL_KEYSTORE_PASSWORD, "password");
+    properties.put(SSL_KEYSTORE_TYPE, "JKS");
+    properties.put(SSL_TRUSTSTORE, getSingleKeyKeystore());
+    properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
     properties.put(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.LOCATOR.getConstant());
 
 
@@ -534,14 +533,13 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.put(CLUSTER_SSL_ENABLED, "true");
-    properties.put(CLUSTER_SSL_CIPHERS, "any");
-    properties.put(CLUSTER_SSL_PROTOCOLS, "any");
-    properties.put(CLUSTER_SSL_KEYSTORE, getMultiKeyKeystore());
-    properties.put(CLUSTER_SSL_KEYSTORE_PASSWORD, "password");
-    properties.put(CLUSTER_SSL_KEYSTORE_TYPE, "JKS");
-    properties.put(CLUSTER_SSL_TRUSTSTORE, getMultiKeyTruststore());
-    properties.put(CLUSTER_SSL_TRUSTSTORE_PASSWORD, "password");
+    properties.put(SSL_CIPHERS, "any");
+    properties.put(SSL_PROTOCOLS, "any");
+    properties.put(SSL_KEYSTORE, getMultiKeyKeystore());
+    properties.put(SSL_KEYSTORE_PASSWORD, "password");
+    properties.put(SSL_KEYSTORE_TYPE, "JKS");
+    properties.put(SSL_TRUSTSTORE, getMultiKeyTruststore());
+    properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
     properties.put(LOCATOR_SSL_ALIAS, "locatorkey");
     properties.put(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.LOCATOR.getConstant());
 
@@ -646,21 +644,19 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.put(CLUSTER_SSL_ENABLED, "true");
-    properties.put(CLUSTER_SSL_CIPHERS, "any");
-    properties.put(CLUSTER_SSL_PROTOCOLS, "any");
-    properties.put(CLUSTER_SSL_KEYSTORE, getSingleKeyKeystore());
-    properties.put(CLUSTER_SSL_KEYSTORE_PASSWORD, "password");
-    properties.put(CLUSTER_SSL_KEYSTORE_TYPE, "JKS");
-    properties.put(CLUSTER_SSL_TRUSTSTORE, getSingleKeyKeystore());
-    properties.put(CLUSTER_SSL_TRUSTSTORE_PASSWORD, "password");
-    properties.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION, "true");
+    properties.put(SSL_CIPHERS, "any");
+    properties.put(SSL_PROTOCOLS, "any");
+    properties.put(SSL_KEYSTORE, getSingleKeyKeystore());
+    properties.put(SSL_KEYSTORE_PASSWORD, "password");
+    properties.put(SSL_KEYSTORE_TYPE, "JKS");
+    properties.put(SSL_TRUSTSTORE, getSingleKeyKeystore());
+    properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
+    properties.put(SSL_REQUIRE_AUTHENTICATION, "true");
     properties.put(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.LOCATOR.getConstant());
 
     try {
       loc1.invoke("start Locator1", () -> startLocator(port1, properties));
       loc1.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(1));
-      properties.put(CLUSTER_SSL_ENABLED, "false");
       properties.remove(SSL_ENABLED_COMPONENTS);
 
       loc2.invoke("start Locator2", () -> startLocator(port2, properties));
@@ -708,22 +704,20 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.put(CLUSTER_SSL_ENABLED, "false");
-    properties.put(CLUSTER_SSL_CIPHERS, "any");
-    properties.put(CLUSTER_SSL_PROTOCOLS, "any");
+    properties.put(SSL_CIPHERS, "any");
+    properties.put(SSL_PROTOCOLS, "any");
 
 
     try {
       loc1.invoke("start Locator1", () -> startLocator(port1, properties));
       loc1.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(1));
 
-      properties.put(CLUSTER_SSL_ENABLED, "true");
-      properties.put(CLUSTER_SSL_KEYSTORE, getSingleKeyKeystore());
-      properties.put(CLUSTER_SSL_KEYSTORE_PASSWORD, "password");
-      properties.put(CLUSTER_SSL_KEYSTORE_TYPE, "JKS");
-      properties.put(CLUSTER_SSL_TRUSTSTORE, getSingleKeyKeystore());
-      properties.put(CLUSTER_SSL_TRUSTSTORE_PASSWORD, "password");
-      properties.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION, "true");
+      properties.put(SSL_KEYSTORE, getSingleKeyKeystore());
+      properties.put(SSL_KEYSTORE_PASSWORD, "password");
+      properties.put(SSL_KEYSTORE_TYPE, "JKS");
+      properties.put(SSL_TRUSTSTORE, getSingleKeyKeystore());
+      properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
+      properties.put(SSL_REQUIRE_AUTHENTICATION, "true");
       properties.put(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.LOCATOR.getConstant());
 
       loc2.invoke("start Locator2", () -> startLocator(port2, properties));
@@ -771,24 +765,22 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.put(CLUSTER_SSL_ENABLED, "false");
-    properties.put(CLUSTER_SSL_CIPHERS, "any");
-    properties.put(CLUSTER_SSL_PROTOCOLS, "any");
-    properties.put(CLUSTER_SSL_ENABLED, "true");
-    properties.put(CLUSTER_SSL_KEYSTORE, getSingleKeyKeystore());
-    properties.put(CLUSTER_SSL_KEYSTORE_PASSWORD, "password");
-    properties.put(CLUSTER_SSL_KEYSTORE_TYPE, "JKS");
-    properties.put(CLUSTER_SSL_TRUSTSTORE, getSingleKeyKeystore());
-    properties.put(CLUSTER_SSL_TRUSTSTORE_PASSWORD, "password");
-    properties.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION, "true");
+    properties.put(SSL_CIPHERS, "any");
+    properties.put(SSL_PROTOCOLS, "any");
+    properties.put(SSL_KEYSTORE, getSingleKeyKeystore());
+    properties.put(SSL_KEYSTORE_PASSWORD, "password");
+    properties.put(SSL_KEYSTORE_TYPE, "JKS");
+    properties.put(SSL_TRUSTSTORE, getSingleKeyKeystore());
+    properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
+    properties.put(SSL_REQUIRE_AUTHENTICATION, "true");
     properties.put(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.LOCATOR.getConstant());
 
     try {
       loc1.invoke("start Locator1", () -> startLocator(port1, properties));
       loc1.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(1));
 
-      properties.put(CLUSTER_SSL_KEYSTORE, getMultiKeyKeystore());
-      properties.put(CLUSTER_SSL_TRUSTSTORE, getMultiKeyTruststore());
+      properties.put(SSL_KEYSTORE, getMultiKeyKeystore());
+      properties.put(SSL_TRUSTSTORE, getMultiKeyTruststore());
       properties.put(LOCATOR_SSL_ALIAS, "locatorkey");
 
       //      loc2.invoke("start Locator2", () -> startLocator(port2, properties));
