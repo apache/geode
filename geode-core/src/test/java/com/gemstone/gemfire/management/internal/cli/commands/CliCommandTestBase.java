@@ -29,6 +29,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.geode.security.templates.SampleSecurityManager;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
@@ -42,29 +43,31 @@ import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.security.JSONAuthorization;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.rules.DistributedRestoreSystemProperties;
 
 /**
  * Base class for all the CLI/gfsh command dunit tests.
  */
 public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
-  private static final long serialVersionUID = 1L;
+  public static final String USE_HTTP_SYSTEM_PROPERTY = "useHTTP";
+
+  private boolean useHttpOnConnect = Boolean.getBoolean(USE_HTTP_SYSTEM_PROPERTY);
 
   private ManagementService managementService;
 
   private transient HeadlessGfsh shell;
 
-  public static final String USE_HTTP_SYSTEM_PROPERTY = "useHTTP";
-  private boolean useHttpOnConnect = Boolean.getBoolean(USE_HTTP_SYSTEM_PROPERTY);
-
   protected transient int httpPort;
   protected transient int jmxPort;
   protected transient String jmxHost;
   protected transient String gfshDir;
+
+  @Rule
+  public transient DistributedRestoreSystemProperties restoreSystemProperties = new DistributedRestoreSystemProperties();
 
   @Rule
   public transient TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -97,7 +100,6 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    * cache). When adding regions, functions, keys, whatever to your cache for tests, you'll need to use
    * Host.getHost(0).getVM(0).invoke(new SerializableRunnable() { public void run() { ... } } in order to have this
    * setup run in the same VM as the manager.
-   * <p>
    *
    * @param props the Properties used when creating the cache for this default setup.
    * @return the default testable GemFire shell.
@@ -117,10 +119,6 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
   }
 
   /**
-   *
-   * @param vm
-   * @param props
-   * @param jsonFile
    * @return an object array, result[0] is jmxHost(String), result[1] is jmxPort, result[2] is httpPort
    */
   protected Object[] setUpJMXManagerOnVM(int vm, final Properties props, String jsonFile) {
@@ -139,6 +137,10 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
         localProps.setProperty(NAME, "Manager");
       }
 
+      if (jsonFile!=null) {
+        localProps.setProperty(SampleSecurityManager.SECURITY_JSON, jsonFile);
+      }
+
       final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
 
       jmxPort = ports[0];
@@ -152,10 +154,6 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
       getSystem(localProps);
       verifyManagementServiceStarted(getCache());
-
-      if(jsonFile!=null){
-        JSONAuthorization.setUpWithJsonFile(jsonFile);
-      }
 
       IgnoredException.addIgnoredException("org.eclipse.jetty.io.EofException");
       IgnoredException.addIgnoredException("java.nio.channels.ClosedChannelException");

@@ -17,6 +17,8 @@
 
 package com.gemstone.gemfire.cache.operations;
 
+import org.apache.geode.security.ResourcePermission;
+
 /**
  * Encapsulates a cache operation and the data associated with it for both the
  * pre-operation and post-operation cases. Implementations for specific
@@ -28,7 +30,7 @@ package com.gemstone.gemfire.cache.operations;
  *
  * @since GemFire 5.5
  *
- * @deprecated since Geode1.0, use {@link org.apache.geode.security.GeodePermission} instead
+ * @deprecated since Geode1.0, use {@link ResourcePermission} instead
  */
 public abstract class OperationContext{
 

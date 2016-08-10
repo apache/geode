@@ -36,6 +36,7 @@ import com.gemstone.gemfire.internal.cache.lru.LRUEntry;
 import com.gemstone.gemfire.internal.cache.region.entry.RegionEntryFactoryBuilder;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessageImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.HAEventWrapper;
 import com.gemstone.gemfire.internal.cache.versions.*;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
@@ -752,30 +753,64 @@ public abstract class AbstractRegionMap implements RegionMap {
         if (haContainer == null) {
           return false;
         }
-        Map.Entry entry = null;
         HAEventWrapper original = null;
-        synchronized (haContainer) {
-          entry = (Map.Entry)haContainer.getEntry(haEventWrapper);
-          if (entry != null) {
-            original = (HAEventWrapper)entry.getKey();
-            original.incAndGetReferenceCount();
+//      synchronized (haContainer) {
+      do {
+        ClientUpdateMessageImpl oldMsg = (ClientUpdateMessageImpl) haContainer
+            .putIfAbsent(haEventWrapper,
+                haEventWrapper.getClientUpdateMessage());
+        if (oldMsg != null) {
+          original = (HAEventWrapper) haContainer.getKey(haEventWrapper);
+          if (original == null) {
+            continue;
           }
-          else {
+          synchronized (original) {
+            if ((HAEventWrapper) haContainer.getKey(original) != null) {
+              original.incAndGetReferenceCount();
+              HARegionQueue.addClientCQsAndInterestList(oldMsg,
+                  haEventWrapper, haContainer, owner.getName());
+              haEventWrapper.setClientUpdateMessage(null);
+              newValue = CachedDeserializableFactory.create(original,
+                  ((CachedDeserializable) newValue).getSizeInBytes());
+            } else {
+              original = null;
+            }
+          }
+        } else { // putIfAbsent successful
+          synchronized (haEventWrapper) {
             haEventWrapper.incAndGetReferenceCount();
             haEventWrapper.setHAContainer(haContainer);
-            haContainer.put(haEventWrapper, haEventWrapper
-                .getClientUpdateMessage());
             haEventWrapper.setClientUpdateMessage(null);
             haEventWrapper.setIsRefFromHAContainer(true);
           }
+          break;
         }
+        // try until we either get a reference to HAEventWrapper from
+        // HAContainer or successfully put one into it.
+      } while (original == null);
+      /*
+        entry = (Map.Entry)haContainer.getEntry(haEventWrapper);
         if (entry != null) {
-          HARegionQueue.addClientCQsAndInterestList(entry, haEventWrapper,
-              haContainer, owner.getName());
-          haEventWrapper.setClientUpdateMessage(null);
-          newValue = CachedDeserializableFactory.create(original,
-              ((CachedDeserializable)newValue).getSizeInBytes());
+          original = (HAEventWrapper)entry.getKey();
+          original.incAndGetReferenceCount();
         }
+        else {
+          haEventWrapper.incAndGetReferenceCount();
+          haEventWrapper.setHAContainer(haContainer);
+          haContainer.put(haEventWrapper, haEventWrapper
+              .getClientUpdateMessage());
+          haEventWrapper.setClientUpdateMessage(null);
+          haEventWrapper.setIsRefFromHAContainer(true);
+        }
+      }
+      if (entry != null) {
+        HARegionQueue.addClientCQsAndInterestList(entry, haEventWrapper,
+            haContainer, owner.getName());
+        haEventWrapper.setClientUpdateMessage(null);
+        newValue = CachedDeserializableFactory.create(original,
+            ((CachedDeserializable)newValue).getSizeInBytes());
+      }
+*/
       }
     }
     
@@ -2809,17 +2844,14 @@ public abstract class AbstractRegionMap implements RegionMap {
     // replace is propagated to server, so no need to check
     // satisfiesOldValue on client
     if (expectedOldValue != null && !replaceOnClient) {
-      ReferenceCountHelper.skipRefCountTracking();
-      
-      @Retained @Released Object v = re._getValueRetain(event.getLocalRegion(), true);
-      
-      ReferenceCountHelper.unskipRefCountTracking();
-      try {
-        if (!AbstractRegionEntry.checkExpectedOldValue(expectedOldValue, v, event.getLocalRegion())) {
-          return false;
-        }
-      } finally {
-        OffHeapHelper.releaseWithNoTracking(v);
+      assert event.getOperation().guaranteesOldValue();
+      // We already called setOldValueInEvent so the event will have the old value.
+      @Unretained Object v = event.getRawOldValue();
+      // Note that v will be null instead of INVALID because setOldValue
+      // converts INVALID to null.
+      // But checkExpectedOldValue handle this and says INVALID equals null.
+      if (!AbstractRegionEntry.checkExpectedOldValue(expectedOldValue, v, event.getLocalRegion())) {
+        return false;
       }
     }
     return true;
@@ -2835,7 +2867,7 @@ public abstract class AbstractRegionMap implements RegionMap {
         @Released Object oldValueInVMOrDisk = re.getValueOffHeapOrDiskWithoutFaultIn(event.getLocalRegion());
         ReferenceCountHelper.unskipRefCountTracking();
         try {
-          event.setOldValue(oldValueInVMOrDisk, requireOldValue);
+          event.setOldValue(oldValueInVMOrDisk, needToSetOldValue);
         } finally {
           OffHeapHelper.releaseWithNoTracking(oldValueInVMOrDisk);
         }
@@ -2847,7 +2879,7 @@ public abstract class AbstractRegionMap implements RegionMap {
         
         ReferenceCountHelper.unskipRefCountTracking();
         try {
-          event.setOldValue(oldValueInVM, requireOldValue);
+          event.setOldValue(oldValueInVM, needToSetOldValue);
         } finally {
           OffHeapHelper.releaseWithNoTracking(oldValueInVM);
         }

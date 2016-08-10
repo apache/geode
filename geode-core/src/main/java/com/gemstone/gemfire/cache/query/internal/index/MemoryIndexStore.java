@@ -18,6 +18,7 @@ package com.gemstone.gemfire.cache.query.internal.index;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -614,7 +615,7 @@ private Object convertToIndexKey(Object key, RegionEntry entry)
             Object indexKey, Collection keysToRemove, long iteratorStartTime) {
 		this.map = submap;
 		this.indexKey = indexKey;
-		this.keysToRemove = keysToRemove;
+		this.keysToRemove = keysToRemove == null? null : new HashSet(keysToRemove);
 		this.iteratorStartTime = iteratorStartTime;
 		currentEntry = new MemoryIndexStoreEntry(iteratorStartTime);
 	}

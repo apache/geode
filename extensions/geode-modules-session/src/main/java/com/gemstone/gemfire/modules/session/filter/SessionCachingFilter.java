@@ -423,8 +423,7 @@ public class SessionCachingFilter implements Filter {
      * Early out if this isn't the right kind of request. We might see a
      * RequestWrapper instance during a forward or include request.
      */
-    if (request instanceof RequestWrapper ||
-        !(request instanceof HttpServletRequest)) {
+    if (alreadyWrapped(httpReq)) {
       LOG.debug("Handling already-wrapped request");
       chain.doFilter(request, response);
       return;
@@ -477,6 +476,28 @@ public class SessionCachingFilter implements Filter {
     if (session != null) {
       session.commit();
     }
+  }
+
+  /**
+   * Test if a request has been wrapped with RequestWrapper somewhere
+   * in the chain of wrapped requests.
+   */
+  private boolean alreadyWrapped(final ServletRequest request) {
+    if(request instanceof RequestWrapper) {
+      return true;
+    }
+
+    if(!(request instanceof ServletRequestWrapper)) {
+      return false;
+    }
+
+    final ServletRequest nestedRequest = ((ServletRequestWrapper) request).getRequest();
+
+    if(nestedRequest == request) {
+      return false;
+    }
+
+    return alreadyWrapped(nestedRequest);
   }
 
   /**

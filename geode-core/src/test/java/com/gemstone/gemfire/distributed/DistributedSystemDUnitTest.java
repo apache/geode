@@ -35,7 +35,8 @@ import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.test.dunit.*;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import org.junit.Test;
+
+import org.junit.*;
 import org.junit.experimental.categories.Category;
 
 import java.net.Inet4Address;
@@ -47,6 +48,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.internal.AvailablePort.SOCKET;
 import static org.junit.Assert.*;
 
 /**
@@ -69,7 +71,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testWaitForDeparture() throws Exception {
     disconnectAllFromDS();
-    int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int locatorPort = AvailablePort.getRandomAvailablePort(SOCKET);
     Properties p = getDistributedSystemProperties();
     p.put(LOCATORS, "");
     p.put(START_LOCATOR, "localhost[" + locatorPort + "]");
@@ -241,7 +243,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testSpecificTcpPort() throws Exception {
     Properties config = new Properties();
-    int tcpPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int tcpPort = AvailablePort.getRandomAvailablePort(SOCKET);
     config.put(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
     config.setProperty(TCP_PORT, String.valueOf(tcpPort));
     InternalDistributedSystem system = getSystem(config);
@@ -290,7 +292,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testUDPPortRange() throws Exception {
     Properties config = new Properties();
-    int unicastPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int unicastPort = AvailablePort.getRandomAvailablePort(SOCKET, AvailablePort.getAddress(SOCKET), true);
     config.put(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
     // Minimum 3 ports required in range for UDP, FD_SOCK and TcpConduit.
     config.setProperty(MEMBERSHIP_PORT_RANGE,
@@ -313,7 +315,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     int startPort = port;
     int found = 0;
     while (port <= DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1]) {
-      if (AvailablePort.isPortAvailable(port, AvailablePort.SOCKET)) {
+      if (AvailablePort.isPortAvailable(port, SOCKET)) {
         found++;
         if (found == range) {
           break;
@@ -359,7 +361,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   public void testConflictingUDPPort() throws Exception {
     final Properties config = new Properties();
     final int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.MULTICAST);
-    final int[] socketPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int[] socketPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2, true);
     final int unicastPort = socketPorts[0];
     config.setProperty(MCAST_PORT, String.valueOf(mcastPort));
     config.setProperty(START_LOCATOR, "localhost[" + socketPorts[1] + "]");

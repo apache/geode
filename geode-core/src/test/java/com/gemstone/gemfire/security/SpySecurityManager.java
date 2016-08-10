@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.security;
 
-import java.security.Principal;
+import java.io.Serializable;
 import java.util.Properties;
 
 import org.apache.geode.security.SecurityManager;
@@ -32,7 +32,7 @@ public class SpySecurityManager implements SecurityManager {
   }
 
   @Override
-  public Principal authenticate(final Properties props) throws AuthenticationFailedException {
+  public Serializable authenticate(final Properties props) throws AuthenticationFailedException {
     return null;
   }
 

@@ -26,6 +26,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -38,6 +39,7 @@ import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
 
 import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
+import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.SecurityManager;
@@ -46,11 +48,11 @@ import org.apache.shiro.realm.Realm;
 import com.gemstone.gemfire.internal.security.shiro.CustomAuthRealm;
 import com.gemstone.gemfire.internal.security.shiro.JMXShiroAuthenticator;
 import com.gemstone.gemfire.management.internal.security.AccessControlMBean;
-import com.gemstone.gemfire.security.JSONAuthorization;
 import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 
 public class Server {
+
   private static final String DEFAULT_HOST = "127.0.0.1"; //"localhost"
   private static final int DEFAULT_PORT = 9999;
   private final JMXServiceURL url;
@@ -68,11 +70,13 @@ public class Server {
 
     if (jsonAuthFile != null) {
       System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
-      JSONAuthorization.setUpWithJsonFile(jsonAuthFile);
+
       Map<String, Object> env = new HashMap<String, Object>();
 
       // set up Shiro Security Manager
-      Realm realm = new CustomAuthRealm(JSONAuthorization.class.getName());
+      Properties securityProperties = new Properties();
+      securityProperties.setProperty(SampleSecurityManager.SECURITY_JSON, jsonAuthFile);
+      Realm realm = new CustomAuthRealm(SampleSecurityManager.class.getName(), securityProperties);
       SecurityManager securityManager = new DefaultSecurityManager(realm);
       SecurityUtils.setSecurityManager(securityManager);
 

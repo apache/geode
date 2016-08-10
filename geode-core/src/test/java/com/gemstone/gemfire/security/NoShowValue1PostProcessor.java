@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.security;
 
-import java.security.Principal;
+import java.io.Serializable;
 
 import org.apache.geode.security.PostProcessor;
 
 public class NoShowValue1PostProcessor implements PostProcessor {
 
   @Override
-  public Object processRegionValue(final Principal principal,
+  public Object processRegionValue(final Serializable principal,
                                    final String regionName,
                                    final Object key,
                                    final Object value) {
-    if(value.equals("value1"))
+    if (value.equals("value1")) {
       return null;
-    else
+    } else {
       return value;
+    }
   }
 }

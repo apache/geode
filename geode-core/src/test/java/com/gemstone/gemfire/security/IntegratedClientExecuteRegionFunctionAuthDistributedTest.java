@@ -29,7 +29,7 @@ import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 public class IntegratedClientExecuteRegionFunctionAuthDistributedTest
-  extends AbstractIntegratedClientAuthDistributedTest {
+  extends AbstractSecureServerDUnitTest {
 
   private final static Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
 

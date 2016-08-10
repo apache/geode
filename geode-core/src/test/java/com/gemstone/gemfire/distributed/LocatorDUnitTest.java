@@ -70,6 +70,20 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.util.test.TestUtil;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests the ability of the {@link Locator} API to start and stop
@@ -178,7 +192,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
     // ensure that I, as a collocated locator owner, can create a cache region
     Cache cache = CacheFactory.create(system);
-    Region r = cache.createRegionFactory(RegionShortcut.REPLICATE).create("test region");
+    Region r = cache.createRegionFactory(RegionShortcut.REPLICATE).create("test-region");
     assertNotNull("expected to create a region", r);
 
     // create a lock service and have every vm get a lock

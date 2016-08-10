@@ -229,7 +229,10 @@ public class ManagementAgent {
           this.httpServer = JettyHelper.initJetty(bindAddress, port, SSLConfigurationFactory.getSSLConfigForComponent(SSLEnabledComponent.HTTP_SERVICE));
 
           if (agentUtil.isWebApplicationAvailable(gemfireWar)) {
-            this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/gemfire", gemfireWar);
+            this.httpServer = JettyHelper
+                .addWebApplication(this.httpServer, "/gemfire", gemfireWar);
+            this.httpServer = JettyHelper
+                .addWebApplication(this.httpServer, "/geode-mgmt", gemfireWar);
           }
 
           if (agentUtil.isWebApplicationAvailable(pulseWar)) {
@@ -238,7 +241,10 @@ public class ManagementAgent {
 
           if (isServer && this.config.getStartDevRestApi()) {
             if (agentUtil.isWebApplicationAvailable(gemfireAPIWar)) {
-              this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/gemfire-api", gemfireAPIWar);
+              this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/geode",
+                  gemfireAPIWar);
+              this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/gemfire-api",
+                  gemfireAPIWar);
               isRestWebAppAdded = true;
             }
           } else {

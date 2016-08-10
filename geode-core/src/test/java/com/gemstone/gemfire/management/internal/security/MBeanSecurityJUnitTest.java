@@ -16,17 +16,11 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.management.ManagementException;
-import com.gemstone.gemfire.management.ManagementService;
-import com.gemstone.gemfire.management.MemberMXBean;
-import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import static com.gemstone.gemfire.security.JSONAuthorization.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.io.IOException;
+import java.util.Set;
 
 import javax.management.DynamicMBean;
 import javax.management.MBeanServer;
@@ -35,24 +29,30 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
-import java.io.IOException;
-import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-@Category(IntegrationTest.class)
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.management.ManagementException;
+import com.gemstone.gemfire.management.ManagementService;
+import com.gemstone.gemfire.management.MemberMXBean;
+import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+
+@Category({ IntegrationTest.class, SecurityTest.class })
 public class MBeanSecurityJUnitTest {
 
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
   @ClassRule
-  public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(jmxManagerPort, CACHE_SERVER_JSON);
+  public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(jmxManagerPort, "com/gemstone/gemfire/management/internal/security/cacheServer.json");
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
-
 
   /**
    * No user can call createBean or unregisterBean of GemFire Domain
@@ -75,9 +75,9 @@ public class MBeanSecurityJUnitTest {
     ).isInstanceOf(ReflectionException.class);
   }
 
-  /*
-  * looks like everyone can query for beans, but the AccessControlMXBean is filtered from the result
-  */
+  /**
+   * looks like everyone can query for beans, but the AccessControlMXBean is filtered from the result
+   */
   @Test
   @JMXConnectionConfiguration(user = "stranger", password = "1234567")
   public void testQueryBean() throws MalformedObjectNameException, IOException {
@@ -89,8 +89,8 @@ public class MBeanSecurityJUnitTest {
     assertThat(objects.size()).isEqualTo(1);
   }
 
-  /*
-  * These calls does not go through the MBeanServerWrapper authentication, therefore is not throwing the SecurityExceptions
+  /**
+   * These calls does not go through the MBeanServerWrapper authentication, therefore is not throwing the SecurityExceptions
    */
   @Test
   public void testLocalCalls() throws Exception{
@@ -103,8 +103,6 @@ public class MBeanSecurityJUnitTest {
     assertThatThrownBy(
         () -> adapter.registerMBean(mock(DynamicMBean.class), new ObjectName("MockDomain", "name", "mock"), false)
     ).isInstanceOf(ManagementException.class);
-
-
   }
 
   @Test

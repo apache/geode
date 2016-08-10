@@ -49,16 +49,17 @@ public class CommitSessionValve extends ValveBase {
       // Commit and if the correct Manager was found
       if (manager instanceof DeltaSessionManager) {
         session = (DeltaSessionFacade) request.getSession(false);
+        DeltaSessionManager dsm = ((DeltaSessionManager) manager);
         if (session != null) {
           if (session.isValid()) {
-            ((DeltaSessionManager) manager).removeTouchedSession(session.getId());
+            dsm.removeTouchedSession(session.getId());
             session.commit();
-            if (manager.getContainer().getLogger().isDebugEnabled()) {
-              manager.getContainer().getLogger().debug(session + ": Committed.");
+            if (dsm.getTheContext().getLogger().isDebugEnabled()) {
+              dsm.getTheContext().getLogger().debug(session + ": Committed.");
             }
           } else {
-            if (manager.getContainer().getLogger().isDebugEnabled()) {
-              manager.getContainer().getLogger().debug(session + ": Not valid so not committing.");
+            if (dsm.getTheContext().getLogger().isDebugEnabled()) {
+              dsm.getTheContext().getLogger().debug(session + ": Not valid so not committing.");
             }
           }
         }

@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import static com.gemstone.gemfire.security.JSONAuthorization.*;
-
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -30,13 +28,14 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class CacheServerMBeanAuthenticationJUnitTest {
+
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
   private CacheServerMXBean bean;
 
   @ClassRule
   public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, CACHE_SERVER_JSON);
+      jmxManagerPort, "com/gemstone/gemfire/management/internal/security/cacheServer.json");
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
@@ -46,7 +45,7 @@ public class CacheServerMBeanAuthenticationJUnitTest {
     bean = connectionRule.getProxyMBean(CacheServerMXBean.class, "GemFire:service=CacheServer,*");
   }
 
-  @Test()
+  @Test
   @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testAllAccess() throws Exception {
     bean.removeIndex("foo");

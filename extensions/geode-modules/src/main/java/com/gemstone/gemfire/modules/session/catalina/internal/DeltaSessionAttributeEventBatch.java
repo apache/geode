@@ -21,6 +21,7 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.modules.gatewaydelta.AbstractGatewayDeltaEvent;
 import com.gemstone.gemfire.modules.session.catalina.DeltaSession;
+import com.gemstone.gemfire.modules.session.catalina.DeltaSessionInterface;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -47,8 +48,8 @@ public class DeltaSessionAttributeEventBatch extends AbstractGatewayDeltaEvent {
   }
 
   public void apply(Cache cache) {
-    Region<String, DeltaSession> region = getRegion(cache);
-    DeltaSession session = region.get(this.key);
+    Region<String, DeltaSessionInterface> region = getRegion(cache);
+    DeltaSessionInterface session = region.get(this.key);
     if (session == null) {
       StringBuilder builder = new StringBuilder();
       builder.append("Session ").append(this.key).append(" was not found while attempting to apply ").append(this);

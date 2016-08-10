@@ -19,7 +19,6 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.fd;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.HEARTBEAT_REQUEST;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.HEARTBEAT_RESPONSE;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.SUSPECT_MEMBERS_MESSAGE;
-import static com.sun.corba.se.impl.naming.cosnaming.NamingUtils.debug;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -41,6 +40,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.*;
 
 import org.apache.logging.log4j.Logger;
 import org.jgroups.util.UUID;
@@ -49,7 +49,6 @@ import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -90,6 +89,7 @@ import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
  * for that member.
  * 
  * */
+@SuppressWarnings({ "SynchronizationOnLocalVariableOrMethodParameter", "NullableProblems" })
 public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   private Services services;
@@ -101,7 +101,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   private final AtomicInteger requestId = new AtomicInteger();
 
   /** membership logger */
-  private static Logger logger = Services.getLogger();
+  private static final Logger logger = Services.getLogger();
   
   /**
    * The number of recipients of periodic heartbeats.  The recipients will
@@ -119,7 +119,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   /** stall time to wait for members leaving concurrently */
   public static final long MEMBER_SUSPECT_COLLECTION_INTERVAL = Long.getLong("geode.suspect-member-collection-interval", 200);
 
-  volatile long currentTimeStamp;
+  private volatile long currentTimeStamp;
   
   /** this member's ID */
   private InternalDistributedMember localAddress;
@@ -159,10 +159,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   private ScheduledFuture<?> monitorFuture;
   
   /** test hook */
-  volatile boolean playingDead = false;
+  private volatile boolean playingDead = false;
 
   /** test hook */
-  volatile boolean beingSick = false;
+  private volatile boolean beingSick = false;
   
   // For TCP check
   private ExecutorService serverSocketExecutor;
@@ -172,7 +172,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   private volatile ServerSocket serverSocket;
   
   /** Statistics about health monitor */
-  protected DMStats stats;
+  private DMStats stats;
 
   /**
    * this class is to avoid garbage
@@ -264,7 +264,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   class ClientSocketHandler implements Runnable {
 
-    private Socket socket;
+    private final Socket socket;
 
     public ClientSocketHandler(Socket socket) {
       this.socket = socket;
@@ -275,7 +275,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         socket.setTcpNoDelay(true);
         DataInputStream in = new DataInputStream(socket.getInputStream());
         OutputStream out = socket.getOutputStream();
-        @SuppressWarnings("unused")
+        @SuppressWarnings("UnusedAssignment")
         short version = in.readShort();
         int  vmViewId = in.readInt();
         long uuidLSBs = in.readLong();
@@ -340,6 +340,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   }
 
+  @SuppressWarnings("EmptyMethod")
   public static void loadEmergencyClasses() {
   }
 
@@ -383,27 +384,23 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     setNextNeighbor(cv, mbr);
 
     // we need to check this member
-    checkExecutor.execute(new Runnable() {
-
-      @Override
-      public void run() {
-        boolean pinged = false;
-        try {
-          pinged = GMSHealthMonitor.this.doCheckMember(mbr, true);
-        } catch (CancelException e) {
-          return;
-        }
-          
-        if (!pinged) {
-          suspectedMemberInView.put(mbr, currentView);
-          String reason = "Member isn't responding to heartbeat requests";
-          GMSHealthMonitor.this.initiateSuspicion(mbr, reason);
-        } else {
-          logger.trace("Setting next neighbor as member {} has responded.", mbr);
-          suspectedMemberInView.remove(mbr);
-          // back to previous one
-          setNextNeighbor(GMSHealthMonitor.this.currentView, null);
-        }
+    checkExecutor.execute(() -> {
+      boolean pinged = false;
+      try {
+        pinged = GMSHealthMonitor.this.doCheckMember(mbr, true);
+      } catch (CancelException e) {
+        return;
+      }
+        
+      if (!pinged) {
+        suspectedMemberInView.put(mbr, currentView);
+        String reason = "Member isn't responding to heartbeat requests";
+        GMSHealthMonitor.this.initiateSuspicion(mbr, reason);
+      } else {
+        logger.trace("Setting next neighbor as member {} has responded.", mbr);
+        suspectedMemberInView.remove(mbr);
+        // back to previous one
+        setNextNeighbor(GMSHealthMonitor.this.currentView, null);
       }
     });
 
@@ -414,7 +411,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       return;
     }
     SuspectRequest sr = new SuspectRequest(mbr, reason);
-    List<SuspectRequest> sl = new ArrayList<SuspectRequest>();
+    List<SuspectRequest> sl = new ArrayList<>();
     sl.add(sr);
     sendSuspectRequest(sl);
   }
@@ -422,8 +419,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   /**
    * This method sends heartbeat request to other member and waits for member-timeout
    * time for response. If it doesn't see response then it returns false.
-   * @param member
-   * @return
    */
   private boolean doCheckMember(InternalDistributedMember member, boolean waitForResponse) {
     if (playingDead || beingSick) {
@@ -592,17 +587,14 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   public void start() {
-    scheduler = Executors.newScheduledThreadPool(1, new ThreadFactory() {
-      @Override
-      public Thread newThread(Runnable r) {
-        Thread th = new Thread(Services.getThreadGroup(), r, "Geode Failure Detection Scheduler");
-        th.setDaemon(true);
-        return th;
-      }
+    scheduler = Executors.newScheduledThreadPool(1, r -> {
+      Thread th = new Thread(Services.getThreadGroup(), r, "Geode Failure Detection Scheduler");
+      th.setDaemon(true);
+      return th;
     });
 
     checkExecutor = Executors.newCachedThreadPool(new ThreadFactory() {
-      AtomicInteger threadIdx = new AtomicInteger();
+      final AtomicInteger threadIdx = new AtomicInteger();
 
       @Override
       public Thread newThread(Runnable r) {
@@ -625,10 +617,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 //      }
 //    }, MEMBER_SUSPECT_COLLECTION_INTERVAL);
 //    suspectRequestCollectorThread.setDaemon(true);
-//    suspectRequestCollectorThread.start();
+//    suspectRequestCollectorThread.start()
     
     serverSocketExecutor = Executors.newCachedThreadPool(new ThreadFactory() {
-      AtomicInteger threadIdx = new AtomicInteger();
+      final AtomicInteger threadIdx = new AtomicInteger();
 
       @Override
       public Thread newThread(Runnable r) {
@@ -642,14 +634,12 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) {
-    ServerSocket serverSocket = null;
+    ServerSocket serverSocket;
     try {
       serverSocket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).createServerSocketUsingPortRange(socketAddress, 50/*backlog*/,
         true/*isBindAddress*/, false/*useNIO*/, 65536/*tcpBufferSize*/, portRange, false);
       socketPort = serverSocket.getLocalPort();
-    } catch (IOException e) {
-      throw new GemFireConfigException("Unable to allocate a failure detection port in the membership-port range", e);
-    } catch (SystemConnectException e) {
+    } catch (IOException | SystemConnectException e) {
       throw new GemFireConfigException("Unable to allocate a failure detection port in the membership-port range", e);
     }
     return serverSocket;
@@ -663,48 +653,45 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     // allocate a socket here so there are no race conditions between knowing the FD
     // socket port and joining the system
 
-    serverSocketExecutor.execute(new Runnable() {
-      @Override
-      public void run() {
-        logger.info("Started failure detection server thread on {}:{}.", ssocket.getInetAddress(), socketPort);
-        Socket socket = null;
-        try {
-          while (!services.getCancelCriterion().isCancelInProgress() 
-              && !GMSHealthMonitor.this.isStopping) {
-            try {
-              socket = ssocket.accept();
-              if (GMSHealthMonitor.this.playingDead) {
-                continue;
-              }
-              serverSocketExecutor.execute(new ClientSocketHandler(socket)); //start();  [bruce] I'm seeing a lot of failures due to this thread not being created fast enough, sometimes as long as 30 seconds
-            
-            } catch (RejectedExecutionException e) {
-              // this can happen during shutdown
+    serverSocketExecutor.execute(() -> {
+      logger.info("Started failure detection server thread on {}:{}.", ssocket.getInetAddress(), socketPort);
+      Socket socket = null;
+      try {
+        while (!services.getCancelCriterion().isCancelInProgress() 
+            && !GMSHealthMonitor.this.isStopping) {
+          try {
+            socket = ssocket.accept();
+            if (GMSHealthMonitor.this.playingDead) {
+              continue;
+            }
+            serverSocketExecutor.execute(new ClientSocketHandler(socket)); //start();  [bruce] I'm seeing a lot of failures due to this thread not being created fast enough, sometimes as long as 30 seconds
+          
+          } catch (RejectedExecutionException e) {
+            // this can happen during shutdown
 
-            } catch (IOException e) {
-              if (!isStopping) {
-                logger.trace("Unexpected exception", e);
+          } catch (IOException e) {
+            if (!isStopping) {
+              logger.trace("Unexpected exception", e);
+            }
+            try {
+              if (socket != null) {
+                socket.close();
               }
-              try {
-                if (socket != null) {
-                  socket.close();
-                }
-              } catch (IOException ioe) {
-                logger.trace("Unexpected exception", ioe);
-              }
+            } catch (IOException ioe) {
+              logger.trace("Unexpected exception", ioe);
             }
           }
-          logger.info("GMSHealthMonitor server thread exiting");
-        } finally {
-          // close the server socket
-          if (ssocket != null && !ssocket.isClosed()) {
-            try {
-              ssocket.close();
-              serverSocket = null;
-              logger.info("GMSHealthMonitor server socket closed.");
-            } catch (IOException e) {
-              logger.debug("Unexpected exception", e);
-            }
+        }
+        logger.info("GMSHealthMonitor server thread exiting");
+      } finally {
+        // close the server socket
+        if (!ssocket.isClosed()) {
+          try {
+            ssocket.close();
+            serverSocket = null;
+            logger.info("GMSHealthMonitor server socket closed.");
+          } catch (IOException e) {
+            logger.debug("Unexpected exception", e);
           }
         }
       }
@@ -835,7 +822,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
     List<InternalDistributedMember> allMembers = newView.getMembers();
     
-    Set<?> checkAllSuspected = new HashSet<>(allMembers);
+    Set<InternalDistributedMember> checkAllSuspected = new HashSet<>(allMembers);
     checkAllSuspected.removeAll(suspectedMemberInView.keySet());
     checkAllSuspected.remove(localAddress);
     if (checkAllSuspected.isEmpty() && allMembers.size() > 1) {
@@ -905,8 +892,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     }
 
     Collection<Response> val = requestIdVsResponse.values();
-    for (Iterator<Response> it = val.iterator(); it.hasNext();) {
-      Response r = it.next();
+    for (Response r : val) {
       synchronized (r) {
         r.notify();
       }
@@ -1072,8 +1058,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * to become the new membership coordinator.
    * it will to final check on that member and then it will send remove request
    * for that member
-   * 
-   * @param incomingRequest
    */
   private void processSuspectMembersRequest(SuspectMembersMessage incomingRequest) {
     
@@ -1124,13 +1108,11 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     else {
 
       NetView check = new NetView(cv, cv.getViewId() + 1);
-      ArrayList<SuspectRequest> smbr = new ArrayList<SuspectRequest>();
+      ArrayList<SuspectRequest> smbr = new ArrayList<>();
       synchronized (viewVsSuspectedMembers) {
         recordSuspectRequests(sMembers, cv);
         Set<SuspectRequest> viewVsMembers = viewVsSuspectedMembers.get(cv);
-        Iterator<SuspectRequest> itr = viewVsMembers.iterator();
-        while (itr.hasNext()) {
-          SuspectRequest sr = itr.next();
+        for (final SuspectRequest sr : viewVsMembers) {
           check.remove(sr.getSuspectMember());
           smbr.add(sr);
         }
@@ -1154,16 +1136,14 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   /***
    * This method make sure that records suspectRequest. We need to make sure this
    * on preferred coordinators, as elder coordinator might be in suspected list next. 
-   * @param sMembers
-   * @param cv
    */
   private void recordSuspectRequests(List<SuspectRequest> sMembers, NetView cv) {
     // record suspect requests
-    Set<SuspectRequest> viewVsMembers = null;
+    Set<SuspectRequest> viewVsMembers;
     synchronized (viewVsSuspectedMembers) {
       viewVsMembers = viewVsSuspectedMembers.get(cv);
       if (viewVsMembers == null) {
-        viewVsMembers = new HashSet<SuspectRequest>();
+        viewVsMembers = new HashSet<>();
         viewVsSuspectedMembers.put(cv, viewVsMembers);
       }
       for (SuspectRequest sr: sMembers) {       
@@ -1177,16 +1157,11 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * socket information is available for the member (in the view) then
    * we attempt to connect to its socket and ask if it's the expected member.
    * Otherwise we send a heartbeat request and wait for a reply.
-   *  
-   * @param initiator
-   * @param sMembers
-   * @param cv
    */
   private void checkIfAvailable(final InternalDistributedMember initiator,
       List<SuspectRequest> sMembers, final NetView cv) {
 
-    for (int i = 0; i < sMembers.size(); i++) {
-      final SuspectRequest sr = sMembers.get(i);
+    for (final SuspectRequest sr : sMembers) {
       final InternalDistributedMember mbr = sr.getSuspectMember();
 
       if (!cv.contains(mbr) || membersInFinalCheck.contains(mbr)) {
@@ -1209,25 +1184,16 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       final String reason = sr.getReason();
       logger.debug("Scheduling final check for member {}; reason={}", mbr, reason);
       // its a coordinator
-      checkExecutor.execute(new Runnable() {
-
-        @Override
-        public void run() {
-          try {
-            inlineCheckIfAvailable(initiator, cv, true, mbr,
-                reason);
-          } catch (DistributedSystemDisconnectedException e) {
-            return;
-          } catch (CancelException e) {
-            // shutting down
-          } catch (Exception e) {
-            logger.info("Unexpected exception while verifying member", e);
-          } finally {
-            GMSHealthMonitor.this.suspectedMemberInView.remove(mbr);
-          }
+      checkExecutor.execute(() -> {
+        try {
+          inlineCheckIfAvailable(initiator, cv, true, mbr, reason);
+        } catch (CancelException e) {
+          // shutting down
+        } catch (Exception e) {
+          logger.info("Unexpected exception while verifying member", e);
+        } finally {
+          GMSHealthMonitor.this.suspectedMemberInView.remove(mbr);
         }
-
-
       });
       //      }// scheduling for final check and removing it..
     }
@@ -1323,13 +1289,11 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     logger.debug("Sending suspect request for members {}", requests);
     List<InternalDistributedMember> recipients;
     if (currentView.size() > 4) {
-      HashSet<InternalDistributedMember> filter = new HashSet<InternalDistributedMember>();
+      HashSet<InternalDistributedMember> filter = new HashSet<>();
       for (Enumeration<InternalDistributedMember> e = suspectedMemberInView.keys(); e.hasMoreElements();) {
         filter.add(e.nextElement());
       }
-      for (int i = 0; i < requests.size(); i++) {
-        filter.add(requests.get(i).getSuspectMember());
-      }
+      filter.addAll(requests.stream().map(SuspectRequest::getSuspectMember).collect(Collectors.toList()));
       recipients = currentView.getPreferredCoordinators(filter, services.getJoinLeave().getMemberID(), 5);
     } else {
       recipients = currentView.getMembers();
@@ -1350,9 +1314,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   private static class ConnectTimeoutTask extends TimerTask implements ConnectionWatcher {
-    Timer scheduler;
+    final Timer scheduler;
     Socket socket;
-    long timeout;
+    final long timeout;
     
     ConnectTimeoutTask(Timer scheduler, long timeout) {
       this.scheduler = scheduler;

@@ -27,6 +27,8 @@ import com.gemstone.gemfire.modules.util.ContextMapper;
 import javax.servlet.http.HttpSession;
 import java.util.Properties;
 
+import org.apache.catalina.session.ManagerBase;
+
 public class SessionExpirationCacheListener extends CacheListenerAdapter<String, HttpSession> implements Declarable {
 
   public void afterDestroy(EntryEvent<String, HttpSession> event) {
@@ -47,7 +49,7 @@ public class SessionExpirationCacheListener extends CacheListenerAdapter<String,
       Object callback = event.getCallbackArgument();
       if (callback != null && callback instanceof DeltaSession) {
         session = (DeltaSession) callback;
-        DeltaSessionManager m = ContextMapper.getContext(session.getContextName());
+        ManagerBase m = ContextMapper.getContext(session.getContextName());
         if (m != null) {
           session.setOwner(m);
         }

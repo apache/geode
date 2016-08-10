@@ -17,7 +17,18 @@
 
 package com.gemstone.gemfire.management.internal;
 
-import com.gemstone.gemfire.cache.*;
+import java.net.UnknownHostException;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.admin.SSLConfig;
@@ -28,12 +39,6 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.ManagementService;
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-
-import java.net.UnknownHostException;
 
 /**
  * Agent implementation that controls the HTTP server end points used for REST
@@ -132,6 +137,7 @@ public class RestAgent {
         this.httpServer = JettyHelper.initJetty(httpServiceBindAddress, port, SSLConfigurationFactory.getSSLConfigForComponent(SSLEnabledComponent.HTTP_SERVICE));
 
         this.httpServer = JettyHelper.addWebApplication(httpServer, "/gemfire-api", gemfireAPIWar);
+        this.httpServer = JettyHelper.addWebApplication(httpServer, "/geode", gemfireAPIWar);
 
         if (logger.isDebugEnabled()) {
           logger.info("Starting HTTP embedded server on port ({}) at bind-address ({})...",

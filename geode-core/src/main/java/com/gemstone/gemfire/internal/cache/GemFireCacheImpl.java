@@ -3016,12 +3016,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
         ira.setIndexes(((UserSpecifiedRegionAttributes) attrs).getIndexes());
       }
       return createVMRegion(name, attrs, ira);
-    } catch (IOException e) {
-      // only if loading snapshot, not here
-      InternalGemFireError assErr = new InternalGemFireError(LocalizedStrings.GemFireCache_UNEXPECTED_EXCEPTION.toLocalizedString());
-      assErr.initCause(e);
-      throw assErr;
-    } catch (ClassNotFoundException e) {
+    } catch (IOException | ClassNotFoundException e) {
       // only if loading snapshot, not here
       InternalGemFireError assErr = new InternalGemFireError(LocalizedStrings.GemFireCache_UNEXPECTED_EXCEPTION.toLocalizedString());
       assErr.initCause(e);
@@ -3037,7 +3032,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
       }
     }
     stopper.checkCancelInProgress(null);
-    LocalRegion.validateRegionName(name);
+    LocalRegion.validateRegionName(name, internalRegionArgs);
     RegionAttributes<K, V> attrs = p_attrs;
     attrs = invokeRegionBefore(null, name, attrs, internalRegionArgs);
     if (attrs == null) {
@@ -3050,7 +3045,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     InternalDistributedMember imageTarget = internalRegionArgs.getImageTarget();
     final boolean recreate = internalRegionArgs.getRecreateFlag();
 
-    final boolean isPartitionedRegion = (attrs.getPartitionAttributes() == null) ? false : true;
+    final boolean isPartitionedRegion = attrs.getPartitionAttributes() != null;
     final boolean isReinitCreate = snapshotInputStream != null || imageTarget != null || recreate;
 
     final String regionPath = LocalRegion.calcFullPath(name, null);

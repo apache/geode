@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -57,6 +58,7 @@ import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
+
 
 /**
  * Class <code>ClientUpdateMessageImpl</code> is a message representing a cache
@@ -442,7 +444,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         // Notify all - do not send the value
         message = new Message(6, clientVersion);
         message.setMessageType(MessageType.LOCAL_INVALIDATE);
-        message.addStringPart(this._regionName);
+        message.addStringPart(this._regionName, true);
         // Currently serializing the key here instead of when the message
         // is put in the queue so that it can be conflated it later
         message.addStringOrObjPart(this._keyOfInterest);
@@ -461,7 +463,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         else {
           message.setMessageType(MessageType.LOCAL_UPDATE);
         }
-        message.addStringPart(this._regionName);
+        message.addStringPart(this._regionName, true);
         // Currently serializing the key here instead of when the message
         // is put in the queue so that it can be conflated it later
         message.addStringOrObjPart(this._keyOfInterest);
@@ -483,7 +485,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       else {
         message.setMessageType(MessageType.LOCAL_INVALIDATE);
       }
-      message.addStringPart(this._regionName);
+      message.addStringPart(this._regionName, true);
 
       // Currently serializing the key here instead of when the message
       // is put in the queue so that it can be conflated it later
@@ -498,7 +500,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     } else if (isDestroyRegion()) {
       message = new Message(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.LOCAL_DESTROY_REGION);
-      message.addStringPart(this._regionName);
+      message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
       message.addObjPart(Boolean.valueOf(clientHasCq));
       
@@ -509,7 +511,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     else if (isClearRegion()) {
       message = new Message(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.CLEAR_REGION);
-      message.addStringPart(this._regionName);
+      message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
       message.addObjPart(Boolean.valueOf(clientHasCq));
       
@@ -520,7 +522,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     else if (isInvalidateRegion()) {
       message = new Message(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.INVALIDATE_REGION);
-      message.addStringPart(this._regionName);
+      message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
       message.addObjPart(Boolean.valueOf(clientHasCq));
       
@@ -560,7 +562,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         message.setMessageType(MessageType.LOCAL_INVALIDATE);
 
         // Add the region name
-        message.addStringPart(this._regionName);
+        message.addStringPart(this._regionName, true);
 
         // Add the key
         // Currently serializing the key here instead of when the message
@@ -587,7 +589,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
           message.setMessageType(MessageType.LOCAL_CREATE);
 
           // Add the region name
-          message.addStringPart(this._regionName);
+          message.addStringPart(this._regionName, true);
 
           // Add the key
           // Currently serializing the key here instead of when the message
@@ -602,7 +604,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
           message.setMessageType(MessageType.LOCAL_UPDATE);
 
           // Add the region name
-          message.addStringPart(this._regionName);
+          message.addStringPart(this._regionName, true);
 
           // Add the key
           // Currently serializing the key here instead of when the message
@@ -657,7 +659,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         message.setMessageType(MessageType.LOCAL_INVALIDATE);
       }
 
-      message.addStringPart(this._regionName);
+      message.addStringPart(this._regionName, true);
 
       // Currently serializing the key here instead of when the message
       // is put in the queue so that it can be conflated later
@@ -674,7 +676,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     else if (isDestroyRegion()) {
       message = new Message(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.LOCAL_DESTROY_REGION);
-      message.addStringPart(this._regionName);
+      message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
       message.addObjPart(Boolean.valueOf(clientHasCq));
 
@@ -685,7 +687,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     else if (isClearRegion()) {
       message = new Message(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.CLEAR_REGION);
-      message.addStringPart(this._regionName);
+      message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
       message.addObjPart(Boolean.valueOf(clientHasCq));
 
@@ -696,7 +698,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     else if (isInvalidateRegion()) {
       message = new Message(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.INVALIDATE_REGION);
-      message.addStringPart(this._regionName);
+      message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
       message.addObjPart(Boolean.valueOf(clientHasCq));
 
@@ -741,7 +743,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         message.setMessageType(MessageType.LOCAL_INVALIDATE);
 
         // Add the region name
-        message.addStringPart(this._regionName);
+        message.addStringPart(this._regionName, true);
 
         // Add the key
         // Currently serializing the key here instead of when the message
@@ -757,7 +759,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
           message.setMessageType(MessageType.LOCAL_CREATE);
 
           // Add the region name
-          message.addStringPart(this._regionName);
+          message.addStringPart(this._regionName, true);
 
           // Add the key
           // Currently serializing the key here instead of when the message
@@ -772,7 +774,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
           message.setMessageType(MessageType.LOCAL_UPDATE);
 
           // Add the region name
-          message.addStringPart(this._regionName);
+          message.addStringPart(this._regionName, true);
 
           // Add the key
           // Currently serializing the key here instead of when the message
@@ -826,7 +828,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         message = new Message(6 + cqMsgParts, clientVersion);
         message.setMessageType(MessageType.LOCAL_INVALIDATE);
       }
-      message.addStringPart(this._regionName);
+      message.addStringPart(this._regionName, true);
       message.addStringOrObjPart(this._keyOfInterest);
       message.addObjPart(this._callbackArgument);
       message.addObjPart(Boolean.valueOf(isClientInterested(proxyId)));
@@ -844,7 +846,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     else if (isDestroyRegion()) {
       message = new Message(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.LOCAL_DESTROY_REGION);
-      message.addStringPart(this._regionName);
+      message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
       message.addObjPart(Boolean.valueOf(clientHasCq));
 
@@ -855,7 +857,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     else if (isClearRegion()) {
       message = new Message(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.CLEAR_REGION);
-      message.addStringPart(this._regionName);
+      message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
       message.addObjPart(Boolean.valueOf(clientHasCq));
 
@@ -866,7 +868,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     else if (isInvalidateRegion()) {
       message = new Message(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.INVALIDATE_REGION);
-      message.addStringPart(this._regionName);
+      message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
 
       // Add CQ status.
@@ -893,7 +895,6 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       byte[] latestValue = p_latestValue;
       Message message = null;
       ClientProxyMembershipID proxyId = proxy.getProxyID();
-
       // Add CQ info.
       int cqMsgParts = 0;
       boolean clientHasCq = this._hasCqs && (this.getCqs(proxyId) != null);
@@ -910,17 +911,17 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
             cqMsgParts++; // To store base operation type for CQ.
           }
 
-          message = new Message(7 + cqMsgParts, clientVersion);
+          message = getMessage(7 + cqMsgParts, clientVersion);
           message.setMessageType(MessageType.LOCAL_INVALIDATE);
-          message.addStringPart(this._regionName);
+          message.addStringPart(this._regionName, true);
           message.addStringOrObjPart(this._keyOfInterest);
         }
         else {
           // Notify by subscription - send the value
-          message = new Message(9 + cqMsgParts, clientVersion);
+          message = getMessage(9 + cqMsgParts, clientVersion);
           if (isCreate()) {
             message.setMessageType(MessageType.LOCAL_CREATE);
-            message.addStringPart(this._regionName);
+            message.addStringPart(this._regionName, true);
             message.addStringOrObjPart(this._keyOfInterest);
             message.addObjPart(Boolean.FALSE); // NO delta
             // Add the value (which has already been serialized)
@@ -928,7 +929,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
           }
           else {
             message.setMessageType(MessageType.LOCAL_UPDATE);
-            message.addStringPart(this._regionName);
+            message.addStringPart(this._regionName, true);
             message.addStringOrObjPart(this._keyOfInterest);
 
             if (this.deltaBytes != null
@@ -972,17 +973,17 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       }
       else if (isDestroy() || isInvalidate()) {
         if (isDestroy()) {
-          message = new Message(7 + cqMsgParts, clientVersion);
+          message = getMessage(7 + cqMsgParts, clientVersion);
           message.setMessageType(MessageType.LOCAL_DESTROY);
         }
         else {
           if (clientHasCq){
             cqMsgParts++;/* To store the region operation for CQ */
           }
-          message = new Message(7 + cqMsgParts, clientVersion);
+          message = getMessage(7 + cqMsgParts, clientVersion);
           message.setMessageType(MessageType.LOCAL_INVALIDATE);
         }
-        message.addStringPart(this._regionName);
+        message.addStringPart(this._regionName, true);
         message.addStringOrObjPart(this._keyOfInterest);
         message.addObjPart(this._callbackArgument);
         message.addObjPart(this.versionTag);
@@ -999,9 +1000,9 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       }
     }
       else if (isDestroyRegion()) {
-        message = new Message(4 + cqMsgParts, clientVersion);
+        message = getMessage(4 + cqMsgParts, clientVersion);
         message.setMessageType(MessageType.LOCAL_DESTROY_REGION);
-        message.addStringPart(this._regionName);
+        message.addStringPart(this._regionName, true);
         message.addObjPart(this._callbackArgument);
         message.addObjPart(Boolean.valueOf(clientHasCq));
 
@@ -1010,9 +1011,9 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         }
       }
       else if (isClearRegion()) {
-        message = new Message(4 + cqMsgParts, clientVersion);
+        message = getMessage(4 + cqMsgParts, clientVersion);
         message.setMessageType(MessageType.CLEAR_REGION);
-        message.addStringPart(this._regionName);
+        message.addStringPart(this._regionName, true);
         message.addObjPart(this._callbackArgument);
         message.addObjPart(Boolean.valueOf(clientHasCq));
 
@@ -1021,9 +1022,9 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         }
       }
     else if (isInvalidateRegion()) {
-      message = new Message(4 + cqMsgParts, clientVersion);
+      message = getMessage(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.INVALIDATE_REGION);
-      message.addStringPart(this._regionName);
+      message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
 
       // Add CQ status.
@@ -1044,6 +1045,22 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     return message;
   }
 
+  private static final ThreadLocal<Map<Integer,Message>> CACHED_MESSAGES = new ThreadLocal<Map<Integer,Message>>() {
+    protected Map<Integer,Message> initialValue() {
+      return new HashMap<Integer,Message>();
+    };
+  };
+
+  private Message getMessage(int numParts, Version clientVersion) {
+    Message m = CACHED_MESSAGES.get().get(numParts);
+    if (m == null) {
+      m =  new Message(numParts, Version.CURRENT);
+      CACHED_MESSAGES.get().put(numParts, m);
+    }
+    m.clearParts();
+    m.setVersion(clientVersion);
+    return m;
+  }
 
   /**
    * @return boolean true if the event is due to net load.
@@ -1088,6 +1105,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     String[] cqNames = null;  
     if (this._clientCqs != null) {
       CqNameToOp cqs = this._clientCqs.get(clientId);
+      
       if (cqs != null && !cqs.isEmpty()) {
         cqNames = cqs.getNames();
       }
@@ -1567,12 +1585,23 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   public static class CqNameToOpSingleEntry implements CqNameToOp {
     private String name;
     private int op;
+  
+    private static final String[] EMPTY_NAMES_ARRAY = new String[0];
+    
+    private static Map<String,String[]> NAMES_ARRAY = new ConcurrentHashMap<String,String[]>();
     
     public CqNameToOpSingleEntry(String name, Integer op) {
-      this.name = name;
+      initializeName(name);
       this.op = op.intValue();
     }
-
+    
+    private void initializeName(String name) {
+      this.name = name;
+      if (!NAMES_ARRAY.containsKey(name)) {
+        NAMES_ARRAY.put(name, new String[]{name});
+      }
+    }
+    
     @Override
     public void sendTo(DataOutput out) throws IOException {
       // When serialized it needs to look just as if writeObject was called on a HASH_MAP
@@ -1593,7 +1622,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     @Override
     public void addToMessage(Message message) {
       if (!isEmpty()) {
-        message.addStringPart(this.name);
+        message.addStringPart(this.name, true);
         message.addIntPart(this.op);
       }
     }
@@ -1605,11 +1634,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
     @Override
     public String[] getNames() {
-      if (isEmpty()) {
-        return new String[0];
-      } else {
-        return new String[]{this.name};
-      }
+      return (isEmpty()) ? EMPTY_NAMES_ARRAY : NAMES_ARRAY.get(this.name);
     }
 
     @Override
@@ -1667,7 +1692,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         Entry<String, Integer> entry = entries.next();
         // Add CQ Name.
         String cq = entry.getKey();
-        message.addStringPart(cq);
+        message.addStringPart(cq, true);
         // Add CQ Op.
         int op = entry.getValue().intValue();
         message.addIntPart(op);

@@ -37,8 +37,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
-
 
 public class ClearRegion extends BaseCommand {
 
@@ -104,8 +102,6 @@ public class ClearRegion extends BaseCommand {
       servConn.setAsTrue(RESPONDED);
       return;
     }
-    // Clear the region
-    GeodeSecurityUtil.authorizeRegionWrite(regionName);
 
     ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
     long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
@@ -113,6 +109,9 @@ public class ClearRegion extends BaseCommand {
     EventID eventId = new EventID(servConn.getEventMemberIDByteArray(), threadId, sequenceId);
 
     try {
+      // Clear the region
+      this.securityService.authorizeRegionWrite(regionName);
+
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {
         RegionClearOperationContext clearContext = authzRequest.clearAuthorize(regionName, callbackArg);

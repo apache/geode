@@ -46,6 +46,7 @@ public class DataCommandRequest implements /*Data*/ Serializable{
   private String removeAllKeys;
   private String value;
   private String valueClass;
+  private Serializable principal;
 
   public static final String NEW_LINE = System.getProperty("line.separator");
 
@@ -135,6 +136,9 @@ public class DataCommandRequest implements /*Data*/ Serializable{
   public boolean isLoadOnCacheMiss() {
     return loadOnCacheMiss;
   }
+  public Serializable getPrincipal() {
+    return principal;
+  }
 
   public void setKey(String key) {
     this.key = key;
@@ -180,6 +184,10 @@ public class DataCommandRequest implements /*Data*/ Serializable{
     this.loadOnCacheMiss = loadOnCacheMiss;
   }
 
+  public void setPrincipal(Serializable principal){
+    this.principal = principal;
+  }
+
   //@Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(command,out);
@@ -192,6 +200,7 @@ public class DataCommandRequest implements /*Data*/ Serializable{
     DataSerializer.writeString(removeAllKeys,out);
     DataSerializer.writeBoolean(recursive,out);    
     DataSerializer.writeBoolean(loadOnCacheMiss,out);
+    DataSerializer.writeObject(principal, out);
   }
 
   //@Override
@@ -206,6 +215,7 @@ public class DataCommandRequest implements /*Data*/ Serializable{
     removeAllKeys = DataSerializer.readString(in);
     recursive = DataSerializer.readBoolean(in);
     loadOnCacheMiss = DataSerializer.readBoolean(in);
+    principal = DataSerializer.readObject(in);
   }  
   
   

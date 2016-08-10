@@ -18,15 +18,9 @@ package com.gemstone.gemfire.management.internal.security;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static com.gemstone.gemfire.security.JSONAuthorization.*;
 
 import javax.management.ObjectName;
 
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.management.GatewaySenderMXBean;
-import com.gemstone.gemfire.management.ManagementService;
-import com.gemstone.gemfire.management.internal.beans.GatewaySenderMBean;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -35,18 +29,27 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-@Category(IntegrationTest.class)
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.management.GatewaySenderMXBean;
+import com.gemstone.gemfire.management.ManagementService;
+import com.gemstone.gemfire.management.internal.beans.GatewaySenderMBean;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+
+@Category({ IntegrationTest.class, SecurityTest.class })
 public class GatewaySenderMBeanSecurityTest {
+
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
-  private GatewaySenderMXBean bean;
   private static GatewaySenderMBean mock = mock(GatewaySenderMBean.class);
   private static ObjectName mockBeanName = null;
   private static ManagementService service = null;
 
+  private GatewaySenderMXBean bean;
+
   @ClassRule
   public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, CACHE_SERVER_JSON);
+      jmxManagerPort, "com/gemstone/gemfire/management/internal/security/cacheServer.json");
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);

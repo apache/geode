@@ -38,7 +38,7 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
-public class CQPostProcessorDunitTest extends AbstractIntegratedClientAuthDistributedTest {
+public class CQPostProcessorDunitTest extends AbstractSecureServerDUnitTest {
 
   public CQPostProcessorDunitTest(){
     this.postProcessor = SamplePostProcessor.class;

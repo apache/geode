@@ -14,67 +14,67 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.management.internal.security;
 
 import static org.junit.Assert.*;
 
-import org.apache.geode.security.GeodePermission;
-import org.apache.geode.security.GeodePermission.Operation;
-import org.apache.geode.security.GeodePermission.Resource;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.shiro.authz.permission.WildcardPermission;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-@Category(UnitTest.class)
-public class GeodePermissionJUnitTest {
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-  private GeodePermission context;
+@Category({ UnitTest.class, SecurityTest.class })
+public class ResourcePermissionTest {
+
+  private ResourcePermission context;
 
   @Test
   public void testEmptyConstructor(){
-    context = new GeodePermission();
+    context = new ResourcePermission();
     assertEquals(Resource.NULL, context.getResource());
     assertEquals(Operation.NULL, context.getOperation());
-    assertEquals(GeodePermission.ALL_REGIONS, context.getRegionName());
+    assertEquals(ResourcePermission.ALL_REGIONS, context.getRegionName());
   }
 
   @Test
   public void testIsPermission(){
-    context = new GeodePermission();
+    context = new ResourcePermission();
     assertTrue(context instanceof WildcardPermission);
   }
 
   @Test
   public void testConstructor(){
-    context = new GeodePermission();
+    context = new ResourcePermission();
     assertEquals(Resource.NULL, context.getResource());
     assertEquals(Operation.NULL, context.getOperation());
-    assertEquals(GeodePermission.ALL_REGIONS, context.getRegionName());
+    assertEquals(ResourcePermission.ALL_REGIONS, context.getRegionName());
 
-    context = new GeodePermission();
+    context = new ResourcePermission();
     assertEquals(Resource.NULL, context.getResource());
     assertEquals(Operation.NULL, context.getOperation());
-    assertEquals(GeodePermission.ALL_REGIONS, context.getRegionName());
+    assertEquals(ResourcePermission.ALL_REGIONS, context.getRegionName());
 
-    context = new GeodePermission("DATA", null, null);
+    context = new ResourcePermission("DATA", null, null);
     assertEquals(Resource.DATA, context.getResource());
     assertEquals(Operation.NULL, context.getOperation());
-    assertEquals(GeodePermission.ALL_REGIONS, context.getRegionName());
+    assertEquals(ResourcePermission.ALL_REGIONS, context.getRegionName());
 
-    context = new GeodePermission("CLUSTER", null, null);
+    context = new ResourcePermission("CLUSTER", null, null);
     assertEquals(Resource.CLUSTER, context.getResource());
     assertEquals(Operation.NULL, context.getOperation());
-    assertEquals(GeodePermission.ALL_REGIONS, context.getRegionName());
+    assertEquals(ResourcePermission.ALL_REGIONS, context.getRegionName());
 
-    context = new GeodePermission(null, "MANAGE", "REGIONA");
+    context = new ResourcePermission(null, "MANAGE", "REGIONA");
     assertEquals(Resource.NULL, context.getResource());
     assertEquals(Operation.MANAGE, context.getOperation());
     assertEquals("REGIONA", context.getRegionName());
 
-    context = new GeodePermission("DATA", "MANAGE", "REGIONA");
+    context = new ResourcePermission("DATA", "MANAGE", "REGIONA");
     assertEquals(Resource.DATA, context.getResource());
     assertEquals(Operation.MANAGE, context.getOperation());
     assertEquals("REGIONA", context.getRegionName());
@@ -82,13 +82,13 @@ public class GeodePermissionJUnitTest {
 
   @Test
   public void testToString(){
-    context = new GeodePermission();
+    context = new ResourcePermission();
     assertEquals("NULL:NULL", context.toString());
 
-    context = new GeodePermission("DATA", "MANAGE");
+    context = new ResourcePermission("DATA", "MANAGE");
     assertEquals("DATA:MANAGE", context.toString());
 
-    context = new GeodePermission("DATA", "MANAGE", "REGIONA");
+    context = new ResourcePermission("DATA", "MANAGE", "REGIONA");
     assertEquals("DATA:MANAGE:REGIONA", context.toString());
   }
 }

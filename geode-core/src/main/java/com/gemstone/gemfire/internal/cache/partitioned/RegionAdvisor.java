@@ -231,7 +231,11 @@ public class RegionAdvisor extends CacheDistributionAdvisor
   public Semaphore getVolunteeringSemaphore() {
     return this.volunteeringSemaphore;
   }
-  
+
+  /**
+   * Returns an unmodifiable map of bucket IDs to locations hosting
+   * the bucket.
+   */
   public Map<Integer, List<BucketServerLocation66>> getAllClientBucketProfiles() {
     Map<Integer, List<BucketServerLocation66>> bucketToServerLocations = new HashMap<Integer, List<BucketServerLocation66>>();
     for (Integer bucketId : this.clientBucketProfilesMap.keySet()) {
@@ -282,9 +286,9 @@ public class RegionAdvisor extends CacheDistributionAdvisor
   
   public ConcurrentHashMap<Integer, Set<ServerBucketProfile>> getAllClientBucketProfilesTest() {
     ConcurrentHashMap<Integer, Set<ServerBucketProfile>> map = new ConcurrentHashMap<Integer, Set<ServerBucketProfile>>();
-    Map<Integer, List<BucketServerLocation66>> testMap = this.getAllClientBucketProfiles();
+    Map<Integer, List<BucketServerLocation66>> testMap = new HashMap<>(this.getAllClientBucketProfiles());
     for (Integer bucketId : testMap.keySet()) {
-      Set<ServerBucketProfile> parr = this.clientBucketProfilesMap.get(bucketId);
+      Set<ServerBucketProfile> parr = new HashSet<>(this.clientBucketProfilesMap.get(bucketId));
       map.put(bucketId, parr);
     }
     
@@ -308,8 +312,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor
   }
 
   public void setClientBucketProfiles(Integer bucketId,
-      Set<ServerBucketProfile> oldProfiles) {
-    this.clientBucketProfilesMap.put(bucketId, oldProfiles);
+      Set<ServerBucketProfile> profiles) {
+    this.clientBucketProfilesMap.put(bucketId, Collections.unmodifiableSet(profiles));
   } 
   
   /**

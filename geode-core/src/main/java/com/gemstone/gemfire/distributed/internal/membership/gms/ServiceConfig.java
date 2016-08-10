@@ -30,21 +30,21 @@ public class ServiceConfig {
   public static final long MEMBER_REQUEST_COLLECTION_INTERVAL = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "member-request-collection-interval", 300);
 
   /** various settings from Geode configuration */
-  private long joinTimeout;
-  private int[] membershipPortRange;
-  private int udpRecvBufferSize;
-  private int udpSendBufferSize;
-  private long memberTimeout;
+  private final long joinTimeout;
+  private final int[] membershipPortRange;
+  private final int udpRecvBufferSize;
+  private final int udpSendBufferSize;
+  private final long memberTimeout;
   private Integer lossThreshold;
-  private Integer memberWeight;
+  private final Integer memberWeight;
   private boolean networkPartitionDetectionEnabled;
-  private int locatorWaitTime;
+  private final int locatorWaitTime;
 
   /** the configuration for the distributed system */
-  private DistributionConfig dconfig;
+  private final DistributionConfig dconfig;
   
   /** the transport config from the distribution manager */
-  private RemoteTransportConfig transport;
+  private final RemoteTransportConfig transport;
 
 
   public int getLocatorWaitTime() {
@@ -59,16 +59,6 @@ public class ServiceConfig {
 
   public int[] getMembershipPortRange() {
     return membershipPortRange;
-  }
-
-
-  public int getUdpRecvBufferSize() {
-    return udpRecvBufferSize;
-  }
-
-
-  public int getUdpSendBufferSize() {
-    return udpSendBufferSize;
   }
 
 
@@ -95,30 +85,6 @@ public class ServiceConfig {
     this.networkPartitionDetectionEnabled = enabled;
   }
   
-  /**
-   * returns the address that will be used by the DirectChannel to
-   * identify this member
-   */
-  public InetAddress getInetAddress() {
-    String bindAddress = this.dconfig.getBindAddress();
-
-    try {
-      /* note: had to change the following to make sure the prop wasn't empty 
-         in addition to not null for admin.DistributedSystemFactory */
-      if (bindAddress != null && bindAddress.length() > 0) {
-        return InetAddress.getByName(bindAddress);
-
-      }
-      else {
-       return SocketCreator.getLocalHost();
-      }
-    }
-    catch (java.net.UnknownHostException unhe) {
-      throw new RuntimeException(unhe);
-
-    }
-  }
-
   public boolean areLocatorsPreferredAsCoordinators() {
     boolean locatorsAreCoordinators = false;
 
@@ -151,7 +117,7 @@ public class ServiceConfig {
     this.transport = transport;
     
     long defaultJoinTimeout = 24000;
-    if (theConfig.getLocators().length() > 0 && !Locator.hasLocators()) {
+    if (theConfig.getLocators().length() > 0 && !Locator.hasLocator()) {
       defaultJoinTimeout = 60000;
     }
     
@@ -160,7 +126,7 @@ public class ServiceConfig {
     long minimumJoinTimeout = dconfig.getMemberTimeout() * 2 + MEMBER_REQUEST_COLLECTION_INTERVAL;
     if (defaultJoinTimeout < minimumJoinTimeout) {
       defaultJoinTimeout = minimumJoinTimeout;
-    };
+    }
     
     joinTimeout = Long.getLong("p2p.joinTimeout", defaultJoinTimeout).longValue();
     

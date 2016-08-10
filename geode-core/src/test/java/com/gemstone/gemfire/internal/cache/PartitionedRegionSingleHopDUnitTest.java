@@ -727,7 +727,6 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4));
   }
 
-  @Ignore("TODO: test disabled due to Bug 47950")
   @Test
   public void testMetadataIsSameOnAllServersAndClients() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
@@ -981,13 +980,6 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  /**
-   * TODO This is failing in WAN_Dev_Dec11 branch after downmerge from trunk revision 34709
-   *
-   * This test is disabled due to intermittent failures in unit test runs
-   * Please see ticket #52203
-   */
-  @Ignore("TODO: test is disabled due to #52203")
   @Test
   public void testClientMetadataForPersistentPrs() throws Exception {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer( 3, 4 ));

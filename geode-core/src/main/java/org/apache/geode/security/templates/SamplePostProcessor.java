@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.geode.security.templates;
 
+import java.io.Serializable;
 import java.security.Principal;
 import java.util.Properties;
 
@@ -29,11 +29,11 @@ public class SamplePostProcessor implements PostProcessor{
 
   @Override
   public void init(final Properties securityProps) {
-
   }
 
   /**
-   * this simply modifies the value with all the parameter values
+   * This simply modifies the value with all the parameter values
+   *
    * @param principal
    *        The principal that's accessing the value
    * @param regionName
@@ -42,13 +42,20 @@ public class SamplePostProcessor implements PostProcessor{
    *        the key of the value that's been accessed. This could be null.
    * @param value
    *        the value, this could be null.
-   * @return
+   * @return the processed value
    */
   @Override
-  public Object processRegionValue(Principal principal,
+  public Object processRegionValue(Serializable principal,
                                    String regionName,
                                    Object key,
                                    Object value) {
-    return principal.getName()+"/"+regionName+"/"+key+"/"+value;
+    String name = null;
+    if(principal instanceof Principal){
+      name = ((Principal) principal).getName();
+    }
+    else{
+      name = principal.toString();
+    }
+    return name+"/"+regionName+"/"+key+"/"+value;
   }
 }

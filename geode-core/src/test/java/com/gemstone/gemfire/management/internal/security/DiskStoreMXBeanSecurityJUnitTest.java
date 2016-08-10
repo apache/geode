@@ -17,11 +17,7 @@
 package com.gemstone.gemfire.management.internal.security;
 
 import static org.assertj.core.api.Assertions.*;
-import static com.gemstone.gemfire.security.JSONAuthorization.*;
 
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.management.DiskStoreMXBean;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -29,15 +25,21 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-@Category(IntegrationTest.class)
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.management.DiskStoreMXBean;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+
+@Category({ IntegrationTest.class, SecurityTest.class })
 public class DiskStoreMXBeanSecurityJUnitTest {
+
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
   private DiskStoreMXBean bean;
 
   @ClassRule
   public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, CACHE_SERVER_JSON);
+      jmxManagerPort, "com/gemstone/gemfire/management/internal/security/cacheServer.json");
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);

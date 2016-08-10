@@ -21,7 +21,8 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Properties;
 
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.management.cli.CommandProcessingException;
 import com.gemstone.gemfire.management.cli.CommandStatement;
 import com.gemstone.gemfire.management.cli.Result;
@@ -52,6 +53,8 @@ public class CommandProcessor {
   private final Object LOCK = new Object();
   
   private volatile boolean isStopped = false;
+
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   public CommandProcessor() throws ClassNotFoundException, IOException {
     this(null);
@@ -110,7 +113,7 @@ public class CommandProcessor {
         //do general authorization check here
         Method method = parseResult.getMethod();
         ResourceOperation resourceOperation = method.getAnnotation(ResourceOperation.class);
-        GeodeSecurityUtil.authorize(resourceOperation);
+        this.securityService.authorize(resourceOperation);
 
         result = executionStrategy.execute(parseResult);
         if (result instanceof Result) {

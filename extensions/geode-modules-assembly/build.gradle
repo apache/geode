@@ -50,6 +50,7 @@ def configureTcServerAssembly = {
   into('geode-cs/lib') {
     from getJarArtifact(':extensions/geode-modules')
     from getJarArtifact(':extensions/geode-modules-tomcat7')
+    from getJarArtifact(':extensions/geode-modules-tomcat8')
     from configurations.slf4jDeps
   }
   into('geode-cs/bin') {
@@ -82,10 +83,8 @@ def configureTcServerAssembly = {
   into('geode-p2p/lib') {
     from getJarArtifact(':extensions/geode-modules')
     from getJarArtifact(':extensions/geode-modules-tomcat7')
+    from getJarArtifact(':extensions/geode-modules-tomcat8')
     from configurations.slf4jDeps
-    from('release/3rdparty_license') {
-      include "open_source_licenses*${version}.txt"
-    }
   }
   into('geode-p2p/bin') {
     from('release/scripts') {
@@ -139,6 +138,7 @@ task distTomcat(type: Zip, dependsOn: ':extensions/geode-modules:assemble') {
   into('lib') {
     from getJarArtifact(':extensions/geode-modules')
     from getJarArtifact(':extensions/geode-modules-tomcat7')
+    from getJarArtifact(':extensions/geode-modules-tomcat8')
     from configurations.slf4jDeps
   }
   into('bin') {
@@ -192,11 +192,11 @@ task distAppServer(type: Zip, dependsOn: ':extensions/geode-modules-session:asse
   }
 }
 
-task distTcServer(type: Zip, dependsOn: [':extensions/geode-modules:assemble', ':extensions/geode-modules-tomcat7:assemble']) {
+task distTcServer(type: Zip, dependsOn: [':extensions/geode-modules:assemble', ':extensions/geode-modules-tomcat7:assemble', ':extensions/geode-modules-tomcat8:assemble'] ) {
   configure(configureTcServerAssembly)
 }
 
-task distTcServer30(type: Zip, dependsOn: [':extensions/geode-modules:assemble', ':extensions/geode-modules-tomcat7:assemble']) {
+task distTcServer30(type: Zip, dependsOn: [':extensions/geode-modules:assemble', ':extensions/geode-modules-tomcat7:assemble', ':extensions/geode-modules-tomcat8:assemble']) {
   configure(configureTcServerAssembly)
   configure(configureTcServer30Assembly)
 }

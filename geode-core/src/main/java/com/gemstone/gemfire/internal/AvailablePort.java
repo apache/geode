@@ -45,7 +45,7 @@ public class AvailablePort {
    * see if there is a gemfire system property that establishes a
    * default address for the given protocol, and return it
    */
-  private static InetAddress getAddress(int protocol) {
+  public static InetAddress getAddress(int protocol) {
     String name = null;
     try {
       if (protocol == SOCKET) {
@@ -351,8 +351,25 @@ public class AvailablePort {
    *         <code>protocol</code> is unknown
    */
   public static int getRandomAvailablePort(int protocol, InetAddress addr) {
+    return getRandomAvailablePort(protocol, addr, false);
+  }
+
+  /**
+   * Returns a randomly selected available port in the range 5001 to
+   * 32767.
+   *
+   * @param protocol
+   *        The protocol to check (either {@link #SOCKET} or {@link
+   *        #MULTICAST}). 
+   * @param addr the bind-address or mcast address to use
+   * @param useMembershipPortRange use true if the port will be used for membership
+   *
+   * @throws IllegalArgumentException
+   *         <code>protocol</code> is unknown
+   */
+  public static int getRandomAvailablePort(int protocol, InetAddress addr, boolean useMembershipPortRange) {
     while (true) {
-      int port = getRandomWildcardBindPortNumber();
+      int port = getRandomWildcardBindPortNumber(useMembershipPortRange);
       if (isPortAvailable(port, protocol, addr)) {
         // don't return the products default multicast port
         if ( !(protocol == MULTICAST && port == DistributionConfig.DEFAULT_MCAST_PORT) ){
@@ -362,8 +379,12 @@ public class AvailablePort {
     }
   }
   public static Keeper getRandomAvailablePortKeeper(int protocol, InetAddress addr) {
+    return getRandomAvailablePortKeeper(protocol, addr, false);
+  }
+  
+  public static Keeper getRandomAvailablePortKeeper(int protocol, InetAddress addr, boolean useMembershipPortRange) {
     while (true) {
-      int port = getRandomWildcardBindPortNumber();
+      int port = getRandomWildcardBindPortNumber(useMembershipPortRange);
       Keeper result = isPortKeepable(port, protocol, addr);
       if (result != null) {
         return result;
@@ -425,19 +446,19 @@ public class AvailablePort {
   }
   
   private static int getRandomWildcardBindPortNumber() {
+    return getRandomWildcardBindPortNumber(false);
+  }
+  
+  private static int getRandomWildcardBindPortNumber(boolean useMembershipPortRange) {
     int rangeBase;
     int rangeTop;
-// wcb port range on Windows is 1024..5000 (and Linux?)
-// wcb port range on Solaris is 32768..65535
-//     if (System.getProperty("os.name").equals("SunOS")) {
-//       rangeBase=32768;
-//       rangeTop=65535;
-//     } else {
-//       rangeBase=1024;
-//       rangeTop=5000;
-//     }
-    rangeBase = AVAILABLE_PORTS_LOWER_BOUND; // 20000/udp is securid
-    rangeTop =  AVAILABLE_PORTS_UPPER_BOUND; // 30000/tcp is spoolfax
+    if ( !useMembershipPortRange ) {
+      rangeBase = AVAILABLE_PORTS_LOWER_BOUND; // 20000/udp is securid
+      rangeTop = AVAILABLE_PORTS_UPPER_BOUND; // 30000/tcp is spoolfax
+    } else {
+      rangeBase = DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[0];
+      rangeTop = DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1];
+    }
 
     return rand.nextInt(rangeTop-rangeBase) + rangeBase;
   }

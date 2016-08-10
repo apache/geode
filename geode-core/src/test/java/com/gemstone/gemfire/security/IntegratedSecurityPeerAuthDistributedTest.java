@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.security;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static com.gemstone.gemfire.security.JSONAuthorization.*;
 import static com.gemstone.gemfire.test.dunit.Invoke.*;
 import static org.assertj.core.api.Assertions.*;
 
@@ -33,13 +32,14 @@ import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
+import org.apache.geode.security.templates.SampleSecurityManager;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCase{
 
-  private static SpyJSONAuthorization spyJSONAuthorization;
+  private static SpySecurityManager spySecurityManager;
 
   private VM locator;
   private VM server1;
@@ -58,12 +58,12 @@ public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCa
     locators =  NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]";
 
     locator.invoke(() -> {
-      JSONAuthorization.setUpWithJsonFile(PEER_AUTH_JSON);
-      spyJSONAuthorization = new SpyJSONAuthorization();
+      spySecurityManager = new SpySecurityManager();
 
       DistributedTestUtils.deleteLocatorStateFile(locatorPort);
 
       final Properties properties = createProperties(locators);
+      properties.setProperty(SampleSecurityManager.SECURITY_JSON, "com/gemstone/gemfire/security/peerAuth.json");
       properties.setProperty(UserPasswordAuthInit.USER_NAME, "locator1");
       properties.setProperty(UserPasswordAuthInit.PASSWORD, "1234567");
       properties.setProperty(START_LOCATOR, locators);
@@ -73,10 +73,10 @@ public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCa
     });
 
     server1.invoke(()-> {
-      JSONAuthorization.setUpWithJsonFile(PEER_AUTH_JSON);
-      spyJSONAuthorization = new SpyJSONAuthorization();
+      spySecurityManager = new SpySecurityManager();
 
       final Properties properties = createProperties(locators);
+      properties.setProperty(SampleSecurityManager.SECURITY_JSON, "com/gemstone/gemfire/security/peerAuth.json");
       properties.setProperty(UserPasswordAuthInit.USER_NAME, "server1");
       properties.setProperty(UserPasswordAuthInit.PASSWORD, "1234567");
 
@@ -85,10 +85,10 @@ public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCa
     });
 
     server2.invoke(()-> {
-      JSONAuthorization.setUpWithJsonFile(PEER_AUTH_JSON);
-      spyJSONAuthorization = new SpyJSONAuthorization();
+      spySecurityManager = new SpySecurityManager();
 
       final Properties properties = createProperties(locators);
+      properties.setProperty(SampleSecurityManager.SECURITY_JSON, "com/gemstone/gemfire/security/peerAuth.json");
       properties.setProperty(UserPasswordAuthInit.USER_NAME, "server2");
       properties.setProperty(UserPasswordAuthInit.PASSWORD, "1234567");
 
@@ -99,10 +99,10 @@ public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCa
 
   @Test
   public void initAndCloseTest() throws Exception {
-    JSONAuthorization.setUpWithJsonFile(PEER_AUTH_JSON);
-    spyJSONAuthorization = new SpyJSONAuthorization();
+    spySecurityManager = new SpySecurityManager();
 
     final Properties properties = createProperties(locators);
+    properties.setProperty(SampleSecurityManager.SECURITY_JSON, "com/gemstone/gemfire/security/peerAuth.json");
     properties.setProperty(UserPasswordAuthInit.USER_NAME, "stranger");
     properties.setProperty(UserPasswordAuthInit.PASSWORD, "1234567");
 
@@ -112,21 +112,21 @@ public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCa
   @Override
   public void postTearDownCacheTestCase() throws Exception {
     closeAllCache();
-    spyJSONAuthorization = null;
-    invokeInEveryVM(() -> { spyJSONAuthorization = null; });
+    spySecurityManager = null;
+    invokeInEveryVM(() -> { spySecurityManager = null; });
   }
 
   private static Properties createProperties(String locators) {
     Properties allProperties = new Properties();
     allProperties.setProperty(LOCATORS, locators);
     allProperties.setProperty(MCAST_PORT, "0");
-    allProperties.setProperty(SECURITY_MANAGER, SpyJSONAuthorization.class.getName());
+    allProperties.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName());
     allProperties.setProperty(SECURITY_PEER_AUTH_INIT, UserPasswordAuthInit.class.getName() + ".create");
     allProperties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
     return allProperties;
   }
 
-  public static class SpyJSONAuthorization extends JSONAuthorization {
+  public static class SpySecurityManager extends SampleSecurityManager {
 
     static int initInvoked = 0;
     static int closeInvoked = 0;

@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- *
- */
+
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
@@ -38,7 +36,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.SecurityService;
 
 public class DestroyRegion extends BaseCommand {
 
@@ -48,9 +46,6 @@ public class DestroyRegion extends BaseCommand {
     return singleton;
   }
 
-  private DestroyRegion() {
-  }
-
   @Override
   public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException, InterruptedException {
     Part regionNamePart = null, callbackArgPart = null;
@@ -58,7 +53,6 @@ public class DestroyRegion extends BaseCommand {
     Object callbackArg = null;
     Part eventPart = null;
     StringBuffer errMessage = new StringBuffer();
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
     CacheServerStats stats = servConn.getCacheServerStats();
     servConn.setAsTrue(REQUIRES_RESPONSE);
 
@@ -107,16 +101,13 @@ public class DestroyRegion extends BaseCommand {
       return;
     }
 
-    LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
+    LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
     if (region == null) {
       String reason = LocalizedStrings.DestroyRegion_REGION_WAS_NOT_FOUND_DURING_DESTROY_REGION_REQUEST.toLocalizedString();
       writeRegionDestroyedEx(msg, regionName, reason, servConn);
       servConn.setAsTrue(RESPONDED);
       return;
     }
-
-    // user needs to have data:manage on all regions in order to destory a particular region
-    GeodeSecurityUtil.authorizeDataManage();
 
     // Destroy the region
     ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
@@ -125,6 +116,9 @@ public class DestroyRegion extends BaseCommand {
     EventID eventId = new EventID(servConn.getEventMemberIDByteArray(), threadId, sequenceId);
 
     try {
+      // user needs to have data:manage on all regions in order to destory a particular region
+      this.securityService.authorizeDataManage();
+
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {
         RegionDestroyOperationContext destroyContext = authzRequest.destroyRegionAuthorize(regionName, callbackArg);

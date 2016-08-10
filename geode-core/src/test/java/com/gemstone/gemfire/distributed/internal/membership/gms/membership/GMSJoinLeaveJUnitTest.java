@@ -833,8 +833,6 @@ public class GMSJoinLeaveJUnitTest {
   }
   
   private void installView(int viewId,InternalDistributedMember coordinator, List<InternalDistributedMember> members) throws IOException {
-    when(services.getMessenger()).thenReturn(messenger);
-    
     //prepare the view
     NetView netView = new NetView(coordinator, viewId, members);
     InstallViewMessage installViewMessage = getInstallViewMessage(netView, credentials, false);
@@ -890,7 +888,7 @@ public class GMSJoinLeaveJUnitTest {
       prepareProcessor.initialize( 1, recips);
       assertTrue("Prepare processor should be waiting ", gmsJoinLeave.testPrepareProcessorWaiting());
       
-      prepareProcessor.memberSuspected(gmsJoinLeaveMemberId, mockMembers[0]);
+      prepareProcessor.memberSuspected(mockMembers[0]);
       prepareProcessor.processLeaveRequest(mockMembers[1]);
       prepareProcessor.processRemoveRequest(mockMembers[2]);
       prepareProcessor.processViewResponse(1, mockMembers[3], null);

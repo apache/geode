@@ -27,11 +27,15 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAttributes;
@@ -41,6 +45,8 @@ import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexCreationProfile;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
 import com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities;
 import com.gemstone.gemfire.cache.lucene.test.TestObject;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
@@ -160,22 +166,65 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
 
   @Test
   public void cannotCreateLuceneIndexForReplicateRegion() throws IOException, ParseException {
-    expectedException.expect(UnsupportedOperationException.class);
-    expectedException.expectMessage("Lucene indexes on replicated regions are not supported");
-    createIndex("field1", "field2", "field3");
-    this.cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+    try {
+      createIndex("field1", "field2", "field3");
+      this.cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+      fail("Should not have been able to create index");
+    } catch (UnsupportedOperationException e) {
+      assertEquals("Lucene indexes on replicated regions are not supported", e.getMessage());
+      assertNull(cache.getRegion(REGION_NAME));
+    }
   }
 
   @Test
   public void cannotCreateLuceneIndexForRegionWithEviction() throws IOException, ParseException {
-    expectedException.expect(UnsupportedOperationException.class);
-    expectedException.expectMessage("Lucene indexes on regions with eviction and action local destroy are not supported");
-    createIndex("field1", "field2", "field3");
-    RegionFactory regionFactory = this.cache.createRegionFactory(RegionShortcut.PARTITION);
-    regionFactory.setEvictionAttributes(EvictionAttributes.createLIFOEntryAttributes(100, EvictionAction.LOCAL_DESTROY));
-    regionFactory.create(REGION_NAME);
+    try {
+      createIndex("field1", "field2", "field3");
+      RegionFactory regionFactory = this.cache.createRegionFactory(RegionShortcut.PARTITION);
+      regionFactory.setEvictionAttributes(
+        EvictionAttributes.createLIFOEntryAttributes(100, EvictionAction.LOCAL_DESTROY));
+      regionFactory.create(REGION_NAME);
+    } catch (UnsupportedOperationException e) {
+      assertEquals("Lucene indexes on regions with eviction and action local destroy are not supported", e.getMessage());
+      assertNull(cache.getRegion(REGION_NAME));
+    }
   }
 
+  @Test
+  public void cannotCreateLuceneIndexWithExistingIndexName()
+  {
+    expectedException.expect(IllegalArgumentException.class);
+    createIndex("field1","field2","field3");
+    createIndex("field4","field5","field6");
+  }
+
+  @Test
+  public void shouldReturnAllDefinedIndexes()
+  {
+    LuceneServiceImpl luceneServiceImpl = (LuceneServiceImpl) luceneService;
+    luceneServiceImpl.createIndex(INDEX_NAME,REGION_NAME,"field1","field2","field3");
+    luceneServiceImpl.createIndex("index2", "region2", "field4","field5","field6");
+    final Collection<LuceneIndexCreationProfile> indexList = luceneServiceImpl.getAllDefinedIndexes();
+
+    assertEquals(Arrays.asList(INDEX_NAME,"index2"), indexList.stream().map(LuceneIndexCreationProfile::getIndexName)
+                                                              .sorted().collect(Collectors.toList()));
+    createRegion();
+    assertEquals(Collections.singletonList("index2"), indexList.stream().map(LuceneIndexCreationProfile::getIndexName)
+                                                    .collect(Collectors.toList()));
+  }
+
+  @Test
+  public void shouldRemoveDefinedIndexIfRegionAlreadyExists()
+  {
+    try {
+      createRegion();
+      createIndex("field1", "field2", "field3");
+
+    } catch(IllegalStateException e) {
+      assertEquals("The lucene index must be created before region", e.getMessage());
+      assertEquals(0,((LuceneServiceImpl) luceneService).getAllDefinedIndexes().size());
+    }
+  }
   private void verifyInternalRegions(Consumer<LocalRegion> verify) {
     LuceneTestUtilities.verifyInternalRegions(luceneService, cache, verify);
   }

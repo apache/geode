@@ -45,7 +45,7 @@ subprojects {
             "Created-By"        : System.getProperty("user.name"),
             "Title"             : rootProject.name,
             "Version"           : version,
-            "Organization"      : "Apache Software Foundation (ASF)"
+            "Organization"      : productOrg
           )
         }
 

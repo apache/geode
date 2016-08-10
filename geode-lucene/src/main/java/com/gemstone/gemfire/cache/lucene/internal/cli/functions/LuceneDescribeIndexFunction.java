@@ -27,7 +27,9 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexCreationProfile;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
 import com.gemstone.gemfire.cache.lucene.internal.cli.LuceneIndexDetails;
 import com.gemstone.gemfire.cache.lucene.internal.cli.LuceneIndexInfo;
 import com.gemstone.gemfire.internal.InternalEntity;
@@ -56,12 +58,16 @@ public class LuceneDescribeIndexFunction extends FunctionAdapter implements Inte
 
   public void execute(final FunctionContext context) {
     LuceneIndexDetails result = null;
+
     final Cache cache = getCache();
     final LuceneIndexInfo indexInfo = (LuceneIndexInfo) context.getArguments();
-    LuceneService service = LuceneServiceProvider.get(cache);
+    LuceneServiceImpl service = (LuceneServiceImpl) LuceneServiceProvider.get(cache);
     LuceneIndex index = service.getIndex(indexInfo.getIndexName(), indexInfo.getRegionPath());
+    LuceneIndexCreationProfile profile = service.getDefinedIndex(indexInfo.getIndexName(),indexInfo.getRegionPath());
     if (index != null) {
       result = new LuceneIndexDetails((LuceneIndexImpl) index);
+    } else if (profile != null) {
+     result = new LuceneIndexDetails(profile);
     }
     context.getResultSender().lastResult(result);
   }

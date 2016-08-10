@@ -37,7 +37,7 @@ public class HAContainerMap implements HAContainerWrapper {
    * TODO: Amogh: Using ConcurrentHashMap may be beneficial. It gives us
    * putEntryIfAbsent()!
    */
-  private Map map = null;
+  private ConcurrentHashMap map = null;
 
   /**
    * This map helps us retrieve the proxy id at the receiver side during GII so
@@ -46,7 +46,7 @@ public class HAContainerMap implements HAContainerWrapper {
    */
   private final Map<String, CacheClientProxy> haRegionNameToProxy;
 
-  public HAContainerMap(HashMap containerMap) {
+  public HAContainerMap(ConcurrentHashMap containerMap) {
     map = containerMap;
     haRegionNameToProxy = new ConcurrentHashMap<String, CacheClientProxy>();
   }
@@ -78,12 +78,10 @@ public class HAContainerMap implements HAContainerWrapper {
    * @param key
    * @return Object
    */
-  public Object getKey(Object key) {
-    synchronized (map) {
-      Entry entry = (Entry)map.get(key);
-      return (entry == null) ? null : entry.getKey();
-    }
-  }
+	public Object getKey(Object key) {
+		Entry entry = (Entry) map.get(key);
+		return (entry == null) ? null : entry.getKey();
+	}
 
   public String getName() {
     return "HashMap";
@@ -95,15 +93,11 @@ public class HAContainerMap implements HAContainerWrapper {
   }
 
   public void clear() {
-    synchronized (map) {
-      map.clear();
-    }
+    map.clear();
   }
 
   public boolean containsKey(Object key) {
-    synchronized (map) {
-      return map.containsKey(key);
-    }
+    return map.containsKey(key);
   }
 
   public boolean containsValue(Object value) {
@@ -117,55 +111,44 @@ public class HAContainerMap implements HAContainerWrapper {
   }
 
   public Object get(Object key) {
-    synchronized (map) {
-      Entry entry = (Entry)map.get(key);
-      return (entry == null) ? null : entry.getValue();
-    }
+    Entry entry = (Entry)map.get(key);
+    return (entry == null) ? null : entry.getValue();
   }
 
   public Object getEntry(Object key) {
-    synchronized (map) {
-      return map.get(key);
-    }
+    return map.get(key);
   }
 
   public boolean isEmpty() {
-    synchronized (map) {
-      return map.isEmpty();
-    }
+    return map.isEmpty();
   }
 
   public Set keySet() {
-    synchronized (map) {
-      return map.keySet();
-    }
+    return map.keySet();
   }
 
   public Object put(Object key, Object value) {
-    Entry entry = new Entry(key, value);
-    synchronized (map) {
-      return map.put(key, entry);
-    }
+    Entry old = (Entry) map.put(key, new Entry(key, value));
+    return old != null ? old.getValue() : null;
+  }
+
+  @SuppressWarnings("unchecked")
+  public Object putIfAbsent(Object key, Object value) {
+    Entry old = (Entry) map.putIfAbsent(key, new Entry(key, value));
+    return old != null ? old.getValue() : null;
   }
 
   public void putAll(Map t) {
-    //synchronized (map) {
-    //  map.putAll(t);
-    //}
     throw new UnsupportedOperationException("putAll() not supported.");
   }
 
   public Object remove(Object key) {
-    synchronized (map) {
-      Entry entry = (Entry)map.remove(key);
-      return (entry == null) ? null : entry.getValue();
-    }
+    Entry entry = (Entry)map.remove(key);
+    return (entry == null) ? null : entry.getValue();
   }
 
   public int size() {
-    synchronized (map) {
-      return map.size();
-    }
+    return map.size();
   }
 
   public Collection values() {

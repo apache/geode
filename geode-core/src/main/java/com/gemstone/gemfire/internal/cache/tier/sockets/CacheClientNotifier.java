@@ -1507,7 +1507,7 @@ public class CacheClientNotifier {
       if (!wrapper.getIsRefFromHAContainer()) {
         wrapper = (HAEventWrapper)haContainer.getKey(wrapper);
         if (wrapper != null && !wrapper.getPutInProgress()) {
-          synchronized (haContainer) {
+          synchronized (wrapper) {
             if (wrapper.getReferenceCount() == 0L) {
               if (logger.isDebugEnabled()) {
                 logger.debug("Removing event from haContainer: {}", wrapper);
@@ -1524,7 +1524,7 @@ public class CacheClientNotifier {
         // This wrapper resides in haContainer.
         wrapper.setClientUpdateMessage(null);
         wrapper.setPutInProgress(false);
-        synchronized (haContainer) {
+        synchronized (wrapper) {
           if (wrapper.getReferenceCount() == 0L) {
             if (logger.isDebugEnabled()) {
               logger.debug("Removing event from haContainer: {}", wrapper);
@@ -2700,7 +2700,7 @@ public class CacheClientNotifier {
               (Boolean)overflowAttributesList.get(4))));
     }
     else {
-      haContainer = new HAContainerMap(new HashMap());
+      haContainer = new HAContainerMap(new ConcurrentHashMap());
     }
     assert haContainer != null;
 

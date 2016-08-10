@@ -26,7 +26,6 @@ import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.operations.RegisterInterestOperationContext;
 import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.InterestType;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
@@ -39,7 +38,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 public class RegisterInterest extends BaseCommand {
 
@@ -49,16 +47,12 @@ public class RegisterInterest extends BaseCommand {
     return singleton;
   }
 
-  private RegisterInterest() {
-  }
-
   @Override
   public void cmdExecute(Message msg, ServerConnection servConn, long start)
       throws IOException, InterruptedException {
     Part regionNamePart = null, keyPart = null;
     String regionName = null;
     Object key = null;
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
     servConn.setAsTrue(REQUIRES_RESPONSE);
     servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
 
@@ -142,16 +136,8 @@ public class RegisterInterest extends BaseCommand {
       return;
     }
 
-    if(interestType == InterestType.REGULAR_EXPRESSION) {
-      GeodeSecurityUtil.authorizeRegionRead(regionName);
-    }
-    else {
-      GeodeSecurityUtil.authorizeRegionRead(regionName, key.toString());
-    }
-
-
     // input key not null
-    LocalRegion region = (LocalRegion)crHelper.getRegion(regionName);
+    LocalRegion region = (LocalRegion)servConn.getCache().getRegion(regionName);
     if (region == null) {
       logger.info(LocalizedMessage.create(LocalizedStrings.RegisterInterest_0_REGION_NAMED_1_WAS_NOT_FOUND_DURING_REGISTER_INTEREST_REQUEST, new Object[] {servConn.getName(), regionName}));
       // writeChunkedErrorResponse(msg,
@@ -160,6 +146,13 @@ public class RegisterInterest extends BaseCommand {
     }
     // Register interest
     try {
+      if (interestType == InterestType.REGULAR_EXPRESSION) {
+        this.securityService.authorizeRegionRead(regionName);
+      }
+      else {
+        this.securityService.authorizeRegionRead(regionName, key.toString());
+      }
+
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {
         // TODO SW: This is a workaround for DynamicRegionFactory

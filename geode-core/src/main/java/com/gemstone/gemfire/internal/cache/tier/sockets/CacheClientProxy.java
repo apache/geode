@@ -47,7 +47,6 @@ import org.apache.shiro.util.ThreadState;
 
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
@@ -84,7 +83,6 @@ import com.gemstone.gemfire.internal.cache.ClientServerObserver;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.Conflatable;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.FilterProfile;
@@ -109,6 +107,8 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 import com.gemstone.gemfire.security.AccessControl;
 
@@ -339,6 +339,8 @@ public class CacheClientProxy implements ClientSession {
   /** number of cq drains that are currently in progress **/
   private int numDrainsInProgress = 0;
   private final Object drainsInProgressLock = new Object();
+
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
   
   /**
    * Constructor.
@@ -1665,7 +1667,7 @@ public class CacheClientProxy implements ClientSession {
    */
   protected void deliverMessage(Conflatable conflatable)
   {
-    ThreadState state = GeodeSecurityUtil.bindSubject(this.subject);
+    ThreadState state = this.securityService.bindSubject(this.subject);
     ClientUpdateMessage clientMessage = null;
     if(conflatable instanceof HAEventWrapper) {
       clientMessage = ((HAEventWrapper)conflatable).getClientUpdateMessage();
@@ -1676,20 +1678,10 @@ public class CacheClientProxy implements ClientSession {
     this._statistics.incMessagesReceived();
 
     // post process
-    if(GeodeSecurityUtil.needPostProcess()) {
+    if(this.securityService.needPostProcess()) {
       Object oldValue = clientMessage.getValue();
-      if (clientMessage.valueIsObject()) {
-        Object newValue = GeodeSecurityUtil.postProcess(clientMessage.getRegionName(), clientMessage.getKeyOfInterest(), EntryEventImpl
-          .deserialize((byte[]) oldValue));
-        try {
-          clientMessage.setLatestValue(BlobHelper.serializeToBlob(newValue));
-        } catch (IOException e) {
-          throw new GemFireIOException("Exception serializing entry value", e);
-        }
-      } else {
-        Object newValue = GeodeSecurityUtil.postProcess(clientMessage.getRegionName(), clientMessage.getKeyOfInterest(), oldValue);
-        clientMessage.setLatestValue(newValue);
-      }
+      Object newValue = GeodeSecurityUtil.postProcess(clientMessage.getRegionName(), clientMessage.getKeyOfInterest(), oldValue, clientMessage.valueIsObject());
+      clientMessage.setLatestValue(newValue);
     }
 
     if (clientMessage.needsNoAuthorizationCheck() || postDeliverAuthCheckPassed(clientMessage)) {
@@ -2381,7 +2373,7 @@ public class CacheClientProxy implements ClientSession {
     private volatile boolean _isStopped = true;
 
     /**
-     * @guarded.By _pausedLock
+     * guarded.By _pausedLock
      */
     //boolean _isPausedDispatcher = false;
     

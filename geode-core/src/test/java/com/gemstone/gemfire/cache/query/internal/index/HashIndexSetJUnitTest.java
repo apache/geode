@@ -116,34 +116,33 @@ public class HashIndexSetJUnitTest {
   public void testHashIndexSetAddUseRemoveTokenSlot() throws Exception {
     int numEntries = 20;
     setupHashIndexSet(numEntries);
-    
     assertEquals(numEntries, his.size());
     his.removeAll(portfolioSet);
-    assertEquals(numEntries, his._removedTokens);
+    assertEquals(numEntries, his.hashIndexSetProperties.removedTokens);
     assertEquals(0, his.size());
     addPortfoliosToHashIndexSet(portfoliosMap, his);
     
-    assertEquals(0, his._removedTokens);
+    assertEquals(0, his.hashIndexSetProperties.removedTokens);
     assertEquals(numEntries, his.size());
   }
   
   @Test
   public void testCompactDueToTooManyRemoveTokens() throws Exception {
-    int numEntries = 100;    
+    int numEntries = 10;
     setupHashIndexSet(numEntries);
     
     assertEquals(numEntries, his.size());
     his.removeAll(portfolioSet);
-    assertEquals(numEntries, his._removedTokens);
+    assertEquals(numEntries, his.hashIndexSetProperties.removedTokens);
     
     assertEquals(0, his.size());
     
     //Very very bad but we fake out the number of removed tokens
-    his._removedTokens = his._maxSize;
+    his.hashIndexSetProperties.removedTokens = his.hashIndexSetProperties.maxSize;
     addPortfoliosToHashIndexSet(portfoliosMap, his);
-    
+
     //compaction should have occured, removed tokens should now be gone
-    assertEquals(0, his._removedTokens);
+    assertEquals(0, his.hashIndexSetProperties.removedTokens);
     assertEquals(numEntries, his.size());
   }
   
@@ -151,12 +150,11 @@ public class HashIndexSetJUnitTest {
   public void testRehashRetainsAllValues() throws Exception {
     int numEntries = 80;
     setupHashIndexSet(numEntries);
-    
     assertEquals(numEntries, his.size());
     his.rehash(1000);
     assertEquals(numEntries, his.size());
     his.iterator().forEachRemaining((e ->portfolioSet.remove(e)));
-    assertTrue(portfolioSet.isEmpty());  
+    assertTrue(portfolioSet.isEmpty());
   }
   
   @Test
@@ -443,7 +441,7 @@ public class HashIndexSetJUnitTest {
     assertEquals(numEntries, his.size());
     his.clear();
     assertTrue(his.isEmpty());
-    assertTrue(his._removedTokens == 0);
+    assertTrue(his.hashIndexSetProperties.removedTokens == 0);
   }
   
   @Test

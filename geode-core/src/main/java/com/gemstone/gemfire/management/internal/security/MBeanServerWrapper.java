@@ -44,10 +44,11 @@ import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 import javax.management.remote.MBeanServerForwarder;
 
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
-import org.apache.geode.security.GeodePermission;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * This class intercepts all MBean requests for GemFire MBeans and passed it to
@@ -57,6 +58,8 @@ import org.apache.geode.security.GeodePermission;
  */
 public class MBeanServerWrapper implements MBeanServerForwarder {
   private MBeanServer mbs;
+
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   public MBeanServerWrapper(){
   }
@@ -146,8 +149,8 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   @Override
   public Object getAttribute(ObjectName name, String attribute) throws MBeanException, InstanceNotFoundException,
       ReflectionException {
-    GeodePermission ctx = getOperationContext(name, attribute, false);
-    GeodeSecurityUtil.authorize(ctx);
+    ResourcePermission ctx = getOperationContext(name, attribute, false);
+    this.securityService.authorize(ctx);
     Object result;
     try {
       result = mbs.getAttribute(name, attribute);
@@ -176,8 +179,8 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   @Override
   public void setAttribute(ObjectName name, Attribute attribute) throws InstanceNotFoundException,
       AttributeNotFoundException, InvalidAttributeValueException, MBeanException, ReflectionException {
-    GeodePermission ctx = getOperationContext(name, attribute.getName(), false);
-    GeodeSecurityUtil.authorize(ctx);
+    ResourcePermission ctx = getOperationContext(name, attribute.getName(), false);
+    this.securityService.authorize(ctx);
     mbs.setAttribute(name, attribute);
   }
 
@@ -199,8 +202,8 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   public Object invoke(ObjectName name, String operationName, Object[] params, String[] signature)
       throws InstanceNotFoundException, MBeanException, ReflectionException {
 
-    GeodePermission ctx = getOperationContext(name, operationName, true);
-    GeodeSecurityUtil.authorize(ctx);
+    ResourcePermission ctx = getOperationContext(name, operationName, true);
+    this.securityService.authorize(ctx);
 
     Object result = mbs.invoke(name, operationName, params, signature);
 
@@ -208,7 +211,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   }
 
   // TODO: cache this
-  private GeodePermission getOperationContext(ObjectName objectName, String featureName, boolean isOp)
+  private ResourcePermission getOperationContext(ObjectName objectName, String featureName, boolean isOp)
       throws InstanceNotFoundException, ReflectionException {
     MBeanInfo beanInfo = null;
     try {
@@ -217,7 +220,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
       throw new GemFireSecurityException("error getting beanInfo of "+objectName, e);
     }
     // If there is no annotation defined either in the class level or method level, we should consider this operation/attribute freely accessible
-    GeodePermission result = null;
+    ResourcePermission result = null;
 
     // find the context in the beanInfo if defined in the class level
     result = getOperationContext(beanInfo.getDescriptor(), result);
@@ -240,11 +243,11 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     return result;
   }
 
-  private GeodePermission getOperationContext(Descriptor descriptor, GeodePermission defaultValue){
+  private ResourcePermission getOperationContext(Descriptor descriptor, ResourcePermission defaultValue){
     String resource = (String)descriptor.getFieldValue("resource");
     String operationCode = (String)descriptor.getFieldValue("operation");
     if(resource!=null && operationCode!=null){
-      return new GeodePermission(resource, operationCode);
+      return new ResourcePermission(resource, operationCode);
     }
     return defaultValue;
   }

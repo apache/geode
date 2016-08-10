@@ -50,7 +50,7 @@ public class Collaboration {
   
   /** The current topic of collaboration 
    *
-   * @guarded.By {@link #topicsQueue}
+   * guarded.By {@link #topicsQueue}
    */
   private volatile Topic currentTopic;
   
@@ -353,8 +353,8 @@ public class Collaboration {
     private final Object topicObject;
     
     /**
-     * @guarded.By {@link Collaboration#topicsQueue}
-     * @guarded.By this instance, <em>after</em> acquiring the topicsQueue
+     * guarded.By {@link Collaboration#topicsQueue}
+     * guarded.By this instance, <em>after</em> acquiring the topicsQueue
      */
     private final List participatingThreads = new ArrayList();
     

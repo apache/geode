@@ -33,8 +33,8 @@ import com.gemstone.gemfire.management.internal.cli.parser.AvailabilityTarget;
 import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
 import com.gemstone.gemfire.management.internal.cli.parser.Option;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-import org.apache.geode.security.GeodePermission.Operation;
-import org.apache.geode.security.GeodePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.junit.After;

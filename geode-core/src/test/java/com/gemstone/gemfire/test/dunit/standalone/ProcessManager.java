@@ -179,6 +179,7 @@ public class ProcessManager {
     cmds.add("-Xmx512m");
     cmds.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE=10");
     cmds.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "disallowMcastDefaults=true");
+    cmds.add("-D" + DistributionConfig.RESTRICT_MEMBERSHIP_PORT_RANGE + "=true");
     cmds.add("-ea");
     cmds.add("-XX:+PrintGC");
     cmds.add("-XX:+PrintGCDetails");

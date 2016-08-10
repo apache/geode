@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.security;
 
-
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -29,7 +28,7 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
-public class IntegratedClientSizeAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
+public class IntegratedClientSizeAuthDistributedTest extends AbstractSecureServerDUnitTest {
 
   @Test
   @Ignore("This is not a supported client message")

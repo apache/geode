@@ -368,7 +368,6 @@ public class SerialWANPropogation_PartitionedRegionDUnitTest extends WANTestBase
         getTestMethodName() + "_PR", 1000 ));
   }
 
-  @Category(FlakyTest.class) // GEODE-1147: random ports, time sensitive, waitForCriterion, eats exceptions
   @Test
   public void testPartitionedSerialPropagationWithParallelThreads() throws Exception {
 
@@ -378,32 +377,36 @@ public class SerialWANPropogation_PartitionedRegionDUnitTest extends WANTestBase
     createCacheInVMs(nyPort, vm2, vm3);
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
+    vm4.invoke(() -> WANTestBase.createPartitionedRegion(
+      getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
+    vm5.invoke(() -> WANTestBase.createPartitionedRegion(
+      getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
+    vm6.invoke(() -> WANTestBase.createPartitionedRegion(
+      getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
+    vm7.invoke(() -> WANTestBase.createPartitionedRegion(
+      getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
+    vm2.invoke(() -> WANTestBase.createPartitionedRegion(
+      getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
+    vm3.invoke(() -> WANTestBase.createPartitionedRegion(
+      getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
+
+    createReceiverInVMs(vm2, vm3);
+
     vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
         false, 100, 10, false, false, null, true ));
     vm5.invoke(() -> WANTestBase.createSender( "ln", 2,
         false, 100, 10, false, false, null, true ));
 
-    vm4.invoke(() -> WANTestBase.createPartitionedRegion(
-        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
-    vm5.invoke(() -> WANTestBase.createPartitionedRegion(
-        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
-    vm6.invoke(() -> WANTestBase.createPartitionedRegion(
-        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
-    vm7.invoke(() -> WANTestBase.createPartitionedRegion(
-        getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
-
     startSenderInVMs("ln", vm4, vm5);
 
-    vm2.invoke(() -> WANTestBase.createPartitionedRegion(
-        getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
-    vm3.invoke(() -> WANTestBase.createPartitionedRegion(
-        getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
-    createReceiverInVMs(vm2, vm3);
+
 
     vm4.invoke(() -> WANTestBase.doMultiThreadedPuts( // TODO: eats exceptions
         getTestMethodName() + "_PR", 1000 ));
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(
         getTestMethodName() + "_PR", 1000 ));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_PR", 1000 ));
   }
 }

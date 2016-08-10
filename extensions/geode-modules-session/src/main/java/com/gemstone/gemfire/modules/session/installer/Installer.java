@@ -151,7 +151,7 @@ public class Installer {
   }
 
 
-  private void processWebXml(final InputStream webXml,
+  public void processWebXml(final InputStream webXml,
       final OutputStream out) throws Exception {
 
     Document doc = createWebXmlDoc(webXml);
@@ -232,10 +232,6 @@ public class Installer {
     final Element filterMapping = doc.createElement("filter-mapping");
     append(doc, filterMapping, "filter-name", "gemfire-session-filter");
     append(doc, filterMapping, "url-pattern", "/*");
-    append(doc, filterMapping, "dispatcher", "FORWARD");
-    append(doc, filterMapping, "dispatcher", "INCLUDE");
-    append(doc, filterMapping, "dispatcher", "REQUEST");
-    append(doc, filterMapping, "dispatcher", "ERROR");
     final Element contextListener = doc.createElement("listener");
     append(doc, contextListener, "listener-class", GEMFIRE_LISTENER_CLASS);
     docElement.insertBefore(filterMapping, after(docElement, "filter"));

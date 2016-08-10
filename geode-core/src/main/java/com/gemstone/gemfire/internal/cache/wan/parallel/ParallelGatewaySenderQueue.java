@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,6 +36,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.CancelException;
@@ -557,7 +556,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         try {
           prQ = (PartitionedRegion)cache
               .createVMRegion(prQName, ra, new InternalRegionArguments()
-                  .setInternalMetaRegion(meta).setDestroyLockFlag(true)
+                  .setInternalMetaRegion(meta).setDestroyLockFlag(true).setInternalRegion(true)
                   .setSnapshotInputStream(null).setImageTarget(null));
           // at this point we should be able to assert prQ == meta; 
           
@@ -570,12 +569,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           //Wait for buckets to be recovered.
           prQ.shadowPRWaitForBucketRecovery();
 
-        } catch (IOException veryUnLikely) {
+        } catch (IOException | ClassNotFoundException veryUnLikely) {
           logger.fatal(LocalizedMessage.create(LocalizedStrings.SingleWriteSingleReadRegionQueue_UNEXPECTED_EXCEPTION_DURING_INIT_OF_0,
                   this.getClass()), veryUnLikely);
-        } catch (ClassNotFoundException alsoUnlikely) {
-          logger.fatal(LocalizedMessage.create(LocalizedStrings.SingleWriteSingleReadRegionQueue_UNEXPECTED_EXCEPTION_DURING_INIT_OF_0,
-                  this.getClass()), alsoUnlikely);
         }
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, prQ);
@@ -680,9 +676,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
   }
   
-  public void put(Object object) throws InterruptedException, CacheException {
+  public boolean put(Object object) throws InterruptedException, CacheException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    
+    boolean putDone = false;
     //Suranjan : Can this region ever be null? Should we work with regionName and not with region instance. 
     // It can't be as put is happeing on the region and its still under process
     GatewaySenderEventImpl value = (GatewaySenderEventImpl)object;
@@ -711,8 +707,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         logger.debug("The userRegionNameToshadowPRMap is {}", userRegionNameToshadowPRMap);
       }
       logger.warn(LocalizedMessage.create(LocalizedStrings.NOT_QUEUING_AS_USERPR_IS_NOT_YET_CONFIGURED, value));        
-      value.release();
-      return;
+      //does not put into queue
+      return false;
     }
     
     PartitionedRegion prQ = this.userRegionNameToshadowPRMap.get(regionPath);
@@ -728,8 +724,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         if (isDebugEnabled) {
           logger.debug("ParallelGatewaySenderOrderedQueue not putting key {} : Value : {}", key, value);
         }
-        value.release();
-        return;
+        //does not put into queue
+        return false;
       }  
     }else{
       key = value.getEventId();
@@ -763,6 +759,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
             brq.getInitializationLock().readLock().lock();
             try {
               putIntoBucketRegionQueue(brq, key, value);
+              putDone = true;
             } finally {
               brq.getInitializationLock().readLock().unlock();
             }
@@ -771,7 +768,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
             // above search then it means that bucket is not intended for this
             // node. So lets not add this event in temp queue event as we are
             // doing it for PRevent
-            value.release();
+            // does not put onto the queue
           } else {
             // We have to handle the case where brq is null because the
             // colocation
@@ -785,9 +782,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
                 logger.debug("ParallelGatewaySenderOrderedQueue not putting key {} : Value : {} as shadowPR bucket is destroyed.",
                     key, value);
               }
-              value.release();
+              // does not put onto the queue
             } else {
-              /**
+              /*
                * This is to prevent data loss, in the scenario when bucket is
                * not available in the cache but we know that it will be created.
                */
@@ -807,6 +804,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
                   brq.getInitializationLock().readLock().lock();
                   try {
                     putIntoBucketRegionQueue(brq, key, value);
+                    putDone = true;
                   } finally {
                     brq.getInitializationLock().readLock().unlock();
                   }
@@ -817,6 +815,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
                   // this.bucketToTempQueueMap.put(bucketId, tempQueue);
                   // }
                   tempQueue.add(value);
+                  putDone = true;
                   // For debugging purpose.
                   if (isDebugEnabled) {
                     logger.debug("The value {} is enqueued to the tempQueue for the BucketRegionQueue.", value);
@@ -844,17 +843,19 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
         if (!thisbucketDestroyed) {
           putIntoBucketRegionQueue(brq, key, value);
+          putDone = true;
         } else {
           if (isDebugEnabled) {
             logger.debug("ParallelGatewaySenderOrderedQueue not putting key {} : Value : {} as shadowPR bucket is destroyed.",
                 key, value);
           }
-          value.release();
+          // does not put onto the queue
         }
       }
     } finally {
       notifyEventProcessorIfRequired();
     }
+    return putDone;
   }
 
   public void notifyEventProcessorIfRequired() {

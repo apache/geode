@@ -238,7 +238,7 @@ com/gemstone/gemfire/distributed/internal/locks/DistributedMemberLock$LockReentr
 com/gemstone/gemfire/distributed/internal/locks/LockGrantorDestroyedException,true,-3540124531032570817
 com/gemstone/gemfire/distributed/internal/membership/gms/messages/InstallViewMessage$messageType,false
 com/gemstone/gemfire/distributed/internal/membership/gms/messenger/JGAddress,true,-1818672332115113291,ip_addr:java/net/InetAddress,port:int,vmViewId:int
-com/gemstone/gemfire/distributed/internal/membership/gms/mgr/GMSMembershipManager$BoundedLinkedHashMap,true,-3419897166186852692,_maximumNumberOfEntries:int
+com/gemstone/gemfire/distributed/internal/membership/gms/mgr/GMSMembershipManager$BoundedLinkedHashMap,true,-3419897166186852692
 com/gemstone/gemfire/internal/AbstractConfig$SortedProperties,true,7156507110684631135
 com/gemstone/gemfire/internal/ConfigSource,true,-4097017272431018553,description:java/lang/String,type:com/gemstone/gemfire/internal/ConfigSource$Type
 com/gemstone/gemfire/internal/ConfigSource$Type,false
@@ -557,8 +557,8 @@ com/gemstone/gemfire/management/internal/cli/functions/CreateAsyncEventQueueFunc
 com/gemstone/gemfire/management/internal/cli/functions/CreateDefinedIndexesFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/CreateDiskStoreFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/CreateIndexFunction,true,1
-com/gemstone/gemfire/management/internal/cli/functions/DataCommandFunction,true,1,optimizeForWrite:boolean
-com/gemstone/gemfire/management/internal/cli/functions/DataCommandFunction$SelectExecStep,true,1
+com/gemstone/gemfire/management/internal/cli/functions/DataCommandFunction,true,1,optimizeForWrite:boolean,securityService:com/gemstone/gemfire/internal/security/SecurityService
+com/gemstone/gemfire/management/internal/cli/functions/DataCommandFunction$SelectExecStep,true,1,securityService:com/gemstone/gemfire/internal/security/SecurityService
 com/gemstone/gemfire/management/internal/cli/functions/DataCommandFunction$SelectMoveStep,true,1
 com/gemstone/gemfire/management/internal/cli/functions/DataCommandFunction$SelectQuitStep,true,1
 com/gemstone/gemfire/management/internal/cli/functions/DeployFunction,true,1

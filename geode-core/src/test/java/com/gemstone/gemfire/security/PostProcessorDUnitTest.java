@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.security;
 
 import static org.junit.Assert.*;
@@ -23,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.geode.security.templates.SamplePostProcessor;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -36,19 +36,18 @@ import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import org.apache.geode.security.templates.SamplePostProcessor;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
-public class IntegratedSecurityPostProcessorDUnitTest extends AbstractIntegratedClientAuthDistributedTest {
+public class PostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
 
-  public IntegratedSecurityPostProcessorDUnitTest(){
+  public PostProcessorDUnitTest(){
     this.postProcessor = SamplePostProcessor.class;
   }
 
   @Test
-  public void testPostProcess(){
+  public void testPostProcessRegionGet(){
     List<String> keys = new ArrayList<>();
     keys.add("key1");
     keys.add("key2");
@@ -66,6 +65,14 @@ public class IntegratedSecurityPostProcessorDUnitTest extends AbstractIntegrated
       assertEquals(2, values.size());
       assertEquals("super-user/AuthRegion/key1/value1", values.get("key1"));
       assertEquals("super-user/AuthRegion/key2/value2", values.get("key2"));
+    });
+  }
+
+  @Test
+  public void testPostProcessQuery(){
+    client1.invoke(()->{
+      ClientCache cache = createClientCache("super-user", "1234567", serverPort);
+      Region region = cache.getRegion(REGION_NAME);
 
       // post process for query
       String query = "select * from /AuthRegion";
@@ -85,7 +92,6 @@ public class IntegratedSecurityPostProcessorDUnitTest extends AbstractIntegrated
       assertTrue(result.contains("super-user/null/null/value2"));
       assertTrue(result.contains("super-user/null/null/value3"));
       assertTrue(result.contains("super-user/null/null/value4"));
-
     });
   }
 

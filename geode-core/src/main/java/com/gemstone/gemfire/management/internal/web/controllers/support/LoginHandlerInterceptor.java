@@ -26,7 +26,8 @@ import javax.servlet.http.HttpServletResponse;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.management.internal.cli.multistep.CLIMultiStepHelper;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.web.util.UriUtils;
@@ -52,6 +53,8 @@ public class LoginHandlerInterceptor extends HandlerInterceptorAdapter {
   private Cache cache;
 
   private Authenticator auth = null;
+
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   private static final ThreadLocal<Map<String, String>> ENV = new ThreadLocal<Map<String, String>>() {
     @Override
@@ -101,7 +104,7 @@ public class LoginHandlerInterceptor extends HandlerInterceptorAdapter {
 
     String username = requestParameterValues.get(ResourceConstants.USER_NAME);
     String password = requestParameterValues.get(ResourceConstants.PASSWORD);
-    GeodeSecurityUtil.login(username, password);
+    this.securityService.login(username, password);
 
     ENV.set(requestParameterValues);
 
@@ -117,7 +120,7 @@ public class LoginHandlerInterceptor extends HandlerInterceptorAdapter {
     throws Exception
   {
     afterConcurrentHandlingStarted(request, response, handler);
-    GeodeSecurityUtil.logout();
+    this.securityService.logout();
   }
 
   @Override

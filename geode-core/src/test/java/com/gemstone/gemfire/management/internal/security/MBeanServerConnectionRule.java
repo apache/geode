@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
 import javax.management.JMX;
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
@@ -33,13 +34,13 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import com.gemstone.gemfire.test.junit.rules.DescribedExternalResource;
 import org.junit.runner.Description;
+
+import com.gemstone.gemfire.test.junit.rules.DescribedExternalResource;
 
 /**
  * Class which eases the creation of MBeans for security testing. When combined with {@link JMXConnectionConfiguration}
  * it allows for the creation of per-test connections with different user/password combinations.
- *
  */
 public class MBeanServerConnectionRule extends DescribedExternalResource {
 
@@ -95,7 +96,6 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
   public <T> T getProxyMBean(String beanQueryName) throws MalformedObjectNameException, IOException {
     return getProxyMBean(null, beanQueryName);
   }
-
 
   public MBeanServerConnection getMBeanServerConnection() throws IOException {
     return con;

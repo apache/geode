@@ -20,12 +20,16 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
+import com.jayway.awaitility.Awaitility;
+import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.Assert;
@@ -72,7 +76,8 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     }
     Properties javaProps1 = gen.getJavaProperties();
 
-    Properties credentials2 = gen.getValidCredentials(2);
+    // vm3's invalid credentials
+    Properties credentials2 = gen.getInvalidCredentials(1);
     if (extraProps != null) {
       credentials2.putAll(extraProps);
     }
@@ -80,6 +85,8 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
 
     Properties props1 = buildProperties(clientauthenticator, clientauthInit,
       null, credentials1, null);
+
+    // have vm 3 start a cache with invalid credentails
     Properties props2 = buildProperties(clientauthenticator, clientauthInit,
       null, credentials2, null);
 
@@ -105,8 +112,61 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
       getTestMethodName() + "_RR", null, isOffHeap()  ));
     logger.info("Created RR in vm3");
 
+    // this tests verifies that even though vm3 has invalid credentials, vm2 can still send data to vm3 because
+    // vm2 has valid credentials
     vm2.invoke(() -> WANTestBase.startSender( "ln" ));
     vm2.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+
+    vm2.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1));
+    vm3.invoke(() -> {
+      Region r = cache.getRegion(Region.SEPARATOR + getTestMethodName() + "_RR");
+      Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> assertTrue(r.size() > 0));
+    });
+    logger.info("Done successfully.");
+  }
+
+  @Test
+  public void testWanIntegratedSecurityWithValidCredentials() {
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    logger.info("Created locator on local site");
+
+    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
+    logger.info("Created locator on remote site");
+
+
+    Properties props1 = buildSecurityProperties("admin", "secret");
+    Properties props2 = buildSecurityProperties("guest", "guest");
+
+    vm2.invoke(() -> NewWanAuthenticationDUnitTest.createSecuredCache(
+      props1, null, lnPort ));
+    logger.info("Created secured cache in vm2");
+
+    vm3.invoke(() -> NewWanAuthenticationDUnitTest.createSecuredCache(
+      props2, null, nyPort ));
+    logger.info("Created secured cache in vm3");
+
+    vm2.invoke(() -> WANTestBase.createSender( "ln", 2,
+      false, 100, 10, false, false, null, true ));
+    logger.info("Created sender in vm2");
+
+    vm3.invoke(() -> createReceiverInSecuredCache());
+    logger.info("Created receiver in vm3");
+
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", isOffHeap()  ));
+    logger.info("Created RR in vm2");
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", null, isOffHeap()  ));
+    logger.info("Created RR in vm3");
+
+    vm2.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm2.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+    vm2.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1));
+    vm3.invoke(() -> {
+      Region r = cache.getRegion(Region.SEPARATOR + getTestMethodName() + "_RR");
+      Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> assertTrue(r.size() > 0));
+
+    });
     logger.info("Done successfully.");
   }
 
@@ -182,6 +242,56 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     }
   }
 
+  /**
+   * Test authentication with new WAN with invalid credentials. Although,
+   * nothing related to authentication has been changed in new WAN, this test
+   * case is added on request from QA for defect 44650.
+   */
+  @Test
+  public void testWanSecurityManagerWithInvalidCredentials() {
+    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    logger.info("Created locator on local site");
+
+    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
+    logger.info("Created locator on remote site");
+
+    Properties props1 = buildSecurityProperties("admin", "wrongPswd");
+    Properties props2 = buildSecurityProperties("guest", "wrongPswd");
+
+    logger.info("Done building auth properties");
+
+    vm2.invoke(() -> NewWanAuthenticationDUnitTest.createSecuredCache(
+      props1, null, lnPort ));
+    logger.info("Created secured cache in vm2");
+
+    vm3.invoke(() -> NewWanAuthenticationDUnitTest.createSecuredCache(
+      props2, null, nyPort ));
+    logger.info("Created secured cache in vm3");
+
+    vm2.invoke(() -> WANTestBase.createSender( "ln", 2,
+      false, 100, 10, false, false, null, true ));
+    logger.info("Created sender in vm2");
+
+    vm3.invoke(() -> createReceiverInSecuredCache());
+    logger.info("Created receiver in vm3");
+
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", "ln", isOffHeap()  ));
+    logger.info("Created RR in vm2");
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", null, isOffHeap()  ));
+    logger.info("Created RR in vm3");
+
+    try {
+      vm2.invoke(() -> WANTestBase.startSender( "ln" ));
+      fail("Authentication Failed: While starting the sender, an exception should have been thrown");
+    } catch (Exception e) {
+      if (!(e.getCause().getCause() instanceof AuthenticationFailedException)) {
+        fail("Authentication is not working as expected", e);
+      }
+    }
+  }
+
   private static Properties buildProperties(String clientauthenticator,
                                             String clientAuthInit, String accessor, Properties extraAuthProps,
                                             Properties extraAuthzProps) {
@@ -205,6 +315,16 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
       authProps.putAll(extraAuthzProps);
     }
     return authProps;
+  }
+
+  private static Properties buildSecurityProperties(String username, String password){
+    Properties props = new Properties();
+    props.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+    props.put("security-json", "org/apache/geode/security/templates/security.json");
+    props.put(SECURITY_CLIENT_AUTH_INIT, UserPasswdAI.class.getName());
+    props.put("security-username", username);
+    props.put("security-password", password);
+    return props;
   }
 
   public static void createSecuredCache(Properties authProps, Object javaProps, Integer locPort) {
@@ -273,7 +393,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
       }
       Properties javaProps1 = gen.getJavaProperties();
 
-      Properties credentials2 = gen.getValidCredentials(2);
+      Properties credentials2 = gen.getInvalidCredentials(2);
       if (extraProps != null) {
         credentials2.putAll(extraProps);
       }
@@ -304,6 +424,46 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
 
       vm2.invoke(() -> verifyDifferentServerInGetCredentialCall());
       vm3.invoke(() -> verifyDifferentServerInGetCredentialCall());
+    }
+  }
+
+  @Test
+  public void testWanSecurityManagerAuthValidCredentialsWithServer() {
+    disconnectAllFromDS();
+    {
+      Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+      logger.info("Created locator on local site");
+
+      Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
+      logger.info("Created locator on remote site");
+
+      Properties props1 = buildSecurityProperties("admin", "secret");
+      Properties props2 = buildSecurityProperties("guest", "guest");
+
+      vm2.invoke(() -> NewWanAuthenticationDUnitTest.createSecuredCache(
+        props1, null, lnPort ));
+      logger.info("Created secured cache in vm2");
+
+      vm3.invoke(() -> NewWanAuthenticationDUnitTest.createSecuredCache(
+        props2, null, nyPort ));
+      logger.info("Created secured cache in vm3");
+
+      vm2.invoke(() -> WANTestBase.createSender( "ln", 2,
+        false, 100, 10, false, false, null, true ));
+      logger.info("Created sender in vm2");
+
+      vm3.invoke(() -> createReceiverInSecuredCache());
+      logger.info("Created receiver in vm3");
+
+      vm2.invoke(() -> WANTestBase.startSender( "ln" ));
+      vm2.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
+
+      vm2.invoke(() -> verifyDifferentServerInGetCredentialCall());
+
+      // this would fail for now because for integrated security, we are not sending the receiver's credentials back
+      // to the sender. Because in the old security implementation, even though the receiver's credentials are sent back to the sender
+      // the sender is not checking it.
+      //vm3.invoke(() -> verifyDifferentServerInGetCredentialCall());
     }
   }
 }

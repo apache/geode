@@ -39,6 +39,8 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -94,6 +96,27 @@ public class Message  {
   private static final int FIXED_LENGTH = 17;
 
   private static final ThreadLocal<ByteBuffer> tlCommBuffer = new ThreadLocal<>();
+  
+  private static final byte[] TRUE;
+  private static final byte[] FALSE;
+
+  static {
+    try {
+      HeapDataOutputStream hdos = new HeapDataOutputStream(10, null);
+      BlobHelper.serializeTo(Boolean.TRUE, hdos);
+      TRUE = hdos.toByteArray();
+    } catch (Exception e) {
+      throw new IllegalStateException(e);
+    }
+
+    try {
+      HeapDataOutputStream hdos = new HeapDataOutputStream(10, null);
+      BlobHelper.serializeTo(Boolean.FALSE, hdos);
+      FALSE = hdos.toByteArray();
+    } catch (Exception e) {
+      throw new IllegalStateException(e);
+    }
+  }
 
   protected int msgType;
   protected int payloadLength=0;
@@ -242,18 +265,34 @@ public class Message  {
   }
 
   public void addStringPart(String str) {
+    addStringPart(str, false);
+  }
+  
+  private static final Map<String,byte[]> CACHED_STRINGS = new ConcurrentHashMap<String,byte[]>();
+  
+  public void addStringPart(String str, boolean enableCaching) {
     if (str==null) {
       addRawPart((byte[])null, false);
     }
     else {
-      HeapDataOutputStream hdos = new HeapDataOutputStream(str);
-      this.messageModified = true;
       Part part = partsList[this.currentPart];
-      part.setPartState(hdos, false);
+      if (enableCaching) {
+        byte[] bytes = CACHED_STRINGS.get(str);
+        if (bytes == null) {
+          HeapDataOutputStream hdos = new HeapDataOutputStream(str);
+          bytes = hdos.toByteArray();
+          CACHED_STRINGS.put(str, bytes);
+        }
+        part.setPartState(bytes, false);
+      } else {
+        HeapDataOutputStream hdos = new HeapDataOutputStream(str);
+        this.messageModified = true;
+        part.setPartState(hdos, false);
+      }
       this.currentPart++;
     }
   }
-
+  
   /*
    * Adds a new part to this message that contains a <code>byte</code>
    * array (as opposed to a serialized object).
@@ -295,9 +334,12 @@ public class Message  {
       serializeAndAddPartNoCopying(o);
     }
   }
+
   public void addObjPart(Object o, boolean zipValues) {
     if (o == null || o instanceof byte[]) {
-      addRawPart((byte[])o, false);
+      addRawPart((byte[]) o, false);
+    } else if (o instanceof Boolean) {
+      addRawPart((Boolean) o ? TRUE : FALSE, true);
     } else {
       serializeAndAddPart(o, zipValues);
     }

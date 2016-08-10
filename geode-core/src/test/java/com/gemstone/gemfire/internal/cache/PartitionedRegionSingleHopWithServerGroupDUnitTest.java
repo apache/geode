@@ -395,7 +395,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     
     try {
       verifyMetadata(4, 2);
-      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.verifyMetadata(new Integer(4),new Integer(1)));
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.verifyMetadata(4, 1));
       
     } finally {
       resetHonourServerGroupsInPRSingleHop();
@@ -559,11 +559,10 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
       assertTrue(regionMetaData.containsKey(region.getFullPath()));
       ClientPartitionAdvisor prMetaData = regionMetaData.get(region
           .getFullPath());
-      for (Entry e : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-          .entrySet()) {
-        cache.getLogger().fine(
-            "For bucket id " + e.getKey() + " the locations are "
-                + e.getValue());
+      if (cache.getLogger().fineEnabled()) {
+        for (Entry e : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+          cache.getLogger().fine("For bucket id " + e.getKey() + " the locations are " + e.getValue());
+        }
       }
 
       for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY()

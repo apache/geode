@@ -17,14 +17,7 @@
 package com.gemstone.gemfire.management.internal.security;
 
 import static org.assertj.core.api.Assertions.*;
-import static com.gemstone.gemfire.security.JSONAuthorization.*;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.locks.DLockService;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.management.LockServiceMXBean;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -33,15 +26,24 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-@Category(IntegrationTest.class)
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.locks.DLockService;
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.management.LockServiceMXBean;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+
+@Category({ IntegrationTest.class, SecurityTest.class })
 public class LockServiceMBeanAuthorizationJUnitTest {
+
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
   private LockServiceMXBean lockServiceMBean;
 
   @ClassRule
   public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, CACHE_SERVER_JSON);
+      jmxManagerPort, "com/gemstone/gemfire/management/internal/security/cacheServer.json");
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);

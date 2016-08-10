@@ -25,6 +25,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.internal.cache.DistributedRegionFunctionStreamingMessage;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
@@ -65,7 +66,6 @@ public final class DistributedRegionFunctionResultSender implements
     this.msg = msg;
     this.dm = dm;
     this.functionObject = function;
-
   }
 
   /**
@@ -139,8 +139,6 @@ public final class DistributedRegionFunctionResultSender implements
       if (isLocal) {
         this.rc.addResult(memberID, oneResult);
         this.rc.endResults();
-        FunctionStats.getFunctionStats(functionObject.getId(),
-            this.dm == null ? null : this.dm.getSystem()).incResultsReceived();
       }
       else {
         try {
@@ -154,8 +152,11 @@ public final class DistributedRegionFunctionResultSender implements
         }
       }
       // incrementing result sent stats.
-      FunctionStats.getFunctionStats(functionObject.getId(),
-          this.dm == null ? null : this.dm.getSystem()).incResultsReturned();
+      if (this.dm == null) {
+        FunctionStats.getFunctionStats(functionObject.getId()).incResultsReceived();
+      } else {
+        FunctionStats.getFunctionStats(functionObject.getId(), this.dm.getSystem()).incResultsReceived();
+      }
     }
 
   }
@@ -205,8 +206,11 @@ public final class DistributedRegionFunctionResultSender implements
     else {
       if (isLocal) {
         this.rc.addResult(memberID, oneResult);
-        FunctionStats.getFunctionStats(functionObject.getId(),
-            this.dm == null ? null : this.dm.getSystem()).incResultsReceived();
+        if (this.dm == null) {
+          FunctionStats.getFunctionStats(functionObject.getId()).incResultsReceived();
+        } else {
+          FunctionStats.getFunctionStats(functionObject.getId(), this.dm.getSystem()).incResultsReceived();
+        }
       }
       else {
         try {
@@ -220,8 +224,11 @@ public final class DistributedRegionFunctionResultSender implements
         }
       }
       // incrementing result sent stats.
-      FunctionStats.getFunctionStats(functionObject.getId(),
-          this.dm == null ? null : this.dm.getSystem()).incResultsReturned();
+      if (this.dm == null) {
+        FunctionStats.getFunctionStats(functionObject.getId()).incResultsReturned();
+      } else {
+        FunctionStats.getFunctionStats(functionObject.getId(), this.dm.getSystem()).incResultsReturned();
+      }
     }
   }
   

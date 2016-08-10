@@ -22,12 +22,12 @@ import javax.servlet.http.HttpSession;
 
 public class DeltaSessionFacade extends StandardSessionFacade {
 
-  private DeltaSession session;
+  private DeltaSessionInterface session;
 
   /**
    * Construct a new session facade.
    */
-  public DeltaSessionFacade(DeltaSession session) {
+  public DeltaSessionFacade(DeltaSessionInterface session) {
     super((HttpSession) session);
     // Store session locally since the super session is private and provides no accessor.
     this.session = session;

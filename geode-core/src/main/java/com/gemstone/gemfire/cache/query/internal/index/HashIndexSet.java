@@ -24,23 +24,17 @@ package com.gemstone.gemfire.cache.query.internal.index;
 
 import static it.unimi.dsi.fastutil.HashCommon.arraySize;
 import it.unimi.dsi.fastutil.HashCommon;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.gemstone.gemfire.cache.query.TypeMismatchException;
-import com.gemstone.gemfire.cache.query.internal.index.AbstractIndex.InternalIndexStatistics;
 import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
 import com.gemstone.gemfire.cache.query.internal.types.TypeUtils;
 import com.gemstone.gemfire.internal.cache.CachePerfStats;
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.pdx.internal.PdxString;
 
 /**
@@ -55,18 +49,41 @@ public class HashIndexSet implements Set {
    * optional statistics object to track number of hash collisions and time
    * spent probing based on hash collisions
    */
+  final class HashIndexSetProperties{
+    /** the set of Objects */
+    final protected transient Object[] set;
+    /** used for hashing into the table**/
+    final protected int mask;
+
+    /** the current number of entries in the set */
+    protected transient int size = 0;
+
+    /** the current number of open slots in the hash.
+     * Originally used when we collapsed collided keys into collections
+     * Not really used now */
+    protected transient int free;
+
+    /** number of removed tokens in the set, these are index positions that may be reused*/
+    transient int removedTokens;
+
+    /** size of the backing table (-1)**/
+    protected int n;
+
+    /**
+     * The maximum number of elements before rehashing
+     */
+    protected int maxSize;
+
+    private int computeNumFree() {
+      return this.n - this.size;
+    }
+
+    public HashIndexSetProperties(final Object[] set, final int mask) {
+      this.set = set;
+      this.mask = mask;
+    }
+  }
   private transient CachePerfStats cacheStats;
-
-  /** the current number of entries in the set */
-  protected transient int _size;
-
-  /** the current number of open slots in the hash.
-   * Originally used when we collapsed collided keys into collections
-   * Not really used now */
-  protected transient int _free;
-
-  /** number of removed tokens in the set, these are index positions that may be reused*/
-  transient int _removedTokens;
 
   /** the load above which rehashing occurs. */
   protected static final float DEFAULT_LOAD_FACTOR = 0.5f;
@@ -74,25 +91,13 @@ public class HashIndexSet implements Set {
   protected static final int DEFAULT_INITIAL_CAPACITY = 128;
 
   protected float _loadFactor;
-  
-  /** size of the backing table (-1)**/
-  protected int n;
-  
-  /** used for hashing into the table**/
-  protected int _mask;
-
-  /**
-   * The maximum number of elements before rehashing
-   */
-  protected int _maxSize;
 
   /** If after an update, the number of removed tokens X percent of the max size,
     * we will compact and rehash to remove the tokens.
     */
   protected static final float CONDITIONAL_REMOVED_TOKEN_REHASH_FACTOR = .7f;
 
-  /** the set of Objects */
-  protected transient Object[] _set;
+  HashIndexSetProperties hashIndexSetProperties;
 
   protected HashIndex.IMQEvaluator _imqEvaluator;
 
@@ -178,11 +183,11 @@ public class HashIndexSet implements Set {
    * @return the indexSlot of the given key/object combination
    */
   protected int index(Object key, Object obj, int ignoreThisSlot) {
+    HashIndexSetProperties metaData = hashIndexSetProperties;
     int hash;
     int pos;
-    Object[] set;
-    int mask = _mask;
-    set = _set;
+    Object[] set = metaData.set;
+    int mask = metaData.mask;
     Object curr;
     hash = computeHash(key);
 
@@ -211,7 +216,7 @@ public class HashIndexSet implements Set {
   }
 
   public Iterator getAllNotMatching(Collection keysToRemove) {
-    return new HashIndexSetIterator(keysToRemove, _set);
+    return new HashIndexSetIterator(keysToRemove, hashIndexSetProperties);
   }
 
   /**
@@ -222,7 +227,7 @@ public class HashIndexSet implements Set {
    * @return Iterator over a collection of objects that match the key
    */
   public Iterator get(Object indexKey) {
-    return new HashIndexSetIterator(indexKey, _set);
+    return new HashIndexSetIterator(indexKey, hashIndexSetProperties);
   }
 
   /**
@@ -277,11 +282,12 @@ public class HashIndexSet implements Set {
 
     // grow/shrink capacity if needed
     preInsertHook();
-    int indexSlot = insertionIndex(indexKey, obj, _set);
+    HashIndexSetProperties metaData = hashIndexSetProperties;
+    int indexSlot = insertionIndex(indexKey, metaData);
 
-    Object old = _set[indexSlot];
-    addObjectToSet(_set, indexSlot, obj);
-
+    Object old = metaData.set[indexSlot];
+    addObjectToSet(metaData.set, indexSlot, obj);
+    hashIndexSetProperties = metaData;
     // only call this now if we are adding to an actual empty slot, otherwise we
     // have reused
     // and inserted into a set or array
@@ -296,16 +302,14 @@ public class HashIndexSet implements Set {
   /**
    * Locates the next available insertion index for the provided indexKey and set
    * 
-   * @param obj
-   *          an <code>Object</code> value
    * @return the index of an open or resused position
    */
-  protected int insertionIndex(Object indexKey, Object obj, Object[] set) {
+  protected int insertionIndex(Object indexKey, HashIndexSetProperties metaData) {
     int hash;
     int pos;
-    int mask = _mask;
+    int mask = metaData.mask;
     Object curr;
-    final Object[] array = set;
+    final Object[] array = metaData.set;
     hash = computeHash(indexKey);
 
     long start = -1L;
@@ -350,7 +354,7 @@ public class HashIndexSet implements Set {
   @Override
   public int hashCode() {
     int hash = 0;
-    Object[] set = _set;
+    Object[] set = hashIndexSetProperties.set;
     for (int i = set.length; i-- > 0;) {
       if (set[i] != null && set[i] != REMOVED) {
         hash += set[i].hashCode();
@@ -365,20 +369,25 @@ public class HashIndexSet implements Set {
    * @param newN the expected size
    */
   protected void rehash(int newN) {
+    HashIndexSetProperties metaData = hashIndexSetProperties;
     if (TEST_ALWAYS_REHASH) {
       Thread.yield();
     }
-    int oldCapacity = _set.length;
-    Object[] oldSet = _set;
+    Object[] oldSet = metaData.set;
+    int oldCapacity = oldSet.length;
 
-    _removedTokens = 0;
+
+
     
-    n = newN;
-    _mask = n - 1;
-    _maxSize = computeMaxSize(n, _loadFactor);
-    _free = computeNumFree();
-    Object[] newSet = new Object[n + 1];
-    
+    int mask = newN - 1;
+    int _maxSize = computeMaxSize(newN, _loadFactor);
+    Object[] newSet = new Object[newN + 1];
+    HashIndexSetProperties newHashIndexProperties = new HashIndexSetProperties(newSet,mask);
+    newHashIndexProperties.size = metaData.size;
+    newHashIndexProperties.free = hashIndexSetProperties.computeNumFree();
+    newHashIndexProperties.removedTokens = 0;
+    newHashIndexProperties.n = newN;
+    newHashIndexProperties.maxSize = _maxSize;
     for (int i = oldCapacity; i-- > 0;) {
       if (oldSet[i] != null && oldSet[i] != REMOVED) {
         Object o = oldSet[i];
@@ -387,13 +396,14 @@ public class HashIndexSet implements Set {
         if (key == null) {
           key = IndexManager.NULL;
         }
-        int index = insertionIndex(key, o, newSet);
+        int index = insertionIndex(key, newHashIndexProperties);
         if (index >= 0) {
-          addObjectToSet(newSet, index, o);
+          addObjectToSet(newHashIndexProperties.set, index, o);
         }
       }
     }
-    _set = newSet;
+    hashIndexSetProperties = newHashIndexProperties;
+
   }
 
 
@@ -420,19 +430,19 @@ public class HashIndexSet implements Set {
    * Empties the set.
    */
   public void clear() {
-    _size = 0;
-    _free = capacity();
-    _removedTokens = 0;
-
-    Object[] set = _set;
-
+    HashIndexSetProperties metaData = hashIndexSetProperties;
+    metaData.size = 0;
+    metaData.free = capacity();
+    metaData.removedTokens = 0;
+    Object[] set = metaData.set;
     for (int i = set.length; i-- > 0;) {
       set[i] = null;
     }
+    hashIndexSetProperties = metaData;
   }
 
   protected int capacity() {
-    return _set.length;
+    return hashIndexSetProperties.set.length;
   }
 
 
@@ -565,7 +575,7 @@ public class HashIndexSet implements Set {
    * return true if no elements exist in the array that are non null or REMOVED tokens
    */
   public boolean isEmpty() {
-    return 0 == _size;
+    return 0 == hashIndexSetProperties.size;
   }
 
   /**
@@ -576,7 +586,7 @@ public class HashIndexSet implements Set {
    * @return an <code>int</code> value
    */
   public int size() {
-    return _size;
+    return hashIndexSetProperties.size;
   }
 
   /**
@@ -584,19 +594,19 @@ public class HashIndexSet implements Set {
    * let's just return the size of the array as that is the worst case size
    */
   public int size(Object indexKey) {
-    return _size;
+    return hashIndexSetProperties.size;
   }
 
   /**
    * Compress the backing array if possible
    */
   public void compact() {
-    trimToSize(_size);
+    trimToSize(hashIndexSetProperties.size);
   }
   
   public boolean trimToSize( final int n ) {
     final int l = HashCommon.nextPowerOfTwo( (int)Math.ceil( n / _loadFactor ) );
-    if ( this.n <= l ) return true;
+    if (this.hashIndexSetProperties.n <= l ) return true;
     try {
             rehash( l );
     }
@@ -613,15 +623,17 @@ public class HashIndexSet implements Set {
    */
   protected boolean removeAt(int index) {
     Object cur;
-    cur = _set[index];
-
+    HashIndexSetProperties metaData = hashIndexSetProperties;
+    cur = metaData.set[index];
     if (cur == null || cur == REMOVED) {
       // nothing removed
       return false;
     } else {
-      _set[index] = REMOVED;
-      _size--;
-      _removedTokens++;
+      metaData.set[index] = REMOVED;
+      metaData.size--;
+      metaData.removedTokens++;
+      hashIndexSetProperties = metaData;
+
       return true;
     }
   }
@@ -630,17 +642,18 @@ public class HashIndexSet implements Set {
    * initializes this index set
    */
   protected int setUp(final int expectedCapacity, final float loadFactor) {
-    n = arraySize( expectedCapacity, loadFactor );
+    int n = arraySize( expectedCapacity, loadFactor );
     this._loadFactor = loadFactor;
-    _maxSize = computeMaxSize(n, loadFactor);
-    _mask = n - 1;
-    _free = computeNumFree();
-    _set = new Object[n + 1];
+    int _maxSize = computeMaxSize(n, loadFactor);
+    int mask = n - 1;
+    Object[] set = new Object[n + 1];
+    HashIndexSetProperties metaData  = new HashIndexSetProperties(set,mask);
+    metaData.n = n;
+    metaData.maxSize = _maxSize;
+    hashIndexSetProperties = metaData;
+    hashIndexSetProperties.free = hashIndexSetProperties.computeNumFree();
+
     return n;
-  }
-  
-  private int computeNumFree() {
-    return n - _size;
   }
   
   private int computeMaxSize(int n, float loadFactor) {
@@ -652,23 +665,23 @@ public class HashIndexSet implements Set {
    */
   protected final void postInsertHook(boolean usedFreeSlot) {
     if (usedFreeSlot) {
-      _free--;
+      hashIndexSetProperties.free--;
     } else {
       // we used a removeToken
-      _removedTokens--;
+      hashIndexSetProperties.removedTokens--;
     }
-    _size++;
+    hashIndexSetProperties.size++;
   }
 
   /**
    * Before inserting we can ensure we have capacity
    */
   protected final void preInsertHook() {
-    if (_size > _maxSize || _free == 0 || TEST_ALWAYS_REHASH) {
-      rehash(arraySize(_size + 1, _loadFactor));
+    if (hashIndexSetProperties.size > hashIndexSetProperties.maxSize || hashIndexSetProperties.free == 0 || TEST_ALWAYS_REHASH) {
+      rehash(arraySize(hashIndexSetProperties.size + 1, _loadFactor));
       computeMaxSize(capacity(), _loadFactor);
-      _free = computeNumFree();
-    } else if (_removedTokens > _maxSize * CONDITIONAL_REMOVED_TOKEN_REHASH_FACTOR) {
+      hashIndexSetProperties.free = hashIndexSetProperties.computeNumFree();
+    } else if (hashIndexSetProperties.removedTokens > hashIndexSetProperties.maxSize * CONDITIONAL_REMOVED_TOKEN_REHASH_FACTOR) {
       compact();
     }
   }
@@ -685,23 +698,22 @@ public class HashIndexSet implements Set {
     private int mask;
     private int probe;
 
-    private HashIndexSetIterator(Collection keysToRemove, Object[] objects) {
+    private HashIndexSetIterator(Collection keysToRemove, HashIndexSetProperties metaData) {
       this.keysToRemove = keysToRemove;
       this.pos = 0;
       this.prevPos = 0;
-      this.objects = objects;
+      this.objects = metaData.set;
       current = objects[pos];
     }
 
-    private HashIndexSetIterator(Object keyToMatch, Object[] objects) {
+    private HashIndexSetIterator(Object keyToMatch , HashIndexSetProperties metaData) {
       this.keyToMatch = keyToMatch;
-      this.objects = objects;
-
-      mask = _mask;
+      this.objects = metaData.set;
+      mask = metaData.mask;
       hash = computeHash(keyToMatch);
       pos = (it.unimi.dsi.fastutil.HashCommon.mix(hash)) & mask;
       prevPos = pos;
-      current = objects[pos];
+      current = this.objects[pos];
     }
     
     private void setPos(int pos) {

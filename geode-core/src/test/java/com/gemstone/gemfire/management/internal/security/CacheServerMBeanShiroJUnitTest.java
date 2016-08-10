@@ -18,17 +18,20 @@ package com.gemstone.gemfire.management.internal.security;
 
 import static org.assertj.core.api.Assertions.*;
 
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.management.CacheServerMXBean;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-@Category(IntegrationTest.class)
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.management.CacheServerMXBean;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+
+@Category({ IntegrationTest.class, SecurityTest.class })
 public class CacheServerMBeanShiroJUnitTest {
+
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
   private CacheServerMXBean bean;
@@ -56,7 +59,6 @@ public class CacheServerMBeanShiroJUnitTest {
     bean.isRunning();
     bean.showClientQueueDetails("foo");
   }
-
 
   @Test
   @JMXConnectionConfiguration(user = "guest", password = "guest")

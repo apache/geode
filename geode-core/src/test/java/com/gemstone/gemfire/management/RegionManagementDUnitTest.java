@@ -16,14 +16,7 @@
  */
 package com.gemstone.gemfire.management;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +29,9 @@ import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -64,6 +60,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This class checks and verifies various data and operations exposed through
@@ -362,12 +359,8 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
           attributesFactory.setValueConstraint(Portfolio.class);
           RegionAttributes regionAttributes = attributesFactory.create();
           
-          cache.createRegion("p:os",regionAttributes);
-          cache.createRegion("p@os",regionAttributes);
           cache.createRegion("p-os",regionAttributes);
-          cache.createRegion("p#os",regionAttributes);
-          cache.createRegion("p+os",regionAttributes);
-          cache.createRegion("p?os",regionAttributes);
+          cache.createRegion("p_os",regionAttributes);
         }
       });
 
@@ -384,12 +377,8 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
           ManagementService service = getManagementService();
           
           try {
-            MBeanUtil.getDistributedRegionMbean("/p:os", 1);
-            MBeanUtil.getDistributedRegionMbean("/p@os", 1);
             MBeanUtil.getDistributedRegionMbean("/p-os", 1);
-            MBeanUtil.getDistributedRegionMbean("/p#os", 1);
-            MBeanUtil.getDistributedRegionMbean("/p+os", 1);
-            MBeanUtil.getDistributedRegionMbean("/p?os", 1);
+            MBeanUtil.getDistributedRegionMbean("/p_os", 1);
 
           } catch (Exception e) {
             InternalDistributedSystem.getLoggerI18n().fine(

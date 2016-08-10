@@ -143,6 +143,11 @@ public interface CacheServer {
    */
   public static final boolean DEFAULT_TCP_NO_DELAY = true;
 
+
+  public static final int HTTP_DEFAULT_PORT = 8080;
+  public static final String HTTP_SERVICE_DEFAULT_BIND_ADDRESS = "";
+
+
   /**
    * Returns the port on which this cache server listens for clients.
    */

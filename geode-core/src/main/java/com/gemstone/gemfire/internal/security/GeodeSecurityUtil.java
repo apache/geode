@@ -14,23 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.security;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
+import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.security.AccessController;
-import java.security.Principal;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.lang.SerializationException;
 import org.apache.commons.lang.StringUtils;
-import org.apache.geode.security.GeodePermission;
-import org.apache.geode.security.GeodePermission.Operation;
-import org.apache.geode.security.GeodePermission.Resource;
 import org.apache.geode.security.PostProcessor;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.security.SecurityManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
@@ -45,10 +46,13 @@ import org.apache.shiro.subject.support.SubjectThreadState;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.util.ThreadState;
 
+import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.internal.ClassLoadUtil;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.security.shiro.CustomAuthRealm;
 import com.gemstone.gemfire.internal.security.shiro.ShiroPrincipal;
+import com.gemstone.gemfire.internal.util.BlobHelper;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
@@ -56,12 +60,19 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
 
 public class GeodeSecurityUtil {
 
-  private static Logger logger = LogService.getLogger();
+  private static Logger logger = LogService.getLogger(LogService.SECURITY_LOGGER_NAME);
 
+  private static PostProcessor postProcessor;
+  private static SecurityManager securityManager;
+  private static boolean isIntegratedSecurity;
+  private static boolean isClientAuthenticator;
+  private static boolean isPeerAuthenticator;
 
   /**
-   * It first looks the shiro subject in AccessControlContext since JMX will use multiple threads to process operations from the same client.
-   * then it looks into Shiro's thead context.
+   * It first looks the shiro subject in AccessControlContext since JMX will
+   * use multiple threads to process operations from the same client, then it
+   * looks into Shiro's thead context.
+   *
    * @return the shiro subject, null if security is not enabled
    */
   public static Subject getSubject() {
@@ -97,8 +108,6 @@ public class GeodeSecurityUtil {
   }
 
   /**
-   * @param username
-   * @param password
    * @return null if security is not enabled, otherwise return a shiro subject
    */
   public static Subject login(String username, String password) {
@@ -153,7 +162,9 @@ public class GeodeSecurityUtil {
   }
 
   /**
-   * this binds the passed-in subject to the executing thread, normally, you would do this:
+   * this binds the passed-in subject to the executing thread, normally, you
+   * would do this:
+   *
    * ThreadState state = null;
    * try{
    *   state = GeodeSecurityUtil.bindSubject(subject);
@@ -242,10 +253,10 @@ public class GeodeSecurityUtil {
 
   private static void authorize(String resource, String operation, String regionName, String key) {
     regionName = StringUtils.stripStart(regionName, "/");
-    authorize(new GeodePermission(resource, operation, regionName, key));
+    authorize(new ResourcePermission(resource, operation, regionName, key));
   }
 
-  public static void authorize(GeodePermission context) {
+  public static void authorize(ResourcePermission context) {
     Subject currentUser = getSubject();
     if (currentUser == null) {
       return;
@@ -269,15 +280,8 @@ public class GeodeSecurityUtil {
     }
   }
 
-  private static PostProcessor postProcessor;
-  private static SecurityManager securityManager;
-  private static boolean isIntegratedSecurity;
-  private static boolean isClientAuthenticator;
-  private static boolean isPeerAuthenticator;
-
   /**
    * initialize Shiro's Security Manager and Security Utilities
-   * @param securityProps
    */
   public static void initSecurity(Properties securityProps) {
     if (securityProps == null) {
@@ -352,33 +356,58 @@ public class GeodeSecurityUtil {
   }
 
   /**
-   * postProcess call already has this logic built in, you don't need to call this everytime you call postProcess.
-   * But if your postProcess is pretty involved with preparations and you need to bypass it entirely, call this first.
+   * postProcess call already has this logic built in, you don't need to call
+   * this everytime you call postProcess. But if your postProcess is pretty
+   * involved with preparations and you need to bypass it entirely, call this
+   * first.
    */
   public static boolean needPostProcess(){
     return (isIntegratedSecurity && postProcessor != null);
   }
 
-  public static Object postProcess(String regionPath, Object key, Object result){
-    if(postProcessor == null)
-      return result;
-
-    Subject subject = getSubject();
-
-    if(subject == null)
-      return result;
-
-    String regionName = StringUtils.stripStart(regionPath, "/");
-    return postProcessor.processRegionValue((Principal)subject.getPrincipal(), regionName, key,  result);
+  public static Object postProcess(String regionPath, Object key, Object value, boolean valueIsSerialized){
+    return postProcess(null, regionPath, key, value, valueIsSerialized);
   }
 
+  public static Object postProcess(Serializable principal, String regionPath, Object key, Object value, boolean valueIsSerialized) {
+    if (!needPostProcess())
+      return value;
+
+    if (principal == null) {
+      Subject subject = getSubject();
+      if (subject == null)
+        return value;
+      principal = (Serializable) subject.getPrincipal();
+    }
+
+    String regionName = StringUtils.stripStart(regionPath, "/");
+    Object newValue = null;
+
+    // if the data is a byte array, but the data itself is supposed to be an object, we need to desearized it before we pass
+    // it to the callback.
+    if (valueIsSerialized && value instanceof byte[]) {
+      try {
+        Object oldObj = EntryEventImpl.deserialize((byte[]) value);
+        Object newObj = postProcessor.processRegionValue(principal, regionName, key,  oldObj);
+        newValue = BlobHelper.serializeToBlob(newObj);
+      } catch (IOException|SerializationException e) {
+        throw new GemFireIOException("Exception de/serializing entry value", e);
+      }
+    }
+    else {
+      newValue = postProcessor.processRegionValue(principal, regionName, key, value);
+    }
+
+    return newValue;
+  }
+
+  private static void checkSameClass(Object obj1, Object obj2){
+
+  }
 
   /**
-   * this method would never return null, it either throws an exception or returns an object
-   * @param className
-   * @param expectedClazz
-   * @param <T>
-   * @return
+   * this method would never return null, it either throws an exception or
+   * returns an object
    */
   public static <T> T getObjectOfTypeFromClassName(String className, Class<T> expectedClazz) {
     Class actualClass = null;
@@ -403,11 +432,8 @@ public class GeodeSecurityUtil {
   }
 
   /**
-   * this method would never return null, it either throws an exception or returns an object
-   * @param factoryMethodName
-   * @param expectedClazz
-   * @param <T>
-   * @return
+   * this method would never return null, it either throws an exception or
+   * returns an object
    */
   public static <T> T getObjectOfTypeFromFactoryMethod(String factoryMethodName, Class<T> expectedClazz){
     T actualObject = null;
@@ -426,12 +452,11 @@ public class GeodeSecurityUtil {
   }
 
   /**
-   * this method would never return null, it either throws an exception or returns an object
-   * @param classOrMethod
-   * @param expectedClazz
-   * @param <T>
-   * @return an object of type expectedClazz. This method would never return null. It either returns an non-null
-   * object or throws exception.
+   * this method would never return null, it either throws an exception or
+   * returns an object
+   *
+   * @return an object of type expectedClazz. This method would never return
+   * null. It either returns an non-null object or throws exception.
    */
   public static <T> T getObjectOfType(String classOrMethod, Class<T> expectedClazz) {
     T object = null;
@@ -448,6 +473,9 @@ public class GeodeSecurityUtil {
     return securityManager;
   }
 
+  public static PostProcessor getPostProcessor() {
+    return postProcessor;
+  }
 
   public static boolean isClientSecurityRequired() {
     return isClientAuthenticator || isIntegratedSecurity;

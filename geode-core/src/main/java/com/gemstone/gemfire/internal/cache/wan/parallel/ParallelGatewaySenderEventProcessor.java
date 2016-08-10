@@ -134,6 +134,7 @@ public class ParallelGatewaySenderEventProcessor extends
 //        .isPdxTypesRegion())) {
 //      bucketId = PartitionedRegionHelper.getHashKey(event);
 //    }
+    boolean queuedEvent = false;
     try {
       EventID eventID = ((EntryEventImpl)event).getEventId();
 
@@ -142,11 +143,11 @@ public class ParallelGatewaySenderEventProcessor extends
       gatewayQueueEvent = new GatewaySenderEventImpl(operation, event,
           substituteValue, true, eventID.getBucketID());
 
+
       if (getSender().beforeEnqueue(gatewayQueueEvent)) {
         long start = getSender().getStatistics().startTime();
         try {
-          this.queue.put(gatewayQueueEvent);
-          gatewayQueueEvent = null;
+          queuedEvent = this.queue.put(gatewayQueueEvent);
         }
         catch (InterruptedException e) {
           e.printStackTrace();
@@ -161,7 +162,7 @@ public class ParallelGatewaySenderEventProcessor extends
       }
     }
     finally {
-      if (gatewayQueueEvent != null) {
+      if (!queuedEvent) {
         // it was not queued for some reason
         gatewayQueueEvent.release();
       }

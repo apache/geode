@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.security;
 
 import static org.junit.Assert.*;
@@ -35,9 +34,9 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
-public class IntegratedSecurityNoShowValue1PostProcessorDUnitTest extends AbstractIntegratedClientAuthDistributedTest {
+public class NoShowValue1PostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
 
-  public IntegratedSecurityNoShowValue1PostProcessorDUnitTest(){
+  public NoShowValue1PostProcessorDUnitTest(){
     this.postProcessor = NoShowValue1PostProcessor.class;
   }
 
@@ -81,7 +80,6 @@ public class IntegratedSecurityNoShowValue1PostProcessorDUnitTest extends Abstra
       assertTrue(result.contains("value2"));
       assertTrue(result.contains("value3"));
       assertTrue(result.contains("value4"));
-
     });
   }
 

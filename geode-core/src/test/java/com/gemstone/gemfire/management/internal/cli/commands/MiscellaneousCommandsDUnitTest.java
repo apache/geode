@@ -289,6 +289,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     assertFalse(defaultShell.isConnectedAndReady());
   }
 
+  @Category(FlakyTest.class) // GEODE-1385: time sensitive, HeadlessGfsh
   @Test
   public void testShutDownForTIMEOUT() {
     setupForShutDown();

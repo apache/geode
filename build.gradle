@@ -24,6 +24,7 @@ buildscript {
     classpath "gradle.plugin.org.nosphere.apache:creadur-rat-gradle:0.2.0"
     classpath "org.ajoberstar:gradle-git:1.3.2"
     classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
+    classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.0.1'
   }
 }
 
@@ -39,6 +40,7 @@ dependencyVersions.load(new FileInputStream("${project.projectDir}/gradle/depend
 dependencyVersions.keys().each{ k -> project.ext[k] = dependencyVersions[k]}
 
 allprojects {
+
   version = versionNumber + releaseType
   ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
@@ -77,6 +79,7 @@ apply from: "${scriptDir}/dependency-resolution.gradle"
 apply from: "${scriptDir}/test.gradle"
 apply from: "${scriptDir}/publish.gradle"
 apply from: "${scriptDir}/code-analysis.gradle"
+apply from: "${scriptDir}/sonar.gradle"
 apply from: "${scriptDir}/ide.gradle"
 apply from: "${scriptDir}/rat.gradle"
 

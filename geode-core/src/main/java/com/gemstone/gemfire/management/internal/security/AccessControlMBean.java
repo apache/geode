@@ -16,8 +16,9 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 /**
  * AccessControlMBean Implementation. This retrieves JMXPrincipal from AccessController
@@ -27,10 +28,12 @@ import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
  */
 public class AccessControlMBean implements AccessControlMXBean {
 
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
+
   @Override
   public boolean authorize(String resource, String permission) {
     try {
-      GeodeSecurityUtil.authorize(resource, permission);
+      this.securityService.authorize(resource, permission);
       return true;
     }
     catch (GemFireSecurityException e){

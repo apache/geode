@@ -239,9 +239,9 @@ public class HARegionQueue implements RegionQueue
   protected static volatile int messageSyncInterval = DEFAULT_MESSAGE_SYNC_INTERVAL;
   
   /**
-   * The underlying map (may hold reference to a Region or a HashMap) for this
-   * HARegionQueue instance (and also shared by all the HARegionQueue instances
-   * associated with the same CacheClientNotifier).
+   * The underlying map (may hold reference to a Region or a ConcurrentHashMap)
+   * for this HARegionQueue instance (and also shared by all the HARegionQueue
+   * instances associated with the same CacheClientNotifier).
    */
   protected Map haContainer;
 
@@ -573,7 +573,7 @@ public class HARegionQueue implements RegionQueue
   }
   
   /**
-   * Adds an object at the queue's tail. The implemetation supports concurrent
+   * Adds an object at the queue's tail. The implementation supports concurrent
    * put operations in a performant manner. This is done in following steps:
    * <br>
    * 1)Check if the Event being added has a sequence ID less than the Last
@@ -593,9 +593,9 @@ public class HARegionQueue implements RegionQueue
    *          object to put onto the queue
    * @throws InterruptedException
    * @throws CacheException
-   * 
+   * @return boolean 
    */
-  public void put(Object object) throws CacheException, InterruptedException {
+  public boolean put(Object object) throws CacheException, InterruptedException {
     this.giiLock.readLock().lock(); // fix for bug #41681 - durable client misses event
     try {
       if (this.giiCount > 0) {
@@ -616,6 +616,16 @@ public class HARegionQueue implements RegionQueue
     } finally {
       this.giiLock.readLock().unlock();
     }
+    
+    //basicPut() invokes dace.putObject() to put onto HARegionQueue
+    //However, dace.putObject could return true even though 
+    //the event is not put onto the HARegionQueue due to eliding events etc. 
+    //So it is not reliable to be used whether offheap ref ownership is passed over to 
+    //the queue (if and when HARegionQueue uses offheap). The probable 
+    //solution could be that to let dace.putObject() to increase offheap REF count
+    //when it puts the event onto the region queue. Also always release (dec)
+    //the offheap REF count from the caller.
+    return true;
   }
   
 
@@ -1601,11 +1611,10 @@ public class HARegionQueue implements RegionQueue
    */
   private List getBatchAndUpdateThreadContext(int batchSize)      
   {
-    // TODO : Dinesh : verify whether (batchSize * 2) is needed or not
-    List batch = new ArrayList(batchSize * 2);
     Iterator itr = this.idsAvailable.iterator();
     int currSize = this.idsAvailable.size();
     int limit = currSize >= batchSize ? batchSize : currSize;
+    List batch = new ArrayList(limit);
 
     List peekedEventsThreadContext;
     if ((peekedEventsThreadContext = (List)HARegionQueue.peekedEventsContext.get()) == null) {
@@ -1910,13 +1919,20 @@ public class HARegionQueue implements RegionQueue
     if (cqService != null) {
       try {
         if (event instanceof HAEventWrapper) {
-          event = (Conflatable)this.haContainer.get(event);
+          HAEventWrapper hw = (HAEventWrapper) event;
+          if (hw.getClientUpdateMessage() != null) {
+            event = hw.getClientUpdateMessage();
+          } else {
+            event = (Conflatable) this.haContainer.get(event);
+          }
+          
+          
           if (event instanceof ClientUpdateMessage) {
             if (((ClientUpdateMessage) event).hasCqs() && ((ClientUpdateMessage) event).hasCqs(clientProxyID)) {
-              CqNameToOp cqNames = ((ClientUpdateMessage)event).getClientCq(clientProxyID);
+              CqNameToOp cqNames = ((ClientUpdateMessage) event).getClientCq(clientProxyID);
               if (cqNames != null) {
-                for (String cqName: cqNames.getNames()) {
-                  InternalCqQuery cq = ((InternalCqQuery)cqService.getClientCqFromServer(clientProxyID, cqName));
+                for (String cqName : cqNames.getNames()) {
+                  InternalCqQuery cq = ((InternalCqQuery) cqService.getClientCqFromServer(clientProxyID, cqName));
                   CqQueryVsdStats cqStats = cq.getVsdStats();
                   if (cq != null && cqStats != null) {
                     cqStats.incNumHAQueuedEvents(incrementAmount);
@@ -1926,10 +1942,9 @@ public class HARegionQueue implements RegionQueue
             }
           }
         }
-      }
-      catch (Exception e) {
-       //catch exceptions that arise due to maintaining cq stats
-        //as maintaining cq stats should not affect the system.
+      } catch (Exception e) {
+        // catch exceptions that arise due to maintaining cq stats
+        // as maintaining cq stats should not affect the system.
         if (logger.isTraceEnabled()) {
           logger.trace("Exception while maintaining cq events stats.", e);
         }
@@ -2094,7 +2109,7 @@ public class HARegionQueue implements RegionQueue
   {
     Map container = null;
     if (haRgnQType == HARegionQueue.BLOCKING_HA_QUEUE) {
-      container = new HAContainerMap(new HashMap());
+      container = new HAContainerMap(new ConcurrentHashMap());
     }
     else {
       // Should actually be HAContainerRegion, but ok if only JUnits using this
@@ -2191,7 +2206,7 @@ public class HARegionQueue implements RegionQueue
   {
     Map container = null;
     if (haRgnQType == HARegionQueue.BLOCKING_HA_QUEUE) {
-      container = new HAContainerMap(new HashMap());
+      container = new HAContainerMap(new ConcurrentHashMap());
     }
     else {
       // Should actually be HAContainerRegion, but ok if only JUnits using this
@@ -3716,9 +3731,41 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
           // authentic, i.e. it doesn't refer to the HAEventWrapper instance
           // in the haContainer, but to the one outside it.
           boolean entryFound;
-          Map.Entry entry = null;
-          synchronized (this.haContainer) {
-            entry = (Map.Entry)((HAContainerWrapper)this.haContainer)
+          //synchronized (this.haContainer) {
+          HAEventWrapper original = null;
+          do {
+            ClientUpdateMessageImpl old = (ClientUpdateMessageImpl) ((HAContainerWrapper) this.haContainer).putIfAbsent(haEventWrapper,
+                haEventWrapper.getClientUpdateMessage());
+            if (old != null) {
+              original = (HAEventWrapper) ((HAContainerWrapper) this.haContainer).getKey(haEventWrapper);
+              if (original == null) {
+                continue;
+              }
+              synchronized (original) {
+                // assert the entry is still present
+                if (((HAContainerWrapper) this.haContainer).getKey(original) != null) {
+                  original.incAndGetReferenceCount();
+                  addClientCQsAndInterestList(old, haEventWrapper, this.haContainer, this.regionName);
+                  haEventWrapper = original;
+                } else {
+                  original = null;
+                }
+              }
+            } else {
+              synchronized (haEventWrapper) {
+                haEventWrapper.incAndGetReferenceCount();
+                haEventWrapper.setHAContainer(this.haContainer);
+                if (!haEventWrapper.getPutInProgress()) {
+                  // This means that this is a GII'ed event. Hence we must
+                  // explicitly set 'clientUpdateMessage' to null.
+                  haEventWrapper.setClientUpdateMessage(null);
+                }
+                haEventWrapper.setIsRefFromHAContainer(true);
+              }
+              break;
+            }
+          } while (original == null);
+          /*  entry = (Map.Entry)((HAContainerWrapper)this.haContainer)
                 .getEntry(haEventWrapper);
             if (entry == null) {
               entryFound = false;
@@ -3729,7 +3776,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
               // Do not assign entry.getKey() to haEventWrapper right now.
               ((HAEventWrapper)entry.getKey()).incAndGetReferenceCount();
             }
-          }
+          }//haContainer synchronized ends
           if (entryFound) {
             addClientCQsAndInterestList(entry, haEventWrapper, haContainer,
                 regionName);
@@ -3742,7 +3789,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
               haEventWrapper.setClientUpdateMessage(null);
             }
             haEventWrapper.setIsRefFromHAContainer(true);
-          }
+          }*/
         }
       }
       // This has now been taken care of in AbstractRegionMap.initialImagePut()
@@ -3762,16 +3809,13 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
     }
   }
   
-  public static void addClientCQsAndInterestList(Map.Entry entry,
-      HAEventWrapper haEventWrapper, Map haContainer, String regionName) {
+  public static void addClientCQsAndInterestList(ClientUpdateMessageImpl msg, HAEventWrapper haEventWrapper, Map haContainer, String regionName) {
 
-    ClientProxyMembershipID proxyID = ((HAContainerWrapper)haContainer)
-        .getProxyID(regionName);
+    ClientProxyMembershipID proxyID = ((HAContainerWrapper) haContainer).getProxyID(regionName);
     if (haEventWrapper.getClientCqs() != null) {
       CqNameToOp clientCQ = haEventWrapper.getClientCqs().get(proxyID);
       if (clientCQ != null) {
-        ((ClientUpdateMessageImpl)entry.getValue()).addClientCqs(proxyID,
-            clientCQ);
+        msg.addClientCqs(proxyID, clientCQ);
       }
     }
     // if (haEventWrapper.getPutInProgress()) {
@@ -3780,15 +3824,11 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
 
     // This is a remote HAEventWrapper.
     // Add new Interested client lists.
-    ClientUpdateMessageImpl clientMsg = (ClientUpdateMessageImpl)haEventWrapper
-        .getClientUpdateMessage();
+    ClientUpdateMessageImpl clientMsg = (ClientUpdateMessageImpl) haEventWrapper.getClientUpdateMessage();
     if (clientMsg.isClientInterestedInUpdates(proxyID)) {
-      ((ClientUpdateMessageImpl)entry.getValue()).addClientInterestList(
-          proxyID, true);
-    }
-    else if (clientMsg.isClientInterestedInInvalidates(proxyID)) {
-      ((ClientUpdateMessageImpl)entry.getValue()).addClientInterestList(
-          proxyID, false);
+      msg.addClientInterestList(proxyID, true);
+    } else if (clientMsg.isClientInterestedInInvalidates(proxyID)) {
+      msg.addClientInterestList(proxyID, false);
     }
   }
   
@@ -3939,18 +3979,18 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
    */
   public Conflatable getAndRemoveFromHAContainer(Conflatable conflatable) 
   {
-    Conflatable cum = null;
+    Conflatable msg = null;
     if (conflatable instanceof HAEventWrapper) {
       HAEventWrapper wrapper = (HAEventWrapper)conflatable;
-      cum = (Conflatable)HARegionQueue.this.haContainer.get(wrapper);
-      if (cum != null) {
+      msg = (Conflatable)HARegionQueue.this.haContainer.get(wrapper);
+      if (msg != null) {
         decAndRemoveFromHAContainer(wrapper);
       }
     }
     else {
-      cum = conflatable;
+      msg = conflatable;
     }
-    return cum;
+    return msg;
   }
   
   /**
@@ -3967,7 +4007,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
   {
     if (wrapper.decAndGetReferenceCount() == 0L
         && !wrapper.getPutInProgress()) {
-      synchronized (this.haContainer) {
+      synchronized (wrapper) {
         if (wrapper.getReferenceCount() == 0L) {
           if (logger.isDebugEnabled()) {
             logger.debug("Removing event from {}: {}", this.region.getFullPath(), wrapper.getEventId());

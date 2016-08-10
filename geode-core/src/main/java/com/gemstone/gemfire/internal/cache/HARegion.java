@@ -273,10 +273,11 @@ public final class HARegion extends DistributedRegion
 
     HARegion haRegion = new HARegion(regionName, ra, null, cache);
     haRegion.setOwner(hrq);
-    Region region = cache.createVMRegion(regionName, ra,
-        new InternalRegionArguments().setInternalMetaRegion(haRegion)
-            .setDestroyLockFlag(true).setSnapshotInputStream(null)
-            .setImageTarget(null));
+    Region region = cache.createVMRegion(regionName, ra, new InternalRegionArguments().setInternalMetaRegion(haRegion)
+                                                                                      .setDestroyLockFlag(true)
+                                                                                      .setSnapshotInputStream(null)
+                                                                                      .setInternalRegion(true)
+                                                                                      .setImageTarget(null));
 
     return (HARegion)region;
   }

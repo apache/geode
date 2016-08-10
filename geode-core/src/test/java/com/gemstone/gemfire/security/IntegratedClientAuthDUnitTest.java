@@ -31,7 +31,7 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
-public class IntegratedClientAuthDUnitTest extends AbstractIntegratedClientAuthDistributedTest {
+public class IntegratedClientAuthDUnitTest extends AbstractSecureServerDUnitTest {
 
   @Test
   public void authWithCorrectPasswordShouldPass() {

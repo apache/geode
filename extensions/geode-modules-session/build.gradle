@@ -23,6 +23,7 @@ dependencies {
   testCompile 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
   testCompile('com.mockrunner:mockrunner-servlet:' + project.'mockrunner.version') {
     exclude group: 'jboss'
+    exclude group: 'xerces'
   }
   testCompile(group: 'org.eclipse.jetty', name: 'jetty-http', version: project.'jetty.version', classifier: 'tests')
   testCompile(group: 'org.eclipse.jetty', name: 'jetty-servlet', version: project.'jetty.version', classifier: 'tests')
