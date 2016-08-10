@@ -58,15 +58,12 @@ import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 import com.gemstone.gemfire.internal.tcp.Connection;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
@@ -296,87 +293,33 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
 
-    SerializableCallable startLocator1 = new SerializableCallable("start locator1") {
-      @Override
-      public Object call() throws Exception {
-        try {
-          System.setProperty("p2p.joinTimeout", "5000"); // set a short join timeout.  default is 17000ms
-          Locator myLocator = Locator.startLocatorAndDS(port1, new File(""), properties);
-        } catch (SystemConnectException e) {
-          return Boolean.FALSE;
-        } catch (GemFireConfigException e) {
-          return Boolean.FALSE;
-        } finally {
-          System.getProperties().remove("p2p.joinTimeout");
-        }
-        return Boolean.TRUE;
-      }
-    };
-    SerializableCallable startLocator2 = new SerializableCallable("start locator2") {
-      @Override
-      public Object call() throws Exception {
-        try {
-          System.setProperty("p2p.joinTimeout", "5000"); // set a short join timeout.  default is 17000ms
-          Locator myLocator = Locator.startLocatorAndDS(port2, new File(""), properties);
-        } catch (SystemConnectException e) {
-          return Boolean.FALSE;
-        } finally {
-          System.getProperties().remove("p2p.joinTimeout");
-        }
-        return Boolean.TRUE;
-      }
-    };
-    AsyncInvocation async1 = null;
-    AsyncInvocation async2 = null;
     try {
-      async2 = loc2.invokeAsync(startLocator2);
-      Wait.pause(2000);
-      async1 = loc1.invokeAsync(startLocator1);
+      loc2.invoke("startLocator2", () -> startLocatorWithPortAndProperties(port2, properties));
+      loc1.invoke("startLocator1", () -> startLocatorWithPortAndProperties(port1, properties));
     } finally {
       try {
-        if (async1 != null) {
-          async1.join(45000);
-          if (async1.isAlive()) {
-            ThreadUtils.dumpAllStacks();
-          }
-          if (async2 != null) {
-            async2.join();
-            Object result1 = async1.getReturnValue();
-            if (result1 instanceof Exception) {
-              throw (Exception) result1;
-            }
-            Object result2 = async2.getReturnValue();
-            if (result2 instanceof Exception) {
-              throw (Exception) result2;
-            }
-            // verify that they found each other
-            SerializableCallable verify = new SerializableCallable("verify no split-brain") {
-              public Object call() {
-                InternalDistributedSystem sys = InternalDistributedSystem.getAnyInstance();
-                if (sys == null) {
-                  fail("no distributed system found");
-                }
-                Assert.assertTrue(sys.getDM().getViewMembers().size() == 2, "expected 2 members but found " + sys.getDM().getViewMembers().size());
-                return true;
-              }
-            };
-            loc2.invoke(verify);
-            loc1.invoke(verify);
-          }
-        }
+        // verify that they found each other
+        loc2.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(2));
+        loc1.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(2));
       } finally {
-        SerializableRunnable r = new SerializableRunnable("stop locator") {
-          public void run() {
-            Locator loc = Locator.getLocator();
-            if (loc != null) {
-              loc.stop();
-            }
-          }
-        };
-        loc2.invoke(r);
-        loc1.invoke(r);
+        loc2.invoke("stop locator", () -> stopLocator());
+        loc1.invoke("stop locator", () -> stopLocator());
       }
     }
+  }
+
+  private Boolean startLocatorWithPortAndProperties(final int port, final Properties properties) throws IOException {
+    try {
+      System.setProperty("p2p.joinTimeout", "5000"); // set a short join timeout.  default is 17000ms
+      Locator.startLocatorAndDS(port, new File(""), properties);
+    } catch (SystemConnectException e) {
+      return Boolean.FALSE;
+    } catch (GemFireConfigException e) {
+      return Boolean.FALSE;
+    } finally {
+      System.getProperties().remove("p2p.joinTimeout");
+    }
+    return Boolean.TRUE;
   }
 
   private String getSingleKeyKeystore() {
@@ -425,86 +368,17 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
     properties.put(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.LOCATOR.getConstant());
 
-
-    SerializableCallable startLocator1 = new SerializableCallable("start locator1") {
-      @Override
-      public Object call() throws Exception {
-        try {
-          System.setProperty("p2p.joinTimeout", "5000"); // set a short join timeout.  default is 17000ms
-          Locator myLocator = Locator.startLocatorAndDS(port1, new File(""), properties);
-        } catch (SystemConnectException e) {
-          return Boolean.FALSE;
-        } catch (GemFireConfigException e) {
-          return Boolean.FALSE;
-        } finally {
-          System.getProperties().remove("p2p.joinTimeout");
-        }
-        return Boolean.TRUE;
-      }
-    };
-    SerializableCallable startLocator2 = new SerializableCallable("start locator2") {
-      @Override
-      public Object call() throws Exception {
-        try {
-          System.setProperty("p2p.joinTimeout", "5000"); // set a short join timeout.  default is 17000ms
-          Locator myLocator = Locator.startLocatorAndDS(port2, new File(""), properties);
-        } catch (SystemConnectException e) {
-          return Boolean.FALSE;
-        } finally {
-          System.getProperties().remove("p2p.joinTimeout");
-        }
-        return Boolean.TRUE;
-      }
-    };
-    AsyncInvocation async1 = null;
-    AsyncInvocation async2 = null;
     try {
-      async2 = loc2.invokeAsync(startLocator2);
-      //      Wait.pause(2000);
-      async1 = loc1.invokeAsync(startLocator1);
+      loc2.invoke("startLocator2", () -> startLocatorWithPortAndProperties(port2, properties));
+      loc1.invoke("startLocator1", () -> startLocatorWithPortAndProperties(port1, properties));
     } finally {
       try {
-        if (async1 != null) {
-          async1.join(45000);
-          if (async1.isAlive()) {
-            ThreadUtils.dumpAllStacks();
-          }
-          if (async2 != null) {
-            async2.join();
-            Object result1 = async1.getReturnValue();
-            if (result1 instanceof Exception) {
-              throw (Exception) result1;
-            }
-            Object result2 = async2.getReturnValue();
-            if (result2 instanceof Exception) {
-              throw (Exception) result2;
-            }
-            // verify that they found each other
-            SerializableCallable verify = new SerializableCallable("verify no split-brain") {
-              public Object call() {
-                InternalDistributedSystem sys = InternalDistributedSystem.getAnyInstance();
-                if (sys == null) {
-                  fail("no distributed system found");
-                }
-                Assert.assertTrue(sys.getDM().getViewMembers().size() == 2, "expected 2 members but found " + sys.getDM().getViewMembers().size());
-                return true;
-              }
-            };
-            loc2.invoke(verify);
-            loc1.invoke(verify);
-          }
-        }
+        // verify that they found each other
+        loc2.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(2));
+        loc1.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(2));
       } finally {
-        SerializableRunnable r = new SerializableRunnable("stop locator") {
-          public void run() {
-            Locator loc = Locator.getLocator();
-            if (loc != null) {
-              loc.stop();
-            }
-          }
-        };
-        loc2.invoke(r);
-        loc1.invoke(r);
+        loc2.invoke("stop locator", () -> stopLocator());
+        loc1.invoke("stop locator", () -> stopLocator());
       }
     }
   }
@@ -544,76 +418,17 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.LOCATOR.getConstant());
 
 
-    SerializableCallable startLocator1 = new SerializableCallable("start locator1") {
-      @Override
-      public Object call() throws Exception {
-        try {
-          System.setProperty("p2p.joinTimeout", "5000"); // set a short join timeout.  default is 17000ms
-          Locator myLocator = Locator.startLocatorAndDS(port1, new File(""), properties);
-        } catch (SystemConnectException e) {
-          return Boolean.FALSE;
-        } catch (GemFireConfigException e) {
-          return Boolean.FALSE;
-        } finally {
-          System.getProperties().remove("p2p.joinTimeout");
-        }
-        return Boolean.TRUE;
-      }
-    };
-    SerializableCallable startLocator2 = new SerializableCallable("start locator2") {
-      @Override
-      public Object call() throws Exception {
-        try {
-          System.setProperty("p2p.joinTimeout", "5000"); // set a short join timeout.  default is 17000ms
-          Locator myLocator = Locator.startLocatorAndDS(port2, new File(""), properties);
-        } catch (SystemConnectException e) {
-          return Boolean.FALSE;
-        } finally {
-          System.getProperties().remove("p2p.joinTimeout");
-        }
-        return Boolean.TRUE;
-      }
-    };
-    AsyncInvocation async1 = null;
-    AsyncInvocation async2 = null;
     try {
-      async2 = loc2.invokeAsync(startLocator2);
-      //      Wait.pause(2000);
-      async1 = loc1.invokeAsync(startLocator1);
+      loc2.invoke("startLocator2", () -> startLocatorWithPortAndProperties(port2, properties));
+      loc1.invoke("startLocator1", () -> startLocatorWithPortAndProperties(port1, properties));
     } finally {
       try {
-        if (async1 != null) {
-          async1.join(45000);
-          if (async1.isAlive()) {
-            ThreadUtils.dumpAllStacks();
-          }
-          if (async2 != null) {
-            async2.join();
-            Object result1 = async1.getReturnValue();
-            if (result1 instanceof Exception) {
-              throw (Exception) result1;
-            }
-            Object result2 = async2.getReturnValue();
-            if (result2 instanceof Exception) {
-              throw (Exception) result2;
-            }
-            // verify that they found each other
-
-            loc2.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(2));
-            loc1.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(2));
-          }
-        }
+        // verify that they found each other
+        loc2.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(2));
+        loc1.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(2));
       } finally {
-        SerializableRunnable r = new SerializableRunnable("stop locator") {
-          public void run() {
-            Locator loc = Locator.getLocator();
-            if (loc != null) {
-              loc.stop();
-            }
-          }
-        };
-        loc2.invoke(r);
-        loc1.invoke(r);
+        loc2.invoke("stop locator", () -> stopLocator());
+        loc1.invoke("stop locator", () -> stopLocator());
       }
     }
   }
@@ -664,17 +479,16 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       try {
         loc1.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(1));
       } finally {
-        SerializableRunnable r = new SerializableRunnable("stop locator") {
-          public void run() {
-            Locator loc = Locator.getLocator();
-            if (loc != null) {
-              loc.stop();
-            }
-          }
-        };
-        loc1.invoke(r);
+        loc1.invoke("stop locator", () -> stopLocator());
         expectedException.remove();
       }
+    }
+  }
+
+  private void stopLocator() {
+    Locator loc = Locator.getLocator();
+    if (loc != null) {
+      loc.stop();
     }
   }
 
@@ -725,15 +539,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       try {
         loc1.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(1));
       } finally {
-        SerializableRunnable r = new SerializableRunnable("stop locator") {
-          public void run() {
-            Locator loc = Locator.getLocator();
-            if (loc != null) {
-              loc.stop();
-            }
-          }
-        };
-        loc1.invoke(r);
+        loc1.invoke("stop locator", () -> stopLocator());
         expectedException.remove();
       }
     }
@@ -743,6 +549,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   public void testStartTwoLocatorsWithDifferentSSLCertificates() throws Exception {
     SocketCreatorFactory.close();
     IgnoredException expectedException = IgnoredException.addIgnoredException("Remote host closed connection during handshake");
+    IgnoredException expectedException2 = IgnoredException.addIgnoredException("unable to find valid certification path to requested target");
+    IgnoredException expectedException3 = IgnoredException.addIgnoredException("Received fatal alert: certificate_unknown");
     disconnectAllFromDS();
     Host host = Host.getHost(0);
     VM loc1 = host.getVM(1);
@@ -783,22 +591,15 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       properties.put(SSL_TRUSTSTORE, getMultiKeyTruststore());
       properties.put(LOCATOR_SSL_ALIAS, "locatorkey");
 
-      //      loc2.invoke("start Locator2", () -> startLocator(port2, properties));
-      startLocator(port2, properties);
+      loc2.invoke("start Locator2", () -> startLocator(port2, properties));
     } finally {
       try {
         loc1.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(1));
       } finally {
-        SerializableRunnable r = new SerializableRunnable("stop locator") {
-          public void run() {
-            Locator loc = Locator.getLocator();
-            if (loc != null) {
-              loc.stop();
-            }
-          }
-        };
-        loc1.invoke(r);
+        loc1.invoke("stop locator", () -> stopLocator());
         expectedException.remove();
+        expectedException2.remove();
+        expectedException3.remove();
       }
     }
   }
@@ -1837,14 +1638,14 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     startLocatorSync(vm2, new Object[] { port3, dsProps });
     try {
       try {
-
-        SerializableRunnable connect = new SerializableRunnable("Connect to " + locators) {
-          public void run() {
-            DistributedSystem.connect(dsProps);
-          }
-        };
-        vm3.invoke(connect);
-        vm4.invoke(connect);
+        vm3.invoke(() -> {
+          DistributedSystem.connect(dsProps);
+          return true;
+        });
+        vm4.invoke(() -> {
+          DistributedSystem.connect(dsProps);
+          return true;
+        });
 
         system = (InternalDistributedSystem) DistributedSystem.connect(dsProps);
 

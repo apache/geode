@@ -60,8 +60,6 @@ public class SocketCreatorFactory {
 
   public static SocketCreator getSSLSocketCreatorForComponent(SSLEnabledComponent sslEnabledComponent) {
     SSLConfig sslConfigForComponent = SSLConfigurationFactory.getSSLConfigForComponent(sslEnabledComponent);
-    System.out.println("SocketCreatorFactory.getSSLSocketCreatorForComponent SSLEnabledComponent:"+sslEnabledComponent);
-    System.out.println("SocketCreatorFactory.getSSLSocketCreatorForComponent SSLEnabledComponent:"+sslConfigForComponent);
     return getInstance().getOrCreateSocketCreatorForSSLEnabledComponent(sslEnabledComponent, sslConfigForComponent);
   }
 
