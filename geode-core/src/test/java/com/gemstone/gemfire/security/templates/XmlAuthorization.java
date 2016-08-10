@@ -478,7 +478,7 @@ public class XmlAuthorization implements AccessControl {
         for (int userIndex = 0; userIndex < userNodes.getLength(); userIndex++) {
           final Node userNode = userNodes.item(userIndex);
 
-          if (userNode.getNodeName() == TAG_USER) {
+          if (TAG_USER.equals(userNode.getNodeName())) {
             final String userName = getNodeValue(userNode);
             HashSet<String> userRoleSet = XmlAuthorization.userRoles.get(userName);
             if (userRoleSet == null) {
@@ -511,7 +511,7 @@ public class XmlAuthorization implements AccessControl {
         for (int opIndex = 0; opIndex < operationNodes.getLength(); opIndex++) {
           final Node operationNode = operationNodes.item(opIndex);
 
-          if (operationNode.getNodeName() == TAG_OP) {
+          if (TAG_OP.equals(operationNode.getNodeName())) {
             final String operationName = getNodeValue(operationNode);
             final OperationCode code = OperationCode.valueOf(operationName);
 

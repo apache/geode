@@ -400,7 +400,7 @@ public class HelpUtils {
   public static String buildOptionHelpText(Option option) {
       String temp = SyntaxConstants.OPTION_VALUE_SPECIFIER + VALUE_FIELD;
       if( (option.getValueSeparator() != null &&
-    	 option.getValueSeparator() != CliMetaData.ANNOTATION_NULL_VALUE &&
+    	 !CliMetaData.ANNOTATION_NULL_VALUE.equals(option.getValueSeparator()) &&
         !option.getValueSeparator().equals("")) || isCollectionOrArrayType(option.getDataType())) {
     	  temp += "(" + option.getValueSeparator() + VALUE_FIELD + ")*";
       }

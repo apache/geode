@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.redis.GeodeRedisServer;
 
 import com.gemstone.gemfire.GemFireConfigException;
@@ -2860,7 +2861,7 @@ public class DistributionConfigImpl
         return false;
     } else if (!userDefinedProps.equals(other.userDefinedProps))
       return false;
-    if (securityEnabledComponents != other.securityEnabledComponents) {
+    if (!StringUtils.equals(securityEnabledComponents, other.securityEnabledComponents)) {
       return false;
     }
     return true;

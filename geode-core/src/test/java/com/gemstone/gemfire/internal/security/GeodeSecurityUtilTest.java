@@ -113,7 +113,8 @@ public class GeodeSecurityUtilTest {
     assertFalse(GeodeSecurityUtil.isIntegratedSecurity());
 
     assertTrue(GeodeSecurityUtil.isClientSecurityRequired());
-    assertFalse(GeodeSecurityUtil.isGatewaySecurityRequired());
+    assertTrue(GeodeSecurityUtil.isGatewaySecurityRequired());
+    
     assertFalse(GeodeSecurityUtil.isHttpServiceSecurityRequired());
     assertFalse(GeodeSecurityUtil.isJmxSecurityRequired());
     assertFalse(GeodeSecurityUtil.isPeerSecurityRequired());
