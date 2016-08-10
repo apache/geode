@@ -57,6 +57,11 @@ public interface DistributionConfig extends Config, LogConfig {
   ////////////////////  Instance Methods  ////////////////////
 
   /**
+   * The prefix used for Gemfire properties set through java system properties
+   */
+  String GEMFIRE_PREFIX = "gemfire.";
+
+  /**
    * Returns the value of the {@link ConfigurationProperties#NAME} property
    * Gets the member's name.
    * A name is optional and by default empty.
@@ -2268,10 +2273,6 @@ public interface DistributionConfig extends Config, LogConfig {
 
   String SECURITY_PREFIX_NAME = SECURITY_PREFIX;
 
-  /**
-   * The prefix used for Gemfire properties set through java system properties
-   */
-  String GEMFIRE_PREFIX = "gemfire.";
 
   /**
    * The static String definition of the cluster ssl prefix <i>"cluster-ssl"</i> used in conjunction with other <i>cluster-ssl-*</i> properties property
