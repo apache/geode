@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.gemstone.gemfire.internal.Assert;
@@ -201,7 +202,7 @@ public class PortfolioNoDS implements Serializable {
   }
   
   public boolean boolFunction(String strArg){
-      if(strArg=="active"){
+      if(Objects.equals(strArg, "active")){
       return true;
       }
       else{

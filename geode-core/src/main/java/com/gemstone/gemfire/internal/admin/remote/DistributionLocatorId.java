@@ -29,6 +29,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 /**
  * Identifies the host, port, and bindAddress a distribution locator is 
@@ -316,8 +317,8 @@ public class DistributionLocatorId implements java.io.Serializable {
 	  	  !(this.host != null &&
 	  	  this.host.equals(that.host))) return false;
 	  if (this.port != that.port) return false;
-	  if (this.bindAddress != that.bindAddress &&
-	  	  !(this.bindAddress != null &&
+	  if (!Objects.equals(this.bindAddress, that.bindAddress) &&
+        !(this.bindAddress != null &&
 	  	  this.bindAddress.equals(that.bindAddress))) return false;
 
 	  return true;

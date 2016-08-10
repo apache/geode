@@ -1364,7 +1364,7 @@ public class CacheServerLauncher  {
           //this should not happen.
           break;
         }
-        if(running && lastLogMessage != status.dsMsg) {
+        if(running && !Objects.equals(lastLogMessage, status.dsMsg)) {
           status.dsMsg = lastLogMessage;
           try {
             writeStatus(status);

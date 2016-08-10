@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -777,16 +778,16 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
     String DATE_FORMAT = "dd-MMM-yyyy";
     SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.US);
     try {
-      if (dateType == "Date") {
+      if (Objects.equals(dateType, "Date")) {
         return sdf.parse(dateString);
       }
-      else if (dateType == "MyDate1") {
+      else if (Objects.equals(dateType, "MyDate1")) {
         return new MyDate1(sdf.parse(dateString).getTime());
       }
-      else if (dateType == "MyDate2") {
+      else if (Objects.equals(dateType, "MyDate2")) {
         return new MyDate2(sdf.parse(dateString).getTime());
       }
-      else if (dateType == "MyDate3") {
+      else if (Objects.equals(dateType, "MyDate3")) {
         return new MyDate3(sdf.parse(dateString).getTime());
       }
       else {

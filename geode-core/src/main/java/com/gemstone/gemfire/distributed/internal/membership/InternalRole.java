@@ -94,8 +94,8 @@ public class InternalRole implements Role {
 		if (!(other instanceof InternalRole)) return  false;
 		final InternalRole that = (InternalRole) other;
 
-		if (this.name != that.name &&
-	  		!(this.name != null &&
+		if (!Objects.equals(this.name, that.name) &&
+        !(this.name != null &&
 	  		this.name.equals(that.name))) return false;
 
 		return true;

@@ -19,6 +19,7 @@ package com.gemstone.gemfire.internal.admin.statalerts;
 import java.io.DataOutput;
 import java.io.DataInput;
 import java.io.IOException;
+import java.util.Objects;
 
 import com.gemstone.gemfire.StatisticDescriptor;
 import com.gemstone.gemfire.Statistics;
@@ -100,7 +101,7 @@ public class StatisticInfoImpl implements StatisticInfo {
 
     StatisticInfoImpl other = (StatisticInfoImpl)object;
 
-    if (getStatisticName() == other.getStatisticName()
+    if (Objects.equals(getStatisticName(), other.getStatisticName())
         && statisticsTextId != null
         && statisticsTextId.equals(other.getStatisticsTextId())) {
       return true;

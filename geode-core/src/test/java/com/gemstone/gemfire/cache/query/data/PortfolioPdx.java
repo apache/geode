@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -235,7 +236,7 @@ public class PortfolioPdx implements Serializable, PdxSerializable  {
   }
   
   public boolean boolFunction(String strArg){
-      if(strArg=="active"){
+      if(Objects.equals(strArg, "active")){
       return true;
       }
       else{

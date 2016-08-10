@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Vector;
 import java.util.zip.DataFormatException;
 
@@ -83,9 +84,9 @@ public class CommandResult implements Result {
   //TODO -Abhishek - extract this code out in a FormatBuilder or PresentationBuilder??
   private void buildData() {
     try {
-      if (resultData.getType() == ResultData.TYPE_OBJECT) {
+      if (Objects.equals(resultData.getType(), ResultData.TYPE_OBJECT)) {
         buildObjectResultOutput();
-      } else if (resultData.getType() == ResultData.TYPE_COMPOSITE) {
+      } else if (Objects.equals(resultData.getType(), ResultData.TYPE_COMPOSITE)) {
         buildComposite();
       } else {
         GfJsonObject content = getContent();
@@ -96,7 +97,7 @@ public class CommandResult implements Result {
 
           RowGroup rowGroup = resultTable.newRowGroup();
           
-          if (resultData.getType() == ResultData.TYPE_TABULAR) {
+          if (Objects.equals(resultData.getType(), ResultData.TYPE_TABULAR)) {
     //        resultTable.setColumnSeparator(" | ");
             resultTable.setColumnSeparator("   ");            
             resultTable.setTabularResult(true);

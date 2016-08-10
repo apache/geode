@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.admin.jmx.internal;
 
+import java.util.Objects;
+
 /**
  * Type-safe definition for ModelMBean managed resources.  The class type 
  * ({@link #getClassTypeName}) must match the fully qualified class name listed
@@ -176,8 +178,8 @@ public class ManagedResourceType implements java.io.Serializable {
 		if (!(other instanceof ManagedResourceType)) return  false;
 		final ManagedResourceType that = (ManagedResourceType) other;
 
-		if (this.name != that.name &&
-	  		!(this.name != null &&
+		if (!Objects.equals(this.name, that.name) &&
+        !(this.name != null &&
 	  		this.name.equals(that.name))) return false;
 		if (this.clazz != that.clazz &&
 	  		!(this.clazz != null &&

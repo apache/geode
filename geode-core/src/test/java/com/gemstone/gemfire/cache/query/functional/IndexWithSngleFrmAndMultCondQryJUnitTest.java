@@ -33,6 +33,7 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -202,7 +203,7 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest{
         fail("FAILED: In both the Cases the first member of StructSet i.e. Portfolio are different. ");
       if(stc2.get(strg2[1]) != stc1.get(strg1[1]))
         fail("FAILED: In both the cases Positions are different");
-      if(((Position)stc2.get(strg2[1])).secId != ((Position)stc1.get(strg1[1])).secId)
+      if(!Objects.equals(((Position) stc2.get(strg2[1])).secId, ((Position) stc1.get(strg1[1])).secId))
         fail("FAILED: In both the cases Positions secIds are different");
       if (((Portfolio)stc2.get(strg2[0])).isActive() != ((Portfolio)stc1.get(strg1[0])).isActive() )
         fail("FAILED: Status of the Portfolios found are different");
@@ -319,7 +320,7 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest{
         fail("FAILED: In both the Cases the first member of StructSet i.e. Portfolio are different. ");
       if(stc2.get(strg2[1]) != stc1.get(strg1[1]))
         fail("FAILED: In both the cases Positions are different");
-      if(((Position)stc2.get(strg2[1])).secId != ((Position)stc1.get(strg1[1])).secId)
+      if(!Objects.equals(((Position) stc2.get(strg2[1])).secId, ((Position) stc1.get(strg1[1])).secId))
         fail("FAILED: In both the cases Positions secIds are different");
       if (((Portfolio)stc2.get(strg2[0])).isActive() != ((Portfolio)stc1.get(strg1[0])).isActive() )
         fail("FAILED: Status of the Portfolios found are different");

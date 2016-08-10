@@ -21,6 +21,7 @@ import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
 //import com.gemstone.gemfire.cache.Region;
 import java.io.*;
+import java.util.Objects;
 
 /** 
  * Represents one transaction lock.
@@ -58,8 +59,8 @@ public class TXLockToken implements DataSerializable {
 		if (!(other instanceof TXLockToken)) return  false;
 		final TXLockToken that = (TXLockToken) other;
 
-		if (this.regionFullPath != that.regionFullPath &&
-	  		!(this.regionFullPath != null &&
+		if (!Objects.equals(this.regionFullPath, that.regionFullPath) &&
+				!(this.regionFullPath != null &&
 	  		this.regionFullPath.equals(that.regionFullPath))) return false;
 		if (this.name != that.name &&
 	  		!(this.name != null &&

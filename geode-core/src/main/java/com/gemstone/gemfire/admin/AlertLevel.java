@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.admin;
 
+import java.util.Objects;
+
 import com.gemstone.gemfire.internal.admin.Alert;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
@@ -145,8 +147,8 @@ public class AlertLevel implements java.io.Serializable {
 		final AlertLevel that = (AlertLevel) other;
 
 		if (this.severity != that.severity) return false;
-		if (this.name != that.name &&
-	  		!(this.name != null &&
+		if (!Objects.equals(this.name, that.name) &&
+        !(this.name != null &&
 	  		this.name.equals(that.name))) return false;
 
 		return true;

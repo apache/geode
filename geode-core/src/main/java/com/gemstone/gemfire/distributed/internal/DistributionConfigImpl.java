@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -2860,7 +2861,7 @@ public class DistributionConfigImpl
         return false;
     } else if (!userDefinedProps.equals(other.userDefinedProps))
       return false;
-    if (securityEnabledComponents != other.securityEnabledComponents) {
+    if (!Objects.equals(securityEnabledComponents, other.securityEnabledComponents)) {
       return false;
     }
     return true;

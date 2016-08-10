@@ -88,7 +88,7 @@ public abstract class AbstractCliAroundInterceptor implements CliAroundIntercept
       try {
         String userInput = interact(message);
 
-        if (userInput == null || userInput == "") {
+        if (userInput.isEmpty()) {
           return defaultResponse;
         }
         response = Response.fromString(userInput);

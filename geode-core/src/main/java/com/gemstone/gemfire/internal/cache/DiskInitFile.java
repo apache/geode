@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -2790,7 +2791,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       }
     }
     if (compressorClassNameOption != null) {
-      compressorClassName = (compressorClassNameOption == "" ? null : compressorClassNameOption);
+      compressorClassName = (Objects.equals(compressorClassNameOption, "") ? null : compressorClassNameOption);
     }
     if (statisticsEnabledOption != null) {
       statisticsEnabled = Boolean.parseBoolean(statisticsEnabledOption);

@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.admin.jmx.internal;
 
+import java.util.Objects;
+
 /**
  * Type-safe definition for refresh notifications.
  *
@@ -99,11 +101,11 @@ public class RefreshNotificationType implements java.io.Serializable {
 		if (!(other instanceof RefreshNotificationType)) return  false;
 		final RefreshNotificationType that = (RefreshNotificationType) other;
 
-		if (this.type != that.type &&
-	  		!(this.type != null &&
+		if (!Objects.equals(this.type, that.type) &&
+				!(this.type != null &&
 	  		this.type.equals(that.type))) return false;
-		if (this.msg != that.msg &&
-	  		!(this.msg != null &&
+		if (!Objects.equals(this.msg, that.msg) &&
+				!(this.msg != null &&
 	  		this.msg.equals(that.msg))) return false;
 
 		return true;

@@ -18,6 +18,7 @@ package com.gemstone.gemfire.cache.query.data;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Properties;
 
 import com.gemstone.gemfire.cache.Declarable;
@@ -109,7 +110,7 @@ public class PortfolioData implements Declarable, Serializable
 
   public boolean boolFunction(String strArg)
   {
-    if (strArg == "active") {
+    if (Objects.equals(strArg, "active")) {
       return true;
     }
     else {
