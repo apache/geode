@@ -19,12 +19,12 @@ Geode does not have any external interfaces or services that need to be enabled 
 
 ## <a id="topic_263072624B8D4CDBAD18B82E07AA44B6" class="no-quick-link"></a>Resources That Must Be Protected
 
-Certain Geode configuration files should be readable and writeable *only* by the dedicated user who runs servers.
+These configuration files should be readable and writeable *only* by the dedicated user who runs servers:
 
 -   `gemfire.properties`
 -   `cache.xml`
 -   `gfsecurity.properties`
-    **Note:** A default `gfsecurity.properties` is not provided in the `defaultConfigs` directory. If you choose to use this properties file, you must create it manually. See [Where to Place Security Settings](where_to_place_sec_settings.html#implementing_security) for more information.
+    **Note:** A default `gfsecurity.properties` is not provided in the `defaultConfigs` directory. If you choose to use this properties file, you must create it manually. See [Where to Place Security Settings](implementing_security.html) for more information.
 
 The default location of the `gemfire.properties` and `cache.xml` configuration files is the `defaultConfigs` child directory of the main installation directory.
 
