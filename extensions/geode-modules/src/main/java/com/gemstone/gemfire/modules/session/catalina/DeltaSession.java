@@ -54,7 +54,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("serial")
-public class DeltaSession extends StandardSession implements DataSerializable, Delta, GatewayDelta, Sizeable {
+public class DeltaSession extends StandardSession implements DataSerializable, Delta, GatewayDelta, Sizeable, DeltaSessionInterface {
 
   private transient Region<String, HttpSession> operatingRegion;
 
@@ -139,7 +139,7 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
         ((DeltaSessionManager) getManager()).getLogger().warn(builder.toString(), e);
         return null;
       }
-      this.principal = sp.getPrincipal(this.manager.getContainer().getRealm());
+      this.principal = sp.getPrincipal(((DeltaSessionManager)this.manager).getTheContext().getRealm());
       if (getManager() != null) {
         DeltaSessionManager mgr = (DeltaSessionManager) getManager();
         if (mgr.getLogger().isDebugEnabled()) {
@@ -223,7 +223,7 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
         this.notes = new Hashtable();
       }
 
-      contextName = ((DeltaSessionManager) manager).getContainer().getName();
+      contextName = ((DeltaSessionManager) manager).getContextName();
     } else {
       throw new IllegalArgumentException(this + ": The Manager must be an AbstractManager");
     }
@@ -345,7 +345,7 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
     super.removeAttribute(name, false); // don't do notification since this is a replication
   }
 
-  public void applyAttributeEvents(Region<String, DeltaSession> region, List<DeltaSessionAttributeEvent> events) {
+  public void applyAttributeEvents(Region<String, DeltaSessionInterface> region, List<DeltaSessionAttributeEvent> events) {
     for (DeltaSessionAttributeEvent event : events) {
       event.apply(this);
       queueAttributeEvent(event, false);
@@ -429,7 +429,7 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
     this.expired = expired;
   }
 
-  protected boolean getExpired() {
+  public boolean getExpired() {
     return this.expired;
   }
 
@@ -515,7 +515,7 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
     this.maxInactiveInterval = in.readInt();
     this.isNew = in.readBoolean();
     this.isValid = in.readBoolean();
-    this.attributes = DataSerializer.readObject(in);
+    this.attributes = readInAttributes(in);
     this.serializedPrincipal = DataSerializer.readByteArray(in);
 
     // Read the DeltaSession state
@@ -537,6 +537,10 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
     }
   }
 
+  protected Map readInAttributes(final DataInput in) throws IOException, ClassNotFoundException {
+    return DataSerializer.readObject(in);
+  }
+
   @Override
   public int getSizeInBytes() {
     int size = 0;
@@ -553,7 +557,7 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private Map<String, byte[]> getSerializedAttributes() {
+  protected Map<String, byte[]> getSerializedAttributes() {
     // Iterate the values and serialize them if necessary before sending them to the server. This makes the application classes unnecessary on the server.
     Map<String, byte[]> serializedAttributes = new ConcurrentHashMap<String, byte[]>();
     for (Iterator i = this.attributes.entrySet().iterator(); i.hasNext(); ) {
@@ -565,7 +569,7 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
     return serializedAttributes;
   }
 
-  private byte[] serialize(Object obj) {
+  protected byte[] serialize(Object obj) {
     byte[] serializedValue = null;
     try {
       serializedValue = BlobHelper.serializeToBlob(obj);

@@ -352,8 +352,8 @@ public abstract class DistributedCacheOperation {
 
       if (recipients.isEmpty() && adjunctRecipients.isEmpty()
           && needsOldValueInCacheOp.isEmpty() && cachelessNodes.isEmpty()) {
-        if (mgr.getNormalDistributionManagerIds().size() > 1) {
-          if (region.isInternalRegion()) {
+        if (region.isInternalRegion()) {
+          if (mgr.getNormalDistributionManagerIds().size() > 1) {
             // suppress this msg if we are the only member.
             if (logger.isTraceEnabled()) {
               logger.trace("<No Recipients> {}", this);

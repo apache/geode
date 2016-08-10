@@ -39,6 +39,7 @@ import com.gemstone.gemfire.cache.execute.ResultSender;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneService;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
 import com.gemstone.gemfire.cache.lucene.internal.cli.LuceneIndexDetails;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.fake.Fakes;
@@ -52,7 +53,7 @@ public class LuceneListIndexFunctionJUnitTest {
   @SuppressWarnings("unchecked")
   public void testExecute() throws Throwable {
     GemFireCacheImpl cache = Fakes.cache();
-    InternalLuceneService service = mock(InternalLuceneService.class);
+    LuceneServiceImpl service = mock(LuceneServiceImpl.class);
     when(cache.getService(InternalLuceneService.class)).thenReturn(service);
     
     FunctionContext context = mock(FunctionContext.class);

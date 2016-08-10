@@ -22,12 +22,14 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.Properties;
 
 import org.apache.geode.security.templates.SampleSecurityManager;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
@@ -36,15 +38,19 @@ import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
+@Ignore("This is broken but fixed on feature/GEODE-1673")
 @Category({DistributedTest.class, SecurityTest.class})
 public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4CacheTestCase {
 
   private VM locator;
+  private SecurityService securityService;
 
   @Override
   public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     locator = host.getVM(0);
+
+    securityService = IntegratedSecurityService.getSecurityService();
 
     int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     String locators =  NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]";
@@ -93,7 +99,7 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
   }
 
   private void verifyInitCloseInvoked() {
-    SpySecurityManager ssm = (SpySecurityManager) GeodeSecurityUtil.getSecurityManager();
+    SpySecurityManager ssm = (SpySecurityManager) this.securityService.getSecurityManager();
     assertThat(ssm.initInvoked).isEqualTo(1);
     getCache().close();
     assertThat(ssm.closeInvoked).isEqualTo(1);

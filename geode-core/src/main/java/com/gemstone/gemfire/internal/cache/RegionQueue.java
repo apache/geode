@@ -45,8 +45,9 @@ public interface RegionQueue
    * 
    * @throws InterruptedException
    * @throws CacheException
+   * @return boolean whether object was successfully put onto the queue
    */
-  public void put(Object object) throws InterruptedException, CacheException;
+  public boolean put(Object object) throws InterruptedException, CacheException;
 
   /**
    * Returns the underlying region that backs this queue.

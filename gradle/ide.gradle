@@ -32,6 +32,9 @@ subprojects {
             // Unfortunately, using minusConfigurations does not work here, because
             // it removes the entire geode-core project.
             classpath.entries.removeAll { entry -> entry.path.contains('geode-core/build')}
+            classpath.entries.removeAll { entry -> entry.path.contains('geode-web/build')}
+            classpath.entries.removeAll { entry -> entry.path.contains('geode-assembly/build')}
+            classpath.entries.removeAll { entry -> entry.path.contains('geode-dependencies.jar')}
 
             //By default, gradle adds the java 1.8 *execution environment*, which has access restrictions on
             //things like Unsafe. Change it to a direct dependency on the workspace JDK

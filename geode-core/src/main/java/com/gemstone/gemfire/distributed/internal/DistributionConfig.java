@@ -54,7 +54,10 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
  */
 public interface DistributionConfig extends Config, LogConfig {
 
-  ////////////////////  Instance Methods  ////////////////////
+  /**
+   * The prefix used for Gemfire properties set through java system properties
+   */
+  String GEMFIRE_PREFIX = "gemfire.";
 
   /**
    * Returns the value of the {@link ConfigurationProperties#NAME} property
@@ -1744,7 +1747,12 @@ public interface DistributionConfig extends Config, LogConfig {
   @ConfigAttribute(type = int[].class)
   String MEMBERSHIP_PORT_RANGE_NAME = MEMBERSHIP_PORT_RANGE;
 
-  int[] DEFAULT_MEMBERSHIP_PORT_RANGE = new int[] { 1024, 65535 };
+  /** set this boolean to restrict membership/communications to use ports in the ephemeral range */
+  String RESTRICT_MEMBERSHIP_PORT_RANGE = GEMFIRE_PREFIX + "use-ephemeral-ports";
+  
+  int[] DEFAULT_MEMBERSHIP_PORT_RANGE = Boolean.getBoolean(RESTRICT_MEMBERSHIP_PORT_RANGE)
+      ?  new int[] { 32769, 61000 }
+      :  new int[] {  1024, 65535 };
 
   @ConfigAttributeGetter(name = MEMBERSHIP_PORT_RANGE)
   int[] getMembershipPortRange();
@@ -2388,11 +2396,6 @@ public interface DistributionConfig extends Config, LogConfig {
   void setSecurity(String attName, String attValue);
 
   String SECURITY_PREFIX_NAME = SECURITY_PREFIX;
-
-  /**
-   * The prefix used for Gemfire properties set through java system properties
-   */
-  String GEMFIRE_PREFIX = "gemfire.";
 
   /**
    * For the "custom-" prefixed properties

@@ -26,6 +26,7 @@ import java.util.Set;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.ResultSender;
+import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneQuery;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryException;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
@@ -54,7 +55,7 @@ public class LuceneSearchIndexFunctionJUnitTest {
     ResultSender resultSender = mock(ResultSender.class);
     GemFireCacheImpl cache = Fakes.cache();
 
-    LuceneQueryInfo queryInfo = createMockQueryInfo("index","region","field1:region1","field1");
+    LuceneQueryInfo queryInfo = createMockQueryInfo("index","region","field1:region1","field1",1);
     InternalLuceneService service = getMockLuceneService("A","Value","1.2");
     Region mockRegion=mock(Region.class);
 
@@ -81,14 +82,16 @@ public class LuceneSearchIndexFunctionJUnitTest {
   }
   private InternalLuceneService getMockLuceneService(String resultKey, String resultValue, String resultScore) throws LuceneQueryException{
     InternalLuceneService service=mock(InternalLuceneService.class);
-    LuceneQueryFactory mockQueryFactory = mock(LuceneQueryFactory.class);
+    LuceneQueryFactory mockQueryFactory = spy(LuceneQueryFactory.class);
     LuceneQuery mockQuery=mock(LuceneQuery.class);
     PageableLuceneQueryResults pageableLuceneQueryResults = mock(PageableLuceneQueryResults.class);
     LuceneResultStruct<String,String> resultStruct = new LuceneResultStructImpl(resultKey,resultValue,Float.valueOf(resultScore));
     List<LuceneResultStruct<String,String>> queryResults= new ArrayList<>();
     queryResults.add(resultStruct);
 
+    doReturn(mock(LuceneIndex.class)).when(service).getIndex(anyString(),anyString());
     doReturn(mockQueryFactory).when(service).createLuceneQueryFactory();
+    doReturn(mockQueryFactory).when(mockQueryFactory).setResultLimit(anyInt());
     doReturn(mockQuery).when(mockQueryFactory).create(any(),any(),any(),any());
     when(mockQuery.findPages()).thenReturn(pageableLuceneQueryResults);
     when(pageableLuceneQueryResults.hasNext()).thenReturn(true).thenReturn(false);
@@ -97,12 +100,13 @@ public class LuceneSearchIndexFunctionJUnitTest {
     return service;
   }
 
-  private LuceneQueryInfo createMockQueryInfo(final String index, final String region, final String query, final String field) {
+  private LuceneQueryInfo createMockQueryInfo(final String index, final String region, final String query, final String field, final int limit) {
     LuceneQueryInfo queryInfo = mock(LuceneQueryInfo.class);
     when(queryInfo.getIndexName()).thenReturn(index);
     when(queryInfo.getRegionPath()).thenReturn(region);
     when(queryInfo.getQueryString()).thenReturn(query);
     when(queryInfo.getDefaultField()).thenReturn(field);
+    when(queryInfo.getLimit()).thenReturn(limit);
     return queryInfo;
   }
 

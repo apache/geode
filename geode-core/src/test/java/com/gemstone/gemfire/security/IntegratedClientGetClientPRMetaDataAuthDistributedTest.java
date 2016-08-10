@@ -32,7 +32,7 @@ import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 public class IntegratedClientGetClientPRMetaDataAuthDistributedTest
-  extends AbstractIntegratedClientAuthDistributedTest {
+  extends AbstractSecureServerDUnitTest {
 
   @Test
   @Ignore("This is not a supported client message")

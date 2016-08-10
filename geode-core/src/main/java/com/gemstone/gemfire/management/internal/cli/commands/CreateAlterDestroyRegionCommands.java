@@ -55,7 +55,8 @@ import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.management.DistributedRegionMXBean;
 import com.gemstone.gemfire.management.DistributedSystemMXBean;
 import com.gemstone.gemfire.management.ManagementService;
@@ -83,8 +84,8 @@ import com.gemstone.gemfire.management.internal.cli.util.RegionPath;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-import org.apache.geode.security.GeodePermission.Operation;
-import org.apache.geode.security.GeodePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
  *
@@ -92,6 +93,8 @@ import org.apache.geode.security.GeodePermission.Resource;
  */
 public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
   public static final Set<RegionShortcut> PERSISTENT_OVERFLOW_SHORTCUTS = new TreeSet<RegionShortcut>();
+
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
   
   static {
     PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.PARTITION_PERSISTENT);
@@ -532,7 +535,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     Result result = null;
     XmlEntity xmlEntity = null;
 
-    GeodeSecurityUtil.authorizeRegionManage(regionPath);
+    this.securityService.authorizeRegionManage(regionPath);
 
     try {
       Cache cache = CacheFactory.getAnyInstance();

@@ -20,8 +20,8 @@ import java.util.Map;
 
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-import org.apache.geode.security.GeodePermission.Operation;
-import org.apache.geode.security.GeodePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
  * MBean that provides access to information and management functionality for a

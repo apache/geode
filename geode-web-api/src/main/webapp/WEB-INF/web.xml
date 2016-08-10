@@ -51,14 +51,14 @@ limitations under the License.
       The Spring DispatcherServlet (FrontController) handling all HTTP requests to the Developer REST API
       GemFire Web Application.
     </description>
-    <servlet-name>gemfire-api</servlet-name>
+    <servlet-name>geode</servlet-name>
     <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
     <load-on-startup>1</load-on-startup>
     <async-supported>true</async-supported>
   </servlet>
    
   <servlet-mapping>
-    <servlet-name>gemfire-api</servlet-name>
+    <servlet-name>geode</servlet-name>
     <url-pattern>/*</url-pattern>
   </servlet-mapping>
   

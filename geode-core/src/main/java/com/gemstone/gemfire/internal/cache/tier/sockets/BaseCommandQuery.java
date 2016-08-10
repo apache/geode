@@ -44,7 +44,6 @@ import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 public abstract class BaseCommandQuery extends BaseCommand {
 
@@ -63,7 +62,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
    *         false in case of failure.
    * @throws IOException
    */
-  protected static boolean processQuery(Message msg, Query query,
+  protected boolean processQuery(Message msg, Query query,
       String queryString, Set regionNames, long start, ServerCQ cqQuery,
       QueryOperationContext queryContext, ServerConnection servConn, 
       boolean sendResults)
@@ -87,7 +86,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
    *         false in case of failure.
    * @throws IOException
    */
-  protected static boolean processQueryUsingParams(Message msg, Query query,
+  protected boolean processQueryUsingParams(Message msg, Query query,
       String queryString, Set regionNames, long start, ServerCQ cqQuery,
       QueryOperationContext queryContext, ServerConnection servConn, 
       boolean sendResults, Object[] params)
@@ -111,7 +110,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
     try {
       // integrated security
       for(Object regionName:regionNames){
-        GeodeSecurityUtil.authorizeRegionRead(regionName.toString());
+        this.securityService.authorizeRegionRead(regionName.toString());
       }
 
       // Execute query
@@ -157,39 +156,14 @@ public abstract class BaseCommandQuery extends BaseCommand {
       if (result instanceof SelectResults) {
         SelectResults selectResults = (SelectResults)result;
 
-        // post process, iterate through the result for post processing
-        if(GeodeSecurityUtil.needPostProcess()) {
-          List list = selectResults.asList();
-          for (Iterator<Object> valItr = list.iterator(); valItr.hasNext(); ) {
-            Object value = valItr.next();
-            if (value == null)
-              continue;
-
-            if (value instanceof CqEntry) {
-              CqEntry cqEntry = (CqEntry) value;
-              Object cqNewValue = GeodeSecurityUtil.postProcess(null, cqEntry.getKey(), cqEntry.getValue());
-              if (!cqEntry.getValue().equals(cqNewValue)) {
-                selectResults.remove(value);
-                selectResults.add(new CqEntry(cqEntry.getKey(), cqNewValue));
-              }
-            } else {
-              Object newValue = GeodeSecurityUtil.postProcess(null, null, value);
-              if (!value.equals(newValue)) {
-                selectResults.remove(value);
-                selectResults.add(newValue);
-              }
-            }
-          }
-        }
-
         if (logger.isDebugEnabled()) {
           logger.debug("Query Result size for : {} is {}", query.getQueryString(), selectResults.size());
         }
-        
+
         CollectionType collectionType = null;
         boolean sendCqResultsWithKey = true;
         boolean isStructs = false;
-     
+
         // check if resultset has serialized objects, so that they could be sent
         // as ObjectPartList
         boolean hasSerializedObjects = ((DefaultQuery) query)
@@ -201,7 +175,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
         // The results in a StructSet are stored in Object[]s
         // Get them as Object[]s for the objs[] in order to avoid duplicating
         // the StructTypes
-        
+
         // Object[] objs = new Object[selectResults.size()];
         // Get the collection type (which includes the element type)
         // (used to generate the appropriate instance on the client)
@@ -215,15 +189,15 @@ public abstract class BaseCommandQuery extends BaseCommand {
         if (cqQuery != null){
           // Check if the key can be sent to the client based on its version.
           sendCqResultsWithKey = sendCqResultsWithKey(servConn);
-          
+
           if (sendCqResultsWithKey){
             // Update the collection type to include key info.
-            collectionType = new CollectionTypeImpl(Collection.class, 
+            collectionType = new CollectionTypeImpl(Collection.class,
                 new StructTypeImpl(new String[]{"key", "value"}));
-            isStructs = collectionType.getElementType().isStructType();              
+            isStructs = collectionType.getElementType().isStructType();
           }
         }
- 
+
         int numberOfChunks = (int)Math.ceil(selectResults.size() * 1.0
             / maximumChunkSize);
 
@@ -231,7 +205,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
           logger.trace("{}: Query results size: {}: Entries in chunk: {}: Number of chunks: {}",
               servConn.getName(), selectResults.size(), maximumChunkSize, numberOfChunks);
         }
-        
+
         long oldStart = start;
         start = DistributionStats.getStatTime();
         stats.incProcessQueryTime(start - oldStart);
@@ -265,12 +239,12 @@ public abstract class BaseCommandQuery extends BaseCommand {
                 isStructs, collectionType, queryString, cqQuery, sendCqResultsWithKey, sendResults);
           }
         }
-        
+
         if(cqQuery != null){
           // Set the CQ query result cache initialized flag.
           cqQuery.setCqResultsCacheInitialized();
         }
-        
+
       }
       else if (result instanceof Integer) {
         if (sendResults) {
@@ -319,7 +293,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       return false;
     }  finally {
       // Since the query object is being shared in case of bind queries,
-      // resetting the flag may cause inconsistency. 
+      // resetting the flag may cause inconsistency.
       // Also since this flag is only being set in code path executed by
       // remote query execution, resetting it is not required.
 
@@ -333,8 +307,8 @@ public abstract class BaseCommandQuery extends BaseCommand {
     stats.incWriteQueryResponseTime(DistributionStats.getStatTime() - start);
     return true;
   }
-  
-  private static boolean sendCqResultsWithKey(ServerConnection servConn) {
+
+  private boolean sendCqResultsWithKey(ServerConnection servConn) {
     Version clientVersion = servConn.getClientVersion();
     if (clientVersion.compareTo(Version.GFE_65) >= 0) {
       return true;
@@ -342,7 +316,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
     return false;
   }
 
-  protected static void sendCqResponse(int msgType, String msgStr, int txId,
+  protected void sendCqResponse(int msgType, String msgStr, int txId,
       Throwable e, ServerConnection servConn) throws IOException {
     ChunkedMessage cqMsg = servConn.getChunkedResponseMessage();
     if (logger.isDebugEnabled()) {
@@ -390,8 +364,8 @@ public abstract class BaseCommandQuery extends BaseCommand {
       logger.debug("CQ Response sent successfully");
     }
   }
-  
-  private static void sendResultsAsObjectArray(SelectResults selectResults,
+
+  private void sendResultsAsObjectArray(SelectResults selectResults,
       int numberOfChunks, ServerConnection servConn, 
       boolean isStructs, CollectionType collectionType, String queryString, ServerCQ cqQuery, boolean sendCqResultsWithKey, boolean sendResults)
       throws IOException {
@@ -422,7 +396,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
             // that results[i] is not null.
             i--;
             continue;
-          }    
+          }
           // Add the key into CQ results cache.
           // For PR the Result caching is not yet supported.
           // cqQuery.cqResultsCacheInitialized is added to take care
@@ -431,13 +405,13 @@ public abstract class BaseCommandQuery extends BaseCommand {
           if (!cqQuery.isPR()) {
             cqQuery.addToCqResultKeys(e.getKey());
           }
-  
+
           // Add to the Results object array.
           if (sendCqResultsWithKey) {
             results[i] = e.getKeyValuePair();
           } else {
             results[i] = e.getValue();
-          }      
+          }
         } else {
           // instance check added to fix bug 40516.
           if (isStructs && (objs[resultIndex] instanceof Struct)) {
@@ -468,7 +442,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       if (sendResults) {
         writeQueryResponseChunk(results, collectionType,
             (resultIndex == selectResults.size()), servConn);
-        
+
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Sent chunk ({} of {}) of query response for query: {}",
               servConn.getName(), (j + 1), numberOfChunks, queryString);
@@ -482,7 +456,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
     }
   }
 
-  private static void sendResultsAsObjectPartList(int numberOfChunks,
+  private void sendResultsAsObjectPartList(int numberOfChunks,
       ServerConnection servConn, List objs, boolean isStructs,
       CollectionType collectionType, String queryString, ServerCQ cqQuery, boolean sendCqResultsWithKey, boolean sendResults)
       throws IOException {
@@ -507,7 +481,8 @@ public abstract class BaseCommandQuery extends BaseCommand {
           if (e.getValue() == null) {
             resultIndex++;
             continue;
-          }    
+          }
+
           // Add the key into CQ results cache.
           // For PR the Result caching is not yet supported.
           // cqQuery.cqResultsCacheInitialized is added to take care
@@ -516,13 +491,13 @@ public abstract class BaseCommandQuery extends BaseCommand {
           if (!cqQuery.isPR()) {
             cqQuery.addToCqResultKeys(e.getKey());
           }
-  
+
           // Add to the Results object array.
           if (sendCqResultsWithKey) {
             result = e.getKeyValuePair();
           } else {
             result = e.getValue();
-          }      
+          }
         }
         else {
           result = objs.get(resultIndex);
@@ -533,7 +508,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
         }
         resultIndex++;
       }
-      
+
       if (sendResults) {
         writeQueryResponseChunk(serializedObjs, collectionType,
             ((j + 1) == numberOfChunks), servConn);
@@ -545,24 +520,17 @@ public abstract class BaseCommandQuery extends BaseCommand {
       }
    }
   }
-  
-  private static void addToObjectPartList(ObjectPartList serializedObjs,
+
+  private void addToObjectPartList(ObjectPartList serializedObjs,
       Object res, CollectionType collectionType, boolean lastChunk,
       ServerConnection servConn, boolean isStructs) throws IOException {
-
     if (isStructs && (res instanceof Struct)) {
       Object[] values = ((Struct) res).getFieldValues();
       // create another ObjectPartList for the struct
       ObjectPartList serializedValueObjs = new ObjectPartList(values.length,
           false);
       for (Object value : values) {
-        if (value instanceof CachedDeserializable) {
-          serializedValueObjs.addPart(null,
-              ((CachedDeserializable) value).getSerializedValue(),
-              ObjectPartList.OBJECT, null);
-        } else {
-          addDeSerializedObjectToObjectPartList(serializedValueObjs, value);
-        }
+        addObjectToPartList(serializedValueObjs, null, value);
       }
       serializedObjs.addPart(null, serializedValueObjs, ObjectPartList.OBJECT,
           null);
@@ -571,33 +539,33 @@ public abstract class BaseCommandQuery extends BaseCommand {
       // create another ObjectPartList for the Object[]
       ObjectPartList serializedValueObjs = new ObjectPartList(values.length,
           false);
-      for (Object value : values) {
-        if (value instanceof CachedDeserializable) {
-          serializedValueObjs.addPart(null,
-              ((CachedDeserializable) value).getSerializedValue(),
-              ObjectPartList.OBJECT, null);
-        } else {
-          addDeSerializedObjectToObjectPartList(serializedValueObjs, value);
-        }
+      for(int i=0; i<values.length; i+=2) {
+        Object key = values[i];
+        Object value = values[i+1];
+        addObjectToPartList(serializedValueObjs, key, value);
       }
       serializedObjs.addPart(null, serializedValueObjs, ObjectPartList.OBJECT,
           null);
-    } else if (res instanceof CachedDeserializable) {
-      serializedObjs.addPart(null,
-          ((CachedDeserializable) res).getSerializedValue(),
-          ObjectPartList.OBJECT, null);
-    } else { // for deserialized objects
-      addDeSerializedObjectToObjectPartList(serializedObjs, res);
+    } else { //for deserialized objects
+      addObjectToPartList(serializedObjs, null, res);
     }
   }
-  
-  private static void addDeSerializedObjectToObjectPartList(
-      ObjectPartList objPartList, Object obj) {
-    if (obj instanceof byte[]) {
-      objPartList.addPart(null, obj, ObjectPartList.BYTES, null);
-    } else {
-      objPartList.addPart(null, obj, ObjectPartList.OBJECT, null);
+
+  private void addObjectToPartList(ObjectPartList objPartList, Object key, Object value) {
+    Object object = value;
+    boolean isObject = true;
+    if (value instanceof CachedDeserializable) {
+      object = ((CachedDeserializable)value).getSerializedValue();
     }
+    else if(value instanceof byte[]){
+      isObject = false;
+    }
+
+    object = this.securityService.postProcess(null, key, object, isObject);
+    if(key!=null){
+      objPartList.addPart(null, key, ObjectPartList.OBJECT, null);
+    }
+    objPartList.addPart(null, object, isObject?ObjectPartList.OBJECT:ObjectPartList.BYTES, null);
   }
 
 }

@@ -34,7 +34,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 
 
@@ -89,9 +88,9 @@ public class Size extends BaseCommand {
       return;
     }
 
-    GeodeSecurityUtil.authorizeRegionRead(regionName);
     // Size the entry
     try {
+      this.securityService.authorizeRegionRead(regionName);
           /*
            *
            * txtodo: doesn't seem like there is any notion of authzSize

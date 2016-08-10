@@ -19,11 +19,15 @@ package com.gemstone.gemfire.rest.internal.web.controllers;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.FunctionService;
@@ -31,9 +35,21 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.rest.internal.web.RestFunctionTemplate;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase {
+
+  @Parameterized.Parameter
+  public String urlContext;
+
+  @Parameterized.Parameters
+  public static Collection<String> data() {
+    return Arrays.asList("/geode", "/gemfire-api");
+  }
+
 
   @Override
   protected String getFunctionID() {
@@ -41,9 +57,9 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
   }
 
   private void setupCacheWithGroupsAndFunction() {
-    restURLs.add(vm0.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm0.getHost().getHostName(), "g0,gm")));
-    restURLs.add(vm1.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm1.getHost().getHostName(), "g1")));
-    restURLs.add(vm2.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm2.getHost().getHostName(), "g0,g1")));
+    restURLs.add(vm0.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm0.getHost().getHostName(), "g0,gm", urlContext)));
+    restURLs.add(vm1.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm1.getHost().getHostName(), "g1", urlContext)));
+    restURLs.add(vm2.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm2.getHost().getHostName(), "g0,g1", urlContext)));
 
     vm0.invoke("registerFunction(new OnGroupsFunction())", () -> FunctionService.registerFunction(new OnGroupsFunction()));
     vm1.invoke("registerFunction(new OnGroupsFunction())", () -> FunctionService.registerFunction(new OnGroupsFunction()));
@@ -103,7 +119,7 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
   }
 
   private class OnGroupsFunction extends RestFunctionTemplate {
-    public static final String Id = "OnGroupsFunction";
+    static final String Id = "OnGroupsFunction";
 
     @Override
     public void execute(FunctionContext context) {

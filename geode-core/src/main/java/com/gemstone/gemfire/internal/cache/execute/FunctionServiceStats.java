@@ -22,6 +22,7 @@ import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.StatisticsType;
 import com.gemstone.gemfire.StatisticsTypeFactory;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
+import com.gemstone.gemfire.internal.DummyStatisticsImpl;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 
 public class FunctionServiceStats {
@@ -201,6 +202,14 @@ public class FunctionServiceStats {
    */
   public FunctionServiceStats(StatisticsFactory factory, String name) {
     this._stats = factory.createAtomicStatistics(_type, name);
+  }
+
+  private FunctionServiceStats() {
+    this._stats = new DummyStatisticsImpl(this._type, null, 0);
+  }
+
+  static FunctionServiceStats createDummy() {
+    return new FunctionServiceStats();
   }
 
   // /////////////////// Instance Methods /////////////////////

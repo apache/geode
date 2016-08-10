@@ -40,6 +40,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -53,6 +54,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public final class CqServiceImpl implements CqService  {
   private static final Logger logger = LogService.getLogger();
+  
+  private static final Integer MESSAGE_TYPE_LOCAL_CREATE = Integer.valueOf(MessageType.LOCAL_CREATE); 
+  private static final Integer MESSAGE_TYPE_LOCAL_UPDATE = Integer.valueOf(MessageType.LOCAL_UPDATE); 
+  private static final Integer MESSAGE_TYPE_LOCAL_DESTROY = Integer.valueOf(MessageType.LOCAL_DESTROY); 
+  private static final Integer MESSAGE_TYPE_EXCEPTION = Integer.valueOf(MessageType.EXCEPTION);
   
   /** 
    * System property to evaluate the query even though the initial results are not required
@@ -94,7 +100,7 @@ public final class CqServiceImpl implements CqService  {
   
   // Map to manage the similar CQs (having same query - performance optimization).
   // With query as key and Set of CQs as values.
-  private final HashMap<String, HashSet<String>> matchingCqMap;
+  private final ConcurrentHashMap matchingCqMap;
 
   // CQ Service statistics
   public final CqServiceStatisticsImpl cqServiceStats;
@@ -127,7 +133,7 @@ public final class CqServiceImpl implements CqService  {
 
     
     // Initialize the Map which maintains the matching cqs.
-    this.matchingCqMap = new HashMap<String, HashSet<String>>();
+    this.matchingCqMap = new ConcurrentHashMap<String, HashSet<String>>();
     
     // Initialize the VSD statistics
     StatisticsFactory factory = cache.getDistributedSystem();
@@ -928,18 +934,33 @@ public final class CqServiceImpl implements CqService  {
     this.isRunning = true;
   }
   
+  private static final ConcurrentHashMap<String, ConcurrentHashMap<ClientProxyMembershipID, String>> serverCqNameCache = new ConcurrentHashMap<>();
+
   /**
    * @return Returns the serverCqName.
    */
-  @Override
   public String constructServerCqName(String cqName, ClientProxyMembershipID clientProxyId) {
-    String cName = null;
-    if (clientProxyId.isDurable()) {
-      cName = cqName + "__" + clientProxyId.getDurableId();
+    ConcurrentHashMap<ClientProxyMembershipID, String> cache = serverCqNameCache.get(cqName);
+    if (null == cache) {
+      final ConcurrentHashMap<ClientProxyMembershipID, String> old = serverCqNameCache.putIfAbsent(cqName,
+          cache = new ConcurrentHashMap<ClientProxyMembershipID, String>());
+      if (null != old) {
+        cache = old;
+      }
     }
-    else {
-      cName = cqName + "__" + clientProxyId.getDSMembership();
+
+    String cName = cache.get(clientProxyId);
+    if (null == cName) {
+      final StringBuilder sb = new StringBuilder(cqName).append("__");
+      if (clientProxyId.isDurable()) {
+        sb.append(clientProxyId.getDurableId());
+      } else {
+        sb.append(clientProxyId.getDSMembership());
+      }
+      cName = sb.toString();
+      cache.put(clientProxyId, cName);
     }
+
     return cName;
   }
   
@@ -1058,7 +1079,6 @@ public final class CqServiceImpl implements CqService  {
     if (!cQuery.isRunning() || cQuery.getCqAttributes() == null) {
       return;
     }
-    
     // invoke CQ Listeners.
     CqListener[] cqListeners = cQuery.getCqAttributes().getCqListeners();
     
@@ -1406,15 +1426,17 @@ public final class CqServiceImpl implements CqService  {
           }
         } else {
           boolean error = false;
-          synchronized (cQuery) {
+          //synchronized (cQuery) 
+          {
             try {
-              // Apply query on new value.
-              if (!cqUnfilteredEventsSet_newValue.isEmpty()) {
-                executionStartTime = this.stats.startCqQueryExecution();
+              synchronized (cQuery) {
+                // Apply query on new value.
+                if (!cqUnfilteredEventsSet_newValue.isEmpty()) {
+                  executionStartTime = this.stats.startCqQueryExecution();
 
-                b_cqResults_newValue = evaluateQuery(cQuery, 
-                    new Object[] {cqUnfilteredEventsSet_newValue});
-                this.stats.endCqQueryExecution(executionStartTime);
+                  b_cqResults_newValue = evaluateQuery(cQuery, new Object[] { cqUnfilteredEventsSet_newValue });
+                  this.stats.endCqQueryExecution(executionStartTime);
+                }
               }
 
               // In case of Update, destroy and invalidate.
@@ -1446,15 +1468,16 @@ public final class CqServiceImpl implements CqService  {
                     }
                   }
                   
-                  // Apply query on old value.
-                  if (!cqUnfilteredEventsSet_oldValue.isEmpty()) {
-                    executionStartTime = this.stats.startCqQueryExecution();
-                    b_cqResults_oldValue = evaluateQuery(cQuery, 
-                        new Object[] {cqUnfilteredEventsSet_oldValue});
-                    this.stats.endCqQueryExecution(executionStartTime);
-                  } else {
-                    if (isDebugEnabled) {
-                      logger.debug("old value for event with key {} is null - query execution not performed", eventKey);
+                  synchronized (cQuery) {
+                    // Apply query on old value.
+                    if (!cqUnfilteredEventsSet_oldValue.isEmpty()) {
+                      executionStartTime = this.stats.startCqQueryExecution();
+                      b_cqResults_oldValue = evaluateQuery(cQuery, new Object[] { cqUnfilteredEventsSet_oldValue });
+                      this.stats.endCqQueryExecution(executionStartTime);
+                    } else {
+                      if (isDebugEnabled) {
+                        logger.debug("old value for event with key {} is null - query execution not performed", eventKey);
+                      }
                     }
                   }
                 } // Query oldValue
@@ -1472,14 +1495,14 @@ public final class CqServiceImpl implements CqService  {
             }
 
             if (error) {
-              cqEvent = Integer.valueOf(MessageType.EXCEPTION); 
+              cqEvent = MESSAGE_TYPE_EXCEPTION; 
             } 
             else { 
               if (b_cqResults_newValue) {
                 if (b_cqResults_oldValue) {
-                  cqEvent = Integer.valueOf(MessageType.LOCAL_UPDATE);
+                  cqEvent = MESSAGE_TYPE_LOCAL_UPDATE;
                 } else {
-                  cqEvent = Integer.valueOf(MessageType.LOCAL_CREATE);
+                  cqEvent = MESSAGE_TYPE_LOCAL_CREATE;
                 }
                 // If its create and caching is enabled, cache the key 
                 // for this CQ.
@@ -1488,7 +1511,7 @@ public final class CqServiceImpl implements CqService  {
                 // Base invalidate operation is treated as destroy.
                 // When the invalidate comes through, the entry will no longer 
                 // satisfy the query and will need to be deleted.
-                cqEvent = Integer.valueOf(MessageType.LOCAL_DESTROY);
+                cqEvent = MESSAGE_TYPE_LOCAL_DESTROY;
                 // If caching is enabled, mark this event's key as removed 
                 // from the CQ cache.
                 cQuery.markAsDestroyedInCqResultKeys(eventKey);
@@ -1497,9 +1520,9 @@ public final class CqServiceImpl implements CqService  {
           } //end synchronized(cQuery)
 
           // Get the matching CQs if any.
-          synchronized (this.matchingCqMap){
+          //synchronized (this.matchingCqMap){
             String query = cQuery.getQueryString();
-            HashSet matchingCqs = matchingCqMap.get(query);
+            Set matchingCqs = (Set)matchingCqMap.get(query);
             if (matchingCqs != null) {
               Iterator iter = matchingCqs.iterator();
               while (iter.hasNext()) {
@@ -1512,7 +1535,7 @@ public final class CqServiceImpl implements CqService  {
                 }
               }
             }
-          }
+          //}
         }
 
         if (cqEvent != null && cQuery.isRunning()){
@@ -1870,13 +1893,13 @@ public final class CqServiceImpl implements CqService  {
   public void addToMatchingCqMap(CqQueryImpl cq) {
     synchronized(this.matchingCqMap){
       String cqQuery = cq.getQueryString();
-      HashSet<String> matchingCQs = null;
+      Set<String> matchingCQs = null;
       if (!matchingCqMap.containsKey(cqQuery)){
-        matchingCQs = new HashSet<String>();
+        matchingCQs = Collections.newSetFromMap(new ConcurrentHashMap());
         matchingCqMap.put(cqQuery, matchingCQs);
         this.stats.incUniqueCqQuery();
       } else {
-        matchingCQs = matchingCqMap.get(cqQuery);
+        matchingCQs = (Set)matchingCqMap.get(cqQuery);
       }
       matchingCQs.add(cq.getServerCqName());
       if (logger.isDebugEnabled()) {
@@ -1893,7 +1916,7 @@ public final class CqServiceImpl implements CqService  {
     synchronized(this.matchingCqMap){
       String cqQuery = cq.getQueryString();
       if (matchingCqMap.containsKey(cqQuery)){
-    	  HashSet matchingCQs = matchingCqMap.get(cqQuery);
+    	  Set matchingCQs = (Set)matchingCqMap.get(cqQuery);
         matchingCQs.remove(cq.getServerCqName());
         if (logger.isDebugEnabled()) {
           logger.debug("Removing CQ from MatchingCQ map, CQName: {} Number of matched querys are: {}", cq.getServerCqName(), matchingCQs.size());
@@ -1910,7 +1933,7 @@ public final class CqServiceImpl implements CqService  {
    * Returns the matching CQ map.
    * @return HashMap matchingCqMap
    */
-  public HashMap<String, HashSet<String>> getMatchingCqMap(){
+  public Map<String, HashSet<String>> getMatchingCqMap(){
     return matchingCqMap; 
   }
 
@@ -2005,7 +2028,7 @@ public final class CqServiceImpl implements CqService  {
   
           //Check cq pool to determine if the pool matches, if not continue.
           //Also if the connected state is already the same, we do not have to send status again.
-	  if (cQuery == null) {
+	  if (cQuery == null || cQuery.getCQProxy() == null) {
             continue;
           }
           Pool cqPool = cQuery.getCQProxy().getPool();

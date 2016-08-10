@@ -463,7 +463,7 @@ public interface Statistics {
    * @param id a statistic id obtained with {@link #nameToId}
    * or {@link StatisticsType#nameToId}.
    * @param supplier a callback that will return the value of the stat. This
-   * replaces any previously registered supplier. If the passed in suppplier is null, it
+   * replaces any previously registered supplier. If the passed in supplier is null, it
    * will remove any existing supplier
    * @return the previously registered supplier, or null if there was no previously registered supplier
    * @throws IllegalArgumentException If the id is invalid.
@@ -485,9 +485,9 @@ public interface Statistics {
    * <p>
    * Get methods are not guaranteed to recompute a new value, they may return
    * the last sampled value
-   * @param name the nane of the statistic to update
+   * @param name the name of the statistic to update
    * @param supplier a callback that will return the value of the stat. This
-   * replaces any previously registered supplier. If the passed in suppplier is null, it
+   * replaces any previously registered supplier. If the passed in supplier is null, it
    * will remove any existing supplier
    * @return the previously registered supplier, or null if there was no previously registered supplier
    * @throws IllegalArgumentException
@@ -515,7 +515,7 @@ public interface Statistics {
    * the last sampled value
    * @param descriptor the descriptor of the statistic to update
    * @param supplier a callback that will return the value of the stat. This
-   * replaces any previously registered supplier. If the passed in suppplier is null, it
+   * replaces any previously registered supplier. If the passed in supplier is null, it
    * will remove any existing supplier
    * @return the previously registered supplier, or null if there was no previously registered supplier
    * @throws IllegalArgumentException
@@ -543,7 +543,7 @@ public interface Statistics {
    * @param id a statistic id obtained with {@link #nameToId}
    * or {@link StatisticsType#nameToId}.
    * @param supplier a callback that will return the value of the stat. This
-   * replaces any previously registered supplier. If the passed in suppplier is null, it
+   * replaces any previously registered supplier. If the passed in supplier is null, it
    * will remove any existing supplier
    * @return the previously registered supplier, or null if there was no previously registered supplier
    * @throws IllegalArgumentException If the id is invalid.
@@ -565,9 +565,9 @@ public interface Statistics {
    * <p>
    * Get methods are not guaranteed to recompute a new value, they may return
    * the last sampled value
-   * @param name the nane of the statistic to update
+   * @param name the name of the statistic to update
    * @param supplier a callback that will return the value of the stat. This
-   * replaces any previously registered supplier. If the passed in suppplier is null, it
+   * replaces any previously registered supplier. If the passed in supplier is null, it
    * will remove any existing supplier
    * @return the previously registered supplier, or null if there was no previously registered supplier
    * @throws IllegalArgumentException
@@ -594,7 +594,7 @@ public interface Statistics {
    * the last sampled value
    * @param descriptor the descriptor of the statistic to update
    * @param supplier a callback that will return the value of the stat. This
-   * replaces any previously registered supplier. If the passed in suppplier is null, it
+   * replaces any previously registered supplier. If the passed in supplier is null, it
    * will remove any existing supplier
    * @return the previously registered supplier, or null if there was no previously registered supplier
    * @throws IllegalArgumentException
@@ -622,7 +622,7 @@ public interface Statistics {
    * @param id a statistic id obtained with {@link #nameToId}
    * or {@link StatisticsType#nameToId}.
    * @param supplier a callback that will return the value of the stat. This
-   * replaces any previously registered supplier. If the passed in suppplier is null, it
+   * replaces any previously registered supplier. If the passed in supplier is null, it
    * will remove any existing supplier
    * @return the previously registered supplier, or null if there was no previously registered supplier
    * @throws IllegalArgumentException If the id is invalid.
@@ -644,9 +644,9 @@ public interface Statistics {
    * <p>
    * Get methods are not guaranteed to recompute a new value, they may return
    * the last sampled value
-   * @param name the nane of the statistic to update
+   * @param name the name of the statistic to update
    * @param supplier a callback that will return the value of the stat. This
-   * replaces any previously registered supplier. If the passed in suppplier is null, it
+   * replaces any previously registered supplier. If the passed in supplier is null, it
    * will remove any existing supplier
    * @return the previously registered supplier, or null if there was no previously registered supplier
    * @throws IllegalArgumentException
@@ -674,7 +674,7 @@ public interface Statistics {
    * the last sampled value
    * @param descriptor the descriptor of the statistic to update
    * @param supplier a callback that will return the value of the stat. This
-   * replaces any previously registered supplier. If the passed in suppplier is null, it
+   * replaces any previously registered supplier. If the passed in supplier is null, it
    * will remove any existing supplier
    * @return the previously registered supplier, or null if there was no previously registered supplier
    * @throws IllegalArgumentException

@@ -16,10 +16,10 @@
  */
 package com.gemstone.gemfire.internal.security.shiro;
 
-import java.security.Principal;
+import java.io.Serializable;
 import java.util.Properties;
 
-import org.apache.geode.security.GeodePermission;
+import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -31,7 +31,7 @@ import org.apache.shiro.authz.Permission;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 
 public class CustomAuthRealm extends AuthorizingRealm {
@@ -57,7 +57,7 @@ public class CustomAuthRealm extends AuthorizingRealm {
    * @param securityProperties the security properties to initialize SecurityManager with
    */
   public CustomAuthRealm(String authenticatorFactory, Properties securityProperties) {
-    this.securityManager = GeodeSecurityUtil.getObjectOfTypeFromClassName(authenticatorFactory, SecurityManager.class);
+    this.securityManager = SecurityService.getObjectOfTypeFromClassName(authenticatorFactory, SecurityManager.class);
     this.securityManager.init(securityProperties);
   }
 
@@ -71,9 +71,13 @@ public class CustomAuthRealm extends AuthorizingRealm {
     credentialProps.put(ResourceConstants.USER_NAME, username);
     credentialProps.put(ResourceConstants.PASSWORD, password);
 
-    Principal principal  = securityManager.authenticate(credentialProps);
+    Serializable principal  = securityManager.authenticate(credentialProps);
 
-    return new SimpleAuthenticationInfo(principal, authToken.getPassword(), REALM_NAME);
+    try {
+      return new SimpleAuthenticationInfo(principal, authToken.getPassword(), REALM_NAME);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("failed for " + username + " " + password, e);
+    }
   }
 
   @Override
@@ -84,8 +88,8 @@ public class CustomAuthRealm extends AuthorizingRealm {
 
   @Override
   public boolean isPermitted(PrincipalCollection principals, Permission permission) {
-    GeodePermission context = (GeodePermission) permission;
-    Principal principal = (Principal) principals.getPrimaryPrincipal();
+    ResourcePermission context = (ResourcePermission) permission;
+    Serializable principal = (Serializable)principals.getPrimaryPrincipal();
     return securityManager.authorize(principal, context);
   }
 

@@ -59,11 +59,13 @@ import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.*;
 
 import static com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil.replaceStrings;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_REQUEST;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_RESPONSE;
 
+@SuppressWarnings("StatementWithEmptyBody")
 public class JGroupsMessenger implements Messenger {
 
   private static final Logger logger = Services.getLogger();
@@ -79,26 +81,26 @@ public class JGroupsMessenger implements Messenger {
   private static final String JGROUPS_MCAST_CONFIG_FILE_NAME = "com/gemstone/gemfire/distributed/internal/membership/gms/messenger/jgroups-mcast.xml";
 
   /** JG magic numbers for types added to the JG ClassConfigurator */
-  public static final short JGROUPS_TYPE_JGADDRESS = 2000;
-  public static final short JGROUPS_PROTOCOL_TRANSPORT = 1000;
+  private static final short JGROUPS_TYPE_JGADDRESS = 2000;
+  private static final short JGROUPS_PROTOCOL_TRANSPORT = 1000;
 
   public static boolean THROW_EXCEPTION_ON_START_HOOK;
 
-  String jgStackConfig;
+  private String jgStackConfig;
   
   JChannel myChannel;
   InternalDistributedMember localAddress;
   JGAddress jgAddress;
-  Services services;
+  private Services services;
 
   /** handlers that receive certain classes of messages instead of the Manager */
-  Map<Class, MessageHandler> handlers = new ConcurrentHashMap<Class, MessageHandler>();
+  private final Map<Class, MessageHandler> handlers = new ConcurrentHashMap<>();
   
   private volatile NetView view;
 
-  private GMSPingPonger pingPonger = new GMSPingPonger();
+  private final GMSPingPonger pingPonger = new GMSPingPonger();
   
-  protected AtomicLong pongsReceived = new AtomicLong(0);
+  protected final AtomicLong pongsReceived = new AtomicLong(0);
   
   /**
    * A set that contains addresses that we have logged JGroups IOExceptions for in the
@@ -106,7 +108,7 @@ public class JGroupsMessenger implements Messenger {
    * reduces the amount of suspect processing initiated by IOExceptions and the
    * amount of exceptions logged
    */
-  private Set<Address> addressesWithIoExceptionsProcessed = Collections.synchronizedSet(new HashSet<Address>());
+  private final Set<Address> addressesWithIoExceptionsProcessed = Collections.synchronizedSet(new HashSet<Address>());
   
   static {
     // register classes that we've added to jgroups that are put on the wire
@@ -132,9 +134,9 @@ public class JGroupsMessenger implements Messenger {
     }
     System.setProperty("jgroups.resolve_dns", String.valueOf(!b));
 
-    InputStream is= null;
+    InputStream is;
 
-    String r = null;
+    String r;
     if (transport.isMcastEnabled()) {
       r = JGROUPS_MCAST_CONFIG_FILE_NAME;
     } else {
@@ -149,7 +151,7 @@ public class JGroupsMessenger implements Messenger {
     try {
       //PlainConfigurator config = PlainConfigurator.getInstance(is);
       //properties = config.getProtocolStackString();
-      StringBuffer sb = new StringBuffer(3000);
+      StringBuilder sb = new StringBuilder(3000);
       BufferedReader br;
       br = new BufferedReader(new InputStreamReader(is, "US-ASCII"));
       String input;
@@ -238,7 +240,7 @@ public class JGroupsMessenger implements Messenger {
         myChannel = (JChannel)oldChannel;
         // scrub the old channel
         ViewId vid = new ViewId(new JGAddress(), 0);
-        View jgv = new View(vid, new ArrayList<Address>());
+        View jgv = new View(vid, new ArrayList<>());
         this.myChannel.down(new Event(Event.VIEW_CHANGE, jgv));
         UUID logicalAddress = (UUID)myChannel.getAddress();
         if (logicalAddress instanceof JGAddress) {
@@ -334,12 +336,10 @@ public class JGroupsMessenger implements Messenger {
     if (this.jgAddress.getVmViewId() < 0) {
       this.jgAddress.setVmViewId(this.localAddress.getVmViewId());
     }
-    List<JGAddress> mbrs = new ArrayList<JGAddress>(v.size());
-    for (InternalDistributedMember idm: v.getMembers()) {
-      mbrs.add(new JGAddress(idm));
-    }
+    List<JGAddress> mbrs = new ArrayList<>(v.size());
+    mbrs.addAll(v.getMembers().stream().map(JGAddress::new).collect(Collectors.toList()));
     ViewId vid = new ViewId(new JGAddress(v.getCoordinator()), v.getViewId());
-    View jgv = new View(vid, new ArrayList<Address>(mbrs));
+    View jgv = new View(vid, new ArrayList<>(mbrs));
     logger.trace("installing JGroups view: {}", jgv);
     this.myChannel.down(new Event(Event.VIEW_CHANGE, jgv));
 
@@ -353,6 +353,7 @@ public class JGroupsMessenger implements Messenger {
    * recipient.<p>
    * see Transport._send()
    */
+  @SuppressWarnings("UnusedParameters")
   public void handleJGroupsIOException(IOException e, Address dest) {
     if (services.getManager().shutdownInProgress()) { // GEODE-634 - don't log IOExceptions during shutdown
       return;
@@ -473,6 +474,7 @@ public class JGroupsMessenger implements Messenger {
     long pongsSnapshot = pongsReceived.longValue();
     JGAddress dest = null;
     try {
+      //noinspection ConstantConditions
       pingPonger.sendPingMessage(myChannel, jgAddress, dest);
     } catch (Exception e) {
       logger.warn("unable to send multicast message: {}", (jgAddress==null? "multicast recipients":jgAddress),
@@ -538,9 +540,7 @@ public class JGroupsMessenger implements Messenger {
       long now = System.currentTimeMillis();
       if (!warned && now >= warnTime) {
         warned = true;
-        if (senderSeqnos != null) {
-          received = String.valueOf(senderSeqnos[0]);
-        }
+        received = String.valueOf(senderSeqnos[0]);
         logger.warn("{} seconds have elapsed while waiting for multicast messages from {}.  Received {} but expecting at least {}.",
             Long.toString((warnTime-startTime)/1000L), sender, received, seqno);
       }
@@ -561,7 +561,7 @@ public class JGroupsMessenger implements Messenger {
     return send(msg, true);
   }
     
-  public Set<InternalDistributedMember> send(DistributionMessage msg, boolean reliably) {
+  private Set<InternalDistributedMember> send(DistributionMessage msg, boolean reliably) {
       
     // perform the same jgroups messaging as in 8.2's GMSMembershipManager.send() method
 
@@ -608,7 +608,7 @@ public class JGroupsMessenger implements Messenger {
       Message jmsg = createJGMessage(msg, local, Version.CURRENT_ORDINAL);
       theStats.endMsgSerialization(startSer);
 
-      Exception problem = null;
+      Exception problem;
       try {
         jmsg.setTransientFlag(TransientFlag.DONT_LOOPBACK);
         if (!reliably) {
@@ -655,7 +655,7 @@ public class JGroupsMessenger implements Messenger {
 
         // Construct the list
         calculatedLen = v.size();
-        calculatedMembers = new LinkedList<GMSMember>();
+        calculatedMembers = new LinkedList<>();
         for (int i = 0; i < calculatedLen; i ++) {
           InternalDistributedMember m = (InternalDistributedMember)v.get(i);
           calculatedMembers.add((GMSMember)m.getNetMember());
@@ -663,7 +663,7 @@ public class JGroupsMessenger implements Messenger {
       } // send to all
       else { // send to explicit list
         calculatedLen = len;
-        calculatedMembers = new LinkedList<GMSMember>();
+        calculatedMembers = new LinkedList<>();
         for (int i = 0; i < calculatedLen; i ++) {
           calculatedMembers.add((GMSMember)destinations[i].getNetMember());
         }
@@ -671,10 +671,9 @@ public class JGroupsMessenger implements Messenger {
       Int2ObjectOpenHashMap<Message> messages = new Int2ObjectOpenHashMap<>();
       long startSer = theStats.startMsgSerialization();
       boolean firstMessage = true;
-      for (Iterator<GMSMember> it=calculatedMembers.iterator(); it.hasNext(); ) {
-        GMSMember mbr = it.next();
+      for (GMSMember mbr : calculatedMembers) {
         short version = mbr.getVersionOrdinal();
-        if ( !messages.containsKey(version) ) {
+        if (!messages.containsKey(version)) {
           Message jmsg = createJGMessage(msg, local, version);
           messages.put(version, jmsg);
           if (firstMessage) {
@@ -689,7 +688,7 @@ public class JGroupsMessenger implements Messenger {
       for (GMSMember mbr: calculatedMembers) {
         JGAddress to = new JGAddress(mbr);
         short version = mbr.getVersionOrdinal();
-        Message jmsg = (Message)messages.get(version);
+        Message jmsg = messages.get(version);
         Exception problem = null;
         try {
           Message tmp = (i < (calculatedLen-1)) ? jmsg.copy(true) : jmsg;
@@ -732,11 +731,10 @@ public class JGroupsMessenger implements Messenger {
     if (msg.forAll()) {
       return Collections.emptySet();
     }
-    Set<InternalDistributedMember> result = new HashSet<InternalDistributedMember>();
+    Set<InternalDistributedMember> result = new HashSet<>();
     NetView newView = this.view;
     if (newView != null && newView != oldView) {
-      for (int i = 0; i < destinations.length; i ++) {
-        InternalDistributedMember d = destinations[i];
+      for (InternalDistributedMember d : destinations) {
         if (!newView.contains(d)) {
           logger.debug("messenger: member has left the view: {}  view is now {}", d, newView);
           result.add(d);
@@ -829,7 +827,7 @@ public class JGroupsMessenger implements Messenger {
       return null;
     }
 
-    InternalDistributedMember sender = null;
+    InternalDistributedMember sender;
 
     Exception problem = null;
     byte[] buf = jgmsg.getRawBuffer();
@@ -916,12 +914,10 @@ public class JGroupsMessenger implements Messenger {
         try {
           Digest digest = new Digest();
           digest.readFrom(dis);
-          if (digest != null) {
-            logger.trace("installing JGroups message digest {}", digest);
-            this.myChannel.getProtocolStack()
-                .getTopProtocol().down(new Event(Event.MERGE_DIGEST, digest));
-            jrsp.setMessengerData(null);
-          }
+          logger.trace("installing JGroups message digest {}", digest);
+          this.myChannel.getProtocolStack()
+              .getTopProtocol().down(new Event(Event.MERGE_DIGEST, digest));
+          jrsp.setMessengerData(null);
         } catch (Exception e) {
           logger.fatal("Unable to read JGroups messaging digest", e);
         }
@@ -961,12 +957,13 @@ public class JGroupsMessenger implements Messenger {
   /**
    * returns the member ID for the given GMSMember object
    */
+  @SuppressWarnings("UnusedParameters")
   private InternalDistributedMember getMemberFromView(GMSMember jgId, short version) {
     NetView v = services.getJoinLeave().getView();
     
     if (v != null) {
       for (InternalDistributedMember m: v.getMembers()) {
-        if (((GMSMember)m.getNetMember()).equals(jgId)) {
+        if (m.getNetMember().equals(jgId)) {
           return m;
         }
       }
@@ -1090,7 +1087,7 @@ public class JGroupsMessenger implements Messenger {
         }
       }
       if (h == null) {
-        h = (MessageHandler)services.getManager();
+        h = services.getManager();
       }
       return h;
     }

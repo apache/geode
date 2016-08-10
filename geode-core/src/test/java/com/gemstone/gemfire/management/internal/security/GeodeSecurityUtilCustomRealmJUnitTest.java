@@ -23,6 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
@@ -38,7 +39,7 @@ public class GeodeSecurityUtilCustomRealmJUnitTest extends GeodeSecurityUtilWith
   public static void beforeClass() throws Exception {
     props.put(SampleSecurityManager.SECURITY_JSON, "com/gemstone/gemfire/management/internal/security/shiro-ini.json");
     props.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
-    GeodeSecurityUtil.initSecurity(props);
+    IntegratedSecurityService.getSecurityService().initSecurity(props);
   }
 
 }

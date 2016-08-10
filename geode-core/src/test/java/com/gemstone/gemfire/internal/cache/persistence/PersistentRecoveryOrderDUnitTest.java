@@ -87,6 +87,7 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * This is a test of how persistent distributed
@@ -1286,7 +1287,8 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
       }
     });
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-1703: fails assertion: Region not created within30000
   @Test
   public void testCrashDuringPreparePersistentId() throws Exception { 
     Host host = Host.getHost(0);

@@ -232,7 +232,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     getRegion().localDestroyRegion();
   }
 
-  public synchronized void put(Object event) throws CacheException {
+  public synchronized boolean put(Object event) throws CacheException {
     GatewaySenderEventImpl eventImpl = (GatewaySenderEventImpl)event;
     final Region r = eventImpl.getRegion();
     final boolean isPDXRegion = (r instanceof DistributedRegion && r.getName()
@@ -249,9 +249,11 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 //      else {
 //        synchronized (this) {
           putAndGetKey(event);
+          return true;
         //}
       //}
     }
+    return false;    
   }
 
   private long putAndGetKey(Object object) throws CacheException {

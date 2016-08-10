@@ -56,14 +56,14 @@ import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-public class RestAPITestBase extends JUnit4DistributedTestCase {
+class RestAPITestBase extends JUnit4DistributedTestCase {
 
   protected Cache cache = null;
-  protected List<String> restURLs = new ArrayList();
-  protected VM vm0 = null;
-  protected VM vm1 = null;
-  protected VM vm2 = null;
-  protected VM vm3 = null;
+  List<String> restURLs = new ArrayList<>();
+  VM vm0 = null;
+  VM vm1 = null;
+  VM vm2 = null;
+  VM vm3 = null;
 
   @Override
   public final void postSetUp() throws Exception {
@@ -83,7 +83,7 @@ public class RestAPITestBase extends JUnit4DistributedTestCase {
     postSetUpRestAPITestBase();
   }
 
-  protected void postSetUpRestAPITestBase() throws Exception {
+  private void postSetUpRestAPITestBase() throws Exception {
   }
 
   /**
@@ -107,7 +107,7 @@ public class RestAPITestBase extends JUnit4DistributedTestCase {
     }
   }
 
-  public String createCacheWithGroups(final String hostName, final String groups) {
+  String createCacheWithGroups(final String hostName, final String groups, final String context) {
     RestAPITestBase test = new RestAPITestBase();
 
     final int servicePort = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -125,17 +125,20 @@ public class RestAPITestBase extends JUnit4DistributedTestCase {
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
 
-    String restEndPoint = "http://" + hostName + ":" + servicePort + "/gemfire-api/v1";
-    return restEndPoint;
+    return "http://" + hostName + ":" + servicePort + context + "/v1";
   }
 
-  protected int getInvocationCount() {
+  private int getInvocationCount() {
     RestFunctionTemplate function = (RestFunctionTemplate) FunctionService.getFunction(getFunctionID());
     return function.invocationCount;
   }
 
-  protected CloseableHttpResponse executeFunctionThroughRestCall(String function, String regionName, String filter, String jsonBody, String groups,
-                                                                 String members) {
+  CloseableHttpResponse executeFunctionThroughRestCall(String function,
+                                                       String regionName,
+                                                       String filter,
+                                                       String jsonBody,
+                                                       String groups,
+                                                       String members) {
     System.out.println("Entering executeFunctionThroughRestCall");
     CloseableHttpResponse value = null;
     try {
@@ -153,20 +156,24 @@ public class RestAPITestBase extends JUnit4DistributedTestCase {
     return value;
   }
 
-  private HttpPost createHTTPPost(String function, String regionName, String filter, int restUrlIndex, String groups, String members, String jsonBody) {
+  private HttpPost createHTTPPost(String function,
+                                  String regionName,
+                                  String filter,
+                                  int restUrlIndex,
+                                  String groups,
+                                  String members,
+                                  String jsonBody) {
     StringBuilder restURLBuilder = new StringBuilder();
-    restURLBuilder.append(restURLs.get(restUrlIndex) + "/functions/" + function+"?");
+    restURLBuilder.append(restURLs.get(restUrlIndex)).append("/functions/").append(function).append("?");
     if (regionName != null && !regionName.isEmpty()) {
-      restURLBuilder.append("onRegion=" + regionName);
-    }
-    else if (groups != null && !groups.isEmpty()) {
-      restURLBuilder.append("onGroups=" + groups);
-    }
-    else if (members != null && !members.isEmpty()) {
-      restURLBuilder.append("onMembers=" + members);
+      restURLBuilder.append("onRegion=").append(regionName);
+    } else if (groups != null && !groups.isEmpty()) {
+      restURLBuilder.append("onGroups=").append(groups);
+    } else if (members != null && !members.isEmpty()) {
+      restURLBuilder.append("onMembers=").append(members);
     }
     if (filter != null && !filter.isEmpty()) {
-      restURLBuilder.append("&filter=" + filter);
+      restURLBuilder.append("&filter=").append(filter);
     }
     String restString = restURLBuilder.toString();
     HttpPost post = new HttpPost(restString);
@@ -183,7 +190,7 @@ public class RestAPITestBase extends JUnit4DistributedTestCase {
     throw new RuntimeException("This method should be overridden");
   }
 
-  protected void assertHttpResponse(CloseableHttpResponse response, int httpCode, int expectedServerResponses) {
+  void assertHttpResponse(CloseableHttpResponse response, int httpCode, int expectedServerResponses) {
     assertEquals(httpCode, response.getStatusLine().getStatusCode());
 
     //verify response has body flag, expected is true.
@@ -204,10 +211,9 @@ public class RestAPITestBase extends JUnit4DistributedTestCase {
     try {
       HttpEntity entity = response.getEntity();
       InputStream content = entity.getContent();
-      BufferedReader reader = new BufferedReader(new InputStreamReader(
-              content));
+      BufferedReader reader = new BufferedReader(new InputStreamReader(content));
       String line;
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       while ((line = reader.readLine()) != null) {
         sb.append(line);
       }
@@ -218,22 +224,22 @@ public class RestAPITestBase extends JUnit4DistributedTestCase {
     return "";
   }
 
-  protected void assertCorrectInvocationCount(int expectedInvocationCount, VM... vms) {
+  void assertCorrectInvocationCount(int expectedInvocationCount, VM... vms) {
     int count = 0;
-    for (int i = 0; i < vms.length; i++) {
-      count += vms[i].invoke("getInvocationCount",() -> getInvocationCount());
+    for (final VM vm : vms) {
+      count += vm.invoke("getInvocationCount", () -> getInvocationCount());
     }
-    assertEquals(expectedInvocationCount,count);
+    assertEquals(expectedInvocationCount, count);
   }
 
-  protected void resetInvocationCount() {
+  private void resetInvocationCount() {
     RestFunctionTemplate f = (RestFunctionTemplate) FunctionService.getFunction(getFunctionID());
     f.invocationCount = 0;
   }
 
-  protected void resetInvocationCounts(VM... vms) {
-    for (int i = 0; i < vms.length; i++) {
-      vms[i].invoke("resetInvocationCount", () -> resetInvocationCount());
+  void resetInvocationCounts(VM... vms) {
+    for (final VM vm : vms) {
+      vm.invoke("resetInvocationCount", () -> resetInvocationCount());
     }
   }
 }

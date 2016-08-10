@@ -18,12 +18,14 @@ package com.gemstone.gemfire.security;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Properties;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
@@ -37,9 +39,12 @@ public class IntegratedSecurityCacheLifecycleIntegrationTest {
 
   private Properties securityProps;
   private Cache cache;
+  private SecurityService securityService;
 
   @Before
   public void before() {
+    securityService = IntegratedSecurityService.getSecurityService();
+
     securityProps = new Properties();
     securityProps.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName());
 
@@ -60,7 +65,7 @@ public class IntegratedSecurityCacheLifecycleIntegrationTest {
 
   @Test
   public void initAndCloseTest () {
-    SpySecurityManager ssm = (SpySecurityManager)GeodeSecurityUtil.getSecurityManager();
+    SpySecurityManager ssm = (SpySecurityManager)securityService.getSecurityManager();
     assertThat(ssm.initInvoked).isEqualTo(1);
     cache.close();
     assertThat(ssm.closeInvoked).isEqualTo(1);

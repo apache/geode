@@ -48,7 +48,6 @@ public class ConcurrentWANPropogation_2_DUnitTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  @Category(FlakyTest.class) // GEODE-1121: random ports, async behavior, time sensitive, waitForCriterion, possibly memory intensive
   @Test
   public void testSerialReplicatedWanWithOverflow() {
 

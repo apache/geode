@@ -98,7 +98,7 @@ public class ServerToClientFunctionResultSender65 extends
       }
       this.msg.sendChunk(this.sc);
       this.sc.setAsTrue(Command.RESPONDED);
-      FunctionStats.getFunctionStats(fn.getId(), null).incResultsReturned();
+      FunctionStats.getFunctionStats(fn.getId()).incResultsReturned();
     }
     catch (IOException ex) {
       if (isOkayToSendResult()) {
@@ -155,7 +155,7 @@ public class ServerToClientFunctionResultSender65 extends
       }
       this.msg.sendChunk(this.sc);
       this.sc.setAsTrue(Command.RESPONDED);
-      FunctionStats.getFunctionStats(fn.getId(), null).incResultsReturned();
+      FunctionStats.getFunctionStats(fn.getId()).incResultsReturned();
     }
     catch (IOException ex) {
       if (isOkayToSendResult()) {
@@ -196,7 +196,7 @@ public class ServerToClientFunctionResultSender65 extends
       this.msg.setNumberOfParts(1);
       this.msg.addObjPart(result);
       this.msg.sendChunk(this.sc);
-      FunctionStats.getFunctionStats(fn.getId(), null).incResultsReturned();
+      FunctionStats.getFunctionStats(fn.getId()).incResultsReturned();
     }
     catch (IOException ex) {
       if (isOkayToSendResult()) {
@@ -237,7 +237,7 @@ public class ServerToClientFunctionResultSender65 extends
       this.msg.setNumberOfParts(1);
       this.msg.addObjPart(result);
       this.msg.sendChunk(this.sc);
-      FunctionStats.getFunctionStats(fn.getId(), null).incResultsReturned();
+      FunctionStats.getFunctionStats(fn.getId()).incResultsReturned();
     }
     catch (IOException ex) {
       if (isOkayToSendResult()) {

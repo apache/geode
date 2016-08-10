@@ -174,9 +174,9 @@ task createVersionPropertiesFile {
 
   doLast {
     def props = [
-      "Product-Name"      : "Apache Geode (incubating)",
+      "Product-Name"      : productName,
       "Product-Version"   : version,
-      "Build-Id"          : "${System.env.USER} ${new Date().format('MMddyy')}".toString(),
+      "Build-Id"          : "${System.env.USER} ${buildId}".toString(),
       "Build-Date"        : new Date().format('yyyy-MM-dd HH:mm:ss Z'),
       "Build-Platform"    : "${System.properties['os.name']} ${System.properties['os.version']} ${System.properties['os.arch']}".toString(),
       "Build-Java-Version": System.properties['java.version']

@@ -14,20 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
-import java.util.Set;
 
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.FixedPartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionResolver;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.internal.GetClientPartitionAttributesOp;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionHelper;
-import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
@@ -35,7 +30,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 /**
  * {@link Command} for {@link GetClientPartitionAttributesOp} operation
@@ -49,16 +43,12 @@ public class GetClientPartitionAttributesCommand extends BaseCommand {
     return singleton;
   }
 
-  private GetClientPartitionAttributesCommand() {
-  }
-
   @SuppressWarnings("unchecked")
   @Override
   public void cmdExecute(Message msg, ServerConnection servConn, long start)
     throws IOException, ClassNotFoundException, InterruptedException
   {
     String regionFullPath = null;
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
     regionFullPath = msg.getPart(0).getString();
     String errMessage = "";
     if (regionFullPath == null) {
@@ -71,7 +61,7 @@ public class GetClientPartitionAttributesCommand extends BaseCommand {
       servConn.setAsTrue(RESPONDED);
       return;
     }
-    Region region = crHelper.getRegion(regionFullPath);
+    Region region = servConn.getCache().getRegion(regionFullPath);
     if (region == null) {
       logger.warn(LocalizedMessage
         .create(LocalizedStrings.GetClientPartitionAttributes_REGION_NOT_FOUND_FOR_SPECIFIED_REGION_PATH,
@@ -87,7 +77,6 @@ public class GetClientPartitionAttributesCommand extends BaseCommand {
     }
 
     try {
-      GeodeSecurityUtil.authorizeClusterRead();
       Message responseMsg = servConn.getResponseMessage();
       responseMsg.setTransactionId(msg.getTransactionId());
       responseMsg

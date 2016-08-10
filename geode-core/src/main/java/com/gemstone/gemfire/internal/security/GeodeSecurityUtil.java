@@ -18,18 +18,20 @@ package com.gemstone.gemfire.internal.security;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
+import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.security.AccessController;
-import java.security.Principal;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.lang.SerializationException;
 import org.apache.commons.lang.StringUtils;
-import org.apache.geode.security.GeodePermission;
-import org.apache.geode.security.GeodePermission.Operation;
-import org.apache.geode.security.GeodePermission.Resource;
 import org.apache.geode.security.PostProcessor;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.security.SecurityManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
@@ -44,10 +46,13 @@ import org.apache.shiro.subject.support.SubjectThreadState;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.util.ThreadState;
 
+import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.internal.ClassLoadUtil;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.security.shiro.CustomAuthRealm;
 import com.gemstone.gemfire.internal.security.shiro.ShiroPrincipal;
+import com.gemstone.gemfire.internal.util.BlobHelper;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
@@ -55,7 +60,7 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
 
 public class GeodeSecurityUtil {
 
-  private static Logger logger = LogService.getLogger();
+  private static Logger logger = LogService.getLogger(LogService.SECURITY_LOGGER_NAME);
 
   private static PostProcessor postProcessor;
   private static SecurityManager securityManager;
@@ -248,10 +253,10 @@ public class GeodeSecurityUtil {
 
   private static void authorize(String resource, String operation, String regionName, String key) {
     regionName = StringUtils.stripStart(regionName, "/");
-    authorize(new GeodePermission(resource, operation, regionName, key));
+    authorize(new ResourcePermission(resource, operation, regionName, key));
   }
 
-  public static void authorize(GeodePermission context) {
+  public static void authorize(ResourcePermission context) {
     Subject currentUser = getSubject();
     if (currentUser == null) {
       return;
@@ -360,17 +365,44 @@ public class GeodeSecurityUtil {
     return (isIntegratedSecurity && postProcessor != null);
   }
 
-  public static Object postProcess(String regionPath, Object key, Object result){
-    if(postProcessor == null)
-      return result;
+  public static Object postProcess(String regionPath, Object key, Object value, boolean valueIsSerialized){
+    return postProcess(null, regionPath, key, value, valueIsSerialized);
+  }
 
-    Subject subject = getSubject();
+  public static Object postProcess(Serializable principal, String regionPath, Object key, Object value, boolean valueIsSerialized) {
+    if (!needPostProcess())
+      return value;
 
-    if(subject == null)
-      return result;
+    if (principal == null) {
+      Subject subject = getSubject();
+      if (subject == null)
+        return value;
+      principal = (Serializable) subject.getPrincipal();
+    }
 
     String regionName = StringUtils.stripStart(regionPath, "/");
-    return postProcessor.processRegionValue((Principal)subject.getPrincipal(), regionName, key,  result);
+    Object newValue = null;
+
+    // if the data is a byte array, but the data itself is supposed to be an object, we need to desearized it before we pass
+    // it to the callback.
+    if (valueIsSerialized && value instanceof byte[]) {
+      try {
+        Object oldObj = EntryEventImpl.deserialize((byte[]) value);
+        Object newObj = postProcessor.processRegionValue(principal, regionName, key,  oldObj);
+        newValue = BlobHelper.serializeToBlob(newObj);
+      } catch (IOException|SerializationException e) {
+        throw new GemFireIOException("Exception de/serializing entry value", e);
+      }
+    }
+    else {
+      newValue = postProcessor.processRegionValue(principal, regionName, key, value);
+    }
+
+    return newValue;
+  }
+
+  private static void checkSameClass(Object obj1, Object obj2){
+
   }
 
   /**
@@ -439,6 +471,10 @@ public class GeodeSecurityUtil {
 
   public static SecurityManager getSecurityManager(){
     return securityManager;
+  }
+
+  public static PostProcessor getPostProcessor() {
+    return postProcessor;
   }
 
   public static boolean isClientSecurityRequired() {

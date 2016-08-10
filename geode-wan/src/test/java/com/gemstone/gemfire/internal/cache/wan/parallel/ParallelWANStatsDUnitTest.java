@@ -273,7 +273,6 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
    * 
    * @throws Exception
    */
-  @Category(FlakyTest.class) // GEODE-977: random ports, time sensitive, waitForCriterion
   @Test
   public void testParallePropagationWithRemoteRegionDestroy() throws Exception {
     addIgnoredException("RegionDestroyedException");
@@ -281,11 +280,10 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
+    createReceiverPR(vm2, 0);
     createReceiverInVMs(vm2);
 
     createSenders(lnPort);
-
-    createReceiverPR(vm2, 0);
 
     vm2.invoke(() -> WANTestBase.addCacheListenerAndDestroyRegion(
         testName));
@@ -301,7 +299,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     vm4.invoke(() -> WANTestBase.validateRegionSize(
         testName, 2000 ));
     
-    ArrayList<Integer> v4List = (ArrayList<Integer>)vm5.invoke(() -> WANTestBase.getSenderStats( "ln", -1));
+    ArrayList<Integer> v4List = (ArrayList<Integer>)vm4.invoke(() -> WANTestBase.getSenderStats( "ln", -1));
     ArrayList<Integer> v5List = (ArrayList<Integer>)vm5.invoke(() -> WANTestBase.getSenderStats( "ln", -1));
     ArrayList<Integer> v6List = (ArrayList<Integer>)vm6.invoke(() -> WANTestBase.getSenderStats( "ln", -1));
     ArrayList<Integer> v7List = (ArrayList<Integer>)vm7.invoke(() -> WANTestBase.getSenderStats( "ln", -1));
@@ -311,7 +309,6 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     assertTrue(v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5) >= 1); //batches redistributed
   }
 
-  @Category(FlakyTest.class) // GEODE-977: random ports and relies on stats
   @Test
   public void testParallelPropogationWithFilter() throws Exception {
 
@@ -319,9 +316,14 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2,lnPort ));
 
     createCacheInVMs(nyPort, vm2);
+
+    createReceiverPR(vm2, 1);
+
     createReceiverInVMs(vm2);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+
+    createSenderPRs(0);
 
     vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
         true, 100, 10, false, false,
@@ -336,11 +338,9 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
       true, 100, 10, false, false,
       new MyGatewayEventFilter(), true ));
   
-    createSenderPRs(0);
-
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
-    createReceiverPR(vm2, 1);
+
     
     vm4.invoke(() -> WANTestBase.doPuts( testName, 1000 ));
 
@@ -351,7 +351,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     ArrayList<Integer> v5List = (ArrayList<Integer>)vm5.invoke(() -> WANTestBase.getSenderStats( "ln", 0 ));
     ArrayList<Integer> v6List = (ArrayList<Integer>)vm6.invoke(() -> WANTestBase.getSenderStats( "ln", 0 ));
     ArrayList<Integer> v7List = (ArrayList<Integer>)vm7.invoke(() -> WANTestBase.getSenderStats( "ln", 0 ));
-    
+
     assertEquals(0, v4List.get(0) + v5List.get(0) + v6List.get(0) + v7List.get(0) ); //queue size
     assertEquals(1000, v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)); //eventsReceived
     assertEquals(900, v4List.get(2) + v5List.get(2) + v6List.get(2) + v7List.get(2)); //events queued

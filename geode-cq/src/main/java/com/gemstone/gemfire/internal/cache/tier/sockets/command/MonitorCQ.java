@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
-
 import java.io.IOException;
 
 import com.gemstone.gemfire.cache.query.CqException;
@@ -27,7 +26,6 @@ import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 public class MonitorCQ extends BaseCQCommand {
 
@@ -74,7 +72,7 @@ public class MonitorCQ extends BaseCQCommand {
       logger.debug("{}: Received MonitorCq request from {} op: {}{}", servConn.getName(), servConn.getSocketString(), op, (regionName != null) ? " RegionName: " + regionName : "");
     }
 
-    GeodeSecurityUtil.authorizeClusterRead();
+    this.securityService.authorizeClusterRead();
 
     try {
       CqService cqService = crHelper.getCache().getCqService();

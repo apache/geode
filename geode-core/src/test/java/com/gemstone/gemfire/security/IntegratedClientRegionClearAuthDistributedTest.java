@@ -28,7 +28,7 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
-public class IntegratedClientRegionClearAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
+public class IntegratedClientRegionClearAuthDistributedTest extends AbstractSecureServerDUnitTest {
 
   @Test
   public void testRegionClear() throws InterruptedException {

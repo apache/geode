@@ -21,7 +21,7 @@ import com.gemstone.gemfire.Instantiator;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.modules.session.catalina.DeltaSession;
+import com.gemstone.gemfire.modules.session.catalina.DeltaSessionInterface;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -38,7 +38,7 @@ public class GatewayDeltaDestroyEvent extends AbstractGatewayDeltaEvent {
   }
 
   public void apply(Cache cache) {
-    Region<String, DeltaSession> region = getRegion(cache);
+    Region<String, DeltaSessionInterface> region = getRegion(cache);
     try {
       region.destroy(this.key);
       if (cache.getLogger().fineEnabled()) {

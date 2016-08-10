@@ -26,11 +26,9 @@ import java.util.StringTokenizer;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.internal.SocketCreator;
 
 public class GMSUtil {
-  static Logger logger = Services.getLogger();
   
   public static List<InetSocketAddress> parseLocators(String locatorsString, String bindAddress) {
     InetAddress addr = null;
@@ -49,11 +47,11 @@ public class GMSUtil {
   
   
   public static List<InetSocketAddress> parseLocators(String locatorsString, InetAddress bindAddress) {
-    List<InetSocketAddress> result=new ArrayList<InetSocketAddress>(2);
+    List<InetSocketAddress> result= new ArrayList<>(2);
     String host;
     int port;
     boolean checkLoopback = (bindAddress != null);
-    boolean isLoopback = (checkLoopback? bindAddress.isLoopbackAddress() : false);
+    boolean isLoopback = (checkLoopback && bindAddress.isLoopbackAddress());
 
     StringTokenizer parts=new StringTokenizer(locatorsString, ",");
     while(parts.hasMoreTokens()) {
@@ -87,7 +85,7 @@ public class GMSUtil {
         result.add(isa);
       }
       catch(NumberFormatException e) {
-        // this shouldln't happen because the config has already been parsed and
+        // this shouldn't happen because the config has already been parsed and
         // validated
       }
     }
@@ -100,7 +98,7 @@ public class GMSUtil {
    * given value
    */
   public static String replaceStrings(String properties, String property, String value) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     int start = 0;
     int index = properties.indexOf(property);
     while (index != -1) {
@@ -136,24 +134,4 @@ public class GMSUtil {
   }
   
   
-  /** compareTo for InetAddresses */
-  public static int compareAddresses(InetAddress one, InetAddress two) {
-    byte[] oneBytes = one.getAddress();
-    byte[] twoBytes = two.getAddress();
-
-    if (oneBytes != twoBytes) {
-      for (int i = 0; i < oneBytes.length; i++) {
-        if (i >= twoBytes.length)
-          return -1; // same as far as they go, but shorter...
-        if (oneBytes[i] < twoBytes[i])
-          return -1;
-        if (oneBytes[i] > twoBytes[i])
-          return 1;
-      }
-      if (oneBytes.length > twoBytes.length)
-        return 1; // same as far as they go, but longer...
-    }
-    return 0;
-  }
-
 }

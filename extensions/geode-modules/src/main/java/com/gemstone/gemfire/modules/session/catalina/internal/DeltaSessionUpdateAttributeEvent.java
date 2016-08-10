@@ -20,6 +20,7 @@ import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.Instantiator;
 import com.gemstone.gemfire.modules.session.catalina.DeltaSession;
+import com.gemstone.gemfire.modules.session.catalina.DeltaSessionInterface;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -48,7 +49,7 @@ public class DeltaSessionUpdateAttributeEvent implements DeltaSessionAttributeEv
     return this.attributeValue;
   }
 
-  public void apply(DeltaSession session) {
+  public void apply(DeltaSessionInterface session) {
     session.localUpdateAttribute(this.attributeName, this.attributeValue);
   }
 

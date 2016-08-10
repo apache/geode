@@ -152,6 +152,9 @@ public class DUnitLauncher {
 
     // inhibit banners to make logs smaller
     System.setProperty(InternalLocator.INHIBIT_DM_BANNER, "true");
+    
+    // restrict membership ports to be outside of AvailablePort's range
+    System.setProperty(DistributionConfig.RESTRICT_MEMBERSHIP_PORT_RANGE, "true");
 
     Runtime.getRuntime().addShutdownHook(new Thread() {
       public void run() {

@@ -95,8 +95,15 @@ public class TXLockRequest {
    */
   public void releaseDistributed() {
     if (this.distLockId != null) {
-      TXLockService txls = TXLockService.createDTLS();
-      txls.release(this.distLockId);
+      try {
+        TXLockService txls = TXLockService.createDTLS();
+        txls.release(this.distLockId);
+      } catch (IllegalStateException ignore) {
+        //IllegalStateException: TXLockService cannot be created 
+        //until connected to distributed system
+        //could be thrown if a jvm is disconnected from the ds, 
+        //and tries to createDTLS() during clean up
+      }
       this.distLockId = null;
     }
   }

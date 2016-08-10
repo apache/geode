@@ -66,12 +66,12 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
   @Override
   public final void postSetUpCliCommandTestBase() throws Exception {
     Properties managerDistributedSystemProperties = createDistributedSystemProperties(GEMFIRE_MANAGER_NAME);
-    HeadlessGfsh gfsh = setUpJmxManagerOnVm0ThenConnect(managerDistributedSystemProperties);
+    HeadlessGfsh gfsh = setUpJmxManagerOnVm0ThenConnect(managerDistributedSystemProperties); // vm 0 -- locator/manager
 
-    assertNotNull(gfsh);
+    assertNotNull(gfsh); // controller vm -- gfsh
     assertTrue(gfsh.isConnectedAndReady());
 
-    setupGemFire();
+    setupGemFire(); // vm 1 -- server
     verifyGemFireSetup(createPeer(getHost(0).getVM(0), managerDistributedSystemProperties));
   }
 

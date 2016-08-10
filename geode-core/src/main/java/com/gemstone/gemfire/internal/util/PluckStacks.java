@@ -298,7 +298,10 @@ public class PluckStacks {
     if (threadName.startsWith("GC Daemon")) {
       return !thread.isRunnable() && stackSize <= 6;
     }
-    if (threadName.startsWith("GemFire Garbage Collection Thread")) {
+    if (threadName.startsWith("Replicate/Partition Region Garbage Collector")) {
+      return !thread.isRunnable() && (stackSize <= 7);
+    }
+    if (threadName.startsWith("Non-replicate Region Garbage Collector")) {
       return !thread.isRunnable() && (stackSize <= 7);
     }
     if (threadName.equals("GemFire Time Service")) {

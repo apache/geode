@@ -19,11 +19,11 @@ package org.apache.geode.security;
 import org.apache.shiro.authz.permission.WildcardPermission;
 
 /**
- * GeodePermission defines the resource, the operation, the region and the key involved in the action to be authorized.
+ * ResourcePermission defines the resource, the operation, the region and the key involved in the action to be authorized.
  *
  * It is passed to the SecurityManager for the implementation to decide whether to grant a user this permission or not.
  */
-public class GeodePermission extends WildcardPermission {
+public class ResourcePermission extends WildcardPermission {
 
   public static String ALL_REGIONS = "*";
   public static String ALL_KEYS = "*";
@@ -47,34 +47,34 @@ public class GeodePermission extends WildcardPermission {
   private String regionName = ALL_REGIONS;
   private String key = ALL_KEYS;
 
-  public GeodePermission() {
+  public ResourcePermission() {
     this(Resource.NULL, Operation.NULL);
   }
 
-  public GeodePermission(String resource, String operation) {
+  public ResourcePermission(String resource, String operation) {
     this(resource, operation, ALL_REGIONS);
   }
 
-  public GeodePermission(String resource, String operation, String regionName) {
+  public ResourcePermission(String resource, String operation, String regionName) {
     this(resource, operation, regionName, ALL_KEYS);
   }
 
-  public GeodePermission(String resource, String operation, String regionName, String key) {
+  public ResourcePermission(String resource, String operation, String regionName, String key) {
     this((resource==null) ? Resource.NULL : Resource.valueOf(resource),
       (operation == null) ? Operation.NULL : Operation.valueOf(operation),
       regionName,
       key);
   }
 
-  public GeodePermission(Resource resource, Operation operation){
+  public ResourcePermission(Resource resource, Operation operation){
     this(resource, operation, ALL_REGIONS);
   }
 
-  public GeodePermission(Resource resource, Operation operation, String regionName){
+  public ResourcePermission(Resource resource, Operation operation, String regionName){
     this(resource, operation, regionName, ALL_KEYS);
   }
 
-  public GeodePermission(Resource resource, Operation operation, String regionName, String key){
+  public ResourcePermission(Resource resource, Operation operation, String regionName, String key){
     if(resource != null) this.resource = resource;
     if(operation != null) this.operation = operation;
     if(regionName != null) this.regionName = regionName;

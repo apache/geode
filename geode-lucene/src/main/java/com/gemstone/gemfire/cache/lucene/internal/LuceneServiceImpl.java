@@ -69,7 +69,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
   private static final Logger logger = LogService.getLogger();
 
   private GemFireCacheImpl cache;
-  private final HashMap<String, LuceneIndex> indexMap = new HashMap<String, LuceneIndex>();;
+  private final HashMap<String, LuceneIndex> indexMap = new HashMap<String, LuceneIndex>();
+  private final HashMap<String, LuceneIndexCreationProfile> definedIndexMap = new HashMap<>();
 
   public LuceneServiceImpl() {
     
@@ -136,8 +137,13 @@ public class LuceneServiceImpl implements InternalLuceneService {
     if(!regionPath.startsWith("/")) {
       regionPath = "/" + regionPath;
     }
+
+    registerDefinedIndex(LuceneServiceImpl.getUniqueIndexName(indexName, regionPath),
+                                new LuceneIndexCreationProfile(indexName, regionPath, fields, analyzer, fieldAnalyzers));
+
     Region region = cache.getRegion(regionPath);
     if(region != null) {
+      definedIndexMap.remove(LuceneServiceImpl.getUniqueIndexName(indexName, regionPath));
       throw new IllegalStateException("The lucene index must be created before region");
     }
 
@@ -148,7 +154,22 @@ public class LuceneServiceImpl implements InternalLuceneService {
           RegionAttributes attrs, InternalRegionArguments internalRegionArgs) {
         RegionAttributes updatedRA = attrs;
         String path = parent == null ? "/" + regionName : parent.getFullPath() + "/" + regionName;
+
         if(path.equals(dataRegionPath)) {
+
+          if (!attrs.getDataPolicy().withPartitioning()) {
+            // replicated region
+            throw new UnsupportedOperationException("Lucene indexes on replicated regions are not supported");
+          }
+
+          //For now we cannot support eviction with local destroy.
+          //Eviction with overflow to disk still needs to be supported
+          EvictionAttributes evictionAttributes = attrs.getEvictionAttributes();
+          EvictionAlgorithm evictionAlgorithm = evictionAttributes.getAlgorithm();
+          if (evictionAlgorithm != EvictionAlgorithm.NONE && evictionAttributes.getAction().isLocalDestroy()) {
+            throw new UnsupportedOperationException("Lucene indexes on regions with eviction and action local destroy are not supported");
+          }
+
           String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, dataRegionPath);
           if (!attrs.getAsyncEventQueueIds().contains(aeqId)) {
             AttributesFactory af = new AttributesFactory(attrs);
@@ -170,9 +191,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
         }
       }
     });
-    
   }
-  
+
+
   /**
    * Finish creating the lucene index after the data region is created .
    * 
@@ -196,26 +217,14 @@ public class LuceneServiceImpl implements InternalLuceneService {
       return null;
     }
     //Convert the region name into a canonical form
-    
     regionPath = dataregion.getFullPath();
-    LuceneIndexImpl index = null;
+    return new LuceneIndexForPartitionedRegion(indexName, regionPath, cache);
+  }
 
-    //For now we cannot support eviction with local destroy.
-    //Eviction with overflow to disk still needs to be supported
-    EvictionAttributes evictionAttributes = dataregion.getAttributes().getEvictionAttributes();
-    EvictionAlgorithm evictionAlgorithm = evictionAttributes.getAlgorithm();
-    if (evictionAlgorithm != EvictionAlgorithm.NONE && evictionAttributes.getAction().isLocalDestroy()) {
-      throw new UnsupportedOperationException("Lucene indexes on regions with eviction and action local destroy are not supported");
-    }
-
-    if (dataregion instanceof PartitionedRegion) {
-      // partitioned region
-      index = new LuceneIndexForPartitionedRegion(indexName, regionPath, cache);
-    } else {
-      // replicated region
-      throw new UnsupportedOperationException("Lucene indexes on replicated regions are not supported");
-    }
-    return index;
+  private void registerDefinedIndex(final String regionAndIndex, final LuceneIndexCreationProfile luceneIndexCreationProfile) {
+    if (definedIndexMap.containsKey(regionAndIndex) || indexMap.containsKey(regionAndIndex))
+      throw new IllegalArgumentException("Lucene index already exists in region");
+    definedIndexMap.put(regionAndIndex, luceneIndexCreationProfile);
   }
 
   @Override
@@ -265,6 +274,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     if( !indexMap.containsKey( regionAndIndex )) {
       indexMap.put(regionAndIndex, index);
     }
+    definedIndexMap.remove(regionAndIndex);
   }
 
   public void unregisterIndex(final String region){
@@ -304,5 +314,13 @@ public class LuceneServiceImpl implements InternalLuceneService {
     DSFIDFactory.registerDSFID(
         DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR,
         TopEntriesCollector.class);
+  }
+
+  public Collection<LuceneIndexCreationProfile> getAllDefinedIndexes() {
+    return definedIndexMap.values();
+  }
+
+  public LuceneIndexCreationProfile getDefinedIndex(String indexName, String regionPath) {
+    return definedIndexMap.get(getUniqueIndexName(indexName , regionPath));
   }
 }

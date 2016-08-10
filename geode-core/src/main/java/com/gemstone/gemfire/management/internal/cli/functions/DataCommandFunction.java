@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.management.internal.cli.functions;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
 import org.json.JSONArray;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -61,7 +63,8 @@ import com.gemstone.gemfire.internal.InternalEntity;
 import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.commands.DataCommands;
@@ -81,11 +84,9 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.JsonUtil;
 import com.gemstone.gemfire.pdx.PdxInstance;
 
-/***
- * 
- * since 7.0
+/**
+ * @since GemFire 7.0
  */
-
 public class DataCommandFunction extends FunctionAdapter implements  InternalEntity {
   private static final Logger logger = LogService.getLogger();
   
@@ -97,6 +98,8 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
   protected static final String SELECT_STEP_END = "SELECT_END";
   protected static final String SELECT_STEP_EXEC = "SELECT_EXEC";
   private static final int NESTED_JSON_LENGTH = 20;
+
+  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   @Override
   public String getId() {
@@ -176,7 +179,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
     String valueClass = request.getValueClass();
     String regionName = request.getRegionName();
     Boolean loadOnCacheMiss = request.isLoadOnCacheMiss();
-    return get(key, keyClass, valueClass, regionName, loadOnCacheMiss);
+    return get(request.getPrincipal(), key, keyClass, valueClass, regionName, loadOnCacheMiss);
   }
   
   public DataCommandResult locateEntry(DataCommandRequest request) {
@@ -201,7 +204,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
   
   public DataCommandResult select(DataCommandRequest request) {
     String query = request.getQuery();    
-    return select(query);
+    return select(request.getPrincipal(), query);
   }
   
   /**
@@ -220,7 +223,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
   }
   
   @SuppressWarnings("rawtypes")
-  private DataCommandResult select(String queryString) {
+  private DataCommandResult select(Serializable principal, String queryString) {
 
     Cache cache = CacheFactory.getAnyInstance();
     AtomicInteger nestedObjectCount = new AtomicInteger(0);
@@ -251,6 +254,9 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
           SelectResults selectResults = (SelectResults) results;
           for (Iterator iter = selectResults.iterator(); iter.hasNext();) {
             Object object = iter.next();
+            // Post processing
+            object = this.securityService.postProcess(principal, null, null, object, false);
+
             if (object instanceof Struct) {
               StructImpl impl = (StructImpl) object;
               GfJsonObject jsonStruct = getJSONForStruct(impl, nestedObjectCount);
@@ -417,7 +423,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
   }
   
   @SuppressWarnings({ "rawtypes" })
-  public DataCommandResult get(String key, String keyClass, String valueClass, String regionName, Boolean loadOnCacheMiss) {
+  public DataCommandResult get(Serializable principal, String key, String keyClass, String valueClass, String regionName, Boolean loadOnCacheMiss) {
     
     Cache cache = CacheFactory.getAnyInstance();
     
@@ -451,6 +457,11 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
 
       if (doGet || region.containsKey(keyObject)) {
         Object value= region.get(keyObject);
+
+        // run it through post processor. region.get will return the deserialized object already, so we don't need to
+        // deserialize it anymore to pass it to the postProcessor
+        value = this.securityService.postProcess(principal, regionName, keyObject, value, false);
+
         if (logger.isDebugEnabled()) 
           logger.debug("Get for key {} value {}", key, value);
         //return DataCommandResult.createGetResult(key, value, null, null);
@@ -676,8 +687,9 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
     else{     
       array[0] = obj.getClass().getCanonicalName();
       Class klass = obj.getClass();
-      if(JsonUtil.isPrimitiveOrWrapper(klass))
+      if(JsonUtil.isPrimitiveOrWrapper(klass)) {
         array[1] = obj;
+      }
       else if (obj instanceof PdxInstance){
         String str = pdxToJson((PdxInstance)obj);
         array[1] =  str;
@@ -867,6 +879,8 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
     
     private static final long serialVersionUID = 1L;
 
+    private SecurityService securityService = IntegratedSecurityService.getSecurityService();
+
     public SelectExecStep(Object[] arguments) {
       super(SELECT_STEP_EXEC, arguments);
     }
@@ -920,7 +934,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
 
         // authorize data read on these regions
         for(String region:regions){
-          GeodeSecurityUtil.authorizeRegionRead(region);
+          this.securityService.authorizeRegionRead(region);
         }
 
         regionsInQuery = Collections.unmodifiableSet(regions);
@@ -931,24 +945,12 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
             DataCommandRequest request = new DataCommandRequest();
             request.setCommand(CliStrings.QUERY);
             request.setQuery(query);
+            Subject subject = this.securityService.getSubject();
+            if(subject!=null){
+              request.setPrincipal((Serializable)subject.getPrincipal());
+            }
             dataResult = DataCommands.callFunctionForRegion(request, function, members);
             dataResult.setInputQuery(query);
-
-            // post process, iterate through the result for post processing
-            if(GeodeSecurityUtil.needPostProcess()) {
-              List<SelectResultRow> rows = dataResult.getSelectResult();
-              for (Iterator<SelectResultRow> itr = rows.iterator(); itr.hasNext(); ) {
-                SelectResultRow row = itr.next();
-                Object newValue = GeodeSecurityUtil.postProcess(null, null, row.getValue());
-                // user is not supposed to see this row
-                if (newValue == null) {
-                  itr.remove();
-                } else {
-                  row.setValue(newValue);
-                }
-              }
-            }
-
             return (dataResult);
           } else {
             return (dataResult = DataCommandResult.createSelectInfoResult(null, null, -1, null,

@@ -33,7 +33,7 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
-public class IntegratedClientQueryAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
+public class ClientQueryAuthDistributedTest extends AbstractSecureServerDUnitTest {
 
   @Test
   public void testQuery(){

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
@@ -37,7 +36,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 
 public class GetAll651 extends BaseCommand {
@@ -48,15 +46,11 @@ public class GetAll651 extends BaseCommand {
     return singleton;
   }
 
-  protected GetAll651() {
-  }
-
   @Override
   public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException, InterruptedException {
     Part regionNamePart = null, keysPart = null;
     String regionName = null;
     Object[] keys = null;
-    CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
     servConn.setAsTrue(REQUIRES_RESPONSE);
     servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
 
@@ -107,7 +101,7 @@ public class GetAll651 extends BaseCommand {
       return;
     }
 
-    LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
+    LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
     if (region == null) {
       String reason = " was not found during getAll request";
       writeRegionDestroyedEx(msg, regionName, reason, servConn);
@@ -196,7 +190,7 @@ public class GetAll651 extends BaseCommand {
       }
 
       try {
-        GeodeSecurityUtil.authorizeRegionRead(regionName, key.toString());
+        this.securityService.authorizeRegionRead(regionName, key.toString());
       } catch (NotAuthorizedException ex) {
         logger.warn(LocalizedMessage.create(LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1, new Object[] {
           servConn.getName(),
@@ -241,8 +235,7 @@ public class GetAll651 extends BaseCommand {
           continue;
         }
       }
-
-      value = GeodeSecurityUtil.postProcess(regionName, key, value);
+      value = this.securityService.postProcess(regionName, key, value, isObject);
 
       if (isDebugEnabled) {
         logger.debug("{}: Returning value for key={}: {}", servConn.getName(), key, value);

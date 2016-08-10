@@ -65,7 +65,7 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   }
   
   @Override
-  public void put(Object object) throws InterruptedException, CacheException {
+  public boolean put(Object object) throws InterruptedException, CacheException {
     throw new UnsupportedOperationException("CPGAQ method(put) is not supported");
   }
   

@@ -49,7 +49,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
 
 public class RemoveAll extends BaseCommand {
@@ -120,7 +119,7 @@ public class RemoveAll extends BaseCommand {
         servConn.setAsTrue(RESPONDED);
         return;
       }
-      LocalRegion region = (LocalRegion)crHelper.getRegion(regionName);
+      LocalRegion region = (LocalRegion)servConn.getCache().getRegion(regionName);
       if (region == null) {
         String reason = " was not found during removeAll request";
         writeRegionDestroyedEx(msg, regionName, reason, servConn);
@@ -128,8 +127,6 @@ public class RemoveAll extends BaseCommand {
         return;
       }
 
-      GeodeSecurityUtil.authorizeRegionWrite(regionName);
-      
       // part 1: eventID
       eventPart = msg.getPart(1);
       ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart
@@ -211,6 +208,8 @@ public class RemoveAll extends BaseCommand {
         int timeout = msg.getPart(5 + numberOfKeys).getInt();
         servConn.setRequestSpecificTimeout(timeout);
       }
+
+      this.securityService.authorizeRegionWrite(regionName);
 
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {

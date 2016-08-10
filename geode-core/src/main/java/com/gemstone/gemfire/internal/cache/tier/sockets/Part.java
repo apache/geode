@@ -16,13 +16,19 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.internal.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.DSCODE;
+import com.gemstone.gemfire.internal.HeapDataOutputStream;
+import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.offheap.AddressableMemoryManager;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
-
-import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
 
 /**
  * Represents one unit of information (essentially a <code>byte</code>
@@ -185,9 +191,16 @@ public class Part {
         | ((bytes[offset + 3]) & 0x000000FF);
   }
 
+  //TODO Check non-enum callers. Don't want to cache all ints, just known ones.
+  private static final Map<Integer,byte[]> CACHED_INTS = new ConcurrentHashMap<Integer,byte[]>();
+  
   public void setInt(int v) {
-    byte[] bytes = new byte[4];
-    encodeInt(v, bytes);
+    byte[] bytes = CACHED_INTS.get(v);
+    if (bytes == null) {
+      bytes = new byte[4];
+      encodeInt(v, bytes);
+      CACHED_INTS.put(v, bytes);
+    }
     this.typeCode = BYTE_CODE;
     this.part = bytes;
   }
