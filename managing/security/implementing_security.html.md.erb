@@ -2,16 +2,17 @@
 title:  Security Implementation Overview
 ---
 
-Apache Geode can authenticate peer system members and clients. It can also authorize cache operations on a server from clients.
+Apache Geode can authenticate system members, clients, and other system
+entities. It can also individually authorize cache operations 
+for those various entities.
 
 <a id="implementing_security__section_79F6CF928E764CA294D466D0CB2E5FAC"></a>
-You can use Geode security for secure communication, to authorize system membership, and to authorize specific activities in the cache:
+For aspects of the secure communication:
 
-1.  Use locators for peer discovery within the distributed systems and for client discovery of servers. See [Configuring Peer-to-Peer Discovery](../../topologies_and_comm/p2p_configuration/setting_up_a_p2p_system.html) and [Configuring a Client/Server System](../../topologies_and_comm/cs_configuration/setting_up_a_client_server_system.html#setting_up_a_client_server_system).
-2.  Use consistent security settings between similar processes in a single distributed system. For example, configure all servers in a system with the same client authentication settings.
-3.  Implement membership authentication. Depending on your installation and security requirements, you may use a combination of peer-to-peer and client/server settings.
-4.  If you have a client/server system, implement any authorized access control your servers will use for clients attempting to access or modify the cache.
-5.  If you want to use secure socket layer (SSL) protocol for your peer-to-peer and client/server connections, implement that. You can configure SSL separately for peer-to-peer, client/server, JMX, and HTTP connections.
+-   Use consistent security settings between similar processes in a single distributed system. For example, configure all servers in a system with the same client authentication settings.
+-   If you have a client/server system, implement any authorized access control your servers will use for clients attempting to access or modify the cache.
+-   If you want to use secure socket layer (SSL) protocol for your peer-to-peer and client/server connections, implement that. You can configure SSL separately for peer-to-peer, client/server, gateway senders and receivers, JMX, 
+and HTTP connections.
 
 ## <a id="implementing_security__section_1B8A856DB52449C6BF2AEB7C0D9515B5" class="no-quick-link"></a>Where to Place Security Configuration Settings
 
