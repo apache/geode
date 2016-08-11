@@ -34,9 +34,9 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
 
   private String[] fieldNames;
 
-  private Class<? extends Analyzer> analyzerClass;
+  private String analyzerClass;
 
-  private Map<String, Class<? extends Analyzer>> fieldAnalyzers;
+  private Map<String, String> fieldAnalyzers;
 
   private String regionPath;
 
@@ -47,7 +47,7 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
       Map<String, Analyzer> fieldAnalyzers) {
     this.indexName = indexName;
     this.fieldNames = fieldNames;
-    this.analyzerClass = analyzer.getClass();
+    this.analyzerClass = analyzer.getClass().getSimpleName();
     initializeFieldAnalyzers(fieldAnalyzers);
   }
 
@@ -56,7 +56,7 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
     this.indexName = indexName;
     this.regionPath = regionPath;
     this.fieldNames = fieldNames;
-    this.analyzerClass = analyzer.getClass();
+    this.analyzerClass = analyzer.getClass().getSimpleName();
     initializeFieldAnalyzers(fieldAnalyzers);
   }
 
@@ -68,11 +68,11 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
     return this.fieldNames;
   }
 
-  public Class<? extends Analyzer> getAnalyzerClass() {
+  public String getAnalyzerClass() {
     return this.analyzerClass;
   }
 
-  public Map<String, Class<? extends Analyzer>> getFieldAnalyzers() {
+  public Map<String, String> getFieldAnalyzers() {
     return this.fieldAnalyzers;
   }
 
@@ -81,7 +81,7 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
       this.fieldAnalyzers = new HashMap<>();
       for (Map.Entry<String, Analyzer> entry : fieldAnalyzers.entrySet()) {
         // Null values are allowed in analyzers which means the default Analyzer is used
-        this.fieldAnalyzers.put(entry.getKey(), entry.getValue() == null ? null : entry.getValue().getClass());
+        this.fieldAnalyzers.put(entry.getKey(), entry.getValue() == null ? null : entry.getValue().getClass().getSimpleName());
       }
     }
   }
@@ -135,28 +135,31 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
 
           // Iterate the existing analyzers and compare them to the input analyzers
           // Note: This is currently destructive to the input field analyzers map which should be ok since its a transient object.
-          for (Iterator<Map.Entry<String, Class<? extends Analyzer>>> i = myProfile.getFieldAnalyzers().entrySet().iterator(); i.hasNext(); ) {
-            Map.Entry<String, Class<? extends Analyzer>> entry = i.next();
+          for (Iterator<Map.Entry<String, String>> i = myProfile.getFieldAnalyzers().entrySet().iterator(); i.hasNext(); ) {
+            Map.Entry<String, String> entry = i.next();
             // Remove the existing field's analyzer from the input analyzers
-            Class<? extends Analyzer> analyzerClass = getFieldAnalyzers().remove(entry.getKey());
+            String analyzerClass = getFieldAnalyzers().remove(entry.getKey());
 
             // Verify the input field analyzer matches the current analyzer
             if (analyzerClass == null && entry.getValue() != null) {
               // The input field analyzers do not include the existing field analyzer
               result = LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_NO_ANALYZER_ON_FIELD_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_ANALYZER_3_ON_THAT_FIELD
-                  .toString(myProfile.getIndexName(), regionPath, entry.getKey(), entry.getValue().getName());
+                  .toString(myProfile.getIndexName(), regionPath, entry.getKey(), entry.getValue());
               break;
             } else if (analyzerClass != null && entry.getValue() == null) {
               // The existing field analyzers do not include the input field analyzer
               result = LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_ANALYZER_2_ON_FIELD_3_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_NO_ANALYZER_ON_THAT_FIELD
-                  .toString(myProfile.getIndexName(), regionPath, analyzerClass.getName(), entry.getKey());
+                  .toString(myProfile.getIndexName(), regionPath, analyzerClass, entry.getKey());
               break;
-            } else {
-              if (analyzerClass != entry.getValue()) {
-                // The class of the input analyzer does not match the existing analyzer for the field
-                result = LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_ANALYZER_2_ON_FIELD_3_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_ANALYZER_4_ON_THAT_FIELD
-                    .toString(myProfile.getIndexName(), regionPath, analyzerClass.getName(), entry.getKey(), entry.getValue().getName());
-                break;
+            }
+            else {
+              if ((analyzerClass != null & entry.getValue() != null)) {
+                if (!analyzerClass.equals(entry.getValue())) {
+                  // The class of the input analyzer does not match the existing analyzer for the field
+                  result = LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_ANALYZER_2_ON_FIELD_3_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_ANALYZER_4_ON_THAT_FIELD
+                    .toString(myProfile.getIndexName(), regionPath, analyzerClass, entry.getKey(), entry.getValue());
+                  break;
+                }
               }
             }
           }
@@ -170,7 +173,7 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.indexName, out);
     DataSerializer.writeStringArray(this.fieldNames, out);
-    DataSerializer.writeClass(this.analyzerClass, out);
+    DataSerializer.writeString(this.analyzerClass, out);
     DataSerializer.writeHashMap(this.fieldAnalyzers, out);
   }
 
@@ -178,7 +181,7 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.indexName = DataSerializer.readString(in);
     this.fieldNames = DataSerializer.readStringArray(in);
-    this.analyzerClass = (Class<? extends Analyzer>) DataSerializer.readClass(in);
+    this.analyzerClass = DataSerializer.readString(in);
     this.fieldAnalyzers = DataSerializer.readHashMap(in);
   }
 
