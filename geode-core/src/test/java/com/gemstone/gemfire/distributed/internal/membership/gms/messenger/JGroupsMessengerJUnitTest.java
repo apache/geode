@@ -927,7 +927,7 @@ public class JGroupsMessengerJUnitTest {
     initMocks(false, p);
     
     NetView v = createView(otherMbr);
-    
+    when(joinLeave.getMemberID(messenger.getMemberID().getNetMember())).thenReturn(messenger.getMemberID());
     GMSEncrypt otherMbrEncrptor = new GMSEncrypt(services);
     
     messenger.setPublicKey(otherMbrEncrptor.getPublicKeyBytes(), otherMbr);

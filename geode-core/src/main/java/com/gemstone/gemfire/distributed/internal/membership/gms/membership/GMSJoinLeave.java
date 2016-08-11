@@ -25,6 +25,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.distributed.internal.membership.NetMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil;
@@ -141,7 +142,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   /**
    * a new view being installed
    */
-  private NetView preparedView;
+  private volatile NetView preparedView;
 
   /**
    * the last view that conflicted with view preparation
@@ -2504,5 +2505,36 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
     logger.info("member " + fmbr + " failed availability check");
     return false;
+  }
+  
+  private InternalDistributedMember getMemId(NetMember jgId, List<InternalDistributedMember> members) {
+    for (InternalDistributedMember m : members) {
+      if (((GMSMember) m.getNetMember()).equals(jgId)) {
+        return m;
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public InternalDistributedMember getMemberID(NetMember jgId) {
+    NetView v = currentView;
+    InternalDistributedMember ret = null;
+    if (v != null) {
+      ret = getMemId(jgId, v.getMembers());
+    }
+
+    if (ret == null) {
+      v = preparedView;
+      if (v != null) {
+        ret = getMemId(jgId, v.getMembers());
+      }
+    }
+
+    if (ret == null) {
+      return new InternalDistributedMember(jgId);
+    }
+    
+    return ret;
   }
 }

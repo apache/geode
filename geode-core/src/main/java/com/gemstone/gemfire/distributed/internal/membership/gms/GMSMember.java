@@ -24,6 +24,7 @@ import com.gemstone.gemfire.distributed.internal.membership.NetMember;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
 import org.jgroups.util.UUID;
 
 import java.io.DataInput;
@@ -129,6 +130,16 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     this.versionOrdinal = version;
     this.uuidMSBs = msbs;
     this.uuidLSBs = lsbs;
+  }
+  
+  public GMSMember(InetAddress i, int p, short version,
+      long msbs, long lsbs, int viewId) {
+    this.inetAddr = i;
+    this.udpPort = p;
+    this.versionOrdinal = version;
+    this.uuidMSBs = msbs;
+    this.uuidLSBs = lsbs;
+    this.vmViewId = viewId;
   }
 
   public int getPort() {
@@ -396,6 +407,17 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   
   @Override
   public void toData(DataOutput out) throws IOException {
+    writeShallowData(out);
+    out.writeInt(directPort);
+    out.writeByte(memberWeight);
+    out.writeByte(vmKind);
+    out.writeInt(processId);
+    
+    DataSerializer.writeString(name, out);
+    DataSerializer.writeStringArray(groups, out);
+}
+  
+  public void writeShallowData(DataOutput out) throws IOException {
     Version.writeOrdinal(out, this.versionOrdinal, true);
     
     int flags = 0;
@@ -406,18 +428,24 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     DataSerializer.writeInetAddress(inetAddr, out);
     out.writeInt(udpPort);
     out.writeInt(vmViewId);
-    out.writeInt(directPort);
-    out.writeByte(memberWeight);
-    out.writeByte(vmKind);
-    out.writeInt(processId);
-    DataSerializer.writeString(name,  out);
-    DataSerializer.writeStringArray(groups, out);
     out.writeLong(uuidMSBs);
     out.writeLong(uuidLSBs);
+    
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    readShallowData(in);
+    this.directPort = in.readInt();
+    this.memberWeight = in.readByte();
+    this.vmKind = in.readByte();
+    this.processId = in.readInt();
+    
+    this.name = DataSerializer.readString(in);
+    this.groups = DataSerializer.readStringArray(in);
+  } 
+  
+  public void readShallowData(DataInput in) throws IOException, ClassNotFoundException {
     this.versionOrdinal = Version.readOrdinal(in);
     
     int flags = in.readShort();
@@ -427,14 +455,8 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     this.inetAddr = DataSerializer.readInetAddress(in);
     this.udpPort = in.readInt();
     this.vmViewId = in.readInt();
-    this.directPort = in.readInt();
-    this.memberWeight = in.readByte();
-    this.vmKind = in.readByte();
-    this.processId = in.readInt();
-    this.name = DataSerializer.readString(in);
-    this.groups = DataSerializer.readStringArray(in);
     this.uuidMSBs = in.readLong();
-    this.uuidLSBs = in.readLong();
+    this.uuidLSBs = in.readLong();    
   }
 
   @Override
@@ -450,5 +472,16 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     this.uuidMSBs = in.readLong();
     this.uuidLSBs = in.readLong();
     memberWeight = (byte)(in.readByte() & 0xFF);
+  }
+  
+  public static void writeShallowNetMember(GMSMember mbr, DataOutput out) throws IOException {
+    mbr.writeShallowData(out);
+  }
+  
+  public static GMSMember readShallowNetMember(DataInput in) throws ClassNotFoundException, IOException {
+    GMSMember mbr = new GMSMember();
+    mbr.readShallowData(in);
+    
+    return mbr;
   }
 }

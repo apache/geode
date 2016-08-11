@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 
+import com.gemstone.gemfire.*;
 import static com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil.replaceStrings;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_REQUEST;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_RESPONSE;
@@ -99,7 +100,9 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.tcp.MemberShunnedException;
+
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+
 import org.apache.logging.log4j.Logger;
 import org.jgroups.*;
 import org.jgroups.Message.Flag;
@@ -938,7 +941,8 @@ public class JGroupsMessenger implements Messenger {
   
   byte[] serializeMessage(DistributionMessage gfmsg, HeapDataOutputStream out_stream) throws IOException {
     
-    DataSerializer.writeObject(this.localAddress.getNetMember(), out_stream);
+    //DataSerializer.writeObject(this.localAddress.getShallowNetMember(), out_stream);
+    GMSMember.writeShallowNetMember((GMSMember)this.localAddress.getNetMember(), out_stream);
     DataSerializer.writeObject(gfmsg, out_stream);
     
     return out_stream.toByteArray();
@@ -1010,13 +1014,7 @@ public class JGroupsMessenger implements Messenger {
       if(isEncrypted) {
         result = readEncryptedMessage(dis, ordinal, encrypt);
       } else {
-        GMSMember m = DataSerializer.readObject(dis);
-  
-        result = DataSerializer.readObject(dis);
-  
-        DistributionMessage dm = (DistributionMessage)result;
-        
-        setSender(dm, m, ordinal);
+        result = deserializeMessage(dis, ordinal);        
       }
       
       
@@ -1103,12 +1101,8 @@ public class JGroupsMessenger implements Messenger {
           in = new VersionedDataInputStream(in, Version.fromOrdinalNoThrow(ordinal, true));
         }
 
-        GMSMember m = DataSerializer.readObject(in);
-
-        DistributionMessage result = (DistributionMessage) DataSerializer.readObject(in);
-
-        setSender(result, m, ordinal);
-
+        DistributionMessage result = deserializeMessage(in, ordinal);
+        
         if (pk != null) {
           
           /*InternalDistributedMember mbr = null;
@@ -1129,6 +1123,16 @@ public class JGroupsMessenger implements Messenger {
       services.getStatistics().endUDPMsgDecryption(start);
     }
 
+  }
+  
+  DistributionMessage deserializeMessage(DataInputStream in, short ordinal) throws ClassNotFoundException, IOException {
+    GMSMember m = GMSMember.readShallowNetMember(in);
+
+    DistributionMessage result = (DistributionMessage) DataSerializer.readObject(in);
+
+    setSender(result, m, ordinal);
+
+    return result;
   }
   
   /** look for certain messages that may need to be altered before being sent */
@@ -1214,16 +1218,7 @@ public class JGroupsMessenger implements Messenger {
    */
   @SuppressWarnings("UnusedParameters")
   private InternalDistributedMember getMemberFromView(GMSMember jgId, short version) {
-    NetView v = services.getJoinLeave().getView();
-    
-    if (v != null) {
-      for (InternalDistributedMember m: v.getMembers()) {
-        if (m.getNetMember().equals(jgId)) {
-          return m;
-        }
-      }
-    }
-    return new InternalDistributedMember(jgId);
+    return this.services.getJoinLeave().getMemberID(jgId);
   }
 
 

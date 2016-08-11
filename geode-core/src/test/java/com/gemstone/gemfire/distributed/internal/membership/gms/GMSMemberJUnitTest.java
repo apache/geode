@@ -70,6 +70,30 @@ public class GMSMemberJUnitTest {
   }
   
   @Test
+  public void testShallowMemberEquals() {
+    GMSMember member1 = createGMSMember(new byte[] {1, 1, 1, 1, 1}, 1, 1, 1);
+    GMSMember member2 = new GMSMember(member1.getInetAddress(), 
+        member1.getPort(), 
+        member1.getVersionOrdinal(), 
+        member1.getUuidMSBs(), 
+        member1.getUuidLSBs(), 
+        member1.getVmViewId());
+    assertEquals(0, member1.compareTo(member2));
+  }
+  
+  @Test
+  public void testShallowMemberNotEquals() {
+    GMSMember member1 = createGMSMember(new byte[] {1, 1, 1, 1, 1}, 1, 1, 1);
+    GMSMember member2 = new GMSMember(member1.getInetAddress(), 
+        member1.getPort(), 
+        member1.getVersionOrdinal(), 
+        member1.getUuidMSBs(), 
+        member1.getUuidLSBs(), 
+        100);
+    assertEquals(false, member1.equals(member2));
+  }
+  
+  @Test
   public void testCompareToInetAddressIsShorterThan() {
     GMSMember member1 = createGMSMember(new byte[] {1, 1, 1, 1}, 1, 1, 1);
     GMSMember member2 = createGMSMember(new byte[] {1, 1, 1, 1, 1}, 1, 1, 1);
