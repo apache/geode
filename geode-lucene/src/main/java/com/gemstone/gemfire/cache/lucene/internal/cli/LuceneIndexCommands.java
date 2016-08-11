@@ -243,6 +243,9 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       SystemFailure.initiateFailure(e);
       throw e;
     }
+    catch (IllegalArgumentException e) {
+      return ResultBuilder.createInfoResult(e.getMessage());
+    }
     catch (Throwable t) {
       SystemFailure.checkFailure();
       getCache().getLogger().info(t);
@@ -310,6 +313,9 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
+    }
+    catch (IllegalArgumentException e) {
+      return ResultBuilder.createInfoResult(e.getMessage());
     }
     catch (Throwable t) {
       SystemFailure.checkFailure();
@@ -433,13 +439,13 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
 
   protected ResultCollector<?, ?> executeFunctionOnGroups(FunctionAdapter function,
                                                           String[] groups,
-                                                          final LuceneIndexInfo indexInfo) throws Exception
+                                                          final LuceneIndexInfo indexInfo) throws IllegalArgumentException, CommandResultException
   {
     final Set<DistributedMember> targetMembers;
     if (function != createIndexFunction) {
       targetMembers = CliUtil.getMembersForeRegionViaFunction(getCache(), indexInfo.getRegionPath());
       if (targetMembers.isEmpty()) {
-        throw new Exception("Region not found.");
+        throw new IllegalArgumentException("Region not found.");
       }
     }
     else {
@@ -451,7 +457,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
   protected ResultCollector<?, ?> executeSearch(final LuceneQueryInfo queryInfo) throws Exception {
     final Set<DistributedMember> targetMembers = CliUtil.getMembersForeRegionViaFunction(getCache(),queryInfo.getRegionPath());
     if (targetMembers.isEmpty())
-      throw new Exception("Region not found.");
+      throw new IllegalArgumentException("Region not found.");
     return CliUtil.executeFunction(searchIndexFunction, queryInfo, targetMembers);
   }
 }

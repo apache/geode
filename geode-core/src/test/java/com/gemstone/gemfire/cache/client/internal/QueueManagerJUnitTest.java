@@ -292,6 +292,12 @@ public class QueueManagerJUnitTest {
   private class DummyPool implements InternalPool {
     
     public String getPoolOrCacheCancelInProgress() {return null; }
+
+    @Override
+    public boolean getKeepAlive() {
+      return false;
+    }
+
     public Object execute(Op op, int retryAttempts) {
       return null;
     }

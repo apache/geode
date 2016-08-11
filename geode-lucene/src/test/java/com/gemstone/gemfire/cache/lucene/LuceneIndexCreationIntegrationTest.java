@@ -213,6 +213,18 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
                                                     .collect(Collectors.toList()));
   }
 
+  @Test
+  public void shouldRemoveDefinedIndexIfRegionAlreadyExists()
+  {
+    try {
+      createRegion();
+      createIndex("field1", "field2", "field3");
+
+    } catch(IllegalStateException e) {
+      assertEquals("The lucene index must be created before region", e.getMessage());
+      assertEquals(0,((LuceneServiceImpl) luceneService).getAllDefinedIndexes().size());
+    }
+  }
   private void verifyInternalRegions(Consumer<LocalRegion> verify) {
     LuceneTestUtilities.verifyInternalRegions(luceneService, cache, verify);
   }

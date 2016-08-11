@@ -445,10 +445,6 @@ public class PoolImpl implements InternalPool {
     return sb.toString();
   }
 
-  public boolean getKeepAlive(){
-      return this.keepAlive;
-  }
-  
   public void destroy(boolean keepAlive) {
     int cnt = getAttachCount();
     this.keepAlive = keepAlive;
@@ -511,6 +507,7 @@ public class PoolImpl implements InternalPool {
   public synchronized void basicDestroy(boolean keepAlive) {
     if (!isDestroyed()) {
       this.destroyed = true;
+      this.keepAlive = keepAlive;
       // LOG: changed from config to info
       logger.info(LocalizedMessage.create(LocalizedStrings.PoolImpl_DESTROYING_CONNECTION_POOL_0, name));
 
@@ -1418,6 +1415,15 @@ public class PoolImpl implements InternalPool {
         return "cache is closed";
       }
     } 
+  }
+
+  public boolean getKeepAlive() {
+    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    if(cache == null) {
+      return keepAlive;
+    }
+
+    return cache.keepDurableSubscriptionsAlive();
   }
 
   public ArrayList<ProxyCache> getProxyCacheList() {

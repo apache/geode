@@ -228,9 +228,14 @@ public class AutoConnectionSourceImplJUnitTest {
   }
   
   public class FakePool implements InternalPool {
-      public String getPoolOrCacheCancelInProgress() {return null; } 
-      
-      public EndpointManager getEndpointManager() {
+      public String getPoolOrCacheCancelInProgress() {return null; }
+
+    @Override
+    public boolean getKeepAlive() {
+      return false;
+    }
+
+    public EndpointManager getEndpointManager() {
         return null;
       }
 

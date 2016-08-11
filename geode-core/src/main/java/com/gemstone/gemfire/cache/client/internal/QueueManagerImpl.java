@@ -416,8 +416,12 @@ public class QueueManagerImpl implements QueueManager {
       //if same client updater then only remove as we don't know whether it has created new updater/connection on same endpoint or not..
       deadConnection = queueConnections.getConnection(endpoint);
       if (deadConnection != null && ccu.equals(deadConnection.getUpdater())) {
-        queueConnections = queueConnections.removeConnection(deadConnection);        
-        deadConnection.internalDestroy();
+        queueConnections = queueConnections.removeConnection(deadConnection);
+        try {
+          deadConnection.internalClose(pool.getKeepAlive());
+        }  catch(Exception e) {
+          logger.warn("Error destroying client to server connection to {}", deadConnection.getEndpoint(), e);
+        }
       }      
     }    
     
@@ -1002,7 +1006,11 @@ public class QueueManagerImpl implements QueueManager {
       if(logger.isDebugEnabled()) {
         logger.debug("Endpoint {} crashed while creating a connection. The connection will be destroyed", connection.getEndpoint());
       }
-      connection.internalDestroy();
+      try {
+        connection.internalClose(pool.getKeepAlive());
+      }  catch(Exception e) {
+        logger.warn("Error destroying client to server connection to {}", connection.getEndpoint(), e);
+      }
     }
     
     return !isBadConnection;

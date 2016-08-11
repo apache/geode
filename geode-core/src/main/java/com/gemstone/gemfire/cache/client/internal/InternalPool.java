@@ -39,4 +39,5 @@ public interface InternalPool extends Pool, ExecutablePool {
   boolean isDurableClient();
   void detach();
   String getPoolOrCacheCancelInProgress();
+  boolean getKeepAlive();
 }
