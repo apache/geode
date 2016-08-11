@@ -23,20 +23,44 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
 
-/**
- * Test of the behavior of a custom ResultCollector when handling exceptions
- */
-@Category(DistributedTest.class)
-public class FunctionServicePeerAccessorPRDUnitTest extends FunctionServicePeerAccessorPRBase {
+public abstract class FunctionServicePeerAccessorPRBase extends FunctionServiceBase {
 
-  @Override
-  public int numberOfExecutions() {
-    return 1;
+  public static final String REGION = "region";
+  private transient Region<Object, Object> region;
+
+  @Before
+  public void createRegions() {
+    region = getCache().createRegionFactory(RegionShortcut.PARTITION_PROXY)
+      .create(REGION);
+    Host host = Host.getHost(0);
+    for(int i =0; i < numberOfExecutions(); i++) {
+      VM vm = host.getVM(i);
+      createRegion(vm);
+    }
+
+    PartitionRegionHelper.assignBucketsToPartitions(region);
+  }
+
+  private void createRegion(final VM vm) {
+    vm.invoke(() -> {
+      getCache().createRegionFactory(RegionShortcut.PARTITION)
+        .create(REGION);
+      });
+  }
+
+  @Override public Execution getExecution() {
+    return FunctionService.onRegion(region);
+  }
+
+  @Ignore("GEODE-1348 - With this topology, the exception is not wrapped in FunctionException")
+  @Override public void defaultCollectorThrowsExceptionAfterFunctionThrowsIllegalState() {
+  }
+
+  @Ignore("GEODE-1348 - With this topology, the exception is not wrapped in FunctionException")
+  @Override public void customCollectorDoesNotSeeExceptionFunctionThrowsIllegalState() {
   }
 }

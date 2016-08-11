@@ -18,22 +18,26 @@ package com.gemstone.gemfire.internal.cache.execute;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 
 /**
- * Test of the behavior of a custom ResultCollector when handling exceptions
+ * Tests function execution with a client accessing a single member with a PR
+ * using onRegion calls.
  */
 @Category(DistributedTest.class)
-public class FunctionServicePeerAccessorPRDUnitTest extends FunctionServicePeerAccessorPRBase {
+public class FunctionServiceClientAccessorPRDUnitTest extends FunctionServiceClientAccessorPRBase {
 
   @Override
   public int numberOfExecutions() {

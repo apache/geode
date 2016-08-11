@@ -16,27 +16,29 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.execute.Execution;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 
 /**
- * Test of the behavior of a custom ResultCollector when handling exceptions
+ * Tests onRegion using multiple servers from a single client that has single hop disabled
  */
 @Category(DistributedTest.class)
-public class FunctionServicePeerAccessorPRDUnitTest extends FunctionServicePeerAccessorPRBase {
+public class FunctionServiceClientAccessorPRMultipleMembersMultihopDUnitTest extends FunctionServiceClientAccessorPRBase {
 
+  @Override public void configureClient(final ClientCacheFactory cacheFactory) {
+    cacheFactory.setPoolPRSingleHopEnabled(false);
+    super.configureClient(cacheFactory);
+  }
+
+  @Override public int numberOfExecutions() {
+    return 2;
+  }
+
+  @Ignore("Multihop clients don't support returning partial results after a cache close")
   @Override
-  public int numberOfExecutions() {
-    return 1;
+  public void nonHAFunctionResultCollectorIsPassedPartialResultsAfterCloseCache() {
   }
 }

@@ -33,10 +33,11 @@ import org.junit.experimental.categories.Category;
  * Test of the behavior of a custom ResultCollector when handling exceptions
  */
 @Category(DistributedTest.class)
-public class FunctionServicePeerAccessorPRDUnitTest extends FunctionServicePeerAccessorPRBase {
+public class FunctionServicePeerAccessorPRMultipleMembersDUnitTest extends FunctionServicePeerAccessorPRBase {
 
   @Override
   public int numberOfExecutions() {
-    return 1;
+    return 2;
   }
+
 }

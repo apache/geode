@@ -16,27 +16,25 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
 
-/**
- * Test of the behavior of a custom ResultCollector when handling exceptions
- */
-@Category(DistributedTest.class)
-public class FunctionServicePeerAccessorPRDUnitTest extends FunctionServicePeerAccessorPRBase {
+public abstract class FunctionServiceClientOnServerBase extends FunctionServiceClientBase {
 
-  @Override
-  public int numberOfExecutions() {
-    return 1;
+  @Before
+  public void createServers() {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    ClientCache cache = createServersAndClient(numberOfExecutions());
+  }
+
+  @Override public Execution getExecution() {
+    return FunctionService.onServers(getCache());
   }
 }
