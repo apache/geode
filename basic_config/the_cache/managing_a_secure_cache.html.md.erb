@@ -2,13 +2,15 @@
 title:  Managing a Cache in a Secure System
 ---
 
-When you create your cache in a secure system, you provide credentials to the connection process for authentication by already-running, secure members. Clients connect to secure servers. Peers are authenticated by secure locators or peer members.
+To create a cache in a secured system,
+authentication at connection time will require credentials.
+Authorization permits operations as configured.
 
 <a id="managing_a_secure_cache__section_11BF0F3F64504B74B39CD4C1CF58E6FC"></a>
-Follow these steps in addition to the steps for implementing security implementation for your peer, server, and client members. See [Managing a Peer or Server Cache](managing_a_peer_server_cache.html#creating_and_closing_a_peer_cache) and [Managing a Client Cache](managing_a_client_cache.html#managing_a_client_cache).
+These steps demonstrate a programmatic cache creation.
 
-1.  To create your cache:
-    1.  Add any necessary security properties to the `gemfire.properties` or `gfsecurity.properties` file, to configure Apache Geode for your particular security implementation. Examples:
+1.  To create the cache:
+    1.  Add necessary security properties to the `gemfire.properties` or `gfsecurity.properties` file, to configure for your particular security implementation. Examples:
 
         ``` pre
         security-client-auth-init=mySecurity.UserPasswordAuthInit.create
