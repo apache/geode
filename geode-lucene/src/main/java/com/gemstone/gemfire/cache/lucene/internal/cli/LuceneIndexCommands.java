@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -459,5 +460,11 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     if (targetMembers.isEmpty())
       throw new IllegalArgumentException("Region not found.");
     return CliUtil.executeFunction(searchIndexFunction, queryInfo, targetMembers);
+  }
+
+  @CliAvailabilityIndicator({LuceneCliStrings.LUCENE_SEARCH_INDEX, LuceneCliStrings.LUCENE_CREATE_INDEX,
+    LuceneCliStrings.LUCENE_DESCRIBE_INDEX, LuceneCliStrings.LUCENE_LIST_INDEX})
+  public boolean indexCommandsAvailable() {
+    return (!CliUtil.isGfshVM() || (getGfsh() != null && getGfsh().isConnectedAndReady()));
   }
 }

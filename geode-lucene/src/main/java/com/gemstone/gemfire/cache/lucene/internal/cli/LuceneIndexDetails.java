@@ -89,7 +89,7 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
     return results;
   }
 
-  private Map<String, String> getFieldAnalyzerStringsFromProfile(Map<String, Class <? extends Analyzer>> fieldAnalyzers) {
+  private Map<String, String> getFieldAnalyzerStringsFromProfile(Map<String, String> fieldAnalyzers) {
     if(fieldAnalyzers == null) {
       return Collections.emptyMap();
 
@@ -97,10 +97,10 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
 
     Map<String, String> results = new HashMap<>();
 
-    for (Entry<String, Class<? extends Analyzer>> entry : fieldAnalyzers.entrySet()) {
-      final Class analyzer = entry.getValue();
+    for (Entry<String, String> entry : fieldAnalyzers.entrySet()) {
+      final String analyzer = entry.getValue();
       if(analyzer != null) {
-        results.put(entry.getKey(), analyzer.getSimpleName());
+        results.put(entry.getKey(), analyzer);
       }
     }
     return results;

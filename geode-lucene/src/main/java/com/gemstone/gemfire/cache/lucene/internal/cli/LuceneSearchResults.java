@@ -57,7 +57,7 @@ public class LuceneSearchResults<K,V> implements Comparable<LuceneSearchResults>
 
   @Override
   public int compareTo(final LuceneSearchResults searchResults) {
-    return getScore() < searchResults.getScore() ? -1 : 1;
+    return Float.compare(getScore(),searchResults.getScore());
   }
 
   public boolean getExeptionFlag() { return exceptionFlag; }
