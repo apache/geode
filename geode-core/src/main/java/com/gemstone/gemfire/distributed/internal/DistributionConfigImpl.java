@@ -31,10 +31,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.redis.GeodeRedisServer;
 
 import com.gemstone.gemfire.GemFireConfigException;
@@ -2861,7 +2861,7 @@ public class DistributionConfigImpl
         return false;
     } else if (!userDefinedProps.equals(other.userDefinedProps))
       return false;
-    if (!Objects.equals(securityEnabledComponents, other.securityEnabledComponents)) {
+    if (!StringUtils.equals(securityEnabledComponents, other.securityEnabledComponents)) {
       return false;
     }
     return true;

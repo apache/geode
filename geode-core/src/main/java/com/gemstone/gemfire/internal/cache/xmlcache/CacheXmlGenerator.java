@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -1036,7 +1035,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
       
       if(bridge.getBindAddress() != null) {
-        if (generateDefaults() || !Objects.equals(bridge.getBindAddress(), CacheServer.DEFAULT_BIND_ADDRESS))
+        if (generateDefaults() ||  !CacheServer.DEFAULT_BIND_ADDRESS.equals(bridge.getBindAddress()))
         atts.addAttribute("","",BIND_ADDRESS,"",bridge.getBindAddress());
       }
   

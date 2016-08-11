@@ -28,7 +28,6 @@ import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @since GemFire 7.0
@@ -400,7 +399,9 @@ public class HelpUtils {
 
   public static String buildOptionHelpText(Option option) {
       String temp = SyntaxConstants.OPTION_VALUE_SPECIFIER + VALUE_FIELD;
-      if((!option.getValueSeparator().isEmpty() && !Objects.equals(option.getValueSeparator(), CliMetaData.ANNOTATION_NULL_VALUE)) || isCollectionOrArrayType(option.getDataType())) {
+      if( (option.getValueSeparator() != null &&
+    	 !CliMetaData.ANNOTATION_NULL_VALUE.equals(option.getValueSeparator()) &&
+        !option.getValueSeparator().equals("")) || isCollectionOrArrayType(option.getDataType())) {
     	  temp += "(" + option.getValueSeparator() + VALUE_FIELD + ")*";
       }
       return temp;

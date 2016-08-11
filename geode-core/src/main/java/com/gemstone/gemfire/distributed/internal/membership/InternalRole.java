@@ -23,6 +23,8 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 import java.util.*;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * <p>Members of the distributed system can fill one or more user defined 
  * roles. A role is metadata that describes how the member relates to other 
@@ -52,7 +54,7 @@ public class InternalRole implements Role {
   private static final Map roles = new HashMap(); // could use ConcurrentHashMap
   
   /** Contructs a new InternalRole instance for the specified role name */
-  private InternalRole(String name) {
+  InternalRole(String name) {
     this.name = name;
   }
   
@@ -94,9 +96,7 @@ public class InternalRole implements Role {
 		if (!(other instanceof InternalRole)) return  false;
 		final InternalRole that = (InternalRole) other;
 
-		if (!Objects.equals(this.name, that.name) &&
-        !(this.name != null &&
-	  		this.name.equals(that.name))) return false;
+		if (!StringUtils.equals(this.name, that.name)) return false;
 
 		return true;
 	}

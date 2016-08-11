@@ -17,7 +17,9 @@
 package com.gemstone.gemfire.management.internal.cli.domain;
 
 import java.io.Serializable;
-import java.util.Objects;
+
+import io.netty.util.internal.StringUtil;
+import org.apache.commons.lang.StringUtils;
 
 import com.gemstone.gemfire.cache.FixedPartitionAttributes;
 
@@ -41,7 +43,7 @@ public class FixedPartitionAttributesInfo implements Serializable{
 		if (obj instanceof FixedPartitionAttributesInfo) {
 			FixedPartitionAttributesInfo fpaInfo = (FixedPartitionAttributesInfo) obj;
 			return this.numBuckets == fpaInfo.getNumBuckets() &&
-						 Objects.equals(this.partitionName, fpaInfo.getPartitionName()) &&
+						 StringUtils.equals(this.partitionName, fpaInfo.getPartitionName()) &&
 					this.isPrimary  == fpaInfo.isPrimary();
 						
 		} else {

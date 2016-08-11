@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -789,11 +788,11 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
       TXCommitMessage localResultMsg = localTXState.getCommitMessage();
       if (logger.isDebugEnabled()) {
         logger.debug("DistTXStateProxyImplOnCoordinator.doCommit local = "
-                     + dm.getId() + " ,sortedRegions=" + sortedRegionName
-                     + " ,entryEventList=" + printEntryEventList(entryEventList)
-                     + " ,txEntryEventMap=" + printEntryEventMap(this.txEntryEventMap)
-                     + " ,result= " + !Objects.equals(localResultMsg,null) + " ,finalResult-old= "
-                     + finalResult);
+            + dm.getId() + " ,sortedRegions=" + sortedRegionName
+            + " ,entryEventList=" + printEntryEventList(entryEventList)
+            + " ,txEntryEventMap=" + printEntryEventMap(this.txEntryEventMap)
+            + " ,result= " + (localResultMsg != null) + " ,finalResult-old= "
+            + finalResult);
       }
       finalResult = finalResult && (localResultMsg != null);
     }
@@ -833,7 +832,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         if (logger.isDebugEnabled()) { // TODO - make this trace level
           logger
               .debug("DistTXStateProxyImplOnCoordinator.doCommit got results from target = "
-                  + target + " ,result= " + !Objects.equals(remoteResultMsg,null)
+                  + target + " ,result= " + (remoteResultMsg != null)
                   + " ,finalResult-old= " + finalResult);
         }
         finalResult = finalResult && remoteResultMsg != null;

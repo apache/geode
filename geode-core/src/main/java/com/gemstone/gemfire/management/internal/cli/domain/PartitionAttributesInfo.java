@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.gemstone.gemfire.cache.FixedPartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionResolver;
@@ -147,9 +149,9 @@ public class PartitionAttributesInfo implements Serializable {
   public boolean equals (Object obj) {
     if (obj instanceof PartitionAttributesInfo) {
       PartitionAttributesInfo paInfo = (PartitionAttributesInfo) obj;
-      return Objects.equals(this.getColocatedWith(), paInfo.getColocatedWith())
+      return StringUtils.equals(this.getColocatedWith(), paInfo.getColocatedWith())
              && this.getLocalMaxMemory() == paInfo.getLocalMaxMemory()
-             && Objects.equals(this.getPartitionResolverName(), paInfo.getPartitionResolverName())
+             && StringUtils.equals(this.getPartitionResolverName(), paInfo.getPartitionResolverName())
              && this.getRecoveryDelay()  == paInfo.getRecoveryDelay()
              && this.getRedundantCopies() == paInfo.getRedundantCopies()
              && this.getStartupRecoveryDelay() == paInfo.getStartupRecoveryDelay()

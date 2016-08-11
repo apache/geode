@@ -27,10 +27,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.SystemFailure;
@@ -772,22 +772,22 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
       day = "0" + i;
     }
     else {
-      day = new Integer(i).toString();
+      day = Integer.toString(i);
     }
     String dateString = day + "-" + month + "-" + year;
     String DATE_FORMAT = "dd-MMM-yyyy";
     SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.US);
     try {
-      if (Objects.equals(dateType, "Date")) {
+      if (StringUtils.equals(dateType,"Date")) {
         return sdf.parse(dateString);
       }
-      else if (Objects.equals(dateType, "MyDate1")) {
+      else if (StringUtils.equals(dateType, "MyDate1")) {
         return new MyDate1(sdf.parse(dateString).getTime());
       }
-      else if (Objects.equals(dateType, "MyDate2")) {
+      else if (StringUtils.equals(dateType, "MyDate2")) {
         return new MyDate2(sdf.parse(dateString).getTime());
       }
-      else if (Objects.equals(dateType, "MyDate3")) {
+      else if (StringUtils.equals(dateType,"MyDate3")) {
         return new MyDate3(sdf.parse(dateString).getTime());
       }
       else {
@@ -795,7 +795,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
       }
     }
     catch (ParseException e) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("Exception Occured while parseing date", e);
+      com.gemstone.gemfire.test.dunit.Assert.fail("Exception occurred while parsing date", e);
     }
     return null;
   }

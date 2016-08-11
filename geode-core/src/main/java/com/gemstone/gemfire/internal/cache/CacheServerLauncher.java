@@ -1364,7 +1364,7 @@ public class CacheServerLauncher  {
           //this should not happen.
           break;
         }
-        if(running && !Objects.equals(lastLogMessage, status.dsMsg)) {
+        if(running && safeEquals(lastLogMessage, status.dsMsg)) {
           status.dsMsg = lastLogMessage;
           try {
             writeStatus(status);
@@ -1376,5 +1376,14 @@ public class CacheServerLauncher  {
         }
       }
     }
+  }
+  protected static boolean safeEquals(String lastLogMessage, String dsMsg) {
+    if (lastLogMessage == null && dsMsg == null){
+      return true;
+    }
+    else if (lastLogMessage == null || dsMsg == null){
+      return false;
+    }
+    return lastLogMessage.equals(dsMsg);
   }
 }
