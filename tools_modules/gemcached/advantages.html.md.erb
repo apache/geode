@@ -2,7 +2,7 @@
 title:  Advantages of Gemcached over Memcached
 ---
 
-The standard memcached architecture has inherent architectural challenges that make memcached applications difficult to write, maintain, and scale. Using Gemcached with Pivotal Geode addresses these challenges.
+The standard memcached architecture has inherent architectural challenges that make memcached applications difficult to write, maintain, and scale. Using Gemcached with Geode addresses these challenges.
 
 **Data consistency**. Memcached clients must maintain a list of servers where the distributed data is stored. Each client must maintain an identical list, with each list ordered in the same way. It is the responsibility of the application logic to maintain and propagate this list. If some clients do not have the correct list, the client can retrieve stale data. In Geode clusters, all members communicate with each other to maintain data consistency, which eliminates the need to code these behaviors in the memcached clients.
 

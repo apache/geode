@@ -131,7 +131,7 @@ The `<dynamic-region-factory>` element configures a dynamic region factory for t
 **Note:**
 You can not use this element to dynamically create *partitioned* regions.
 
-Pivotal Inc. recommends that you use functions to dynamically create regions. See [Creating Regions Dynamically](../../developing/region_options/dynamic_region_creation.html).
+We recommend that you use functions to dynamically create regions. See [Creating Regions Dynamically](../../developing/region_options/dynamic_region_creation.html).
 
 The optional `<disk-dir>` sub-element specifies the directory to store the persistent files that are used for dynamic region bookkeeping. It defaults to the current directory.
 
@@ -2449,7 +2449,7 @@ Specifies the binding for a data-source used in transaction management. See [Con
 
 For every datasource that is bound to the JNDI tree, there should be one `<jndi-binding>` element. This element describes the property and the configuration of the datasource. Geode uses the attributes of the `<jndi-binding>` element for configuration. Use the `<config-property>` element to configure properties for the datasource.
 
-Pivotal recommends that you set the username and password with the `user-name` and `password` jndi-binding attributes rather than using the `<config-property>` element.
+We recommend that you set the username and password with the `user-name` and `password` jndi-binding attributes rather than using the `<config-property>` element.
 
 <a id="jndi-binding__table_ACB9FB992BD8456AB2052017C2B2CCB4"></a>
 

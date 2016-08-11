@@ -8,7 +8,7 @@ Optimize the cache and region snapshot feature by understanding how it performs.
 
 Importing and exporting region data is an administrative operation, and certain simultaneous runtime conditions can cause the import or export operation to fail such as when you are rebalancing partitioned region buckets or experience a network partition event. This behavior is expected, and you should retry the operation. Redoing an export overwrites an incomplete snapshot file, and redoing an import updates partially imported data.
 
-The snapshot feature does not guarantee consistency. Concurrent cache operations during a snapshot import or export can cause data consistency issues. If snapshot consistency is important, Pivotal recommends that you take your application offline before export and import, to provide a quiet period ensures data consistency in your snapshot.
+The snapshot feature does not guarantee consistency. Concurrent cache operations during a snapshot import or export can cause data consistency issues. If snapshot consistency is important, we recommend that you take your application offline before export and import, to provide a quiet period ensures data consistency in your snapshot.
 
 For example, modifications to region entries during an export can result in a snapshot that contains some but not all updates. If entries { A, B } are updated to { A', B'} during the export, the snapshot can contain { A, B' } depending on the write order. Also, modifications to region entries during an import can cause lost updates in the cache. If the region contains entries { A, B } and the snapshot contains { A', B' }, concurrent updates { A\*, B\* } can result in the region containing { A\*, B' } after the import completes.
 
