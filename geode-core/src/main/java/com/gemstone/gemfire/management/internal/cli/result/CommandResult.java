@@ -83,9 +83,9 @@ public class CommandResult implements Result {
   //TODO -Abhishek - extract this code out in a FormatBuilder or PresentationBuilder??
   private void buildData() {
     try {
-      if (resultData.getType() == ResultData.TYPE_OBJECT) {
+      if (ResultData.TYPE_OBJECT.equals(resultData.getType())) {
         buildObjectResultOutput();
-      } else if (resultData.getType() == ResultData.TYPE_COMPOSITE) {
+      } else if (ResultData.TYPE_COMPOSITE.equals(resultData.getType())) {
         buildComposite();
       } else {
         GfJsonObject content = getContent();
@@ -96,7 +96,7 @@ public class CommandResult implements Result {
 
           RowGroup rowGroup = resultTable.newRowGroup();
           
-          if (resultData.getType() == ResultData.TYPE_TABULAR) {
+          if (ResultData.TYPE_TABULAR.equals(resultData.getType())) {
     //        resultTable.setColumnSeparator(" | ");
             resultTable.setColumnSeparator("   ");            
             resultTable.setTabularResult(true);

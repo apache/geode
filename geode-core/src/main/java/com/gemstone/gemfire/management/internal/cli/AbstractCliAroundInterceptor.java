@@ -88,7 +88,7 @@ public abstract class AbstractCliAroundInterceptor implements CliAroundIntercept
       try {
         String userInput = interact(message);
 
-        if (userInput == null || userInput == "") {
+        if (isNullOrEmpty(userInput)) {
           return defaultResponse;
         }
         response = Response.fromString(userInput);
@@ -101,6 +101,10 @@ public abstract class AbstractCliAroundInterceptor implements CliAroundIntercept
     } while (response == null);
 
     return response;
+  }
+
+  protected boolean isNullOrEmpty(final String userInput) {
+    return userInput == null || userInput.isEmpty();
   }
 
   protected static void info(String msg, Throwable th) {

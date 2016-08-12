@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Identifies the host, port, and bindAddress a distribution locator is 
  * listening on.
@@ -316,9 +318,7 @@ public class DistributionLocatorId implements java.io.Serializable {
 	  	  !(this.host != null &&
 	  	  this.host.equals(that.host))) return false;
 	  if (this.port != that.port) return false;
-	  if (this.bindAddress != that.bindAddress &&
-	  	  !(this.bindAddress != null &&
-	  	  this.bindAddress.equals(that.bindAddress))) return false;
+	  if (!StringUtils.equals(this.bindAddress, that.bindAddress)) return false;
 
 	  return true;
 	}

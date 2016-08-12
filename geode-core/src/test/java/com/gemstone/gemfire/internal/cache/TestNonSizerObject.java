@@ -18,6 +18,8 @@ package com.gemstone.gemfire.internal.cache;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Test object which does not implement ObjectSizer, used as Key/Value in put operation.
  * 
@@ -51,7 +53,7 @@ public class TestNonSizerObject implements Serializable {
   public boolean equals(Object obj) {
     if (obj instanceof TestNonSizerObject) {
       TestNonSizerObject other = (TestNonSizerObject)obj;
-      if (this.testString == other.testString) {
+      if (StringUtils.equals(this.testString, other.testString)) {
         return true;
       }
     }

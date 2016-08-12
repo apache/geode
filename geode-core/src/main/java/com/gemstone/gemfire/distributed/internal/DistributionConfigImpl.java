@@ -34,11 +34,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.redis.GeodeRedisServer;
 
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import org.apache.geode.security.SecurableComponents;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -398,7 +400,9 @@ public class DistributionConfigImpl
   private Map<String, ConfigSource> sourceMap = Collections.synchronizedMap(new HashMap<String, ConfigSource>());
   
   protected String userCommandPackages = DEFAULT_USER_COMMAND_PACKAGES;
-  
+
+  private String securityEnabledComponents = DEFAULT_SECURITY_ENABLED_COMPONENTS;
+
   /** "off-heap-memory-size" with value of "" or "<size>[g|m]" */
   protected String offHeapMemorySize = DEFAULT_OFF_HEAP_MEMORY_SIZE;
   
@@ -588,6 +592,8 @@ public class DistributionConfigImpl
     this.shiroInit = other.getShiroInit();
     this.securityManager = other.getSecurityManager();
     this.postProcessor = other.getPostProcessor();
+
+    this.securityEnabledComponents = ((DistributionConfigImpl) other).securityEnabledComponents;
   }
 
   /**
@@ -1088,7 +1094,7 @@ public class DistributionConfigImpl
   private void copyClusterSSLPropsToGatewaySSLProps() {
     boolean gatewaySSLOverriden = this.sourceMap.get(GATEWAY_SSL_ENABLED)!=null;
     boolean clusterSSLOverRidden = this.sourceMap.get(CLUSTER_SSL_ENABLED)!=null;
-    
+
     if(clusterSSLOverRidden && !gatewaySSLOverriden) {
       this.gatewaySSLEnabled  = this.clusterSSLEnabled;
       this.sourceMap.put(GATEWAY_SSL_ENABLED,this.sourceMap.get(CLUSTER_SSL_ENABLED));
@@ -2023,6 +2029,9 @@ public class DistributionConfigImpl
   }
 
   public Properties getSecurityProps() {
+    if(security.containsKey(SECURITY_MANAGER) && !security.containsKey(SECURITY_ENABLED_COMPONENTS)){
+      security.setProperty(SECURITY_ENABLED_COMPONENTS, SecurableComponents.ALL);
+    }
     return security;
   }
 
@@ -2314,9 +2323,19 @@ public class DistributionConfigImpl
     return this.shiroInit;
   }
 
+  @Override
+  public String getSecurityEnabledComponents() {
+    return securityEnabledComponents;
+  }
+
+  @Override
+  public void setSecurityEnabledComponents(final String securityEnabledComponents) {
+    this.securityEnabledComponents = (String) checkAttribute(SECURITY_ENABLED_COMPONENTS, securityEnabledComponents);
+  }
+
   ///////////////////////  Utility Methods  ///////////////////////
   /**
-   * Two instances of <code>DistributedConfigImpl</code> are equal if all of 
+   * Two instances of <code>DistributedConfigImpl</code> are equal if all of
    * their configuration properties are the same. Be careful if you need to
    * remove final and override this. See bug #50939.
    */
@@ -2842,6 +2861,9 @@ public class DistributionConfigImpl
         return false;
     } else if (!userDefinedProps.equals(other.userDefinedProps))
       return false;
+    if (!StringUtils.equals(securityEnabledComponents, other.securityEnabledComponents)) {
+      return false;
+    }
     return true;
   }
 
@@ -3123,6 +3145,7 @@ public class DistributionConfigImpl
         + ((userCommandPackages == null) ? 0 : userCommandPackages.hashCode());
     result = prime * result
         + ((userDefinedProps == null) ? 0 : userDefinedProps.hashCode());
+    result = prime * result + ((securityEnabledComponents == null) ? 0 : securityEnabledComponents.hashCode());
     return result;
   }
   

@@ -3760,6 +3760,16 @@ public class LocalizedStrings {
   public static final StringId LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_ANALYZER_2_ON_FIELD_3_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_NO_ANALYZER_ON_THAT_FIELD = new StringId(6630, "Cannot create Lucene index {0} on region {1} with analyzer {2} on field {3} because another member defines the same index with no analyzer on that field.");
   public static final StringId LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_ANALYZER_2_ON_FIELD_3_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_ANALYZER_4_ON_THAT_FIELD = new StringId(6631, "Cannot create Lucene index {0} on region {1} with analyzer {2} on field {3} because another member defines the same index with analyzer {4} on that field.");
 
+  public static final StringId AbstractDistributionConfig_CLUSTER_SSL_ALIAS_0 = new StringId(6633,"SSL communication uses the this alias when determining the key to use from the keystore for SSL. Defaults to \"{0}\".");
+  public static final StringId AbstractDistributionConfig_GATEWAY_SSL_ALIAS_0 = new StringId(6634,"SSL gateway communication uses the this alias when determining the key to use from the keystore for SSL. Defaults to \"{0}\".");
+  public static final StringId AbstractDistributionConfig_SERVER_SSL_ALIAS_0 = new StringId(6635,"SSL inter-server communication (peer-to-peer) uses the this alias when determining the key to use from the keystore for SSL. Defaults to \"{0}\".");
+  public static final StringId AbstractDistributionConfig_HTTP_SERVICE_SSL_ALIAS_0 = new StringId(6636,"SSL http service communication uses the this alias when determining the key to use from the keystore for SSL. Defaults to \"{0}\".");
+  public static final StringId AbstractDistributionConfig_JMX_MANAGER_SSL_ALIAS_0 = new StringId(6637,"SSL jmx communication uses the this alias when determining the key to use from the keystore for SSL. Defaults to \"{0}\".");
+
+  public static final StringId AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_0_INVALID_TRY_1 = new StringId(6638,"\"{0}\" is not in the valid set of options \"{1}\"");
+
+  public static final StringId AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET = new StringId(6639,"When using ssl-enabled-components one cannot use any other SSL properties other than cluster-ssl-* or the corresponding aliases");
+
   /** Testing strings, messageId 90000-99999 **/
   
   /** These are simple messages for testing, translated with Babelfish. **/

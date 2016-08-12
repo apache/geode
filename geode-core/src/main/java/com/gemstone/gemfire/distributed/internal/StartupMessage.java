@@ -24,6 +24,8 @@ import com.gemstone.gemfire.internal.InternalDataSerializer.SerializerAttributes
 import com.gemstone.gemfire.internal.InternalInstantiator.InstantiatorAttributesHolder;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import java.io.DataInput;
@@ -288,7 +290,7 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
     if (myMcastAddr != null) {
       myMcastHostAddr = myMcastAddr.getHostAddress();
     }
-    if (myMcastHostAddr == otherMcastHostAddr) return true;
+    if (StringUtils.equals(myMcastHostAddr,otherMcastHostAddr)) return true;
     if (myMcastHostAddr == null) return false;
     return myMcastHostAddr.equals(otherMcastHostAddr);
   }

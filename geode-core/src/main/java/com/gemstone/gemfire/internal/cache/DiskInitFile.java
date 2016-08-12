@@ -2790,7 +2790,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       }
     }
     if (compressorClassNameOption != null) {
-      compressorClassName = (compressorClassNameOption == "" ? null : compressorClassNameOption);
+      compressorClassName = (compressorClassNameOption.isEmpty() ? null : compressorClassNameOption);
     }
     if (statisticsEnabledOption != null) {
       statisticsEnabled = Boolean.parseBoolean(statisticsEnabledOption);

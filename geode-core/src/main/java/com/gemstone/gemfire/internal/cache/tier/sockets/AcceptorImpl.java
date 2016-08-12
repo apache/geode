@@ -275,7 +275,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
 
   private boolean isGatewayReceiver;
   private List<GatewayTransportFilter> gatewayTransportFilters;
-  private final SocketCreator socketCreator; 
+  private final SocketCreator socketCreator;
   
   private SecurityService securityService = IntegratedSecurityService.getSecurityService();
   
@@ -642,7 +642,8 @@ public class AcceptorImpl extends Acceptor implements Runnable
       this.hsPool = tmp_hsPool;
     }
 
-    isAuthenticationRequired = this.securityService.isClientSecurityRequired();
+    isAuthenticationRequired = (this.isGatewayReceiver && this.securityService.isGatewaySecurityRequired()) ||
+                               (! this.isGatewayReceiver && this.securityService.isClientSecurityRequired());
 
     isIntegratedSecurity = this.securityService.isIntegratedSecurity();
 

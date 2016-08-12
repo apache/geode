@@ -1035,7 +1035,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
       
       if(bridge.getBindAddress() != null) {
-        if (generateDefaults() || bridge.getBindAddress() != CacheServer.DEFAULT_BIND_ADDRESS)
+        if (generateDefaults() ||  !CacheServer.DEFAULT_BIND_ADDRESS.equals(bridge.getBindAddress()))
         atts.addAttribute("","",BIND_ADDRESS,"",bridge.getBindAddress());
       }
   
