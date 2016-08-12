@@ -252,11 +252,7 @@ public class CommandInitializer {
     gfe66Commands.put(MessageType.EXECUTE_REGION_FUNCTION, ExecuteRegionFunction66.getCommand());
     gfe66Commands.put(MessageType.EXECUTE_FUNCTION, ExecuteFunction66.getCommand());
     gfe66Commands.put(MessageType.GET_ALL_FOR_RI, GetAllForRI.getCommand());
-
-    //TODO Pushkar Put it into newer version
     gfe66Commands.put(MessageType.GATEWAY_RECEIVER_COMMAND, GatewayReceiverCommand.getCommand());
-    
-
     gfe66Commands.put(MessageType.CONTAINS_KEY, ContainsKey66.getCommand());
     
     // Initialize the GFE 6.6.2 commands

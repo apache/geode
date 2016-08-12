@@ -1166,7 +1166,7 @@ public class TCPConduit implements Runnable {
    * Returns true if member is part of view, false if membership is not confirmed before timeout.
    */
   public boolean waitForMembershipCheck(InternalDistributedMember remoteId) {
-    return membershipManager.waitForMembershipCheck(remoteId);
+    return membershipManager.waitForNewMember(remoteId);
   }
   
   /**

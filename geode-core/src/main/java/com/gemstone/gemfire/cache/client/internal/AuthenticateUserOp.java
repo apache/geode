@@ -108,7 +108,6 @@ public class AuthenticateUserOp {
     public AuthenticateUserOpImpl(Connection con, ExecutablePool pool) {
       super(MessageType.USER_CREDENTIAL_MESSAGE, 1);
       byte[] credentialBytes = null;
-      // TODO this is not a valid way to create a member ID
       DistributedMember server = new InternalDistributedMember(con.getSocket()
           .getInetAddress(), con.getSocket().getPort(), false);
       DistributedSystem sys = InternalDistributedSystem.getConnectedInstance();
@@ -153,7 +152,6 @@ public class AuthenticateUserOp {
       hdos.writeLong(cnx.getConnectionID());
       if (this.securityProperties != null) {
         byte[] credentialBytes = null;
-        // TODO this is not a valid way to create a member ID
         DistributedMember server = new InternalDistributedMember(cnx
             .getSocket().getInetAddress(), cnx.getSocket().getPort(), false);
         DistributedSystem sys = InternalDistributedSystem

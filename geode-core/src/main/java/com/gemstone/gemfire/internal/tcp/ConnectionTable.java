@@ -483,9 +483,6 @@ public class ConnectionTable  {
       result = handleNewPendingConnection(id, true /* fixes bug 43386 */, preserveOrder, m, pc,
                                           startTime, ackTimeout, ackSATimeout);
       if (!preserveOrder && threadOwnsResources) {
-        // TODO we only schedule unordered shared cnxs for timeout
-        // if we own sockets. This seems wrong. We should
-        // be willing to time them out even if we don't own sockets.
         scheduleIdleTimeout(result);
       }
     } else {  // we have existing connection
@@ -1046,9 +1043,6 @@ public class ConnectionTable  {
     if (ct == null) {
       return;
     }
-    // ct.close(); // TODO implementing this is a quagmire, but not necessary,
-    //                since recusing from JGroups takes care of our obligations
-    //                to our peers.
     lastInstance.set(null);
   }
   

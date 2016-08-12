@@ -35,13 +35,6 @@ import java.util.concurrent.*;
  *   Otherwise a thread is started in the pool that buffers the rejected
  *   tasks and puts them back into the executor.
  *   
- *   TODO this is a version of PooledExecutorWithDMStats that was spun off
- *   in cedar_dev_Oct12 as a measure to fix bug #46438.  It should be cleaned
- *   up to not have code paths for !forFnExecution since it is only used
- *   for function execution.  This was not done for the 8.0 release because
- *   of code freeze.
- * 
- *
  */
 public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
   protected final PoolStatHelper stats;

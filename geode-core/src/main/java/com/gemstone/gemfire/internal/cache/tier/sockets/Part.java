@@ -191,7 +191,6 @@ public class Part {
         | ((bytes[offset + 3]) & 0x000000FF);
   }
 
-  //TODO Check non-enum callers. Don't want to cache all ints, just known ones.
   private static final Map<Integer,byte[]> CACHED_INTS = new ConcurrentHashMap<Integer,byte[]>();
   
   public void setInt(int v) {

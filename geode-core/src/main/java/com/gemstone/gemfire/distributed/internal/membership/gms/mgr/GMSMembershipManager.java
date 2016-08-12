@@ -2271,9 +2271,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
   }
   
 
-  // TODO remove this overly complex method and replace its use with
-  // waitForViewChange using the remote member's view ID
-  public boolean waitForMembershipCheck(InternalDistributedMember remoteId) {
+  // TODO GEODE-1752 rewrite this to get rid of the latches, which are currently a memory leak
+  public boolean waitForNewMember(InternalDistributedMember remoteId) {
     boolean foundRemoteId = false;
     CountDownLatch currentLatch = null;
     // ARB: preconditions

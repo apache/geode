@@ -77,7 +77,6 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
   public ServerLocation findReplacementServer(ServerLocation currentServer, Set/*<ServerLocation>*/ excludedServers) {
     // at this time we always try to find a server other than currentServer
     // and if we do return it. Otherwise return null;
-    // @todo grid: We could add balancing information to the explicit source
     // so that clients would attempt to keep the same number of connections
     // to each server but it would be a bit of work.
     // Plus we need to make sure it would work ok for hardware load balancers.

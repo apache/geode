@@ -108,7 +108,7 @@ public class ClientPartitionAdvisor {
           .get(bucketId);
       List<BucketServerLocation66> locationsCopy = new ArrayList<BucketServerLocation66>(
           locations);
-      // TODO: We need to consider Load Balancing Policy
+
       if (locationsCopy.isEmpty()) {
         return null;
       }

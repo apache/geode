@@ -220,9 +220,6 @@ public class Destroy65 extends BaseCommand {
 
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {
-        // TODO SW: This is to handle DynamicRegionFactory destroy
-        // calls. Rework this when the semantics of DynamicRegionFactory are
-        // cleaned up.
         if (DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
           RegionDestroyOperationContext destroyContext = authzRequest.destroyRegionAuthorize((String) key, callbackArg);
           callbackArg = destroyContext.getCallbackArg();

@@ -187,9 +187,6 @@ public class RegisterInterestList66 extends BaseCommand {
         this.securityService.authorizeRegionRead(regionName);
         AuthorizeRequest authzRequest = servConn.getAuthzRequest();
         if (authzRequest != null) {
-          // TODO SW: This is a workaround for DynamicRegionFactory
-          // registerInterest calls. Remove this when the semantics of
-          // DynamicRegionFactory are cleaned up.
           if (!DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
             RegisterInterestOperationContext registerContext = authzRequest
                 .registerInterestListAuthorize(regionName, keys, policy);

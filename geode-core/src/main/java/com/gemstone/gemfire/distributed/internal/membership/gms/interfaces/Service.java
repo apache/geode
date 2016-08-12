@@ -75,7 +75,6 @@ public interface Service {
   
   /**
    * a member is suspected of having crashed
-   * @param reason TODO
    */
   void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect, String reason);
 

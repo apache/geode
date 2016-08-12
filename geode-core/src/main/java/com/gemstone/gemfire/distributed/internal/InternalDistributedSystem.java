@@ -1102,7 +1102,6 @@ public class InternalDistributedSystem
       // Run the shutdown, if any
       if (sdListener != null) {
         try {
-          // TODO: should we make sure this times out?
           sdListener.onShutdown(this);
         }
         catch (VirtualMachineError err) {
@@ -1445,8 +1444,6 @@ public class InternalDistributedSystem
     if (!me.getBindAddress().equals(other.getBindAddress())) {
       return false;
     }
-
-    // @todo Do we need to compare SSL properties?
 
     // locators
     String myLocators = me.getLocators();

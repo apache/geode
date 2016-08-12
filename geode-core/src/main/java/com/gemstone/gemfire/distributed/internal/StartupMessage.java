@@ -85,7 +85,7 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
   /**
    * Creates new instance for StartupOperation.
    * @param hostedLocators
-   * @param isSharedConfigurationEnabled TODO
+   * @param isSharedConfigurationEnabled true if cluster configuration is enabled
    */
   StartupMessage(Collection<String> hostedLocators, boolean isSharedConfigurationEnabled) {
     this.hostedLocatorsAll = hostedLocators;
@@ -380,7 +380,6 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
       int id = in.readInt(); // id
       try {
         if (cName != null) {
-          // @todo verify that the id is correct
           InternalDataSerializer.register(cName, false, null, null, id);
         }
       } catch (IllegalArgumentException ex) {

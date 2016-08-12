@@ -175,7 +175,6 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     if (response==null) {
       throw new NoAvailableLocatorsException("Unable to connect to any locators in the list " + locators);
     }
-    //TODO - do this logic on the server side, return one list in the message.
     List result = response.getServers();
     return result;
   }

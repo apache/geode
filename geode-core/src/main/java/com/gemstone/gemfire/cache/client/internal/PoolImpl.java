@@ -815,15 +815,6 @@ public class PoolImpl implements InternalPool {
    * Any connection that is acquired using this method must be returned using
    * returnConnection, even if it is destroyed.
    * 
-   * TODO - The use of the this method should be removed
-   * from the gateway code. This method is fine for tests,
-   * but these connections should really be managed inside
-   * the pool code. If the gateway needs to persistent connection
-   * to a single server, which should create have the OpExecutor
-   * that holds a reference to the connection (similar to the way
-   * we do with thread local connections).
-   * TODO use {@link ExecutablePool#setupServerAffinity(boolean)} for
-   * gateway code
    */
   public Connection acquireConnection() {
     return manager.borrowConnection(45000L);

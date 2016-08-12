@@ -321,10 +321,7 @@ public class ExecuteRegionFunctionOp {
     private final String functionId;
     private final boolean executeOnBucketSet;
 
-    /**
-     * @param removedNodes TODO
-     * @throws com.gemstone.gemfire.SerializationException if serialization fails
-     */
+
     public ExecuteRegionFunctionOpImpl(String region, Function function,
         ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc,
         byte hasResult, Set<String> removedNodes) {

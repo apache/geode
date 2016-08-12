@@ -86,8 +86,7 @@ public class AddPDXEnumOp {
       return false;
     }
     
-    //TODO - no idea what this mumbo jumbo means, but it's on
-    //most of the other messages like this.
+    // override since this is not a message subject to security
     @Override
     protected void sendMessage(Connection cnx) throws Exception {
       getMessage().clearMessageHasSecurePartFlag();

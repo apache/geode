@@ -701,13 +701,10 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
     if (!gfc.getPdxIgnoreUnreadFields()) {
       PdxType localPdxType = tr.getExistingTypeForClass(pdxClass);
       if (localPdxType != null) {
-        if (getPdxType().getTypeId() != localPdxType.getTypeId()) {
-          if (getPdxType().hasExtraFields(localPdxType)) {
-            // TODO: we can calculate the extra fields here
-            needToTrackReads = true;
-          }
-        } else {
-          // TODO they are the same type id so create an optimized PdxReaderImpl
+        if (getPdxType().getTypeId() != localPdxType.getTypeId()
+            && getPdxType().hasExtraFields(localPdxType)) {
+          // we could calculate the extra fields here
+          needToTrackReads = true;
         }
       } else {
         // we don't know what our local type would be

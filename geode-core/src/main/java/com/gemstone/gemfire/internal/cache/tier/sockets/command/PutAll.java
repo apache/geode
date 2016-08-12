@@ -73,23 +73,6 @@ public class PutAll extends BaseCommand {
     CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
     CacheServerStats stats = servConn.getCacheServerStats();
     boolean replyWithMetaData = false;
-    if (crHelper.emulateSlowServer() > 0) {
-      // this.logger.fine("SlowServer", new Exception());
-      boolean interrupted = Thread.interrupted();
-      try {
-        Thread.sleep(crHelper.emulateSlowServer());
-      }
-      catch (InterruptedException ugh) {
-        interrupted = true;
-        servConn.getCachedRegionHelper().getCache().getCancelCriterion()
-            .checkCancelInProgress(ugh);
-      }
-      finally {
-        if (interrupted) {
-          Thread.currentThread().interrupt();
-        }
-      }
-    }
     
     // requiresResponse = true;
     servConn.setAsTrue(REQUIRES_RESPONSE);
@@ -185,10 +168,6 @@ public class PutAll extends BaseCommand {
 
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {
-        // TODO SW: This is to handle DynamicRegionFactory create
-        // calls. Rework this when the semantics of DynamicRegionFactory
-        // are
-        // cleaned up.
         if (DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
           authzRequest.createRegionAuthorize(regionName);
         }

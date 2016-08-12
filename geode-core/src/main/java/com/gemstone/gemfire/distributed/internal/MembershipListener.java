@@ -60,7 +60,7 @@ public interface MembershipListener {
    * removed from the membership view
    * @param id the suspected member
    * @param whoSuspected the member that initiated suspect processing
-   * @param reason TODO
+   * @param reason the reason the member was suspected
    */
   public void memberSuspect(InternalDistributedMember id,
       InternalDistributedMember whoSuspected, String reason);

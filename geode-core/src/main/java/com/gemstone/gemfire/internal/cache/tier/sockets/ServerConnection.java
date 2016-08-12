@@ -89,8 +89,6 @@ public class ServerConnection implements Runnable {
    */
   private static final int TIMEOUT_BUFFER_FOR_CONNECTION_CLEANUP_MS = 5000;
   
-  //TODO:Asif: Do we need a  Concurrent Map as we know it will be only get operations?
- // private static final CM commands = CFactory.createCM();
   private Map commands;
 
   private SecurityService securityService = IntegratedSecurityService.getSecurityService();
@@ -758,7 +756,7 @@ public class ServerConnection implements Runnable {
 
         if (logger.isTraceEnabled()) {
           logger.trace("{} received {} with txid {}", getName(), MessageType.getString(msg.getMessageType()), msg.getTransactionId());
-          if (msg.getTransactionId() < -1) { // TODO:WTF: why is this happening?
+          if (msg.getTransactionId() < -1) { // TODO: why is this happening?
             msg.setTransactionId(-1);
           }
         }

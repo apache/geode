@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.sun.tools.doclint.Entity.part;
+
 import com.gemstone.gemfire.SerializationException;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.Assert;
@@ -207,7 +209,7 @@ public class Message  {
    * @param numberOfParts
    */
   public void setNumberOfParts(int numberOfParts) {
-    //TODO:hitesh need to add security header here from server
+    //hitesh: need to add security header here from server
     //need to insure it is not chunked message
     //should we look message type to avoid internal message like ping
     this.messageModified = true;
@@ -506,7 +508,7 @@ public class Message  {
   }
 
   protected void packHeaderInfoForSending(int msgLen, boolean isSecurityHeader) {
-    //TODO:hitesh setting second bit of flags byte for client 
+    //hitesh: setting second bit of flags byte for client 
     //this is not require but this makes all changes easily at client side right now
     //just see this bit and process security header
     byte flagsByte = this.flags;
@@ -690,14 +692,7 @@ public class Message  {
     } else {
       do {
         int bytesRead = -1;
-        try {
-          bytesRead = this.is.read(cb.array(),hdr, headerLength-hdr);
-        }
-        catch (SocketTimeoutException e) {
-//          bytesRead = 0;
-          // TODO add a cancellation check
-          throw e;
-        }
+        bytesRead = this.is.read(cb.array(),hdr, headerLength-hdr);
         if (bytesRead == -1) {
           throw new EOFException(LocalizedStrings.Message_THE_CONNECTION_HAS_BEEN_RESET_WHILE_READING_THE_HEADER.toLocalizedString());
         }
@@ -714,7 +709,6 @@ public class Message  {
 
   private void readHeaderAndPayload()
   throws IOException {
-    //TODO:Hitesh ???
     fetchHeader();
     final ByteBuffer cb = getCommBuffer();
     final int type = cb.getInt();
@@ -809,7 +803,6 @@ public class Message  {
     this.isRetry = (bits & MESSAGE_IS_RETRY) != 0;
     bits = (byte)(bits & MESSAGE_IS_RETRY_MASK);
     this.flags = bits;
-    // TODO why is the msgType set twice, here and after reading the payload fields?
     this.msgType = type;
 
     readPayloadFields(numParts, len);
@@ -817,7 +810,6 @@ public class Message  {
     // Set the header and payload fields only after receiving all the
     // socket data, providing better message consistency in the face
     // of exceptional conditions (e.g. IO problems, timeouts etc.)
-    this.msgType = type;
     this.payloadLength = len;
     // this.numberOfParts = numParts;  Already set in setPayloadFields via setNumberOfParts
     this.transactionId = txid;
@@ -830,7 +822,6 @@ public class Message  {
 
   protected void readPayloadFields(final int numParts, final int len)
   throws IOException {
-    //TODO:Hitesh
     if (len > 0 && numParts <= 0 ||
         len <= 0 && numParts > 0) {
       throw new IOException(LocalizedStrings.Message_PART_LENGTH_0_AND_NUMBER_OF_PARTS_1_INCONSISTENT.toLocalizedString(
@@ -861,7 +852,6 @@ public class Message  {
     cb.flip();
 
     int readSecurePart = 0;
-    //TODO:Hitesh look if securePart can be cached here
     readSecurePart = checkAndSetSecurityPart();
     
     int bytesRemaining = len;
@@ -917,13 +907,7 @@ public class Message  {
             }
           } else {
             int res = 0;
-            try {
-              res = this.is.read(partBytes, off, remaining);
-            }
-            catch (SocketTimeoutException e) {
-              // TODO: add cancellation check
-              throw e;
-            }
+            res = this.is.read(partBytes, off, remaining);
             if (res != -1) {
               bytesRemaining -= res;
               remaining -= res;
@@ -1001,13 +985,7 @@ public class Message  {
       int pos = cb.position();
       while (bytesToRead > 0) {
         int res = 0;
-        try {
-          res = this.is.read(cb.array(), pos, bytesToRead);
-        }
-        catch (SocketTimeoutException e) {
-          // TODO add a cancellation check
-          throw e;
-        }
+        res = this.is.read(cb.array(), pos, bytesToRead);
         if (res != -1) {
           bytesToRead -= res;
           pos += res;

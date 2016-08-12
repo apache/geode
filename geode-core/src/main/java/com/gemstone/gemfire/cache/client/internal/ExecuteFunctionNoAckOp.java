@@ -203,7 +203,7 @@ public class ExecuteFunctionNoAckOp {
           logger.warn(LocalizedMessage.create(LocalizedStrings.EXECUTE_FUNCTION_NO_HAS_RESULT_RECEIVED_EXCEPTION), t);
         }
         else if (isErrorResponse(msgType)) {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.EXECUTE_FUNCTION_NO_HAS_RESULT_RECEIVED_EXCEPTION)); // TODO:LOG:FIXED: was ", part.getString());" which makes no sense
+          logger.warn(LocalizedMessage.create(LocalizedStrings.EXECUTE_FUNCTION_NO_HAS_RESULT_RECEIVED_EXCEPTION));
         }
         else {
           throw new InternalGemFireError("Unexpected message type "

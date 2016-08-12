@@ -201,11 +201,8 @@ public class TypeRegistry {
       if (logger.isInfoEnabled()) {
         logger.info("Defining: {}", newType.toFormattedString());
       }
-    } else {
-      //TODO - this might be overkill, but type definition should be rare enough.
-      if(!oldType.equals(newType)) {
-        Assert.fail("Old type does not equal new type for the same id. oldType=" + oldType + " new type=" + newType);
-      }
+    } else if ( !oldType.equals(newType) ) {
+      Assert.fail("Old type does not equal new type for the same id. oldType=" + oldType + " new type=" + newType);
     }
     
     return id;
@@ -220,11 +217,8 @@ public class TypeRegistry {
       if (logger.isInfoEnabled()) {
         logger.info("Adding, from remote WAN: {}", newType.toFormattedString());
       }
-    } else {
-    //TODO - this might be overkill, but type definition should be rare enough.
-      if(!oldType.equals(newType)) {
-        Assert.fail("Old type does not equal new type for the same id. oldType=" + oldType + " new type=" + newType);
-      }
+    } else if ( !oldType.equals(newType) ) {
+      Assert.fail("Old type does not equal new type for the same id. oldType=" + oldType + " new type=" + newType);
     }
   }
 
@@ -371,11 +365,8 @@ public class TypeRegistry {
       this.distributedTypeRegistry.addRemoteEnum(enumId, newInfo);
       this.idToEnum.put(enumId, newInfo);
       this.enumInfoToId.put(newInfo, enumId);
-    } else {
-    //TODO - this might be overkill, but enum definition should be rare enough.
-      if(!oldInfo.equals(newInfo)) {
-        Assert.fail("Old enum does not equal new enum for the same id. oldEnum=" + oldInfo + " new enum=" + newInfo);
-      }
+    } else if ( !oldInfo.equals(newInfo) ) {
+      Assert.fail("Old enum does not equal new enum for the same id. oldEnum=" + oldInfo + " new enum=" + newInfo);
     }
   }
 
@@ -389,11 +380,8 @@ public class TypeRegistry {
     if(oldInfo == null) {
       this.idToEnum.put(id, newInfo);
       this.enumInfoToId.put(newInfo, id);
-    } else {
-      //TODO - this might be overkill, but type definition should be rare enough.
-      if(!oldInfo.equals(newInfo)) {
-        Assert.fail("Old enum does not equal new enum for the same id. oldEnum=" + oldInfo + " newEnum=" + newInfo);
-      }
+    } else if ( !oldInfo.equals(newInfo) ) {
+      Assert.fail("Old enum does not equal new enum for the same id. oldEnum=" + oldInfo + " newEnum=" + newInfo);
     }
     return id;
   }

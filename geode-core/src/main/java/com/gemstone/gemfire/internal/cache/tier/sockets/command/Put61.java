@@ -68,18 +68,6 @@ public class Put61 extends BaseCommand {
     boolean isDelta = false;
     CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
     CacheServerStats stats = servConn.getCacheServerStats();
-    if (crHelper.emulateSlowServer() > 0) {
-      boolean interrupted = Thread.interrupted();
-      try {
-        Thread.sleep(crHelper.emulateSlowServer());
-      } catch (InterruptedException ugh) {
-        interrupted = true;
-      } finally {
-        if (interrupted) {
-          Thread.currentThread().interrupt();
-        }
-      }
-    }
 
     // requiresResponse = true;
     servConn.setAsTrue(REQUIRES_RESPONSE);
@@ -191,9 +179,6 @@ public class Put61 extends BaseCommand {
         authzRequest = servConn.getAuthzRequest();
       }
       if (authzRequest != null) {
-        // TODO SW: This is to handle DynamicRegionFactory create
-        // calls. Rework this when the semantics of DynamicRegionFactory are
-        // cleaned up.
         if (DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
           authzRequest.createRegionAuthorize((String) key);
         }

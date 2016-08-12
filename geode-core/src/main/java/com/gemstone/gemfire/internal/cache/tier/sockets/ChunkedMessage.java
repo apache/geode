@@ -242,16 +242,8 @@ public class ChunkedMessage extends Message
       cb.clear();
       int totalBytesRead = 0;
       do {
-        //@TODO DARREL: add channel support
         int bytesRead = 0;
-        try {
-          bytesRead = is.read(cb.array(), totalBytesRead, CHUNK_HEADER_LENGTH-totalBytesRead);
-        }
-        catch (SocketTimeoutException e) {
-//          bytesRead = 0;
-          // TODO add a cancellation check
-          throw e;
-        }
+        bytesRead = is.read(cb.array(), totalBytesRead, CHUNK_HEADER_LENGTH-totalBytesRead);
         if (bytesRead == -1) {
           throw new EOFException(LocalizedStrings.ChunkedMessage_CHUNK_READ_ERROR_CONNECTION_RESET.toLocalizedString());
         }
@@ -332,7 +324,6 @@ public class ChunkedMessage extends Message
 
   @Override
   protected Part getSecurityPart() {
-    // TODO Auto-generated method stub
     if (this.isLastChunk())
       return super.getSecurityPart();
     else

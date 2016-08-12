@@ -550,7 +550,6 @@ public class PeerTypeRegistration implements TypeRegistration {
           EnumId id = (EnumId)k;
           EnumInfo info = (EnumInfo)v;
           enumToId.put(info, id);
-          // TODO: do I need to keep track of multiple ids for the same enum?
           if (ei.equals(info)) {
             result = id;
           }

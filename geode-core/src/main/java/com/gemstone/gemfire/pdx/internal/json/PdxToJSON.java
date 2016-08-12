@@ -36,7 +36,7 @@ import com.gemstone.gemfire.pdx.internal.EnumInfo;
 import com.gemstone.gemfire.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 
 /*
- * This class converts PdxInstance into JSON document.
+ * This class converts a PdxInstance into a JSON document.
  */
 public class PdxToJSON 
 {
@@ -59,7 +59,6 @@ public class PdxToJSON
       jg.close();
       return new String(hdos.toByteArray());
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       throw new RuntimeException(e.getMessage());
     }finally{
         hdos.close();
@@ -77,7 +76,6 @@ public class PdxToJSON
       jg.close();      
       return hdos.toByteArray();
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       throw new RuntimeException(e.getMessage());
     }finally {
       hdos.close();

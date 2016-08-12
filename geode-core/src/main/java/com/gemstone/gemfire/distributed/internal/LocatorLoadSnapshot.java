@@ -267,10 +267,6 @@ public class LocatorLoadSnapshot {
       return null;
     }
 
-    // @todo: currently the following code could end up doing 3 iterations
-    // of groupServers. This could be optimized to do just one iteration
-    // but for now I wanted to reuse isBalanced and findBestServers.
-
     // check to see if we are currently balanced
     if (isBalanced(groupServers)) {
       // if we are then return currentServer
