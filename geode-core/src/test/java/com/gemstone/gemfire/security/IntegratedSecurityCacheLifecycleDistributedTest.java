@@ -19,6 +19,7 @@ package com.gemstone.gemfire.security;
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.assertj.core.api.Assertions.*;
 
+import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.geode.security.templates.SampleSecurityManager;
@@ -30,6 +31,8 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
 import com.gemstone.gemfire.internal.security.SecurityService;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
@@ -42,6 +45,7 @@ import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 @Category({DistributedTest.class, SecurityTest.class})
 public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4CacheTestCase {
 
+  private String locators;
   private VM locator;
   private SecurityService securityService;
 
@@ -52,29 +56,61 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
 
     securityService = IntegratedSecurityService.getSecurityService();
 
-    int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    String locators =  NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]";
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int locatorPort = ports[0];
+    int managerPort = ports[1];
+
+    locators =  NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]";
 
     locator.invoke(() -> {
       DistributedTestUtils.deleteLocatorStateFile(locatorPort);
 
       final Properties properties = new Properties();
       properties.setProperty(SampleSecurityManager.SECURITY_JSON, "com/gemstone/gemfire/management/internal/security/clientServer.json");
-//      properties.setProperty(LOCATORS, locators);
+      properties.setProperty(LOCATORS, locators);
       properties.setProperty(MCAST_PORT, "0");
+      properties.setProperty(SECURITY_ENABLED_COMPONENTS, "");
       properties.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName());
       properties.setProperty(START_LOCATOR, locators);
+      properties.setProperty(JMX_MANAGER, "true");
+      properties.setProperty(JMX_MANAGER_START, "true");
+      properties.setProperty(JMX_MANAGER_PORT, String.valueOf(managerPort));
       properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
       getSystem(properties);
       getCache();
     });
+  }
 
+  @Test
+  public void initAndCloseTest() throws Exception {
+    connect();
+
+    {
+      ManagementService ms = ManagementService.getExistingManagementService(getCache());
+      assertThat(ms).isNotNull();
+      assertThat(ms.isManager()).isFalse();
+
+      verifyInitCloseInvoked();
+    }
+
+    locator.invoke(() -> {
+      ManagementService ms = ManagementService.getExistingManagementService(getCache());
+      assertThat(ms).isNotNull();
+      assertThat(ms.isManager()).isTrue();
+
+      verifyInitCloseInvoked();
+    });
+  }
+
+  private void connect() throws IOException {
     final Properties properties = new Properties();
     properties.setProperty(SampleSecurityManager.SECURITY_JSON, "com/gemstone/gemfire/management/internal/security/clientServer.json");
     properties.setProperty(LOCATORS, locators);
     properties.setProperty(MCAST_PORT, "0");
+    properties.setProperty(SECURITY_ENABLED_COMPONENTS, "");
     properties.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName());
     properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
+
     getSystem(properties);
 
     CacheServer server1 = getCache().addCacheServer();
@@ -82,15 +118,6 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
     server1.start();
 
     getCache();
-  }
-
-  @Test
-  public void initAndCloseTest () {
-    verifyInitCloseInvoked();
-
-    locator.invoke(() -> {
-      verifyInitCloseInvoked();
-    });
   }
 
   @Override

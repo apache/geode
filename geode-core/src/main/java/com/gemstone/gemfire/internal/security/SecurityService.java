@@ -55,6 +55,9 @@ public interface SecurityService {
   Object postProcess(String regionPath, Object key, Object value, boolean valueIsSerialized);
   Object postProcess(Serializable principal, String regionPath, Object key, Object value, boolean valueIsSerialized);
   boolean isClientSecurityRequired();
+  boolean isJmxSecurityRequired();
+  boolean isGatewaySecurityRequired();
+  boolean isHttpSecurityRequired();
   boolean isPeerSecurityRequired();
   boolean isIntegratedSecurity();
   SecurityManager getSecurityManager();

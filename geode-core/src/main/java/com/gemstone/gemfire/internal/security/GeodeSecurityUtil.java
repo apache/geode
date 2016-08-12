@@ -47,6 +47,8 @@ import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.util.ThreadState;
 
 import com.gemstone.gemfire.GemFireIOException;
+import org.apache.geode.security.SecurableComponents;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.ClassLoadUtil;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -64,9 +66,17 @@ public class GeodeSecurityUtil {
 
   private static PostProcessor postProcessor;
   private static SecurityManager securityManager;
+
   private static boolean isIntegratedSecurity;
-  private static boolean isClientAuthenticator;
-  private static boolean isPeerAuthenticator;
+
+  private static boolean isClientAuthenticator; // is there a SECURITY_CLIENT_AUTHENTICATOR
+  private static boolean isPeerAuthenticator; // is there a SECURITY_PEER_AUTHENTICATOR
+
+  private static boolean isJmxSecurityRequired;
+  private static boolean isHttpSecurityRequired;
+  private static boolean isGatewaySecurityRequired;
+  private static boolean isClusterSecurityRequired;
+  private static boolean isServerSecurityRequired;
 
   /**
    * It first looks the shiro subject in AccessControlContext since JMX will
@@ -288,6 +298,17 @@ public class GeodeSecurityUtil {
       return;
     }
 
+    String enabledComponentsString = securityProps.getProperty(SECURITY_ENABLED_COMPONENTS);
+    if (enabledComponentsString == null) {
+      enabledComponentsString = DistributionConfig.DEFAULT_SECURITY_ENABLED_COMPONENTS;
+    }
+
+    boolean isClusterSecured = enabledComponentsString.contains(SecurableComponents.ALL) || enabledComponentsString.contains(SecurableComponents.CLUSTER);
+    boolean isGatewaySecured = enabledComponentsString.contains(SecurableComponents.ALL) || enabledComponentsString.contains(SecurableComponents.GATEWAY);
+    boolean isHttpSecured = enabledComponentsString.contains(SecurableComponents.ALL) || enabledComponentsString.contains(SecurableComponents.HTTP_SERVICE);
+    boolean isJmxSecured = enabledComponentsString.contains(SecurableComponents.ALL) || enabledComponentsString.contains(SecurableComponents.JMX);
+    boolean isServerSecured = enabledComponentsString.contains(SecurableComponents.ALL) || enabledComponentsString.contains(SecurableComponents.SERVER);
+
     String shiroConfig = securityProps.getProperty(SECURITY_SHIRO_INIT);
     String securityConfig = securityProps.getProperty(SECURITY_MANAGER);
     String clientAuthenticatorConfig = securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
@@ -327,6 +348,13 @@ public class GeodeSecurityUtil {
       isClientAuthenticator = false;
       isPeerAuthenticator = false;
     }
+
+    isServerSecurityRequired = isClientAuthenticator || (isIntegratedSecurity && isServerSecured);
+    isClusterSecurityRequired = isPeerAuthenticator || (isIntegratedSecurity && isClusterSecured);
+
+    isGatewaySecurityRequired = isClientAuthenticator || (isIntegratedSecurity && isGatewaySecured);
+    isHttpSecurityRequired = isIntegratedSecurity && isHttpSecured;
+    isJmxSecurityRequired = isIntegratedSecurity && isJmxSecured;
 
     // this initializes the post processor
     String customPostProcessor = securityProps.getProperty(SECURITY_POST_PROCESSOR);
@@ -477,16 +505,27 @@ public class GeodeSecurityUtil {
     return postProcessor;
   }
 
-  public static boolean isClientSecurityRequired() {
-    return isClientAuthenticator || isIntegratedSecurity;
-  }
-
-  public static boolean isPeerSecurityRequired() {
-    return isPeerAuthenticator || isIntegratedSecurity;
-  }
-
   public static boolean isIntegratedSecurity(){
     return isIntegratedSecurity;
   }
 
+  public static boolean isClientSecurityRequired() { // TODO: rename as isServerSecurityRequired
+    return isServerSecurityRequired;
+  }
+
+  public static boolean isPeerSecurityRequired() { // TODO: rename as isClusterSecurityRequired
+    return isClusterSecurityRequired;
+  }
+
+  public static boolean isJmxSecurityRequired() {
+    return isJmxSecurityRequired;
+  }
+
+  public static boolean isGatewaySecurityRequired() {
+    return isGatewaySecurityRequired;
+  }
+
+  public static boolean isHttpServiceSecurityRequired() {
+    return isHttpSecurityRequired;
+  }
 }

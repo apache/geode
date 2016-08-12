@@ -116,6 +116,7 @@ com/gemstone/gemfire/internal/process/ClusterConfigurationNotAvailableException
 com/gemstone/gemfire/internal/security/GeodeSecurityUtil
 com/gemstone/gemfire/internal/security/IntegratedSecurityService
 com/gemstone/gemfire/internal/security/IntegratedSecurityService$SerializationProxy
+com/gemstone/gemfire/internal/security/SecurableComponent
 com/gemstone/gemfire/internal/security/SecurityService
 com/gemstone/org/apache/logging/log4j/core/config/xml/GemFireXmlConfiguration
 com/gemstone/org/apache/logging/log4j/core/config/xml/GemFireXmlConfiguration$ErrorType
