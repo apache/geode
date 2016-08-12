@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheWriter;
@@ -330,7 +332,7 @@ public class RegionAttributesInfo implements Serializable{
 				nonDefaultAttributes.put(RegionAttributesNames.CLONING_ENABLED, Boolean.toString(cloningEnabled));
 			}
 			
-			if (RegionAttributesDefault.COMPRESSOR_CLASS_NAME.equals(compressorClassName)) {
+			if (!StringUtils.equals(RegionAttributesDefault.COMPRESSOR_CLASS_NAME,compressorClassName)) {
 			        nonDefaultAttributes.put(RegionAttributesNames.COMPRESSOR, compressorClassName);
 			}
 			
