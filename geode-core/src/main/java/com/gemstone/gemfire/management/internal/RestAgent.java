@@ -220,7 +220,7 @@ public class RestAgent {
         attributesFactory.setConcurrencyChecksEnabled(false);
         attributesFactory.setDataPolicy(DataPolicy.REPLICATE);
         attributesFactory.setKeyConstraint(String.class);
-        attributesFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
+        attributesFactory.setScope(Scope.DISTRIBUTED_ACK);
         attributesFactory.setStatisticsEnabled(false);
         attributesFactory.setValueConstraint(String.class);
 
