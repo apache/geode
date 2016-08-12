@@ -129,7 +129,7 @@ This section provides a walk-through example of configuring a simple Apache Geod
 
     Note that `region1` is created on all cache servers that specified the group named `group1` when starting the cache server (`server1` and `server2`, in this example). `region2` is created on all members because no group was specified.
 
-6.  Deploy jar files. Use the `gfsh` `deploy` command to deploy application jar files to all members or to a specified group of members. The following example deploys the `mail.jar` and `mx4j.jar` files from the Pivotal GemFire distribution. (Note: This is only an example, you do not need to deploy these files to use the Cluster Configuration Service. Alternately, you can use any two jar files for this demonstration.)
+6.  Deploy jar files. Use the `gfsh deploy` command to deploy application jar files to all members or to a specified group of members. The following example deploys the `mail.jar` and `mx4j.jar` files from the distribution. (Note: This is only an example, you do not need to deploy these files to use the Cluster Configuration Service. Alternately, you can use any two jar files for this demonstration.)
 
     ``` pre
     gfsh>deploy --group=group1 --jar=${SYS_GEMFIRE_DIR}/lib/mail.jar

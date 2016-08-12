@@ -22,9 +22,7 @@ Before you begin, make sure you understand [Basic Configuration and Programming]
     **Note:**
     You can also specify logging parameters when you start up members (either locators or servers) using the `gfsh` command-line utility. In addition, you can modify log file properties and log-level settings while a member is already running by using the [alter runtime](../../tools_modules/gfsh/command-pages/alter.html#topic_7E6B7E1B972D4F418CB45354D1089C2B) command.
 
-    1.  Set `log-level`. Options are `severe` (the highest level), `error`, `warning`, `info`, `config`, and `fine`. The lower levels include higher level settings, so a setting of `warning` would log `warning`, `error`, and `severe` messages. For general troubleshooting, we recommend setting the log level at `config` or higher.
-        **Note:**
-        The `fine` setting can fill up disk too quickly and impact system performance. Use `fine` only if asked to do so by Pivotal technical support.
+    1.  Set `log-level`. Options are `severe` (the highest level), `error`, `warning`, `info`, `config`, and `fine`. The lower levels include higher level settings, so a setting of `warning` would log `warning`, `error`, and `severe` messages. For general troubleshooting, we recommend setting the log level at `config` or higher.  The `fine` setting can fill up disk rather quickly and impact system performance. Use `fine` only if necessary.
 
     2.  Specify the log file name in `log-file`. This can be relative or absolute. If this property is not specified, the defaults are:
         -   Standard output for applications
