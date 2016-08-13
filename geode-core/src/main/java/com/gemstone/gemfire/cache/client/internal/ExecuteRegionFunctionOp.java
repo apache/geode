@@ -501,6 +501,7 @@ public class ExecuteRegionFunctionOp {
               logger.debug("ExecuteRegionFunctionOpImpl#processResponse: received message of type EXECUTE_REGION_FUNCTION_RESULT. The number of parts are : {}", executeFunctionResponseMsg.getNumberOfParts());
             }
             // Read the chunk
+            boolean throwServerOp = false;
             do {
               executeFunctionResponseMsg.receiveChunk();
               Object resultResponse = executeFunctionResponseMsg.getPart(0)
@@ -532,43 +533,14 @@ public class ExecuteRegionFunctionOp {
                   InternalFunctionInvocationTargetException ifite = (InternalFunctionInvocationTargetException)ex
                       .getCause();
                   this.failedNodes.addAll(ifite.getFailedNodeSet());
-                  if (this.functionException == null) {
-                    this.functionException = (FunctionException)result;
-                  }
-                  this.functionException.addException((FunctionException)result);
-                }
-                else if(((FunctionException) result).getCause() instanceof FunctionInvocationTargetException){
-                  if (this.functionException == null) {
-                    this.functionException = ex;
-                  }
-                  this.functionException.addException(ex.getCause());
-                }
-                else if(result instanceof FunctionInvocationTargetException){
-                  if (this.functionException == null) {
-                    this.functionException = new FunctionException((FunctionInvocationTargetException)result);
-                  }
-                  this.functionException.addException(ex);
-                }
-                else if(result instanceof InternalFunctionInvocationTargetException){
-                  if (this.functionException == null) {
-                    this.functionException = new FunctionException((InternalFunctionInvocationTargetException)result);
-                  }
-                  this.functionException.addException(ex);
+                  addFunctionException((FunctionException) result);
                 }
                 else{
-                  if (this.functionException == null) {
-                    this.functionException = ex;
-                  }
-                  this.functionException.addException(ex);
-                }
-                if (isHA) {
-                  executeFunctionResponseMsg.clear();
-                  throw ex;
+                  addFunctionException((FunctionException) result);
                 }
               }
               else if (result instanceof Throwable) {
                 Throwable t = (Throwable)result;
-                boolean throwServerOp = false;
                   if (this.functionException == null) {
                     if(result instanceof BucketMovedException){
                       FunctionInvocationTargetException fite;
@@ -606,16 +578,6 @@ public class ExecuteRegionFunctionOp {
                   } else {
                     this.functionException.addException(t);
                   }
-                  
-                  if (isHA) {
-                    if (throwServerOp) {
-                      String s = "While performing a remote " + getOpName();
-                      executeFunctionResponseMsg.clear();
-                      throw new ServerOperationException(s, this.functionException);
-                    } else {
-                       throw this.functionException;
-                    }
-                  }
               }
               else {
                 DistributedMember memberID = (DistributedMember)((ArrayList)resultResponse)
@@ -628,6 +590,13 @@ public class ExecuteRegionFunctionOp {
             if (isDebugEnabled) {
               logger.debug("ExecuteRegionFunctionOpImpl#processResponse: received all the results from server successfully.");
             }
+
+
+            if (isHA && throwServerOp) {
+              String s = "While performing a remote " + getOpName();
+              throw new ServerOperationException(s, this.functionException);
+            }
+
             // add all the exceptions here.
             if (this.functionException != null) {
               throw this.functionException;
@@ -651,11 +620,9 @@ public class ExecuteRegionFunctionOp {
                     .getCause();
                 this.failedNodes.addAll(ifite.getFailedNodeSet());
               }
-              executeFunctionResponseMsg.clear();
               throw ex;
             }
             else if (obj instanceof Throwable) {
-              executeFunctionResponseMsg.clear();
               String s = "While performing a remote " + getOpName();
               throw new ServerOperationException(s, (Throwable)obj);
             }
@@ -668,7 +635,6 @@ public class ExecuteRegionFunctionOp {
             executeFunctionResponseMsg.receiveChunk();
             String errorMessage = executeFunctionResponseMsg.getPart(0)
                 .getString();
-            executeFunctionResponseMsg.clear();
             throw new ServerOperationException(errorMessage);
           default:
             throw new InternalGemFireError("Unknown message type "
@@ -679,6 +645,13 @@ public class ExecuteRegionFunctionOp {
         executeFunctionResponseMsg.clear();
       }
       return null;
+    }
+
+    private void addFunctionException(final FunctionException result) {
+      if (this.functionException == null) {
+        this.functionException = result;
+      }
+      this.functionException.addException(result);
     }
 
     @Override

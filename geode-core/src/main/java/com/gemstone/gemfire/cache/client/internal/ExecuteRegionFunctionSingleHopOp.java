@@ -338,6 +338,7 @@ public class ExecuteRegionFunctionSingleHopOp {
             if (isDebugEnabled) {
               logger.debug("ExecuteRegionFunctionSingleHopOpImpl#processResponse: received message of type EXECUTE_REGION_FUNCTION_RESULT.");
             }
+            Exception exception = null;
             do {
               executeFunctionResponseMsg.receiveChunk();
               Object resultResponse = executeFunctionResponseMsg.getPart(0)
@@ -371,14 +372,12 @@ public class ExecuteRegionFunctionSingleHopOp {
                   this.failedNodes.addAll(ifite.getFailedNodeSet());
                 }
                 if (!ex.getMessage().equals("Buckets are null"))
-                  throw ex;
-
-                return null;
+                  exception = ex;
               }
               else if(result instanceof BucketMovedException) {
                 FunctionInvocationTargetException fite = new InternalFunctionInvocationTargetException(
                     ((BucketMovedException)result).getMessage());
-                throw new FunctionException(fite);
+                exception = new FunctionException(fite);
               }
               else if(result instanceof CacheClosedException) {
                 FunctionInvocationTargetException fite = new InternalFunctionInvocationTargetException(
@@ -388,11 +387,11 @@ public class ExecuteRegionFunctionSingleHopOp {
                       .get(1);
                   this.failedNodes.add(memberID.getId());
                 }                
-                throw new FunctionException(fite);
+                exception = new FunctionException(fite);
               }
               else if (result instanceof Throwable) {
                 String s = "While performing a remote " + getOpName();
-                throw new ServerOperationException(s, (Throwable)result);
+                exception = new ServerOperationException(s, (Throwable)result);
               }
               else {
                 DistributedMember memberID = (DistributedMember)((ArrayList)resultResponse)
@@ -405,6 +404,11 @@ public class ExecuteRegionFunctionSingleHopOp {
                     this.executor.getRegion().getSystem()).incResultsReceived();
               }
             } while (!executeFunctionResponseMsg.isLastChunk());
+
+            if (exception != null) {
+              throw exception;
+            }
+
             if (isDebugEnabled) {
               logger.debug("ExecuteRegionFunctionSingleHopOpImpl#processResponse: received all the results from server successfully.");
             }
