@@ -91,7 +91,10 @@ import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
  * and authorization tests.
  *
  * @since GemFire 5.5
+ *
+ * @deprecated in favor of just writing a test without this class
  */
+@Deprecated
 public final class SecurityTestUtils {
 
   private final JUnit4DistributedTestCase distributedTestCase = new JUnit4DistributedTestCase() {};
