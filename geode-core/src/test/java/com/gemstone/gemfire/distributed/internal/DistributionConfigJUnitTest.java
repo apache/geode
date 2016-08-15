@@ -78,7 +78,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testGetAttributeNames() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    assertEquals(attNames.length, 153);
+    assertEquals(attNames.length, 154);
 
     List boolList = new ArrayList();
     List intList = new ArrayList();
@@ -113,7 +113,7 @@ public class DistributionConfigJUnitTest {
     //TODO - This makes no sense. One has no idea what the correct expected number of attributes are.
     assertEquals(28, boolList.size());
     assertEquals(33, intList.size());
-    assertEquals(83, stringList.size());
+    assertEquals(84, stringList.size());
     assertEquals(5, fileList.size());
     assertEquals(4, otherList.size());
   }
@@ -279,6 +279,7 @@ public class DistributionConfigJUnitTest {
   @Test(expected = UnmodifiableException.class)
   public void testSetUnmodifiableAttributeObject() {
     config.setAttributeObject(ARCHIVE_DISK_SPACE_LIMIT, 0, ConfigSource.api());
+    config.checkAttribute(ARCHIVE_DISK_SPACE_LIMIT, 0);
   }
 
   @Test
@@ -290,6 +291,7 @@ public class DistributionConfigJUnitTest {
   @Test(expected = IllegalArgumentException.class)
   public void testOutOfRangeAttributeObject() {
     config.setAttributeObject(HTTP_SERVICE_PORT, -1, ConfigSource.api());
+    config.checkAttribute(HTTP_SERVICE_PORT, -1);
   }
 
   @Test
@@ -316,6 +318,7 @@ public class DistributionConfigJUnitTest {
     config.modifiable = true;
 //    config.setStartLocator(address);
     config.setAttributeObject(START_LOCATOR,address,ConfigSource.api());
+    config.checkAttribute(START_LOCATOR,address);
   }
 
   @Test

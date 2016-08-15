@@ -996,6 +996,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     m.put(SSL_KEYSTORE_PASSWORD, "Password to access the private key from the keystore.");
     m.put(SSL_TRUSTSTORE, "Location of the Java keystore file containing the collection of trusted certificates.");
     m.put(SSL_TRUSTSTORE_PASSWORD, "Password to unlock the truststore.");
+    m.put(SSL_DEFAULT_ALIAS, "The default certificate alias to be used in a multi-key keystore");
 
     dcAttDescriptions = Collections.unmodifiableMap(m);
 
