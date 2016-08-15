@@ -26,6 +26,7 @@ import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexCreationProfile;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
 import com.gemstone.gemfire.distributed.ConfigurationProperties;
+import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.CommandManager;
 import com.gemstone.gemfire.management.internal.cli.commands.CliCommandTestBase;
@@ -45,9 +46,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+
 
 import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static junitparams.JUnitParamsRunner.$;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -62,7 +66,11 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+
 @Category(DistributedTest.class)
+@RunWith(JUnitParamsRunner.class)
 public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
 
@@ -263,6 +271,32 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
       final ArrayList<LuceneIndexCreationProfile> profiles= new ArrayList<> (luceneService.getAllDefinedIndexes());
       assertEquals(1, profiles.size());
       assertEquals(INDEX_NAME, profiles.get(0).getIndexName());
+    });
+  }
+
+  @Test
+  public void createIndexWithNullAnalyzerShouldUseStandardAnalyzer() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(1);
+    vm1.invoke(() -> {getCache();});
+
+    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
+    String analyzerList=StandardAnalyzer.class.getCanonicalName()+",null,"+KeywordAnalyzer.class.getCanonicalName();
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME,INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH,REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD,"field1,field2,field3");
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER,analyzerList);
+
+    String resultAsString = executeCommandAndLogResult(csb);
+
+    vm1.invoke(() -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      createRegion();
+      final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+      final Map<String, Analyzer> fieldAnalyzers = index.getFieldAnalyzers();
+      assertEquals(StandardAnalyzer.class.getCanonicalName(), fieldAnalyzers.get("field1").getClass().getCanonicalName());
+      assertEquals(StandardAnalyzer.class.getCanonicalName(), fieldAnalyzers.get("field2").getClass().getCanonicalName());
+      assertEquals(KeywordAnalyzer.class.getCanonicalName(), fieldAnalyzers.get("field3").getClass().getCanonicalName());
     });
   }
 
