@@ -70,20 +70,6 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.util.test.TestUtil;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests the ability of the {@link Locator} API to start and stop
@@ -428,7 +414,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(SSL_KEYSTORE_TYPE, "JKS");
     properties.put(SSL_TRUSTSTORE, getMultiKeyTruststore());
     properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
-    properties.put(LOCATOR_SSL_ALIAS, "locatorkey");
+    properties.put(SSL_LOCATOR_ALIAS, "locatorkey");
     properties.put(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.LOCATOR.getConstant());
 
 
@@ -603,7 +589,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
       properties.put(SSL_KEYSTORE, getMultiKeyKeystore());
       properties.put(SSL_TRUSTSTORE, getMultiKeyTruststore());
-      properties.put(LOCATOR_SSL_ALIAS, "locatorkey");
+      properties.put(SSL_LOCATOR_ALIAS, "locatorkey");
 
       loc2.invoke("start Locator2", () -> startLocator(port2, properties));
     } finally {

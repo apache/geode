@@ -186,7 +186,6 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     return value;
   }
 
-
   @ConfigAttributeChecker(name = DISTRIBUTED_SYSTEM_ID)
   protected int checkDistributedSystemId(int value) {
     String distributedSystemListener = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener");
@@ -361,7 +360,6 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     return params;
   }
 
-
   @ConfigAttributeChecker(name = MEMBERSHIP_PORT_RANGE)
   protected int[] checkMembershipPortRange(int[] value) {
     minMaxCheck(MEMBERSHIP_PORT_RANGE, value[0], DEFAULT_MEMBERSHIP_PORT_RANGE[0], value[1]);
@@ -376,7 +374,6 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     }
     return value;
   }
-
 
   /**
    * @since GemFire 5.7
@@ -400,7 +397,6 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     return value;
   }
 
-
   @ConfigAttributeChecker(name = SECURITY_PEER_AUTHENTICATOR)
   protected String checkSecurityPeerAuthenticator(String value) {
     if (value != null && value.length() > 0 && getMcastPort() != 0) {
@@ -411,7 +407,6 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     }
     return value;
   }
-
 
   @ConfigAttributeChecker(name = SECURITY_LOG_LEVEL)
   protected int checkSecurityLogLevel(int value) {
@@ -427,7 +422,6 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     }
     return value;
   }
-
 
   @ConfigAttributeChecker(name = MEMCACHED_PROTOCOL)
   protected String checkMemcachedProtocol(String protocol) {
@@ -470,6 +464,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
   @ConfigAttributeChecker(name = SSL_ENABLED_COMPONENTS)
   protected SSLEnabledComponent[] checkLegacySSLWhenSSLEnabledComponentsSet(SSLEnabledComponent[] value) {
     for (SSLEnabledComponent component : value) {
+      if (!isAliasCorrectlyConfiguredForComponents(component)) {
+        throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_INVALID_ALIAS_OPTIONS.toLocalizedString());
+      }
       switch (component) {
         case ALL:
         case CLUSTER:
@@ -493,12 +490,50 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
           }));
       }
     }
-    for (SSLEnabledComponent component : value) {
+    if (value.length > 0) {
       if (getClusterSSLEnabled() || getJmxManagerSSLEnabled() || getHttpServiceSSLEnabled() || getServerSSLEnabled() || getGatewaySSLEnabled()) {
         throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET.toLocalizedString());
       }
     }
     return value;
+  }
+
+  private boolean isAliasCorrectlyConfiguredForComponents(final SSLEnabledComponent component) {
+    switch (component) {
+      case ALL: {
+        //If the default alias is not set, then check that all the other component aliases are set
+        if (StringUtils.isEmpty(getSSLDefaultAlias())) {
+          boolean correctAlias = true;
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.CLUSTER);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.GATEWAY);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.HTTP_SERVICE);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.JMX);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.LOCATOR);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.SERVER);
+          return correctAlias;
+        }
+      }
+      case CLUSTER: {
+        return StringUtils.isEmpty(getClusterSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+      }
+      case GATEWAY: {
+        return StringUtils.isEmpty(getGatewaySSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+      }
+      case HTTP_SERVICE: {
+        return StringUtils.isEmpty(getHTTPServiceSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+      }
+      case JMX: {
+        return StringUtils.isEmpty(getJMXManagerSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+      }
+      case LOCATOR: {
+        return StringUtils.isEmpty(getLocatorSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+      }
+      case SERVER: {
+        return StringUtils.isEmpty(getServerSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+      }
+      default:
+        return false;
+    }
   }
 
   // AbstractConfig overriding methods
@@ -562,8 +597,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
       throw new InternalGemFireException("the attribute setter must have one and only one parametter");
     }
 
-
-    checkAttribute(attName, attValue);
+    //Moved this to the outside loop to complete the setting of configuration before checking their validity.
+    //    checkAttribute(attName, attValue);
     try {
       setter.invoke(this, attValue);
     } catch (Exception e) {
@@ -770,7 +805,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
     m.put(STATISTIC_SAMPLING_ENABLED, LocalizedStrings.AbstractDistributionConfig_STATISTIC_SAMPLING_ENABLED_NAME_0.toLocalizedString(Boolean.valueOf(DEFAULT_STATISTIC_SAMPLING_ENABLED)));
 
-    m.put(CLUSTER_SSL_ALIAS, LocalizedStrings.AbstractDistributionConfig_CLUSTER_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_CLUSTER_SSL_ALIAS)));
+    m.put(SSL_CLUSTER_ALIAS, LocalizedStrings.AbstractDistributionConfig_CLUSTER_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_SSL_ALIAS)));
 
     m.put(CLUSTER_SSL_ENABLED, LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_NAME_0.toLocalizedString(Boolean.valueOf(DEFAULT_SSL_ENABLED)));
 
@@ -863,7 +898,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     m.put(JMX_MANAGER, "If true then this member is willing to be a jmx manager. Defaults to false except on a locator.");
     m.put(JMX_MANAGER_START, "If true then the jmx manager will be started when the cache is created. Defaults to false.");
     m.put(JMX_MANAGER_SSL_ENABLED, "If true then the jmx manager will only allow SSL clients to connect. Defaults to false. This property is ignored if jmx-manager-port is \"0\".");
-    m.put(JMX_MANAGER_SSL_ALIAS, LocalizedStrings.AbstractDistributionConfig_JMX_MANAGER_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_CLUSTER_SSL_ALIAS)));
+    m.put(SSL_JMX_MANAGER_ALIAS, LocalizedStrings.AbstractDistributionConfig_JMX_MANAGER_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_SSL_ALIAS)));
     m.put(JMX_MANAGER_SSL_CIPHERS, "List of available SSL cipher suites that are to be enabled for JMX Manager. Defaults to \"" + DEFAULT_JMX_MANAGER_SSL_CIPHERS + "\" meaning your provider''s defaults.");
     m.put(JMX_MANAGER_SSL_PROTOCOLS, "List of available SSL protocols that are to be enabled for JMX Manager. Defaults to \"" + DEFAULT_JMX_MANAGER_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
     m.put(JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION, "If set to false, ciphers and protocols that permit anonymous JMX Clients are allowed. Defaults to \"" + DEFAULT_JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION + "\".");
@@ -880,7 +915,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     m.put(JMX_MANAGER_ACCESS_FILE, "The name of the file the jmx manager will use to define the access level of authenticated clients. Default is \"\" which causes the jmx manager to allow all clients all access. This property is ignored if jmx-manager-port is \"0\".");
     m.put(JMX_MANAGER_HTTP_PORT, "By default when a jmx-manager is started it will also start an http server on this port. This server is used by the GemFire Pulse application. Setting this property to zero disables the http server. It defaults to 8080. Ignored if jmx-manager is false.");
     m.put(JMX_MANAGER_UPDATE_RATE, "The rate in milliseconds at which this member will send updates to each jmx manager. Default is " + DEFAULT_JMX_MANAGER_UPDATE_RATE + ". Values must be in the range " + MIN_JMX_MANAGER_UPDATE_RATE + ".." + MAX_JMX_MANAGER_UPDATE_RATE + ".");
-    m.put(LOCATOR_SSL_ALIAS, LocalizedStrings.AbstractDistributionConfig_LOCATOR_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_CLUSTER_SSL_ALIAS)));
+    m.put(SSL_LOCATOR_ALIAS, LocalizedStrings.AbstractDistributionConfig_LOCATOR_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_SSL_ALIAS)));
     m.put(MEMCACHED_PORT, "The port GemFireMemcachedServer will listen on. Default is 0. Set to zero to disable GemFireMemcachedServer.");
     m.put(MEMCACHED_PROTOCOL, "The protocol that GemFireMemcachedServer understands. Default is ASCII. Values may be ASCII or BINARY");
     m.put(MEMCACHED_BIND_ADDRESS, "The address the GemFireMemcachedServer will listen on for remote connections. Default is \"\" which causes the GemFireMemcachedServer to listen on the host's default address. This property is ignored if memcached-port is \"0\".");
@@ -891,7 +926,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     m.put(USE_CLUSTER_CONFIGURATION, LocalizedStrings.AbstractDistributionConfig_USE_SHARED_CONFIGURATION.toLocalizedString());
     m.put(LOAD_CLUSTER_CONFIGURATION_FROM_DIR, LocalizedStrings.AbstractDistributionConfig_LOAD_SHARED_CONFIGURATION_FROM_DIR.toLocalizedString(SharedConfiguration.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME));
     m.put(CLUSTER_CONFIGURATION_DIR, LocalizedStrings.AbstractDistributionConfig_CLUSTER_CONFIGURATION_DIR.toLocalizedString());
-    m.put(SERVER_SSL_ALIAS, LocalizedStrings.AbstractDistributionConfig_SERVER_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_CLUSTER_SSL_ALIAS)));
+    m.put(SSL_SERVER_ALIAS, LocalizedStrings.AbstractDistributionConfig_SERVER_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_SSL_ALIAS)));
     m.put(SERVER_SSL_ENABLED, "If true then the cache server will only allow SSL clients to connect. Defaults to false.");
     m.put(SERVER_SSL_CIPHERS, "List of available SSL cipher suites that are to be enabled for CacheServer. Defaults to \"" + DEFAULT_SERVER_SSL_CIPHERS + "\" meaning your provider''s defaults.");
     m.put(SERVER_SSL_PROTOCOLS, "List of available SSL protocols that are to be enabled for CacheServer. Defaults to \"" + DEFAULT_SERVER_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
@@ -907,7 +942,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
     m.put(SERVER_SSL_TRUSTSTORE_PASSWORD, "Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
 
-    m.put(GATEWAY_SSL_ALIAS, LocalizedStrings.AbstractDistributionConfig_GATEWAY_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_CLUSTER_SSL_ALIAS)));
+    m.put(SSL_GATEWAY_ALIAS, LocalizedStrings.AbstractDistributionConfig_GATEWAY_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_SSL_ALIAS)));
     m.put(GATEWAY_SSL_ENABLED, "If true then the gateway receiver will only allow SSL gateway sender to connect. Defaults to false.");
     m.put(GATEWAY_SSL_CIPHERS, "List of available SSL cipher suites that are to be enabled for Gateway Receiver. Defaults to \"" + DEFAULT_GATEWAY_SSL_CIPHERS + "\" meaning your provider''s defaults.");
     m.put(GATEWAY_SSL_PROTOCOLS, "List of available SSL protocols that are to be enabled for Gateway Receiver. Defaults to \"" + DEFAULT_GATEWAY_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
@@ -923,7 +958,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
     m.put(GATEWAY_SSL_TRUSTSTORE_PASSWORD, "Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
 
-    m.put(HTTP_SERVICE_SSL_ALIAS, LocalizedStrings.AbstractDistributionConfig_HTTP_SERVICE_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_CLUSTER_SSL_ALIAS)));
+    m.put(SSL_HTTP_SERVICE_ALIAS, LocalizedStrings.AbstractDistributionConfig_HTTP_SERVICE_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_SSL_ALIAS)));
     m.put(HTTP_SERVICE_PORT, "If non zero, then the gemfire developer REST service will be deployed and started when the cache is created. Default value is 0.");
     m.put(HTTP_SERVICE_BIND_ADDRESS, "The address where gemfire developer REST service will listen for remote REST connections. Default is \"\" which causes the Rest service to listen on the host's default address.");
 

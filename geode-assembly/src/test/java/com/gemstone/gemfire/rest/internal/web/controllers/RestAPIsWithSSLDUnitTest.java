@@ -316,7 +316,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
       sslPropertyConverter(sslProperties, props, SSL_REQUIRE_AUTHENTICATION, null);
       sslPropertyConverter(sslProperties, props, SSL_TRUSTSTORE, null);
       sslPropertyConverter(sslProperties, props, SSL_TRUSTSTORE_PASSWORD, null);
-      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_ALIAS, null);
+      sslPropertyConverter(sslProperties, props, SSL_HTTP_SERVICE_ALIAS, null);
       sslPropertyConverter(sslProperties, props, SSL_ENABLED_COMPONENTS, null);
     }
     return props;
@@ -414,7 +414,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
       if (!StringUtils.isEmpty(properties.getProperty(INVALID_CLIENT_ALIAS))) {
         return properties.getProperty(INVALID_CLIENT_ALIAS);
       } else {
-        return properties.getProperty(HTTP_SERVICE_SSL_ALIAS);
+        return properties.getProperty(SSL_HTTP_SERVICE_ALIAS);
       }
     }).build();
 
@@ -491,7 +491,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_ENABLED_COMPONENTS, SSLEnabledComponents.HTTP_SERVICE);
-    props.setProperty(HTTP_SERVICE_SSL_ALIAS, "httpservicekey");
+    props.setProperty(SSL_HTTP_SERVICE_ALIAS, "httpservicekey");
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "SSL", props);
   }
@@ -506,7 +506,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_ENABLED_COMPONENTS, SSLEnabledComponents.HTTP_SERVICE);
-    props.setProperty(HTTP_SERVICE_SSL_ALIAS, "httpservicekey");
+    props.setProperty(SSL_HTTP_SERVICE_ALIAS, "httpservicekey");
     props.setProperty(INVALID_CLIENT_ALIAS, "someAlias");
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "SSL", props);

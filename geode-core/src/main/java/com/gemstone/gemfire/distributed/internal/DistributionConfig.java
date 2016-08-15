@@ -4188,148 +4188,148 @@ public interface DistributionConfig extends Config, LogConfig {
 
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_ALIAS}
+   * Returns the value of the {@link ConfigurationProperties#SSL_CLUSTER_ALIAS}
    * property.
    * @since Geode 1.0
    */
-  @ConfigAttributeGetter(name = CLUSTER_SSL_ALIAS)
+  @ConfigAttributeGetter(name = SSL_CLUSTER_ALIAS)
   String getClusterSSLAlias();
 
   /**
-   * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_ALIAS}
+   * Sets the value of the {@link ConfigurationProperties#SSL_CLUSTER_ALIAS}
    * property.
    * @since Geode 1.0
    */
-  @ConfigAttributeSetter(name = CLUSTER_SSL_ALIAS)
+  @ConfigAttributeSetter(name = SSL_CLUSTER_ALIAS)
   void setClusterSSLAlias(String alias);
 
   /**
    * The Default Cluster SSL alias
    * @since Geode 1.0
    */
-  String DEFAULT_CLUSTER_SSL_ALIAS = "";
+  String DEFAULT_SSL_ALIAS = "";
 
   /**
-   * The name of the {@link ConfigurationProperties#CLUSTER_SSL_ALIAS} property
+   * The name of the {@link ConfigurationProperties#SSL_CLUSTER_ALIAS} property
    * @since Geode 1.0
    */
   @ConfigAttribute(type = String.class)
-  String CLUSTER_SSL_ALIAS_NAME = CLUSTER_SSL_ALIAS;
+  String CLUSTER_SSL_ALIAS_NAME = SSL_CLUSTER_ALIAS;
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#LOCATOR_SSL_ALIAS}
+   * Returns the value of the {@link ConfigurationProperties#SSL_LOCATOR_ALIAS}
    * property.
    * @since Geode 1.0
    */
-  @ConfigAttributeGetter(name = LOCATOR_SSL_ALIAS)
+  @ConfigAttributeGetter(name = SSL_LOCATOR_ALIAS)
   String getLocatorSSLAlias();
 
   /**
-   * Sets the value of the {@link ConfigurationProperties#LOCATOR_SSL_ALIAS}
+   * Sets the value of the {@link ConfigurationProperties#SSL_LOCATOR_ALIAS}
    * property.
    * @since Geode 1.0
    */
-  @ConfigAttributeSetter(name = LOCATOR_SSL_ALIAS)
+  @ConfigAttributeSetter(name = SSL_LOCATOR_ALIAS)
   void setLocatorSSLAlias(String alias);
 
   /**
-   * The name of the {@link ConfigurationProperties#LOCATOR_SSL_ALIAS} property
+   * The name of the {@link ConfigurationProperties#SSL_LOCATOR_ALIAS} property
    * @since Geode 1.0
    */
   @ConfigAttribute(type = String.class)
-  String LOCATOR_SSL_ALIAS_NAME = LOCATOR_SSL_ALIAS;
+  String LOCATOR_SSL_ALIAS_NAME = SSL_LOCATOR_ALIAS;
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_ALIAS}
+   * Returns the value of the {@link ConfigurationProperties#SSL_GATEWAY_ALIAS}
    * property.
    * @since Geode 1.0
    */
-  @ConfigAttributeGetter(name = GATEWAY_SSL_ALIAS)
+  @ConfigAttributeGetter(name = SSL_GATEWAY_ALIAS)
   String getGatewaySSLAlias();
 
   /**
-   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_ALIAS}
+   * Sets the value of the {@link ConfigurationProperties#SSL_GATEWAY_ALIAS}
    * property.
    * @since Geode 1.0
    */
-  @ConfigAttributeSetter(name = GATEWAY_SSL_ALIAS)
+  @ConfigAttributeSetter(name = SSL_GATEWAY_ALIAS)
   void setGatewaySSLAlias(String alias);
 
   /**
-   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_ALIAS} property
+   * The name of the {@link ConfigurationProperties#SSL_GATEWAY_ALIAS} property
    * @since Geode 1.0
    */
   @ConfigAttribute(type = String.class)
-  String GATEWAY_SSL_ALIAS_NAME = GATEWAY_SSL_ALIAS;
+  String GATEWAY_SSL_ALIAS_NAME = SSL_GATEWAY_ALIAS;
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_ALIAS}
+   * Returns the value of the {@link ConfigurationProperties#SSL_CLUSTER_ALIAS}
    * property.
    * @since Geode 1.0
    */
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_ALIAS)
+  @ConfigAttributeGetter(name = SSL_HTTP_SERVICE_ALIAS)
   String getHTTPServiceSSLAlias();
 
   /**
-   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_ALIAS}
+   * Sets the value of the {@link ConfigurationProperties#SSL_HTTP_SERVICE_ALIAS}
    * property.
    * @since Geode 1.0
    */
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_ALIAS)
+  @ConfigAttributeSetter(name = SSL_HTTP_SERVICE_ALIAS)
   void setHTTPServiceSSLAlias(String alias);
 
   /**
-   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_ALIAS} property
+   * The name of the {@link ConfigurationProperties#SSL_HTTP_SERVICE_ALIAS} property
    * @since Geode 1.0
    */
   @ConfigAttribute(type = String.class)
-  String HTTP_SERVICE_SSL_ALIAS_NAME = HTTP_SERVICE_SSL_ALIAS;
+  String HTTP_SERVICE_SSL_ALIAS_NAME = SSL_HTTP_SERVICE_ALIAS;
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_ALIAS}
+   * Returns the value of the {@link ConfigurationProperties#SSL_JMX_MANAGER_ALIAS}
    * property.
    * @since Geode 1.0
    */
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_ALIAS)
+  @ConfigAttributeGetter(name = SSL_JMX_MANAGER_ALIAS)
   String getJMXManagerSSLAlias();
 
   /**
-   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_ALIAS}
+   * Sets the value of the {@link ConfigurationProperties#SSL_JMX_MANAGER_ALIAS}
    * property.
    * @since Geode 1.0
    */
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_ALIAS)
+  @ConfigAttributeSetter(name = SSL_JMX_MANAGER_ALIAS)
   void setJMXManagerSSLAlias(String alias);
 
   /**
-   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_ALIAS} property
+   * The name of the {@link ConfigurationProperties#SSL_JMX_MANAGER_ALIAS} property
    * @since Geode 1.0
    */
   @ConfigAttribute(type = String.class)
-  String JMX_MANAGER_SSL_ALIAS_NAME = JMX_MANAGER_SSL_ALIAS;
+  String JMX_MANAGER_SSL_ALIAS_NAME = SSL_JMX_MANAGER_ALIAS;
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_ALIAS}
+   * Returns the value of the {@link ConfigurationProperties#SSL_SERVER_ALIAS}
    * property.
    * @since Geode 1.0
    */
-  @ConfigAttributeGetter(name = SERVER_SSL_ALIAS)
+  @ConfigAttributeGetter(name = SSL_SERVER_ALIAS)
   String getServerSSLAlias();
 
   /**
-   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_ALIAS}
+   * Sets the value of the {@link ConfigurationProperties#SSL_SERVER_ALIAS}
    * property.
    * @since Geode 1.0
    */
-  @ConfigAttributeSetter(name = SERVER_SSL_ALIAS)
+  @ConfigAttributeSetter(name = SSL_SERVER_ALIAS)
   void setServerSSLAlias(String alias);
 
   /**
-   * The name of the {@link ConfigurationProperties#SERVER_SSL_ALIAS} property
+   * The name of the {@link ConfigurationProperties#SSL_SERVER_ALIAS} property
    * @since Geode 1.0
    */
   @ConfigAttribute(type = String.class)
-  String SERVER_SSL_ALIAS_NAME = SERVER_SSL_ALIAS;
+  String SERVER_SSL_ALIAS_NAME = SSL_SERVER_ALIAS;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS}
@@ -4501,6 +4501,26 @@ public interface DistributionConfig extends Config, LogConfig {
   String SSL_TRUSTSTORE_NAME = SSL_TRUSTSTORE;
 
   /**
+   * Returns the value of the {@link ConfigurationProperties#SSL_DEFAULT_ALIAS}
+   * property.
+   */
+  @ConfigAttributeGetter(name = SSL_DEFAULT_ALIAS)
+  String getSSLDefaultAlias();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SSL_DEFAULT_ALIAS}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SSL_DEFAULT_ALIAS)
+  void setSSLDefaultAlias(String sslDefaultAlias);
+
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_DEFAULT_ALIAS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SSL_DEFAULT_ALIAS_NAME = SSL_DEFAULT_ALIAS;
+
+  /**
    * Returns the value of the {@link ConfigurationProperties#SSL_TRUSTSTORE_PASSWORD}
    * property.
    */
@@ -4519,7 +4539,6 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @ConfigAttribute(type = String.class)
   String SSL_TRUSTSTORE_PASSWORD_NAME = SSL_TRUSTSTORE_PASSWORD;
-
 
   //*************** Initializers to gather all the annotations in this class ************************
 

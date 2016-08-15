@@ -197,7 +197,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Deprecated
   private String clusterSSLTrustStorePassword = DEFAULT_SSL_TRUSTSTORE_PASSWORD;
 
-  private String clusterSSLAlias = DEFAULT_CLUSTER_SSL_ALIAS;
+  private String clusterSSLAlias = DEFAULT_SSL_ALIAS;
 
   /**
    * multicast send buffer size, in bytes
@@ -472,7 +472,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Deprecated
   private String jmxManagerSSLTrustStorePassword = DEFAULT_JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD;
 
-  private String jmxManagerSSLAlias = clusterSSLAlias;
+  private String jmxManagerSSLAlias = DEFAULT_SSL_ALIAS;
 
   @Deprecated
   private boolean serverSSLEnabled = DEFAULT_SERVER_SSL_ENABLED;
@@ -495,7 +495,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Deprecated
   private String serverSSLTrustStorePassword = DEFAULT_SERVER_SSL_TRUSTSTORE_PASSWORD;
 
-  private String serverSSLAlias = clusterSSLAlias;
+  private String serverSSLAlias = DEFAULT_SSL_ALIAS;
 
   @Deprecated
   private boolean gatewaySSLEnabled = DEFAULT_GATEWAY_SSL_ENABLED;
@@ -519,7 +519,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private String gatewaySSLTrustStorePassword = DEFAULT_GATEWAY_SSL_TRUSTSTORE_PASSWORD;
 
 
-  private String gatewaySSLAlias = clusterSSLAlias;
+  private String gatewaySSLAlias = DEFAULT_SSL_ALIAS;
 
   @Deprecated
   private boolean httpServiceSSLEnabled = DEFAULT_HTTP_SERVICE_SSL_ENABLED;
@@ -542,7 +542,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Deprecated
   private String httpServiceSSLTrustStorePassword = DEFAULT_HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD;
 
-  private String httpServiceSSLAlias = clusterSSLAlias;
+  private String httpServiceSSLAlias = DEFAULT_SSL_ALIAS;
 
   private SSLEnabledComponent[] sslEnabledComponents = DEFAULT_SSL_ENABLED_COMPONENTS;
 
@@ -555,7 +555,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private String sslTrustStore = DEFAULT_SSL_TRUSTSTORE;
   private String sslTrustStorePassword = DEFAULT_SSL_TRUSTSTORE_PASSWORD;
 
-  private String locatorSSLAlias = clusterSSLAlias;
+  private String locatorSSLAlias = DEFAULT_SSL_ALIAS;
+
+  private String sslDefaultAlias = DEFAULT_SSL_ALIAS;
 
   private Map<String, ConfigSource> sourceMap = Collections.synchronizedMap(new HashMap<String, ConfigSource>());
 
@@ -767,6 +769,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.sslTrustStore = other.getSSLTrustStore();
     this.sslTrustStorePassword = other.getSSLTrustStorePassword();
     this.sslProperties = other.getSSLProperties();
+    this.sslDefaultAlias = other.getSSLDefaultAlias();
 
 
   }
@@ -2550,6 +2553,16 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Override
   public void setSSLTrustStore(final String sslTrustStore) {
     this.sslTrustStore = sslTrustStore;
+  }
+
+  @Override
+  public String getSSLDefaultAlias() {
+    return sslDefaultAlias;
+  }
+
+  @Override
+  public void setSSLDefaultAlias(final String sslDefaultAlias) {
+    this.sslDefaultAlias = sslDefaultAlias;
   }
 
   @Override

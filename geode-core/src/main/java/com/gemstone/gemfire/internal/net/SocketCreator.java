@@ -598,7 +598,7 @@ public class SocketCreator {
      * @param keyAlias The alias name of the server's keypair and supporting
      * certificate chain
      */
-    public ExtendedAliasKeyManager(KeyManager mgr, String keyAlias) {
+    ExtendedAliasKeyManager(KeyManager mgr, String keyAlias) {
       this.delegate = (X509ExtendedKeyManager) mgr;
       this.keyAlias = keyAlias;
     }

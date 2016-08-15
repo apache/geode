@@ -42,7 +42,6 @@ import org.junit.Test;
 import com.gemstone.gemfire.distributed.AbstractLauncher;
 import com.gemstone.gemfire.distributed.LocatorLauncher;
 import com.gemstone.gemfire.distributed.ServerLauncher;
-import com.gemstone.gemfire.distributed.ServerLauncher.Builder;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
@@ -297,7 +296,7 @@ public class JMXMBeanDUnitTest extends DistributedTestCase {
         if (useMultiKey) {
           properties.setProperty(SSL_KEYSTORE, getMultiKeyKeystore());
           properties.setProperty(SSL_TRUSTSTORE, getMultiKeyTruststore());
-          properties.setProperty(JMX_MANAGER_SSL_ALIAS, "jmxkey");
+          properties.setProperty(SSL_JMX_MANAGER_ALIAS, "jmxkey");
         }
       }
     }

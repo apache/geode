@@ -168,16 +168,14 @@ public interface ConfigurationProperties {
   String CLUSTER_SSL_PREFIX = "cluster-ssl";
 
   /**
-   * The static String definition of the <i>"cluster-ssl-alias"</i> property
-   * <a name="cluster-ssl-alias"/a></p>
-   * <U>Description</U>: This property is to be used if a specific key is to be used out of a keystore with multiple keys in it.
-   * This alias will be used for all other SSL communication (HTTP Service,JMX,SERVER,GATEWAY) unless specifically overridden by their
-   * corresponding aliases {@link #GATEWAY_SSL_ALIAS}, {@link #HTTP_SERVICE_SSL_ALIAS}, {@link #JMX_MANAGER_SSL_ALIAS}, {@link #SERVER_SSL_ALIAS}
+   * The static String definition of the <i>"ssl-cluster-alias"</i> property
+   * <a name="ssl-cluster-alias"/a></p>
+   * <U>Description</U>: This property is to be used if a specific key is to be used out of a keystore for the cluster ssl certificate.
    * </p>
    * <U>Default</U>: "" </p>
    * <U>Since</U>: Geode 1.0
    */
-  String CLUSTER_SSL_ALIAS = "cluster-ssl-alias";
+  String SSL_CLUSTER_ALIAS = "ssl-cluster-alias";
   /**
    * The static String definition of the <i>"cluster-ssl-ciphers"</i> property
    * <a name="cluster-ssl-ciphers"/a></p>
@@ -447,15 +445,15 @@ public interface ConfigurationProperties {
    */
   String ENFORCE_UNIQUE_HOST = "enforce-unique-host";
   /**
-   * The static String definition of the <i>"gateway-ssl-alias"</i> property
-   * <a name="gateway-ssl-alias"/a></p>
+   * The static String definition of the <i>"ssl-gateway-alias"</i> property
+   * <a name="ssl-gateway-alias"/a></p>
    * <U>Description</U>: This property is to be used if a specific key is to be used for the SSL communications for the Gateways.
    * </p>
    * <U><i>Optional</i></U>
    * <U>Default</U>: "" </p>
    * <U>Since</U>: Geode 1.0
    */
-  String GATEWAY_SSL_ALIAS = "gateway-ssl-alias";
+  String SSL_GATEWAY_ALIAS = "ssl-gateway-alias";
   /**
    * The static String definition of the <i>"gateway-ssl-ciphers"</i> property
    * <a name="gateway-ssl-ciphers"/a></p>
@@ -476,7 +474,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>false</code></p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_ENABLED} with the optional {@link #GATEWAY_SSL_ALIAS}
+   * @deprecated Since Geode 1.0 use {@link #SSL_ENABLED_COMPONENTS} with the optional {@link #SSL_GATEWAY_ALIAS}
    */
   String GATEWAY_SSL_ENABLED = "gateway-ssl-enabled";
   /**
@@ -593,15 +591,15 @@ public interface ConfigurationProperties {
    */
   String HTTP_SERVICE_PORT = "http-service-port";
   /**
-   * The static String definition of the <i>"http-service-ssl-alias"</i> property
-   * <a name="http-service-ssl-alias"/a></p>
+   * The static String definition of the <i>"ssl-http-service-alias"</i> property
+   * <a name="ssl-http-service-alias"/a></p>
    * <U>Description</U>: This property is to be used if a specific key is to be used for the SSL communications for the HTTP service.
    * </p>
    * <U><i>Optional</i></U>
    * <U>Default</U>: "" </p>
    * <U>Since</U>: Geode 1.0
    */
-  String HTTP_SERVICE_SSL_ALIAS = "http-service-ssl-alias";
+  String SSL_HTTP_SERVICE_ALIAS = "ssl-http-service-alias";
   /**
    * The static String definition of the <i>"http-service-ssl-ciphers"</i> property
    * <a name="http-service-ssl-ciphers"/a></p>
@@ -623,7 +621,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>false</code></p>
    * <U>Since</U>: GemFire 8.1
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_ENABLED} with optional {@link #HTTP_SERVICE_SSL_ALIAS}
+   * @deprecated Since Geode 1.0 use {@link #SSL_ENABLED_COMPONENTS} with optional {@link #SSL_HTTP_SERVICE_ALIAS}
    */
   String HTTP_SERVICE_SSL_ENABLED = "http-service-ssl-enabled";
   /**
@@ -824,15 +822,15 @@ public interface ConfigurationProperties {
    */
   String JMX_MANAGER_UPDATE_RATE = "jmx-manager-update-rate";
   /**
-   * The static String definition of the <i>"jmx-manager-ssl-alias"</i> property
-   * <a name="jmx-manager-ssl-alias"/a></p>
+   * The static String definition of the <i>"ssl-jmx-manager-alias"</i> property
+   * <a name="ssl-jmx-manager-alias"/a></p>
    * <U>Description</U>: This property is to be used if a specific key is to be used for the SSL communications for the jmx manager.
    * </p>
    * <U><i>Optional</i></U>
    * <U>Default</U>: "" </p>
    * <U>Since</U>: Geode 1.0
    */
-  String JMX_MANAGER_SSL_ALIAS = "jmx-manager-ssl-alias";
+  String SSL_JMX_MANAGER_ALIAS = "ssl-jmx-manager-alias";
   /**
    * The static String definition of the <i>"jmx-manager-ssl-ciphers"</i> property
    * <a name="jmx-manager-ssl-ciphers"/a></p>
@@ -853,7 +851,7 @@ public interface ConfigurationProperties {
    * Ignored if jmx-manager is false.
    * </p>
    * <U>Default</U>: "false"
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_ENABLED} with optional {@link #JMX_MANAGER_SSL_ALIAS}
+   * @deprecated Since Geode 1.0 use {@link #SSL_ENABLED_COMPONENTS} with optional {@link #SSL_JMX_MANAGER_ALIAS}
    */
   String JMX_MANAGER_SSL_ENABLED = "jmx-manager-ssl-enabled";
   /**
@@ -943,8 +941,8 @@ public interface ConfigurationProperties {
    */
   String LOAD_CLUSTER_CONFIGURATION_FROM_DIR = "load-cluster-configuration-from-dir";
   /**
-   * The static String definition of the <i>"locator-ssl-alias"</i> property
-   * <a name="locator-ssl-alias"/a></p>
+   * The static String definition of the <i>"ssl-locator-alias"</i> property
+   * <a name="ssl-locator-alias"/a></p>
    * <U>Description</U>: This property is to be used if a specific key is to be used for the SSL communications for the locator.
    * These Communications would be either locator-client or locator-server
    * </p>
@@ -952,7 +950,7 @@ public interface ConfigurationProperties {
    * <U>Default</U>: "" </p>
    * <U>Since</U>: Geode 1.0
    */
-  String LOCATOR_SSL_ALIAS = "locator-ssl-alias";
+  String SSL_LOCATOR_ALIAS = "ssl-locator-alias";
   /**
    * The static String definition of the <i>"locator-wait-time"</i> property
    * <a name="locator-wait-time"/a><p>
@@ -1324,15 +1322,15 @@ public interface ConfigurationProperties {
    */
   String SERVER_BIND_ADDRESS = "server-bind-address";
   /**
-   * The static String definition of the <i>"server-ssl-alias"</i> property
-   * <a name="server-ssl-alias"/a></p>
+   * The static String definition of the <i>"ssl-server-alias"</i> property
+   * <a name="ssl-server-alias"/a></p>
    * <U>Description</U>: This property is to be used if a specific key is to be used for the SSL communications for client-server.
    * </p>
    * <U><i>Optional</i></U>
    * <U>Default</U>: "" </p>
    * <U>Since</U>: Geode 1.0
    */
-  String SERVER_SSL_ALIAS = "server-ssl-alias";
+  String SSL_SERVER_ALIAS = "ssl-server-alias";
   /**
    * The static String definition of the <i>"server-ssl-ciphers"</i> property
    * <a name="server-ssl-ciphers"/a></p>
@@ -1353,7 +1351,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>false</code></p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_ENABLED} with optional {@link #SERVER_SSL_ALIAS}
+   * @deprecated Since Geode 1.0 use {@link #SSL_ENABLED_COMPONENTS} with optional {@link #SSL_SERVER_ALIAS}
    */
   @Deprecated
   String SERVER_SSL_ENABLED = "server-ssl-enabled";
@@ -1749,4 +1747,15 @@ public interface ConfigurationProperties {
    * <U>Since</U>: Geode 1.0
    */
   String SSL_TRUSTSTORE_PASSWORD = "ssl-truststore-password";
+  /**
+   * The static String definition of the <i>"ssl-default-alias"</i> property
+   *
+   * <U>Description</U>This property will be set when using multi-key keystores. This will define the alias that
+   * the ssl connection factory would use when no alias has been set for the different component aliases.
+   * {@link #SSL_CLUSTER_ALIAS}, {@link #SSL_SERVER_ALIAS},{@link #SSL_LOCATOR_ALIAS},{@link #SSL_GATEWAY_ALIAS},{@link #SSL_JMX_MANAGER_ALIAS} , {@link #SSL_HTTP_SERVICE_ALIAS}
+   * </p>
+   * <U>Default</U>: ""</p>
+   * <U>Since</U>: Geode 1.0
+   */
+  String SSL_DEFAULT_ALIAS = "ssl-default-alias";
 }
