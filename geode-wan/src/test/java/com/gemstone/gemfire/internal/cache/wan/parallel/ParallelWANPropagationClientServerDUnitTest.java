@@ -16,34 +16,20 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
-import org.junit.experimental.categories.Category;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-/**
- * 
- */
 @Category(DistributedTest.class)
 public class ParallelWANPropagationClientServerDUnitTest extends WANTestBase {
-  private static final long serialVersionUID = 1L;
-
-  public ParallelWANPropagationClientServerDUnitTest() {
-    super();
-  }
 
   /**
    * Normal happy scenario test case.
-   * 
-   * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-1775: fails intermittently
   @Test
   public void testParallelPropagationWithClientServer() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
