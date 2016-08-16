@@ -1545,9 +1545,8 @@ public class LocalRegion extends AbstractRegion
         // This code was moved from PartitionedRegion.nonTxnFindObject().  That method has been removed.
         // For PRs we don't want to deserialize the value and we can't use findObjectInSystem because
         // it can invoke code that is transactional.
-        result = getSharedDataView().findObject(keyInfo, this, true/*isCreate*/, generateCallbacks,
-            localValue, disableCopyOnRead, preferCD, null, null, false);
-        // TODO why are we not passing the client event or returnTombstones in the above invokation?
+        result = getSharedDataView().findObject(keyInfo, this, isCreate, generateCallbacks,
+            localValue, disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
       }
 
       if (result == null && localValue != null) {
