@@ -2672,6 +2672,9 @@ public class StatArchiveReader implements StatArchiveFormat {
           return false;
       } else if (!type.equals(other.type))
         return false;
+      if (this.firstTSidx != other.firstTSidx) {
+        return false;
+      }
       return true;
     }
   }
