@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import com.sun.xml.internal.ws.api.FeatureListValidatorAnnotation;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -69,6 +70,7 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
@@ -434,6 +436,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
+  @Category(FlakyTest.class)
   public void testStartTwoLocatorsOneWithSSLAndTheOtherNonSSL() throws Exception {
     SocketCreatorFactory.close();
     IgnoredException expectedException = IgnoredException.addIgnoredException("Unrecognized SSL message, plaintext connection");
@@ -493,6 +496,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
+  @Category(FlakyTest.class)
   public void testStartTwoLocatorsOneWithNonSSLAndTheOtherSSL() throws Exception {
     SocketCreatorFactory.close();
     IgnoredException expectedException = IgnoredException.addIgnoredException("Remote host closed connection during handshake");
@@ -546,6 +550,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
+  @Category(FlakyTest.class)
   public void testStartTwoLocatorsWithDifferentSSLCertificates() throws Exception {
     SocketCreatorFactory.close();
     IgnoredException expectedException = IgnoredException.addIgnoredException("Remote host closed connection during handshake");

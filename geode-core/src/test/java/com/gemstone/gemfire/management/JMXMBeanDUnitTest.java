@@ -38,6 +38,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.distributed.AbstractLauncher;
 import com.gemstone.gemfire.distributed.LocatorLauncher;
@@ -51,6 +52,7 @@ import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.rules.DistributedRestoreSystemProperties;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.rules.serializable.SerializableTemporaryFolder;
 import com.gemstone.gemfire.util.test.TestUtil;
 
@@ -149,7 +151,7 @@ public class JMXMBeanDUnitTest extends DistributedTestCase {
   }
 
   @Test
-  @Ignore
+  @Category(FlakyTest.class)
   //To be fixed in GEODE-1716
   public void testJMXOverNonSSL() throws Exception {
     locator.invoke("Configure and start Locator", () -> {
