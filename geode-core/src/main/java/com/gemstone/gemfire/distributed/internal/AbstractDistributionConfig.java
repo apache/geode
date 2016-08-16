@@ -464,9 +464,6 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
   @ConfigAttributeChecker(name = SSL_ENABLED_COMPONENTS)
   protected SSLEnabledComponent[] checkLegacySSLWhenSSLEnabledComponentsSet(SSLEnabledComponent[] value) {
     for (SSLEnabledComponent component : value) {
-      if (!isAliasCorrectlyConfiguredForComponents(component)) {
-        throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_INVALID_ALIAS_OPTIONS.toLocalizedString());
-      }
       switch (component) {
         case ALL:
         case CLUSTER:
@@ -498,43 +495,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     return value;
   }
 
-  private boolean isAliasCorrectlyConfiguredForComponents(final SSLEnabledComponent component) {
-    switch (component) {
-      case ALL: {
-        //If the default alias is not set, then check that all the other component aliases are set
-        if (StringUtils.isEmpty(getSSLDefaultAlias())) {
-          boolean correctAlias = true;
-          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.CLUSTER);
-          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.GATEWAY);
-          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.HTTP_SERVICE);
-          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.JMX);
-          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.LOCATOR);
-          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.SERVER);
-          return correctAlias;
-        }
-      }
-      case CLUSTER: {
-        return StringUtils.isEmpty(getClusterSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
-      }
-      case GATEWAY: {
-        return StringUtils.isEmpty(getGatewaySSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
-      }
-      case HTTP_SERVICE: {
-        return StringUtils.isEmpty(getHTTPServiceSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
-      }
-      case JMX: {
-        return StringUtils.isEmpty(getJMXManagerSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
-      }
-      case LOCATOR: {
-        return StringUtils.isEmpty(getLocatorSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
-      }
-      case SERVER: {
-        return StringUtils.isEmpty(getServerSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
-      }
-      default:
-        return false;
-    }
-  }
+
 
   // AbstractConfig overriding methods
 
@@ -597,8 +558,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
       throw new InternalGemFireException("the attribute setter must have one and only one parametter");
     }
 
-    //Moved this to the outside loop to complete the setting of configuration before checking their validity.
-    //    checkAttribute(attName, attValue);
+    checkAttribute(attName, attValue);
     try {
       setter.invoke(this, attValue);
     } catch (Exception e) {

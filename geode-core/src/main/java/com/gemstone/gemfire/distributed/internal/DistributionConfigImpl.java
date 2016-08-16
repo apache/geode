@@ -35,11 +35,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.redis.GeodeRedisServer;
 
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.InternalGemFireException;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -919,9 +921,74 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     // Make attributes writeable only
     this.modifiable = true;
     validateConfigurationProperties(props);
+    validateSSLEnabledComponentsConfiguration();
     // Make attributes read only
     this.modifiable = false;
 
+  }
+
+  private void validateSSLEnabledComponentsConfiguration() {
+    Object value = null;
+    try {
+      Method method = getters.get(ConfigurationProperties.SSL_ENABLED_COMPONENTS);
+      if (method != null) {
+        value = method.invoke(this, new Object[] {});
+      }
+    } catch (Exception e) {
+      if (e instanceof RuntimeException) {
+        throw (RuntimeException) e;
+      }
+      if (e.getCause() instanceof RuntimeException) {
+        throw (RuntimeException) e.getCause();
+      } else {
+        throw new InternalGemFireException("error invoking getter for property" + ConfigurationProperties.SSL_ENABLED_COMPONENTS);
+      }
+    }
+    SSLEnabledComponent[] sslEnabledComponents = (SSLEnabledComponent[]) value;
+    for (SSLEnabledComponent sslEnabledComponent : sslEnabledComponents) {
+      if (!isAliasCorrectlyConfiguredForComponents(sslEnabledComponent)) {
+        throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_INVALID_ALIAS_OPTIONS.toLocalizedString());
+      }
+    }
+
+  }
+
+  private boolean isAliasCorrectlyConfiguredForComponents(final SSLEnabledComponent component) {
+    switch (component) {
+      case ALL: {
+        //If the default alias is not set, then check that all the other component aliases are set
+        if (StringUtils.isEmpty(getSSLDefaultAlias())) {
+          boolean correctAlias = true;
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.CLUSTER);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.GATEWAY);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.HTTP_SERVICE);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.JMX);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.LOCATOR);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.SERVER);
+          return correctAlias;
+        }
+      }
+      case CLUSTER: {
+        return StringUtils.isEmpty(getClusterSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+      }
+      case GATEWAY: {
+        return StringUtils.isEmpty(getGatewaySSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+      }
+      case HTTP_SERVICE: {
+        return StringUtils.isEmpty(getHTTPServiceSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+      }
+      case JMX: {
+        return StringUtils.isEmpty(getJMXManagerSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+      }
+      case LOCATOR: {
+        return StringUtils.isEmpty(getLocatorSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+      }
+      case SERVER: {
+        return StringUtils.isEmpty(getServerSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+      }
+      default:
+        return false;
+    }
   }
 
   /**

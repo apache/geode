@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import com.sun.xml.internal.ws.api.FeatureListValidatorAnnotation;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
