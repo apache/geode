@@ -83,7 +83,7 @@ public class LuceneIndexCreationProfileJUnitTest {
         new Object[] {
             getOneAnalyzerLuceneIndexCreationProfile(new KeywordAnalyzer()),
             getTwoAnalyzersLuceneIndexCreationProfile(),
-            CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZER_SIZES_2
+          CANNOT_CREATE_LUCENE_INDEX_NO_ANALYZER_EXISTING_MEMBER_2
         },
         new Object[] {
             getOneAnalyzerLuceneIndexCreationProfile(new StandardAnalyzer()),
