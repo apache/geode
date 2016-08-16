@@ -41,6 +41,7 @@ import com.gemstone.gemfire.distributed.internal.locks.DLockService;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation.GIIStatus;
 import com.gemstone.gemfire.internal.cache.RemoteFetchVersionMessage.FetchVersionResponse;
@@ -1966,20 +1967,25 @@ public class DistributedRegion extends LocalRegion implements
     }
   }
 
-  
   @Override
   void basicUpdateEntryVersion(EntryEventImpl event)
       throws EntryNotFoundException {
-
+    LocalRegion lr = event.getLocalRegion();
+    AbstractRegionMap arm = ((AbstractRegionMap) lr.getRegionMap());
     try {
-      if (!hasSeenEvent(event)) {
-        super.basicUpdateEntryVersion(event);
+      arm.lockForCacheModification(lr, event);
+      try {
+        if (!hasSeenEvent(event)) {
+          super.basicUpdateEntryVersion(event);
+        }
+        return;
+      } finally {
+        if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
+          distributeUpdateEntryVersion(event);
+        }
       }
-      return;
     } finally {
-      if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
-        distributeUpdateEntryVersion(event);
-      }
+      arm.releaseCacheModificationLock(lr, event);
     }
   }
 
@@ -2110,33 +2116,47 @@ public class DistributedRegion extends LocalRegion implements
    * @param participants 
    **/
   private void obtainWriteLocksForClear(RegionEventImpl regionEvent, Set<InternalDistributedMember> participants) {
-    lockLocallyForClear(getDistributionManager(), getMyId());
+    lockLocallyForClear(getDistributionManager(), getMyId(), regionEvent);
     DistributedClearOperation.lockAndFlushToOthers(regionEvent, participants);
   }
   
   /** pause local operations so that a clear() can be performed and flush comm channels to the given member
   */
-  public void lockLocallyForClear(DM dm, InternalDistributedMember locker) {
+  public void lockLocallyForClear(DM dm, InternalDistributedMember locker, CacheEvent event) {
     RegionVersionVector rvv = getVersionVector();
+    
+    ARMLockTestHook alth = getRegionMap().getARMLockTestHook();
+    if(alth!=null) alth.beforeLock(this, event);
+    
     if (rvv != null) {
       // block new operations from being applied to the region map
       rvv.lockForClear(getFullPath(), dm, locker);
       //Check for region destroyed after we have locked, to make sure
       //we don't continue a clear if the region has been destroyed.
       checkReadiness();
-      // wait for current operations to 
-      if (!locker.equals(dm.getDistributionManagerId())) {
+      // Only need to flush if NOACK at this point
+      if (this.getAttributes().getScope().isDistributedNoAck()) {
         Set<InternalDistributedMember> mbrs = getDistributionAdvisor().adviseCacheOp();
         StateFlushOperation.flushTo(mbrs, this);
-      }
+      }      
     }
+    
+    if(alth!=null) alth.afterLock(this, null);
+
   }
 
   /** releases the locks obtained in obtainWriteLocksForClear 
    * @param participants */
   private void releaseWriteLocksForClear(RegionEventImpl regionEvent, Set<InternalDistributedMember> participants) {
+    
+    ARMLockTestHook alth = getRegionMap().getARMLockTestHook();
+    if(alth!=null) alth.beforeRelease(this, regionEvent);
+    
     getVersionVector().unlockForClear(getMyId());
     DistributedClearOperation.releaseLocks(regionEvent, participants);
+    
+    if(alth!=null) alth.afterRelease(this, regionEvent);
+
   }
   
   /**

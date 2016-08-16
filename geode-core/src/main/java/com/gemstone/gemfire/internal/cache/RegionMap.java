@@ -27,6 +27,7 @@ import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.cache.TransactionId;
+import com.gemstone.gemfire.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import com.gemstone.gemfire.internal.cache.lru.LRUMapCallbacks;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
@@ -391,4 +392,7 @@ public interface RegionMap extends LRUMapCallbacks {
   public void decTxRefCount(RegionEntry e);
 
   public void close();
+  
+  public ARMLockTestHook getARMLockTestHook();
+  
 }
