@@ -270,6 +270,24 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     );
   }
 
+  @Test
+  public void verifyStandardAnalyzerAndNullOnSameFieldPasses() {
+    SerializableRunnableIF createIndex1 = getAnalyzersIndexWithNullField1();
+    dataStore1.invoke(() -> initDataStore(createIndex1));
+
+    SerializableRunnableIF createIndex2 = getAnalyzersIndexWithTwoFields2();
+    dataStore2.invoke(() -> initDataStore(createIndex2));
+  }
+
+  @Test
+  public void verifyStandardAnalyzerAndNullOnSameFieldPasses2() {
+    SerializableRunnableIF createIndex1 = getAnalyzersIndexWithTwoFields2();
+    dataStore1.invoke(() -> initDataStore(createIndex1));
+
+    SerializableRunnableIF createIndex2 = getAnalyzersIndexWithNullField1();
+    dataStore2.invoke(() -> initDataStore(createIndex2));
+  }
+
   private String getXmlFileForTest(String testName) {
     return TestUtil.getResourcePath(getClass(), getClass().getSimpleName() + "." + testName + ".cache.xml");
   }
@@ -384,6 +402,16 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       Map<String, Analyzer> analyzers = new HashMap<>();
       analyzers.put("field1", new KeywordAnalyzer());
+      analyzers.put("field2", new KeywordAnalyzer());
+      luceneService.createIndex(INDEX_NAME, REGION_NAME, analyzers);
+    };
+  }
+
+  private SerializableRunnableIF getAnalyzersIndexWithTwoFields2() {
+    return () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      Map<String, Analyzer> analyzers = new HashMap<>();
+      analyzers.put("field1", new StandardAnalyzer());
       analyzers.put("field2", new KeywordAnalyzer());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, analyzers);
     };

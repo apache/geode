@@ -22,6 +22,7 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.CacheServiceProfile;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -141,12 +142,12 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
             String analyzerClass = getFieldAnalyzers().remove(entry.getKey());
 
             // Verify the input field analyzer matches the current analyzer
-            if (analyzerClass == null && entry.getValue() != null) {
+            if (analyzerClass == null && (entry.getValue() != null && !entry.getValue().equals(StandardAnalyzer.class.getSimpleName()))) {
               // The input field analyzers do not include the existing field analyzer
               result = LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_NO_ANALYZER_ON_FIELD_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_ANALYZER_3_ON_THAT_FIELD
                   .toString(myProfile.getIndexName(), regionPath, entry.getKey(), entry.getValue());
               break;
-            } else if (analyzerClass != null && entry.getValue() == null) {
+            } else if ((analyzerClass != null && !analyzerClass.equals(StandardAnalyzer.class.getSimpleName())) && entry.getValue() == null) {
               // The existing field analyzers do not include the input field analyzer
               result = LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_ANALYZER_2_ON_FIELD_3_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_NO_ANALYZER_ON_THAT_FIELD
                   .toString(myProfile.getIndexName(), regionPath, analyzerClass, entry.getKey());
