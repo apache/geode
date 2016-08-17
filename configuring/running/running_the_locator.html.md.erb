@@ -192,16 +192,16 @@ where &lt;*locator\_working\_directory*&gt; corresponds to the local working dir
 If successful, the command returns the following information (with the JVM arguments that were provided at startup):
 
 ``` pre
-stymon@ubuntu:~$ gfsh status locator --dir=locator1
-Locator in /home/stymon/locator1 on ubuntu.local[10334] as locator1 is currently online.
+$ gfsh status locator --dir=locator1
+Locator in /home/user/locator1 on ubuntu.local[10334] as locator1 is currently online.
 Process ID: 2359
 Uptime: 17 minutes 3 seconds
 GemFire Version: 8.0.0
 Java Version: 1.7.0_65
-Log File: /home/stymon/locator1/locator1.log
+Log File: /home/user/locator1/locator1.log
 JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
  -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/stymon/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependencies.jar:/usr/local/java/lib/tools.jar
+Class-Path: /home/user/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependencies.jar:/usr/local/java/lib/tools.jar
 
 Cluster configuration service is up and running.
 ```

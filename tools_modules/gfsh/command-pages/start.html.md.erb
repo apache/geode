@@ -173,10 +173,10 @@ start jconsole [--interval=<seconds>] [--notile] [--version]
 **Example Commands:**
 
 ``` pre
-gfsh./> start jconsole --interval=8 --notile;
+gfsh>start jconsole --interval=8 --notile;
 Running JDK JConsole
 
-gfsh./> start jconsole --version;
+gfsh>start jconsole --version;
 JConsole version "1.8.0_31-b01-1"
 Java(TM) SE Runtime Environment (build 1.8.0_31-b01-1-11)
 Java HotSpot(TM) 64-Bit Server VM (build 20.6-b01-11, mixed mode)
@@ -406,19 +406,19 @@ start locator --name=locator1
 
 ``` pre
 gfsh>start locator --name=locator3
-Starting a GemFire Locator in /home/stymon/locator3...
+Starting a GemFire Locator in /home/user/locator3...
 ................................
-Locator in /home/stymon/locator3 on ubuntu.local[10334] as locator3 is currently online.
+Locator in /home/user/locator3 on ubuntu.local[10334] as locator3 is currently online.
 Process ID: 1898
 Uptime: 19 seconds
 GemFire Version: 8.0.0
 Java Version: 1.7.0_65
-Log File: /home/stymon/locator3/locator3.log
+Log File: /home/user/locator3/locator3.log
 JVM Arguments: -Dgemfire.default.locators=192.0.2.3[40402]
 -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
 -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
 -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/stymon/Pivotal_GemFire_800_b48258_Linux/lib/locator-dependencies.jar:
+Class-Path: /home/user/Pivotal_GemFire_800_b48258_Linux/lib/locator-dependencies.jar:
 /usr/local/java/lib/tools.jar
 
 Cluster configuration service is up and running.
@@ -744,16 +744,16 @@ gfsh>start server --name=server2 --server-port=40405
 
 ``` pre
 gfsh>start server --name=server1 --server-port=40406
-Starting a GemFire Server in /home/stymon/server1...
+Starting a GemFire Server in /home/user/server1...
 ....................................................
-Server in /home/stymon/server1 on ubuntu.local[40406] as server1 is currently online.
+Server in /home/user/server1 on ubuntu.local[40406] as server1 is currently online.
 Process ID: 32209
 Uptime: 47 seconds
 GemFire Version: 8.0.0
 Java Version: 1.7.0_65
-Log File: /home/stymon/server1/server1.log
+Log File: /home/user/server1/server1.log
 JVM Arguments: -Dgemfire.default.locators=192.0.2.4[40402] -Dgemfire.use-cluster-configuration=true
 -XX:OnOutOfMemoryError="kill -9 %p" -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
 -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/stymon/Pivotal_GemFire_800_b48258_Linux/lib/server-dependencies.jar:/usr/local/java/lib/tools.jar
+Class-Path: /home/user/Pivotal_GemFire_800_b48258_Linux/lib/server-dependencies.jar:/usr/local/java/lib/tools.jar
 ```
