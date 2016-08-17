@@ -78,7 +78,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testGetAttributeNames() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    assertEquals(attNames.length, 154);
+    assertEquals(attNames.length, 155);
 
     List boolList = new ArrayList();
     List intList = new ArrayList();

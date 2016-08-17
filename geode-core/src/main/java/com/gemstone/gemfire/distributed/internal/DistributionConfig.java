@@ -4552,7 +4552,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    */
   @ConfigAttributeSetter(name = SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION)
-  void setSSLHTTPRequireAuthentication(boolean requiresAuthenatication);
+  void setSSLHTTPRequireAuthentication(boolean requiresAuthentication);
 
   /**
    * The name of the {@link ConfigurationProperties#SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION} property

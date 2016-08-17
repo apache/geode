@@ -33,7 +33,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
 import javax.net.ssl.SSLContext;
 
 import org.apache.commons.lang.StringUtils;
@@ -52,9 +51,14 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-
-import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
@@ -71,6 +75,7 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import com.gemstone.gemfire.util.test.TestUtil;
 
@@ -94,8 +99,6 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
   public static Collection<String> data() {
     return Arrays.asList("/geode", "/gemfire-api");
   }
-
-  private File jks;
 
   public RestAPIsWithSSLDUnitTest() {
     super();
@@ -286,6 +289,10 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     }
   }
 
+  /**
+   * @Deprecated once the legacy SSL properties have been removed we need to remove this logic.
+   */
+  @Deprecated()
   private Properties configureSSL(Properties props, Properties sslProperties, boolean clusterLevel) {
 
     if (clusterLevel) {
@@ -318,6 +325,8 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
       sslPropertyConverter(sslProperties, props, SSL_TRUSTSTORE_PASSWORD, null);
       sslPropertyConverter(sslProperties, props, SSL_HTTP_SERVICE_ALIAS, null);
       sslPropertyConverter(sslProperties, props, SSL_ENABLED_COMPONENTS, null);
+      sslPropertyConverter(sslProperties, props, SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION, null);
+      sslPropertyConverter(sslProperties, props, SSL_DEFAULT_ALIAS, null);
     }
     return props;
   }
@@ -420,14 +429,10 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
     // Host checking is disabled here , as tests might run on multiple hosts and
     // host entries can not be assumed
-    SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+    SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(sslcontext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 
-    return HttpClients.custom().setSSLSocketFactory(sslsf).build();
+    return HttpClients.custom().setSSLSocketFactory(sslConnectionSocketFactory).build();
   }
-
-  //  private void validateConnection(String restEndpoint, String algo) {
-  //    validateConnection(restEndpoint, algo, new Properties());
-  //  }
 
   private void validateConnection(String restEndpoint, String algo, Properties properties) {
 
@@ -492,6 +497,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_ENABLED_COMPONENTS, SSLEnabledComponents.HTTP_SERVICE);
     props.setProperty(SSL_HTTP_SERVICE_ALIAS, "httpservicekey");
+    props.setProperty(SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION, "true");
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "SSL", props);
   }
@@ -506,6 +512,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_ENABLED_COMPONENTS, SSLEnabledComponents.HTTP_SERVICE);
+    props.setProperty(SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION, "true");
     props.setProperty(SSL_HTTP_SERVICE_ALIAS, "httpservicekey");
     props.setProperty(INVALID_CLIENT_ALIAS, "someAlias");
     String restEndpoint = startInfraWithSSL(props, false);
@@ -656,6 +663,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_PROTOCOLS, "SSL");
     props.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
+    props.setProperty(SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION, "true");
     props.setProperty(SSL_ENABLED_COMPONENTS, SSLEnabledComponents.HTTP_SERVICE);
 
     String restEndpoint = startInfraWithSSL(props, false);

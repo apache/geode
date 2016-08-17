@@ -591,15 +591,15 @@ public interface ConfigurationProperties {
    */
   String HTTP_SERVICE_PORT = "http-service-port";
   /**
-   * The static String definition of the <i>"ssl-http-service-alias"</i> property
-   * <a name="ssl-http-service-alias"/a></p>
+   * The static String definition of the <i>"ssl-http-alias"</i> property
+   * <a name="ssl-http-alias"/a></p>
    * <U>Description</U>: This property is to be used if a specific key is to be used for the SSL communications for the HTTP service.
    * </p>
    * <U><i>Optional</i></U>
    * <U>Default</U>: "" </p>
    * <U>Since</U>: Geode 1.0
    */
-  String SSL_HTTP_SERVICE_ALIAS = "ssl-http-service-alias";
+  String SSL_HTTP_SERVICE_ALIAS = "ssl-http-alias";
   /**
    * The static String definition of the <i>"http-service-ssl-ciphers"</i> property
    * <a name="http-service-ssl-ciphers"/a></p>
@@ -822,15 +822,15 @@ public interface ConfigurationProperties {
    */
   String JMX_MANAGER_UPDATE_RATE = "jmx-manager-update-rate";
   /**
-   * The static String definition of the <i>"ssl-jmx-manager-alias"</i> property
-   * <a name="ssl-jmx-manager-alias"/a></p>
+   * The static String definition of the <i>"ssl-jmx-alias"</i> property
+   * <a name="ssl-jmx-alias"/a></p>
    * <U>Description</U>: This property is to be used if a specific key is to be used for the SSL communications for the jmx manager.
    * </p>
    * <U><i>Optional</i></U>
    * <U>Default</U>: "" </p>
    * <U>Since</U>: Geode 1.0
    */
-  String SSL_JMX_MANAGER_ALIAS = "ssl-jmx-manager-alias";
+  String SSL_JMX_MANAGER_ALIAS = "ssl-jmx-alias";
   /**
    * The static String definition of the <i>"jmx-manager-ssl-ciphers"</i> property
    * <a name="jmx-manager-ssl-ciphers"/a></p>
@@ -1759,12 +1759,12 @@ public interface ConfigurationProperties {
    */
   String SSL_DEFAULT_ALIAS = "ssl-default-alias";
   /**
-   * The static String definition of the <i>"ssl-http-service-require-authentication"</i> property
+   * The static String definition of the <i>"ssl-http-require-authentication"</i> property
    *
    * <U>Description</U>If false allows client side's http connection to be authenticated without a 2-way SSL authentication.
    * </p>
    * <U>Default</U>: "false"</p>
    * <U>Since</U>: Geode 1.0
    */
-  String SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION = "ssl-http-service-require-authentication";
+  String SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION = "ssl-http-require-authentication";
 }
