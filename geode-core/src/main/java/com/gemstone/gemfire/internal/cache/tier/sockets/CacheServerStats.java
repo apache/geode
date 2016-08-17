@@ -26,7 +26,7 @@ import com.gemstone.gemfire.distributed.internal.PoolStatHelper;
 import com.gemstone.gemfire.internal.SocketCreator;
 
 /**
- * Bridge Server statistic definitions
+ * Cache Server statistic definitions
  */
 public class CacheServerStats implements MessageStats {
   
