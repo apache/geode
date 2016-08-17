@@ -24,6 +24,8 @@ import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.cache.CachePerfStats;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.statistics.GemFireStatSampler;
+import com.gemstone.gemfire.internal.statistics.platform.ProcessStats;
 
 import java.util.*;
 

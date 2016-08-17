@@ -33,7 +33,7 @@ import com.gemstone.gemfire.distributed.PoolCancelledException;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.DummyStatisticsFactory;
+import com.gemstone.gemfire.internal.statistics.DummyStatisticsFactory;
 import com.gemstone.gemfire.internal.ScheduledThreadPoolExecutorWithKeepAlive;
 import com.gemstone.gemfire.internal.admin.ClientStatsManager;
 import com.gemstone.gemfire.internal.cache.*;

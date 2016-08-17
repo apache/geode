@@ -18,7 +18,7 @@ package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
+import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
 

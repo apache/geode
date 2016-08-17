@@ -18,8 +18,8 @@
 package com.gemstone.gemfire.distributed.internal.locks;
 
 import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.distributed.internal.*;
+import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * This class maintains statistics in GemFire about the distributed lock 

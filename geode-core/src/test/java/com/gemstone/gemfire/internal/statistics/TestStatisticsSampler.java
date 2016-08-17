@@ -19,16 +19,16 @@ package com.gemstone.gemfire.internal.statistics;
 import java.util.List;
 
 import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.internal.StatisticsManager;
 
 /**
  * @since GemFire 7.0
  */
+@SuppressWarnings("unchecked")
 public class TestStatisticsSampler implements StatisticsSampler {
   
   private final StatisticsManager manager;
   
-  public TestStatisticsSampler(StatisticsManager manager) {
+  public TestStatisticsSampler(final StatisticsManager manager) {
     this.manager = manager;
   }
   
@@ -39,20 +39,19 @@ public class TestStatisticsSampler implements StatisticsSampler {
   
   @Override
   public Statistics[] getStatistics() {
-    @SuppressWarnings("unchecked")
-    List<Statistics> statsList = (List<Statistics>)this.manager.getStatsList();
+    List<Statistics> statsList = this.manager.getStatsList();
     synchronized (statsList) {
-      return (Statistics[])statsList.toArray(new Statistics[statsList.size()]);
+      return statsList.toArray(new Statistics[statsList.size()]);
     }
   }
 
   @Override
-  public boolean waitForSample(long timeout) throws InterruptedException {
+  public boolean waitForSample(final long timeout) throws InterruptedException {
     return false;
   }
   
   @Override
-  public SampleCollector waitForSampleCollector(long timeout) throws InterruptedException {
+  public SampleCollector waitForSampleCollector(final long timeout) throws InterruptedException {
     return null;
   }
 }

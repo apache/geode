@@ -19,12 +19,12 @@
 package com.gemstone.gemfire.internal.admin.remote;
 
 //import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.internal.*;
 //import com.gemstone.gemfire.internal.admin.*;
 import com.gemstone.gemfire.distributed.internal.*;
 import java.io.*;
 //import java.util.*;
 import com.gemstone.gemfire.distributed.internal.membership.*;
+import com.gemstone.gemfire.internal.statistics.GemFireStatSampler;
 
 /**
  * A message that is sent to a particular distribution manager to

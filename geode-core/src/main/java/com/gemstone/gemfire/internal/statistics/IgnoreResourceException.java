@@ -22,7 +22,7 @@ import com.gemstone.gemfire.GemFireCheckedException;
  * Indicates that a Statistics resource instance with a null StatisticsType
  * should be ignored by the statistics sampler.
  * <p/>
- * Extracted from {@link com.gemstone.gemfire.internal.StatArchiveWriter}.
+ * Extracted from {@link StatArchiveWriter}.
  * 
  * @since GemFire 7.0
  */

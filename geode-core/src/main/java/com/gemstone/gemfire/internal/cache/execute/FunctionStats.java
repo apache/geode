@@ -20,9 +20,8 @@ import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.DummyStatisticsImpl;
-import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.statistics.DummyStatisticsImpl;
+import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
 
 public class FunctionStats {
 

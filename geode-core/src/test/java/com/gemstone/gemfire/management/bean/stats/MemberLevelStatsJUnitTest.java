@@ -32,7 +32,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.distributed.internal.locks.DLockStats;
 import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.VMStatsContract;
+import com.gemstone.gemfire.internal.statistics.VMStatsContract;
 import com.gemstone.gemfire.internal.cache.CachePerfStats;
 import com.gemstone.gemfire.internal.cache.DiskStoreStats;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;

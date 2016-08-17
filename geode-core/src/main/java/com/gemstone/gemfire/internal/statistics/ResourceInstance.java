@@ -24,7 +24,7 @@ import com.gemstone.gemfire.Statistics;
  * instances depending on the statistics type. The ResourceInstance holds
  * an array of the latest stat values.
  * <p/>
- * Extracted from {@link com.gemstone.gemfire.internal.StatArchiveWriter}.
+ * Extracted from {@link StatArchiveWriter}.
  * 
  * @since GemFire 7.0
  */

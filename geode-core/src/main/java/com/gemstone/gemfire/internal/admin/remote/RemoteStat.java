@@ -18,8 +18,8 @@
 package com.gemstone.gemfire.internal.admin.remote;
 
 import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.admin.*;
+import com.gemstone.gemfire.internal.statistics.StatisticDescriptorImpl;
 //import java.util.*;
 import java.io.*;
 

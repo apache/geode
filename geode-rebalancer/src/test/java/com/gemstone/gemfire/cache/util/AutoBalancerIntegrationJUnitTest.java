@@ -23,7 +23,7 @@ import com.gemstone.gemfire.cache.util.AutoBalancer.GeodeCacheFacade;
 import com.gemstone.gemfire.distributed.DistributedLockService;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.locks.DLockService;
-import com.gemstone.gemfire.internal.HostStatSampler;
+import com.gemstone.gemfire.internal.statistics.HostStatSampler;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;

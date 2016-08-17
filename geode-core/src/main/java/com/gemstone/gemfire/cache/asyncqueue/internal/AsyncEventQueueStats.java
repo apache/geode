@@ -20,7 +20,7 @@ import com.gemstone.gemfire.StatisticDescriptor;
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.StatisticsType;
 import com.gemstone.gemfire.StatisticsTypeFactory;
-import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
+import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderStats;
 
 public class AsyncEventQueueStats extends GatewaySenderStats {

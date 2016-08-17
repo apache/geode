@@ -18,11 +18,11 @@ package com.gemstone.gemfire.internal.statistics;
 
 /**
  * Descriptor containing all of the parameters required to construct a new
- * instance of a {@link com.gemstone.gemfire.internal.StatArchiveWriter}. 
+ * instance of a {@link StatArchiveWriter}.
  * This describes the statistics archive.
  * <p/>
  * This is a constructor parameter object for {@link 
- * com.gemstone.gemfire.internal.StatArchiveWriter}. 
+ * StatArchiveWriter}.
  * <p/>
  * {@link StatArchiveDescriptor.Builder} is used for constructing instances
  * instead of a constructor with many similar parameters (ie, multiple Strings

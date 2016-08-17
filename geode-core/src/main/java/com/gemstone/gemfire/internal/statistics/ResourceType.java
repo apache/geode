@@ -24,7 +24,7 @@ import com.gemstone.gemfire.StatisticsType;
  * each ResourceInstance. The ResourceType holds an array of 
  * StatisticDescriptors for its StatisticsType.
  * <p/>
- * Extracted from {@link com.gemstone.gemfire.internal.StatArchiveWriter}.
+ * Extracted from {@link StatArchiveWriter}.
  *  
  * @since GemFire 7.0
  */

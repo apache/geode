@@ -43,8 +43,8 @@ import com.gemstone.gemfire.StatisticsTypeFactory;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
-import com.gemstone.gemfire.internal.VMStatsContract;
+import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
+import com.gemstone.gemfire.internal.statistics.VMStatsContract;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**

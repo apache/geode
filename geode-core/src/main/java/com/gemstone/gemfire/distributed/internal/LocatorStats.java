@@ -17,7 +17,7 @@
 package com.gemstone.gemfire.distributed.internal;
 
 import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
+import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;

@@ -177,7 +177,7 @@ public class CompiledClass implements Comparable {
       // in junit
       String name = fullyQualifiedName().replace('/', '.');
       if (name.startsWith("com.gemstone.gemfire.internal.shared.NativeCallsJNAImpl")
-          || name.startsWith("com.gemstone.gemfire.internal.HostStatHelper")) {
+          || name.startsWith("com.gemstone.gemfire.internal.statistics.HostStatHelper")) {
         return false;
       }
       try {

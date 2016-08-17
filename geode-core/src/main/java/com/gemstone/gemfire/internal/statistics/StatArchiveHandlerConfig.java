@@ -22,7 +22,7 @@ import java.io.File;
  * Defines the contract enabling the {@link StatArchiveHandler} to retrieve
  * configuration details (some of which may change at runtime).
  * <p/>
- * Implemented by {@link com.gemstone.gemfire.internal.HostStatSampler}.
+ * Implemented by {@link HostStatSampler}.
 
  * @since GemFire 7.0
  * @see com.gemstone.gemfire.distributed.internal.RuntimeDistributionConfigImpl

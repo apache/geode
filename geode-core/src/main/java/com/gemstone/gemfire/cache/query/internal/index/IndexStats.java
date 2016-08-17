@@ -19,7 +19,7 @@ package com.gemstone.gemfire.cache.query.internal.index;
 
 import com.gemstone.gemfire.*;
 //import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
+import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.cache.CachePerfStats;
 
 /**

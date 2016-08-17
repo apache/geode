@@ -18,10 +18,6 @@ package com.gemstone.gemfire.internal.statistics;
 
 import java.util.TimeZone;
 
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.StatArchiveWriter;
-
 /**
  * @since GemFire 7.0
  */
@@ -32,7 +28,7 @@ public class TestStatArchiveWriter extends StatArchiveWriter {
   public static final String WRITER_OS_INFO = "Linux 2.6.18-262.el5";
   public static final String WRITER_MACHINE_INFO = "i386 kuwait";
   
-  public TestStatArchiveWriter(StatArchiveDescriptor archiveDescriptor, LogWriterI18n logger) {
+  public TestStatArchiveWriter(final StatArchiveDescriptor archiveDescriptor) {
     super(archiveDescriptor);
     initialize(WRITER_PREVIOUS_TIMESTAMP_NANOS);
   }

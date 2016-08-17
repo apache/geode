@@ -18,8 +18,8 @@ package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.*;
 //import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
+import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * GemFire statistics about a {@link DiskStoreImpl}.

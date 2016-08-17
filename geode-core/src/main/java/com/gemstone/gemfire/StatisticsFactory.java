@@ -17,7 +17,7 @@
 package com.gemstone.gemfire;
 
 //import com.gemstone.gemfire.distributed.DistributedSystem;
-//import com.gemstone.gemfire.internal.StatArchiveFormat;
+//import com.gemstone.gemfire.internal.statistics.StatArchiveFormat;
 //import java.io.IOException;
 //import java.io.Reader;
 

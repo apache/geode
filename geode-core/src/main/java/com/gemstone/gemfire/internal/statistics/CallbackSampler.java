@@ -23,9 +23,6 @@ import java.util.concurrent.TimeUnit;
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.internal.StatSamplerStats;
-import com.gemstone.gemfire.internal.StatisticsImpl;
-import com.gemstone.gemfire.internal.StatisticsManager;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 import org.apache.logging.log4j.Logger;
