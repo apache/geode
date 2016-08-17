@@ -132,8 +132,7 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
           else if (!analyzerClass.equals(entry.getValue())) {
             // The class of the input analyzer does not match the existing analyzer for the field
             return LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_ANALYZER_2_ON_FIELD_3_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_ANALYZER_4_ON_THAT_FIELD
-              .toString(remoteProfile.getIndexName(), regionPath, analyzerClass, entry.getKey(), entry.getValue());
-          }
+              .toString(remoteProfile.getIndexName(), regionPath, analyzerClass, entry.getKey(), entry.getValue());}
         }
       }
     }
