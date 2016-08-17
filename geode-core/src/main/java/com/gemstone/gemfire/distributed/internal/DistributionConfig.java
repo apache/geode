@@ -1631,12 +1631,12 @@ public interface DistributionConfig extends Config, LogConfig {
   @ConfigAttribute(type = int[].class)
   String MEMBERSHIP_PORT_RANGE_NAME = MEMBERSHIP_PORT_RANGE;
 
-  /** set this boolean to restrict membership/communications to use ports in the ephemeral range */
+  /**
+   * set this boolean to restrict membership/communications to use ports in the ephemeral range
+   */
   String RESTRICT_MEMBERSHIP_PORT_RANGE = GEMFIRE_PREFIX + "use-ephemeral-ports";
 
-  int[] DEFAULT_MEMBERSHIP_PORT_RANGE = Boolean.getBoolean(RESTRICT_MEMBERSHIP_PORT_RANGE)
-      ?  new int[] { 32769, 61000 }
-      :  new int[] {  1024, 65535 };
+  int[] DEFAULT_MEMBERSHIP_PORT_RANGE = Boolean.getBoolean(RESTRICT_MEMBERSHIP_PORT_RANGE) ? new int[] { 32769, 61000 } : new int[] { 1024, 65535 };
 
   @ConfigAttributeGetter(name = MEMBERSHIP_PORT_RANGE)
   int[] getMembershipPortRange();
@@ -4539,6 +4539,31 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @ConfigAttribute(type = String.class)
   String SSL_TRUSTSTORE_PASSWORD_NAME = SSL_TRUSTSTORE_PASSWORD;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION}
+   * property.
+   */
+  @ConfigAttributeGetter(name = SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION)
+  boolean getSSLHTTPRequireAuthentication();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION)
+  void setSSLHTTPRequireAuthentication(boolean requiresAuthenatication);
+
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION_NAME = SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION;
+
+  /**
+   * The default value for http service ssl mutual authentication
+   */
+  boolean DEFAULT_SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION = false;
 
   //*************** Initializers to gather all the annotations in this class ************************
 

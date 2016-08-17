@@ -1758,4 +1758,13 @@ public interface ConfigurationProperties {
    * <U>Since</U>: Geode 1.0
    */
   String SSL_DEFAULT_ALIAS = "ssl-default-alias";
+  /**
+   * The static String definition of the <i>"ssl-http-service-require-authentication"</i> property
+   *
+   * <U>Description</U>If false allows client side's http connection to be authenticated without a 2-way SSL authentication.
+   * </p>
+   * <U>Default</U>: "false"</p>
+   * <U>Since</U>: Geode 1.0
+   */
+  String SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION = "ssl-http-service-require-authentication";
 }

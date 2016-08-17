@@ -62,33 +62,33 @@ public class SSLConfigurationFactory {
   }
 
   private SSLConfig createSSLConfigForComponent(final SSLEnabledComponent sslEnabledComponent) {
-    SSLConfig sslConfig = new SSLConfig();
-    configureClusterSSL(sslConfig, sslEnabledComponent);
+    SSLConfig sslConfig = createSSLConfig(sslEnabledComponent);
     SSLEnabledComponent[] sslEnabledComponents = distributionConfig.getSSLEnabledComponents();
-    if(sslEnabledComponents.length == 0)
-    {
+    if (sslEnabledComponents.length == 0) {
       sslConfig = configureLegacyClusterSSL(sslConfig);
     }
     sslConfig.setSslEnabledComponent(sslEnabledComponent);
     switch (sslEnabledComponent) {
       case ALL: {
-
+        //Create a SSLConfig separate for HTTP Service. As the require-authentication might differ
+        createSSLConfigForComponent(SSLEnabledComponent.HTTP_SERVICE);
+        break;
       }
       case CLUSTER: {
         if (sslEnabledComponents.length > 0) {
-          sslConfig.setAlias(distributionConfig.getClusterSSLAlias());
+          sslConfig = setAliasForComponent(sslConfig, distributionConfig.getClusterSSLAlias());
         }
         break;
       }
       case LOCATOR: {
         if (sslEnabledComponents.length > 0) {
-          sslConfig.setAlias(distributionConfig.getLocatorSSLAlias());
+          sslConfig = setAliasForComponent(sslConfig, distributionConfig.getLocatorSSLAlias());
         }
         break;
       }
       case SERVER: {
         if (sslEnabledComponents.length > 0) {
-          sslConfig.setAlias(distributionConfig.getServerSSLAlias());
+          sslConfig = setAliasForComponent(sslConfig, distributionConfig.getServerSSLAlias());
         } else {
           sslConfig = configureLegacyServerSSL(sslConfig);
         }
@@ -96,7 +96,7 @@ public class SSLConfigurationFactory {
       }
       case GATEWAY: {
         if (sslEnabledComponents.length > 0) {
-          sslConfig.setAlias(distributionConfig.getGatewaySSLAlias());
+          sslConfig = setAliasForComponent(sslConfig, distributionConfig.getGatewaySSLAlias());
         } else {
           sslConfig = configureLegacyGatewaySSL(sslConfig);
         }
@@ -104,7 +104,8 @@ public class SSLConfigurationFactory {
       }
       case HTTP_SERVICE: {
         if (sslEnabledComponents.length > 0) {
-          sslConfig.setAlias(distributionConfig.getHTTPServiceSSLAlias());
+          sslConfig = setAliasForComponent(sslConfig, distributionConfig.getHTTPServiceSSLAlias());
+          sslConfig.setRequireAuth(distributionConfig.getSSLHTTPRequireAuthentication());
         } else {
           sslConfig = configureLegacyHttpServiceSSL(sslConfig);
         }
@@ -112,7 +113,7 @@ public class SSLConfigurationFactory {
       }
       case JMX: {
         if (sslEnabledComponents.length > 0) {
-          sslConfig.setAlias(distributionConfig.getJMXManagerSSLAlias());
+          sslConfig = setAliasForComponent(sslConfig, distributionConfig.getJMXManagerSSLAlias());
         } else {
           sslConfig = configureLegacyJMXSSL(sslConfig);
         }
@@ -123,7 +124,15 @@ public class SSLConfigurationFactory {
     return sslConfig;
   }
 
-  private void configureClusterSSL(final SSLConfig sslConfig, final SSLEnabledComponent sslEnabledComponent) {
+  private SSLConfig setAliasForComponent(final SSLConfig sslConfig, final String clusterSSLAlias) {
+    if (!StringUtils.isEmpty(clusterSSLAlias)) {
+      sslConfig.setAlias(clusterSSLAlias);
+    }
+    return sslConfig;
+  }
+
+  private SSLConfig createSSLConfig(final SSLEnabledComponent sslEnabledComponent) {
+    SSLConfig sslConfig = new SSLConfig();
     sslConfig.setCiphers(distributionConfig.getSSLCiphers());
     sslConfig.setEnabled(determineIfSSLEnabledForSSLComponent(sslEnabledComponent));
     sslConfig.setKeystore(distributionConfig.getSSLKeyStore());
@@ -133,6 +142,8 @@ public class SSLConfigurationFactory {
     sslConfig.setTruststorePassword(distributionConfig.getSSLTrustStorePassword());
     sslConfig.setProtocols(distributionConfig.getSSLProtocols());
     sslConfig.setRequireAuth(distributionConfig.getSSLRequireAuthentication());
+    sslConfig.setAlias(distributionConfig.getSSLDefaultAlias());
+    return sslConfig;
   }
 
   private boolean determineIfSSLEnabledForSSLComponent(final SSLEnabledComponent sslEnabledComponent) {
@@ -296,6 +307,7 @@ public class SSLConfigurationFactory {
     registeredSSLConfig.clear();
   }
 
+  @Deprecated
   public static SSLConfig getSSLConfigForComponent(final boolean useSSL,
                                                    final boolean needClientAuth,
                                                    final String protocols,

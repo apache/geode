@@ -556,6 +556,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private String sslKeyStorePassword = DEFAULT_SSL_KEYSTORE_PASSWORD;
   private String sslTrustStore = DEFAULT_SSL_TRUSTSTORE;
   private String sslTrustStorePassword = DEFAULT_SSL_TRUSTSTORE_PASSWORD;
+  private boolean sslHttpServiceRequireAuthentication = DEFAULT_SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION;
 
   private String locatorSSLAlias = DEFAULT_SSL_ALIAS;
 
@@ -772,6 +773,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.sslTrustStorePassword = other.getSSLTrustStorePassword();
     this.sslProperties = other.getSSLProperties();
     this.sslDefaultAlias = other.getSSLDefaultAlias();
+    this.sslHttpServiceRequireAuthentication = other.getSSLHTTPRequireAuthentication();
 
 
   }
@@ -2640,6 +2642,16 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Override
   public void setSSLTrustStorePassword(final String sslTrustStorePassword) {
     this.sslTrustStorePassword = sslTrustStorePassword;
+  }
+
+  @Override
+  public boolean getSSLHTTPRequireAuthentication() {
+    return sslHttpServiceRequireAuthentication;
+  }
+
+  @Override
+  public void setSSLHTTPRequireAuthentication(final boolean requiresAuthenatication) {
+    this.sslHttpServiceRequireAuthentication = requiresAuthenatication;
   }
 
   ///////////////////////  Utility Methods  ///////////////////////

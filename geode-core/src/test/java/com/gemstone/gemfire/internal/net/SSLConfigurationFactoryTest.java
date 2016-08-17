@@ -1,0 +1,163 @@
+package com.gemstone.gemfire.internal.net;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.apache.commons.lang.StringUtils;
+import org.junit.After;
+import org.junit.Test;
+
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
+import com.gemstone.gemfire.internal.admin.SSLConfig;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+
+public class SSLConfigurationFactoryTest extends JUnit4DistributedTestCase {
+
+  @After
+  public void tearDownTest()
+  {
+    SSLConfigurationFactory.close();
+  }
+
+  @Test
+  public void getSSLConfigForComponentALL() throws Exception {
+    Properties properties = new Properties();
+    properties.setProperty(SSL_ENABLED_COMPONENTS, "all");
+    properties.setProperty(SSL_KEYSTORE, "someKeyStore");
+    properties.setProperty(SSL_KEYSTORE_PASSWORD, "keystorePassword");
+    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
+    properties.setProperty(SSL_TRUSTSTORE, "someKeyStore");
+    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "keystorePassword");
+    properties.setProperty(SSL_DEFAULT_ALIAS, "defaultAlias");
+    properties.setProperty(SSL_CIPHERS, "any");
+    properties.setProperty(SSL_PROTOCOLS, "any");
+    DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
+    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
+    for (SSLEnabledComponent sslEnabledComponent : SSLEnabledComponent.values()) {
+      assertSSLConfig(properties, SSLConfigurationFactory.getSSLConfigForComponent(sslEnabledComponent), sslEnabledComponent, distributionConfig);
+    }
+  }
+
+  @Test
+  public void getSSLConfigForComponentHTTPService() throws Exception {
+    Properties properties = new Properties();
+    properties.setProperty(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.HTTP_SERVICE.getConstant());
+    properties.setProperty(SSL_KEYSTORE, "someKeyStore");
+    properties.setProperty(SSL_KEYSTORE_PASSWORD, "keystorePassword");
+    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
+    properties.setProperty(SSL_TRUSTSTORE, "someKeyStore");
+    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "keystorePassword");
+    properties.setProperty(SSL_DEFAULT_ALIAS, "defaultAlias");
+    properties.setProperty(SSL_CIPHERS, "any");
+    properties.setProperty(SSL_PROTOCOLS, "any");
+    DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
+    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
+    for (SSLEnabledComponent sslEnabledComponent : SSLEnabledComponent.values()) {
+      assertSSLConfig(properties, SSLConfigurationFactory.getSSLConfigForComponent(sslEnabledComponent), sslEnabledComponent, distributionConfig);
+    }
+  }
+
+  @Test
+  public void getSSLConfigForComponentHTTPServiceWithAlias() throws Exception {
+    Properties properties = new Properties();
+    properties.setProperty(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.HTTP_SERVICE.getConstant());
+    properties.setProperty(SSL_KEYSTORE, "someKeyStore");
+    properties.setProperty(SSL_KEYSTORE_PASSWORD, "keystorePassword");
+    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
+    properties.setProperty(SSL_TRUSTSTORE, "someKeyStore");
+    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "keystorePassword");
+    properties.setProperty(SSL_DEFAULT_ALIAS, "defaultAlias");
+    properties.setProperty(SSL_HTTP_SERVICE_ALIAS, "httpAlias");
+    properties.setProperty(SSL_CIPHERS, "any");
+    properties.setProperty(SSL_PROTOCOLS, "any");
+    DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
+    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
+    for (SSLEnabledComponent sslEnabledComponent : SSLEnabledComponent.values()) {
+      assertSSLConfig(properties, SSLConfigurationFactory.getSSLConfigForComponent(sslEnabledComponent), sslEnabledComponent, distributionConfig);
+    }
+  }
+
+  @Test
+  public void getSSLConfigForComponentHTTPServiceWithMutualAuth() throws Exception {
+    Properties properties = new Properties();
+    properties.setProperty(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.HTTP_SERVICE.getConstant());
+    properties.setProperty(SSL_KEYSTORE, "someKeyStore");
+    properties.setProperty(SSL_KEYSTORE_PASSWORD, "keystorePassword");
+    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
+    properties.setProperty(SSL_TRUSTSTORE, "someKeyStore");
+    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "keystorePassword");
+    properties.setProperty(SSL_DEFAULT_ALIAS, "defaultAlias");
+    properties.setProperty(SSL_HTTP_SERVICE_ALIAS, "httpAlias");
+    properties.setProperty(SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION, "true");
+    properties.setProperty(SSL_CIPHERS, "any");
+    properties.setProperty(SSL_PROTOCOLS, "any");
+    DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
+    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
+    for (SSLEnabledComponent sslEnabledComponent : SSLEnabledComponent.values()) {
+      assertSSLConfig(properties, SSLConfigurationFactory.getSSLConfigForComponent(sslEnabledComponent), sslEnabledComponent, distributionConfig);
+    }
+  }
+
+  private void assertSSLConfig(final Properties properties,
+                               final SSLConfig sslConfig,
+                               final SSLEnabledComponent expectedSSLEnabledComponent,
+                               final DistributionConfigImpl distributionConfig) {
+    assertEquals(isSSLComponentEnabled(expectedSSLEnabledComponent, distributionConfig.getSSLEnabledComponents()), sslConfig.isEnabled());
+    assertEquals(properties.getProperty(SSL_KEYSTORE), sslConfig.getKeystore());
+    assertEquals(properties.getProperty(SSL_KEYSTORE_PASSWORD), sslConfig.getKeystorePassword());
+    assertEquals(properties.getProperty(SSL_KEYSTORE_TYPE), sslConfig.getKeystoreType());
+    assertEquals(properties.getProperty(SSL_TRUSTSTORE), sslConfig.getTruststore());
+    assertEquals(properties.getProperty(SSL_TRUSTSTORE_PASSWORD), sslConfig.getTruststorePassword());
+    assertEquals(properties.getProperty(SSL_CIPHERS), sslConfig.getCiphers());
+    assertEquals(properties.getProperty(SSL_PROTOCOLS), sslConfig.getProtocols());
+    assertEquals(getCorrectAlias(expectedSSLEnabledComponent, properties), sslConfig.getAlias());
+    assertEquals(requiresAuthentication(properties, expectedSSLEnabledComponent), sslConfig.isRequireAuth());
+    assertEquals(expectedSSLEnabledComponent, sslConfig.getSslEnabledComponent());
+  }
+
+  private boolean requiresAuthentication(final Properties properties, final SSLEnabledComponent expectedSSLEnabledComponent) {
+    boolean defaultAuthentication = expectedSSLEnabledComponent.equals(SSLEnabledComponent.HTTP_SERVICE) ? DistributionConfig.DEFAULT_SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION : DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
+    String httpRequiresAuthentication = properties.getProperty(SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION);
+
+    return httpRequiresAuthentication == null ? defaultAuthentication : Boolean.parseBoolean(httpRequiresAuthentication);
+  }
+
+  private String getCorrectAlias(final SSLEnabledComponent expectedSSLEnabledComponent, final Properties properties) {
+    switch (expectedSSLEnabledComponent) {
+      case ALL:
+        return properties.getProperty(SSL_DEFAULT_ALIAS);
+      case CLUSTER:
+        return getAliasForComponent(properties, SSL_CLUSTER_ALIAS);
+      case GATEWAY:
+        return getAliasForComponent(properties, SSL_GATEWAY_ALIAS);
+      case HTTP_SERVICE:
+        return getAliasForComponent(properties, SSL_HTTP_SERVICE_ALIAS);
+      case JMX:
+        return getAliasForComponent(properties, SSL_JMX_MANAGER_ALIAS);
+      case LOCATOR:
+        return getAliasForComponent(properties, SSL_LOCATOR_ALIAS);
+      case SERVER:
+        return getAliasForComponent(properties, SSL_SERVER_ALIAS);
+      default:
+        return properties.getProperty(SSL_DEFAULT_ALIAS);
+    }
+  }
+
+  private String getAliasForComponent(final Properties properties, final String componentAliasProperty) {
+    String aliasProperty = properties.getProperty(componentAliasProperty);
+    return !StringUtils.isEmpty(aliasProperty) ? aliasProperty : properties.getProperty(SSL_DEFAULT_ALIAS);
+  }
+
+  private boolean isSSLComponentEnabled(final SSLEnabledComponent expectedSSLEnabledComponent, final SSLEnabledComponent[] sslEnabledComponents) {
+    for (SSLEnabledComponent sslEnabledComponent : sslEnabledComponents) {
+      if (SSLEnabledComponent.ALL.equals(sslEnabledComponent) || sslEnabledComponent.equals(expectedSSLEnabledComponent)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+}

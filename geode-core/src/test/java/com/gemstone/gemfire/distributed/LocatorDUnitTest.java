@@ -130,6 +130,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       system.disconnect();
       system = null;
     }
+    SocketCreatorFactory.close();
   }
 
   ////////  Test Methods
@@ -437,7 +438,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   @Test
   @Category(FlakyTest.class)
   public void testStartTwoLocatorsOneWithSSLAndTheOtherNonSSL() throws Exception {
-    SocketCreatorFactory.close();
     IgnoredException expectedException = IgnoredException.addIgnoredException("Unrecognized SSL message, plaintext connection");
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -497,7 +497,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   @Test
   @Category(FlakyTest.class)
   public void testStartTwoLocatorsOneWithNonSSLAndTheOtherSSL() throws Exception {
-    SocketCreatorFactory.close();
     IgnoredException expectedException = IgnoredException.addIgnoredException("Remote host closed connection during handshake");
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -551,7 +550,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   @Test
   @Category(FlakyTest.class)
   public void testStartTwoLocatorsWithDifferentSSLCertificates() throws Exception {
-    SocketCreatorFactory.close();
     IgnoredException expectedException = IgnoredException.addIgnoredException("Remote host closed connection during handshake");
     IgnoredException expectedException2 = IgnoredException.addIgnoredException("unable to find valid certification path to requested target");
     IgnoredException expectedException3 = IgnoredException.addIgnoredException("Received fatal alert: certificate_unknown");

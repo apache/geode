@@ -30,8 +30,6 @@ import com.gemstone.gemfire.management.internal.SSLUtil;
  */
 public class SSLConfig {
 
-  //private static final String PREFIX = "javax.net.ssl.";
-
   private boolean enabled = DistributionConfig.DEFAULT_SSL_ENABLED;
   private String protocols = DistributionConfig.DEFAULT_SSL_PROTOCOLS;
   private String ciphers = DistributionConfig.DEFAULT_SSL_CIPHERS;
@@ -149,6 +147,8 @@ public class SSLConfig {
   public void setTruststoreType(final String truststoreType) {
     this.truststoreType = truststoreType;
   }
+
+
 
   public Properties getProperties() {
     return this.properties;
