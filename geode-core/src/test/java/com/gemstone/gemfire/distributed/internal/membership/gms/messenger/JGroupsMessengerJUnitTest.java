@@ -440,8 +440,10 @@ public class JGroupsMessengerJUnitTest {
     InternalDistributedMember addr = messenger.getMemberID();
     NetView v = new NetView(addr);
     when(joinLeave.getView()).thenReturn(v);
+    
 
     InternalDistributedMember sender = createAddress(8888);
+    
     JoinRequestMessage msg = new JoinRequestMessage(messenger.localAddress, sender, null, -1, 0);
     
     Message jmsg = messenger.createJGMessage(msg, messenger.jgAddress, Version.CURRENT_ORDINAL);
@@ -450,6 +452,7 @@ public class JGroupsMessengerJUnitTest {
     verify(mh, times(1)).processMessage(any(JoinRequestMessage.class));
     
     LeaveRequestMessage lmsg = new LeaveRequestMessage(messenger.localAddress, sender, "testing");
+    when(joinLeave.getMemberID(any())).thenReturn(sender);
     jmsg = messenger.createJGMessage(lmsg, messenger.jgAddress, Version.CURRENT_ORDINAL);
     interceptor.up(new Event(Event.MSG, jmsg));
     

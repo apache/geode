@@ -82,13 +82,12 @@ public class GMSEncryptJUnitTest {
     }
     int viewId = 1;
     List<InternalDistributedMember> mbrs = new LinkedList<>();
-    //mbrs.add(mockMembers[0]);
+    mbrs.add(mockMembers[0]);
     mbrs.add(mockMembers[1]);
     mbrs.add(mockMembers[2]);
-    mbrs.add(mockMembers[3]);
-
+    
     //prepare the view
-    netView = new NetView(mockMembers[1], viewId, mbrs);
+    netView = new NetView(mockMembers[0], viewId, mbrs);
 
   }
 
@@ -578,8 +577,8 @@ public class GMSEncryptJUnitTest {
     SecretKey bobSharedSecret = bobKeyAgree.generateSecret(dhKalgo);
     System.out.println("Bob   secret: " + toHexString(bobSharedSecret.getEncoded()));
     
-    applyMAC(aliceSharedSecret);
-    applyMAC(bobSharedSecret);
+    //applyMAC(aliceSharedSecret);
+    //applyMAC(bobSharedSecret);
     
     // Compare Alice and Bob
     if (!java.util.Arrays.equals(aliceSharedSecret.getEncoded(), bobSharedSecret.getEncoded()))

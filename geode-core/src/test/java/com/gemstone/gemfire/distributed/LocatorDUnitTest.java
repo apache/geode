@@ -1821,7 +1821,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(LOCATORS, locators);
       props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-      addDSProps(props);
       system = (InternalDistributedSystem) DistributedSystem.connect(props);
       system.disconnect();
     } finally {
@@ -1868,7 +1867,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
               props.setProperty(MCAST_PORT, "0");
               props.setProperty(LOCATORS, locators);
               props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-              addDSProps(props);
               DistributedSystem.connect(props);
             }
           };

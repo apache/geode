@@ -122,6 +122,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase
   @Override
   public Properties getDistributedSystemProperties() {
     if (dsProperties == null) {
+      dsProperties = new Properties();
       dsProperties.put(MAX_WAIT_TIME_RECONNECT, "20000");
       dsProperties.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
       dsProperties.put(DISABLE_AUTO_RECONNECT, "false");
