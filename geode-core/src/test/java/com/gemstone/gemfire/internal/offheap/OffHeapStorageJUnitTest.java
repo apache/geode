@@ -23,7 +23,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.internal.LocalStatisticsFactory;
+import com.gemstone.gemfire.internal.statistics.LocalStatisticsFactory;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.junit.Rule;
 import org.junit.Test;

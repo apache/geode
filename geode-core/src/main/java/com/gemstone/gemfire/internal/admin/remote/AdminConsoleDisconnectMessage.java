@@ -28,7 +28,7 @@ import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.PooledDistributionMessage;
-import com.gemstone.gemfire.internal.GemFireStatSampler;
+import com.gemstone.gemfire.internal.statistics.GemFireStatSampler;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;

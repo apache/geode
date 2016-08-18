@@ -19,6 +19,10 @@ package com.gemstone.gemfire.internal.stats50;
 import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.statistics.StatisticsImpl;
+import com.gemstone.gemfire.internal.statistics.StatisticsManager;
+import com.gemstone.gemfire.internal.statistics.StatisticsTypeImpl;
+
 import java.util.concurrent.atomic.AtomicIntegerArray; // don't use backport here!
 import java.util.concurrent.atomic.AtomicLongArray; // don't use backport here!
 import java.util.concurrent.ConcurrentLinkedQueue; // don't use backport here!

@@ -200,11 +200,6 @@ public class ReplyMessage extends HighPriorityDistributionMessage  {
     dmProcess(dm);
   }
   public final void dmProcess(final DM dm) {
-    // TODO: because startTime uses getTimeStamp replyMessageTime
-    // ends up measuring both messageProcessingScheduleTime and
-    // processedMessagesTime. I'm not sure this was intended.
-    // I've added this info to the stat description so update it
-    // if the startTime changes.
     final long startTime = getTimestamp();
     ReplyProcessor21 processor = ReplyProcessor21.getProcessor(processorId);
     try {

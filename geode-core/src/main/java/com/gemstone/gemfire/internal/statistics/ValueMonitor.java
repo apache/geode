@@ -23,7 +23,6 @@ import java.util.Map;
 import com.gemstone.gemfire.StatisticDescriptor;
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.internal.CopyOnWriteHashSet;
-import com.gemstone.gemfire.internal.StatisticDescriptorImpl;
 
 /**
  * Adds coarser-grained monitoring of entire Statistics instances.

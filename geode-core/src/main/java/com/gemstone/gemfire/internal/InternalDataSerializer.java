@@ -564,7 +564,6 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           return true;
         }});
     }
-    // @todo add: LinkedHashMap (hard to do because it might not be insertion ordered)
   }
   
   /** Maps the id of a serializer to its <code>DataSerializer</code>.
@@ -1473,7 +1472,6 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       if (isPdxSerializationInProgress()) {
         writePdxEnum((Enum<?>)o, out);
       } else {
-        // TODO once .NET is enhanced to support inline enums then it should be compatible.
         checkPdxCompatible(o, ensurePdxCompatibility);
         writeGemFireEnum((Enum<?>)o, out);
       }
@@ -1483,30 +1481,6 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       if (pdxSerializer != null) {
         return writePdx(out, null, o, pdxSerializer);
       }
-//       DSDataOutput out2 = new DSDataOutput(out);
-
-//       for (int i = 0; i < serializers.length; i++) {
-//         final DataSerializer myserializer =
-//           (DataSerializer) serializers[i];
-//         out2.setSerializerId(myserializer.getId());
-//         if (myserializer.toData(o, out2)) {
-//           if (!out2.hasWritten()) {
-//             String s = "Serializer " + serializer + " serialized a " +
-//               o.getClass().getName() + ", but it did not write " +
-//               "any data";
-//             throw new IOException(s);
-//           }
-//           return true;
-
-//         } else {
-//           if (out2.hasWritten()) {
-//             String s = "Serializer " + myserializer +
-//               " did not serialize a " + o.getClass().getName() +
-//               ", but it wrote data";
-//             throw new IOException(s);
-//           }
-//         }
-//       }
       return false;
     }
   }
@@ -1589,14 +1563,11 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   /**
    * Test to see if the object is in the gemfire package,
    * to see if we should pass it on to a users custom serializater.
-   * 
-   * TODO - this is a hack. We should have different flavor of
-   * write object for user objects that calls the serializer. Other
-   * kinds of write object shouldn't even get to the pdx serializer.
    */
   private static boolean isGemfireObject(Object o) {
     return ((o instanceof Function) // fixes 43691
-            || o.getClass().getName().startsWith("com.gemstone."))
+            || o.getClass().getName().startsWith("com.gemstone.")
+             || o.getClass().getName().startsWith("org.apache.geode"))
       && !(o instanceof PdxSerializerObject);
   }
 
@@ -2093,16 +2064,6 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         logger.trace(LogMarker.SERIALIZER, "Writing DataSerializable: {}", o);
       }
       checkPdxCompatible(o, ensurePdxCompatibility);
-      // @todo darrel: make a subinterface of DataSerializable
-      // named InstantiatedDataSerializable
-      // which adds one method which returns the instantiator code.
-      // This would allow the serialization side to not need a map lookup (instead they just call the method)
-      // which also helps the DataSerializable case to no longer do the lookup.
-      // We could also use it to get rid of the need for static register calls
-      // but that would mean that when we find one of these that we check to see
-      // if that class had been registered and do so if not.
-      // So from the customer's point of view this would be easier; just implement
-      // a method that returns an int.
 
       Class c = o.getClass();
       // Is "c" a user class registered with an Instantiator?
@@ -2924,18 +2885,6 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
                 }
               }
 
-              //               public int read(byte[] b, int off, int len)
-              //                 throws IOException {
-              //                 // @todo davidw Do read() and readFully() have the
-              //                 // same semantics in this case?
-              //                 in.readFully(b, off, len);
-              //                 return len;
-              //               }
-
-              //               public long skip(long n) throws IOException {
-              //                 // @todo davidw Is casting the right thing to do?
-              //                 return in.skipBytes((int) n);
-              //               }
             };
         }
 

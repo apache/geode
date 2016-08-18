@@ -64,6 +64,7 @@ import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.Instantiator;
 import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.internal.statistics.StatArchiveWriter;
 import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 

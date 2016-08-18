@@ -87,7 +87,6 @@ public class EnumId implements DataSerializableFixedID {
 
   @Override
   public Version[] getSerializationVersions() {
-    // TODO Auto-generated method stub
     return null;
   }
   

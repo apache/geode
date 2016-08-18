@@ -37,6 +37,7 @@ import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.execute.ResultSender;
+import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
@@ -420,6 +421,7 @@ public abstract class AbstractExecution implements InternalExecution {
   }
 
   public final void setWaitOnExceptionFlag(boolean waitOnException) {
+    this.setForwardExceptions(waitOnException);
     this.waitOnException = waitOnException;
   }
 
@@ -604,6 +606,14 @@ public abstract class AbstractExecution implements InternalExecution {
     stats.endFunctionExecutionWithException(fn.hasResult());
     if (fn.hasResult()) {
       if (waitOnException || forwardExceptions) {
+        if(functionException instanceof FunctionException
+            && functionException.getCause() instanceof QueryInvalidException) {
+          // Handle this exception differently since it can contain
+          // non-serializable objects.
+          // java.io.NotSerializableException: antlr.CommonToken
+          // create a new FunctionException on the original one's message (not cause).
+          functionException = new FunctionException(functionException.getLocalizedMessage());
+        }
         sender.lastResult(functionException);
       } else {
         ((InternalResultSender)sender).setException(functionException);

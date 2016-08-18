@@ -71,7 +71,7 @@ public class MsgDestreamer {
 
   public MsgDestreamer(DMStats stats, CancelCriterion stopper, Version v) {
     this.stopper = stopper;
-    this.t = new DestreamerThread(stats, stopper); // @todo darrel: add group support
+    this.t = new DestreamerThread(stats, stopper);
     this.version = v;
     init();
   }
@@ -271,9 +271,6 @@ public class MsgDestreamer {
     }
     public void close() {
       this.closed = true;
-      // TODO nothing in the run method DIRECTLY throws an interrupt,
-      // though it's possible underlying methods might catch and suitable
-      // exit early...
       interrupt();
     }
     public boolean isClosed() {
@@ -434,7 +431,6 @@ public class MsgDestreamer {
       do {
         // only the thread that sets data to null ever does this check
         // so I believe it is ok to do this check outside of sync.
-        // @todo darrel: mitch questions this logic
         myData = this.data;
         if (myData == null) {
           for (;;) {

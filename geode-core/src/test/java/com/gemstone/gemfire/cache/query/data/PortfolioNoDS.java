@@ -201,12 +201,7 @@ public class PortfolioNoDS implements Serializable {
   }
   
   public boolean boolFunction(String strArg){
-      if(strArg=="active"){
-      return true;
-      }
-      else{
-          return false;
-      }
+    return "active".equals(strArg);
   }  //added by vikramj
   
   public int intFunction(int j) {

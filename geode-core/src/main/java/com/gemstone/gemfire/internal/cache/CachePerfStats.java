@@ -21,6 +21,7 @@ import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.distributed.internal.PoolStatHelper;
 import com.gemstone.gemfire.distributed.internal.QueueStatHelper;
+import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * CachePerfStats tracks statistics about GemFire cache performance.

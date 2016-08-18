@@ -25,10 +25,12 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.InternalGemFireError;
+import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionException;
+import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
@@ -36,6 +38,7 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
+import com.gemstone.gemfire.internal.cache.execute.BucketMovedException;
 import com.gemstone.gemfire.internal.cache.execute.FunctionStats;
 import com.gemstone.gemfire.internal.cache.execute.InternalFunctionException;
 import com.gemstone.gemfire.internal.cache.execute.InternalFunctionInvocationTargetException;
@@ -335,6 +338,7 @@ public class ExecuteRegionFunctionSingleHopOp {
             if (isDebugEnabled) {
               logger.debug("ExecuteRegionFunctionSingleHopOpImpl#processResponse: received message of type EXECUTE_REGION_FUNCTION_RESULT.");
             }
+            Exception exception = null;
             do {
               executeFunctionResponseMsg.receiveChunk();
               Object resultResponse = executeFunctionResponseMsg.getPart(0)
@@ -346,7 +350,6 @@ public class ExecuteRegionFunctionSingleHopOp {
               else {
                 result = resultResponse;
               }
-
               if (result instanceof FunctionException) {
                 FunctionException ex = ((FunctionException)result);
                 if (isDebugEnabled) {
@@ -369,13 +372,26 @@ public class ExecuteRegionFunctionSingleHopOp {
                   this.failedNodes.addAll(ifite.getFailedNodeSet());
                 }
                 if (!ex.getMessage().equals("Buckets are null"))
-                  throw ex;
-
-                return null;
+                  exception = ex;
+              }
+              else if(result instanceof BucketMovedException) {
+                FunctionInvocationTargetException fite = new InternalFunctionInvocationTargetException(
+                    ((BucketMovedException)result).getMessage());
+                exception = new FunctionException(fite);
+              }
+              else if(result instanceof CacheClosedException) {
+                FunctionInvocationTargetException fite = new InternalFunctionInvocationTargetException(
+                    ((CacheClosedException)result).getMessage());
+                if (resultResponse instanceof ArrayList) {
+                  DistributedMember memberID = (DistributedMember) ((ArrayList) resultResponse)
+                      .get(1);
+                  this.failedNodes.add(memberID.getId());
+                }                
+                exception = new FunctionException(fite);
               }
               else if (result instanceof Throwable) {
                 String s = "While performing a remote " + getOpName();
-                throw new ServerOperationException(s, (Throwable)result);
+                exception = new ServerOperationException(s, (Throwable)result);
               }
               else {
                 DistributedMember memberID = (DistributedMember)((ArrayList)resultResponse)
@@ -388,6 +404,11 @@ public class ExecuteRegionFunctionSingleHopOp {
                     this.executor.getRegion().getSystem()).incResultsReceived();
               }
             } while (!executeFunctionResponseMsg.isLastChunk());
+
+            if (exception != null) {
+              throw exception;
+            }
+
             if (isDebugEnabled) {
               logger.debug("ExecuteRegionFunctionSingleHopOpImpl#processResponse: received all the results from server successfully.");
             }

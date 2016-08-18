@@ -113,7 +113,7 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
    * @throws Exception
    */
   @Test
-  public void testParallelPropagationWithLowNumberofBuckets() throws Exception {
+  public void testParallelPropagationWithLowNumberOfBuckets() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
@@ -159,7 +159,7 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testParalleQueueDrainInOrder_PR() throws Exception {
+  public void testParallelQueueDrainInOrder_PR() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 

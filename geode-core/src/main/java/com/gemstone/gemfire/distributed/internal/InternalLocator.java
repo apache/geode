@@ -176,8 +176,6 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   protected volatile LocatorStats stats;
 
-  //TODO - these to properties are a waste of memory once
-  //the system is started.
   private Properties env;
 
   /**
@@ -685,8 +683,6 @@ public class InternalLocator extends Locator implements ConnectListener {
   public void startDistributedSystem() throws UnknownHostException {
     InternalDistributedSystem existing = InternalDistributedSystem.getConnectedInstance();
 
-    //TODO : For now set this property to create a PDX registry that does nothing
-    // Investigate keeping the typeRegistry in the locators
     if (existing != null) {
       // LOG: changed from config to info
       logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_USING_EXISTING_DISTRIBUTED_SYSTEM__0, existing));

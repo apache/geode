@@ -26,6 +26,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import java.io.DataInput;
@@ -87,7 +88,7 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
   /**
    * Creates new instance for StartupOperation.
    * @param hostedLocators
-   * @param isSharedConfigurationEnabled TODO
+   * @param isSharedConfigurationEnabled true if cluster configuration is enabled
    */
   StartupMessage(Collection<String> hostedLocators, boolean isSharedConfigurationEnabled) {
     this.hostedLocatorsAll = hostedLocators;
@@ -290,7 +291,7 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
     if (myMcastAddr != null) {
       myMcastHostAddr = myMcastAddr.getHostAddress();
     }
-    if (myMcastHostAddr == otherMcastHostAddr) return true;
+    if (StringUtils.equals(myMcastHostAddr,otherMcastHostAddr)) return true;
     if (myMcastHostAddr == null) return false;
     return myMcastHostAddr.equals(otherMcastHostAddr);
   }
@@ -382,7 +383,6 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
       int id = in.readInt(); // id
       try {
         if (cName != null) {
-          // @todo verify that the id is correct
           InternalDataSerializer.register(cName, false, null, null, id);
         }
       } catch (IllegalArgumentException ex) {

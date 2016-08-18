@@ -26,7 +26,7 @@ import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.StatisticsType;
 import com.gemstone.gemfire.StatisticsTypeFactory;
-import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
+import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
 
 public class FileSystemStats {
   private static final StatisticsType statsType;

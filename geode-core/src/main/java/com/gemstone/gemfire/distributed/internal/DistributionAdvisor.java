@@ -400,7 +400,6 @@ public class DistributionAdvisor  {
     }
   }
 
-  // @todo ericz this method may not be necessary anymore
   /**
    * Atomically add listener to the list to receive notification when a 
    * *new* profile is added or a profile is removed, and return adviseGeneric(). 
@@ -868,7 +867,7 @@ public class DistributionAdvisor  {
    * defer to their superclass at some point in their re-implementation.
    * 
    * @param memberId the member to remove
-   * @param crashed TODO
+   * @param crashed true if the member did not leave normally
    * @return true if it was being tracked
    */
   private boolean basicRemoveId(ProfileId memberId, 
@@ -980,7 +979,6 @@ public class DistributionAdvisor  {
    * @param serialNum specific serial number to remove
    * @return true if a matching profile for the member was found
    */
-  // TODO could this be merged with removeId?
   public boolean removeIdWithSerial(InternalDistributedMember memberId,
                                     int serialNum,
                                     boolean regionDestroyed) {

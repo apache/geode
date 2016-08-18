@@ -335,23 +335,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
     assert oldConnection instanceof PooledConnection;
     PooledConnection newConnection = null;
     PooledConnection oldPC = (PooledConnection) oldConnection;
-//     while (!allConnectionsMap.containsConnection(oldPC)) {
-//       // ok the connection has already been removed so we really can't do an
-//       // exchange yet.
-//       // As a quick hack lets just get a connection using borrow.
-//       // If it turns out to be in our excludedServer set then
-//       // we can loop and try to exchange it.
-//       // But first make sure oldPC's socket gets closed.
-//       oldPC.internalDestroy();
-//       newConnection = (PooledConnection)borrowConnection(acquireTimeout);
-//       if (excludedServers.contains(newConnection.getServer())) {
-//         oldPC = newConnection; // loop and try to exchange it
-//         newConnection = null;
-//       } else {
-//         // we found one so we can just return it
-//         return newConnection;
-//       }
-//     }
 
     boolean needToUndoEstimate = false;
     lock.lock();
@@ -385,18 +368,9 @@ public class ConnectionManagerImpl implements ConnectionManager {
       }
       if (newConnection == null) {
         if (!allConnectionsMap.removeConnection(oldPC)) {
-          // need to reserve space for the following create
-//           if (connectionCount >= maxConnections) {
-//             throw new AllConnectionsInUseException();
-//           } else {
-          // WARNING: we may be going over maxConnections here
-          // @todo grid: this needs to be fixed
-            //We need to create a connection. Reserve space for it.
-            needToUndoEstimate = true;
-            connectionCount++;
-//             logger.info("DEBUG: exchangeConnection conCount(+1)->" + connectionCount);
-//             getPoolStats().incConCount(1);
-//           }
+          //We need to create a connection. Reserve space for it.
+          needToUndoEstimate = true;
+          connectionCount++;
         }
       }
     }

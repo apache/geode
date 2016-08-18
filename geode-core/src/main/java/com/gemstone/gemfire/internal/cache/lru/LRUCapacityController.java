@@ -18,7 +18,7 @@ package com.gemstone.gemfire.internal.cache.lru;
 
 import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
+import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 

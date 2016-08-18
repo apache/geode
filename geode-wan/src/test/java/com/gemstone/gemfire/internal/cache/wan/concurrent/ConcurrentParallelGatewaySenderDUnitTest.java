@@ -104,7 +104,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
     vm7.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
     
     try {
-      // set the test hook to find out dispacthed events by each of the
+      // set the test hook to find out dispatched events by each of the
       // concurrent dispatcher
       vm4.invoke(() -> ConcurrentParallelGatewaySenderDUnitTest.setTestHook("ln", Boolean.TRUE ));
       vm5.invoke(() -> ConcurrentParallelGatewaySenderDUnitTest.setTestHook("ln", Boolean.TRUE ));
@@ -203,7 +203,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    * @throws Exception
    */
   @Test
-  public void testParallelPropagationWithUnEqualBucketDivison() throws Exception {
+  public void testParallelPropagationWithUnEqualBucketDivision() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
@@ -322,10 +322,10 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
   }
   
   /**
-   * Testing for colocated region with orderpolicy Partition
+   * Testing for colocated region with orderPolicy Partition
    */
   @Test
-  public void testParallelPropogationColocatedPartitionedRegions() {
+  public void testParallelPropagationColocatedPartitionedRegions() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 

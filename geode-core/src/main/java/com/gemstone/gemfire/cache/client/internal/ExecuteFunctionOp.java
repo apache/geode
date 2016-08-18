@@ -531,6 +531,7 @@ public class ExecuteFunctionOp {
             if (logger.isDebugEnabled()) {
               logger.debug("ExecuteFunctionOpImpl#processResponse: received message of type EXECUTE_FUNCTION_RESULT.");
             }
+            Exception exception = null;
             // Read the chunk
             do{
               executeFunctionResponseMsg.receiveChunk();
@@ -556,11 +557,11 @@ public class ExecuteFunctionOp {
                   continue;
                 }
                 else {
-                  throw ex;
+                  exception = ex;
                 }
               }else if (result instanceof Throwable) {
                 String s = "While performing a remote " + getOpName();
-                throw new ServerOperationException(s, (Throwable)result);
+                exception = new ServerOperationException(s, (Throwable)result);
                 // Get the exception toString part.
                 // This was added for c++ thin client and not used in java
                 //Part exceptionToStringPart = msg.getPart(1);
@@ -575,6 +576,11 @@ public class ExecuteFunctionOp {
                     .incResultsReceived();
               }
             }while(!executeFunctionResponseMsg.isLastChunk());
+
+            if(exception != null) {
+              throw exception;
+            }
+
             if (logger.isDebugEnabled()) {
               logger.debug("ExecuteFunctionOpImpl#processResponse: received all the results from server successfully.");
             }

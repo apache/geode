@@ -18,24 +18,19 @@ package com.gemstone.gemfire.internal.statistics;
 
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.internal.AbstractStatisticsFactory;
-import com.gemstone.gemfire.internal.OsStatisticsFactory;
-import com.gemstone.gemfire.internal.StatisticsManager;
+import com.gemstone.gemfire.internal.statistics.platform.OsStatisticsFactory;
 
 /**
  * @since GemFire 7.0
  */
-public class TestStatisticsManager extends AbstractStatisticsFactory 
-    implements StatisticsManager, OsStatisticsFactory {
+public class TestStatisticsManager extends AbstractStatisticsFactory  implements StatisticsManager, OsStatisticsFactory {
 
-  public TestStatisticsManager(long id, String name, long startTime) {
+  public TestStatisticsManager(final long id, final String name, final long startTime) {
     super(id, name, startTime);
   }
 
   @Override
-  public Statistics createOsStatistics(StatisticsType type, String textId,
-      long numericId, int osStatFlags) {
-    // TODO ?
+  public Statistics createOsStatistics(final StatisticsType type, final String textId, final long numericId, final int osStatFlags) {
     return null;
   }
 }

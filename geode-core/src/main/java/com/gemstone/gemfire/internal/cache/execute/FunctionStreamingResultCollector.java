@@ -545,7 +545,8 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
       }
       else {
         if (execution.forwardExceptions || (execution.waitOnException 
-            && !(m.getException().getCause() instanceof BucketMovedException))) {
+            /*&& !(m.getException().getCause() instanceof BucketMovedException)*/)) {
+          // send BucketMovedException forward which will be handled by LocalResultCollectorImpl
           synchronized (processSingleResult) {
             this.functionResultWaiter.processData(m.getException().getCause(), true, msg.getSender());
           }
@@ -607,16 +608,16 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
   @Override
   protected synchronized void processException(ReplyException ex) {
     // we have already forwarded the exception, no need to keep it here
-    if (execution.isForwardExceptions()) {
+    if (execution.isForwardExceptions() || this.execution.waitOnException) {
       return;
     }
     
     // have to keep all the exception
     // rest exception will be added to localresultcollector and it will throw
     // them
-    if (ex.getCause() instanceof CacheClosedException
+    if ((ex.getCause() instanceof CacheClosedException
         || ex.getCause() instanceof ForceReattemptException
-        || ex.getCause() instanceof BucketMovedException) {
+        || ex.getCause() instanceof BucketMovedException)) {
       this.exception = ex;
     }
     else if (!execution.getWaitOnExceptionFlag()) {
@@ -626,7 +627,14 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
 
   @Override
   protected boolean stopBecauseOfExceptions() {
-    if (this.execution.isIgnoreDepartedMembers()) {
+    if (this.execution.isIgnoreDepartedMembers() ) {
+      return false;
+    }
+    // in case of waitOnException : keep processing
+    // the reply from other nodes
+    // this exception will be saved in this.exception 
+    // which will be thrown at the end
+    if(this.execution.waitOnException) {
       return false;
     }
     return super.stopBecauseOfExceptions();

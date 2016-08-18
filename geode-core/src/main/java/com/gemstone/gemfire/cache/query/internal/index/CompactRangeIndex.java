@@ -984,6 +984,9 @@ public class CompactRangeIndex extends AbstractIndex {
 
     if (key != null) {
       right = key.evaluate(context);
+      if(null != right  && indexInfo._getIndex() instanceof CompactMapRangeIndex){
+        right = ((Object[])right)[0];
+      }
     } else {
       right = keyVal;
     }

@@ -1984,6 +1984,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
         }
       }
 
+      this.keepAlive = keepalive;
       isClosing = true;
       logger.info(LocalizedMessage.create(LocalizedStrings.GemFireCache_0_NOW_CLOSING, this));
 
@@ -2000,7 +2001,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
       }
       TXStateProxy tx = null;
       try {
-        this.keepAlive = keepalive;
 
         if (this.txMgr != null) {
           tx = this.txMgr.internalSuspend();

@@ -3405,7 +3405,6 @@ public class Connection implements Runnable {
         msg = (ReplyMessage) msgReader.readMessage(header);
         len = header.getNioMessageLength();
       } else {
-        //TODO - really no need to go to shared map here, we could probably just cache an idle one.
         MsgDestreamer destreamer = obtainMsgDestreamer(
             header.getNioMessageId(), version);
         while (header.getNioMessageType() == CHUNKED_MSG_TYPE) {
@@ -3960,7 +3959,6 @@ public class Connection implements Runnable {
       msg.setDoDecMessagesBeingReceived(true);
       if(directAck) {
         Assert.assertTrue(!isSharedResource(), "We were asked to send a direct reply on a shared socket");
-        //TODO dirack we should resize the send buffer if we know this socket is used for direct ack.
         msg.setReplySender(new DirectReplySender(this));
       }
       this.owner.getConduit().messageReceived(this, msg, bytesRead);
@@ -4057,7 +4055,6 @@ public class Connection implements Runnable {
       // reader threads send replies and we always want to permit those without waiting
       return;
     }
-    // @todo darrel: add some stats
     boolean interrupted = false;
     try {
       for (;;) {

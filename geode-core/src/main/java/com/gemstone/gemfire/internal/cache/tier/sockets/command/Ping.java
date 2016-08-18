@@ -52,23 +52,7 @@ public class Ping extends BaseCommand {
     if (chm != null)
       chm.receivedPing(servConn.getProxyID());
     CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
-    if (crHelper.emulateSlowServer() > 0) {
-      // this.logger.fine("SlowServer", new Exception());
-      boolean interrupted = Thread.interrupted();
-      try {
-        Thread.sleep(crHelper.emulateSlowServer());
-      }
-      catch (InterruptedException ugh) {
-        interrupted = true;
-        servConn.getCachedRegionHelper().getCache().getCancelCriterion()
-            .checkCancelInProgress(ugh);
-      }
-      finally {
-        if (interrupted) {
-          Thread.currentThread().interrupt();
-        }
-      }
-    }
+
     writeReply(msg, servConn);
     servConn.setAsTrue(RESPONDED);
     if (isDebugEnabled) {

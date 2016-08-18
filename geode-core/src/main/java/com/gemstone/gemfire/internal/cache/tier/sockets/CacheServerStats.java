@@ -14,10 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/**
- * Bridge Server statistic definitions
- */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
 import com.gemstone.gemfire.StatisticDescriptor;
@@ -29,6 +25,9 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.PoolStatHelper;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 
+/**
+ * Cache Server statistic definitions
+ */
 public class CacheServerStats implements MessageStats {
   
   private static final String typeName = "CacheServerStats";

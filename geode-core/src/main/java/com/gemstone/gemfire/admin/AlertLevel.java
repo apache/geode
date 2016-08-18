@@ -145,9 +145,8 @@ public class AlertLevel implements java.io.Serializable {
 		final AlertLevel that = (AlertLevel) other;
 
 		if (this.severity != that.severity) return false;
-		if (this.name != that.name &&
-	  		!(this.name != null &&
-	  		this.name.equals(that.name))) return false;
+		if (this.name != null &&
+	  		!this.name.equals(that.name)) return false;
 
 		return true;
 	}

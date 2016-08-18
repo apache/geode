@@ -62,23 +62,6 @@ public class RequestEventValue extends BaseCommand {
     CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
     StringBuffer errMessage = new StringBuffer();
 
-    // TODO: Amogh- Do we need to keep this?
-    if (crHelper.emulateSlowServer() > 0) {
-      boolean interrupted = Thread.interrupted();
-      try {
-        Thread.sleep(crHelper.emulateSlowServer());
-      }
-      catch (InterruptedException ugh) {
-        interrupted = true;
-        ((GemFireCacheImpl)(servConn.getCachedRegionHelper().getCache()))
-            .getCancelCriterion().checkCancelInProgress(ugh);
-      }
-      finally {
-        if (interrupted) {
-          Thread.currentThread().interrupt();
-        }
-      }
-    }
     servConn.setAsTrue(REQUIRES_RESPONSE);
 
     // Retrieve the data from the message parts

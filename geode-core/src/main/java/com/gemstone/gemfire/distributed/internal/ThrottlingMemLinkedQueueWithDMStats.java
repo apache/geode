@@ -107,7 +107,6 @@ public class ThrottlingMemLinkedQueueWithDMStats extends OverflowQueueWithDMStat
     } 
     catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
-      // TODO cancellation check?
     }
   }
   @Override

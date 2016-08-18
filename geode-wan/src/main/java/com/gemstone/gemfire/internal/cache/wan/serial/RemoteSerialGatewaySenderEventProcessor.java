@@ -37,9 +37,9 @@ public class RemoteSerialGatewaySenderEventProcessor extends
     if (logger.isDebugEnabled()) {
       logger.debug(" Creating the GatewayEventRemoteDispatcher");
     }
-    // In case of serial there is a way to create gatewaysender and attach
-    // asynceventlistener. Not sure of the use-case but there are dunit tests
-    // To make them passuncommenting the below condition
+    // In case of serial there is a way to create gatewaySender and attach
+    // asyncEventListener. Not sure of the use-case but there are dunit tests
+    // To make them pass uncommenting the below condition
     if (this.sender.getRemoteDSId() != GatewaySender.DEFAULT_DISTRIBUTED_SYSTEM_ID) {
       this.dispatcher = new GatewaySenderEventRemoteDispatcher(this);
     }else{

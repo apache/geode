@@ -16,8 +16,6 @@
  */
 package org.apache.geode.security.templates;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -52,14 +50,9 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  *
  * <p>{@code security-manager = com.gemstone.gemfire.security.examples.SampleSecurityManager}
  *
- * <p>The class can be initialized with from either a JSON string or a JSON
- * file
- *
- * <p>TODO: example of configuring from in-memory JSON string specified in securityProperties
- *
- * <p>TODO: example of configuring from a JSON file specified in securityProperties<br/>
- * ...called {@code security.json}. This file must exist on the classpath,
- * so members should be started with an appropriate {@code --classpath} option.
+ * <p>The class can be initialized with from a JSON resource called
+ * {@code security.json}. This file must exist on the classpath, so members
+ * should be started with an appropriate {@code --classpath} option.
  *
  * <p>The format of the JSON for configuration is as follows:
  * <pre><code>
@@ -124,26 +117,13 @@ public class SampleSecurityManager implements SecurityManager {
 
   @Override
   public void init(final Properties securityProperties) throws NotAuthorizedException {
-    String jsonPropertyValue = securityProperties.getProperty(SECURITY_JSON);
+    String jsonPropertyValue = securityProperties != null ? securityProperties.getProperty(SECURITY_JSON) : null;
     if (jsonPropertyValue == null) {
-      throw new AuthenticationFailedException("SampleSecurityManager: property [" + SECURITY_JSON + "] must be set.");
+      jsonPropertyValue = DEFAULT_JSON_FILE_NAME;
     }
 
-    // 1st try to load value as a json resource
-    boolean initialized = initializeFromJsonResource(jsonPropertyValue);
-
-    // 2nd try to load value as a json file
-    if (!initialized) {
-      initialized = initializeFromJsonFile(new File(jsonPropertyValue));
-    }
-
-    // 3rd try to use value as a json string
-    if (!initialized) {
-      initialized = initializeFromJson(jsonPropertyValue);
-    }
-
-    if (!initialized) {
-      throw new AuthenticationFailedException("SampleSecurityManager: unable to read json from \"" + jsonPropertyValue + "\" as specified by [" + SECURITY_JSON + "].");
+    if (!initializeFromJsonResource(jsonPropertyValue)) {
+      throw new AuthenticationFailedException("SampleSecurityManager: unable to find json resource \"" + jsonPropertyValue + "\" as specified by [" + SECURITY_JSON + "].");
     }
   }
 
@@ -164,7 +144,7 @@ public class SampleSecurityManager implements SecurityManager {
     return user;
   }
 
-  boolean initializeFromJson(final String json) {//throws IOException {
+  boolean initializeFromJson(final String json) {
     try {
       ObjectMapper mapper = new ObjectMapper();
       JsonNode jsonNode = mapper.readTree(json);
@@ -177,19 +157,7 @@ public class SampleSecurityManager implements SecurityManager {
     }
   }
 
-  boolean initializeFromJsonFile(final File jsonFile) {//throws IOException {
-    try {
-      InputStream input = new FileInputStream(jsonFile);
-      if (input != null) {
-        initializeFromJson(readJsonFromInputStream(input));
-        return true;
-      }
-    } catch (IOException ex) {
-    }
-    return false;
-  }
-
-  boolean initializeFromJsonResource(final String jsonResource) {//throws IOException {
+  boolean initializeFromJsonResource(final String jsonResource) {
     try {
       InputStream input = ClassLoader.getSystemResourceAsStream(jsonResource);
       if (input != null) {

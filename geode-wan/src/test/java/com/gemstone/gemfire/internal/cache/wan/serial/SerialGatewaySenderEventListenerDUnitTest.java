@@ -16,20 +16,20 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.serial;
 
+import com.jayway.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.experimental.categories.Category;
 
@@ -162,7 +162,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
 
   /**
    * Test validates whether the listener attached receives all the events. 
-   * When there are 2 listeners attcahed to the GatewaySender.
+   * When there are 2 listeners attached to the GatewaySender.
    */
   @Category(FlakyTest.class) // GEODE-1066: random ports, waitForCriterion, time sensitive
   @Test
@@ -171,6 +171,12 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
+
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", null, isOffHeap() ));
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR", null, isOffHeap() ));
+
     createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -180,20 +186,11 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.createSenderWithListener( "ln", 2,
         false, 100, 10, false, false, null, true, true));
 
-    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", null, isOffHeap() ));
-    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", null, isOffHeap() ));
-
     startSenderInVMs("ln", vm4, vm5);
 
     vm4.invoke(() -> WANTestBase.createReplicatedRegion(
         getTestMethodName() + "_RR", "ln", isOffHeap() ));
     vm5.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", "ln", isOffHeap() ));
-    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", "ln", isOffHeap() ));
-    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
         getTestMethodName() + "_RR", "ln", isOffHeap() ));
 
     final Map keyValues = new HashMap();
@@ -215,7 +212,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
   }
   
   /**
-   * Test vaildates whether the PoolImpl is created. Ideally when a listener is attached
+   * Test validates whether the PoolImpl is created. Ideally when a listener is attached
    * pool should not be created.
    */
   @Test
@@ -359,35 +356,28 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     if(listeners.size() == 2) {
       final AsyncEventListener l1 = listeners.get(0);
       final AsyncEventListener l2 = listeners.get(1);
-
-      WaitCriterion wc = new WaitCriterion() {
-        Map listenerMap1, listenerMap2;
-        public boolean done() {
-          listenerMap1 = ((MyGatewaySenderEventListener)l1)
-              .getEventsMap();
-          
-          listenerMap2 = ((MyGatewaySenderEventListener2)l2)
+      Awaitility.await().atMost(60000, TimeUnit.MILLISECONDS).until(()->{
+        Map listenerMap1 = ((MyGatewaySenderEventListener)l1)
           .getEventsMap();
-          
-          boolean sizeCorrect = map.size() == listenerMap1.size();
-          boolean keySetCorrect = listenerMap1.keySet().containsAll(map.keySet());
-          boolean valuesCorrect = listenerMap1.values().containsAll(map.values());
-          
-          boolean sizeCorrect2 = map.size() == listenerMap2.size();
-          boolean keySetCorrect2 = listenerMap2.keySet().containsAll(map.keySet());
-          boolean valuesCorrect2 = listenerMap2.values().containsAll(map.values());
-          
-          
-          return sizeCorrect && keySetCorrect && valuesCorrect && sizeCorrect2 && keySetCorrect2 && valuesCorrect2;
-        }
 
-        public String description() {
-          return "Waiting for all sites to get updated, the sizes are "
-              + listenerMap1.size() + " and listenerMap2 "
-              + listenerMap2.size() + " expected map size " + map.size();
-        }
-      };
-      Wait.waitForCriterion(wc, 60000, 500, true); 
+        Map listenerMap2 = ((MyGatewaySenderEventListener2)l2)
+          .getEventsMap();
+        int listener1MapSize = listenerMap1.size();
+        int listener2MapSize = listenerMap1.size();
+        int expectedMapSize = map.size();
+        boolean sizeCorrect = expectedMapSize == listener1MapSize;
+        boolean keySetCorrect = listenerMap1.keySet().containsAll(map.keySet());
+        boolean valuesCorrect = listenerMap1.values().containsAll(map.values());
+
+        boolean sizeCorrect2 = expectedMapSize== listener2MapSize;
+        boolean keySetCorrect2 = listenerMap2.keySet().containsAll(map.keySet());
+        boolean valuesCorrect2 = listenerMap2.values().containsAll(map.values());
+
+        assertEquals("Failed while waiting for all sites to get updated with the correct events. \nThe " +
+                     "size of listener 1's map = "+ listener1MapSize + "\n The size of listener 2's map = " +
+                     ""+ listener2MapSize + "\n The expected map size =" + expectedMapSize ,
+          true, sizeCorrect && keySetCorrect && valuesCorrect && sizeCorrect2 && keySetCorrect2 && valuesCorrect2);
+      });
     }
   }
 }

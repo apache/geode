@@ -29,6 +29,9 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.distributed.internal.tcpserver.*;
 import com.gemstone.gemfire.internal.StatArchiveReader.ResourceInst;
 import com.gemstone.gemfire.internal.StatArchiveReader.StatValue;
+import com.gemstone.gemfire.internal.statistics.StatArchiveReader;
+import com.gemstone.gemfire.internal.statistics.StatArchiveReader.ResourceInst;
+import com.gemstone.gemfire.internal.statistics.StatArchiveReader.StatValue;
 import com.gemstone.gemfire.internal.admin.remote.TailLogResponse;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -942,7 +945,7 @@ public class SystemAdmin {
     return result;
   }
 
-  private static class StatSpec implements StatArchiveReader.StatSpec {
+  public static class StatSpec implements StatArchiveReader.StatSpec {
     public final String cmdLineSpec;
     public final String typeId;
     public final String instanceId;

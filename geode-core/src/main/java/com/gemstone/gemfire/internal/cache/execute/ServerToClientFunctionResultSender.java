@@ -80,9 +80,10 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     this.fn = function;
     this.authContext = authzContext;
     this.isSelector = sc.getAcceptor().isSelector();
+    
     if(this.isSelector){
       this.commBuffer = msg.getCommBuffer();  
-    }     
+    }
   }
 
   public synchronized void lastResult(Object oneResult) {
@@ -95,6 +96,9 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     }
     if(this.lastResultReceived){
       return;
+    }
+    if (logger.isDebugEnabled()) {
+      logger.debug("ServerToClientFunctionResultSender sending last result1 {} " + oneResult);
     }
     try {
       authorizeResult(oneResult);
@@ -137,6 +141,9 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       }
       return;
     }
+    if (logger.isDebugEnabled()) {
+      logger.debug("ServerToClientFunctionResultSender sending last result2 {} " + oneResult);
+    }
     try {
       authorizeResult(oneResult);
       if (!this.fn.hasResult()) {
@@ -175,6 +182,9 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       }
       return;
     }
+    if (logger.isDebugEnabled()) {
+      logger.debug("ServerToClientFunctionResultSender sending result1 {} " + oneResult);
+    }
     try {
       authorizeResult(oneResult);
       if (!this.fn.hasResult()) {
@@ -210,6 +220,9 @@ public class ServerToClientFunctionResultSender implements ResultSender {
         logger.debug("ServerToClientFunctionResultSender not sending result {} as the server has shutdown", oneResult);
       }
       return;
+    }
+    if (logger.isDebugEnabled()) {
+      logger.debug("ServerToClientFunctionResultSender sending result2 {} " + oneResult);
     }
     try {
       authorizeResult(oneResult);
@@ -263,6 +276,9 @@ public class ServerToClientFunctionResultSender implements ResultSender {
   }
 
   protected void sendHeader() throws IOException {
+    if (logger.isDebugEnabled()) {
+      logger.debug("ServerToClientFunctionResultSender sending header");
+    }
     this.setBuffer();
     this.msg.setMessageType(messageType);
     this.msg.setLastChunk(false);
@@ -280,6 +296,9 @@ public class ServerToClientFunctionResultSender implements ResultSender {
   
   public synchronized void setException(Throwable exception) {
     this.lastResultReceived = true;
+    if (logger.isDebugEnabled()) {
+      logger.debug("ServerToClientFunctionResultSender setting exception {} ", exception);
+    }
     synchronized (this.msg) {
       if (!this.sc.getTransientFlag(Command.RESPONDED)) {
         alreadySendException.set(true);

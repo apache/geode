@@ -22,6 +22,7 @@ package com.gemstone.gemfire.cache.lucene.internal;
 import java.util.*;
 
 import com.gemstone.gemfire.cache.lucene.internal.management.LuceneServiceMBean;
+import com.gemstone.gemfire.cache.lucene.internal.management.ManagementIndexListener;
 import com.gemstone.gemfire.management.internal.beans.CacheServiceMBeanBase;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -71,6 +72,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
   private GemFireCacheImpl cache;
   private final HashMap<String, LuceneIndex> indexMap = new HashMap<String, LuceneIndex>();
   private final HashMap<String, LuceneIndexCreationProfile> definedIndexMap = new HashMap<>();
+  private IndexListener managementListener;
 
   public LuceneServiceImpl() {
     
@@ -92,7 +94,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
   @Override
   public CacheServiceMBeanBase getMBean() {
-    return new LuceneServiceMBean(this);
+    LuceneServiceMBean mbean = new LuceneServiceMBean(this);
+    this.managementListener = new ManagementIndexListener(mbean);
+    return mbean;
   }
 
   @Override
@@ -208,6 +212,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
     index.setFieldAnalyzers(fieldAnalyzers);
     index.initialize();
     registerIndex(index);
+    if (this.managementListener != null) {
+      this.managementListener.afterIndexCreated(index);
+    }
   }
   
   private LuceneIndexImpl createIndexRegions(String indexName, String regionPath) {

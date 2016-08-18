@@ -64,7 +64,6 @@ public class ViewAckMessage extends HighPriorityDistributionMessage {
   
   @Override
   public int getDSFID() {
-    // TODO Auto-generated method stub
     return VIEW_ACK_MESSAGE;
   }
 

@@ -33,41 +33,10 @@ import org.junit.experimental.categories.Category;
  * Test of the behavior of a custom ResultCollector when handling exceptions
  */
 @Category(DistributedTest.class)
-public class FunctionServicePeerAccessorPRDUnitTest extends FunctionServiceBase {
+public class FunctionServicePeerAccessorPRDUnitTest extends FunctionServicePeerAccessorPRBase {
 
-  public static final String REGION = "region";
-
-  private transient Region<Object, Object> region;
-
-  @Before
-  public void createRegions() {
-    region = getCache().createRegionFactory(RegionShortcut.PARTITION_PROXY)
-      .create(REGION);
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    vm0.invoke(() -> {
-
-      getCache().createRegionFactory(RegionShortcut.PARTITION)
-        .create(REGION);
-
-      });
-
-    PartitionRegionHelper.assignBucketsToPartitions(region);
-  }
-
-  @Override public Execution getExecution() {
-    return FunctionService.onRegion(region);
-  }
-
-  @Override public int numberOfExecutions() {
+  @Override
+  public int numberOfExecutions() {
     return 1;
-  }
-
-  @Ignore("GEODE-1348 - With this topology, the exception is not wrapped in FunctionException")
-  @Override public void defaultCollectorThrowsExceptionAfterFunctionThrowsIllegalState() {
-  }
-
-  @Ignore("GEODE-1348 - With this topology, the exception is not wrapped in FunctionException")
-  @Override public void customCollectorDoesNotSeeExceptionFunctionThrowsIllegalState() {
   }
 }

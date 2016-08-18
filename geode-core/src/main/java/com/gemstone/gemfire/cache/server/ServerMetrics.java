@@ -47,6 +47,4 @@ public interface ServerMetrics {
    */
   int getMaxConnections();
   
-  //TODO grid - Queue sizes, server group counts,
-  //CPU Usage, stats, etc.
 }

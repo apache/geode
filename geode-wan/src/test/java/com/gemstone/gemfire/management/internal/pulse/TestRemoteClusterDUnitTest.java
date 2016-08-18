@@ -221,7 +221,7 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
   }
 
   /**
-   * Checks whether a GatewayreceiverMBean is created or not
+   * Checks whether a GatewayReceiverMBean is created or not
    * 
    * @param vm
    *          reference to VM
@@ -242,7 +242,7 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
   }
 
   /**
-   * Checks whether a GatewayreceiverMBean is created or not
+   * Checks whether a GatewayReceiverMBean is created or not
    * 
    * @param vm reference to VM
    */

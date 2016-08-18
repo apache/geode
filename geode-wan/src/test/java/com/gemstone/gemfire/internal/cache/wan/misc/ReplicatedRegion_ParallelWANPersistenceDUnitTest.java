@@ -22,8 +22,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -45,7 +43,7 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
 
   /**Below test is disabled intentionally
   1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-  2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+  2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -185,7 +183,7 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
   
   /**Below test is disabled intentionally
   1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-  2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+  2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -338,7 +336,7 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
   
   /**Below test is disabled intentionally
   1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-  2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+  2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -554,7 +552,7 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
   
   /**Below test is disabled intentionally
   1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-  2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+  2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
   3> We have to enabled it in next release
   4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -613,11 +611,11 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
 
     Thread.sleep(60000);
     {
-      AsyncInvocation inv1 = vm7.invokeAsync(() -> ReplicatedRegion_ParallelWANPropogationDUnitTest.doPuts0( getTestMethodName() + "_RR", 10000 ));
+      AsyncInvocation inv1 = vm7.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest.doPuts0(getTestMethodName() + "_RR", 10000 ));
       Thread.sleep(1000);
       AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
       Thread.sleep(2000);
-      AsyncInvocation inv3 = vm6.invokeAsync(() -> ReplicatedRegion_ParallelWANPropogationDUnitTest.doPuts1( getTestMethodName() + "_RR", 10000 ));
+      AsyncInvocation inv3 = vm6.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest.doPuts1(getTestMethodName() + "_RR", 10000 ));
       Thread.sleep(1500);
       AsyncInvocation inv4 = vm5.invokeAsync(() -> WANTestBase.killSender());
       try {
@@ -647,7 +645,7 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
             DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
     AsyncInvocation inv2 = vm5.invokeAsync(() -> WANTestBase.createReplicatedRegion( getTestMethodName() + "_RR", "ln", Scope.DISTRIBUTED_ACK,
             DataPolicy.PERSISTENT_REPLICATE, isOffHeap() ));
-    AsyncInvocation inv3 = vm6.invokeAsync(() -> ReplicatedRegion_ParallelWANPropogationDUnitTest.doPuts2( getTestMethodName() + "_RR", 15000 ));
+    AsyncInvocation inv3 = vm6.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest.doPuts2(getTestMethodName() + "_RR", 15000 ));
     try {
       inv1.join();
       inv2.join();

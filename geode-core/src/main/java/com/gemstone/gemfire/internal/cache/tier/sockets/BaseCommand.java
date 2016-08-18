@@ -158,8 +158,6 @@ public abstract class BaseCommand implements Command {
     }
     catch (EOFException eof) {
       BaseCommand.handleEOFException(msg, servConn, eof);
-      // TODO:Asif: Check if there is any need for explicitly returning
-      return;
     }
     catch (InterruptedIOException e) { // Solaris only
       BaseCommand.handleInterruptedIOException(msg, servConn, e);

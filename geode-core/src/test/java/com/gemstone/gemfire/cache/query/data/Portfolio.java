@@ -30,7 +30,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
@@ -210,12 +213,7 @@ public class Portfolio implements Serializable, DataSerializable {
   }
   
   public boolean boolFunction(String strArg){
-      if(strArg=="active"){
-      return true;
-      }
-      else{
-          return false;
-      }
+    return "active".equals(strArg);
   }  //added by vikramj
   
   public int intFunction(int j) {

@@ -24,7 +24,7 @@ import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.StatisticsType;
 import com.gemstone.gemfire.StatisticsTypeFactory;
 import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
+import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.logging.LogService;
 //import java.io.*;
 import com.gemstone.gemfire.internal.tcp.Buffers;

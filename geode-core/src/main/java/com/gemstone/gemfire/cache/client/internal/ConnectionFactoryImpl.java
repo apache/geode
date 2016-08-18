@@ -52,7 +52,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   
   private static final Logger logger = LogService.getLogger();
   
-  //TODO  - the handshake holds state. It seems like the code depends 
+  //TODO  - GEODE-1746, the handshake holds state. It seems like the code depends 
   //on all of the handshake operations happening in a single thread. I don't think we
   //want that, need to refactor.
   private final HandShake handshake;

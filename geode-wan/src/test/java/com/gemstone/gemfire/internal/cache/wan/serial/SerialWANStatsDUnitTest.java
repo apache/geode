@@ -21,8 +21,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import static com.gemstone.gemfire.test.dunit.Wait.*;
@@ -288,7 +286,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
   }
   
   @Test
-  public void testReplicatedSerialPropagationUNPorcessedEvents() throws Exception {
+  public void testReplicatedSerialPropagationUnprocessedEvents() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
@@ -372,7 +370,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
    * Not Disabled - see ticket #52118
    *
    * NOTE: The test failure is avoided by having a larger number of puts operation so
-   * that WANTestBase.verifyRegionQueueNotEmpty("ln" )) is sucessful as there is a
+   * that WANTestBase.verifyRegionQueueNotEmpty("ln" )) is successful as there is a
    * significant delay during the high number of puts.
    *
    * In future if this failure reappears, the put operations must be increase or a better fix must be found.
@@ -452,12 +450,12 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     
     vm5.invoke(() -> WANTestBase.checkUnProcessedStats("ln", numEntries));
     
-    vm2.invoke(() -> WANTestBase.checkExcepitonStats(1));
+    vm2.invoke(() -> WANTestBase.checkExceptionStats(1));
     
   }
   
   @Test
-  public void testSerialPropogationWithFilter() throws Exception {
+  public void testSerialPropagationWithFilter() throws Exception {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2,lnPort ));

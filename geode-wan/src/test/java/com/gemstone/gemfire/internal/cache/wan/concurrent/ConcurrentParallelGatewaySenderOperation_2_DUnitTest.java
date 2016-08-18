@@ -62,7 +62,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
   }
   
   // to test that when userPR is locally destroyed, shadow Pr is also locally
-  // destroyed and on recreation usrePr , shadow Pr is also recreated.
+  // destroyed and on recreation userPr , shadow Pr is also recreated.
   @Test
   public void testParallelGatewaySender_SingleNode_UserPR_localDestroy_RecreateRegion() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
@@ -186,7 +186,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
   }
 
   @Test
-  public void testParallelGatewaySender_SingleNode_UserPR_Destroy_SimultenuousPut_RecreateRegion() throws Exception {
+  public void testParallelGatewaySender_SingleNode_UserPR_Destroy_SimultaneousPut_RecreateRegion() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
@@ -273,7 +273,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
   }
   
   @Test
-  public void testParallelGatewaySender_SingleNode_UserPR_Close_SimultenuousPut_RecreateRegion() throws Exception {
+  public void testParallelGatewaySender_SingleNode_UserPR_Close_SimultaneousPut_RecreateRegion() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
@@ -419,7 +419,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
   }
   
   @Test
-  public void testParallelGatewaySenders_MultiplNode_UserPR_localDestroy_Recreate() throws Exception {
+  public void testParallelGatewaySenders_MultipleNode_UserPR_localDestroy_Recreate() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
@@ -532,7 +532,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
         assertTrue(ex.getCause() instanceof IllegalStateException);
         return;
       }
-      fail("Excpeted UnsupportedOperationException");
+      fail("Expected UnsupportedOperationException");
     } finally {
       vm4.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());
       vm5.invoke(() -> clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME());

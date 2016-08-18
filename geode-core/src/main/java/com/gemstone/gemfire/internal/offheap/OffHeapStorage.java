@@ -24,7 +24,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
+import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 import java.lang.reflect.Method;

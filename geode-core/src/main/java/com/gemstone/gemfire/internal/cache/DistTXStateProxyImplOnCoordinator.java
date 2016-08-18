@@ -791,7 +791,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
             + dm.getId() + " ,sortedRegions=" + sortedRegionName
             + " ,entryEventList=" + printEntryEventList(entryEventList)
             + " ,txEntryEventMap=" + printEntryEventMap(this.txEntryEventMap)
-            + " ,result= " + localResultMsg != null + " ,finalResult-old= "
+            + " ,result= " + (localResultMsg != null) + " ,finalResult-old= "
             + finalResult);
       }
       finalResult = finalResult && (localResultMsg != null);
@@ -832,7 +832,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         if (logger.isDebugEnabled()) { // TODO - make this trace level
           logger
               .debug("DistTXStateProxyImplOnCoordinator.doCommit got results from target = "
-                  + target + " ,result= " + remoteResultMsg != null
+                  + target + " ,result= " + (remoteResultMsg != null)
                   + " ,finalResult-old= " + finalResult);
         }
         finalResult = finalResult && remoteResultMsg != null;

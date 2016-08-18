@@ -81,7 +81,7 @@ import com.gemstone.gemfire.distributed.internal.MessageWithReply;
 import com.gemstone.gemfire.distributed.internal.ReplyMessage;
 import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
 import com.gemstone.gemfire.internal.ClassLoadUtil;
-import com.gemstone.gemfire.internal.DummyStatisticsFactory;
+import com.gemstone.gemfire.internal.statistics.DummyStatisticsFactory;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalInstantiator;
 import com.gemstone.gemfire.internal.net.SocketCloser;

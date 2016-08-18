@@ -199,7 +199,7 @@ public interface MembershipManager {
    * @param remoteId
    * @return true if membership is confirmed, else timeout and false
    */
-  public boolean waitForMembershipCheck(InternalDistributedMember remoteId);
+  public boolean waitForNewMember(InternalDistributedMember remoteId);
 
   /**
    * Release critical resources, avoiding any possibility

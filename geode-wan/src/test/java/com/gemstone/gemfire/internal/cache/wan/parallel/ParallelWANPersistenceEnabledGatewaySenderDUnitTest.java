@@ -73,10 +73,10 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
         AttributesFactory rFact = new AttributesFactory();
         rFact.addGatewaySenderId(sender1.getId());
 
-        PartitionAttributesFactory pfact = new PartitionAttributesFactory();
-        pfact.setTotalNumBuckets(100);
-        pfact.setRedundantCopies(1);
-        rFact.setPartitionAttributes(pfact.create());
+        PartitionAttributesFactory pFact = new PartitionAttributesFactory();
+        pFact.setTotalNumBuckets(100);
+        pFact.setRedundantCopies(1);
+        rFact.setPartitionAttributes(pFact.create());
         Region r = cache.createRegionFactory(rFact.create()).create("MyRegion");
         sender1.start();
       } finally {
@@ -85,7 +85,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
       
     }
     catch (Exception e) {
-      fail("UnExpectd Exception :" + e);
+      fail("Unexpected Exception :" + e);
     }
   }
   
@@ -1450,7 +1450,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
    * This test is added for defect # 45747. 
    */
   @Test
-  public void testParallelPropagationWithSenderPerisistenceEnabledForAccessor() {
+  public void testParallelPropagationWithSenderPersistenceEnabledForAccessor() {
     //create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     //create locator on remote site

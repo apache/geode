@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.pdx.internal;
 
+import static org.apache.logging.log4j.message.MapMessage.MapFormat.JSON;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -62,6 +64,18 @@ import com.gemstone.gemfire.pdx.WritablePdxInstance;
 public class PdxInstanceImpl extends PdxReaderImpl implements PdxInstance, Sendable, ConvertableToBytes {
 
   private static final long serialVersionUID = -1669268527103938431L;
+
+  private static final boolean USE_STATIC_MAPPER = Boolean.getBoolean("PdxInstance.use-static-mapper");
+
+  static final ObjectMapper mapper = USE_STATIC_MAPPER? createObjectMapper() : null;
+
+  private static ObjectMapper createObjectMapper() {
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.setDateFormat(new SimpleDateFormat("MM/dd/yyyy"));
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    mapper.configure(com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+    return mapper;
+  }
 
   private transient volatile Object cachedObjectForm;
 
@@ -209,12 +223,9 @@ public class PdxInstanceImpl extends PdxReaderImpl implements PdxInstance, Senda
         
         if(StringUtils.hasText(className)) {
           try {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.setDateFormat(new SimpleDateFormat("MM/dd/yyyy"));
-            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            mapper.configure(com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
             String JSON = JSONFormatter.toJSON(this);
-            Object classInstance = mapper.readValue(JSON, ClassPathLoader.getLatest().forName(className));
+            ObjectMapper objMapper = USE_STATIC_MAPPER? mapper : createObjectMapper();
+            Object classInstance = objMapper.readValue(JSON, ClassPathLoader.getLatest().forName(className));
             return classInstance;
           }catch(Exception e){
             throw new PdxSerializationException("Could not deserialize as java class type could not resolved", e);
@@ -284,7 +295,6 @@ public class PdxInstanceImpl extends PdxReaderImpl implements PdxInstance, Senda
         break;
       }
       case OBJECT: {
-        //TODO - we might able to optimize these to not deserialize the object
         Object objectValue = ur.readObject(ft);
         if (objectValue == null) {
           // default value of null does not modify hashCode.

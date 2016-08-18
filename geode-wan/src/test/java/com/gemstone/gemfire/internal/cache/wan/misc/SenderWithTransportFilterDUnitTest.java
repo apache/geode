@@ -50,7 +50,7 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 public class SenderWithTransportFilterDUnitTest extends WANTestBase {
 
   @Test
-  public void testSerialSenderWithTansportFilter() {
+  public void testSerialSenderWithTransportFilter() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -76,7 +76,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testParallelSenderWithTansportFilter() {
+  public void testParallelSenderWithTransportFilter() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -115,7 +115,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
     fact.setStartPort(port);
     fact.setEndPort(port);
     ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
-    transportFilters.add(new CheckSumTranportFilter("CheckSumTranportFilter"));
+    transportFilters.add(new CheckSumTransportFilter("CheckSumTransportFilter"));
     if (!transportFilters.isEmpty()) {
       for (GatewayTransportFilter filter : transportFilters) {
         fact.addGatewayTransportFilter(filter);
@@ -126,14 +126,14 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
       receiver.start();
     }
     catch (IOException e) {
-      fail("Test " + test.getName() + " failed to start GatewayRecevier on port " + port, e);
+      fail("Test " + test.getName() + " failed to start GatewayReceiver on port " + port, e);
     }
     return port;
   }
 
   public static void createSenderWithTransportFilter(String dsName,
       int remoteDsId, boolean isParallel, Integer maxMemory, Integer batchSize,
-      boolean isConflation, boolean isPersistent, boolean isManulaStart) {
+      boolean isConflation, boolean isPersistent, boolean isManualStart) {
     File persistentDirectory = new File(dsName + "_disk_"
         + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
     persistentDirectory.mkdir();
@@ -148,7 +148,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
       gateway.setBatchSize(batchSize);
       ((InternalGatewaySenderFactory)gateway).setLocatorDiscoveryCallback(new MyLocatorCallback());
       ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
-      transportFilters.add(new CheckSumTranportFilter("CheckSumTranportFilter"));
+      transportFilters.add(new CheckSumTransportFilter("CheckSumTransportFilter"));
       if (!transportFilters.isEmpty()) {
         for (GatewayTransportFilter filter : transportFilters) {
           gateway.addGatewayTransportFilter(filter);
@@ -172,11 +172,11 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
           .createGatewaySenderFactory();
       gateway.setMaximumQueueMemory(maxMemory);
       gateway.setBatchSize(batchSize);
-      gateway.setManualStart(isManulaStart);
+      gateway.setManualStart(isManualStart);
       ((InternalGatewaySenderFactory)gateway)
           .setLocatorDiscoveryCallback(new MyLocatorCallback());
       ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
-      transportFilters.add(new CheckSumTranportFilter("CheckSumTranportFilter"));
+      transportFilters.add(new CheckSumTransportFilter("CheckSumTransportFilter"));
       if (!transportFilters.isEmpty()) {
         for (GatewayTransportFilter filter : transportFilters) {
           gateway.addGatewayTransportFilter(filter);
@@ -196,13 +196,13 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
     }
   }
 
-  static class CheckSumTranportFilter implements GatewayTransportFilter {
+  static class CheckSumTransportFilter implements GatewayTransportFilter {
 
     Adler32 checker = new Adler32();
     
     private String name;
     
-    public CheckSumTranportFilter(String name){
+    public CheckSumTransportFilter(String name){
       this.name = name;
     }
 

@@ -43,6 +43,7 @@ import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import org.apache.geode.security.SecurableComponents;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
@@ -566,9 +567,10 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   protected String userCommandPackages = DEFAULT_USER_COMMAND_PACKAGES;
 
-  /**
-   * "off-heap-memory-size" with value of "" or "<size>[g|m]"
-   */
+  private String securityEnabledComponents = DEFAULT_SECURITY_ENABLED_COMPONENTS;
+
+  /** "off-heap-memory-size" with value of "" or "<size>[g|m]" */
+
   protected String offHeapMemorySize = DEFAULT_OFF_HEAP_MEMORY_SIZE;
 
   /**
@@ -754,6 +756,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.shiroInit = other.getShiroInit();
     this.securityManager = other.getSecurityManager();
     this.postProcessor = other.getPostProcessor();
+
+    this.securityEnabledComponents = ((DistributionConfigImpl) other).securityEnabledComponents;
     this.clusterSSLAlias = other.getClusterSSLAlias();
     this.gatewaySSLAlias = other.getGatewaySSLAlias();
     this.httpServiceSSLAlias = other.getHTTPServiceSSLAlias();
@@ -2167,6 +2171,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   public Properties getSecurityProps() {
+    if(security.containsKey(SECURITY_MANAGER) && !security.containsKey(SECURITY_ENABLED_COMPONENTS)){
+      security.setProperty(SECURITY_ENABLED_COMPONENTS, SecurableComponents.ALL);
+    }
     return security;
   }
 
@@ -2482,6 +2489,16 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Override
   public String getShiroInit() {
     return this.shiroInit;
+  }
+
+  @Override
+  public String getSecurityEnabledComponents() {
+    return securityEnabledComponents;
+  }
+
+  @Override
+  public void setSecurityEnabledComponents(final String securityEnabledComponents) {
+    this.securityEnabledComponents = (String) checkAttribute(SECURITY_ENABLED_COMPONENTS, securityEnabledComponents);
   }
 
   @Override
@@ -3311,6 +3328,54 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
       }
     } else if (!startLocator.equals(other.startLocator)) {
       return false;
+    if (sslProtocols == null) {
+      if (other.sslProtocols != null)
+        return false;
+    } else if (!sslProtocols.equals(other.sslProtocols))
+      return false;
+    if (sslRequireAuthentication != other.sslRequireAuthentication)
+      return false;
+    if (startDevRestApi != other.startDevRestApi)
+      return false;
+    if (startLocator == null) {
+      if (other.startLocator != null)
+        return false;
+    } else if (!startLocator.equals(other.startLocator))
+      return false;
+    if (startLocatorPort != other.startLocatorPort)
+      return false;
+    if (statisticArchiveFile == null) {
+      if (other.statisticArchiveFile != null)
+        return false;
+    } else if (!statisticArchiveFile.equals(other.statisticArchiveFile))
+      return false;
+    if (statisticSampleRate != other.statisticSampleRate)
+      return false;
+    if (statisticSamplingEnabled != other.statisticSamplingEnabled)
+      return false;
+    if (tcpPort != other.tcpPort)
+      return false;
+    if (udpFragmentSize != other.udpFragmentSize)
+      return false;
+    if (udpRecvBufferSize != other.udpRecvBufferSize)
+      return false;
+    if (udpSendBufferSize != other.udpSendBufferSize)
+      return false;
+    if (useSharedConfiguration != other.useSharedConfiguration)
+      return false;
+    if (userCommandPackages == null) {
+      if (other.userCommandPackages != null)
+        return false;
+    } else if (!userCommandPackages.equals(other.userCommandPackages))
+      return false;
+    if (userDefinedProps == null) {
+      if (other.userDefinedProps != null)
+        return false;
+    } else if (!userDefinedProps.equals(other.userDefinedProps))
+      return false;
+    if (!StringUtils.equals(securityEnabledComponents, other.securityEnabledComponents)) {
+      return false;
+    }
     }
     if (startLocatorPort != other.startLocatorPort) {
       return false;
@@ -3517,6 +3582,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     result = prime * result + udpRecvBufferSize;
     result = prime * result + udpSendBufferSize;
     result = prime * result + (useSharedConfiguration ? 1231 : 1237);
+    result = prime * result
+        + ((userCommandPackages == null) ? 0 : userCommandPackages.hashCode());
+    result = prime * result
+        + ((userDefinedProps == null) ? 0 : userDefinedProps.hashCode());
+    result = prime * result + ((securityEnabledComponents == null) ? 0 : securityEnabledComponents.hashCode());
     result = prime * result + ((userCommandPackages == null) ? 0 : userCommandPackages.hashCode());
     result = prime * result + ((userDefinedProps == null) ? 0 : userDefinedProps.hashCode());
     result = prime * result + ((clusterSSLAlias == null) ? 0 : clusterSSLAlias.hashCode());

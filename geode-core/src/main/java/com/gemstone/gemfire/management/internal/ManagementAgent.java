@@ -61,6 +61,7 @@ import com.gemstone.gemfire.internal.net.SSLConfigurationFactory;
 import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.internal.security.shiro.JMXShiroAuthenticator;
 import com.gemstone.gemfire.internal.tcp.TCPConduit;
 import com.gemstone.gemfire.management.ManagementException;
@@ -95,6 +96,7 @@ public class ManagementAgent {
   private JMXConnectorServer jmxConnectorServer;
   private JMXShiroAuthenticator shiroAuthenticator;
   private final DistributionConfig config;
+  // TODO: add this -- private boolean isSecured;
   private boolean isHttpServiceRunning = false;
 
   /**
@@ -438,8 +440,7 @@ public class ManagementAgent {
       }
     };
 
-    String shiroConfig = this.config.getShiroInit();
-    if (!StringUtils.isBlank(shiroConfig) || isIntegratedSecurity()) {
+    if (isIntegratedSecurity()) {
       shiroAuthenticator = new JMXShiroAuthenticator();
       env.put(JMXConnectorServer.AUTHENTICATOR, shiroAuthenticator);
       jmxConnectorServer.addNotificationListener(shiroAuthenticator, null, jmxConnectorServer.getAttributes());
@@ -498,8 +499,7 @@ public class ManagementAgent {
 
 
   private boolean isIntegratedSecurity() {
-    String factoryName = config.getSecurityManager();
-    return factoryName != null && !factoryName.isEmpty();
+    return GeodeSecurityUtil.isJmxSecurityRequired();
   }
 
   private static class GemFireRMIClientSocketFactory implements RMIClientSocketFactory, Serializable {

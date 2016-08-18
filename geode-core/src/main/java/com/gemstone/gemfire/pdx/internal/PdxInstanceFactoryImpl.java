@@ -27,9 +27,7 @@ import com.gemstone.gemfire.pdx.PdxInstanceFactory;
 import com.gemstone.gemfire.pdx.PdxUnreadFields;
 
 /**
- * TODO
- *  without
- * defining a real class. These PdxInstances can never be deserialized
+ * PdxInstances created with this factory can never be deserialized
  * but you can access their fields just like any other pdx.
  * <p>The current implementation of this interface is meant for internal use only.
  * The way it defines a PdxType is expensive since it can never figure out it is

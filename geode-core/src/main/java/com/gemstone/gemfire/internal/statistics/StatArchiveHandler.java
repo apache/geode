@@ -28,7 +28,6 @@ import org.apache.logging.log4j.Logger;
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.StatArchiveWriter;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -40,13 +39,13 @@ import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppenders;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
 
 /**
- * Extracted from {@link com.gemstone.gemfire.internal.HostStatSampler} and 
- * {@link com.gemstone.gemfire.internal.GemFireStatSampler}.
+ * Extracted from {@link HostStatSampler} and
+ * {@link GemFireStatSampler}.
  * <p/>
  * The StatArchiveHandler handles statistics samples by archiving them to a 
  * file. This handler provides archive file rolling (file size limit) and 
  * removal (disk space limit). This handler creates and uses an instance of
- * {@link com.gemstone.gemfire.internal.StatArchiveWriter} for the currently
+ * {@link StatArchiveWriter} for the currently
  * open archive file (unless archiving is disabled).
  * 
  * @since GemFire 7.0
@@ -100,7 +99,7 @@ public class StatArchiveHandler implements SampleHandler {
   }
   
   /**
-   * Closes any {@link com.gemstone.gemfire.internal.StatArchiveWriter} 
+   * Closes any {@link StatArchiveWriter}
    * currently in use by this handler.
    * @throws GemFireException
    */

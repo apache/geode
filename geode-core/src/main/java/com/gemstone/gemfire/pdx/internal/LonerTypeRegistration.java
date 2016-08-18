@@ -157,8 +157,6 @@ public class LonerTypeRegistration implements TypeRegistration {
 
   @Override
   public void testClearRegistry() {
-    // TODO Auto-generated method stub
-    
   }
   
   @Override

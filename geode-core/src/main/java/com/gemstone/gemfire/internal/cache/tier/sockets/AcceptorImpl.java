@@ -630,7 +630,8 @@ public class AcceptorImpl extends Acceptor implements Runnable
       this.hsPool = tmp_hsPool;
     }
 
-    isAuthenticationRequired = this.securityService.isClientSecurityRequired();
+    isAuthenticationRequired = (this.isGatewayReceiver && this.securityService.isGatewaySecurityRequired()) ||
+                               (! this.isGatewayReceiver && this.securityService.isClientSecurityRequired());
 
     isIntegratedSecurity = this.securityService.isIntegratedSecurity();
 
@@ -749,9 +750,6 @@ public class AcceptorImpl extends Acceptor implements Runnable
     synchronized (this.allSCsLock) {
       this.allSCs.remove(sc);
       Iterator it = this.allSCs.iterator();
-      
-      // TODO: if we know *where* in the list this connection was, we
-      // could use ArrayUtils here.
       ServerConnection again[] = new ServerConnection[this.allSCs.size()];
       for (int i = 0; i < again.length; i ++) {
         again[i] = (ServerConnection)it.next();
@@ -1272,18 +1270,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
         // java.lang.NullPointerException
         //   at
         // com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection.run(ServerConnection.java:107)
-        
-        if (this.crHelper.emulateSlowServer() > 0) {
-          try {
-            Thread.sleep(this.crHelper.emulateSlowServer()); 
-            } 
-          catch (InterruptedException ugh) {
-            // This had better be due to shutdown; don't reenable the bit,
-            // it would just cause a hot-loop.
-//            Thread.currentThread().interrupt(); 
-            };
-        }
-        
+
         synchronized (this.syncLock) {
           if (!isRunning()) {
             closeSocket(s);

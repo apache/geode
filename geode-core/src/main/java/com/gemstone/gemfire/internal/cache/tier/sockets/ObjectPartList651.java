@@ -101,8 +101,6 @@ public class ObjectPartList651 extends ObjectPartList {
         } else if (objectType == EXCEPTION) {
           out.writeByte(EXCEPTION);
         } else {
-          //TODO - should we be writing BYTES here if objectType==BYTES?
-          //otherwise, we're losing information when we serialize this part list
           out.writeByte(OBJECT);
         }
         

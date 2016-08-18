@@ -33,7 +33,7 @@ import com.gemstone.gemfire.distributed.PoolCancelledException;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.DummyStatisticsFactory;
+import com.gemstone.gemfire.internal.statistics.DummyStatisticsFactory;
 import com.gemstone.gemfire.internal.ScheduledThreadPoolExecutorWithKeepAlive;
 import com.gemstone.gemfire.internal.admin.ClientStatsManager;
 import com.gemstone.gemfire.internal.cache.*;
@@ -445,10 +445,6 @@ public class PoolImpl implements InternalPool {
     return sb.toString();
   }
 
-  public boolean getKeepAlive(){
-      return this.keepAlive;
-  }
-  
   public void destroy(boolean keepAlive) {
     int cnt = getAttachCount();
     this.keepAlive = keepAlive;
@@ -511,6 +507,7 @@ public class PoolImpl implements InternalPool {
   public synchronized void basicDestroy(boolean keepAlive) {
     if (!isDestroyed()) {
       this.destroyed = true;
+      this.keepAlive = keepAlive;
       // LOG: changed from config to info
       logger.info(LocalizedMessage.create(LocalizedStrings.PoolImpl_DESTROYING_CONNECTION_POOL_0, name));
 
@@ -818,15 +815,6 @@ public class PoolImpl implements InternalPool {
    * Any connection that is acquired using this method must be returned using
    * returnConnection, even if it is destroyed.
    * 
-   * TODO - The use of the this method should be removed
-   * from the gateway code. This method is fine for tests,
-   * but these connections should really be managed inside
-   * the pool code. If the gateway needs to persistent connection
-   * to a single server, which should create have the OpExecutor
-   * that holds a reference to the connection (similar to the way
-   * we do with thread local connections).
-   * TODO use {@link ExecutablePool#setupServerAffinity(boolean)} for
-   * gateway code
    */
   public Connection acquireConnection() {
     return manager.borrowConnection(45000L);
@@ -1418,6 +1406,15 @@ public class PoolImpl implements InternalPool {
         return "cache is closed";
       }
     } 
+  }
+
+  public boolean getKeepAlive() {
+    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    if(cache == null) {
+      return keepAlive;
+    }
+
+    return cache.keepDurableSubscriptionsAlive();
   }
 
   public ArrayList<ProxyCache> getProxyCacheList() {

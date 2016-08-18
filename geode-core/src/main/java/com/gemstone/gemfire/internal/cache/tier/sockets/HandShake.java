@@ -690,8 +690,6 @@ public class HandShake implements ClientHandShake
    * This method writes what readCredential() method expects to read. (Note the
    * use of singular credential). It is similar to writeCredentials(), except
    * that it doesn't write credential-properties.
-   * TODO (ashetkar) A better name.
-   * TODO (ashetkar) Could be merged with existing writeCredentials().
    * 
    * @param dos
    * @param dis
@@ -1191,7 +1189,6 @@ public class HandShake implements ClientHandShake
       dis = new DataInputStream(in);
     }
     // Write ok reply
-    //TODO:HItesh
     if (communicationMode == Acceptor.GATEWAY_TO_GATEWAY && principal != null) {
       dos.writeByte(REPLY_WAN_CREDENTIALS);
     }
@@ -1759,7 +1756,7 @@ public class HandShake implements ClientHandShake
         }
       }else if (secureMode == SECURITY_MULTIUSER_NOTIFICATIONCHANNEL)
       {
-        //TODO:hitesh there will be no credential CCP will get credential(Principal) using ServerConnection..
+        // hitesh there will be no credential CCP will get credential(Principal) using ServerConnection..
         logger.debug("readCredential where multiuser mode creating callback connection");
       }
     }

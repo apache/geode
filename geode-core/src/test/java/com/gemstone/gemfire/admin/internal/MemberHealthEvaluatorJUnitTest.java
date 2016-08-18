@@ -28,8 +28,8 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.admin.GemFireHealth;
 import com.gemstone.gemfire.admin.GemFireHealthConfig;
-import com.gemstone.gemfire.internal.GemFireStatSampler;
-import com.gemstone.gemfire.internal.ProcessStats;
+import com.gemstone.gemfire.internal.statistics.GemFireStatSampler;
+import com.gemstone.gemfire.internal.statistics.platform.ProcessStats;
 import com.gemstone.gemfire.internal.PureJavaMode;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 

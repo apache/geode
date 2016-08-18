@@ -139,7 +139,6 @@ public class ClientBlacklistProcessor extends ReplyProcessor21 {
 
     @Override
     protected Object clone() throws CloneNotSupportedException {
-      // TODO Auto-generated method stub
       return super.clone();
     }
 

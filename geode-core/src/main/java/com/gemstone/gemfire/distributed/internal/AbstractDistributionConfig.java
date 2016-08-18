@@ -40,6 +40,7 @@ import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
@@ -497,6 +498,29 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
 
 
+  /**
+   * First check if sslComponents are in the list of valid components. If so, check that no other *-ssl-* properties other than cluster-ssl-* are set.
+   * This would mean one is mixing the "old" with the "new"
+   */
+  @ConfigAttributeChecker(name=SECURITY_ENABLED_COMPONENTS)
+  protected String checkSecurityEnabledComponents(String value) {
+    // value with no commas
+    // empty value
+    // null
+    if (StringUtils.isEmpty(value) || SecurableComponent.NONE.name().equalsIgnoreCase(value)) {
+      return value;
+    }
+    if (!value.contains(",")) {
+      SecurableComponent.getEnum(value);
+      return value;
+    }
+    StringTokenizer stringTokenizer = new StringTokenizer(value, ",");
+    while (stringTokenizer.hasMoreTokens()){
+      SecurableComponent.getEnum(stringTokenizer.nextToken());
+    }
+    return value;
+  }
+
   // AbstractConfig overriding methods
 
   @Override
@@ -945,6 +969,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     m.put(SECURITY_SHIRO_INIT, "The name of the shiro configuration file in the classpath, e.g. shiro.ini");
     m.put(SECURITY_MANAGER, "User defined fully qualified class name implementing SecurityManager interface for integrated security. Defaults to \"{0}\". Legal values can be any \"class name\" implementing SecurityManager that is present in the classpath.");
     m.put(SECURITY_POST_PROCESSOR, "User defined fully qualified class name implementing PostProcessor interface for integrated security. Defaults to \"{0}\". Legal values can be any \"class name\" implementing PostProcessor that is present in the classpath.");
+
+    m.put(SECURITY_ENABLED_COMPONENTS, "A comma delimited list of components that should be secured");
 
     m.put(SSL_ENABLED_COMPONENTS, "A comma delimited list of components that require SSL communications");
 

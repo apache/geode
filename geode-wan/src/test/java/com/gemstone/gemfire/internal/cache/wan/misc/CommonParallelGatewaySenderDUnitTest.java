@@ -60,7 +60,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     try {
       vm4.invoke(() -> WANTestBase.createPartitionedRegion(
         getTestMethodName() + "_PR2", "ln", 1, 100, isOffHeap() ));
-      fail("Expected IllegateStateException : cannot have the same parallel gateway sender");
+      fail("Expected IllegalStateException : cannot have the same parallel gateway sender");
     }
     catch (Exception e) {
       if (!(e.getCause() instanceof IllegalStateException)
@@ -76,7 +76,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
    * @throws Exception
    * Below test is disabled intentionally
     1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-    2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+    2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
     3> We have to enabled it in next release
     4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -158,7 +158,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
    * The PGS is persistence enabled but not the Regions
    * Below test is disabled intentionally
     1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-    2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+    2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
     3> We have to enabled it in next release
     4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 
@@ -245,7 +245,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
    * Check if the remote site receives all the events.
    * Below test is disabled intentionally
     1> In this release 8.0, for rolling upgrade support queue name is changed to old style
-    2>Comman parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about 
+    2>Common parallel sender for different non colocated regions is not supported in 8.0 so no need to bother about
       ParallelGatewaySenderQueue#convertPathToName
     3> We have to enabled it in next release
     4> Version based rolling upgrade support should be provided. based on the version of the gemfire QSTRING should be used between 8.0 

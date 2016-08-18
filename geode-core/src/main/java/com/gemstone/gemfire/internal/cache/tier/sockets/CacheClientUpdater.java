@@ -46,6 +46,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
+import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
 import com.gemstone.gemfire.security.GemFireSecurityException;

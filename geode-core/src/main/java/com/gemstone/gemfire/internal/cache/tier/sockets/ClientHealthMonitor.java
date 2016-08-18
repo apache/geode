@@ -795,7 +795,6 @@ public class ClientHealthMonitor {
     return numOfClientsPerVersion.get(version.ordinal());
   }
 
-  // TODO assumes that version ordinals always increase as versions increase
   public int getNumberOfClientsAtOrAboveVersion(Version version) {
     int number = 0;
     for (int i = version.ordinal(); i < numOfClientsPerVersion.length(); i++) {

@@ -115,7 +115,6 @@ public abstract class AbstractOp implements Op {
     if (cnx.getServer().getRequiresCredentials()) {
       // Security is enabled on client as well as on server
       getMessage().setMessageHasSecurePartFlag();
-      HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
       long userId = -1;
 
       if (UserAttributes.userAttributes.get() == null) { // single user mode
@@ -127,10 +126,11 @@ public abstract class AbstractOp implements Op {
           // This will ensure that this op is retried on another server, unless
           // the retryCount is exhausted. Fix for Bug 41501
           throw new ServerConnectivityException(
-              "Connection error while authenticating user"); // TODO:LOG hdos is not closed??
+              "Connection error while authenticating user");
         }
         userId = (Long)id;
       }
+      HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
       try {
         hdos.writeLong(cnx.getConnectionID());
         hdos.writeLong(userId);
@@ -162,7 +162,6 @@ public abstract class AbstractOp implements Op {
           return processResponse(msg, cnx);
         } finally {
           msg.unsetComms();
-          // TODO (ashetkar) Handle the case when we fail to read the connection id.
           processSecureBytes(cnx, msg);
         }
       } else {

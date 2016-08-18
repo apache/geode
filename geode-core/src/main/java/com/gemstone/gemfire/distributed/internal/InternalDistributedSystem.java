@@ -105,6 +105,14 @@ import com.gemstone.gemfire.internal.net.SSLConfigurationFactory;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 import com.gemstone.gemfire.internal.offheap.MemoryAllocator;
 import com.gemstone.gemfire.internal.offheap.OffHeapStorage;
+import com.gemstone.gemfire.internal.statistics.DummyStatisticsImpl;
+import com.gemstone.gemfire.internal.statistics.GemFireStatSampler;
+import com.gemstone.gemfire.internal.statistics.platform.LinuxProcFsStatistics;
+import com.gemstone.gemfire.internal.statistics.LocalStatisticsImpl;
+import com.gemstone.gemfire.internal.statistics.platform.OsStatisticsFactory;
+import com.gemstone.gemfire.internal.statistics.StatisticsImpl;
+import com.gemstone.gemfire.internal.statistics.StatisticsManager;
+import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableCondition;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
@@ -1128,7 +1136,6 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
       // Run the shutdown, if any
       if (sdListener != null) {
         try {
-          // TODO: should we make sure this times out?
           sdListener.onShutdown(this);
         } catch (VirtualMachineError err) {
           SystemFailure.initiateFailure(err);
@@ -1453,8 +1460,6 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
     if (!me.getBindAddress().equals(other.getBindAddress())) {
       return false;
     }
-
-    // @todo Do we need to compare SSL properties?
 
     // locators
     String myLocators = me.getLocators();

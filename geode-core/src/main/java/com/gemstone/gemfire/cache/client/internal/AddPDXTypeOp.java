@@ -85,7 +85,8 @@ public class AddPDXTypeOp {
     protected boolean participateInTransaction() {
       return false;
     }
-    
+
+    // override since this is not a message subject to security
     @Override
     protected void sendMessage(Connection cnx) throws Exception {
       getMessage().clearMessageHasSecurePartFlag();

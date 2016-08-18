@@ -1160,33 +1160,40 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
     assertEquals(total - 1, diskStats.getNumEntriesInVM());
     assertEquals(5, diskStats.getNumOverflowOnDisk());
 
-    // Make sure invalidate doesn't change anything
+    // Make sure invalidate of inVM entry changes inVM count but not disk
     region.invalidate(new Integer(total+10));
-    assertEquals(region.entryCount(), diskStats.getNumEntriesInVM() +
-                 diskStats.getNumOverflowOnDisk());
-    assertEquals(total - 1, diskStats.getNumEntriesInVM());
-    assertEquals(5, diskStats.getNumOverflowOnDisk());
-
-    // Make sure local-invalidate doesn't change anything
-    region.localInvalidate(new Integer(total+11));
-    assertEquals(region.entryCount(), diskStats.getNumEntriesInVM() +
-                 diskStats.getNumOverflowOnDisk());
-    assertEquals(total - 1, diskStats.getNumEntriesInVM());
-    assertEquals(5, diskStats.getNumOverflowOnDisk());
-
-    // Make sure destroy does
-    region.destroy(new Integer(total+10));
-    ((LocalRegion)region).dumpBackingMap();
-    assertEquals(region.entryCount(), diskStats.getNumEntriesInVM() +
+    assertEquals(region.entryCount()-1, diskStats.getNumEntriesInVM() +
                  diskStats.getNumOverflowOnDisk());
     assertEquals(total - 2, diskStats.getNumEntriesInVM());
+    assertEquals(5, diskStats.getNumOverflowOnDisk());
+
+    // Make sure local-invalidate of inVM entry changes inVM count but not disk
+    region.localInvalidate(new Integer(total+11));
+    assertEquals(region.entryCount()-2, diskStats.getNumEntriesInVM() +
+                 diskStats.getNumOverflowOnDisk());
+    assertEquals(total - 3, diskStats.getNumEntriesInVM());
+    assertEquals(5, diskStats.getNumOverflowOnDisk());
+
+    // Make sure destroy of invalid entry does not change inVM or onDisk but changes entry count
+    region.destroy(new Integer(total+10));
+    //((LocalRegion)region).dumpBackingMap();
+    assertEquals(region.entryCount()-1, diskStats.getNumEntriesInVM() +
+                 diskStats.getNumOverflowOnDisk());
+    assertEquals(total - 3, diskStats.getNumEntriesInVM());
+    assertEquals(5, diskStats.getNumOverflowOnDisk());
+
+    // Make sure destroy of inVM entry does change inVM but not onDisk
+    region.destroy(new Integer(total+12));
+    assertEquals(region.entryCount()-1, diskStats.getNumEntriesInVM() +
+                 diskStats.getNumOverflowOnDisk());
+    assertEquals(total - 4, diskStats.getNumEntriesInVM());
     assertEquals(5, diskStats.getNumOverflowOnDisk());
 
     // Destroy an entry that has been overflowed
     region.destroy(new Integer(3));
-    assertEquals(region.entryCount(), diskStats.getNumEntriesInVM() +
+    assertEquals(region.entryCount()-1, diskStats.getNumEntriesInVM() +
                  diskStats.getNumOverflowOnDisk());
-    assertEquals(total - 2, diskStats.getNumEntriesInVM());
+    assertEquals(total - 4, diskStats.getNumEntriesInVM());
     assertEquals(4, diskStats.getNumOverflowOnDisk());
   }
 

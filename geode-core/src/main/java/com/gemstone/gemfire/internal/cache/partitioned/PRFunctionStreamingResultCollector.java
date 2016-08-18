@@ -93,7 +93,6 @@ public class PRFunctionStreamingResultCollector extends  FunctionStreamingResult
     if (this.hasResult) {
       try {
         this.waitForCacheOrFunctionException(0);
-
         if (!this.execution.getFailedNodes().isEmpty()
             && !this.execution.isClientServerMode()) {
           // end the rc and clear it
@@ -116,6 +115,7 @@ public class PRFunctionStreamingResultCollector extends  FunctionStreamingResult
       catch (FunctionInvocationTargetException fite) {
         // this is case of WrapperException which enforce the re execution of
         // the function.
+        if(!execution.getWaitOnExceptionFlag()) {
         if (!this.fn.isHA()) {
           throw new FunctionException(fite);
         }
@@ -137,8 +137,10 @@ public class PRFunctionStreamingResultCollector extends  FunctionStreamingResult
           }
           return newRc.getResult();
         }
+        }
       }
       catch (BucketMovedException e) {
+        if(!execution.getWaitOnExceptionFlag()){
         if (!this.fn.isHA()) {
           //endResults();
           FunctionInvocationTargetException fite = new FunctionInvocationTargetException(
@@ -165,8 +167,10 @@ public class PRFunctionStreamingResultCollector extends  FunctionStreamingResult
           }
           return newRc.getResult();
         }
+        }
       }
       catch (CacheClosedException e) {
+        if(!execution.getWaitOnExceptionFlag()) {
         if (!this.fn.isHA()) {
           //endResults();
           FunctionInvocationTargetException fite = new FunctionInvocationTargetException(e.getMessage());
@@ -191,6 +195,7 @@ public class PRFunctionStreamingResultCollector extends  FunctionStreamingResult
             newRc = this.execution.execute(this.fn.getId());
           }
           return newRc.getResult();
+        }
         }
       }
       catch (CacheException e) {
@@ -417,11 +422,19 @@ public class PRFunctionStreamingResultCollector extends  FunctionStreamingResult
     logger.debug("StreamingPartitionResponseWithResultCollector received exception {} from member {}", ex.getCause(), msg.getSender());
     
     // we have already forwarded the exception, no need to keep it here
-    if (execution.isForwardExceptions()) {
+    if (execution.isForwardExceptions() || execution.getWaitOnExceptionFlag()) {
       return;
     }
     
-    if (ex.getCause() instanceof CacheClosedException) {
+    /** 
+     * Below two cases should also be handled
+     * and not thrown exception
+     * Saving the exception
+     * ForeceReattempt can also be added here? 
+     * Also, if multipel nodes throw exception, one may override another
+     * TODO: Wrap exception among each other or create a list of exceptions like this.fite.
+     */
+    if ( ex.getCause() instanceof CacheClosedException) {
       ((PartitionedRegionFunctionExecutor)this.execution).addFailedNode(msg
           .getSender().getId());
       this.exception = ex;

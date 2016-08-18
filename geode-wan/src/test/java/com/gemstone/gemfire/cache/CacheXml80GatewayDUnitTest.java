@@ -59,10 +59,10 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
     gatewayReceiverFactory.setMaximumTimeBetweenPings(2000);
     gatewayReceiverFactory.setSocketBufferSize(1500);
     gatewayReceiverFactory.setManualStart(true);
-    GatewayTransportFilter myStreamfilter1 = new MyGatewayTransportFilter1();
-    gatewayReceiverFactory.addGatewayTransportFilter(myStreamfilter1);
-    GatewayTransportFilter myStreamfilter2 = new MyGatewayTransportFilter2();
-    gatewayReceiverFactory.addGatewayTransportFilter(myStreamfilter2);
+    GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
+    gatewayReceiverFactory.addGatewayTransportFilter(myStreamFilter1);
+    GatewayTransportFilter myStreamFilter2 = new MyGatewayTransportFilter2();
+    gatewayReceiverFactory.addGatewayTransportFilter(myStreamFilter2);
     GatewayReceiver receiver1 = gatewayReceiverFactory.create();
     try {
       receiver1.start();

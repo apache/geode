@@ -27,7 +27,7 @@ import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.StatisticsType;
 import com.gemstone.gemfire.StatisticsTypeFactory;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
+import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * Represents a statistics type that can be archived to vsd. Loading of this

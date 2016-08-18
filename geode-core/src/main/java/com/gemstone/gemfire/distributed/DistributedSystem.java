@@ -233,17 +233,10 @@ public abstract class DistributedSystem implements StatisticsFactory {
       }
 
       // Make a new connection to the distributed system
-      try {
-        InternalDistributedSystem newSystem =
-          InternalDistributedSystem.newInstance(config);
-        addSystem(newSystem);
-        return newSystem;
-
-      }
-      catch (GemFireSecurityException ex) {
-        ex.fillInStackTrace(); // Make it harder to figure out where jgroups code lives.
-        throw ex;
-      }
+      InternalDistributedSystem newSystem =
+        InternalDistributedSystem.newInstance(config);
+      addSystem(newSystem);
+      return newSystem;
     }
   }
 

@@ -63,12 +63,6 @@ import java.util.concurrent.*;
  *
  * <P>
  *
- * <code>DistributionManager</code> is not intended to be
- * serialized.  It is <code>Externalizable</code> only to prevent it
- * from being copy shared.  See {@link #writeExternal}.
- *
- * <P>
- *
  * Prior to GemFire 4.0, <code>DistributionManager</code> was an
  * abstract class with two concrete subclasses,
  * <code>LocalDistributionManager</code> and
@@ -86,7 +80,7 @@ import java.util.concurrent.*;
  * @see IgnoredByManager
  */
 public class DistributionManager
-  implements Externalizable, DM {
+  implements DM {
 
   private static final Logger logger = LogService.getLogger();
   
@@ -489,8 +483,6 @@ public class DistributionManager
     return (id1.getInetAddress().equals(id2.getInetAddress()));
   }
 
-  // @todo davidw Modify JGroups so that we do not have to send out a
-  // {@link StartupMessage}
   /**
    * Creates a new distribution manager and discovers the other members of the
    * distributed system. Note that it does not check to see whether or not this
@@ -729,21 +721,6 @@ public class DistributionManager
   
   ///////////////////////  Constructors  ///////////////////////
   
-  /**
-   * no-arg constructor for Externalizable
-   * TODO: does this class really need to implement Externalizable?  I
-   * think it only implements that interface for the old copy-sharing
-   * shared-memory stuff that's no longer in GemFire
-   */
-  public DistributionManager() {
-    this.elderLock = null;
-    this.membershipListeners = null;
-    this.myid = null;
-    this.description = null;
-    this.dmType = 0;
-    throw new IllegalAccessError("this constructor should never be invoked");
-  }
-
   /**
    * Creates a new <code>DistributionManager</code> by initializing
    * itself, creating the membership manager and executors
@@ -3278,9 +3255,6 @@ public class DistributionManager
     }
   }
 
-  /**
-   * @param reason TODO
-   */
   public void handleManagerSuspect(InternalDistributedMember suspect, 
       InternalDistributedMember whoSuspected, String reason) {
     if (!isCurrentMember(suspect)) {
@@ -3622,7 +3596,6 @@ public class DistributionManager
    * elderStateInitialized which should cause this back-off to occur only
    * once in the life of a vm... once the elder, always the elder.
    * <p>
-   * TODO: Collaboration lock is no longer used. Do we need to to use tryLock?
    */
   private ElderState getElderStateWithTryLock(boolean useTryLock) {
     boolean locked = false;
@@ -3898,27 +3871,6 @@ public class DistributionManager
       return this.agent.getTransport().toString();
     }
   } 
-
-  /**
-   * A <code>DistributionManager</code> is not intented to be
-   * serialized.  This method throws an {@link
-   * UnsupportedOperationException} to prevent a
-   * <code>DistributionManager</code> from being copy shared.
-   */
-  public void writeExternal(ObjectOutput out) throws IOException {
-    throw new UnsupportedOperationException(LocalizedStrings.DistributionManager_DISTRIBUTIONMANAGERS_SHOULD_NOT_BE_COPY_SHARED.toLocalizedString());
-  }
-
-  /**
-   * A <code>DistributionManager</code> is not intented to be
-   * serialized.  This method throws an {@link
-   * UnsupportedOperationException} to prevent a
-   * <code>DistributionManager</code> from being copy shared.
-   */
-  public void readExternal(ObjectInput out)
-    throws IOException, ClassNotFoundException {
-    throw new UnsupportedOperationException(LocalizedStrings.DistributionManager_DISTRIBUTIONMANAGERS_SHOULD_NOT_BE_COPY_SHARED.toLocalizedString());
-  }
 
   /* -----------------------------Health Monitor------------------------------ */
   private final ConcurrentMap hmMap = new ConcurrentHashMap();

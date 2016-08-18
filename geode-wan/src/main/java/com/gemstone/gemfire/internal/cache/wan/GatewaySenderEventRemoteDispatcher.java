@@ -379,6 +379,17 @@ public class GatewaySenderEventRemoteDispatcher implements
       Connection con;
       try {
         if (this.sender.isParallel()) {
+          /*
+           * TODO - The use of acquireConnection should be removed
+           * from the gateway code. This method is fine for tests,
+           * but these connections should really be managed inside
+           * the pool code. If the gateway needs to persistent connection
+           * to a single server, which should create have the OpExecutor
+           * that holds a reference to the connection (similar to the way
+           * we do with thread local connections).
+           * Use {@link ExecutablePool#setupServerAffinity(boolean)} for
+           * gateway code
+           */
           con = this.sender.getProxy().acquireConnection();
           // For parallel sender, setting server location will not matter.
           // everytime it will ask for acquire connection whenever it needs it. I
@@ -751,7 +762,7 @@ public class GatewaySenderEventRemoteDispatcher implements
 
     private void shutDownAckReaderConnection() {
       Connection conn = connection;
-      //attempt to unblock the ackreader thread by shutting down the inputStream, if it was stuck on a read
+      //attempt to unblock the ackReader thread by shutting down the inputStream, if it was stuck on a read
       try {
         if (conn != null && conn.getInputStream() != null) {
           conn.getInputStream().close();

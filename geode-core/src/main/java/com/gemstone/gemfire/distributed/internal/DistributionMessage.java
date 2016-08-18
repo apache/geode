@@ -193,7 +193,6 @@ public abstract class DistributionMessage
       case DistributionManager.REGION_FUNCTION_EXECUTION_EXECUTOR:
         // allow nested distributed functions to be executed from within the
         // execution of a function
-        // TODO: this can later be adjusted to use a separate property
         return false;
       default:
         InternalDistributedSystem ids = InternalDistributedSystem

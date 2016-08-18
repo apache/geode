@@ -219,32 +219,26 @@ public class GMSQuorumChecker implements QuorumChecker {
 
     @Override
     public void getState(OutputStream output) throws Exception {
-      // TODO Auto-generated method stub
     }
 
     @Override
     public void setState(InputStream input) throws Exception {
-      // TODO Auto-generated method stub
     }
 
     @Override
     public void viewAccepted(View new_view) {
-      // TODO Auto-generated method stub
     }
 
     @Override
     public void suspect(Address suspected_mbr) {
-      // TODO Auto-generated method stub
     }
 
     @Override
     public void block() {
-      // TODO Auto-generated method stub
     }
 
     @Override
     public void unblock() {
-      // TODO Auto-generated method stub
     }
 
     public void pongReceived(Address sender) {

@@ -86,7 +86,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
    */
   @Ignore
   @Test
-  public void test_AllLocatorsinDSShouldHaveDistributedSystemId() throws Exception {
+  public void test_AllLocatorsInDSShouldHaveDistributedSystemId() throws Exception {
     try {
       Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
@@ -197,7 +197,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   }
   
   @Test
-  public void test_NY_Recognises_TK_AND_HK_Simeltenously() {
+  public void test_NY_Recognises_TK_AND_HK_Simultaneously() {
     Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
 
     ArrayList<Integer> locatorPortsln = new ArrayList<Integer>();
@@ -251,7 +251,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   
   
   @Test
-  public void test_LN_Sender_recogises_ALL_NY_Locators() {
+  public void test_LN_Sender_recognises_ALL_NY_Locators() {
     
     Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     

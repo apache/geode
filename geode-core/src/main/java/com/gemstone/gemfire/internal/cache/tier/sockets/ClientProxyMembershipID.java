@@ -57,12 +57,6 @@ public final class ClientProxyMembershipID
   
   private static final int BYTES_32KB = 32768;
 
-  // TODO:Asif : If possible remove the static data from here
-  // Uniquely identifies the distributed system of client. These static fields
-  // have significance
-  // only in the Cache Client VM
-  //public volatile static byte[] client_side_identity = null;
-  
   public volatile static DistributedSystem system = null;
 
   /**

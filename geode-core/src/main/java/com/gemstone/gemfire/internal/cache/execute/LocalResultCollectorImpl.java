@@ -22,9 +22,11 @@ import java.util.concurrent.TimeUnit;
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionException;
+import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 public final class LocalResultCollectorImpl implements LocalResultCollector {
@@ -44,7 +46,6 @@ public final class LocalResultCollectorImpl implements LocalResultCollector {
   private Function function = null;
   
   private AbstractExecution execution = null;
-
 
   public LocalResultCollectorImpl(Function function, ResultCollector rc,
       Execution execution) {
@@ -69,7 +70,10 @@ public final class LocalResultCollectorImpl implements LocalResultCollector {
         } else {
           if (!(t instanceof InternalFunctionException)) {
             if (this.functionException == null) {
-              if (resultOfSingleExecution instanceof FunctionException) {
+              if(resultOfSingleExecution instanceof FunctionInvocationTargetException){
+                this.functionException = new FunctionException(t);
+              }
+              else if (resultOfSingleExecution instanceof FunctionException) {
                 this.functionException = (FunctionException)resultOfSingleExecution;
                 if (t.getCause() != null) {
                   t = t.getCause();

@@ -171,7 +171,7 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
   }
 
   public void doMultipleCacheServer(boolean durable) throws Exception {
-    /* test senario: */
+    /* test scenario: */
     /* create 1 GatewaySender on vm0 */
     /* create 1 GatewayReceiver on vm1 */
     /* create 2 cache servers on vm1, one with overflow. */
@@ -183,7 +183,7 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     // create sender at ln
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     
-    // create recever and cache servers will be at ny
+    // create receiver and cache servers will be at ny
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
     vm1.invoke(() -> WANTestBase.createCache( nyPort ));
     int receiverPort = vm1.invoke(() -> WANTestBase.createReceiver());

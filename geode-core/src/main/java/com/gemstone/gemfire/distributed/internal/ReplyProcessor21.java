@@ -68,8 +68,6 @@ import java.util.*;
  *
  * <p>
  *
- * TODO: alter process to use template method to enforce above usage pattern.
- *
  * @see MessageWithReply
  *
  *
@@ -187,8 +185,6 @@ public class ReplyProcessor21
     PR_SEVERE_ALERT_RATIO = ratio;
   }
   
-  // @todo davidw If the processor isn't there, should it return a
-  // "no-op" processor that just ignores the message being processed?
   /**
    * Returns the <code>ReplyProcessor</code> with the given
    * id, or <code>null</code> if it no longer exists.
@@ -530,7 +526,7 @@ public class ReplyProcessor21
    * met so that we don't need to wait anymore.
    * @throws InternalGemFireException if ack-threshold was exceeded and system
    *         property "ack-threshold-exception" is set to true
-   * @throws InterruptedException TODO-javadocs
+   * @throws InterruptedException thrown if the wait is interrupted
    * @see #canStopWaiting()
    */
   public final void waitForReplies()
@@ -602,9 +598,6 @@ public class ReplyProcessor21
     removeListener();
     final DM mgr = getDistributionManager();
     mgr.getStats().endReplyWait(this.statStart, this.initTime);
-
-    // Make sure that a cancellation check occurs.
-    // TODO there may be a more elegant place to put this...
     mgr.getCancelCriterion().checkCancelInProgress(null);
   }
 

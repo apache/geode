@@ -65,24 +65,7 @@ public class Get70 extends BaseCommand {
     CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
     CacheServerStats stats = servConn.getCacheServerStats();
     StringId errMessage = null;
-    if (crHelper.emulateSlowServer() > 0) {
-      // this.logger.debug("SlowServer", new Exception());
-      boolean interrupted = Thread.interrupted();
-      try {
-        Thread.sleep(crHelper.emulateSlowServer());
-      }
-      catch (InterruptedException ugh) {
-        interrupted = true;
-        servConn.getCachedRegionHelper().getCache().getCancelCriterion()
-            .checkCancelInProgress(ugh);
-      }
-      finally {
-        if (interrupted) {
-          Thread.currentThread().interrupt();
-        }
-      }
-      ;
-    }
+
     servConn.setAsTrue(REQUIRES_RESPONSE);
     // requiresResponse = true;
     {

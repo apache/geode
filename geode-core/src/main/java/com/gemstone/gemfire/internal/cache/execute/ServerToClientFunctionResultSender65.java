@@ -120,6 +120,9 @@ public class ServerToClientFunctionResultSender65 extends
       return;
     }
     try {
+      if (logger.isDebugEnabled()) {
+        logger.debug("ServerToClientFunctionResultSender sending last result2 {} " + oneResult);
+      }
       authorizeResult(oneResult);
       if (!this.fn.hasResult()) {
         throw new IllegalStateException(

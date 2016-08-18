@@ -24,16 +24,19 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.InternalGemFireError;
+import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.cache.client.internal.ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionException;
+import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
+import com.gemstone.gemfire.internal.cache.execute.BucketMovedException;
 import com.gemstone.gemfire.internal.cache.execute.FunctionStats;
 import com.gemstone.gemfire.internal.cache.execute.InternalFunctionException;
 import com.gemstone.gemfire.internal.cache.execute.MemberMappedArgument;
@@ -84,6 +87,7 @@ public class ExecuteRegionFunctionOp {
     
     final boolean isDebugEnabled =logger.isDebugEnabled();
     do {
+      
     try {
         if (reexecuteForServ) {
           reexecOp = new ExecuteRegionFunctionOpImpl(
@@ -319,12 +323,13 @@ public class ExecuteRegionFunctionOp {
     private Set<String> failedNodes = new HashSet<String>();
 
     private final String functionId;
-    private final boolean executeOnBucketSet;
 
-    /**
-     * @param removedNodes TODO
-     * @throws com.gemstone.gemfire.SerializationException if serialization fails
-     */
+    private final boolean executeOnBucketSet;
+    
+    private final boolean isHA;
+
+    private FunctionException functionException;
+
     public ExecuteRegionFunctionOpImpl(String region, Function function,
         ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc,
         byte hasResult, Set<String> removedNodes) {
@@ -367,6 +372,7 @@ public class ExecuteRegionFunctionOp {
       this.executor = serverRegionExecutor;
       this.hasResult = functionState;
       this.failedNodes = removedNodes;
+      this.isHA = function.isHA();
     }
     
     public ExecuteRegionFunctionOpImpl(String region, String function,
@@ -411,6 +417,7 @@ public class ExecuteRegionFunctionOp {
       this.executor = serverRegionExecutor;
       this.hasResult = functionState;
       this.failedNodes = removedNodes;
+      this.isHA = isHA;
     }
 
     public ExecuteRegionFunctionOpImpl(
@@ -434,6 +441,7 @@ public class ExecuteRegionFunctionOp {
       this.hasResult = op.hasResult;
       this.failedNodes = op.failedNodes;
       this.executeOnBucketSet = op.executeOnBucketSet;
+      this.isHA = op.isHA;
       if (isReExecute == 1) {
         this.resultCollector.endResults();
         this.resultCollector.clearResults();
@@ -493,6 +501,7 @@ public class ExecuteRegionFunctionOp {
               logger.debug("ExecuteRegionFunctionOpImpl#processResponse: received message of type EXECUTE_REGION_FUNCTION_RESULT. The number of parts are : {}", executeFunctionResponseMsg.getNumberOfParts());
             }
             // Read the chunk
+            boolean throwServerOp = false;
             do {
               executeFunctionResponseMsg.receiveChunk();
               Object resultResponse = executeFunctionResponseMsg.getPart(0)
@@ -504,6 +513,9 @@ public class ExecuteRegionFunctionOp {
               else {
                 result = resultResponse;
               }
+              
+              // if the function is HA throw exceptions
+              // if nonHA collect these exceptions and wait till you get last chunk
               if (result instanceof FunctionException) {
                 FunctionException ex = ((FunctionException)result);
                 if (ex instanceof InternalFunctionException) {
@@ -521,14 +533,51 @@ public class ExecuteRegionFunctionOp {
                   InternalFunctionInvocationTargetException ifite = (InternalFunctionInvocationTargetException)ex
                       .getCause();
                   this.failedNodes.addAll(ifite.getFailedNodeSet());
+                  addFunctionException((FunctionException) result);
                 }
-                executeFunctionResponseMsg.clear();
-                throw ex;
+                else{
+                  addFunctionException((FunctionException) result);
+                }
               }
               else if (result instanceof Throwable) {
-                String s = "While performing a remote " + getOpName();
-                executeFunctionResponseMsg.clear();
-                throw new ServerOperationException(s, (Throwable)result);
+                Throwable t = (Throwable)result;
+                  if (this.functionException == null) {
+                    if(result instanceof BucketMovedException){
+                      FunctionInvocationTargetException fite;
+                      if(isHA){
+                        fite = new InternalFunctionInvocationTargetException(
+                                              ((BucketMovedException)result).getMessage());
+                      }else {
+                        fite = new FunctionInvocationTargetException(
+                            ((BucketMovedException)result).getMessage());
+                      }
+                      this.functionException =  new FunctionException(fite);
+                      this.functionException.addException(fite);
+                    }
+                    else if (result instanceof CacheClosedException) {
+                      FunctionInvocationTargetException fite;
+                      if(isHA) {
+                        fite = new InternalFunctionInvocationTargetException(((CacheClosedException)result).getMessage());
+                      }
+                      else{
+                        fite = new FunctionInvocationTargetException(((CacheClosedException)result).getMessage());
+                      }
+                      if (resultResponse instanceof ArrayList) {
+                        DistributedMember memberID = (DistributedMember) ((ArrayList) resultResponse)
+                            .get(1);
+                        this.failedNodes.add(memberID.getId());
+                      }                   
+                      this.functionException = new FunctionException(fite);
+                      this.functionException.addException(fite);
+                    }
+                    else {
+                      throwServerOp = true;
+                      this.functionException = new FunctionException(t);
+                      this.functionException.addException(t);
+                    }
+                  } else {
+                    this.functionException.addException(t);
+                  }
               }
               else {
                 DistributedMember memberID = (DistributedMember)((ArrayList)resultResponse)
@@ -540,6 +589,17 @@ public class ExecuteRegionFunctionOp {
             } while (!executeFunctionResponseMsg.isLastChunk());
             if (isDebugEnabled) {
               logger.debug("ExecuteRegionFunctionOpImpl#processResponse: received all the results from server successfully.");
+            }
+
+
+            if (isHA && throwServerOp) {
+              String s = "While performing a remote " + getOpName();
+              throw new ServerOperationException(s, this.functionException);
+            }
+
+            // add all the exceptions here.
+            if (this.functionException != null) {
+              throw this.functionException;
             }
             this.resultCollector.endResults();
             return null;
@@ -560,11 +620,9 @@ public class ExecuteRegionFunctionOp {
                     .getCause();
                 this.failedNodes.addAll(ifite.getFailedNodeSet());
               }
-              executeFunctionResponseMsg.clear();
               throw ex;
             }
             else if (obj instanceof Throwable) {
-              executeFunctionResponseMsg.clear();
               String s = "While performing a remote " + getOpName();
               throw new ServerOperationException(s, (Throwable)obj);
             }
@@ -577,7 +635,6 @@ public class ExecuteRegionFunctionOp {
             executeFunctionResponseMsg.receiveChunk();
             String errorMessage = executeFunctionResponseMsg.getPart(0)
                 .getString();
-            executeFunctionResponseMsg.clear();
             throw new ServerOperationException(errorMessage);
           default:
             throw new InternalGemFireError("Unknown message type "
@@ -588,6 +645,13 @@ public class ExecuteRegionFunctionOp {
         executeFunctionResponseMsg.clear();
       }
       return null;
+    }
+
+    private void addFunctionException(final FunctionException result) {
+      if (this.functionException == null) {
+        this.functionException = result;
+      }
+      this.functionException.addException(result);
     }
 
     @Override

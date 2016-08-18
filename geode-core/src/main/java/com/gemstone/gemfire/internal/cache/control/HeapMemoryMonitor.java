@@ -22,10 +22,10 @@ import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.query.internal.QueryMonitor;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.GemFireStatSampler;
-import com.gemstone.gemfire.internal.LocalStatListener;
+import com.gemstone.gemfire.internal.statistics.GemFireStatSampler;
+import com.gemstone.gemfire.internal.statistics.LocalStatListener;
 import com.gemstone.gemfire.internal.SetUtils;
-import com.gemstone.gemfire.internal.StatisticsImpl;
+import com.gemstone.gemfire.internal.statistics.StatisticsImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
 import com.gemstone.gemfire.internal.cache.control.MemoryThresholds.MemoryState;
@@ -759,7 +759,7 @@ public void stopMonitoring() {
   
   class LocalHeapStatListener implements LocalStatListener {
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.internal.LocalStatListener#statValueChanged(double)
+     * @see com.gemstone.gemfire.internal.statistics.LocalStatListener#statValueChanged(double)
      */
     @Override
     @SuppressWarnings("synthetic-access")

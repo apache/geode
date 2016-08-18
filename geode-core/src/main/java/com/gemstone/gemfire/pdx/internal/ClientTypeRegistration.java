@@ -126,9 +126,8 @@ public class ClientTypeRegistration implements TypeRegistration {
       throw lastException;
     } else {
       if(pools.isEmpty()) {
-        // TODO check for cache closed
         if (this.cache.isClosed()) {
-          throw new CacheClosedException("PDX detected cache was closed");
+          throw this.cache.getCacheClosedException("PDX detected cache was closed", null);
         }
         throw new CacheClosedException("Client pools have been closed so the PDX type registry can not lookup a type.");
       } else {
@@ -272,9 +271,8 @@ public class ClientTypeRegistration implements TypeRegistration {
       throw lastException;
     } else {
       if(pools.isEmpty()) {
-        // TODO check for cache closed
         if (this.cache.isClosed()) {
-          throw new CacheClosedException("PDX detected cache was closed");
+          throw this.cache.getCacheClosedException("PDX detected cache was closed", null);
         }
         throw new CacheClosedException("Client pools have been closed so the PDX type registry can not lookup an enum.");
       } else {
@@ -354,8 +352,6 @@ public class ClientTypeRegistration implements TypeRegistration {
   }
   @Override
   public void testClearRegistry() {
-    // TODO Auto-generated method stub
-    
   }
 
   @Override

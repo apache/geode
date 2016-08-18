@@ -97,7 +97,7 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
 
   private static int mcastPort;
 
-  private static Cache cache;
+  protected static Cache cache;
 
   @Override
   public final void postSetUp() throws Exception {
@@ -299,7 +299,7 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
     return (String) vm.invoke(getMember);
   }
 
-  protected void waitForProxy(final ObjectName objectName,
+  protected static void waitForProxy(final ObjectName objectName,
       final Class interfaceClass) {
 
     Wait.waitForCriterion(new WaitCriterion() {
@@ -701,7 +701,7 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
     assertNotNull(bean.getManagerObjectName());
   }
 
-  public void waitForRefresh(final int expectedRefreshCount,
+  public static void waitForRefresh(final int expectedRefreshCount,
       final ObjectName objectName) {
     final ManagementService service = getManagementService();
 

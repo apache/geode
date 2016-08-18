@@ -91,27 +91,6 @@ public class Size extends BaseCommand {
     // Size the entry
     try {
       this.securityService.authorizeRegionRead(regionName);
-          /*
-           *
-           * txtodo: doesn't seem like there is any notion of authzSize
-           *
-          AuthorizeRequest authzRequest = servConn.getAuthzRequest();
-          if (authzRequest != null) {
-            // TODO SW: This is to handle DynamicRegionFactory destroy
-            // calls. Rework this when the semantics of DynamicRegionFactory are
-            // cleaned up.
-            if (DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
-              RegionSizeOperationContext destroyContext = authzRequest
-                  .invalidateRegionAuthorize((String)key, callbackArg);
-              callbackArg = destroyContext.getCallbackArg();
-            }
-            else {
-              SizeOperationContext destroyContext = authzRequest
-                  .destroyAuthorize(regionName, key, callbackArg);
-              callbackArg = destroyContext.getCallbackArg();
-            }
-          }
-          */
       writeSizeResponse(region.size(), msg, servConn);
     } catch (RegionDestroyedException rde) {
       writeException(msg, rde, false, servConn);
