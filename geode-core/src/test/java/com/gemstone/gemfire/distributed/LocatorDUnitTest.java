@@ -557,6 +557,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     IgnoredException expectedException2 = IgnoredException.addIgnoredException("unable to find valid certification path to requested target");
     IgnoredException expectedException3 = IgnoredException.addIgnoredException("Received fatal alert: certificate_unknown");
     disconnectAllFromDS();
+    IgnoredException expectedException4 = IgnoredException.addIgnoredException("Unrecognized SSL message, plaintext connection");
+    disconnectAllFromDS();
     Host host = Host.getHost(0);
     VM loc1 = host.getVM(1);
     VM loc2 = host.getVM(2);
@@ -605,6 +607,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         expectedException.remove();
         expectedException2.remove();
         expectedException3.remove();
+        expectedException4.remove();
       }
     }
   }
