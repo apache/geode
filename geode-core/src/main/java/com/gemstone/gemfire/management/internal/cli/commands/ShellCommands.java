@@ -435,7 +435,7 @@ public class ShellCommands implements CommandMarker {
         trustManagerFactory.init(serverPub);
       }
 
-      SSLContext ssl = SSLContext.getInstance(SSLUtil.getSSLAlgo(SSLUtil.readArray(sslProtocolsToUse)));
+      SSLContext ssl = SSLContext.getInstance(SSLUtil.getSSLAlgo(SSLUtil.stringToArray(sslProtocolsToUse)));
 
       ssl.init(keyManagerFactory != null ? keyManagerFactory.getKeyManagers() : null,
         trustManagerFactory != null ? trustManagerFactory.getTrustManagers() : null, new java.security.SecureRandom());

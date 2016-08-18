@@ -31,8 +31,8 @@ import com.gemstone.gemfire.management.internal.SSLUtil;
 public class SSLConfig {
 
   private boolean enabled = DistributionConfig.DEFAULT_SSL_ENABLED;
-  private String protocols = DistributionConfig.DEFAULT_SSL_PROTOCOLS;
-  private String ciphers = DistributionConfig.DEFAULT_SSL_CIPHERS;
+  private String[] protocols = new String[] { DistributionConfig.DEFAULT_SSL_PROTOCOLS };
+  private String[] ciphers = new String[] { DistributionConfig.DEFAULT_SSL_CIPHERS };
   private boolean requireAuth = DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
   private String keystore = DistributionConfig.DEFAULT_SSL_KEYSTORE;
   private String keystoreType = DistributionConfig.DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE;
@@ -108,27 +108,19 @@ public class SSLConfig {
     this.enabled = enabled;
   }
 
-  public String getProtocols() {
+  public String[] getProtocols() {
     return this.protocols;
   }
 
-  public String[] getProtocolsAsStringArray() {
-    return SSLUtil.readArray(this.protocols);
-  }
-
-  public void setProtocols(String protocols) {
+  public void setProtocols(String[] protocols) {
     this.protocols = protocols;
   }
 
-  public String getCiphers() {
+  public String[] getCiphers() {
     return this.ciphers;
   }
 
-  public String[] getCiphersAsStringArray() {
-    return SSLUtil.readArray(this.ciphers);
-  }
-
-  public void setCiphers(String ciphers) {
+  public void setCiphers(String[] ciphers) {
     this.ciphers = ciphers;
   }
 
@@ -147,7 +139,6 @@ public class SSLConfig {
   public void setTruststoreType(final String truststoreType) {
     this.truststoreType = truststoreType;
   }
-
 
 
   public Properties getProperties() {
@@ -186,8 +177,8 @@ public class SSLConfig {
     props.setProperty(CLUSTER_SSL_ENABLED, String.valueOf(this.enabled));
 
     if (this.enabled) {
-      props.setProperty(CLUSTER_SSL_PROTOCOLS, this.protocols);
-      props.setProperty(CLUSTER_SSL_CIPHERS, this.ciphers);
+      props.setProperty(CLUSTER_SSL_PROTOCOLS, SSLUtil.arrayToSpaceDelimitedString(this.protocols));
+      props.setProperty(CLUSTER_SSL_CIPHERS, SSLUtil.arrayToSpaceDelimitedString(this.ciphers));
       props.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(this.requireAuth));
     }
   }

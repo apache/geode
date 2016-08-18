@@ -48,6 +48,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
+import com.gemstone.gemfire.management.internal.SSLUtil;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
 
 /**
@@ -183,9 +184,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Deprecated
   private boolean clusterSSLEnabled = DEFAULT_SSL_ENABLED;
   @Deprecated
-  private String clusterSSLProtocols = DEFAULT_SSL_PROTOCOLS;
+  private String[] clusterSSLProtocols = new String[] { DEFAULT_SSL_PROTOCOLS };
   @Deprecated
-  private String clusterSSLCiphers = DEFAULT_SSL_CIPHERS;
+  private String[] clusterSSLCiphers = new String[] { DEFAULT_SSL_CIPHERS };
   @Deprecated
   private boolean clusterSSLRequireAuthentication = DEFAULT_SSL_REQUIRE_AUTHENTICATION;
   @Deprecated
@@ -458,9 +459,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Deprecated
   private boolean jmxManagerSslRequireAuthentication = DEFAULT_JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION;
   @Deprecated
-  private String jmxManagerSslProtocols = DEFAULT_JMX_MANAGER_SSL_PROTOCOLS;
+  private String[] jmxManagerSslProtocols = new String[] { DEFAULT_JMX_MANAGER_SSL_PROTOCOLS };
   @Deprecated
-  private String jmxManagerSslCiphers = DEFAULT_JMX_MANAGER_SSL_CIPHERS;
+  private String[] jmxManagerSslCiphers = new String[] { DEFAULT_JMX_MANAGER_SSL_CIPHERS };
   @Deprecated
   private Properties jmxManagerSslProperties = new Properties();
   @Deprecated
@@ -481,9 +482,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Deprecated
   private boolean serverSslRequireAuthentication = DEFAULT_SERVER_SSL_REQUIRE_AUTHENTICATION;
   @Deprecated
-  private String serverSslProtocols = DEFAULT_SERVER_SSL_PROTOCOLS;
+  private String[] serverSslProtocols = new String[] { DEFAULT_SERVER_SSL_PROTOCOLS };
   @Deprecated
-  private String serverSslCiphers = DEFAULT_SERVER_SSL_CIPHERS;
+  private String[] serverSslCiphers = new String[] { DEFAULT_SERVER_SSL_CIPHERS };
   @Deprecated
   private Properties serverSslProperties = new Properties();
   @Deprecated
@@ -504,9 +505,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Deprecated
   private boolean gatewaySslRequireAuthentication = DEFAULT_GATEWAY_SSL_REQUIRE_AUTHENTICATION;
   @Deprecated
-  private String gatewaySslProtocols = DEFAULT_GATEWAY_SSL_PROTOCOLS;
+  private String[] gatewaySslProtocols = new String[] { DEFAULT_GATEWAY_SSL_PROTOCOLS };
   @Deprecated
-  private String gatewaySslCiphers = DEFAULT_GATEWAY_SSL_CIPHERS;
+  private String[] gatewaySslCiphers = new String[] { DEFAULT_GATEWAY_SSL_CIPHERS };
   @Deprecated
   private Properties gatewaySslProperties = new Properties();
   @Deprecated
@@ -528,9 +529,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Deprecated
   private boolean httpServiceSSLRequireAuthentication = DEFAULT_HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION;
   @Deprecated
-  private String httpServiceSSLProtocols = DEFAULT_HTTP_SERVICE_SSL_PROTOCOLS;
+  private String[] httpServiceSSLProtocols = new String[] { DEFAULT_HTTP_SERVICE_SSL_PROTOCOLS };
   @Deprecated
-  private String httpServiceSSLCiphers = DEFAULT_HTTP_SERVICE_SSL_CIPHERS;
+  private String[] httpServiceSSLCiphers = new String[] { DEFAULT_HTTP_SERVICE_SSL_CIPHERS };
   @Deprecated
   private Properties httpServiceSSLProperties = new Properties();
   @Deprecated
@@ -548,8 +549,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private SSLEnabledComponent[] sslEnabledComponents = DEFAULT_SSL_ENABLED_COMPONENTS;
 
-  private String sslProtocols = DEFAULT_SSL_PROTOCOLS;
-  private String sslCiphers = DEFAULT_SSL_CIPHERS;
+  private String[] sslProtocols = new String[] { DEFAULT_SSL_PROTOCOLS };
+  private String[] sslCiphers = new String[] { DEFAULT_SSL_CIPHERS };
   private boolean sslRequireAuthentication = DEFAULT_SSL_REQUIRE_AUTHENTICATION;
   private String sslKeyStore = DEFAULT_SSL_KEYSTORE;
   private String sslKeyStoreType = DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE;
@@ -1457,8 +1458,13 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         continue;
       }
       Object propVal = me.getValue();
-      if (propVal != null && (propVal instanceof String)) { // weed out extraneous non-string properties
-        this.setAttribute(propName, ((String) propVal).trim(), this.sourceMap.get(propName));
+      if (isLegacySSLCipherOrProtocol(propName)) {
+        propVal = SSLUtil.stringToArray((String) propVal);
+        setAttributeObject(propName, propVal, this.sourceMap.get(propName));
+      } else {
+        if (propVal != null && (propVal instanceof String)) { // weed out extraneous non-string properties
+          this.setAttribute(propName, ((String) propVal).trim(), this.sourceMap.get(propName));
+        }
       }
     }
     if (props.containsKey(CLUSTER_SSL_ENABLED)) {
@@ -1475,6 +1481,15 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
     // Make attributes read only
     this.modifiable = false;
+  }
+
+  private boolean isLegacySSLCipherOrProtocol(final String propName) {
+    if (propName.contains("-ciphers") || propName.contains("-protocols")) {
+      if (!ConfigurationProperties.SSL_CIPHERS.equals(propName) && !ConfigurationProperties.SSL_PROTOCOLS.equals(propName)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public void close() {
@@ -1623,11 +1638,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     return this.clusterSSLEnabled;
   }
 
-  public String getClusterSSLProtocols() {
+  public String[] getClusterSSLProtocols() {
     return this.clusterSSLProtocols;
   }
 
-  public String getClusterSSLCiphers() {
+  public String[] getClusterSSLCiphers() {
     return this.clusterSSLCiphers;
   }
 
@@ -1903,12 +1918,12 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.clusterSSLEnabled = (Boolean) value;
   }
 
-  public void setClusterSSLProtocols(String value) {
-    this.clusterSSLProtocols = (String) value;
+  public void setClusterSSLProtocols(String[] value) {
+    this.clusterSSLProtocols = value;
   }
 
-  public void setClusterSSLCiphers(String value) {
-    this.clusterSSLCiphers = (String) value;
+  public void setClusterSSLCiphers(String[] value) {
+    this.clusterSSLCiphers = value;
   }
 
   public void setClusterSSLRequireAuthentication(boolean value) {
@@ -2313,22 +2328,22 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public String getJmxManagerSSLProtocols() {
+  public String[] getJmxManagerSSLProtocols() {
     return this.jmxManagerSslProtocols;
   }
 
   @Override
-  public void setJmxManagerSSLProtocols(String protocols) {
+  public void setJmxManagerSSLProtocols(String[] protocols) {
     this.jmxManagerSslProtocols = protocols;
   }
 
   @Override
-  public String getJmxManagerSSLCiphers() {
+  public String[] getJmxManagerSSLCiphers() {
     return this.jmxManagerSslCiphers;
   }
 
   @Override
-  public void setJmxManagerSSLCiphers(String ciphers) {
+  public void setJmxManagerSSLCiphers(String[] ciphers) {
     this.jmxManagerSslCiphers = ciphers;
   }
 
@@ -2555,22 +2570,22 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public String getSSLProtocols() {
+  public String[] getSSLProtocols() {
     return sslProtocols;
   }
 
   @Override
-  public void setSSLProtocols(final String sslProtocols) {
+  public void setSSLProtocols(final String[] sslProtocols) {
     this.sslProtocols = sslProtocols;
   }
 
   @Override
-  public String getSSLCiphers() {
+  public String[] getSSLCiphers() {
     return sslCiphers;
   }
 
   @Override
-  public void setSSLCiphers(final String sslCiphers) {
+  public void setSSLCiphers(final String[] sslCiphers) {
     this.sslCiphers = sslCiphers;
   }
 
@@ -3723,23 +3738,23 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public String getServerSSLProtocols() {
+  public String[] getServerSSLProtocols() {
     return this.serverSslProtocols;
   }
 
   @Override
-  public void setServerSSLProtocols(String protocols) {
-    this.serverSslProtocols = (String) protocols;
+  public void setServerSSLProtocols(String[] protocols) {
+    this.serverSslProtocols = protocols;
   }
 
   @Override
-  public String getServerSSLCiphers() {
+  public String[] getServerSSLCiphers() {
     return this.serverSslCiphers;
   }
 
   @Override
-  public void setServerSSLCiphers(String ciphers) {
-    this.serverSslCiphers = (String) ciphers;
+  public void setServerSSLCiphers(String[] ciphers) {
+    this.serverSslCiphers = ciphers;
   }
 
   public void setServerSSLKeyStore(String value) {
@@ -3814,23 +3829,23 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public String getGatewaySSLProtocols() {
+  public String[] getGatewaySSLProtocols() {
     return this.gatewaySslProtocols;
   }
 
   @Override
-  public void setGatewaySSLProtocols(String protocols) {
-    this.gatewaySslProtocols = (String) protocols;
+  public void setGatewaySSLProtocols(String[] protocols) {
+    this.gatewaySslProtocols = protocols;
   }
 
   @Override
-  public String getGatewaySSLCiphers() {
+  public String[] getGatewaySSLCiphers() {
     return this.gatewaySslCiphers;
   }
 
   @Override
-  public void setGatewaySSLCiphers(String ciphers) {
-    this.gatewaySslCiphers = (String) ciphers;
+  public void setGatewaySSLCiphers(String[] ciphers) {
+    this.gatewaySslCiphers = ciphers;
   }
 
   public void setGatewaySSLKeyStore(String value) {
@@ -3905,22 +3920,22 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public String getHttpServiceSSLProtocols() {
+  public String[] getHttpServiceSSLProtocols() {
     return httpServiceSSLProtocols;
   }
 
   @Override
-  public void setHttpServiceSSLProtocols(String httpServiceSSLProtocols) {
+  public void setHttpServiceSSLProtocols(String[] httpServiceSSLProtocols) {
     this.httpServiceSSLProtocols = httpServiceSSLProtocols;
   }
 
   @Override
-  public String getHttpServiceSSLCiphers() {
+  public String[] getHttpServiceSSLCiphers() {
     return httpServiceSSLCiphers;
   }
 
   @Override
-  public void setHttpServiceSSLCiphers(String httpServiceSSLCiphers) {
+  public void setHttpServiceSSLCiphers(String[] httpServiceSSLCiphers) {
     this.httpServiceSSLCiphers = httpServiceSSLCiphers;
   }
 

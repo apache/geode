@@ -450,16 +450,16 @@ public interface DistributedSystemConfig extends Cloneable {
   public void setSSLEnabled(boolean enabled);
 
   /** Returns the value of the "ssl-protocols" property. */
-  public String getSSLProtocols();
+  public String[] getSSLProtocols();
 
   /** Sets the value of the "ssl-protocols" property. */
-  public void setSSLProtocols(String protocols);
+  public void setSSLProtocols(String[] protocols);
 
   /** Returns the value of the "ssl-ciphers" property. */
-  public String getSSLCiphers();
+  public String[] getSSLCiphers();
 
   /** Sets the value of the "ssl-ciphers" property. */
-  public void setSSLCiphers(String ciphers);
+  public void setSSLCiphers(String[] ciphers);
 
   /** Returns the value of the "ssl-require-authentication" property. */
   public boolean isSSLAuthenticationRequired();

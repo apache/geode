@@ -111,11 +111,11 @@ public class DistributionConfigJUnitTest {
     System.out.println("otherList: " + otherList);
 
     //TODO - This makes no sense. One has no idea what the correct expected number of attributes are.
-    assertEquals(28, boolList.size());
+    assertEquals(29, boolList.size());
     assertEquals(33, intList.size());
-    assertEquals(84, stringList.size());
+    assertEquals(72, stringList.size());
     assertEquals(5, fileList.size());
-    assertEquals(4, otherList.size());
+    assertEquals(16, otherList.size());
   }
 
   @Test
@@ -306,7 +306,7 @@ public class DistributionConfigJUnitTest {
   public void testValidLocatorAddress() {
     String address = "81.240.0.1[7056]";
     config.modifiable = true;
-    config.setAttributeObject(START_LOCATOR,address,ConfigSource.api());
+    config.setAttributeObject(START_LOCATOR, address, ConfigSource.api());
     assertEquals(config.getStartLocator(), address);
   }
 
@@ -314,8 +314,8 @@ public class DistributionConfigJUnitTest {
   public void testInvalidLocatorAddress() {
     String address = "bad.bad[7056]";
     config.modifiable = true;
-//    config.setStartLocator(address);
-    config.setAttributeObject(START_LOCATOR,address,ConfigSource.api());
+    //    config.setStartLocator(address);
+    config.setAttributeObject(START_LOCATOR, address, ConfigSource.api());
   }
 
   @Test
@@ -375,6 +375,7 @@ public class DistributionConfigJUnitTest {
 
     DistributionConfig config = new DistributionConfigImpl(props);
   }
+
   @Test
   public void testSSLEnabledComponentsLegacyPass() {
     Properties props = new Properties();
@@ -384,5 +385,57 @@ public class DistributionConfigJUnitTest {
     props.put(SSL_ENABLED_COMPONENTS, "");
 
     DistributionConfig config = new DistributionConfigImpl(props);
+  }
+
+  @Test
+  public void testSSLCiphers() {
+    Properties props = new Properties();
+    props.put(SSL_CIPHERS, "any,test,anythingelse");
+
+    DistributionConfig config = new DistributionConfigImpl(props);
+    assertArrayEquals(new String[] { "any", "test", "anythingelse" }, config.getSSLCiphers());
+  }
+
+  @Test
+  public void testSSLProtocols() {
+    Properties props = new Properties();
+    props.put(SSL_PROTOCOLS, "any,protocol1,protocol2");
+
+    DistributionConfig config = new DistributionConfigImpl(props);
+    assertArrayEquals(new String[] { "any", "protocol1", "protocol2" }, config.getSSLProtocols());
+  }
+
+  @Test
+  public void testSSLLegacyCiphers() {
+    Properties props = new Properties();
+    props.put(CLUSTER_SSL_CIPHERS, "cluster1 cluster2 cluster3");
+    props.put(JMX_MANAGER_SSL_CIPHERS, "jmx1 jmx2 jmx3");
+    props.put(HTTP_SERVICE_SSL_CIPHERS, "http1 http2 http3");
+    props.put(GATEWAY_SSL_CIPHERS, "gateway1 gateway2 gateway3");
+    props.put(SERVER_SSL_CIPHERS, "server1 server2 server3");
+
+    DistributionConfig config = new DistributionConfigImpl(props);
+    assertArrayEquals(new String[] { "cluster1", "cluster2", "cluster3" }, config.getClusterSSLCiphers());
+    assertArrayEquals(new String[] { "jmx1", "jmx2", "jmx3" }, config.getJmxManagerSSLCiphers());
+    assertArrayEquals(new String[] { "server1", "server2", "server3" }, config.getServerSSLCiphers());
+    assertArrayEquals(new String[] { "gateway1", "gateway2", "gateway3" }, config.getGatewaySSLCiphers());
+    assertArrayEquals(new String[] { "http1", "http2", "http3" }, config.getHttpServiceSSLCiphers());
+  }
+
+  @Test
+  public void testSSLLegacyProtocols() {
+    Properties props = new Properties();
+    props.put(CLUSTER_SSL_PROTOCOLS, "cluster1 cluster2 cluster3");
+    props.put(JMX_MANAGER_SSL_PROTOCOLS, "jmx1 jmx2 jmx3");
+    props.put(HTTP_SERVICE_SSL_PROTOCOLS, "http1 http2 http3");
+    props.put(GATEWAY_SSL_PROTOCOLS, "gateway1 gateway2 gateway3");
+    props.put(SERVER_SSL_PROTOCOLS, "server1 server2 server3");
+
+    DistributionConfig config = new DistributionConfigImpl(props);
+    assertArrayEquals(new String[] { "cluster1", "cluster2", "cluster3" }, config.getClusterSSLProtocols());
+    assertArrayEquals(new String[] { "jmx1", "jmx2", "jmx3" }, config.getJmxManagerSSLProtocols());
+    assertArrayEquals(new String[] { "server1", "server2", "server3" }, config.getServerSSLProtocols());
+    assertArrayEquals(new String[] { "gateway1", "gateway2", "gateway3" }, config.getGatewaySSLProtocols());
+    assertArrayEquals(new String[] { "http1", "http2", "http3" }, config.getHttpServiceSSLProtocols());
   }
 }

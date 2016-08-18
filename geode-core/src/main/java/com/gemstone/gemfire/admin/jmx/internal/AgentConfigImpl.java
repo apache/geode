@@ -42,6 +42,7 @@ import com.gemstone.gemfire.admin.jmx.AgentConfig;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.util.IOUtils;
+import com.gemstone.gemfire.management.internal.SSLUtil;
 
 /**
  * Provides the JMX Agent configuration properties.
@@ -936,8 +937,8 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     this.httpAuthPassword = validateNonEmptyString(props.getProperty(HTTP_AUTHENTICATION_PASSWORD_NAME), DEFAULT_HTTP_AUTHENTICATION_PASSWORD);
 
     this.sslEnabled = validateBoolean(props.getProperty(CLUSTER_SSL_ENABLED), DEFAULT_SSL_ENABLED);
-    this.sslProtocols = validateNonEmptyString(props.getProperty(CLUSTER_SSL_PROTOCOLS), DEFAULT_SSL_PROTOCOLS);
-    this.sslCiphers = validateNonEmptyString(props.getProperty(CLUSTER_SSL_CIPHERS), DEFAULT_SSL_CIPHERS);
+    this.sslProtocols = validateNonEmptyStringArray(props.getProperty(CLUSTER_SSL_PROTOCOLS), DEFAULT_SSL_PROTOCOLS);
+    this.sslCiphers = validateNonEmptyStringArray(props.getProperty(CLUSTER_SSL_CIPHERS), DEFAULT_SSL_CIPHERS);
     this.sslAuthenticationRequired = validateBoolean(props.getProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION), DEFAULT_SSL_REQUIRE_AUTHENTICATION);
     this.sslProperties = new Properties();
     for (int i = 0; true; i++) {
@@ -994,6 +995,10 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
        */
       e.printStackTrace();
     }
+  }
+
+  private String[] validateNonEmptyStringArray(final String property, final String defaultSslProtocols) {
+    return isEmpty(property) ? SSLUtil.stringToArray(defaultSslProtocols) : SSLUtil.stringToArray(property);
   }
 
   /**
@@ -1676,8 +1681,8 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   //   SSL support...
   // -------------------------------------------------------------------------
   private boolean sslEnabled = DEFAULT_SSL_ENABLED;
-  private String sslProtocols = DEFAULT_SSL_PROTOCOLS;
-  private String sslCiphers = DEFAULT_SSL_CIPHERS;
+  private String[] sslProtocols = new String[] { DEFAULT_SSL_PROTOCOLS };
+  private String[] sslCiphers = new String[] { DEFAULT_SSL_CIPHERS };
   private boolean sslAuthenticationRequired = DEFAULT_SSL_REQUIRE_AUTHENTICATION;
   private Properties sslProperties = new Properties();
 
@@ -1693,23 +1698,23 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   }
 
   @Override
-  public String getSSLProtocols() {
+  public String[] getSSLProtocols() {
     return this.sslProtocols;
   }
 
   @Override
-  public void setSSLProtocols(String protocols) {
+  public void setSSLProtocols(String[] protocols) {
     this.sslProtocols = protocols;
     configChanged();
   }
 
   @Override
-  public String getSSLCiphers() {
+  public String[] getSSLCiphers() {
     return this.sslCiphers;
   }
 
   @Override
-  public void setSSLCiphers(String ciphers) {
+  public void setSSLCiphers(String[] ciphers) {
     this.sslCiphers = ciphers;
     configChanged();
   }

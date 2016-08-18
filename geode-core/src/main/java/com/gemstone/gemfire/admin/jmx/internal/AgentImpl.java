@@ -1422,16 +1422,16 @@ implements com.gemstone.gemfire.admin.jmx.Agent,
   public void setSSLEnabled(boolean enabled) {
     this.agentConfig.setSSLEnabled(enabled);
   }
-  public String getSSLProtocols() {
+  public String[] getSSLProtocols() {
     return this.agentConfig.getSSLProtocols();
   }
-  public void setSSLProtocols(String protocols) {
+  public void setSSLProtocols(String[] protocols) {
     this.agentConfig.setSSLProtocols(protocols);
   }
-  public String getSSLCiphers() {
+  public String[] getSSLCiphers() {
     return this.agentConfig.getSSLCiphers();
   }
-  public void setSSLCiphers(String ciphers) {
+  public void setSSLCiphers(String[] ciphers) {
     this.agentConfig.setSSLCiphers(ciphers);
   }
   public boolean isSSLAuthenticationRequired() {

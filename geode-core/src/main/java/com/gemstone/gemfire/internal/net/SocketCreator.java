@@ -440,7 +440,7 @@ public class SocketCreator {
   }
 
   private SSLContext getSSLContextInstance() {
-    String[] protocols = sslConfig.getProtocolsAsStringArray();
+    String[] protocols = sslConfig.getProtocols();
     SSLContext sslContext = null;
     if (protocols != null && protocols.length > 0) {
       for (String protocol : protocols) {
@@ -1019,11 +1019,11 @@ public class SocketCreator {
     serverSocket.setEnableSessionCreation(true);
 
     // restrict cyphers
-    String[] protocols = this.sslConfig.getProtocolsAsStringArray();
+    String[] protocols = this.sslConfig.getProtocols();
     if (!"any".equalsIgnoreCase(protocols[0])) {
       serverSocket.setEnabledProtocols(protocols);
     }
-    String[] ciphers = this.sslConfig.getCiphersAsStringArray();
+    String[] ciphers = this.sslConfig.getCiphers();
     if (!"any".equalsIgnoreCase(ciphers[0])) {
       serverSocket.setEnabledCipherSuites(ciphers);
     }
@@ -1040,13 +1040,13 @@ public class SocketCreator {
       sslSocket.setUseClientMode(true);
       sslSocket.setEnableSessionCreation(true);
 
-      String[] protocols = this.sslConfig.getProtocolsAsStringArray();
+      String[] protocols = this.sslConfig.getProtocols();
 
       // restrict cyphers
       if (protocols != null && !"any".equalsIgnoreCase(protocols[0])) {
         sslSocket.setEnabledProtocols(protocols);
       }
-      String[] ciphers = this.sslConfig.getCiphersAsStringArray();
+      String[] ciphers = this.sslConfig.getCiphers();
       if (ciphers != null && !"any".equalsIgnoreCase(ciphers[0])) {
         sslSocket.setEnabledCipherSuites(ciphers);
       }
