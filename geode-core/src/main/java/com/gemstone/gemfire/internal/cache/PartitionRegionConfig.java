@@ -42,7 +42,7 @@ import com.gemstone.gemfire.internal.util.VersionedArrayList;
  * Maintains configuration information for a PartitionedRegion. Instances are
  * stored in the allPartitionedRegion.
  */
-public final class PartitionRegionConfig extends ExternalizableDSFID implements Versionable
+public class PartitionRegionConfig extends ExternalizableDSFID implements Versionable
 {
 
   /** PRId. */

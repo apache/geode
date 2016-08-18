@@ -29,7 +29,10 @@ import com.gemstone.gemfire.internal.cache.execute.InternalRegionFunctionContext
 import com.gemstone.gemfire.internal.cache.partitioned.PRLocallyDestroyedException;
 import com.gemstone.gemfire.internal.cache.persistence.PRPersistentConfig;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+
 import org.apache.logging.log4j.Logger;
 
 import java.io.Serializable;
@@ -57,9 +60,10 @@ public class ColocationHelper {
   /**
    * An utility method to retrieve colocated region of a given partitioned
    * region
-   * 
+   *
    * @param partitionedRegion
    * @return colocated PartitionedRegion
+   * @throws IllegalStateException for missing colocated region
    * @since GemFire 5.8Beta
    */
   public static PartitionedRegion getColocatedRegion(
@@ -75,11 +79,21 @@ public class ColocationHelper {
         .getCache());
     PartitionRegionConfig prConf = (PartitionRegionConfig)prRoot
         .get(getRegionIdentifier(colocatedWith));
+    if (prConf == null) {
+      throw new IllegalStateException(LocalizedStrings.ColocationHelper_REGION_SPECIFIED_IN_COLOCATEDWITH_DOES_NOT_EXIST.toLocalizedString(
+          new Object[] {colocatedWith, partitionedRegion.getFullPath()}));
+    }
     int prID = prConf.getPRId();
     PartitionedRegion colocatedPR = null;
     try {
       colocatedPR = PartitionedRegion.getPRFromId(prID);
-      colocatedPR.waitOnBucketMetadataInitialization();
+      if (colocatedPR != null) {
+        colocatedPR.waitOnBucketMetadataInitialization();
+      }
+      else {
+        throw new IllegalStateException(LocalizedStrings.ColocationHelper_REGION_SPECIFIED_IN_COLOCATEDWITH_DOES_NOT_EXIST.toLocalizedString(
+            new Object[] {colocatedWith, partitionedRegion.getFullPath()}));
+      }
     }
     catch (PRLocallyDestroyedException e) {
       if (logger.isDebugEnabled()) {
@@ -186,8 +200,7 @@ public class ColocationHelper {
    * member, but have not yet been created.
    */
   private static boolean hasOfflineColocatedChildRegions(PartitionedRegion region) {
-    
-    boolean hasOfflineChildren;
+    boolean hasOfflineChildren = false;
     int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
     try {
       GemFireCacheImpl cache = region.getCache();
@@ -208,24 +221,26 @@ public class ColocationHelper {
               //If the child region is offline, return true
               //unless it is a parallel queue that the user has removed.
               if(!ignoreUnrecoveredQueue(region, childName)) {
-                return true;
+                region.addMissingColocatedRegionLogger(childName);
+                hasOfflineChildren = true;
               }
             } else {
               //Otherwise, look for offline children of that region.
               if(hasOfflineColocatedChildRegions(childRegion)) {
-                return true;
+                hasOfflineChildren = true;
+                // Add the offline children of this child to the region's missingChildren list
+                region.addMissingColocatedRegionLogger(childRegion);
               }
             }
           }
         }
       }
-    
     } finally {
       LocalRegion.setThreadInitLevelRequirement(oldLevel);
     }
-    return false;
+    return hasOfflineChildren;
   }
-  
+
 
   private static boolean ignoreUnrecoveredQueue(PartitionedRegion region, String childName) {
     //Hack for #50120 if the childRegion is an async queue, but we
@@ -381,9 +396,10 @@ public class ColocationHelper {
     while ( itr.hasNext()) {
       try {
         String prName = (String)itr.next();
-        /*if (prName == prName) {
+        if (prName.equals(partitionedRegion.getRegionIdentifier())) {
+          // region can't be a child of itself
           continue;
-        }*/
+        }
         try {
           prConf = (PartitionRegionConfig)prRoot.get(prName);
         }

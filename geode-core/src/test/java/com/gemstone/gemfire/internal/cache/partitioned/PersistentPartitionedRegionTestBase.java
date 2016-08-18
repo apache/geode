@@ -239,10 +239,14 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
   }
 
   protected void closePR(VM vm0) {
-    SerializableRunnable close = new SerializableRunnable("Close Cache") {
+    closePR(vm0, PR_REGION_NAME);
+  }
+
+  protected void closePR(VM vm0, String regionName) {
+    SerializableRunnable close = new SerializableRunnable("Close PR") {
       public void run() {
         Cache cache = getCache();
-        Region region = cache.getRegion(PR_REGION_NAME);
+        Region region = cache.getRegion(regionName);
         region.close();
       }
     };
@@ -251,10 +255,14 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
   }
 
   protected void destroyPR(VM vm0) {
-    SerializableRunnable destroy = new SerializableRunnable() {
+    destroyPR(vm0,PR_REGION_NAME);
+  }
+
+  protected void destroyPR(VM vm0, String regionName) {
+    SerializableRunnable destroy = new SerializableRunnable("Destroy PR") {
       public void run() {
         Cache cache = getCache();
-        Region region = cache.getRegion(PR_REGION_NAME);
+        Region region = cache.getRegion(regionName);
         region.localDestroyRegion();
       }
     };
@@ -490,6 +498,7 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
       }
     };
     
+    vm.invoke(getBuckets);
   }
   
   protected Set<Integer> getPrimaryBucketList(VM vm0) {

@@ -303,6 +303,8 @@ public class PartitionedRegion extends LocalRegion implements
   
   private final PartitionedRegion colocatedWithRegion;
 
+  private ColocationLogger missingColocatedRegionLogger;
+
   private List<BucketRegion> sortedBuckets; 
   
   private ScheduledExecutorService bucketSorter;
@@ -7457,6 +7459,41 @@ public class PartitionedRegion extends LocalRegion implements
     basicDestroyRegion(event, true);
   }
 
+  private void stopMissingColocatedRegionLogger() {
+    if (missingColocatedRegionLogger != null) {
+      missingColocatedRegionLogger.stopLogger();
+    }
+    missingColocatedRegionLogger = null;
+  }
+
+  public void addMissingColocatedRegionLogger() {
+    if (missingColocatedRegionLogger == null) {
+      missingColocatedRegionLogger = new ColocationLogger(this);
+    }
+  }
+
+  public void addMissingColocatedRegionLogger(String childName) {
+    if (missingColocatedRegionLogger == null) {
+      missingColocatedRegionLogger = new ColocationLogger(this);
+    }
+    missingColocatedRegionLogger.addMissingChildRegion(childName);
+  }
+
+  public void addMissingColocatedRegionLogger(PartitionedRegion childRegion) {
+    if (missingColocatedRegionLogger == null) {
+      missingColocatedRegionLogger = new ColocationLogger(this);
+    }
+    missingColocatedRegionLogger.addMissingChildRegions(childRegion);
+  }
+
+  public List<String> getMissingColocatedChildren() {
+    ColocationLogger regionLogger = missingColocatedRegionLogger;
+    if (regionLogger != null) {
+      return regionLogger.getMissingChildRegions();
+    }
+    return Collections.emptyList();
+  }
+
   /**Globally destroy the partitioned region by sending a message
    * to a data store to do the destroy.
    * @return true if the region was destroyed successfully
@@ -7965,6 +8002,7 @@ public class PartitionedRegion extends LocalRegion implements
     this.cache.getResourceManager(false).removeResourceListener(this);
     
     final Operation op = event.getOperation();
+    stopMissingColocatedRegionLogger();
     if (op.isClose() || Operation.REGION_LOCAL_DESTROY.equals(op)) {
       try {
         if (Operation.CACHE_CLOSE.equals(op) || 
