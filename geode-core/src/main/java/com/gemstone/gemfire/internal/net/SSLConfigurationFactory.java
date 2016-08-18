@@ -27,7 +27,6 @@ import org.springframework.util.StringUtils;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.internal.admin.SSLConfig;
-import com.gemstone.gemfire.management.internal.SSLUtil;
 
 public class SSLConfigurationFactory {
 
@@ -317,8 +316,8 @@ public class SSLConfigurationFactory {
                                                    final String alias) {
     SSLConfig sslConfig = new SSLConfig();
     sslConfig.setAlias(alias);
-    sslConfig.setCiphers(SSLUtil.stringToArray(ciphers));
-    sslConfig.setProtocols(SSLUtil.stringToArray(protocols));
+    sslConfig.setCiphers(ciphers);
+    sslConfig.setProtocols(protocols);
     sslConfig.setRequireAuth(needClientAuth);
     sslConfig.setEnabled(useSSL);
 

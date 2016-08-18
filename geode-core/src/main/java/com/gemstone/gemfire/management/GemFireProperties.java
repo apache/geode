@@ -442,12 +442,12 @@ public class GemFireProperties {
    * @deprecated Geode 1.0 use {@link #clusterSSLProtocols}
    */
   @Deprecated
-  private String[] jmxManagerSSLProtocols;
+  private String jmxManagerSSLProtocols;
   /**
    * @deprecated Geode 1.0 use {@link #clusterSSLCiphers}
    */
   @Deprecated
-  private String[] jmxManagerSSLCiphers;
+  private String jmxManagerSSLCiphers;
   /**
    * @deprecated Geode 1.0 use {@link #clusterSSLRequireAuthentication}
    */
@@ -481,8 +481,8 @@ public class GemFireProperties {
   private String jmxManagerSSLAlias;
   
   private boolean clusterSSLEnabled;
-  private String[] clusterSSLProtocols;
-  private String[] clusterSSLCiphers;
+  private String clusterSSLProtocols;
+  private String clusterSSLCiphers;
   private boolean clusterSSLRequireAuthentication;
   private String clusterSSLKeyStore;
   private String clusterSSLKeyStoreType;
@@ -500,12 +500,12 @@ public class GemFireProperties {
    * @deprecated Geode 1.0 use {@link #clusterSSLProtocols}
    */
   @Deprecated
-  private String[] serverSSLProtocols;
+  private String serverSSLProtocols;
   /**
    * @deprecated Geode 1.0 use {@link #clusterSSLCiphers}
    */
   @Deprecated
-  private String[] serverSSLCiphers;
+  private String serverSSLCiphers;
   /**
    * @deprecated Geode 1.0 use {@link #clusterSSLRequireAuthentication}
    */
@@ -547,12 +547,12 @@ public class GemFireProperties {
    * @deprecated Geode 1.0 use {@link #clusterSSLProtocols}
    */
   @Deprecated
-  private String[] gatewaySSLProtocols;
+  private String gatewaySSLProtocols;
   /**
    * @deprecated Geode 1.0 use {@link #clusterSSLCiphers}
    */
   @Deprecated
-  private String[] gatewaySSLCiphers;
+  private String gatewaySSLCiphers;
   /**
    * @deprecated Geode 1.0 use {@link #clusterSSLRequireAuthentication}
    */
@@ -599,12 +599,12 @@ public class GemFireProperties {
    * @deprecated Geode 1.0 use {@link #clusterSSLProtocols}
    */
   @Deprecated
-  private String[] httpServiceSSLProtocols;
+  private String httpServiceSSLProtocols;
   /**
    * @deprecated Geode 1.0 use {@link #clusterSSLCiphers}
    */
   @Deprecated
-  private String[] httpServiceSSLCiphers;
+  private String httpServiceSSLCiphers;
   /**
    * @deprecated Geode 1.0 use {@link #clusterSSLKeyStore}
    */
@@ -1018,6 +1018,26 @@ public class GemFireProperties {
     
   }
 
+//  public void setSslEnabled(boolean sslEnabled) {
+//    this.sslEnabled = sslEnabled;
+//
+//  }
+//
+//  public void setSslCiphers(String sslCiphers) {
+//    this.sslCiphers = sslCiphers;
+//
+//  }
+//
+//  public void setSslProtocols(String sslProtocols) {
+//    this.sslProtocols = sslProtocols;
+//
+//  }
+//
+//  public void setSslRequireAuthentication(boolean sslRequireAuthentication) {
+//    this.sslRequireAuthentication = sslRequireAuthentication;
+//
+//  }
+
   public void setSocketLeaseTime(int socketLeaseTime) {
     this.socketLeaseTime = socketLeaseTime;
     
@@ -1338,19 +1358,19 @@ public class GemFireProperties {
     this.jmxManagerSSLEnabled = jmxManagerSSLEnabled;
   }
 
-  public String[] getJmxManagerSSLProtocols() {
+  public String getJmxManagerSSLProtocols() {
     return jmxManagerSSLProtocols;
   }
 
-  public void setJmxManagerSSLProtocols(String[] jmxManagerSSLProtocols) {
+  public void setJmxManagerSSLProtocols(String jmxManagerSSLProtocols) {
     this.jmxManagerSSLProtocols = jmxManagerSSLProtocols;
   }
 
-  public String[] getJmxManagerSSLCiphers() {
+  public String getJmxManagerSSLCiphers() {
     return jmxManagerSSLCiphers;
   }
 
-  public void setJmxManagerSSLCiphers(String[] jmxManagerSSLCiphers) {
+  public void setJmxManagerSSLCiphers(String jmxManagerSSLCiphers) {
     this.jmxManagerSSLCiphers = jmxManagerSSLCiphers;
   }
 
@@ -1411,19 +1431,19 @@ public class GemFireProperties {
     this.clusterSSLEnabled = clusterSSLEnabled;
   }
 
-  public String[] getClusterSSLProtocols() {
+  public String getClusterSSLProtocols() {
     return clusterSSLProtocols;
   }
 
-  public void setClusterSSLProtocols(String[] clusterSSLProtocols) {
+  public void setClusterSSLProtocols(String clusterSSLProtocols) {
     this.clusterSSLProtocols = clusterSSLProtocols;
   }
 
-  public String[] getClusterSSLCiphers() {
+  public String getClusterSSLCiphers() {
     return clusterSSLCiphers;
   }
 
-  public void setClusterSSLCiphers(String[] clusterSSLCiphers) {
+  public void setClusterSSLCiphers(String clusterSSLCiphers) {
     this.clusterSSLCiphers = clusterSSLCiphers;
   }
 
@@ -1484,19 +1504,19 @@ public class GemFireProperties {
     this.serverSSLEnabled = serverSSLEnabled;
   }
 
-  public String[] getServerSSLProtocols() {
+  public String getServerSSLProtocols() {
     return serverSSLProtocols;
   }
 
-  public void setServerSSLProtocols(String[] serverSSLProtocols) {
+  public void setServerSSLProtocols(String serverSSLProtocols) {
     this.serverSSLProtocols = serverSSLProtocols;
   }
 
-  public String[] getServerSSLCiphers() {
+  public String getServerSSLCiphers() {
     return serverSSLCiphers;
   }
 
-  public void setServerSSLCiphers(String[] serverSSLCiphers) {
+  public void setServerSSLCiphers(String serverSSLCiphers) {
     this.serverSSLCiphers = serverSSLCiphers;
   }
 
@@ -1557,19 +1577,19 @@ public class GemFireProperties {
     this.gatewaySSLEnabled = gatewaySSLEnabled;
   }
 
-  public String[] getGatewaySSLProtocols() {
+  public String getGatewaySSLProtocols() {
     return gatewaySSLProtocols;
   }
 
-  public void setGatewaySSLProtocols(String[] gatewaySSLProtocols) {
+  public void setGatewaySSLProtocols(String gatewaySSLProtocols) {
     this.gatewaySSLProtocols = gatewaySSLProtocols;
   }
 
-  public String[] getGatewaySSLCiphers() {
+  public String getGatewaySSLCiphers() {
     return gatewaySSLCiphers;
   }
 
-  public void setGatewaySSLCiphers(String[] gatewaySSLCiphers) {
+  public void setGatewaySSLCiphers(String gatewaySSLCiphers) {
     this.gatewaySSLCiphers = gatewaySSLCiphers;
   }
 
@@ -1638,19 +1658,19 @@ public class GemFireProperties {
     this.httpServiceSSLRequireAuthentication = httpServiceSSLRequireAuthentication;
   }
 
-  public String[] getHttpServiceSSLProtocols() {
+  public String getHttpServiceSSLProtocols() {
     return httpServiceSSLProtocols;
   }
 
-  public void setHttpServiceSSLProtocols(String[] httpServiceSSLProtocols) {
+  public void setHttpServiceSSLProtocols(String httpServiceSSLProtocols) {
     this.httpServiceSSLProtocols = httpServiceSSLProtocols;
   }
 
-  public String[] getHttpServiceSSLCiphers() {
+  public String getHttpServiceSSLCiphers() {
     return httpServiceSSLCiphers;
   }
 
-  public void setHttpServiceSSLCiphers(String[] httpServiceSSLCiphers) {
+  public void setHttpServiceSSLCiphers(String httpServiceSSLCiphers) {
     this.httpServiceSSLCiphers = httpServiceSSLCiphers;
   }
 

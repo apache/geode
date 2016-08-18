@@ -1710,7 +1710,7 @@ public interface ConfigurationProperties {
   /**
    * The static String definition of the <i>"cluster-ssl-protocols"</i> property
    * <a name="ssl-protocols"/a></p>
-   * <U>Description</U>: A comma separated list of the SSL protocols to
+   * <U>Description</U>: A space separated list of the SSL protocols to
    * enable. Those listed must be supported by the available providers.
    * </p>
    * <U>Default</U>: "any"</p>

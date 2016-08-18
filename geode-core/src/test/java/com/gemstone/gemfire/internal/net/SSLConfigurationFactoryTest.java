@@ -29,7 +29,6 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.internal.admin.SSLConfig;
-import com.gemstone.gemfire.management.internal.SSLUtil;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
@@ -130,8 +129,8 @@ public class SSLConfigurationFactoryTest extends JUnit4DistributedTestCase {
     assertEquals(properties.getProperty(SSL_KEYSTORE_TYPE), sslConfig.getKeystoreType());
     assertEquals(properties.getProperty(SSL_TRUSTSTORE), sslConfig.getTruststore());
     assertEquals(properties.getProperty(SSL_TRUSTSTORE_PASSWORD), sslConfig.getTruststorePassword());
-    assertEquals(SSLUtil.stringToArray(properties.getProperty(SSL_CIPHERS)), sslConfig.getCiphers());
-    assertEquals(SSLUtil.stringToArray(properties.getProperty(SSL_PROTOCOLS)), sslConfig.getProtocols());
+    assertEquals(properties.getProperty(SSL_CIPHERS), sslConfig.getCiphers());
+    assertEquals(properties.getProperty(SSL_PROTOCOLS), sslConfig.getProtocols());
     assertEquals(getCorrectAlias(expectedSSLEnabledComponent, properties), sslConfig.getAlias());
     assertEquals(requiresAuthentication(properties, expectedSSLEnabledComponent), sslConfig.isRequireAuth());
     assertEquals(expectedSSLEnabledComponent, sslConfig.getSslEnabledComponent());

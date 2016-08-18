@@ -850,7 +850,7 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @Deprecated
   @ConfigAttributeGetter(name = CLUSTER_SSL_PROTOCOLS)
-  String[] getClusterSSLProtocols();
+  String getClusterSSLProtocols();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
@@ -858,7 +858,7 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @Deprecated
   @ConfigAttributeSetter(name = CLUSTER_SSL_PROTOCOLS)
-  void setClusterSSLProtocols(String[] protocols);
+  void setClusterSSLProtocols(String protocols);
 
   /**
    * The default {@link ConfigurationProperties#CLUSTER_SSL_PROTOCOLS} value.
@@ -870,7 +870,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link ConfigurationProperties#CLUSTER_SSL_PROTOCOLS} property
    */
   @Deprecated
-  @ConfigAttribute(type = String[].class)
+  @ConfigAttribute(type = String.class)
   String CLUSTER_SSL_PROTOCOLS_NAME = CLUSTER_SSL_PROTOCOLS;
 
   /**
@@ -879,7 +879,7 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @Deprecated
   @ConfigAttributeGetter(name = CLUSTER_SSL_CIPHERS)
-  String[] getClusterSSLCiphers();
+  String getClusterSSLCiphers();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_CIPHERS}
@@ -887,7 +887,7 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @Deprecated
   @ConfigAttributeSetter(name = CLUSTER_SSL_CIPHERS)
-  void setClusterSSLCiphers(String[] ciphers);
+  void setClusterSSLCiphers(String ciphers);
 
   /**
    * The default {@link ConfigurationProperties#CLUSTER_SSL_CIPHERS} value.
@@ -899,7 +899,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link ConfigurationProperties#CLUSTER_SSL_CIPHERS} property
    */
   @Deprecated
-  @ConfigAttribute(type = String[].class)
+  @ConfigAttribute(type = String.class)
   String CLUSTER_SSL_CIPHERS_NAME = CLUSTER_SSL_CIPHERS;
 
   /**
@@ -2592,16 +2592,16 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @Deprecated
   @ConfigAttributeGetter(name = JMX_MANAGER_SSL_PROTOCOLS)
-  String[] getJmxManagerSSLProtocols();
+  String getJmxManagerSSLProtocols();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS}
    * property.
-   * @deprecated Geode 1.0 use {@link #setClusterSSLProtocols(String[])}
+   * @deprecated Geode 1.0 use {@link #setClusterSSLProtocols(String)}
    */
   @Deprecated
   @ConfigAttributeSetter(name = JMX_MANAGER_SSL_PROTOCOLS)
-  void setJmxManagerSSLProtocols(String[] protocols);
+  void setJmxManagerSSLProtocols(String protocols);
 
   /**
    * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS} value.
@@ -2616,7 +2616,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    */
   @Deprecated
-  @ConfigAttribute(type = String[].class)
+  @ConfigAttribute(type = String.class)
   String JMX_MANAGER_SSL_PROTOCOLS_NAME = JMX_MANAGER_SSL_PROTOCOLS;
 
   /**
@@ -2626,16 +2626,16 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @Deprecated
   @ConfigAttributeGetter(name = JMX_MANAGER_SSL_CIPHERS)
-  String[] getJmxManagerSSLCiphers();
+  String getJmxManagerSSLCiphers();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS}
    * property.
-   * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String[])}
+   * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String)}
    */
   @Deprecated
   @ConfigAttributeSetter(name = JMX_MANAGER_SSL_CIPHERS)
-  void setJmxManagerSSLCiphers(String[] ciphers);
+  void setJmxManagerSSLCiphers(String ciphers);
 
   /**
    * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS} value.
@@ -2650,7 +2650,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS}
    */
   @Deprecated
-  @ConfigAttribute(type = String[].class)
+  @ConfigAttribute(type = String.class)
   String JMX_MANAGER_SSL_CIPHERS_NAME = JMX_MANAGER_SSL_CIPHERS;
 
   /**
@@ -3209,16 +3209,16 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @Deprecated
   @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_PROTOCOLS)
-  String[] getHttpServiceSSLProtocols();
+  String getHttpServiceSSLProtocols();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS}
    * property.
-   * @deprecated Geode 1.0 use {@link #setClusterSSLProtocols(String[])}
+   * @deprecated Geode 1.0 use {@link #setClusterSSLProtocols(String)}
    */
   @Deprecated
   @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_PROTOCOLS)
-  void setHttpServiceSSLProtocols(String[] protocols);
+  void setHttpServiceSSLProtocols(String protocols);
 
   /**
    * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS} value.
@@ -3234,7 +3234,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    */
   @Deprecated
-  @ConfigAttribute(type = String[].class)
+  @ConfigAttribute(type = String.class)
   String HTTP_SERVICE_SSL_PROTOCOLS_NAME = HTTP_SERVICE_SSL_PROTOCOLS;
 
   /**
@@ -3244,16 +3244,16 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @Deprecated
   @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_CIPHERS)
-  String[] getHttpServiceSSLCiphers();
+  String getHttpServiceSSLCiphers();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS}
    * property.
-   * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String[])}
+   * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String)}
    */
   @Deprecated
   @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_CIPHERS)
-  void setHttpServiceSSLCiphers(String[] ciphers);
+  void setHttpServiceSSLCiphers(String ciphers);
 
   /**
    * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS} value.
@@ -3269,7 +3269,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS}
    */
   @Deprecated
-  @ConfigAttribute(type = String[].class)
+  @ConfigAttribute(type = String.class)
   String HTTP_SERVICE_SSL_CIPHERS_NAME = HTTP_SERVICE_SSL_CIPHERS;
 
   /**
@@ -3565,14 +3565,14 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @Deprecated
   @ConfigAttributeGetter(name = SERVER_SSL_PROTOCOLS)
-  String[] getServerSSLProtocols();
+  String getServerSSLProtocols();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_PROTOCOLS}
    * property.
    */
   @ConfigAttributeSetter(name = SERVER_SSL_PROTOCOLS)
-  void setServerSSLProtocols(String[] protocols);
+  void setServerSSLProtocols(String protocols);
 
   /**
    * The default {@link ConfigurationProperties#SERVER_SSL_PROTOCOLS} value.
@@ -3587,7 +3587,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    */
   @Deprecated
-  @ConfigAttribute(type = String[].class)
+  @ConfigAttribute(type = String.class)
   String SERVER_SSL_PROTOCOLS_NAME = SERVER_SSL_PROTOCOLS;
 
   /**
@@ -3597,16 +3597,16 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @Deprecated
   @ConfigAttributeGetter(name = SERVER_SSL_CIPHERS)
-  String[] getServerSSLCiphers();
+  String getServerSSLCiphers();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_CIPHERS}
    * property.
-   * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String[])} 
+   * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String)} 
    */
   @Deprecated
   @ConfigAttributeSetter(name = SERVER_SSL_CIPHERS)
-  void setServerSSLCiphers(String[] ciphers);
+  void setServerSSLCiphers(String ciphers);
 
   /**
    * The default {@link ConfigurationProperties#SERVER_SSL_CIPHERS} value.
@@ -3621,7 +3621,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS} 
    */
   @Deprecated
-  @ConfigAttribute(type = String[].class)
+  @ConfigAttribute(type = String.class)
   String SERVER_SSL_CIPHERS_NAME = SERVER_SSL_CIPHERS;
 
   /**
@@ -3873,7 +3873,7 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @Deprecated
   @ConfigAttributeGetter(name = GATEWAY_SSL_PROTOCOLS)
-  String[] getGatewaySSLProtocols();
+  String getGatewaySSLProtocols();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS}
@@ -3882,7 +3882,7 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @Deprecated
   @ConfigAttributeSetter(name = GATEWAY_SSL_PROTOCOLS)
-  void setGatewaySSLProtocols(String[] protocols);
+  void setGatewaySSLProtocols(String protocols);
 
   /**
    * The default {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} value.
@@ -3896,7 +3896,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    */
   @Deprecated
-  @ConfigAttribute(type = String[].class)
+  @ConfigAttribute(type = String.class)
   String GATEWAY_SSL_PROTOCOLS_NAME = GATEWAY_SSL_PROTOCOLS;
 
   /**
@@ -3906,16 +3906,16 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @Deprecated
   @ConfigAttributeGetter(name = GATEWAY_SSL_CIPHERS)
-  String[] getGatewaySSLCiphers();
+  String getGatewaySSLCiphers();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS}
    * property.
-   * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String[])} 
+   * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String)} 
    */
   @Deprecated
   @ConfigAttributeSetter(name = GATEWAY_SSL_CIPHERS)
-  void setGatewaySSLCiphers(String[] ciphers);
+  void setGatewaySSLCiphers(String ciphers);
 
   /**
    * The default {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS} value.
@@ -3929,7 +3929,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS} 
    */
   @Deprecated
-  @ConfigAttribute(type = String[].class)
+  @ConfigAttribute(type = String.class)
   String GATEWAY_SSL_CIPHERS_NAME = GATEWAY_SSL_CIPHERS;
 
   /**
@@ -4365,19 +4365,19 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    */
   @ConfigAttributeGetter(name = SSL_PROTOCOLS)
-  String[] getSSLProtocols();
+  String getSSLProtocols();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#SSL_PROTOCOLS}
    * property.
    */
   @ConfigAttributeSetter(name = SSL_PROTOCOLS)
-  void setSSLProtocols(String[] protocols);
+  void setSSLProtocols(String protocols);
 
   /**
    * The name of the {@link ConfigurationProperties#SSL_PROTOCOLS} property
    */
-  @ConfigAttribute(type = String[].class)
+  @ConfigAttribute(type = String.class)
   String SSL_PROTOCOLS_NAME = SSL_PROTOCOLS;
 
   /**
@@ -4385,19 +4385,19 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    */
   @ConfigAttributeGetter(name = SSL_CIPHERS)
-  String[] getSSLCiphers();
+  String getSSLCiphers();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#SSL_CIPHERS}
    * property.
    */
   @ConfigAttributeSetter(name = SSL_CIPHERS)
-  void setSSLCiphers(String[] ciphers);
+  void setSSLCiphers(String ciphers);
 
   /**
    * The name of the {@link ConfigurationProperties#SSL_CIPHERS} property
    */
-  @ConfigAttribute(type = String[].class)
+  @ConfigAttribute(type = String.class)
   String SSL_CIPHERS_NAME = SSL_CIPHERS;
 
   /**

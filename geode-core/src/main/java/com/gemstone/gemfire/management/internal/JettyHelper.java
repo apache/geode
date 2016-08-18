@@ -19,7 +19,6 @@ package com.gemstone.gemfire.management.internal;
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.Connector;
@@ -81,12 +80,12 @@ public class JettyHelper {
 
       sslContextFactory.setNeedClientAuth(sslConfig.isRequireAuth());
 
-      if (sslConfig.getCiphers().length > 0 && !ArrayUtils.contains(sslConfig.getCiphers(),"any")) {
+      if (!StringUtils.isBlank(sslConfig.getCiphers()) && !"any".equalsIgnoreCase(sslConfig.getCiphers())) {
         //If use has mentioned "any" let the SSL layer decide on the ciphers
-        sslContextFactory.setIncludeCipherSuites(sslConfig.getCiphers());
+        sslContextFactory.setIncludeCipherSuites(SSLUtil.readArray(sslConfig.getCiphers()));
       }
 
-      String protocol = SSLUtil.getSSLAlgo(sslConfig.getProtocols());
+      String protocol = SSLUtil.getSSLAlgo(SSLUtil.readArray(sslConfig.getProtocols()));
       if (protocol != null) {
         sslContextFactory.setProtocol(protocol);
       } else {

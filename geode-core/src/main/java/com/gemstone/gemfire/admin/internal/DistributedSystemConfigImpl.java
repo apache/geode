@@ -16,28 +16,7 @@
  */
 package com.gemstone.gemfire.admin.internal;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.admin.AdminXmlException;
-import com.gemstone.gemfire.admin.CacheServerConfig;
-import com.gemstone.gemfire.admin.CacheVmConfig;
-import com.gemstone.gemfire.admin.DistributedSystemConfig;
-import com.gemstone.gemfire.admin.DistributionLocator;
-import com.gemstone.gemfire.admin.DistributionLocatorConfig;
+import com.gemstone.gemfire.admin.*;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -45,6 +24,15 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogConfig;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * An implementation of the configuration object for an
@@ -55,9 +43,11 @@ import com.gemstone.gemfire.internal.logging.LogWriterImpl;
  * distribution locators) are "passed through" to the
  * <code>AdminDistributedSystem</code> associated with this
  * configuration object.
+ *
  * @since GemFire 3.5
  */
-public class DistributedSystemConfigImpl implements DistributedSystemConfig {
+public class DistributedSystemConfigImpl
+    implements DistributedSystemConfig {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -109,8 +99,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * The admin distributed system object that is configured by this
    * config object.
-   * @since GemFire 4.0
-   */
+   *
+   * @since GemFire 4.0 */
   private AdminDistributedSystemImpl system;
 
   /**
@@ -124,14 +114,21 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    * Filters out all properties that are unique to the admin
    * <code>DistributedSystemConfig</code> that are not present in the
    * internal <code>DistributionConfig</code>.
+   *
    * @since GemFire 4.0
    */
-  private static Properties filterOutAdminProperties(Properties props) {
+  private static Properties
+  filterOutAdminProperties(Properties props) {
 
     Properties props2 = new Properties();
-    for (Enumeration names = props.propertyNames(); names.hasMoreElements(); ) {
+    for (Enumeration names = props.propertyNames();
+         names.hasMoreElements(); ) {
       String name = (String) names.nextElement();
-      if (!(ENTITY_CONFIG_XML_FILE_NAME.equals(name) || REFRESH_INTERVAL_NAME.equals(name) || REMOTE_COMMAND_NAME.equals(name))) {
+      if (!(ENTITY_CONFIG_XML_FILE_NAME.equals(name) ||
+          REFRESH_INTERVAL_NAME.equals(name) ||
+          REMOTE_COMMAND_NAME.equals(name)
+      )
+          ) {
         String value = props.getProperty(name);
         if ((name != null) && (value != null)) {
           props2.setProperty(name, value);
@@ -149,7 +146,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    * the configuration stored in a <code>DistributedSystem</code>'s
    * <code>DistributionConfig</code>.
    */
-  public DistributedSystemConfigImpl(DistributionConfig distConfig, String remoteCommand) {
+  public DistributedSystemConfigImpl(DistributionConfig distConfig,
+      String remoteCommand) {
     if (distConfig == null) {
       throw new IllegalArgumentException(LocalizedStrings.DistributedSystemConfigImpl_DISTRIBUTIONCONFIG_MUST_NOT_BE_NULL.toLocalizedString());
     }
@@ -157,7 +155,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     this.mcastAddress = InetAddressUtil.toString(distConfig.getMcastAddress());
     this.mcastPort = distConfig.getMcastPort();
     this.locators = distConfig.getLocators();
-    this.membershipPortRange = getMembershipPortRangeString(distConfig.getMembershipPortRange());
+    this.membershipPortRange =
+        getMembershipPortRangeString(distConfig.getMembershipPortRange());
 
     this.systemName = distConfig.getName();
 
@@ -167,7 +166,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     this.sslAuthenticationRequired = distConfig.getClusterSSLRequireAuthentication();
 
     this.logFile = distConfig.getLogFile().getPath();
-    this.logLevel = LogWriterImpl.levelToString(distConfig.getLogLevel());
+    this.logLevel =
+        LogWriterImpl.levelToString(distConfig.getLogLevel());
     this.logDiskSpaceLimit = distConfig.getLogDiskSpaceLimit();
     this.logFileSizeLimit = distConfig.getLogFileSizeLimit();
 
@@ -186,6 +186,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   /**
    * Zero-argument constructor to be used only by subclasses.
+   *
    * @since GemFire 4.0
    */
   protected DistributedSystemConfigImpl() {
@@ -204,32 +205,39 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * Creates a new <code>DistributedSystemConifgImpl</code> whose configuration
    * is specified by the given <code>Properties</code> object.
-   * @param props The configuration properties specified by the caller
-   * @param ignoreGemFirePropsFile whether to skip loading distributed system properties from
-   * gemfire.properties file
-   *
+   * 
+   * @param props
+   *          The configuration properties specified by the caller
+   * @param ignoreGemFirePropsFile
+   *          whether to skip loading distributed system properties from
+   *          gemfire.properties file
+   *          
    * @since GemFire 6.5
    */
-  protected DistributedSystemConfigImpl(Properties props, boolean ignoreGemFirePropsFile) {
-    this(new DistributionConfigImpl(filterOutAdminProperties(props), ignoreGemFirePropsFile), DEFAULT_REMOTE_COMMAND);
+  protected DistributedSystemConfigImpl(Properties props,
+      boolean ignoreGemFirePropsFile) {
+    this(new DistributionConfigImpl(
+            filterOutAdminProperties(props), ignoreGemFirePropsFile),
+        DEFAULT_REMOTE_COMMAND);
     String remoteCommand = props.getProperty(REMOTE_COMMAND_NAME);
     if (remoteCommand != null) {
       this.remoteCommand = remoteCommand;
     }
 
-    String entityConfigXMLFile = props.getProperty(ENTITY_CONFIG_XML_FILE_NAME);
+    String entityConfigXMLFile =
+        props.getProperty(ENTITY_CONFIG_XML_FILE_NAME);
     if (entityConfigXMLFile != null) {
       this.entityConfigXMLFile = entityConfigXMLFile;
     }
 
-    String refreshInterval = props.getProperty(REFRESH_INTERVAL_NAME);
+    String refreshInterval =
+        props.getProperty(REFRESH_INTERVAL_NAME);
     if (refreshInterval != null) {
       try {
         this.refreshInterval = Integer.parseInt(refreshInterval);
       } catch (NumberFormatException nfEx) {
-        throw new IllegalArgumentException(LocalizedStrings.DistributedSystemConfigImpl_0_IS_NOT_A_VALID_INTEGER_1.toLocalizedString(new Object[] {
-          refreshInterval, REFRESH_INTERVAL_NAME
-        }));
+        throw new IllegalArgumentException(
+            LocalizedStrings.DistributedSystemConfigImpl_0_IS_NOT_A_VALID_INTEGER_1.toLocalizedString(new Object[] { refreshInterval, REFRESH_INTERVAL_NAME }));
       }
     }
   }
@@ -240,6 +248,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    * Returns the <code>LogWriterI18n</code> to be used when administering
    * the distributed system. Returns null if nothing has been provided via
    * <code>setInternalLogWriter</code>.
+   *
    * @since GemFire 4.0
    */
   public InternalLogWriter getInternalLogWriter() {
@@ -298,6 +307,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    * Marks this config object as "read only".  Attempts to modify a
    * config object will result in a {@link IllegalStateException}
    * being thrown.
+   *
    * @since GemFire 4.0
    */
   void setDistributedSystem(AdminDistributedSystemImpl system) {
@@ -307,12 +317,14 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * Checks to see if this config object is "read only".  If it is,
    * then an {@link IllegalStateException} is thrown.
+   *
    * @since GemFire 4.0
    */
   protected void checkReadOnly() {
     if (this.system != null) {
-      throw new IllegalStateException(LocalizedStrings.DistributedSystemConfigImpl_A_DISTRIBUTEDSYSTEMCONFIG_OBJECT_CANNOT_BE_MODIFIED_AFTER_IT_HAS_BEEN_USED_TO_CREATE_AN_ADMINDISTRIBUTEDSYSTEM
-        .toLocalizedString());
+      throw new IllegalStateException(
+          LocalizedStrings.DistributedSystemConfigImpl_A_DISTRIBUTEDSYSTEMCONFIG_OBJECT_CANNOT_BE_MODIFIED_AFTER_IT_HAS_BEEN_USED_TO_CREATE_AN_ADMINDISTRIBUTEDSYSTEM
+              .toLocalizedString());
     }
   }
 
@@ -329,6 +341,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * Parses the XML configuration file that describes managed
    * entities.
+   *
    * @throws AdminXmlException If a problem is encountered while parsing the XML file.
    */
   private void parseEntityConfigXMLFile() {
@@ -430,6 +443,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   /**
    * Returns the value for membership-port-range
+   *
    * @return the value for the Distributed System property membership-port-range
    */
   public String getMembershipPortRange() {
@@ -438,8 +452,9 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   /**
    * Sets the Distributed System property membership-port-range
+   *
    * @param membershipPortRangeStr the value for membership-port-range given as two numbers separated
-   * by a minus sign.
+   *                               by a minus sign.
    */
   public void setMembershipPortRange(String membershipPortRangeStr) {
     /*
@@ -457,9 +472,10 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
         if (validateMembershipRange(membershipPortRangeStr)) {
           this.membershipPortRange = membershipPortRangeStr;
         } else {
-          throw new IllegalArgumentException(LocalizedStrings.DistributedSystemConfigImpl_INVALID_VALUE_FOR_MEMBERSHIP_PORT_RANGE.toLocalizedString(new Object[] {
-            membershipPortRangeStr, MEMBERSHIP_PORT_RANGE_NAME
-          }));
+          throw new IllegalArgumentException(
+              LocalizedStrings.DistributedSystemConfigImpl_INVALID_VALUE_FOR_MEMBERSHIP_PORT_RANGE
+                  .toLocalizedString(new Object[] { membershipPortRangeStr,
+                      MEMBERSHIP_PORT_RANGE_NAME }));
         }
       } catch (Exception e) {
         if (logger.isDebugEnabled()) {
@@ -483,9 +499,9 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    * Validates the given string - which is expected in the format as two numbers
    * separated by a minus sign - in to an integer array of length 2 with first
    * element as lower end & second element as upper end of the range.
-   * @param membershipPortRange membership-port-range given as two numbers separated by a minus
-   * sign.
    *
+   * @param membershipPortRange membership-port-range given as two numbers separated by a minus
+   *                            sign.
    * @return true if the membership-port-range string is valid, false otherwise
    */
   private boolean validateMembershipRange(String membershipPortRange) {
@@ -497,7 +513,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
       range[1] = Integer.parseInt(splitted[1].trim());
       //NumberFormatException if any could be thrown
 
-      if (range[0] < 0 || range[0] >= range[1] || range[1] < 0 || range[1] > 65535) {
+      if (range[0] < 0 || range[0] >= range[1] ||
+          range[1] < 0 || range[1] > 65535) {
         range = null;
       }
     }
@@ -510,8 +527,10 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    */
   private static String getMembershipPortRangeString(int[] membershipPortRange) {
     String membershipPortRangeString = "";
-    if (membershipPortRange != null && membershipPortRange.length == 2) {
-      membershipPortRangeString = membershipPortRange[0] + "-" + membershipPortRange[1];
+    if (membershipPortRange != null &&
+        membershipPortRange.length == 2) {
+      membershipPortRangeString = membershipPortRange[0] + "-" +
+          membershipPortRange[1];
     }
 
     return membershipPortRangeString;
@@ -675,10 +694,12 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * Returns an array of configurations for statically known
    * CacheServers
+   *
    * @since GemFire 4.0
-   */
+   */ 
   public CacheServerConfig[] getCacheServerConfigs() {
-    return (CacheServerConfig[]) this.cacheServerConfigs.toArray(new CacheServerConfig[this.cacheServerConfigs.size()]);
+    return (CacheServerConfig[]) this.cacheServerConfigs.toArray(
+        new CacheServerConfig[this.cacheServerConfigs.size()]);
   }
 
   public CacheVmConfig[] getCacheVmConfigs() {
@@ -687,6 +708,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   /**
    * Creates the configuration for a CacheServer
+   *
    * @since GemFire 4.0
    */
   public CacheServerConfig createCacheServerConfig() {
@@ -701,14 +723,14 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   /**
    * Adds the configuration for a CacheServer
+   *
    * @since GemFire 4.0
    */
   private void addCacheServerConfig(CacheServerConfig managerConfig) {
     checkReadOnly();
 
-    if (managerConfig == null) {
+    if (managerConfig == null)
       return;
-    }
     for (Iterator iter = this.cacheServerConfigs.iterator(); iter.hasNext(); ) {
       CacheServerConfigImpl impl = (CacheServerConfigImpl) iter.next();
       if (impl.equals(managerConfig)) {
@@ -721,6 +743,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   /**
    * Removes the configuration for a CacheServer
+   *
    * @since GemFire 4.0
    */
   public void removeCacheServerConfig(CacheServerConfig managerConfig) {
@@ -738,15 +761,18 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    */
   public DistributionLocatorConfig[] getDistributionLocatorConfigs() {
     if (this.system != null) {
-      DistributionLocator[] locators = this.system.getDistributionLocators();
-      DistributionLocatorConfig[] configs = new DistributionLocatorConfig[locators.length];
+      DistributionLocator[] locators =
+          this.system.getDistributionLocators();
+      DistributionLocatorConfig[] configs =
+          new DistributionLocatorConfig[locators.length];
       for (int i = 0; i < locators.length; i++) {
         configs[i] = locators[i].getConfig();
       }
       return configs;
 
     } else {
-      Object[] array = new DistributionLocatorConfig[this.locatorConfigs.size()];
+      Object[] array =
+          new DistributionLocatorConfig[this.locatorConfigs.size()];
       return (DistributionLocatorConfig[]) this.locatorConfigs.toArray(array);
     }
   }
@@ -783,22 +809,22 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    * Validates the bind address.  The address may be a host name or IP address,
    * but it must not be empty and must be usable for creating an InetAddress.
    * Cannot have a leading '/' (which InetAddress.toString() produces).
+   *
    * @param bindAddress host name or IP address to validate
    */
   public static boolean validateBindAddress(String bindAddress) {
-    if (bindAddress == null || bindAddress.length() == 0) {
+    if (bindAddress == null || bindAddress.length() == 0)
       return true;
-    }
-    if (InetAddressUtil.validateHost(bindAddress) == null) {
+    if (InetAddressUtil.validateHost(bindAddress) == null)
       return false;
-    }
     return true;
   }
 
   public synchronized void configChanged() {
     ConfigListener[] clients = null;
     synchronized (this.listeners) {
-      clients = (ConfigListener[]) listeners.toArray(new ConfigListener[this.listeners.size()]);
+      clients = (ConfigListener[])
+          listeners.toArray(new ConfigListener[this.listeners.size()]);
     }
     for (int i = 0; i < clients.length; i++) {
       try {
@@ -830,10 +856,14 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   // -------------------------------------------------------------------------
   //   SSL support...
   // -------------------------------------------------------------------------
-  private boolean sslEnabled = DistributionConfig.DEFAULT_SSL_ENABLED;
-  private String[] sslProtocols = new String[] { DistributionConfig.DEFAULT_SSL_PROTOCOLS };
-  private String[] sslCiphers = new String[] { DistributionConfig.DEFAULT_SSL_CIPHERS };
-  private boolean sslAuthenticationRequired = DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
+  private boolean sslEnabled =
+      DistributionConfig.DEFAULT_SSL_ENABLED;
+  private String sslProtocols =
+      DistributionConfig.DEFAULT_SSL_PROTOCOLS;
+  private String sslCiphers =
+      DistributionConfig.DEFAULT_SSL_CIPHERS;
+  private boolean sslAuthenticationRequired =
+      DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
   private Properties sslProperties = new Properties();
 
   public boolean isSSLEnabled() {
@@ -846,21 +876,21 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     configChanged();
   }
 
-  public String[] getSSLProtocols() {
+  public String getSSLProtocols() {
     return this.sslProtocols;
   }
 
-  public void setSSLProtocols(final String[] protocols) {
+  public void setSSLProtocols(String protocols) {
     checkReadOnly();
     this.sslProtocols = protocols;
     configChanged();
   }
 
-  public String[] getSSLCiphers() {
+  public String getSSLCiphers() {
     return this.sslCiphers;
   }
 
-  public void setSSLCiphers(String[] ciphers) {
+  public void setSSLCiphers(String ciphers) {
     checkReadOnly();
     this.sslCiphers = ciphers;
     configChanged();
@@ -903,7 +933,6 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   /**
    * @return the gfSecurityProperties
-   *
    * @since GemFire 6.6.3
    */
   public Properties getGfSecurityProperties() {
@@ -969,13 +998,14 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * Makes sure that the mcast port and locators are correct and
    * consistent.
+   *
    * @throws IllegalArgumentException If configuration is not valid
    */
   public void validate() {
-    if (this.getMcastPort() < MIN_MCAST_PORT || this.getMcastPort() > MAX_MCAST_PORT) {
-      throw new IllegalArgumentException(LocalizedStrings.DistributedSystemConfigImpl_MCASTPORT_MUST_BE_AN_INTEGER_INCLUSIVELY_BETWEEN_0_AND_1.toLocalizedString(new Object[] {
-        Integer.valueOf(MIN_MCAST_PORT), Integer.valueOf(MAX_MCAST_PORT)
-      }));
+    if (this.getMcastPort() < MIN_MCAST_PORT ||
+        this.getMcastPort() > MAX_MCAST_PORT) {
+      throw new IllegalArgumentException(LocalizedStrings.DistributedSystemConfigImpl_MCASTPORT_MUST_BE_AN_INTEGER_INCLUSIVELY_BETWEEN_0_AND_1
+          .toLocalizedString(new Object[] { Integer.valueOf(MIN_MCAST_PORT), Integer.valueOf(MAX_MCAST_PORT) }));
     }
 
     // disabled in 5.1 - multicast and locators can be used together
@@ -987,16 +1017,16 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
     LogWriterImpl.levelNameToCode(this.logLevel);
 
-    if (this.logFileSizeLimit < MIN_LOG_FILE_SIZE_LIMIT || this.logFileSizeLimit > MAX_LOG_FILE_SIZE_LIMIT) {
-      throw new IllegalArgumentException(LocalizedStrings.DistributedSystemConfigImpl_LOGFILESIZELIMIT_MUST_BE_AN_INTEGER_BETWEEN_0_AND_1.toLocalizedString(new Object[] {
-        Integer.valueOf(MIN_LOG_FILE_SIZE_LIMIT), Integer.valueOf(MAX_LOG_FILE_SIZE_LIMIT)
-      }));
+    if (this.logFileSizeLimit < MIN_LOG_FILE_SIZE_LIMIT ||
+        this.logFileSizeLimit > MAX_LOG_FILE_SIZE_LIMIT) {
+      throw new IllegalArgumentException(LocalizedStrings.DistributedSystemConfigImpl_LOGFILESIZELIMIT_MUST_BE_AN_INTEGER_BETWEEN_0_AND_1
+          .toLocalizedString(new Object[] { Integer.valueOf(MIN_LOG_FILE_SIZE_LIMIT), Integer.valueOf(MAX_LOG_FILE_SIZE_LIMIT) }));
     }
 
-    if (this.logDiskSpaceLimit < MIN_LOG_DISK_SPACE_LIMIT || this.logDiskSpaceLimit > MAX_LOG_DISK_SPACE_LIMIT) {
-      throw new IllegalArgumentException(LocalizedStrings.DistributedSystemConfigImpl_LOGDISKSPACELIMIT_MUST_BE_AN_INTEGER_BETWEEN_0_AND_1.toLocalizedString(new Object[] {
-        Integer.valueOf(MIN_LOG_DISK_SPACE_LIMIT), Integer.valueOf(MAX_LOG_DISK_SPACE_LIMIT)
-      }));
+    if (this.logDiskSpaceLimit < MIN_LOG_DISK_SPACE_LIMIT ||
+        this.logDiskSpaceLimit > MAX_LOG_DISK_SPACE_LIMIT) {
+      throw new IllegalArgumentException(LocalizedStrings.DistributedSystemConfigImpl_LOGDISKSPACELIMIT_MUST_BE_AN_INTEGER_BETWEEN_0_AND_1
+          .toLocalizedString(new Object[] { Integer.valueOf(MIN_LOG_DISK_SPACE_LIMIT), Integer.valueOf(MAX_LOG_DISK_SPACE_LIMIT) }));
     }
 
     parseEntityConfigXMLFile();
@@ -1007,12 +1037,14 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    */
   @Override
   public Object clone() throws CloneNotSupportedException {
-    DistributedSystemConfigImpl other = (DistributedSystemConfigImpl) super.clone();
+    DistributedSystemConfigImpl other =
+        (DistributedSystemConfigImpl) super.clone();
     other.system = null;
     other.cacheServerConfigs = new HashSet();
     other.locatorConfigs = new HashSet();
 
-    DistributionLocatorConfig[] myLocators = this.getDistributionLocatorConfigs();
+    DistributionLocatorConfig[] myLocators =
+        this.getDistributionLocatorConfigs();
     for (int i = 0; i < myLocators.length; i++) {
       DistributionLocatorConfig locator = myLocators[i];
       other.addDistributionLocatorConfig((DistributionLocatorConfig) locator.clone());
@@ -1031,9 +1063,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   public String toString() {
     StringBuffer buf = new StringBuffer(1000);
     String lf = System.getProperty("line.separator");
-    if (lf == null) {
+    if (lf == null)
       lf = ",";
-    }
 
     buf.append("DistributedSystemConfig(");
     buf.append(lf);

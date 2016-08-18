@@ -1191,19 +1191,19 @@ public class AdminDistributedSystemJmxImpl
     this.getConfig().setSSLEnabled(enabled);
   }
 
-  public String[] getSSLProtocols() {
+  public String getSSLProtocols() {
     return this.getConfig().getSSLProtocols();
   }
 
-  public void setSSLProtocols(final String[] protocols) {
+  public void setSSLProtocols(String protocols) {
     this.getConfig().setSSLProtocols(protocols);
   }
 
-  public String[] getSSLCiphers() {
+  public String getSSLCiphers() {
     return this.getConfig().getSSLCiphers();
   }
 
-  public void setSSLCiphers(final String[] ciphers) {
+  public void setSSLCiphers(String ciphers) {
     this.getConfig().setSSLCiphers(ciphers);
   }
 
