@@ -17,20 +17,39 @@
 package com.gemstone.gemfire.internal.cache.partitioned;
 
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.Logger;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+import static com.jayway.awaitility.Awaitility.await;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.jayway.awaitility.core.ConditionTimeoutException;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
@@ -50,6 +69,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.FileUtil;
+import com.gemstone.gemfire.internal.cache.ColocationLogger;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation.RequestImageMessage;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
@@ -68,8 +88,15 @@ import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 @Category(DistributedTest.class)
 public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPartitionedRegionTestBase {
 
+  private static final String PATTERN_FOR_MISSING_CHILD_LOG = "(?s)Persistent data recovery for region .*is prevented by offline colocated region.*";
   private static final int NUM_BUCKETS = 15;
   private static final int MAX_WAIT = 30 * 1000;
+  private static final int DEFAULT_NUM_EXPECTED_LOG_MESSAGES = 1;
+  private static int numExpectedLogMessages = DEFAULT_NUM_EXPECTED_LOG_MESSAGES;
+  private static int numChildPRs = 1;
+  private static int numChildPRGenerations = 2;
+  // Default region creation delay long enough for the initial cycle of logger warnings
+  private static int delayForChildCreation = MAX_WAIT * 2 / 3;
 
   public PersistentColocatedPartitionedRegionDUnitTest() {
     super();
@@ -230,6 +257,950 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     assertEquals(vm1Buckets, getBucketList(vm1, "region3"));
     assertEquals(vm2Buckets, getBucketList(vm2, "region3"));
 
+  }
+
+  private void createPR(String regionName, boolean persistent) {
+    createPR(regionName, null, persistent, "disk");
+  }
+
+  private void createPR(String regionName, String colocatedWith, boolean persistent) {
+    createPR(regionName, colocatedWith, persistent, "disk");
+  }
+
+  private void createPR(String regionName, String colocatedRegionName, boolean persistent, String diskName) {
+    Cache cache = getCache();
+
+    DiskStore ds = cache.findDiskStore(diskName);
+    if (ds == null) {
+      ds = cache.createDiskStoreFactory().setDiskDirs(getDiskDirs())
+          .create(diskName);
+    }
+    AttributesFactory af = new AttributesFactory();
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setRedundantCopies(0);
+    if (colocatedRegionName != null) {
+      paf.setColocatedWith(colocatedRegionName);
+    }
+    af.setPartitionAttributes(paf.create());
+    if (persistent) {
+      af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+      af.setDiskStoreName(diskName);
+    } else {
+      af.setDataPolicy(DataPolicy.PARTITION);
+      af.setDiskStoreName(null);
+    }
+    cache.createRegion(regionName, af.create());
+  }
+
+  private SerializableRunnable createPRsColocatedPairThread = new SerializableRunnable("create2PRs") {
+    public void run() {
+      createPR(PR_REGION_NAME, true);
+      createPR("region2", PR_REGION_NAME, true);
+    }
+  };
+
+  private SerializableRunnable createMultipleColocatedChildPRs = new SerializableRunnable("create multiple child PRs") {
+    @Override
+    public void run() throws Exception {
+      createPR(PR_REGION_NAME, true);
+      for (int i = 2; i < numChildPRs +2; ++i) {
+        createPR("region" + i, PR_REGION_NAME, true);
+      }
+    }
+  };
+
+  private SerializableRunnable createPRColocationHierarchy = new SerializableRunnable("create PR colocation hierarchy") {
+    @Override
+    public void run() throws Exception {
+      createPR(PR_REGION_NAME, true);
+      createPR("region2", PR_REGION_NAME, true);
+      for (int i = 3; i < numChildPRGenerations +2; ++i) {
+        createPR("region" + i, "region" + (i-1), true);
+      }
+    }
+  };
+
+  private SerializableCallable createPRsMissingParentRegionThread = new SerializableCallable("createPRsMissingParentRegion") {
+    public Object call() throws Exception {
+      String exClass = "";
+      Exception ex = null;
+      try {
+        // Skip creation of first region - expect region2 creation to fail
+        //createPR(PR_REGION_NAME, true);
+        createPR("region2", PR_REGION_NAME, true);
+      } catch (Exception e) {
+        ex = e;
+        exClass = e.getClass().toString();
+      } finally {
+        return ex;
+      }
+    }
+  };
+
+  private SerializableCallable delayedCreatePRsMissingParentRegionThread = new SerializableCallable("delayedCreatePRsMissingParentRegion") {
+    public Object call() throws Exception {
+      String exClass = "";
+      Exception ex = null;
+      // To ensure that the targeted code paths in ColocationHelper.getColocatedRegion is taken, this 
+      // thread delays the attempted creation on the local member of colocated child region when parent doesn't exist.
+      // The delay is so that both parent and child regions will be created on another member and the PR root config 
+      // will have an entry for the parent region.
+      try {
+        await().pollDelay(50, TimeUnit.MILLISECONDS).atMost(100, TimeUnit.MILLISECONDS).until(() -> {return false;});
+      } catch (Exception e) {
+      }
+      try {
+        // Skip creation of first region - expect region2 creation to fail
+        //createPR(PR_REGION_NAME, true);
+        createPR("region2", PR_REGION_NAME, true);
+      } catch (Exception e) {
+        ex = e;
+        exClass = e.getClass().toString();
+      } finally {
+        return ex;
+      }
+    }
+  };
+
+  private SerializableCallable createPRsMissingChildRegionThread = new SerializableCallable("createPRsMissingChildRegion") {
+    Appender mockAppender;
+    ArgumentCaptor<LogEvent> loggingEventCaptor;
+
+    public Object call() throws Exception {
+      // Setup for capturing logger messages
+      Appender mockAppender = mock(Appender.class);
+      when(mockAppender.getName()).thenReturn("MockAppender");
+      when(mockAppender.isStarted()).thenReturn(true);
+      when(mockAppender.isStopped()).thenReturn(false);
+      Logger logger = (Logger) LogManager.getLogger(ColocationLogger.class);
+      logger.addAppender(mockAppender);
+      logger.setLevel(Level.WARN);
+      loggingEventCaptor = ArgumentCaptor.forClass(LogEvent.class);
+
+      // Logger interval may have been hooked by the test, so adjust test delays here
+      int logInterval = ColocationLogger.getLogInterval();
+      List<LogEvent> logEvents = Collections.emptyList();
+
+      AtomicBoolean isDone = new AtomicBoolean(false);
+      try {
+        createPR(PR_REGION_NAME, true);
+        // Let this thread continue running long enough for the missing region to be logged a couple times.
+        // Child regions do not get created by this thread. (1.5*logInterval < delay < 2*logInterval)
+        await().atMost((int)(1.75 * logInterval), TimeUnit.MILLISECONDS).until(() -> {verify(mockAppender, times(numExpectedLogMessages)).append(loggingEventCaptor.capture());});
+        //createPR("region2", PR_REGION_NAME, true);  // This child region is never created
+      } catch (Exception e) {
+        e.printStackTrace();
+      } finally {
+        logEvents = loggingEventCaptor.getAllValues();
+        assertEquals(String.format("Expected %d messages to be logged, got %d.", numExpectedLogMessages, logEvents.size()), numExpectedLogMessages, logEvents.size());
+        String logMsg = logEvents.get(0).getMessage().getFormattedMessage();
+        logger.removeAppender(mockAppender);
+        numExpectedLogMessages = 1;
+        return logMsg;
+      }
+    }
+  };
+
+  private SerializableCallable createPRsMissingChildRegionDelayedStartThread = new SerializableCallable("createPRsMissingChildRegionDelayedStart") {
+    Appender mockAppender;
+    ArgumentCaptor<LogEvent> loggingEventCaptor;
+
+    public Object call() throws Exception {
+      // Setup for capturing logger messages
+      mockAppender = mock(Appender.class);
+      when(mockAppender.getName()).thenReturn("MockAppender");
+      when(mockAppender.isStarted()).thenReturn(true);
+      when(mockAppender.isStopped()).thenReturn(false);
+      Logger logger = (Logger) LogManager.getLogger(ColocationLogger.class);
+      logger.addAppender(mockAppender);
+      logger.setLevel(Level.WARN);
+      loggingEventCaptor = ArgumentCaptor.forClass(LogEvent.class);
+
+      // Logger interval may have been hooked by the test, so adjust test delays here
+      int logInterval = ColocationLogger.getLogInterval();
+      List<LogEvent> logEvents = Collections.emptyList();
+
+      try {
+        createPR(PR_REGION_NAME, true);
+        // Delay creation of second (i.e child) region to see missing colocated region log message (logInterval/2 < delay < logInterval)
+        await().atMost((int)(.75 * logInterval), TimeUnit.MILLISECONDS).until(() -> {verify(mockAppender, times(1)).append(loggingEventCaptor.capture());});
+        logEvents = loggingEventCaptor.getAllValues();
+        createPR("region2", PR_REGION_NAME, true);
+        // Another delay before exiting the thread to make sure that missing region logging doesn't continue after 
+        // missing region is created (delay > logInterval)
+        await().atMost((int)(1.25 * logInterval), TimeUnit.MILLISECONDS).until(() -> {verifyNoMoreInteractions(mockAppender);});
+        fail("Unexpected missing colocated region log message");
+      } finally {
+        assertEquals(String.format("Expected %d messages to be logged, got %d.", numExpectedLogMessages, logEvents.size()), numExpectedLogMessages, logEvents.size());
+        String logMsg = logEvents.get(0).getMessage().getFormattedMessage();
+        logger.removeAppender(mockAppender);
+        numExpectedLogMessages = 1;
+        mockAppender = null;
+        return logMsg;
+      }
+    }
+  };
+
+  private SerializableCallable createPRsSequencedChildrenCreationThread = new SerializableCallable("createPRsSequencedChildrenCreation") {
+    Appender mockAppender;
+    ArgumentCaptor<LogEvent> loggingEventCaptor;
+
+    public Object call() throws Exception {
+      // Setup for capturing logger messages
+      mockAppender = mock(Appender.class);
+      when(mockAppender.getName()).thenReturn("MockAppender");
+      when(mockAppender.isStarted()).thenReturn(true);
+      when(mockAppender.isStopped()).thenReturn(false);
+      Logger logger = (Logger) LogManager.getLogger(ColocationLogger.class);
+      logger.addAppender(mockAppender);
+      logger.setLevel(Level.WARN);
+      loggingEventCaptor = ArgumentCaptor.forClass(LogEvent.class);
+
+      // Logger interval may have been hooked by the test, so adjust test delays here
+      int logInterval = ColocationLogger.getLogInterval();
+      List<LogEvent> logEvents = Collections.emptyList();
+      int numLogEvents = 0;
+
+      createPR(PR_REGION_NAME, true);
+      // Delay creation of child generation regions to see missing colocated region log message (logInterval/2 < delay < logInterval)
+      // parent region is generation 1, child region is generation 2, grandchild is 3, etc.
+      for (int generation = 2; generation < (numChildPRGenerations + 2); ++generation) {
+        String childPRName = "region" + generation;
+        String colocatedWithRegionName = generation == 2 ? PR_REGION_NAME : "region" + (generation - 1);
+        loggingEventCaptor = ArgumentCaptor.forClass(LogEvent.class);
+
+        // delay between starting generations of child regions
+        try {
+        await().atMost(delayForChildCreation, TimeUnit.MILLISECONDS).until(() -> {return false;});
+        } catch (ConditionTimeoutException e) {
+        }
+        // check for log messages
+        verify(mockAppender,  times((generation - 1) * generation / 2)).append(loggingEventCaptor.capture());
+        logEvents = loggingEventCaptor.getAllValues();
+        String logMsg = loggingEventCaptor.getValue().getMessage().getFormattedMessage();
+
+        // Start the child region
+        createPR(childPRName, colocatedWithRegionName, true);
+      }
+      // Another delay before exiting the thread to make sure that missing region logging doesn't continue after 
+      // all regions created (delay > logInterval)
+      String logMsg = "";
+          try {
+        await().atMost((int)(delayForChildCreation * 1.2), TimeUnit.MILLISECONDS).until(() -> {return false;});
+      } catch (ConditionTimeoutException e) {
+      } finally {
+        logEvents = loggingEventCaptor.getAllValues();
+        assertEquals(String.format("Expected warning messages to be logged."), numExpectedLogMessages, logEvents.size());
+        logMsg = logEvents.get(0).getMessage().getFormattedMessage();
+        logger.removeAppender(mockAppender);
+      }
+      numExpectedLogMessages = 1;
+      mockAppender = null;
+      return logMsg;
+    }
+  };
+
+  private SerializableCallable createMultipleColocatedChildPRsWithSequencedStart = new SerializableCallable("createPRsMultipleSequencedChildrenCreation") {
+    Appender mockAppender;
+    ArgumentCaptor<LogEvent> loggingEventCaptor;
+
+    public Object call() throws Exception {
+      // Setup for capturing logger messages
+      mockAppender = mock(Appender.class);
+      when(mockAppender.getName()).thenReturn("MockAppender");
+      when(mockAppender.isStarted()).thenReturn(true);
+      when(mockAppender.isStopped()).thenReturn(false);
+      Logger logger = (Logger) LogManager.getLogger(ColocationLogger.class);
+      logger.addAppender(mockAppender);
+      logger.setLevel(Level.WARN);
+      loggingEventCaptor = ArgumentCaptor.forClass(LogEvent.class);
+
+      // Logger interval may have been hooked by the test, so adjust test delays here
+      int logInterval = ColocationLogger.getLogInterval();
+      List<LogEvent> logEvents = Collections.emptyList();
+      int numLogEvents = 0;
+
+      createPR(PR_REGION_NAME, true);
+      // Delay creation of child generation regions to see missing colocated region log message (logInterval/2 < delay < logInterval)
+      for (int regionNum = 2; regionNum < (numChildPRs + 2); ++regionNum) {
+        String childPRName = "region" + regionNum;
+        loggingEventCaptor = ArgumentCaptor.forClass(LogEvent.class);
+
+        // delay between starting generations of child regions
+        try {
+          await().atMost(delayForChildCreation, TimeUnit.MILLISECONDS).until(() -> {return false;});
+        } catch (ConditionTimeoutException e) {
+        }
+        // check for log messages
+        verify(mockAppender,  times(regionNum - 1)).append(loggingEventCaptor.capture());
+        logEvents = loggingEventCaptor.getAllValues();
+        String logMsg = loggingEventCaptor.getValue().getMessage().getFormattedMessage();
+        numLogEvents = logEvents.size();
+        assertEquals("Expected warning messages to be logged.", regionNum - 1, numLogEvents);
+
+        // Start the child region
+        try {
+          createPR(childPRName, PR_REGION_NAME, true);
+        } catch (Exception e) {
+        }
+      }
+      // Another delay before exiting the thread to make sure that missing region logging doesn't continue after 
+      // all regions created (delay > logInterval)
+      try {
+        await().atMost((int)(delayForChildCreation * 1.2), TimeUnit.MILLISECONDS).until(() -> {return false;});
+      } catch (ConditionTimeoutException e) {
+      }
+      String logMsg;
+      try {
+        logEvents = loggingEventCaptor.getAllValues();
+        assertEquals(String.format("Expected warning messages to be logged."), numExpectedLogMessages, logEvents.size());
+        logMsg = logEvents.get(0).getMessage().getFormattedMessage();
+      } finally {
+        logger.removeAppender(mockAppender);
+        numExpectedLogMessages = 1;
+        mockAppender = null;
+      }
+      return logMsg;
+    }
+  };
+
+  private SerializableCallable createPRsMissingGrandchildRegionThread = new SerializableCallable("createPRsMissingChildRegion") {
+    Appender mockAppender;
+    ArgumentCaptor<LogEvent> loggingEventCaptor;
+
+    public Object call() throws Exception {
+      // Setup for capturing logger messages
+      Appender mockAppender = mock(Appender.class);
+      when(mockAppender.getName()).thenReturn("MockAppender");
+      when(mockAppender.isStarted()).thenReturn(true);
+      when(mockAppender.isStopped()).thenReturn(false);
+      Logger logger = (Logger) LogManager.getLogger(ColocationLogger.class);
+      logger.addAppender(mockAppender);
+      logger.setLevel(Level.WARN);
+      loggingEventCaptor = ArgumentCaptor.forClass(LogEvent.class);
+
+      // Logger interval may have been hooked by the test, so adjust test delays here
+      int logInterval = ColocationLogger.getLogInterval();
+      List<LogEvent> logEvents = Collections.emptyList();
+
+      try {
+        createPR(PR_REGION_NAME, true);
+        createPR("region2", PR_REGION_NAME, true);  // This child region is never created
+        // Let this thread continue running long enough for the missing region to be logged a couple times.
+        // Grandchild region does not get created by this thread. (1.5*logInterval < delay < 2*logInterval)
+        await().atMost((int)(1.75 * logInterval), TimeUnit.MILLISECONDS).until(() -> {verify(mockAppender, times(numExpectedLogMessages)).append(loggingEventCaptor.capture());});
+        //createPR("region3", PR_REGION_NAME, true);  // This child region is never created
+      } finally {
+        logEvents = loggingEventCaptor.getAllValues();
+        assertEquals(String.format("Expected %d messages to be logged, got %d.", numExpectedLogMessages, logEvents.size()), numExpectedLogMessages, logEvents.size());
+        String logMsg = logEvents.get(0).getMessage().getFormattedMessage();
+        logger.removeAppender(mockAppender);
+        numExpectedLogMessages = 1;
+        return logMsg;
+      }
+    }
+  };
+
+  private class ColocationLoggerIntervalSetter extends SerializableRunnable {
+    private int logInterval;
+
+    ColocationLoggerIntervalSetter(int newInterval) {
+      this.logInterval = newInterval;
+    }
+    @Override
+    public void run() throws Exception {
+      ColocationLogger.testhookSetLogInterval(logInterval);
+    }
+  }
+
+  private class ColocationLoggerIntervalResetter extends SerializableRunnable {
+    private int logInterval;
+
+    @Override
+    public void run() throws Exception {
+      ColocationLogger.testhookResetLogInterval();
+    }
+  }
+
+  private class ExpectedNumLogMessageSetter extends SerializableRunnable {
+    private int numMsgs;
+
+    ExpectedNumLogMessageSetter(int num) {
+      this.numMsgs = num;
+    }
+    @Override
+    public void run() throws Exception {
+      numExpectedLogMessages = numMsgs;
+    }
+  }
+
+  private class ExpectedNumLogMessageResetter extends SerializableRunnable {
+    private int numMsgs;
+
+    ExpectedNumLogMessageResetter() {
+      this.numMsgs = DEFAULT_NUM_EXPECTED_LOG_MESSAGES;
+    }
+    @Override
+    public void run() throws Exception {
+      numExpectedLogMessages = numMsgs;
+    }
+  }
+
+  private class NumChildPRsSetter extends SerializableRunnable {
+    private int numChildren;
+
+    NumChildPRsSetter(int num) {
+      this.numChildren = num;
+    }
+    @Override
+    public void run() throws Exception {
+      numChildPRs = numChildren;
+    }
+  }
+
+  private class NumChildPRGenerationsSetter extends SerializableRunnable {
+    private int numGenerations;
+
+    NumChildPRGenerationsSetter(int num) {
+      this.numGenerations = num;
+    }
+    @Override
+    public void run() throws Exception {
+      numChildPRGenerations = numGenerations;
+    }
+  }
+
+  private class DelayForChildCreationSetter extends SerializableRunnable {
+    private int delay;
+
+    DelayForChildCreationSetter(int millis) {
+      this.delay = millis;
+    }
+    @Override
+    public void run() throws Exception {
+      delayForChildCreation = delay;
+    }
+  }
+
+  /**
+   * Testing that missing colocated persistent PRs are logged as warning
+   */
+  @Test
+  public void testMissingColocatedParentPR() throws Throwable {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+
+    vm0.invoke(createPRsColocatedPairThread);
+    vm1.invoke(createPRsColocatedPairThread);
+
+    createData(vm0, 0, NUM_BUCKETS, "a");
+    createData(vm0, 0, NUM_BUCKETS, "b", "region2");
+
+    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    assertFalse(vm0Buckets.isEmpty());
+    assertEquals(vm0Buckets, getBucketList(vm0, "region2"));
+    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    assertEquals(vm1Buckets, getBucketList(vm1, "region2"));
+
+    closeCache(vm0);
+    closeCache(vm1);
+
+    Object remoteException = null;
+    remoteException = vm0.invoke(createPRsMissingParentRegionThread);
+    assertEquals("Expected IllegalState Exception for missing colocated parent region", IllegalStateException.class, remoteException.getClass());
+    assertTrue("Expected IllegalState Exception for missing colocated parent region", remoteException.toString().matches(
+        "java.lang.IllegalStateException: Region specified in 'colocated-with'.*"));
+  }
+
+  /**
+   * Testing that parent colocated persistent PRs only missing on local member throws exception 
+   */
+  @Test
+  public void testMissingColocatedParentPRWherePRConfigExists() throws Throwable {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+
+    vm0.invoke(createPRsColocatedPairThread);
+    vm1.invoke(createPRsColocatedPairThread);
+
+    createData(vm0, 0, NUM_BUCKETS, "a");
+    createData(vm0, 0, NUM_BUCKETS, "b", "region2");
+
+    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    assertFalse(vm0Buckets.isEmpty());
+    assertEquals(vm0Buckets, getBucketList(vm0, "region2"));
+    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    assertEquals(vm1Buckets, getBucketList(vm1, "region2"));
+
+    closeCache(vm0);
+    closeCache(vm1);
+
+    AsyncInvocation async0 = vm0.invokeAsync(createPRsColocatedPairThread);
+
+    Object logMsg = "";
+    Object remoteException = null;
+    AsyncInvocation async1 = vm1.invokeAsync(delayedCreatePRsMissingParentRegionThread);
+    remoteException = async1.get(MAX_WAIT, TimeUnit.MILLISECONDS);
+    assertEquals("Expected IllegalState Exception for missing colocated parent region", IllegalStateException.class, remoteException.getClass());
+    assertTrue("Expected IllegalState Exception for missing colocated parent region", remoteException.toString().matches(
+        "java.lang.IllegalStateException: Region specified in 'colocated-with'.*"));
+  }
+
+  /**
+   * Testing that missing colocated child persistent PRs are logged as warning
+   */
+  @Test
+  public void testMissingColocatedChildPRDueToDelayedStart() throws Throwable {
+    int loggerTestInterval = 4000; // millis
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+
+    vm0.invoke(createPRsColocatedPairThread);
+    vm1.invoke(createPRsColocatedPairThread);
+
+    createData(vm0, 0, NUM_BUCKETS, "a");
+    createData(vm0, 0, NUM_BUCKETS, "b", "region2");
+
+    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    assertFalse(vm0Buckets.isEmpty());
+    assertEquals(vm0Buckets, getBucketList(vm0, "region2"));
+    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    assertEquals(vm1Buckets, getBucketList(vm1, "region2"));
+
+    closeCache(vm0);
+    closeCache(vm1);
+
+    vm0.invoke(new ColocationLoggerIntervalSetter(loggerTestInterval));
+    vm1.invoke(new ColocationLoggerIntervalSetter(loggerTestInterval));
+    vm0.invoke(new ExpectedNumLogMessageSetter(1));
+    vm1.invoke(new ExpectedNumLogMessageSetter(1));
+
+    Object logMsg = "";
+    AsyncInvocation async0 = vm0.invokeAsync(createPRsMissingChildRegionDelayedStartThread);
+    AsyncInvocation async1 = vm1.invokeAsync(createPRsMissingChildRegionDelayedStartThread);
+    logMsg = async1.get(MAX_WAIT, TimeUnit.MILLISECONDS);
+    vm0.invoke(new ExpectedNumLogMessageResetter());
+    vm1.invoke(new ExpectedNumLogMessageResetter());
+    vm0.invoke(new ColocationLoggerIntervalResetter());
+    vm1.invoke(new ColocationLoggerIntervalResetter());
+    assertTrue("Expected missing colocated region warning on remote. Got message \"" + logMsg + "\"",
+        logMsg.toString().matches(PATTERN_FOR_MISSING_CHILD_LOG));
+  }
+
+  /**
+   * Testing that missing colocated child persistent PRs are logged as warning
+   */
+  @Test
+  public void testMissingColocatedChildPR() throws Throwable {
+    int loggerTestInterval = 4000; // millis
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+
+    vm0.invoke(createPRsColocatedPairThread);
+    vm1.invoke(createPRsColocatedPairThread);
+
+    createData(vm0, 0, NUM_BUCKETS, "a");
+    createData(vm0, 0, NUM_BUCKETS, "b", "region2");
+
+    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    assertFalse(vm0Buckets.isEmpty());
+    assertEquals(vm0Buckets, getBucketList(vm0, "region2"));
+    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    assertEquals(vm1Buckets, getBucketList(vm1, "region2"));
+
+    closeCache(vm0);
+    closeCache(vm1);
+
+    vm0.invoke(new ColocationLoggerIntervalSetter(loggerTestInterval));
+    vm1.invoke(new ColocationLoggerIntervalSetter(loggerTestInterval));
+    vm0.invoke(new ExpectedNumLogMessageSetter(2));
+    vm1.invoke(new ExpectedNumLogMessageSetter(2));
+
+    Object logMsg = "";
+    AsyncInvocation async0 = vm0.invokeAsync(createPRsMissingChildRegionThread);
+    AsyncInvocation async1 = vm1.invokeAsync(createPRsMissingChildRegionThread);
+    logMsg = async1.get(MAX_WAIT, TimeUnit.MILLISECONDS);
+    async0.get(MAX_WAIT, TimeUnit.MILLISECONDS);
+    vm0.invoke(new ExpectedNumLogMessageResetter());
+    vm1.invoke(new ExpectedNumLogMessageResetter());
+    vm0.invoke(new ColocationLoggerIntervalResetter());
+    vm1.invoke(new ColocationLoggerIntervalResetter());
+    assertTrue("Expected missing colocated region warning on remote. Got message \"" + logMsg + "\"",
+        logMsg.toString().matches(PATTERN_FOR_MISSING_CHILD_LOG));
+  }
+
+  /**
+   * Test that when there is more than one missing colocated child persistent PRs for a region all missing regions are logged
+   * in the warning. 
+   */
+  @Test
+  public void testMultipleColocatedChildPRsMissing() throws Throwable {
+    int loggerTestInterval = 4000; // millis
+    int numChildPRs = 2;
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+
+    vm0.invoke(new NumChildPRsSetter(numChildPRs));
+    vm1.invoke(new NumChildPRsSetter(numChildPRs));
+    vm0.invoke(createMultipleColocatedChildPRs);
+    vm1.invoke(createMultipleColocatedChildPRs);
+
+    createData(vm0, 0, NUM_BUCKETS, "a");
+    createData(vm0, 0, NUM_BUCKETS, "b", "region2");
+    createData(vm0, 0, NUM_BUCKETS, "c", "region2");
+
+    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    assertFalse(vm0Buckets.isEmpty());
+    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    assertFalse(vm1Buckets.isEmpty());
+    for (int i = 2;i < numChildPRs + 2; ++i) {
+      String childName = "region" + i;
+      assertEquals(vm0Buckets, getBucketList(vm0, childName));
+      assertEquals(vm1Buckets, getBucketList(vm1, childName));
+    }
+
+    closeCache(vm0);
+    closeCache(vm1);
+
+    vm0.invoke(new ColocationLoggerIntervalSetter(loggerTestInterval));
+    vm1.invoke(new ColocationLoggerIntervalSetter(loggerTestInterval));
+    vm0.invoke(new ExpectedNumLogMessageSetter(2));
+    vm1.invoke(new ExpectedNumLogMessageSetter(2));
+
+    Object logMsg = "";
+    AsyncInvocation async0 = vm0.invokeAsync(createPRsMissingChildRegionThread);
+    AsyncInvocation async1 = vm1.invokeAsync(createPRsMissingChildRegionThread);
+    logMsg = async1.get(MAX_WAIT, TimeUnit.MILLISECONDS);
+    async0.get(MAX_WAIT, TimeUnit.MILLISECONDS);
+    vm0.invoke(new ExpectedNumLogMessageResetter());
+    vm1.invoke(new ExpectedNumLogMessageResetter());
+    vm0.invoke(new ColocationLoggerIntervalResetter());
+    vm1.invoke(new ColocationLoggerIntervalResetter());
+    assertTrue("Expected missing colocated region warning on remote. Got message \"" + logMsg + "\"",
+        logMsg.toString().matches(PATTERN_FOR_MISSING_CHILD_LOG));
+  }
+
+  /**
+   * Test that when there is more than one missing colocated child persistent PRs for a region all missing regions are logged
+   * in the warning. Verifies that as regions are created they no longer appear in the warning.
+   */
+  @Test
+  public void testMultipleColocatedChildPRsMissingWithSequencedStart() throws Throwable {
+    int loggerTestInterval = 4000; // millis
+    int numChildPRs = 2;
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+
+    vm0.invoke(new NumChildPRsSetter(numChildPRs));
+    vm1.invoke(new NumChildPRsSetter(numChildPRs));
+    vm0.invoke(createMultipleColocatedChildPRs);
+    vm1.invoke(createMultipleColocatedChildPRs);
+
+    createData(vm0, 0, NUM_BUCKETS, "a");
+    createData(vm0, 0, NUM_BUCKETS, "b", "region2");
+    createData(vm0, 0, NUM_BUCKETS, "c", "region2");
+
+    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    assertFalse(vm0Buckets.isEmpty());
+    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    assertFalse(vm1Buckets.isEmpty());
+    for (int i = 2;i < numChildPRs + 2; ++i) {
+      String childName = "region" + i;
+      assertEquals(vm0Buckets, getBucketList(vm0, childName));
+      assertEquals(vm1Buckets, getBucketList(vm1, childName));
+    }
+
+    closeCache(vm0);
+    closeCache(vm1);
+
+    vm0.invoke(new ColocationLoggerIntervalSetter(loggerTestInterval));
+    vm1.invoke(new ColocationLoggerIntervalSetter(loggerTestInterval));
+    vm0.invoke(new ExpectedNumLogMessageSetter(2));
+    vm1.invoke(new ExpectedNumLogMessageSetter(2));
+    vm0.invoke(new DelayForChildCreationSetter((int)(loggerTestInterval)));
+    vm1.invoke(new DelayForChildCreationSetter((int)(loggerTestInterval)));
+
+    Object logMsg = "";
+    AsyncInvocation async0 = vm0.invokeAsync(createMultipleColocatedChildPRsWithSequencedStart);
+    AsyncInvocation async1 = vm1.invokeAsync(createMultipleColocatedChildPRsWithSequencedStart);
+    logMsg = async1.get(MAX_WAIT, TimeUnit.MILLISECONDS);
+    async0.get(MAX_WAIT, TimeUnit.MILLISECONDS);
+    vm0.invoke(new ExpectedNumLogMessageResetter());
+    vm1.invoke(new ExpectedNumLogMessageResetter());
+    vm0.invoke(new ColocationLoggerIntervalResetter());
+    vm1.invoke(new ColocationLoggerIntervalResetter());
+    assertTrue("Expected missing colocated region warning on remote. Got message \"" + logMsg + "\"",
+        logMsg.toString().matches(PATTERN_FOR_MISSING_CHILD_LOG));
+  }
+
+  /**
+   * Testing that all missing persistent PRs in a colocation hierarchy are logged as warnings
+   */
+  @Test
+  public void testHierarchyOfColocatedChildPRsMissing() throws Throwable {
+    int loggerTestInterval = 4000; // millis
+    int numChildGenerations = 2;
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+
+    vm0.invoke(new NumChildPRGenerationsSetter(numChildGenerations));
+    vm1.invoke(new NumChildPRGenerationsSetter(numChildGenerations));
+    vm0.invoke(createPRColocationHierarchy);
+    vm1.invoke(createPRColocationHierarchy);
+
+    createData(vm0, 0, NUM_BUCKETS, "a");
+    createData(vm0, 0, NUM_BUCKETS, "b", "region2");
+    createData(vm0, 0, NUM_BUCKETS, "c", "region3");
+
+    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    assertFalse(vm0Buckets.isEmpty());
+    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    assertFalse(vm1Buckets.isEmpty());
+    for (int i = 2;i < numChildGenerations + 2; ++i) {
+      String childName = "region" + i;
+      assertEquals(vm0Buckets, getBucketList(vm0, childName));
+      assertEquals(vm1Buckets, getBucketList(vm1, childName));
+    }
+
+    closeCache(vm0);
+    closeCache(vm1);
+
+    vm0.invoke(new ColocationLoggerIntervalSetter(loggerTestInterval));
+    vm1.invoke(new ColocationLoggerIntervalSetter(loggerTestInterval));
+    // Expected warning logs only on the child region, because without the child there's nothing known about the remaining hierarchy
+    vm0.invoke(new ExpectedNumLogMessageSetter(numChildGenerations));
+    vm1.invoke(new ExpectedNumLogMessageSetter(numChildGenerations));
+
+    Object logMsg = "";
+    AsyncInvocation async0 = vm0.invokeAsync(createPRsMissingChildRegionThread);
+    AsyncInvocation async1 = vm1.invokeAsync(createPRsMissingChildRegionThread);
+    logMsg = async1.get(MAX_WAIT, TimeUnit.MILLISECONDS);
+    async0.get(MAX_WAIT, TimeUnit.MILLISECONDS);
+    vm0.invoke(new ExpectedNumLogMessageResetter());
+    vm1.invoke(new ExpectedNumLogMessageResetter());
+    vm0.invoke(new ColocationLoggerIntervalResetter());
+    vm1.invoke(new ColocationLoggerIntervalResetter());
+    assertTrue("Expected missing colocated region warning on remote. Got message \"" + logMsg + "\"",
+        logMsg.toString().matches(PATTERN_FOR_MISSING_CHILD_LOG));
+  }
+
+  /**
+   * Testing that all missing persistent PRs in a colocation hierarchy are logged as warnings
+   */
+  @Test
+  public void testHierarchyOfColocatedChildPRsMissingGrandchild() throws Throwable {
+    int loggerTestInterval = 4000; // millis
+    int numChildGenerations = 3;
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+
+    vm0.invoke(new NumChildPRGenerationsSetter(numChildGenerations));
+    vm1.invoke(new NumChildPRGenerationsSetter(numChildGenerations));
+    vm0.invoke(createPRColocationHierarchy);
+    vm1.invoke(createPRColocationHierarchy);
+
+    createData(vm0, 0, NUM_BUCKETS, "a");
+    createData(vm0, 0, NUM_BUCKETS, "b", "region2");
+    createData(vm0, 0, NUM_BUCKETS, "c", "region3");
+
+    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    assertFalse(vm0Buckets.isEmpty());
+    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    assertFalse(vm1Buckets.isEmpty());
+    for (int i = 2;i < numChildGenerations + 2; ++i) {
+      String childName = "region" + i;
+      assertEquals(vm0Buckets, getBucketList(vm0, childName));
+      assertEquals(vm1Buckets, getBucketList(vm1, childName));
+    }
+
+    closeCache(vm0);
+    closeCache(vm1);
+
+    vm0.invoke(new ColocationLoggerIntervalSetter(loggerTestInterval));
+    vm1.invoke(new ColocationLoggerIntervalSetter(loggerTestInterval));
+    // Expected warning logs only on the child region, because without the child there's nothing known about the remaining hierarchy
+    vm0.invoke(new ExpectedNumLogMessageSetter(numChildGenerations * (numChildGenerations + 1) / 2));
+    vm1.invoke(new ExpectedNumLogMessageSetter(numChildGenerations * (numChildGenerations + 1) / 2));
+    vm0.invoke(new DelayForChildCreationSetter((int)(loggerTestInterval)));
+    vm1.invoke(new DelayForChildCreationSetter((int)(loggerTestInterval)));
+
+    Object logMsg = "";
+    AsyncInvocation async0 = vm0.invokeAsync(createPRsSequencedChildrenCreationThread);
+    AsyncInvocation async1 = vm1.invokeAsync(createPRsSequencedChildrenCreationThread);
+    logMsg = async1.get(MAX_WAIT, TimeUnit.MILLISECONDS);
+    async0.get(MAX_WAIT, TimeUnit.MILLISECONDS);
+    vm0.invoke(new ExpectedNumLogMessageResetter());
+    vm1.invoke(new ExpectedNumLogMessageResetter());
+    vm0.invoke(new ColocationLoggerIntervalResetter());
+    vm1.invoke(new ColocationLoggerIntervalResetter());
+    System.out.println(logMsg);
+    assertTrue("Expected missing colocated region warning on remote. Got message \"" + logMsg + "\"",
+        logMsg.toString().matches(PATTERN_FOR_MISSING_CHILD_LOG));
+  }
+
+  private SerializableRunnable createPRColocationTree = new SerializableRunnable("create PR colocation hierarchy") {
+    @Override
+    public void run() throws Exception {
+      createPR("Parent", true);
+      createPR("Gen1_C1", "Parent", true);
+      createPR("Gen1_C2", "Parent", true);
+      createPR("Gen2_C1_1", "Gen1_C1", true);
+      createPR("Gen2_C1_2", "Gen1_C1", true);
+      createPR("Gen2_C2_1", "Gen1_C2", true);
+      createPR("Gen2_C2_2", "Gen1_C2", true);
+    }
+  };
+
+  /**
+   * The colocation tree has the regions started in a specific order so that the logging is predictable.
+   * For each entry in the list, the array values are:
+   * <pre> 
+   *   [0] - the region name
+   *   [1] - the name of that region's parent
+   *   [2] - the number of warnings that will be logged after the region is created (1 warning for
+   *         each region in the tree that exists that still has 1 or more missing children.)
+   * </pre>
+   */
+  private static final List<Object[]> CHILD_REGION_RESTART_ORDER = new ArrayList<Object[]>();
+  static {
+    CHILD_REGION_RESTART_ORDER.add(new Object[]{"Gen1_C1", "Parent", 2});
+    CHILD_REGION_RESTART_ORDER.add(new Object[]{"Gen2_C1_1", "Gen1_C1", 2});
+    CHILD_REGION_RESTART_ORDER.add(new Object[]{"Gen1_C2", "Parent", 3});
+    CHILD_REGION_RESTART_ORDER.add(new Object[]{"Gen2_C1_2", "Gen1_C1", 2});
+    CHILD_REGION_RESTART_ORDER.add(new Object[]{"Gen2_C2_1", "Gen1_C2", 2});
+    CHILD_REGION_RESTART_ORDER.add(new Object[]{"Gen2_C2_2", "Gen1_C2", 0});
+  }
+
+  private SerializableCallable createPRsSequencedColocationTreeCreationThread = new SerializableCallable("createPRsSequencedColocationTreeCreation") {
+    Appender mockAppender;
+    ArgumentCaptor<LogEvent> loggingEventCaptor;
+
+    public Object call() throws Exception {
+      // Setup for capturing logger messages
+      mockAppender = mock(Appender.class);
+      when(mockAppender.getName()).thenReturn("MockAppender");
+      when(mockAppender.isStarted()).thenReturn(true);
+      when(mockAppender.isStopped()).thenReturn(false);
+      Logger logger = (Logger) LogManager.getLogger(ColocationLogger.class);
+      logger.addAppender(mockAppender);
+      logger.setLevel(Level.WARN);
+      loggingEventCaptor = ArgumentCaptor.forClass(LogEvent.class);
+
+      // Logger interval may have been hooked by the test, so adjust test delays here
+      int logInterval = ColocationLogger.getLogInterval();
+      List<LogEvent> logEvents = Collections.emptyList();
+      int nLogEvents = 0;
+      int nExpectedLogs = 1;
+
+      createPR("Parent", true);
+      // Delay creation of descendant regions in the hierarchy to see missing colocated region 
+      // log messages (logInterval/2 < delay < logInterval)
+      for (Object[] regionInfo:CHILD_REGION_RESTART_ORDER) {
+        loggingEventCaptor = ArgumentCaptor.forClass(LogEvent.class);
+        String childPRName = (String) regionInfo[0];
+        String colocatedWithRegionName = (String) regionInfo[1];
+        int nLogsAfterRegionCreation = (int) regionInfo[2];
+
+        // delay between starting generations of child regions
+        try {
+        await().atMost(delayForChildCreation, TimeUnit.MILLISECONDS).until(() -> {return false;});
+        } catch (ConditionTimeoutException e) {
+        }
+        // check for log messages that occurred during the delay
+        verify(mockAppender,  times(nExpectedLogs)).append(loggingEventCaptor.capture());
+        nExpectedLogs += nLogsAfterRegionCreation;
+        logEvents = loggingEventCaptor.getAllValues();
+        String logMsg = loggingEventCaptor.getValue().getMessage().getFormattedMessage();
+
+        // Finally start the next child region
+        createPR(childPRName, colocatedWithRegionName, true);
+      }
+      // Another delay before exiting the thread to make sure that missing region logging doesn't continue after 
+      // all regions created (delay > logInterval)
+      String logMsg = "";
+          try {
+        await().atMost((int)(delayForChildCreation * 1.2), TimeUnit.MILLISECONDS).until(() -> {return false;});
+      } catch (ConditionTimeoutException e) {
+      } finally {
+        logEvents = loggingEventCaptor.getAllValues();
+        assertEquals(String.format("Expected warning messages to be logged."), nExpectedLogs, logEvents.size());
+        logMsg = logEvents.get(0).getMessage().getFormattedMessage();
+        logger.removeAppender(mockAppender);
+      }
+      numExpectedLogMessages = 1;
+      mockAppender = null;
+      return logMsg;
+    }
+  };
+
+  /**
+   * Testing that all missing persistent PRs in a colocation tree hierarchy are logged as warnings.
+   * This test is a combines the "multiple children" and "hierarchy of children" tests.
+   * This is the colocation tree for this test
+   * <pre>
+   *                  Parent
+   *                /         \
+   *             /               \
+   *         Gen1_C1            Gen1_C2
+   *         /    \              /    \
+   *  Gen2_C1_1  Gen2_C1_2  Gen2_C2_1  Gen2_C2_2
+   * </pre>
+   */
+  @Test
+  public void testFullTreeOfColocatedChildPRsWithMissingRegions() throws Throwable {
+    int loggerTestInterval = 4000; // millis
+    int numChildPRs = 2;
+    int numChildGenerations = 2;
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+
+    vm0.invoke(createPRColocationTree);
+    vm1.invoke(createPRColocationTree);
+
+    createData(vm0, 0, NUM_BUCKETS, "a", "Parent");
+    createData(vm0, 0, NUM_BUCKETS, "b", "Gen1_C1");
+    createData(vm0, 0, NUM_BUCKETS, "c", "Gen1_C2");
+    createData(vm0, 0, NUM_BUCKETS, "c", "Gen2_C1_1");
+    createData(vm0, 0, NUM_BUCKETS, "c", "Gen2_C1_2");
+    createData(vm0, 0, NUM_BUCKETS, "c", "Gen2_C2_1");
+    createData(vm0, 0, NUM_BUCKETS, "c", "Gen2_C2_2");
+
+    Set<Integer> vm0Buckets = getBucketList(vm0, "Parent");
+    assertFalse(vm0Buckets.isEmpty());
+    Set<Integer> vm1Buckets = getBucketList(vm1, "Parent");
+    assertFalse(vm1Buckets.isEmpty());
+    for (String region:new String[]{"Gen1_C1", "Gen1_C2", "Gen2_C1_1", "Gen2_C1_2", "Gen2_C2_1", "Gen2_C2_2"}) {
+      assertEquals(vm0Buckets, getBucketList(vm0, region));
+      assertEquals(vm1Buckets, getBucketList(vm1, region));
+    }
+
+    closeCache(vm0);
+    closeCache(vm1);
+
+    vm0.invoke(new ColocationLoggerIntervalSetter(loggerTestInterval));
+    vm1.invoke(new ColocationLoggerIntervalSetter(loggerTestInterval));
+    vm0.invoke(new DelayForChildCreationSetter((int)(loggerTestInterval)));
+    vm1.invoke(new DelayForChildCreationSetter((int)(loggerTestInterval)));
+
+    Object logMsg = "";
+    AsyncInvocation async0 = vm0.invokeAsync(createPRsSequencedColocationTreeCreationThread);
+    AsyncInvocation async1 = vm1.invokeAsync(createPRsSequencedColocationTreeCreationThread);
+    logMsg = async1.get(MAX_WAIT, TimeUnit.MILLISECONDS);
+    async0.get(MAX_WAIT, TimeUnit.MILLISECONDS);
+    vm0.invoke(new ColocationLoggerIntervalResetter());
+    vm1.invoke(new ColocationLoggerIntervalResetter());
+    // Expected warning logs only on the child region, because without the child there's nothing known about the remaining hierarchy
+    assertTrue("Expected missing colocated region warning on remote. Got message \"" + logMsg + "\"",
+        logMsg.toString().matches(PATTERN_FOR_MISSING_CHILD_LOG));
   }
 
   /**
@@ -1580,7 +2551,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
       }
     });
   }
-  
+
   private static class PRObserver extends PartitionedRegionObserverAdapter {
     private CountDownLatch rebalanceDone = new CountDownLatch(1);
     private CountDownLatch bucketCreateStarted  = new CountDownLatch(3);
