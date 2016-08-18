@@ -111,7 +111,7 @@ public class DistributionConfigJUnitTest {
     System.out.println("otherList: " + otherList);
 
     //TODO - This makes no sense. One has no idea what the correct expected number of attributes are.
-    assertEquals(28, boolList.size());
+    assertEquals(29, boolList.size());
     assertEquals(33, intList.size());
     assertEquals(84, stringList.size());
     assertEquals(5, fileList.size());

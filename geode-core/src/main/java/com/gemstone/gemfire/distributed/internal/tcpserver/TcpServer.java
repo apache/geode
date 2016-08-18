@@ -205,13 +205,6 @@ public class TcpServer {
   }
 
   private void startServerThread() throws IOException {
-    //TODO Udo: clean this up
-    if(srv_sock != null){
-      throw new RuntimeException("TcpServer.startServerThread + SrvSocket not null");
-    }
-    if(srv_sock != null && !srv_sock.isClosed()){
-      throw new RuntimeException("TcpServer.startServerThread + SrvSocket not closed");
-    }
     if (srv_sock == null || srv_sock.isClosed()) {
       if (bind_address == null) {
         srv_sock = socketCreator.createServerSocket(port, BACKLOG);

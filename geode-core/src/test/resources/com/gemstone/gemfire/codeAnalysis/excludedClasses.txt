@@ -151,3 +151,4 @@ com/gemstone/gemfire/internal/cache/operations/ContainsKeyOperationContext
 org/apache/geode/security/ResourcePermission
 org/apache/geode/security/ResourcePermission$Operation
 org/apache/geode/security/ResourcePermission$Resource
+com/gemstone/gemfire/distributed/internal/tcpserver/LocatorCancelException
