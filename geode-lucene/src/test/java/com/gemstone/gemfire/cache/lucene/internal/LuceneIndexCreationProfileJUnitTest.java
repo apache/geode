@@ -19,6 +19,7 @@
 package com.gemstone.gemfire.cache.lucene.internal;
 
 import com.gemstone.gemfire.CopyHelper;
+import com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -78,27 +79,27 @@ public class LuceneIndexCreationProfileJUnitTest {
         new Object[] {
             getTwoAnalyzersLuceneIndexCreationProfile(),
             getOneAnalyzerLuceneIndexCreationProfile(new KeywordAnalyzer()),
-            CANNOT_CREATE_LUCENE_INDEX_NO_ANALYZER_FIELD2
+          CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS
         },
         new Object[] {
             getOneAnalyzerLuceneIndexCreationProfile(new KeywordAnalyzer()),
             getTwoAnalyzersLuceneIndexCreationProfile(),
-          CANNOT_CREATE_LUCENE_INDEX_NO_ANALYZER_EXISTING_MEMBER_2
+          CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_3
         },
         new Object[] {
             getOneAnalyzerLuceneIndexCreationProfile(new StandardAnalyzer()),
             getOneAnalyzerLuceneIndexCreationProfile(new KeywordAnalyzer()),
-            CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS
+          CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2
         },
         new Object[] {
             getNullField2AnalyzerLuceneIndexCreationProfile(),
             getNullField1AnalyzerLuceneIndexCreationProfile(),
-            CANNOT_CREATE_LUCENE_INDEX_NO_ANALYZER_FIELD1
+          CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_1
         },
         new Object[] {
             getNullField1AnalyzerLuceneIndexCreationProfile(),
             getNullField2AnalyzerLuceneIndexCreationProfile(),
-            CANNOT_CREATE_LUCENE_INDEX_NO_ANALYZER_EXISTING_MEMBER
+          LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2
         }
     );
   }

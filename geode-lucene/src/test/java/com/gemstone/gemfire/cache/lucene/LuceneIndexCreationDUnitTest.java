@@ -19,6 +19,7 @@
 package com.gemstone.gemfire.cache.lucene;
 
 import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.util.test.TestUtil;
@@ -143,25 +144,26 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     dataStore1.invoke(() -> initDataStore(createIndex1));
 
     SerializableRunnableIF createIndex2 = getAnalyzersIndexWithOneField(KeywordAnalyzer.class);
-    dataStore2.invoke(() -> initDataStore(createIndex2, CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS));
+    dataStore2.invoke(() -> initDataStore(createIndex2, CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2));
   }
 
   @Test
   public void verifyDifferentFieldAnalyzersFails2() {
-    SerializableRunnableIF createIndex1 = getAnalyzersIndexWithNullField2();
-    dataStore1.invoke(() -> initDataStore(createIndex1));
-
-    SerializableRunnableIF createIndex2 = getAnalyzersIndexWithNullField1();
-    dataStore2.invoke(() -> initDataStore(createIndex2, CANNOT_CREATE_LUCENE_INDEX_NO_ANALYZER_FIELD1));
-  }
-
-  @Test
-  public void verifyDifferentFieldAnalyzersFails3() {
     SerializableRunnableIF createIndex1 = getAnalyzersIndexWithNullField1();
     dataStore1.invoke(() -> initDataStore(createIndex1));
 
     SerializableRunnableIF createIndex2 = getAnalyzersIndexWithNullField2();
-    dataStore2.invoke(() -> initDataStore(createIndex2, CANNOT_CREATE_LUCENE_INDEX_NO_ANALYZER_EXISTING_MEMBER));
+    dataStore2.invoke(() -> initDataStore(createIndex2, CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS));
+  }
+
+  @Test
+  public void verifyDifferentFieldAnalyzersFails3() {
+    SerializableRunnableIF createIndex1 = getAnalyzersIndexWithNullField2();
+    dataStore1.invoke(() -> initDataStore(createIndex1));
+
+    SerializableRunnableIF createIndex2 = getAnalyzersIndexWithNullField1();
+    dataStore2.invoke(() -> initDataStore(createIndex2,
+      LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_3));
   }
 
   @Test
@@ -260,10 +262,10 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
         new Object[] { "verifyDifferentFieldsFails", CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS },
         new Object[] { "verifyDifferentFieldAnalyzerSizesFails1", CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS_2 },
         new Object[] { "verifyDifferentFieldAnalyzerSizesFails2", CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS },
-        new Object[] { "verifyDifferentFieldAnalyzersFails1", CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS },
+        new Object[] { "verifyDifferentFieldAnalyzersFails1", CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2 },
         // Currently setting a null analyzer is not a valid xml configuration: <lucene:field name="field2" analyzer="null"/>
-        //new Object[] { "verifyDifferentFieldAnalyzersFails2", CANNOT_CREATE_LUCENE_INDEX_NO_ANALYZER_FIELD1 },
-        //new Object[] { "verifyDifferentFieldAnalyzersFails3", CANNOT_CREATE_LUCENE_INDEX_NO_ANALYZER_EXISTING_MEMBER },
+        //new Object[] { "verifyDifferentFieldAnalyzersFails2", CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_1 },
+        //new Object[] { "verifyDifferentFieldAnalyzersFails3", CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2 },
         new Object[] { "verifyDifferentIndexNamesFails", CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_NAMES },
         new Object[] { "verifyDifferentIndexesFails1", CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_1 },
         new Object[] { "verifyDifferentIndexesFails2", CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_2 }
