@@ -116,7 +116,7 @@ public class DistributionConfigJUnitTest {
     //TODO - This makes no sense. One has no idea what the correct expected number of attributes are.
     assertEquals(29, boolList.size());
     assertEquals(33, intList.size());
-    assertEquals(84, stringList.size());
+    assertEquals(85, stringList.size());
     assertEquals(5, fileList.size());
     assertEquals(4, otherList.size());
   }

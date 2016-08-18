@@ -32,18 +32,21 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.geode.redis.GeodeRedisServer;
+import org.apache.geode.security.SecurableComponents;
 
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import org.apache.geode.security.SecurableComponents;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
@@ -569,7 +572,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private String securityEnabledComponents = DEFAULT_SECURITY_ENABLED_COMPONENTS;
 
-  /** "off-heap-memory-size" with value of "" or "<size>[g|m]" */
+  /**
+   * "off-heap-memory-size" with value of "" or "<size>[g|m]"
+   */
 
   protected String offHeapMemorySize = DEFAULT_OFF_HEAP_MEMORY_SIZE;
 
@@ -2171,7 +2176,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   public Properties getSecurityProps() {
-    if(security.containsKey(SECURITY_MANAGER) && !security.containsKey(SECURITY_ENABLED_COMPONENTS)){
+    if (security.containsKey(SECURITY_MANAGER) && !security.containsKey(SECURITY_ENABLED_COMPONENTS)) {
       security.setProperty(SECURITY_ENABLED_COMPONENTS, SecurableComponents.ALL);
     }
     return security;
@@ -2498,7 +2503,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   @Override
   public void setSecurityEnabledComponents(final String securityEnabledComponents) {
-    this.securityEnabledComponents = (String) checkAttribute(SECURITY_ENABLED_COMPONENTS, securityEnabledComponents);
+    this.securityEnabledComponents = securityEnabledComponents;
   }
 
   @Override
@@ -2673,774 +2678,193 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   ///////////////////////  Utility Methods  ///////////////////////
 
+
   /**
    * Two instances of <code>DistributedConfigImpl</code> are equal if all of
    * their configuration properties are the same. Be careful if you need to
    * remove final and override this. See bug #50939.
    */
   @Override
-  public final boolean equals(Object obj) {
-    // this was auto-generated using Eclipse
-    if (this == obj) {
+  public boolean equals(final Object o) {
+    if (this == o) {
       return true;
     }
-    if (!super.equals(obj)) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    DistributionConfigImpl other = (DistributionConfigImpl) obj;
-    if (ackForceDisconnectThreshold != other.ackForceDisconnectThreshold) {
-      return false;
-    }
-    if (ackWaitThreshold != other.ackWaitThreshold) {
-      return false;
-    }
-    if (archiveDiskSpaceLimit != other.archiveDiskSpaceLimit) {
-      return false;
-    }
-    if (archiveFileSizeLimit != other.archiveFileSizeLimit) {
-      return false;
-    }
-    if (asyncDistributionTimeout != other.asyncDistributionTimeout) {
-      return false;
-    }
-    if (asyncMaxQueueSize != other.asyncMaxQueueSize) {
-      return false;
-    }
-    if (asyncQueueTimeout != other.asyncQueueTimeout) {
-      return false;
-    }
-    if (bindAddress == null) {
-      if (other.bindAddress != null) {
-        return false;
-      }
-    } else if (!bindAddress.equals(other.bindAddress)) {
-      return false;
-    }
-    if (cacheXmlFile == null) {
-      if (other.cacheXmlFile != null) {
-        return false;
-      }
-    } else if (!cacheXmlFile.equals(other.cacheXmlFile)) {
-      return false;
-    }
-    if (clientConflation == null) {
-      if (other.clientConflation != null) {
-        return false;
-      }
-    } else if (!clientConflation.equals(other.clientConflation)) {
-      return false;
-    }
-    if (clusterSSLCiphers == null) {
-      if (other.clusterSSLCiphers != null) {
-        return false;
-      }
-    } else if (!clusterSSLCiphers.equals(other.clusterSSLCiphers)) {
-      return false;
-    }
-    if (clusterSSLEnabled != other.clusterSSLEnabled) {
-      return false;
-    }
-    if (clusterSSLKeyStore == null) {
-      if (other.clusterSSLKeyStore != null) {
-        return false;
-      }
-    } else if (!clusterSSLKeyStore.equals(other.clusterSSLKeyStore)) {
-      return false;
-    }
-    if (clusterSSLKeyStorePassword == null) {
-      if (other.clusterSSLKeyStorePassword != null) {
-        return false;
-      }
-    } else if (!clusterSSLKeyStorePassword.equals(other.clusterSSLKeyStorePassword)) {
-      return false;
-    }
-    if (clusterSSLKeyStoreType == null) {
-      if (other.clusterSSLKeyStoreType != null) {
-        return false;
-      }
-    } else if (!clusterSSLKeyStoreType.equals(other.clusterSSLKeyStoreType)) {
-      return false;
-    }
-    if (clusterSSLProperties == null) {
-      if (other.clusterSSLProperties != null) {
-        return false;
-      }
-    } else if (!clusterSSLProperties.equals(other.clusterSSLProperties)) {
-      return false;
-    }
-    if (clusterSSLProtocols == null) {
-      if (other.clusterSSLProtocols != null) {
-        return false;
-      }
-    } else if (!clusterSSLProtocols.equals(other.clusterSSLProtocols)) {
-      return false;
-    }
-    if (clusterSSLRequireAuthentication != other.clusterSSLRequireAuthentication) {
-      return false;
-    }
-    if (clusterSSLTrustStore == null) {
-      if (other.clusterSSLTrustStore != null) {
-        return false;
-      }
-    } else if (!clusterSSLTrustStore.equals(other.clusterSSLTrustStore)) {
-      return false;
-    }
-    if (clusterSSLTrustStorePassword == null) {
-      if (other.clusterSSLTrustStorePassword != null) {
-        return false;
-      }
-    } else if (!clusterSSLTrustStorePassword.equals(other.clusterSSLTrustStorePassword)) {
-      return false;
-    }
-    if (conserveSockets != other.conserveSockets) {
-      return false;
-    }
-    if (deltaPropagation != other.deltaPropagation) {
-      return false;
-    }
-    if (deployWorkingDir == null) {
-      if (other.deployWorkingDir != null) {
-        return false;
-      }
-    } else if (!deployWorkingDir.equals(other.deployWorkingDir)) {
-      return false;
-    }
-    if (disableAutoReconnect != other.disableAutoReconnect) {
-      return false;
-    }
-    if (disableTcp != other.disableTcp) {
-      return false;
-    }
-    if (distributedSystemId != other.distributedSystemId) {
-      return false;
-    }
-    if (durableClientId == null) {
-      if (other.durableClientId != null) {
-        return false;
-      }
-    } else if (!durableClientId.equals(other.durableClientId)) {
-      return false;
-    }
-    if (durableClientTimeout != other.durableClientTimeout) {
-      return false;
-    }
-    if (enableNetworkPartitionDetection != other.enableNetworkPartitionDetection) {
-      return false;
-    }
-    if (enableSharedConfiguration != other.enableSharedConfiguration) {
-      return false;
-    }
-    if (enableTimeStatistics != other.enableTimeStatistics) {
-      return false;
-    }
-    if (enforceUniqueHost != other.enforceUniqueHost) {
-      return false;
-    }
-    if (gatewaySSLEnabled != other.gatewaySSLEnabled) {
-      return false;
-    }
-    if (gatewaySSLKeyStore == null) {
-      if (other.gatewaySSLKeyStore != null) {
-        return false;
-      }
-    } else if (!gatewaySSLKeyStore.equals(other.gatewaySSLKeyStore)) {
-      return false;
-    }
-    if (gatewaySSLKeyStorePassword == null) {
-      if (other.gatewaySSLKeyStorePassword != null) {
-        return false;
-      }
-    } else if (!gatewaySSLKeyStorePassword.equals(other.gatewaySSLKeyStorePassword)) {
-      return false;
-    }
-    if (gatewaySSLKeyStoreType == null) {
-      if (other.gatewaySSLKeyStoreType != null) {
-        return false;
-      }
-    } else if (!gatewaySSLKeyStoreType.equals(other.gatewaySSLKeyStoreType)) {
-      return false;
-    }
-    if (gatewaySSLTrustStore == null) {
-      if (other.gatewaySSLTrustStore != null) {
-        return false;
-      }
-    } else if (!gatewaySSLTrustStore.equals(other.gatewaySSLTrustStore)) {
-      return false;
-    }
-    if (gatewaySSLTrustStorePassword == null) {
-      if (other.gatewaySSLTrustStorePassword != null) {
-        return false;
-      }
-    } else if (!gatewaySSLTrustStorePassword.equals(other.gatewaySSLTrustStorePassword)) {
-      return false;
-    }
-    if (gatewaySslCiphers == null) {
-      if (other.gatewaySslCiphers != null) {
-        return false;
-      }
-    } else if (!gatewaySslCiphers.equals(other.gatewaySslCiphers)) {
-      return false;
-    }
-    if (gatewaySslProperties == null) {
-      if (other.gatewaySslProperties != null) {
-        return false;
-      }
-    } else if (!gatewaySslProperties.equals(other.gatewaySslProperties)) {
-      return false;
-    }
-    if (gatewaySslProtocols == null) {
-      if (other.gatewaySslProtocols != null) {
-        return false;
-      }
-    } else if (!gatewaySslProtocols.equals(other.gatewaySslProtocols)) {
-      return false;
-    }
-    if (gatewaySslRequireAuthentication != other.gatewaySslRequireAuthentication) {
-      return false;
-    }
-    if (groups == null) {
-      if (other.groups != null) {
-        return false;
-      }
-    } else if (!groups.equals(other.groups)) {
-      return false;
-    }
-    if (httpServiceBindAddress == null) {
-      if (other.httpServiceBindAddress != null) {
-        return false;
-      }
-    } else if (!httpServiceBindAddress.equals(other.httpServiceBindAddress)) {
-      return false;
-    }
-    if (httpServicePort != other.httpServicePort) {
-      return false;
-    }
-    if (jmxManager != other.jmxManager) {
-      return false;
-    }
-    if (jmxManagerAccessFile == null) {
-      if (other.jmxManagerAccessFile != null) {
-        return false;
-      }
-    } else if (!jmxManagerAccessFile.equals(other.jmxManagerAccessFile)) {
-      return false;
-    }
-    if (jmxManagerBindAddress == null) {
-      if (other.jmxManagerBindAddress != null) {
-        return false;
-      }
-    } else if (!jmxManagerBindAddress.equals(other.jmxManagerBindAddress)) {
-      return false;
-    }
-    if (jmxManagerHostnameForClients == null) {
-      if (other.jmxManagerHostnameForClients != null) {
-        return false;
-      }
-    } else if (!jmxManagerHostnameForClients.equals(other.jmxManagerHostnameForClients)) {
-      return false;
-    }
-    if (jmxManagerHttpPort != other.jmxManagerHttpPort) {
-      return false;
-    }
-    if (jmxManagerPasswordFile == null) {
-      if (other.jmxManagerPasswordFile != null) {
-        return false;
-      }
-    } else if (!jmxManagerPasswordFile.equals(other.jmxManagerPasswordFile)) {
-      return false;
-    }
-    if (jmxManagerPort != other.jmxManagerPort) {
-      return false;
-    }
-    if (jmxManagerSSLEnabled != other.jmxManagerSSLEnabled) {
-      return false;
-    }
-    if (jmxManagerSSLKeyStore == null) {
-      if (other.jmxManagerSSLKeyStore != null) {
-        return false;
-      }
-    } else if (!jmxManagerSSLKeyStore.equals(other.jmxManagerSSLKeyStore)) {
-      return false;
-    }
-    if (jmxManagerSSLKeyStorePassword == null) {
-      if (other.jmxManagerSSLKeyStorePassword != null) {
-        return false;
-      }
-    } else if (!jmxManagerSSLKeyStorePassword.equals(other.jmxManagerSSLKeyStorePassword)) {
-      return false;
-    }
-    if (jmxManagerSSLKeyStoreType == null) {
-      if (other.jmxManagerSSLKeyStoreType != null) {
-        return false;
-      }
-    } else if (!jmxManagerSSLKeyStoreType.equals(other.jmxManagerSSLKeyStoreType)) {
-      return false;
-    }
-    if (jmxManagerSSLTrustStore == null) {
-      if (other.jmxManagerSSLTrustStore != null) {
-        return false;
-      }
-    } else if (!jmxManagerSSLTrustStore.equals(other.jmxManagerSSLTrustStore)) {
-      return false;
-    }
-    if (jmxManagerSSLTrustStorePassword == null) {
-      if (other.jmxManagerSSLTrustStorePassword != null) {
-        return false;
-      }
-    } else if (!jmxManagerSSLTrustStorePassword.equals(other.jmxManagerSSLTrustStorePassword)) {
-      return false;
-    }
-    if (jmxManagerSslCiphers == null) {
-      if (other.jmxManagerSslCiphers != null) {
-        return false;
-      }
-    } else if (!jmxManagerSslCiphers.equals(other.jmxManagerSslCiphers)) {
-      return false;
-    }
-    if (jmxManagerSslProperties == null) {
-      if (other.jmxManagerSslProperties != null) {
-        return false;
-      }
-    } else if (!jmxManagerSslProperties.equals(other.jmxManagerSslProperties)) {
-      return false;
-    }
-    if (jmxManagerSslProtocols == null) {
-      if (other.jmxManagerSslProtocols != null) {
-        return false;
-      }
-    } else if (!jmxManagerSslProtocols.equals(other.jmxManagerSslProtocols)) {
-      return false;
-    }
-    if (jmxManagerSslRequireAuthentication != other.jmxManagerSslRequireAuthentication) {
-      return false;
-    }
-    if (jmxManagerStart != other.jmxManagerStart) {
-      return false;
-    }
-    if (jmxManagerUpdateRate != other.jmxManagerUpdateRate) {
-      return false;
-    }
-    if (loadSharedConfigurationFromDir != other.loadSharedConfigurationFromDir) {
-      return false;
-    }
-    if (locators == null) {
-      if (other.locators != null) {
-        return false;
-      }
-    } else if (!locators.equals(other.locators)) {
-      return false;
-    }
-    if (locatorWaitTime != other.locatorWaitTime) {
-      return false;
-    }
-    if (logDiskSpaceLimit != other.logDiskSpaceLimit) {
-      return false;
-    }
-    if (logFile == null) {
-      if (other.logFile != null) {
-        return false;
-      }
-    } else if (!logFile.equals(other.logFile)) {
-      return false;
-    }
-    if (logFileSizeLimit != other.logFileSizeLimit) {
-      return false;
-    }
-    if (logLevel != other.logLevel) {
-      return false;
-    }
-    if (maxNumReconnectTries != other.maxNumReconnectTries) {
-      return false;
-    }
-    if (maxWaitTimeForReconnect != other.maxWaitTimeForReconnect) {
-      return false;
-    }
-    if (mcastAddress == null) {
-      if (other.mcastAddress != null) {
-        return false;
-      }
-    } else if (!mcastAddress.equals(other.mcastAddress)) {
-      return false;
-    }
-    if (mcastFlowControl == null) {
-      if (other.mcastFlowControl != null) {
-        return false;
-      }
-    } else if (!mcastFlowControl.equals(other.mcastFlowControl)) {
-      return false;
-    }
-    if (mcastPort != other.mcastPort) {
-      return false;
-    }
-    if (mcastRecvBufferSize != other.mcastRecvBufferSize) {
-      return false;
-    }
-    if (mcastSendBufferSize != other.mcastSendBufferSize) {
-      return false;
-    }
-    if (mcastTtl != other.mcastTtl) {
-      return false;
-    }
-    if (memberTimeout != other.memberTimeout) {
-      return false;
-    }
-    if (!Arrays.equals(membershipPortRange, other.membershipPortRange)) {
-      return false;
-    }
-    if (memcachedPort != other.memcachedPort) {
-      return false;
-    }
-    if (memcachedProtocol == null) {
-      if (other.memcachedProtocol != null) {
-        return false;
-      }
-    } else if (!memcachedProtocol.equals(other.memcachedProtocol)) {
-      return false;
-    }
-    if (modifiable != other.modifiable) {
-      return false;
-    }
-    if (name == null) {
-      if (other.name != null) {
-        return false;
-      }
-    } else if (!name.equals(other.name)) {
-      return false;
-    }
-    if (props == null) {
-      if (other.props != null) {
-        return false;
-      }
-    } else if (!props.equals(other.props)) {
-      return false;
-    }
-    if (redundancyZone == null) {
-      if (other.redundancyZone != null) {
-        return false;
-      }
-    } else if (!redundancyZone.equals(other.redundancyZone)) {
-      return false;
-    }
-    if (remoteLocators == null) {
-      if (other.remoteLocators != null) {
-        return false;
-      }
-    } else if (!remoteLocators.equals(other.remoteLocators)) {
-      return false;
-    }
-    if (removeUnresponsiveClient != other.removeUnresponsiveClient) {
-      return false;
-    }
-    if (roles == null) {
-      if (other.roles != null) {
-        return false;
-      }
-    } else if (!roles.equals(other.roles)) {
-      return false;
-    }
-    if (security == null) {
-      if (other.security != null) {
-        return false;
-      }
-    } else if (!security.equals(other.security)) {
-      return false;
-    }
-    if (securityClientAccessor == null) {
-      if (other.securityClientAccessor != null) {
-        return false;
-      }
-    } else if (!securityClientAccessor.equals(other.securityClientAccessor)) {
-      return false;
-    }
-    if (securityClientAccessorPP == null) {
-      if (other.securityClientAccessorPP != null) {
-        return false;
-      }
-    } else if (!securityClientAccessorPP.equals(other.securityClientAccessorPP)) {
-      return false;
-    }
-    if (securityClientAuthInit == null) {
-      if (other.securityClientAuthInit != null) {
-        return false;
-      }
-    } else if (!securityClientAuthInit.equals(other.securityClientAuthInit)) {
-      return false;
-    }
-    if (securityClientAuthenticator == null) {
-      if (other.securityClientAuthenticator != null) {
-        return false;
-      }
-    } else if (!securityClientAuthenticator.equals(other.securityClientAuthenticator)) {
-      if (securityManager == null) {
-        if (other.securityManager != null) {
-          return false;
-        }
-      } else if (!securityManager.equals(other.securityManager)) {
-        return false;
-      }
-      if (postProcessor == null) {
-        if (other.postProcessor != null) {
-          return false;
-        }
-      } else if (!postProcessor.equals(other.postProcessor)) {
-        return false;
-      }
-      if (shiroInit == null) {
-        if (other.shiroInit != null) {
-          return false;
-        }
-      } else if (!shiroInit.equals(other.shiroInit)) {
-        return false;
-      }
-    }
-    if (securityClientDHAlgo == null) {
-      if (other.securityClientDHAlgo != null) {
-        return false;
-      }
-    } else if (!securityClientDHAlgo.equals(other.securityClientDHAlgo)) {
-      return false;
-    }
-    if (securityLogFile == null) {
-      if (other.securityLogFile != null) {
-        return false;
-      }
-    } else if (!securityLogFile.equals(other.securityLogFile)) {
-      return false;
-    }
-    if (securityLogLevel != other.securityLogLevel) {
-      return false;
-    }
-    if (securityPeerAuthInit == null) {
-      if (other.securityPeerAuthInit != null) {
-        return false;
-      }
-    } else if (!securityPeerAuthInit.equals(other.securityPeerAuthInit)) {
-      return false;
-    }
-    if (securityPeerAuthenticator == null) {
-      if (other.securityPeerAuthenticator != null) {
-        return false;
-      }
-    } else if (!securityPeerAuthenticator.equals(other.securityPeerAuthenticator)) {
-      return false;
-    }
-    if (securityPeerMembershipTimeout != other.securityPeerMembershipTimeout) {
-      return false;
-    }
-    if (serverBindAddress == null) {
-      if (other.serverBindAddress != null) {
-        return false;
-      }
-    } else if (!serverBindAddress.equals(other.serverBindAddress)) {
-      return false;
-    }
-    if (serverSSLEnabled != other.serverSSLEnabled) {
-      return false;
-    }
-    if (serverSSLKeyStore == null) {
-      if (other.serverSSLKeyStore != null) {
-        return false;
-      }
-    } else if (!serverSSLKeyStore.equals(other.serverSSLKeyStore)) {
-      return false;
-    }
-    if (serverSSLKeyStorePassword == null) {
-      if (other.serverSSLKeyStorePassword != null) {
-        return false;
-      }
-    } else if (!serverSSLKeyStorePassword.equals(other.serverSSLKeyStorePassword)) {
-      return false;
-    }
-    if (serverSSLKeyStoreType == null) {
-      if (other.serverSSLKeyStoreType != null) {
-        return false;
-      }
-    } else if (!serverSSLKeyStoreType.equals(other.serverSSLKeyStoreType)) {
-      return false;
-    }
-    if (serverSSLTrustStore == null) {
-      if (other.serverSSLTrustStore != null) {
-        return false;
-      }
-    } else if (!serverSSLTrustStore.equals(other.serverSSLTrustStore)) {
-      return false;
-    }
-    if (serverSSLTrustStorePassword == null) {
-      if (other.serverSSLTrustStorePassword != null) {
-        return false;
-      }
-    } else if (!serverSSLTrustStorePassword.equals(other.serverSSLTrustStorePassword)) {
-      return false;
-    }
-    if (serverSslCiphers == null) {
-      if (other.serverSslCiphers != null) {
-        return false;
-      }
-    } else if (!serverSslCiphers.equals(other.serverSslCiphers)) {
-      return false;
-    }
-    if (serverSslProperties == null) {
-      if (other.serverSslProperties != null) {
-        return false;
-      }
-    } else if (!serverSslProperties.equals(other.serverSslProperties)) {
-      return false;
-    }
-    if (serverSslProtocols == null) {
-      if (other.serverSslProtocols != null) {
-        return false;
-      }
-    } else if (!serverSslProtocols.equals(other.serverSslProtocols)) {
-      return false;
-    }
-    if (serverSslRequireAuthentication != other.serverSslRequireAuthentication) {
-      return false;
-    }
-    if (socketBufferSize != other.socketBufferSize) {
-      return false;
-    }
-    if (socketLeaseTime != other.socketLeaseTime) {
-      return false;
-    }
-    if (sourceMap == null) {
-      if (other.sourceMap != null) {
-        return false;
-      }
-    } else if (!sourceMap.equals(other.sourceMap)) {
-      return false;
-    }
-    if (sslProperties == null) {
-      if (other.sslProperties != null) {
-        return false;
-      }
-    } else if (!sslProperties.equals(other.sslProperties)) {
-      return false;
-    }
-    if (startDevRestApi != other.startDevRestApi) {
-      return false;
-    }
-    if (startLocator == null) {
-      if (other.startLocator != null) {
-        return false;
-      }
-    } else if (!startLocator.equals(other.startLocator)) {
-      return false;
-    if (sslProtocols == null) {
-      if (other.sslProtocols != null)
-        return false;
-    } else if (!sslProtocols.equals(other.sslProtocols))
-      return false;
-    if (sslRequireAuthentication != other.sslRequireAuthentication)
-      return false;
-    if (startDevRestApi != other.startDevRestApi)
-      return false;
-    if (startLocator == null) {
-      if (other.startLocator != null)
-        return false;
-    } else if (!startLocator.equals(other.startLocator))
-      return false;
-    if (startLocatorPort != other.startLocatorPort)
-      return false;
-    if (statisticArchiveFile == null) {
-      if (other.statisticArchiveFile != null)
-        return false;
-    } else if (!statisticArchiveFile.equals(other.statisticArchiveFile))
-      return false;
-    if (statisticSampleRate != other.statisticSampleRate)
-      return false;
-    if (statisticSamplingEnabled != other.statisticSamplingEnabled)
-      return false;
-    if (tcpPort != other.tcpPort)
-      return false;
-    if (udpFragmentSize != other.udpFragmentSize)
-      return false;
-    if (udpRecvBufferSize != other.udpRecvBufferSize)
-      return false;
-    if (udpSendBufferSize != other.udpSendBufferSize)
-      return false;
-    if (useSharedConfiguration != other.useSharedConfiguration)
-      return false;
-    if (userCommandPackages == null) {
-      if (other.userCommandPackages != null)
-        return false;
-    } else if (!userCommandPackages.equals(other.userCommandPackages))
-      return false;
-    if (userDefinedProps == null) {
-      if (other.userDefinedProps != null)
-        return false;
-    } else if (!userDefinedProps.equals(other.userDefinedProps))
-      return false;
-    if (!StringUtils.equals(securityEnabledComponents, other.securityEnabledComponents)) {
-      return false;
-    }
-    }
-    if (startLocatorPort != other.startLocatorPort) {
-      return false;
-    }
-    if (statisticArchiveFile == null) {
-      if (other.statisticArchiveFile != null) {
-        return false;
-      }
-    } else if (!statisticArchiveFile.equals(other.statisticArchiveFile)) {
-      return false;
-    }
-    if (statisticSampleRate != other.statisticSampleRate) {
-      return false;
-    }
-    if (statisticSamplingEnabled != other.statisticSamplingEnabled) {
-      return false;
-    }
-    if (tcpPort != other.tcpPort) {
-      return false;
-    }
-    if (udpFragmentSize != other.udpFragmentSize) {
-      return false;
-    }
-    if (udpRecvBufferSize != other.udpRecvBufferSize) {
-      return false;
-    }
-    if (udpSendBufferSize != other.udpSendBufferSize) {
-      return false;
-    }
-    if (useSharedConfiguration != other.useSharedConfiguration) {
-      return false;
-    }
-    if (userCommandPackages == null) {
-      if (other.userCommandPackages != null) {
-        return false;
-      }
-    } else if (!userCommandPackages.equals(other.userCommandPackages)) {
-      return false;
-    }
-    if (userDefinedProps == null) {
-      if (other.userDefinedProps != null) {
-        return false;
-      }
-    } else if (!userDefinedProps.equals(other.userDefinedProps)) {
-      return false;
-    }
-    if (clusterSSLAlias != other.clusterSSLAlias) {
-      return false;
-    }
-    if (serverSSLAlias != other.serverSSLAlias) {
-      return false;
-    }
-    if (httpServiceSSLAlias != other.httpServiceSSLAlias) {
-      return false;
-    }
-    if (jmxManagerSSLAlias != other.jmxManagerSSLAlias) {
-      return false;
-    }
-    if (gatewaySSLAlias != other.gatewaySSLAlias) {
-      return false;
-    }
-    if (sslEnabledComponents != other.sslEnabledComponents) {
-      return false;
-    }
-    return true;
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    final DistributionConfigImpl that = (DistributionConfigImpl) o;
+
+    return new EqualsBuilder().append(tcpPort, that.tcpPort)
+                              .append(mcastPort, that.mcastPort)
+                              .append(mcastTtl, that.mcastTtl)
+                              .append(socketLeaseTime, that.socketLeaseTime)
+                              .append(socketBufferSize, that.socketBufferSize)
+                              .append(conserveSockets, that.conserveSockets)
+                              .append(locatorWaitTime, that.locatorWaitTime)
+                              .append(logLevel, that.logLevel)
+                              .append(startLocatorPort, that.startLocatorPort)
+                              .append(statisticSamplingEnabled, that.statisticSamplingEnabled)
+                              .append(statisticSampleRate, that.statisticSampleRate)
+                              .append(ackWaitThreshold, that.ackWaitThreshold)
+                              .append(ackForceDisconnectThreshold, that.ackForceDisconnectThreshold)
+                              .append(archiveDiskSpaceLimit, that.archiveDiskSpaceLimit)
+                              .append(archiveFileSizeLimit, that.archiveFileSizeLimit)
+                              .append(logDiskSpaceLimit, that.logDiskSpaceLimit)
+                              .append(logFileSizeLimit, that.logFileSizeLimit)
+                              .append(clusterSSLEnabled, that.clusterSSLEnabled)
+                              .append(clusterSSLRequireAuthentication, that.clusterSSLRequireAuthentication)
+                              .append(mcastSendBufferSize, that.mcastSendBufferSize)
+                              .append(mcastRecvBufferSize, that.mcastRecvBufferSize)
+                              .append(udpSendBufferSize, that.udpSendBufferSize)
+                              .append(udpRecvBufferSize, that.udpRecvBufferSize)
+                              .append(udpFragmentSize, that.udpFragmentSize)
+                              .append(disableTcp, that.disableTcp)
+                              .append(enableTimeStatistics, that.enableTimeStatistics)
+                              .append(memberTimeout, that.memberTimeout)
+                              .append(maxWaitTimeForReconnect, that.maxWaitTimeForReconnect)
+                              .append(maxNumReconnectTries, that.maxNumReconnectTries)
+                              .append(asyncDistributionTimeout, that.asyncDistributionTimeout)
+                              .append(asyncQueueTimeout, that.asyncQueueTimeout)
+                              .append(asyncMaxQueueSize, that.asyncMaxQueueSize)
+                              .append(durableClientTimeout, that.durableClientTimeout)
+                              .append(securityLogLevel, that.securityLogLevel)
+                              .append(enableNetworkPartitionDetection, that.enableNetworkPartitionDetection)
+                              .append(disableAutoReconnect, that.disableAutoReconnect)
+                              .append(securityPeerMembershipTimeout, that.securityPeerMembershipTimeout)
+                              .append(removeUnresponsiveClient, that.removeUnresponsiveClient)
+                              .append(deltaPropagation, that.deltaPropagation)
+                              .append(distributedSystemId, that.distributedSystemId)
+                              .append(enforceUniqueHost, that.enforceUniqueHost)
+                              .append(enableSharedConfiguration, that.enableSharedConfiguration)
+                              .append(useSharedConfiguration, that.useSharedConfiguration)
+                              .append(loadSharedConfigurationFromDir, that.loadSharedConfigurationFromDir)
+                              .append(httpServicePort, that.httpServicePort)
+                              .append(startDevRestApi, that.startDevRestApi)
+                              .append(memcachedPort, that.memcachedPort)
+                              .append(distributedTransactions, that.distributedTransactions)
+                              .append(redisPort, that.redisPort)
+                              .append(jmxManager, that.jmxManager)
+                              .append(jmxManagerStart, that.jmxManagerStart)
+                              .append(jmxManagerPort, that.jmxManagerPort)
+                              .append(jmxManagerHttpPort, that.jmxManagerHttpPort)
+                              .append(jmxManagerUpdateRate, that.jmxManagerUpdateRate)
+                              .append(jmxManagerSSLEnabled, that.jmxManagerSSLEnabled)
+                              .append(jmxManagerSslRequireAuthentication, that.jmxManagerSslRequireAuthentication)
+                              .append(serverSSLEnabled, that.serverSSLEnabled)
+                              .append(serverSslRequireAuthentication, that.serverSslRequireAuthentication)
+                              .append(gatewaySSLEnabled, that.gatewaySSLEnabled)
+                              .append(gatewaySslRequireAuthentication, that.gatewaySslRequireAuthentication)
+                              .append(httpServiceSSLEnabled, that.httpServiceSSLEnabled)
+                              .append(httpServiceSSLRequireAuthentication, that.httpServiceSSLRequireAuthentication)
+                              .append(sslRequireAuthentication, that.sslRequireAuthentication)
+                              .append(sslHttpServiceRequireAuthentication, that.sslHttpServiceRequireAuthentication)
+                              .append(lockMemory, that.lockMemory)
+                              .append(modifiable, that.modifiable)
+                              .append(name, that.name)
+                              .append(roles, that.roles)
+                              .append(mcastAddress, that.mcastAddress)
+                              .append(bindAddress, that.bindAddress)
+                              .append(serverBindAddress, that.serverBindAddress)
+                              .append(locators, that.locators)
+                              .append(logFile, that.logFile)
+                              .append(deployWorkingDir, that.deployWorkingDir)
+                              .append(startLocator, that.startLocator)
+                              .append(statisticArchiveFile, that.statisticArchiveFile)
+                              .append(cacheXmlFile, that.cacheXmlFile)
+                              .append(clusterSSLProtocols, that.clusterSSLProtocols)
+                              .append(clusterSSLCiphers, that.clusterSSLCiphers)
+                              .append(clusterSSLKeyStore, that.clusterSSLKeyStore)
+                              .append(clusterSSLKeyStoreType, that.clusterSSLKeyStoreType)
+                              .append(clusterSSLKeyStorePassword, that.clusterSSLKeyStorePassword)
+                              .append(clusterSSLTrustStore, that.clusterSSLTrustStore)
+                              .append(clusterSSLTrustStorePassword, that.clusterSSLTrustStorePassword)
+                              .append(clusterSSLAlias, that.clusterSSLAlias)
+                              .append(mcastFlowControl, that.mcastFlowControl)
+                              .append(membershipPortRange, that.membershipPortRange)
+                              .append(clientConflation, that.clientConflation)
+                              .append(durableClientId, that.durableClientId)
+                              .append(securityClientAuthInit, that.securityClientAuthInit)
+                              .append(securityClientAuthenticator, that.securityClientAuthenticator)
+                              .append(securityManager, that.securityManager)
+                              .append(postProcessor, that.postProcessor)
+                              .append(securityClientDHAlgo, that.securityClientDHAlgo)
+                              .append(securityPeerAuthInit, that.securityPeerAuthInit)
+                              .append(securityPeerAuthenticator, that.securityPeerAuthenticator)
+                              .append(securityClientAccessor, that.securityClientAccessor)
+                              .append(securityClientAccessorPP, that.securityClientAccessorPP)
+                              .append(securityLogFile, that.securityLogFile)
+                              .append(security, that.security)
+                              .append(userDefinedProps, that.userDefinedProps)
+                              .append(props, that.props)
+                              .append(remoteLocators, that.remoteLocators)
+                              .append(redundancyZone, that.redundancyZone)
+                              .append(sslProperties, that.sslProperties)
+                              .append(clusterSSLProperties, that.clusterSSLProperties)
+                              .append(groups, that.groups)
+                              .append(clusterConfigDir, that.clusterConfigDir)
+                              .append(httpServiceBindAddress, that.httpServiceBindAddress)
+                              .append(memcachedProtocol, that.memcachedProtocol)
+                              .append(memcachedBindAddress, that.memcachedBindAddress)
+                              .append(redisBindAddress, that.redisBindAddress)
+                              .append(redisPassword, that.redisPassword)
+                              .append(jmxManagerBindAddress, that.jmxManagerBindAddress)
+                              .append(jmxManagerHostnameForClients, that.jmxManagerHostnameForClients)
+                              .append(jmxManagerPasswordFile, that.jmxManagerPasswordFile)
+                              .append(jmxManagerAccessFile, that.jmxManagerAccessFile)
+                              .append(jmxManagerSslProtocols, that.jmxManagerSslProtocols)
+                              .append(jmxManagerSslCiphers, that.jmxManagerSslCiphers)
+                              .append(jmxManagerSslProperties, that.jmxManagerSslProperties)
+                              .append(jmxManagerSSLKeyStore, that.jmxManagerSSLKeyStore)
+                              .append(jmxManagerSSLKeyStoreType, that.jmxManagerSSLKeyStoreType)
+                              .append(jmxManagerSSLKeyStorePassword, that.jmxManagerSSLKeyStorePassword)
+                              .append(jmxManagerSSLTrustStore, that.jmxManagerSSLTrustStore)
+                              .append(jmxManagerSSLTrustStorePassword, that.jmxManagerSSLTrustStorePassword)
+                              .append(jmxManagerSSLAlias, that.jmxManagerSSLAlias)
+                              .append(serverSslProtocols, that.serverSslProtocols)
+                              .append(serverSslCiphers, that.serverSslCiphers)
+                              .append(serverSslProperties, that.serverSslProperties)
+                              .append(serverSSLKeyStore, that.serverSSLKeyStore)
+                              .append(serverSSLKeyStoreType, that.serverSSLKeyStoreType)
+                              .append(serverSSLKeyStorePassword, that.serverSSLKeyStorePassword)
+                              .append(serverSSLTrustStore, that.serverSSLTrustStore)
+                              .append(serverSSLTrustStorePassword, that.serverSSLTrustStorePassword)
+                              .append(serverSSLAlias, that.serverSSLAlias)
+                              .append(gatewaySslProtocols, that.gatewaySslProtocols)
+                              .append(gatewaySslCiphers, that.gatewaySslCiphers)
+                              .append(gatewaySslProperties, that.gatewaySslProperties)
+                              .append(gatewaySSLKeyStore, that.gatewaySSLKeyStore)
+                              .append(gatewaySSLKeyStoreType, that.gatewaySSLKeyStoreType)
+                              .append(gatewaySSLKeyStorePassword, that.gatewaySSLKeyStorePassword)
+                              .append(gatewaySSLTrustStore, that.gatewaySSLTrustStore)
+                              .append(gatewaySSLTrustStorePassword, that.gatewaySSLTrustStorePassword)
+                              .append(gatewaySSLAlias, that.gatewaySSLAlias)
+                              .append(httpServiceSSLProtocols, that.httpServiceSSLProtocols)
+                              .append(httpServiceSSLCiphers, that.httpServiceSSLCiphers)
+                              .append(httpServiceSSLProperties, that.httpServiceSSLProperties)
+                              .append(httpServiceSSLKeyStore, that.httpServiceSSLKeyStore)
+                              .append(httpServiceSSLKeyStoreType, that.httpServiceSSLKeyStoreType)
+                              .append(httpServiceSSLKeyStorePassword, that.httpServiceSSLKeyStorePassword)
+                              .append(httpServiceSSLTrustStore, that.httpServiceSSLTrustStore)
+                              .append(httpServiceSSLTrustStorePassword, that.httpServiceSSLTrustStorePassword)
+                              .append(httpServiceSSLAlias, that.httpServiceSSLAlias)
+                              .append(sslEnabledComponents, that.sslEnabledComponents)
+                              .append(sslProtocols, that.sslProtocols)
+                              .append(sslCiphers, that.sslCiphers)
+                              .append(sslKeyStore, that.sslKeyStore)
+                              .append(sslKeyStoreType, that.sslKeyStoreType)
+                              .append(sslKeyStorePassword, that.sslKeyStorePassword)
+                              .append(sslTrustStore, that.sslTrustStore)
+                              .append(sslTrustStorePassword, that.sslTrustStorePassword)
+                              .append(locatorSSLAlias, that.locatorSSLAlias)
+                              .append(sslDefaultAlias, that.sslDefaultAlias)
+                              .append(sourceMap, that.sourceMap)
+                              .append(userCommandPackages, that.userCommandPackages)
+                              .append(securityEnabledComponents, that.securityEnabledComponents)
+                              .append(offHeapMemorySize, that.offHeapMemorySize)
+                              .append(shiroInit, that.shiroInit)
+                              .isEquals();
   }
 
   /**
@@ -3449,160 +2873,182 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    * remove final and override this. See bug #50939.
    */
   @Override
-  public final int hashCode() {
-    // this was auto-generated using Eclipse
-    final int prime = 31;
-    int result = super.hashCode();
-    result = prime * result + ackForceDisconnectThreshold;
-    result = prime * result + ackWaitThreshold;
-    result = prime * result + archiveDiskSpaceLimit;
-    result = prime * result + archiveFileSizeLimit;
-    result = prime * result + asyncDistributionTimeout;
-    result = prime * result + asyncMaxQueueSize;
-    result = prime * result + asyncQueueTimeout;
-    result = prime * result + ((bindAddress == null) ? 0 : bindAddress.hashCode());
-    result = prime * result + ((cacheXmlFile == null) ? 0 : cacheXmlFile.hashCode());
-    result = prime * result + ((clientConflation == null) ? 0 : clientConflation.hashCode());
-    result = prime * result + ((clusterSSLCiphers == null) ? 0 : clusterSSLCiphers.hashCode());
-    result = prime * result + (clusterSSLEnabled ? 1231 : 1237);
-    result = prime * result + ((clusterSSLKeyStore == null) ? 0 : clusterSSLKeyStore.hashCode());
-    result = prime * result + ((clusterSSLKeyStorePassword == null) ? 0 : clusterSSLKeyStorePassword.hashCode());
-    result = prime * result + ((clusterSSLKeyStoreType == null) ? 0 : clusterSSLKeyStoreType.hashCode());
-    result = prime * result + ((clusterSSLProperties == null) ? 0 : clusterSSLProperties.hashCode());
-    result = prime * result + ((clusterSSLProtocols == null) ? 0 : clusterSSLProtocols.hashCode());
-    result = prime * result + (clusterSSLRequireAuthentication ? 1231 : 1237);
-    result = prime * result + ((clusterSSLTrustStore == null) ? 0 : clusterSSLTrustStore.hashCode());
-    result = prime * result + ((clusterSSLTrustStorePassword == null) ? 0 : clusterSSLTrustStorePassword.hashCode());
-    result = prime * result + (conserveSockets ? 1231 : 1237);
-    result = prime * result + (deltaPropagation ? 1231 : 1237);
-    result = prime * result + ((deployWorkingDir == null) ? 0 : deployWorkingDir.hashCode());
-    result = prime * result + (disableAutoReconnect ? 1231 : 1237);
-    result = prime * result + (disableTcp ? 1231 : 1237);
-    result = prime * result + distributedSystemId;
-    result = prime * result + ((durableClientId == null) ? 0 : durableClientId.hashCode());
-    result = prime * result + durableClientTimeout;
-    result = prime * result + (enableNetworkPartitionDetection ? 1231 : 1237);
-    result = prime * result + (enableSharedConfiguration ? 1231 : 1237);
-    result = prime * result + (enableTimeStatistics ? 1231 : 1237);
-    result = prime * result + (enforceUniqueHost ? 1231 : 1237);
-    result = prime * result + (gatewaySSLEnabled ? 1231 : 1237);
-    result = prime * result + ((gatewaySSLKeyStore == null) ? 0 : gatewaySSLKeyStore.hashCode());
-    result = prime * result + ((gatewaySSLKeyStorePassword == null) ? 0 : gatewaySSLKeyStorePassword.hashCode());
-    result = prime * result + ((gatewaySSLKeyStoreType == null) ? 0 : gatewaySSLKeyStoreType.hashCode());
-    result = prime * result + ((gatewaySSLTrustStore == null) ? 0 : gatewaySSLTrustStore.hashCode());
-    result = prime * result + ((gatewaySSLTrustStorePassword == null) ? 0 : gatewaySSLTrustStorePassword.hashCode());
-    result = prime * result + ((gatewaySslCiphers == null) ? 0 : gatewaySslCiphers.hashCode());
-    result = prime * result + ((gatewaySslProperties == null) ? 0 : gatewaySslProperties.hashCode());
-    result = prime * result + ((gatewaySslProtocols == null) ? 0 : gatewaySslProtocols.hashCode());
-    result = prime * result + (gatewaySslRequireAuthentication ? 1231 : 1237);
-    result = prime * result + ((groups == null) ? 0 : groups.hashCode());
-    result = prime * result + ((httpServiceBindAddress == null) ? 0 : httpServiceBindAddress.hashCode());
-    result = prime * result + httpServicePort;
-    result = prime * result + (jmxManager ? 1231 : 1237);
-    result = prime * result + ((jmxManagerAccessFile == null) ? 0 : jmxManagerAccessFile.hashCode());
-    result = prime * result + ((jmxManagerBindAddress == null) ? 0 : jmxManagerBindAddress.hashCode());
-    result = prime * result + ((jmxManagerHostnameForClients == null) ? 0 : jmxManagerHostnameForClients.hashCode());
-    result = prime * result + jmxManagerHttpPort;
-    result = prime * result + ((jmxManagerPasswordFile == null) ? 0 : jmxManagerPasswordFile.hashCode());
-    result = prime * result + jmxManagerPort;
-    result = prime * result + (jmxManagerSSLEnabled ? 1231 : 1237);
-    result = prime * result + ((jmxManagerSSLKeyStore == null) ? 0 : jmxManagerSSLKeyStore.hashCode());
-    result = prime * result + ((jmxManagerSSLKeyStorePassword == null) ? 0 : jmxManagerSSLKeyStorePassword.hashCode());
-    result = prime * result + ((jmxManagerSSLKeyStoreType == null) ? 0 : jmxManagerSSLKeyStoreType.hashCode());
-    result = prime * result + ((jmxManagerSSLTrustStore == null) ? 0 : jmxManagerSSLTrustStore.hashCode());
-    result = prime * result + ((jmxManagerSSLTrustStorePassword == null) ? 0 : jmxManagerSSLTrustStorePassword.hashCode());
-    result = prime * result + ((jmxManagerSslCiphers == null) ? 0 : jmxManagerSslCiphers.hashCode());
-    result = prime * result + ((jmxManagerSslProperties == null) ? 0 : jmxManagerSslProperties.hashCode());
-    result = prime * result + ((jmxManagerSslProtocols == null) ? 0 : jmxManagerSslProtocols.hashCode());
-    result = prime * result + (jmxManagerSslRequireAuthentication ? 1231 : 1237);
-    result = prime * result + (jmxManagerStart ? 1231 : 1237);
-    result = prime * result + jmxManagerUpdateRate;
-    result = prime * result + (loadSharedConfigurationFromDir ? 1231 : 1237);
-    result = prime * result + ((locators == null) ? 0 : locators.hashCode());
-    result = prime * result + logDiskSpaceLimit;
-    result = prime * result + ((logFile == null) ? 0 : logFile.hashCode());
-    result = prime * result + logFileSizeLimit;
-    result = prime * result + logLevel;
-    result = prime * result + maxNumReconnectTries;
-    result = prime * result + maxWaitTimeForReconnect;
-    result = prime * result + ((mcastAddress == null) ? 0 : mcastAddress.hashCode());
-    result = prime * result + ((mcastFlowControl == null) ? 0 : mcastFlowControl.hashCode());
-    result = prime * result + mcastPort;
-    result = prime * result + mcastRecvBufferSize;
-    result = prime * result + mcastSendBufferSize;
-    result = prime * result + mcastTtl;
-    result = prime * result + memberTimeout;
-    result = prime * result + Arrays.hashCode(membershipPortRange);
-    result = prime * result + memcachedPort;
-    result = prime * result + ((memcachedProtocol == null) ? 0 : memcachedProtocol.hashCode());
-    result = prime * result + (modifiable ? 1231 : 1237);
-    result = prime * result + ((name == null) ? 0 : name.hashCode());
-    result = prime * result + ((props == null) ? 0 : props.hashCode());
-    result = prime * result + ((redundancyZone == null) ? 0 : redundancyZone.hashCode());
-    result = prime * result + ((remoteLocators == null) ? 0 : remoteLocators.hashCode());
-    result = prime * result + (removeUnresponsiveClient ? 1231 : 1237);
-    result = prime * result + ((roles == null) ? 0 : roles.hashCode());
-    result = prime * result + ((security == null) ? 0 : security.hashCode());
-    result = prime * result + ((securityClientAccessor == null) ? 0 : securityClientAccessor.hashCode());
-    result = prime * result + ((securityClientAccessorPP == null) ? 0 : securityClientAccessorPP.hashCode());
-    result = prime * result + ((securityClientAuthInit == null) ? 0 : securityClientAuthInit.hashCode());
-    result = prime * result + ((securityClientAuthenticator == null) ? 0 : securityClientAuthenticator.hashCode());
-    result = prime * result + ((securityManager == null) ? 0 : securityManager.hashCode());
-    result = prime * result + ((postProcessor == null) ? 0 : postProcessor.hashCode());
-    result = prime * result + ((shiroInit == null) ? 0 : shiroInit.hashCode());
-    result = prime * result + ((securityClientDHAlgo == null) ? 0 : securityClientDHAlgo.hashCode());
-    result = prime * result + ((securityLogFile == null) ? 0 : securityLogFile.hashCode());
-    result = prime * result + securityLogLevel;
-    result = prime * result + ((securityPeerAuthInit == null) ? 0 : securityPeerAuthInit.hashCode());
-    result = prime * result + ((securityPeerAuthenticator == null) ? 0 : securityPeerAuthenticator.hashCode());
-    result = prime * result + securityPeerMembershipTimeout;
-    result = prime * result + ((serverBindAddress == null) ? 0 : serverBindAddress.hashCode());
-    result = prime * result + (serverSSLEnabled ? 1231 : 1237);
-    result = prime * result + ((serverSSLKeyStore == null) ? 0 : serverSSLKeyStore.hashCode());
-    result = prime * result + ((serverSSLKeyStorePassword == null) ? 0 : serverSSLKeyStorePassword.hashCode());
-    result = prime * result + ((serverSSLKeyStoreType == null) ? 0 : serverSSLKeyStoreType.hashCode());
-    result = prime * result + ((serverSSLTrustStore == null) ? 0 : serverSSLTrustStore.hashCode());
-    result = prime * result + ((serverSSLTrustStorePassword == null) ? 0 : serverSSLTrustStorePassword.hashCode());
-    result = prime * result + ((serverSslCiphers == null) ? 0 : serverSslCiphers.hashCode());
-    result = prime * result + ((serverSslProperties == null) ? 0 : serverSslProperties.hashCode());
-    result = prime * result + ((serverSslProtocols == null) ? 0 : serverSslProtocols.hashCode());
-    result = prime * result + (serverSslRequireAuthentication ? 1231 : 1237);
-    result = prime * result + socketBufferSize;
-    result = prime * result + socketLeaseTime;
-    result = prime * result + ((sourceMap == null) ? 0 : sourceMap.hashCode());
-    result = prime * result + ((sslProperties == null) ? 0 : sslProperties.hashCode());
-    result = prime * result + (startDevRestApi ? 1231 : 1237);
-    result = prime * result + ((startLocator == null) ? 0 : startLocator.hashCode());
-    result = prime * result + startLocatorPort;
-    result = prime * result + ((statisticArchiveFile == null) ? 0 : statisticArchiveFile.hashCode());
-    result = prime * result + statisticSampleRate;
-    result = prime * result + (statisticSamplingEnabled ? 1231 : 1237);
-    result = prime * result + tcpPort;
-    result = prime * result + udpFragmentSize;
-    result = prime * result + udpRecvBufferSize;
-    result = prime * result + udpSendBufferSize;
-    result = prime * result + (useSharedConfiguration ? 1231 : 1237);
-    result = prime * result
-        + ((userCommandPackages == null) ? 0 : userCommandPackages.hashCode());
-    result = prime * result
-        + ((userDefinedProps == null) ? 0 : userDefinedProps.hashCode());
-    result = prime * result + ((securityEnabledComponents == null) ? 0 : securityEnabledComponents.hashCode());
-    result = prime * result + ((userCommandPackages == null) ? 0 : userCommandPackages.hashCode());
-    result = prime * result + ((userDefinedProps == null) ? 0 : userDefinedProps.hashCode());
-    result = prime * result + ((clusterSSLAlias == null) ? 0 : clusterSSLAlias.hashCode());
-    result = prime * result + ((serverSSLAlias == null) ? 0 : serverSSLAlias.hashCode());
-    result = prime * result + ((jmxManagerSSLAlias == null) ? 0 : jmxManagerSSLAlias.hashCode());
-    result = prime * result + ((gatewaySSLAlias == null) ? 0 : gatewaySSLAlias.hashCode());
-    result = prime * result + ((httpServiceSSLAlias == null) ? 0 : httpServiceSSLAlias.hashCode());
-    result = prime * result + ((sslEnabledComponents == null) ? 0 : sslEnabledComponents.hashCode());
-    return result;
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37).append(name)
+                                      .append(tcpPort)
+                                      .append(mcastPort)
+                                      .append(mcastTtl)
+                                      .append(socketLeaseTime)
+                                      .append(socketBufferSize)
+                                      .append(conserveSockets)
+                                      .append(roles)
+                                      .append(mcastAddress)
+                                      .append(bindAddress)
+                                      .append(serverBindAddress)
+                                      .append(locators)
+                                      .append(locatorWaitTime)
+                                      .append(logFile)
+                                      .append(deployWorkingDir)
+                                      .append(logLevel)
+                                      .append(startLocator)
+                                      .append(startLocatorPort)
+                                      .append(statisticSamplingEnabled)
+                                      .append(statisticSampleRate)
+                                      .append(statisticArchiveFile)
+                                      .append(ackWaitThreshold)
+                                      .append(ackForceDisconnectThreshold)
+                                      .append(cacheXmlFile)
+                                      .append(archiveDiskSpaceLimit)
+                                      .append(archiveFileSizeLimit)
+                                      .append(logDiskSpaceLimit)
+                                      .append(logFileSizeLimit)
+                                      .append(clusterSSLEnabled)
+                                      .append(clusterSSLProtocols)
+                                      .append(clusterSSLCiphers)
+                                      .append(clusterSSLRequireAuthentication)
+                                      .append(clusterSSLKeyStore)
+                                      .append(clusterSSLKeyStoreType)
+                                      .append(clusterSSLKeyStorePassword)
+                                      .append(clusterSSLTrustStore)
+                                      .append(clusterSSLTrustStorePassword)
+                                      .append(clusterSSLAlias)
+                                      .append(mcastSendBufferSize)
+                                      .append(mcastRecvBufferSize)
+                                      .append(mcastFlowControl)
+                                      .append(udpSendBufferSize)
+                                      .append(udpRecvBufferSize)
+                                      .append(udpFragmentSize)
+                                      .append(disableTcp)
+                                      .append(enableTimeStatistics)
+                                      .append(memberTimeout)
+                                      .append(membershipPortRange)
+                                      .append(maxWaitTimeForReconnect)
+                                      .append(maxNumReconnectTries)
+                                      .append(asyncDistributionTimeout)
+                                      .append(asyncQueueTimeout)
+                                      .append(asyncMaxQueueSize)
+                                      .append(clientConflation)
+                                      .append(durableClientId)
+                                      .append(durableClientTimeout)
+                                      .append(securityClientAuthInit)
+                                      .append(securityClientAuthenticator)
+                                      .append(securityManager)
+                                      .append(postProcessor)
+                                      .append(securityClientDHAlgo)
+                                      .append(securityPeerAuthInit)
+                                      .append(securityPeerAuthenticator)
+                                      .append(securityClientAccessor)
+                                      .append(securityClientAccessorPP)
+                                      .append(securityLogLevel)
+                                      .append(enableNetworkPartitionDetection)
+                                      .append(disableAutoReconnect)
+                                      .append(securityLogFile)
+                                      .append(securityPeerMembershipTimeout)
+                                      .append(security)
+                                      .append(userDefinedProps)
+                                      .append(removeUnresponsiveClient)
+                                      .append(deltaPropagation)
+                                      .append(props)
+                                      .append(distributedSystemId)
+                                      .append(remoteLocators)
+                                      .append(enforceUniqueHost)
+                                      .append(redundancyZone)
+                                      .append(sslProperties)
+                                      .append(clusterSSLProperties)
+                                      .append(groups)
+                                      .append(enableSharedConfiguration)
+                                      .append(useSharedConfiguration)
+                                      .append(loadSharedConfigurationFromDir)
+                                      .append(clusterConfigDir)
+                                      .append(httpServicePort)
+                                      .append(httpServiceBindAddress)
+                                      .append(startDevRestApi)
+                                      .append(memcachedPort)
+                                      .append(memcachedProtocol)
+                                      .append(memcachedBindAddress)
+                                      .append(distributedTransactions)
+                                      .append(redisPort)
+                                      .append(redisBindAddress)
+                                      .append(redisPassword)
+                                      .append(jmxManager)
+                                      .append(jmxManagerStart)
+                                      .append(jmxManagerPort)
+                                      .append(jmxManagerBindAddress)
+                                      .append(jmxManagerHostnameForClients)
+                                      .append(jmxManagerPasswordFile)
+                                      .append(jmxManagerAccessFile)
+                                      .append(jmxManagerHttpPort)
+                                      .append(jmxManagerUpdateRate)
+                                      .append(jmxManagerSSLEnabled)
+                                      .append(jmxManagerSslRequireAuthentication)
+                                      .append(jmxManagerSslProtocols)
+                                      .append(jmxManagerSslCiphers)
+                                      .append(jmxManagerSslProperties)
+                                      .append(jmxManagerSSLKeyStore)
+                                      .append(jmxManagerSSLKeyStoreType)
+                                      .append(jmxManagerSSLKeyStorePassword)
+                                      .append(jmxManagerSSLTrustStore)
+                                      .append(jmxManagerSSLTrustStorePassword)
+                                      .append(jmxManagerSSLAlias)
+                                      .append(serverSSLEnabled)
+                                      .append(serverSslRequireAuthentication)
+                                      .append(serverSslProtocols)
+                                      .append(serverSslCiphers)
+                                      .append(serverSslProperties)
+                                      .append(serverSSLKeyStore)
+                                      .append(serverSSLKeyStoreType)
+                                      .append(serverSSLKeyStorePassword)
+                                      .append(serverSSLTrustStore)
+                                      .append(serverSSLTrustStorePassword)
+                                      .append(serverSSLAlias)
+                                      .append(gatewaySSLEnabled)
+                                      .append(gatewaySslRequireAuthentication)
+                                      .append(gatewaySslProtocols)
+                                      .append(gatewaySslCiphers)
+                                      .append(gatewaySslProperties)
+                                      .append(gatewaySSLKeyStore)
+                                      .append(gatewaySSLKeyStoreType)
+                                      .append(gatewaySSLKeyStorePassword)
+                                      .append(gatewaySSLTrustStore)
+                                      .append(gatewaySSLTrustStorePassword)
+                                      .append(gatewaySSLAlias)
+                                      .append(httpServiceSSLEnabled)
+                                      .append(httpServiceSSLRequireAuthentication)
+                                      .append(httpServiceSSLProtocols)
+                                      .append(httpServiceSSLCiphers)
+                                      .append(httpServiceSSLProperties)
+                                      .append(httpServiceSSLKeyStore)
+                                      .append(httpServiceSSLKeyStoreType)
+                                      .append(httpServiceSSLKeyStorePassword)
+                                      .append(httpServiceSSLTrustStore)
+                                      .append(httpServiceSSLTrustStorePassword)
+                                      .append(httpServiceSSLAlias)
+                                      .append(sslEnabledComponents)
+                                      .append(sslProtocols)
+                                      .append(sslCiphers)
+                                      .append(sslRequireAuthentication)
+                                      .append(sslKeyStore)
+                                      .append(sslKeyStoreType)
+                                      .append(sslKeyStorePassword)
+                                      .append(sslTrustStore)
+                                      .append(sslTrustStorePassword)
+                                      .append(sslHttpServiceRequireAuthentication)
+                                      .append(locatorSSLAlias)
+                                      .append(sslDefaultAlias)
+                                      .append(sourceMap)
+                                      .append(userCommandPackages)
+                                      .append(securityEnabledComponents)
+                                      .append(offHeapMemorySize)
+                                      .append(lockMemory)
+                                      .append(shiroInit)
+                                      .append(modifiable)
+                                      .toHashCode();
   }
 
   /**
    * Used by gemfire build.xml to generate a default gemfire.properties
    * for use by applications. See bug 30995 for the feature request.
-   */
-  public static void main(String args[]) throws IOException {
+   */ public static void main(String args[]) throws IOException {
     DistributionConfigImpl cfg = new DistributionConfigImpl();
     String fileName = DistributionConfig.GEMFIRE_PREFIX + "properties";
     if (args != null && args.length > 0) {
