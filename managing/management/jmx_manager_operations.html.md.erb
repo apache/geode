@@ -117,7 +117,7 @@ In the `gemfire.properties` file, you configure a JMX manager as follows.
 </tr>
 <tr class="even">
 <td>jmx-manager-access-file</td>
-<td><p>By default the JMX Manager allows full access to all MBeans by any client. If this property is set to the name of a file, then it can restrict clients to only reading MBeans; they cannot modify MBeans. The access level can be configured differently in this file for each user name defined in the password file. For more information about the format of this file see Oracle's documentation of the <code class="ph codeph">com.sun.management.jmxremote.access.file</code> system property. Ignored if <code class="ph codeph">jmx-manager</code> is false or if <code class="ph codeph">jmx-manager-port</code> is zero. See <a href="../security/management_system_jmx_authentication.html#topic_06B28974C3D34C019418C92B1FC189C8">Setting Up JMX Authentication for Geode Management and Monitoring</a> for more information.</p></td>
+<td><p>By default the JMX Manager allows full access to all MBeans by any client. If this property is set to the name of a file, then it can restrict clients to only reading MBeans; they cannot modify MBeans. The access level can be configured differently in this file for each user name defined in the password file. For more information about the format of this file see Oracle's documentation of the <code class="ph codeph">com.sun.management.jmxremote.access.file</code> system property. Ignored if <code class="ph codeph">jmx-manager</code> is false or if <code class="ph codeph">jmx-manager-port</code> is zero.</p></td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
@@ -132,7 +132,7 @@ In the `gemfire.properties` file, you configure a JMX manager as follows.
 </tr>
 <tr class="odd">
 <td>jmx-manager-password-file</td>
-<td>By default the JMX Manager allows clients without credentials to connect. If this property is set to the name of a file, only clients that connect with credentials that match an entry in this file will be allowed. Most JVMs require that the file is only readable by the owner. For more information about the format of this file see Oracle's documentation of the com.sun.management.jmxremote.password.file system property. Ignored if jmx-manager is false or if jmx-manager-port is zero. See <a href="../security/management_system_jmx_authentication.html#topic_06B28974C3D34C019418C92B1FC189C8">Setting Up JMX Authentication for Geode Management and Monitoring</a> for more information.</td>
+<td>By default the JMX Manager allows clients without credentials to connect. If this property is set to the name of a file, only clients that connect with credentials that match an entry in this file will be allowed. Most JVMs require that the file is only readable by the owner. For more information about the format of this file see Oracle's documentation of the com.sun.management.jmxremote.password.file system property. Ignored if jmx-manager is false or if jmx-manager-port is zero. </td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
