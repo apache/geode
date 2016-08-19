@@ -33,17 +33,17 @@ The following is an example of starting a new locator that also starts an embedd
 
 ``` pre
 gfsh>start locator --name=locator1
-Starting a GemFire Locator in /home/stymon/test2/locator1...
+Starting a GemFire Locator in /home/user/test2/locator1...
 ............................................
-Locator in /home/stymon/test2/locator1 on ubuntu.local[10334] as locator1 is currently online.
+Locator in /home/user/test2/locator1 on ubuntu.local[10334] as locator1 is currently online.
 Process ID: 2081
 Uptime: 30 seconds
 GemFire Version: 8.0.0
 Java Version: 1.7.0_65
-Log File: /home/stymon/test2/locator1/locator1.log
+Log File: /home/user/test2/locator1/locator1.log
 JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
 -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/stymon/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependencies.jar:/usr/local/java/lib/tools.jar
+Class-Path: /home/user/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependencies.jar:/usr/local/java/lib/tools.jar
 
 Successfully connected to: [host=ubuntu.local, port=1099]
 
@@ -53,17 +53,17 @@ Cluster configuration service is up and running.
 Or you can enter the command directly in your terminal:
 
 ``` pre
-stymon@ubuntu:~$ gfsh start locator --name=locator1
+$ gfsh start locator --name=locator1
 ....................................
-Locator in /home/stymon/locator1 on ubuntu.local[10334] as locator1 is currently online.
+Locator in /home/user/locator1 on ubuntu.local[10334] as locator1 is currently online.
 Process ID: 2359
 Uptime: 21 seconds
 GemFire Version: 8.0.0
 Java Version: 1.7.0_65
-Log File: /home/stymon/locator1/locator1.log
+Log File: /home/user/locator1/locator1.log
 JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
  -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/stymon/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependencies.jar:/usr/local/java/lib/tools.jar
+Class-Path: /home/user/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependencies.jar:/usr/local/java/lib/tools.jar
 
 Successfully connected to: [host=ubuntu.local, port=1099]
 
@@ -166,9 +166,9 @@ For a locator:
 
 ``` pre
 gfsh>stop locator --dir=locator1
-Stopping Locator running in /home/stymon/test2/locator1 on ubuntu.local[10334] as locator1...
+Stopping Locator running in /home/user/test2/locator1 on ubuntu.local[10334] as locator1...
 Process ID: 2081
-Log File: /home/stymon/test2/locator1/locator1.log
+Log File: /home/user/test2/locator1/locator1.log
 ....
 No longer connected to ubuntu.local[1099].
 ```
@@ -177,9 +177,9 @@ For a server:
 
 ``` pre
 gfsh>stop server --dir=server1
-Stopping Cache Server running in /home/stymon/test2/server1 ubuntu.local[40404] as server1...
+Stopping Cache Server running in /home/user/test2/server1 ubuntu.local[40404] as server1...
 Process ID: 1156
-Log File: /home/stymon/test2/server1/server1.log
+Log File: /home/user/test2/server1/server1.log
 ....
 
 

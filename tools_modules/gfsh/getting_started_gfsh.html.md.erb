@@ -5,34 +5,14 @@ title:  Basic Shell Features and Command-Line Usage
 The `gfsh` utility provides useful features for a shell environment, including command auto-complete, preserved command history, and delimiting of multi-line commands. Context-sensitive help is available by command and by topic.
 
 <a id="concept_45D28CC9710C4EAFB6EECFA0D651D439__section_A7A871DBD8C7464A80CEB007798E5AE7"></a>
-This section describes these features.
 
 **To view a list of available gfsh commands, press Tab at an empty prompt.**
 
 The list of commands you see depends on whether you are connected to a Geode distributed system. If you are not connected, you see a list of local commands that are available.
 
-``` pre
-gfsh>
-
-alter disk-store              compact offline-disk-store
-connect                       debug
-describe connection           describe offline-disk-store
-disconnect                    echo
-encrypt password              exit
-help                          hint
-history                       run
-set variable                  sh
-sleep                         start jconsole
-start jvisualvm               start locator
-start pulse                   start server
-status locator                status server
-stop locator                  stop server
-version
-```
-
 **Use the hint command to get information on a particular topic.**
 
-The hint command displays a one-line description and associated commands for a specified topic. For example, typing **hint data** returns a description of the "data" topic and all the possible actions available for data:
+The hint command displays a one-line description and associated commands for a specified topic. For example, **hint data** returns a description of the data topic and all the possible actions available for data:
 
 ``` pre
 gfsh>hint data
@@ -51,48 +31,19 @@ rebalance     : Rebalance partitioned regions. The default is for all partitione
 remove        : Remove an entry from a region. If using a region whose key class has been set, then specifying --key-class is unnecessary.
 ```
 
-Type `hint server` to view a description of servers in Geode and a list of commands available for managing and monitoring them.
-
-``` pre
-gfsh>hint server
-A server is GemFire cluster member which holds a GemFire cache. Depending on the topology used it can refer to either a system that responds to client requests or a system that is only a peer to other members.
-
-describe member : Display information about a member, including name, id, groups, regions, etc.
-export logs     : Export the log files for a member or members.
-list members    : Display all or a subset of members.
-start server    : Start a GemFire Cache Server.
-status server   : Display the status of a GemFire Cache Server.
-stop server     : Stop a GemFire Cache Server.
-```
-
-**To view a list of hint topics, type `hint`.**
-
-``` pre
-gfsh>hint
-Hints are available for the following topics. Use "hint <topic-name>" for a specific hint.
-Configuration
-Data
-Debug-Utility
-Disk Store
-Function Execution
-GFSH
-GemFire
-Help
-JMX
-Lifecycle
-Locator
-Management-Monitoring
-Manager
-Region
-Server
-Statistics
-```
+To view a list of hint topics, type `hint`.
 
 **Use the help command to get information on a particular command.**
 
 Depending on the command, typing `help <command-name>` displays usage information for that particular command or a list of commands related to the command.
 
-For example, type `help start` to display a list of start commands with short descriptions. The descriptions indicate whether the command is available, depending on your connection status. In the following example, you are not currently connected to a Geode distributed system (via connection to a JMX Manager node), so some start commands are unavailable.
+For example, type `help start` to display a list of start commands
+with short descriptions.
+The descriptions indicate whether the command is available,
+and depend on the connection status of `gfsh`.
+The following example assumes `gfsh` is not currently connected
+(via connection to a JMX Manager node),
+so some start commands are unavailable.
 
 ``` pre
 gfsh>help start
@@ -115,36 +66,12 @@ start server (Available)
     Start a GemFire Cache Server.
 ```
 
-In the following example, typing `help export data` displays the command name, availability (depending on your connection status), a description, its syntax, and a list of all its required and optional parameters.
-
-``` pre
-gfsh>help export data
-NAME
-        export data
-IS AVAILABLE
-        false
-SYNOPSIS
-        Export user data from a region to a file.
-SYNTAX
-        export data --region=value --file=value --member=value
-PARAMETERS
-        region
-                Region from which data will be exported.
-                Required:true
-        file
-                File to which the exported data will be written.
-The file must have an extension of ".gfd".
-                Required:true
-        member
-                Name/Id of a member which hosts the region.
-The data will be exported to the specified file on the host
-where the member is running.
-                Required:true
-```
-
 **Use the Tab key to auto-complete a command or trigger possible completions.**
 
-Use the Tab key after entering a partial command to trigger auto-completion of the command or a list of possible command completions. For example, hitting Tab after typing `hint` displays all available topics:
+Use the Tab key after entering a partial command to trigger
+auto-completion of the command or a list of possible command completions.
+For example, hitting Tab after typing `hint` displays all available topics:
+
 ``` pre
 gfsh>hint
 
@@ -175,18 +102,14 @@ start locator        start pulse          start server
 
 Hitting tab after `start locator` will populate the required `--name` parameter after the command.
 
-**Note:**
-The available commands that are listed varies depending on whether you are currently connected to a distributed system.
-
-To use auto-completion from a UNIX bash shell, see [Tab Completion](configuring_gfsh.html#concept_3B9C6CE2F64841E98C33D9F6441DF487__section_jcs_ltx_n4).
-
 **Access command history with the Up arrow.**
 
 Access a command in your shell history by scrolling through previous commands with the Up arrow.
 
-**Delimit multi-line commands with \\.**
+**Delimit multi-line commands with a backslash.**
 
-When entering long commands, you can break the command line up by using the \\ character as a delimiter. For example:
+When entering long commands, you can break the command line up
+by using the backslash character ('\\') as a delimiter. For example:
 
 ``` pre
 gfsh>create region --name=region1 \
@@ -197,7 +120,8 @@ gfsh>create region --name=region1 \
 
 **Enclose strings that contain spaces or commas with single or double quotes**
 
-When you execute gfsh commands in the gfsh command shell, enclose any strings that contain spaces or commas in single quotes. For example:
+When you execute gfsh commands in the gfsh command shell,
+enclose any strings that contain spaces or commas in single quotes. For example:
 
 ``` pre
 gfsh>start locator --name='locator 1'

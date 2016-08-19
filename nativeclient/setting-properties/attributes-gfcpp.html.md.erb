@@ -128,10 +128,10 @@ For the system properties that relate to high availability, see [Sending Periodi
 </tr>
 <tr class="odd">
 <td>tombstone-timeout</td>
-<td>Time in milliseconds used to timeout tombstone entries when region consistency checking is enabled.
+<td>Time in milliseconds before a tombstone entry goes away, when region consistency checking is enabled.
 <div class="note note">
 **Note:**
-<p>Do not modify this property unless instructed by technical support.</p>
+<p>This timeout's default has been determined heuristically through experience with many systems. Careful consideration should be applied before changing the value away from the default.</p>
 </div></td>
 <td>480000</td>
 </tr>
