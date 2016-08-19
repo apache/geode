@@ -49,21 +49,12 @@ To connect `gfsh` using the HTTP protocol to a remote GemFire cluster:
 
     `*`You can stop and obtain the status of *remote locators and servers* when `gfsh` is connected to the cluster via JMX or HTTP/S by using the `--name` option for these `stop`/`status` commands. If you are using the `--pid` or `--dir` option for these commands, then the` stop`/`status` commands are executed only locally.
 
-To configure SSL for the remote connection (HTTPS), specify the GemFire configuration parameters in <span class="ph filepath">gemfire.properties</span> or <span class="ph filepath">gfsecurity-properties</span> or upon server startup:
-
--   http-service-ssl-enabled
--   http-service-ssl-require-authentication
--   http-service-ssl-protocols
--   http-service-ssl-ciphers
--   http-service-ssl-keystore
--   http-service-ssl-keystore-password
--   http-service-ssl-keystore-type
--   http-service-ssl-truststore
--   http-service-ssl-truststore-password
-
-See [SSL](../../managing/security/ssl_overview.html) for details on configuring these parameters.
-
-The above parameters also apply to all HTTP services hosted on the configured JMX Manager, which can include the following:
+To configure SSL for the remote connection (HTTPS), enable SSL for the `http` component
+in <span class="ph filepath">gemfire.properties</span> or <span class="ph
+filepath">gfsecurity-properties</span> or upon server startup. See
+[SSL](../../managing/security/ssl_overview.html) for details on configuring SSL parameters. These
+SSL parameters also apply to all HTTP services hosted on the configured JMX Manager, which can
+include the following:
 
 -   Developer REST API service
 -   Pulse monitoring tool

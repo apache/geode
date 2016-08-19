@@ -84,6 +84,67 @@ any protocol that is enabled by default in the configured JSSE provider.</dd>
 <dt>**ssl-truststore, ssl-truststore-password**</dt>
 <dd>The path to the trust store and the trust store password, specified as strings</dd>
 
+### Example: secure communications throughout
+
+To implement secure SSL communications throughout an entire distributed system, each process should
+enable SSL for all components. 
+ 
+``` pre
+ssl-enabled-components=all
+ssl-keystore=secure/keystore.dat
+ssl-keystore-password=changeit
+ssl-truststore=secure/truststore.dat
+ssl-truststore-password=changeit
+```
+ 
+If the key store has multiple certificates you may want to specify the alias of the one you wish to use for each process.  For instance,
+`ssl-default-alias=Hiroki`.
+
+
+### Example: non-secure cluster communications, secure client/server
+
+In this example, SSL is used to secure communications between the client and the server:
+
+**Server properties**
+
+Cluster SSL is not enabled.
+
+``` pre
+ssl-enabled-components=server,locator
+ssl-server-alias=server
+ssl-keystore=secure/keystore.dat
+ssl-keystore-password=changeit
+ssl-truststore=secure/truststore.dat
+ssl-truststore-password=changeit
+```
+
+**Locator properties**
+
+Cluster SSL is not enabled.
+
+``` pre
+ssl-enabled-components=locator
+ssl-locator-alias=locator
+ssl-keystore=secure/keystore.dat
+ssl-keystore-password=changeit
+ssl-truststore=secure/truststore.dat
+ssl-truststore-password=changeit
+```
+ 
+**Client properties**
+
+The client's trust store must trust both locator and server certificates.
+
+Since the client did not specify a certificate alias, SSL will use the default certificate in its key store.
+
+``` pre
+ssl-enabled-components=server,locator
+ssl-keystore=secret/keystore.dat
+ssl-keystore-password=changeit
+ssl-truststore=secret/truststore.dat
+ssl-truststore-password=changeit
+```
+ 
 ## <a id="ssl_property_reference_tables" class="no-quick-link"></a>SSL Property Reference Tables
 
 The following table lists the components you can configure to use SSL.
@@ -102,7 +163,7 @@ The following table lists the components you can configure to use SSL.
 
 The following table lists the properties you can use to configure SSL on your Geode system.
 
-<span class="tablecap">Table 2. SSL Configurable Properties</span>
+<span class="tablecap">Table 2. SSL Configuration Properties</span>
 
 | Property                           | Description                                                                  | Value |
 |------------------------------------|------------------------------------------------------------------------------|-------|
