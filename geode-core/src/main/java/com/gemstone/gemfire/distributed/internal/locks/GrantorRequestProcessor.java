@@ -21,6 +21,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Set;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.*;
 
 import org.apache.logging.log4j.Logger;
 
@@ -210,8 +212,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
       logger.info(LogMarker.DLS, message);
       boolean interrupted = Thread.interrupted();
       try {
-        grc.elderLockCondition.await();
-        break;
+        grc.elderLockCondition.await(sys.getConfig().getMemberTimeout());
       } catch (InterruptedException ignore) {
         interrupted = true;
         sys.getCancelCriterion().checkCancelInProgress(ignore);

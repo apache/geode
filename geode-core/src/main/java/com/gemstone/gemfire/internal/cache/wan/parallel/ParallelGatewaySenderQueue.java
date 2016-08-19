@@ -1728,7 +1728,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
             try {
               boolean wasEmpty = regionToDispatchedKeysMap.isEmpty();
               while (regionToDispatchedKeysMap.isEmpty()) {
-                regionToDispatchedKeysMapEmpty.await();
+                regionToDispatchedKeysMapEmpty.await(StoppableCondition.TIME_TO_WAIT);
               }
               if (wasEmpty) continue;
               // TODO: This should be optimized.
