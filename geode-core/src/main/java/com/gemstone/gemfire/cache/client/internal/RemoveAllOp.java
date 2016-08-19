@@ -313,12 +313,11 @@ public class RemoveAllOp {
                                      } else if (o instanceof byte[]) {
                                        if (prSingleHopEnabled) {
                                          byte[] bytesReceived = part.getSerializedForm();
-                                         if (/*bytesReceived.length==1 &&*/ bytesReceived[0] != ClientMetadataService.INITIAL_VERSION) { // nw hop
+                                         if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION) {
                                            if (region != null) {
-                                             ClientMetadataService cms;
                                              try {
-                                               cms = region.getCache().getClientMetadataService();
-                                               cms.scheduleGetPRMetaData(region, false,bytesReceived[1]);
+                                               ClientMetadataService cms = region.getCache().getClientMetadataService();
+                                               cms.scheduleGetPRMetaData(region, false, bytesReceived[1]);
                                              }
                                              catch (CacheClosedException e) {
                                              }

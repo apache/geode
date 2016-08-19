@@ -24,6 +24,7 @@ import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import com.gemstone.gemfire.cache.client.internal.*;
 import com.gemstone.gemfire.cache.execute.*;
 import com.gemstone.gemfire.cache.partition.PartitionListener;
 import com.gemstone.gemfire.cache.partition.PartitionNotAvailableException;
@@ -131,6 +132,25 @@ public class PartitionedRegion extends LocalRegion implements
       DistributionConfig.GEMFIRE_PREFIX + "PartitionedRegionRandomSeed", NanoTimer.getTime()).longValue());
   
   private static final AtomicInteger SERIAL_NUMBER_GENERATOR = new AtomicInteger();
+
+  /**
+   * getNetworkHopType byte indicating this was the bucket owner for
+   * the last operation
+   */
+  public static final int NETWORK_HOP_NONE = 0;
+
+  /**
+   * getNetworkHopType byte indicating this was not the bucket owner and
+   * a message had to be sent to a primary in the same server group
+   */
+  public static final int NETWORK_HOP_TO_SAME_GROUP = 1;
+
+  /**
+   * getNetworkHopType byte indicating this was not the bucket owner and
+   * a message had to be sent to a primary in a different server group
+   */
+  public static final int NETWORK_HOP_TO_DIFFERENT_GROUP = 2;
+
   
   private final DiskRegionStats diskRegionStats;
   /**
@@ -325,34 +345,47 @@ public class PartitionedRegion extends LocalRegion implements
    * Byte 0 = no NWHOP Byte 1 = NWHOP to servers in same server-grp Byte 2 =
    * NWHOP tp servers in other server-grp
    */
-  private final ThreadLocal<Byte> isNetworkHop = new ThreadLocal<Byte>() {
+  private final ThreadLocal<Byte> networkHopType = new ThreadLocal<Byte>() {
     @Override
     protected Byte initialValue() {
-      return Byte.valueOf((byte)0);
+      return Byte.valueOf((byte)NETWORK_HOP_NONE);
     }
   };
 
-  public void setIsNetworkHop(Byte value) {
-    this.isNetworkHop.set(value);
+  public void clearNetworkHopData() {
+    this.networkHopType.remove();
+    this.metadataVersion.remove();
+  }
+  
+  private void setNetworkHopType(Byte value) {
+    this.networkHopType.set(value);
   }
 
-  public Byte isNetworkHop() {
-    return this.isNetworkHop.get();
+  /**
+   * <p>
+   * If the last operation in the current thread required a one-hop to
+   * another server who held the primary bucket for the operation then
+   * this will return something other than NETWORK_HOP_NONE.
+   * </p>
+   * see NETWORK_HOP_NONE, NETWORK_HOP_TO_SAME_GROUP and NETWORK_HOP_TO_DIFFERENT_GROUP
+   */
+  public byte getNetworkHopType() {
+    return this.networkHopType.get().byteValue();
   }
   
   private final ThreadLocal<Byte> metadataVersion = new ThreadLocal<Byte>() {
     @Override
     protected Byte initialValue() {
-      return 0;
+      return ClientMetadataService.INITIAL_VERSION;
     }
   };
 
-  public void setMetadataVersion(Byte value) {
+  private void setMetadataVersion(Byte value) {
     this.metadataVersion.set(value);
   }
 
-  public Byte getMetadataVersion() {
-    return this.metadataVersion.get();
+  public byte getMetadataVersion() {
+    return this.metadataVersion.get().byteValue();
   }
       
 
@@ -1464,7 +1497,7 @@ public class PartitionedRegion extends LocalRegion implements
           String name = Thread.currentThread().getName();
           if (name.startsWith("ServerConnection")
               && !getMyId().equals(targetNode)) {
-            setNetworkHop(bucketIdInt, (InternalDistributedMember)targetNode);
+            setNetworkHopType(bucketIdInt, (InternalDistributedMember)targetNode);
           }
         }
         
@@ -1929,7 +1962,7 @@ public class PartitionedRegion extends LocalRegion implements
       }
 
       if (event.isBridgeEvent() && bucketStorageAssigned) {
-        setNetworkHop(bucketId, targetNode);
+        setNetworkHopType(bucketId, targetNode);
       }
       if (putAllOp_save == null) {
         result = putInBucket(targetNode,
@@ -4012,7 +4045,7 @@ public class PartitionedRegion extends LocalRegion implements
           String name = Thread.currentThread().getName();
           if (name.startsWith("ServerConnection")
               && !getMyId().equals(retryNode)) {
-            setNetworkHop(bucketId, (InternalDistributedMember)retryNode);
+            setNetworkHopType(bucketId, (InternalDistributedMember)retryNode);
           }
         }
         return obj;
@@ -5468,7 +5501,7 @@ public class PartitionedRegion extends LocalRegion implements
         }
         else {
           if (event.isBridgeEvent()) {
-            setNetworkHop(bucketId, currentTarget);
+            setNetworkHopType(bucketId, currentTarget);
           }
           destroyRemotely(currentTarget,
                           bucketId,
@@ -5557,8 +5590,8 @@ public class PartitionedRegion extends LocalRegion implements
    * @param targetNode
    */
 
-  private void setNetworkHop(final Integer bucketId,
-      final InternalDistributedMember targetNode) {
+  private void setNetworkHopType(final Integer bucketId,
+                                 final InternalDistributedMember targetNode) {
 
     if (this.isDataStore() && !getMyId().equals(targetNode)) {
       Set<ServerBucketProfile> profiles = this.getRegionAdvisor()
@@ -5569,15 +5602,15 @@ public class PartitionedRegion extends LocalRegion implements
           if (profile.getDistributedMember().equals(targetNode)) {
 
             if (isProfileFromSameGroup(profile)) {
-              if (this.isNetworkHop() != 1 && logger.isDebugEnabled()) {
+              if (this.getNetworkHopType() != NETWORK_HOP_TO_SAME_GROUP && logger.isDebugEnabled()) {
                 logger.debug("one-hop: cache op meta data staleness observed.  Message is in same server group (byte 1)");
               }
-              this.setIsNetworkHop((byte)1);
+              this.setNetworkHopType((byte)NETWORK_HOP_TO_SAME_GROUP);
             } else {
-              if (this.isNetworkHop() != 2 && logger.isDebugEnabled()) {
+              if (this.getNetworkHopType() != NETWORK_HOP_TO_DIFFERENT_GROUP && logger.isDebugEnabled()) {
                 logger.debug("one-hop: cache op meta data staleness observed.  Message is to different server group (byte 2)");
               }
-              this.setIsNetworkHop((byte)2);
+              this.setNetworkHopType((byte)NETWORK_HOP_TO_DIFFERENT_GROUP);
             }
             this.setMetadataVersion((byte)profile.getVersion());
             break;

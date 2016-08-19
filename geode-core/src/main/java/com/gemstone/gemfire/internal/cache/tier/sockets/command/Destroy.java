@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.EventIDHolder;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
@@ -181,10 +180,9 @@ public class Destroy extends BaseCommand {
     }
     if (region instanceof PartitionedRegion) {
       PartitionedRegion pr = (PartitionedRegion) region;
-      if (pr.isNetworkHop() != (byte) 0) {
-        writeReplyWithRefreshMetadata(msg, servConn, pr, pr.isNetworkHop());
-        pr.setIsNetworkHop((byte) 0);
-        pr.setMetadataVersion(Byte.valueOf((byte) 0));
+      if (pr.getNetworkHopType() != PartitionedRegion.NETWORK_HOP_NONE) {
+        writeReplyWithRefreshMetadata(msg, servConn, pr, pr.getNetworkHopType());
+        pr.clearNetworkHopData();
       } else {
         writeReply(msg, servConn);
       }

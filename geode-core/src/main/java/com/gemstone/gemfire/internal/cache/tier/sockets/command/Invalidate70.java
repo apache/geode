@@ -60,7 +60,7 @@ public class Invalidate70 extends Invalidate {
     if (versionTag != null) {
       replyMsg.addObjPart(versionTag);
     }
-    replyMsg.addBytesPart(new byte[]{pr.getMetadataVersion().byteValue(), nwHop});
+    replyMsg.addBytesPart(new byte[]{pr.getMetadataVersion(), nwHop});
     pr.getPrStats().incPRMetaDataSentCount();
     replyMsg.send(servConn);
     if (logger.isTraceEnabled()) {

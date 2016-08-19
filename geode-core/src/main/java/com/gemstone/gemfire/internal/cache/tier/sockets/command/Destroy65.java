@@ -301,10 +301,9 @@ public class Destroy65 extends BaseCommand {
 
     if (region instanceof PartitionedRegion) {
       PartitionedRegion pr = (PartitionedRegion) region;
-      if (pr.isNetworkHop() != (byte) 0) {
-        writeReplyWithRefreshMetadata(msg, servConn, pr, entryNotFoundForRemove, pr.isNetworkHop(), clientEvent.getVersionTag());
-        pr.setIsNetworkHop((byte) 0);
-        pr.setMetadataVersion((byte) 0);
+      if (pr.getNetworkHopType() != PartitionedRegion.NETWORK_HOP_NONE) {
+        writeReplyWithRefreshMetadata(msg, servConn, pr, entryNotFoundForRemove, pr.getNetworkHopType(), clientEvent.getVersionTag());
+        pr.clearNetworkHopData();
       } else {
         writeReply(msg, servConn, entryNotFoundForRemove | clientEvent.getIsRedestroyedEntry(), clientEvent.getVersionTag());
       }

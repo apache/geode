@@ -261,10 +261,9 @@ public class Put61 extends BaseCommand {
     // Increment statistics and write the reply
     if (region instanceof PartitionedRegion) {
       PartitionedRegion pr = (PartitionedRegion) region;
-      if (pr.isNetworkHop() != (byte) 0) {
-        writeReplyWithRefreshMetadata(msg, servConn, pr, pr.isNetworkHop());
-        pr.setIsNetworkHop((byte) 0);
-        pr.setMetadataVersion(Byte.valueOf((byte) 0));
+      if (pr.getNetworkHopType() != PartitionedRegion.NETWORK_HOP_NONE) {
+        writeReplyWithRefreshMetadata(msg, servConn, pr, pr.getNetworkHopType());
+        pr.clearNetworkHopData();
       } else {
         writeReply(msg, servConn);
       }

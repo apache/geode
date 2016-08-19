@@ -69,9 +69,8 @@ public class PutOp {
                              Operation operation,
                              boolean requireOldValue, Object expectedOldValue,
                              Object callbackArg,
-                             boolean prSingleHopEnabled)
-  {
-    AbstractOp op = new PutOpImpl(region, key, value, deltaBytes, event,
+                             boolean prSingleHopEnabled) {
+    PutOpImpl op = new PutOpImpl(region, key, value, deltaBytes, event,
         operation, requireOldValue,
         expectedOldValue, callbackArg,
         false/*donot send full obj; send delta*/, prSingleHopEnabled);
@@ -86,6 +85,7 @@ public class PutOp {
           boolean onlyUseExistingCnx = ((poolImpl.getMaxConnections() != -1 && poolImpl
               .getConnectionCount() >= poolImpl.getMaxConnections()) ? true
               : false);
+          op.setAllowDuplicateMetadataRefresh(! onlyUseExistingCnx);
           return pool.executeOn(new ServerLocation(server.getHostName(), server
               .getPort()), op, true, onlyUseExistingCnx);
         }
@@ -106,6 +106,7 @@ public class PutOp {
       Object key, Object value, byte[] deltaBytes, EntryEventImpl event, Operation operation,
       boolean requireOldValue, Object expectedOldValue,
       Object callbackArg, boolean prSingleHopEnabled, boolean isMetaRegionPutOp) {
+
     AbstractOp op = new PutOpImpl(regionName, key, value, deltaBytes, event,
         operation, requireOldValue,
         expectedOldValue, callbackArg,
@@ -135,8 +136,7 @@ public class PutOp {
                              Object value,
                              EntryEventImpl event,
                              Object callbackArg,
-                             boolean prSingleHopEnabled)
-  {
+                             boolean prSingleHopEnabled) {
     AbstractOp op = new PutOpImpl(regionName, key, value, null,
         event, Operation.CREATE, false,
         null, callbackArg, false /*donot send full Obj; send delta*/, prSingleHopEnabled);
@@ -180,6 +180,7 @@ public class PutOp {
     private boolean requireOldValue;
 
     private Object expectedOldValue;
+    
     
     public PutOpImpl(String regionName , Object key, Object value, byte[] deltaBytes, 
         EntryEventImpl event,
@@ -311,30 +312,6 @@ public class PutOp {
     @Override
     protected Object processResponse(Message msg) throws Exception {
       throw new UnsupportedOperationException("processResponse should not be invoked in PutOp.  Use processResponse(Message, Connection)");
-//      processAck(msg, "put");
-//      if (prSingleHopEnabled) {
-//        byte version = 0;
-//        Part part = msg.getPart(0);
-//        byte[] bytesReceived = part.getSerializedForm();
-//        if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION
-//            && bytesReceived.length == ClientMetadataService.SIZE_BYTES_ARRAY_RECEIVED) { // nw hop
-//          if (this.region != null) {
-//            ClientMetadataService cms;
-//            try {
-//              cms = region.getCache().getClientMetadataService();
-//              version = cms.getMetaDataVersion(region, Operation.UPDATE,
-//                  key, value, callbackArg);
-//            }
-//            catch (CacheClosedException e) {
-//              return null;
-//            }
-//            if (bytesReceived[0] != version) {
-//              cms.scheduleGetPRMetaData(region, false,bytesReceived[1]);
-//            }
-//          }
-//        }
-//      }
-//      return null;
     }
 
     /*
@@ -353,18 +330,17 @@ public class PutOp {
     protected Object processResponse(Message msg, Connection con)
         throws Exception {
       processAck(msg, "put", con);
-      byte version = 0 ;
+
       if (prSingleHopEnabled) {
         Part part = msg.getPart(0);
         byte[] bytesReceived = part.getSerializedForm();
         if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION
             && bytesReceived.length == ClientMetadataService.SIZE_BYTES_ARRAY_RECEIVED) {
           if (this.region != null) {
-            ClientMetadataService cms;
-              cms = region.getCache().getClientMetadataService();
-              version = cms.getMetaDataVersion(region, Operation.UPDATE,
-                  key, value, callbackArg);
-            if (bytesReceived[0] != version) {
+            ClientMetadataService cms = region.getCache().getClientMetadataService();
+            byte myVersion = cms.getMetaDataVersion(region, Operation.UPDATE,
+                               key, value, callbackArg);
+            if (myVersion != bytesReceived[0] || isAllowDuplicateMetadataRefresh()) {
               cms.scheduleGetPRMetaData(region, false, bytesReceived[1]);
             }
           }

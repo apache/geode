@@ -50,7 +50,6 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 
@@ -426,12 +425,10 @@ public class Put65 extends BaseCommand {
     // Increment statistics and write the reply
     if (region instanceof PartitionedRegion) {
       PartitionedRegion pr = (PartitionedRegion) region;
-      if (pr.isNetworkHop().byteValue() != (byte) 0) {
-        writeReplyWithRefreshMetadata(msg, servConn, pr, sendOldValue, oldValueIsObject, oldValue, pr.isNetworkHop()
-                                                                                                     .byteValue(), clientEvent
-          .getVersionTag());
-        pr.setIsNetworkHop((byte) 0);
-        pr.setMetadataVersion(Byte.valueOf((byte) 0));
+      if (pr.getNetworkHopType() != PartitionedRegion.NETWORK_HOP_NONE) {
+        writeReplyWithRefreshMetadata(msg, servConn, pr, sendOldValue, oldValueIsObject, oldValue, pr.getNetworkHopType()
+          , clientEvent.getVersionTag());
+        pr.clearNetworkHopData();
       } else {
         writeReply(msg, servConn, sendOldValue, oldValueIsObject, oldValue, clientEvent.getVersionTag());
       }
@@ -482,7 +479,7 @@ public class Put65 extends BaseCommand {
     replyMsg.setMessageType(MessageType.REPLY);
     replyMsg.setNumberOfParts(sendOldValue ? 3 : 1);
     replyMsg.setTransactionId(origMsg.getTransactionId());
-    replyMsg.addBytesPart(new byte[] { pr.getMetadataVersion().byteValue(), nwHopType });
+    replyMsg.addBytesPart(new byte[] { pr.getMetadataVersion(), nwHopType });
     if (sendOldValue) {
       replyMsg.addIntPart(oldValueIsObject ? 1 : 0);
       replyMsg.addObjPart(oldValue);

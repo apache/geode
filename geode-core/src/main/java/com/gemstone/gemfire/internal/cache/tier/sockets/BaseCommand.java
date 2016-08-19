@@ -284,7 +284,7 @@ public abstract class BaseCommand implements Command {
     replyMsg.setMessageType(MessageType.REPLY);
     replyMsg.setNumberOfParts(1);
     replyMsg.setTransactionId(origMsg.getTransactionId());
-    replyMsg.addBytesPart(new byte[]{pr.getMetadataVersion().byteValue(), nwHop});
+    replyMsg.addBytesPart(new byte[]{pr.getMetadataVersion(), nwHop});
     replyMsg.send(servConn);
     pr.getPrStats().incPRMetaDataSentCount();
     if (logger.isTraceEnabled()) {
@@ -701,7 +701,7 @@ public abstract class BaseCommand implements Command {
     if (callbackArg != null) {
       responseMsg.addObjPart(callbackArg);
     }
-    responseMsg.addBytesPart(new byte[]{pr.getMetadataVersion().byteValue(),nwHop});
+    responseMsg.addBytesPart(new byte[]{pr.getMetadataVersion(),nwHop});
     servConn.getCache().getCancelCriterion().checkCancelInProgress(null);
     responseMsg.send(servConn);
     origMsg.clearParts();

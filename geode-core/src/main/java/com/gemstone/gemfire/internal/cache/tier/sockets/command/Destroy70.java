@@ -65,7 +65,7 @@ public class Destroy70 extends Destroy65 {
     if (versionTag != null) {
       replyMsg.addObjPart(versionTag);
     }
-    replyMsg.addBytesPart(new byte[]{pr.getMetadataVersion().byteValue(), nwHop});
+    replyMsg.addBytesPart(new byte[]{pr.getMetadataVersion(), nwHop});
     replyMsg.addIntPart(entryNotFoundForRemove? 1 : 0);
     pr.getPrStats().incPRMetaDataSentCount();
     replyMsg.send(servConn);
