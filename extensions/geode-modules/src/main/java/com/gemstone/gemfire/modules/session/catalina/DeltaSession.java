@@ -317,9 +317,11 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
   }
 
   public void processExpired() {
-    if (((DeltaSessionManager) getManager()).getLogger().isDebugEnabled()) {
+    DeltaSessionManager manager = (DeltaSessionManager) getManager();
+    if (manager != null && manager.getLogger() != null && manager.getLogger().isDebugEnabled()) {
       ((DeltaSessionManager) getManager()).getLogger().debug(this + ": Expired");
     }
+
     // Set expired (so region.destroy is not called again)
     setExpired(true);
 
@@ -327,7 +329,6 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
     expire();
 
     // Update statistics
-    DeltaSessionManager manager = (DeltaSessionManager) getManager();
     if (manager != null) {
       manager.getStatistics().incSessionsExpired();
     }
