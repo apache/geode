@@ -52,7 +52,7 @@ public class ClientServerCache extends AbstractCache {
 
     // If no cache exists, create one
     String message = null;
-    if (this.cache == null || this.cache.isClosed()) {
+    if (this.cache == null) {
       // enable pool subscription so that default cache can be used by hibernate module
       this.cache = new ClientCacheFactory(createDistributedSystemProperties()).create();
       message = "Created ";

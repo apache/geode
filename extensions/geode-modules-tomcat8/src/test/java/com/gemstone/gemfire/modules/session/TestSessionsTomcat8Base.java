@@ -35,28 +35,60 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.modules.session.catalina.ClientServerCacheLifecycleListener;
 import com.gemstone.gemfire.modules.session.catalina.DeltaSessionManager;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.modules.session.catalina.PeerToPeerCacheLifecycleListener;
 
-public abstract class TestSessionsTomcat8Base extends JUnit4DistributedTestCase{
+public abstract class TestSessionsTomcat8Base {
 
-  protected static EmbeddedTomcat8 server;
+  private static EmbeddedTomcat8 server;
 
-  protected static Region<String, HttpSession> region;
+  private static Region<String, HttpSession> region;
 
-  protected static StandardWrapper servlet;
+  private static StandardWrapper servlet;
 
-  protected static DeltaSessionManager sessionManager;
+  private static DeltaSessionManager sessionManager;
 
-  protected static int port;
+  private static int port;
 
-  protected Cache cache;
+  // Set up the servers we need
+  public static void setupServer(DeltaSessionManager manager) throws Exception {
+    port = AvailablePortHelper.getRandomAvailableTCPPort();
+    server = new EmbeddedTomcat8("/test", port, "JVM-1");
 
-  protected VM vm0;
+    PeerToPeerCacheLifecycleListener p2pListener = new PeerToPeerCacheLifecycleListener();
+    p2pListener.setProperty(MCAST_PORT, "0");
+    p2pListener.setProperty(LOG_LEVEL, "config");
+    server.addLifecycleListener(p2pListener);
+    sessionManager = manager;
+    sessionManager.setEnableCommitValve(true);
+    server.getRootContext().setManager(sessionManager);
 
+    servlet = server.addServlet("/test/*", "default", CommandServlet.class.getName());
+    server.startContainer();
+
+    /*
+     * Can only retrieve the region once the container has started up
+     * (and the cache has started too).
+     */
+    region = sessionManager.getSessionCache().getSessionRegion();
+  }
+
+  @AfterClass
+  public static void teardownClass() throws Exception {
+    server.stopContainer();
+  }
+
+  /**
+   * Reset some data
+   */
+  @Before
+  public void setup() throws Exception {
+    sessionManager.getTheContext().setSessionTimeout(30);
+    region.clear();
+  }
 
   /**
    * Check that the basics are working

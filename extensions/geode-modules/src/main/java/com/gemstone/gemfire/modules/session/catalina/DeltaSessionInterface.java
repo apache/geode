@@ -49,5 +49,4 @@ public interface DeltaSessionInterface extends Session {
   void setOwner(Object manager);
   void activate();
 
-  void processExpired();
 }

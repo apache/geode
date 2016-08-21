@@ -90,7 +90,9 @@ public abstract class AbstractCache {
         rebalanceCache();
       }
     } else if (eventType.equals(LifecycleTypeAdapter.STOP)) {
-      started.set(false);
+      // Close the cache
+//      closeCache();
+      // TODO: Do we need to reset the started flag here?
     }
   }
 
