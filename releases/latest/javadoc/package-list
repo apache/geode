@@ -7,7 +7,6 @@ com.gemstone.gemfire.cache.asyncqueue
 com.gemstone.gemfire.cache.client
 com.gemstone.gemfire.cache.control
 com.gemstone.gemfire.cache.execute
-com.gemstone.gemfire.cache.hdfs
 com.gemstone.gemfire.cache.lucene
 com.gemstone.gemfire.cache.operations
 com.gemstone.gemfire.cache.partition
@@ -37,5 +36,4 @@ com.gemstone.gemfire.modules.session.installer.args
 com.gemstone.gemfire.modules.util
 com.gemstone.gemfire.pdx
 com.gemstone.gemfire.ra
-com.gemstone.gemfire.redis
 com.gemstone.gemfire.security
