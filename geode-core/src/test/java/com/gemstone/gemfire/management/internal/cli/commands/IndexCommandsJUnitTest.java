@@ -24,6 +24,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.jmock.Expectations;
+import org.jmock.Mockery;
+import org.jmock.lib.legacy.ClassImposteriser;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
@@ -34,15 +43,6 @@ import com.gemstone.gemfire.internal.util.CollectionUtils;
 import com.gemstone.gemfire.management.internal.cli.domain.IndexDetails;
 import com.gemstone.gemfire.management.internal.cli.functions.ListIndexFunction;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * The IndexCommandsJUnitTest class is a test suite of test cases testing the contract and functionality of the
@@ -56,7 +56,7 @@ import org.junit.experimental.categories.Category;
  * @see org.jmock.lib.legacy.ClassImposteriser
  * @see org.junit.Assert
  * @see org.junit.Test
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(UnitTest.class)
 public class IndexCommandsJUnitTest {
@@ -76,11 +76,11 @@ public class IndexCommandsJUnitTest {
     mockContext = null;
   }
 
-  protected IndexCommands createIndexCommands(final Cache cache, final Execution functionExecutor) {
+  private IndexCommands createIndexCommands(final Cache cache, final Execution functionExecutor) {
     return new TestIndexCommands(cache, functionExecutor);
   }
 
-  protected IndexDetails createIndexDetails(final String memberId, final String regionPath, final String indexName) {
+  private IndexDetails createIndexDetails(final String memberId, final String regionPath, final String indexName) {
     return new IndexDetails(memberId, regionPath, indexName);
   }
 
@@ -174,7 +174,7 @@ public class IndexCommandsJUnitTest {
     assertEquals(expectedIndexDetails, actualIndexDetails);
   }
 
-  protected static class TestIndexCommands extends IndexCommands {
+  private static class TestIndexCommands extends IndexCommands {
 
     private final Cache cache;
     private final Execution functionExecutor;

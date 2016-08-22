@@ -48,7 +48,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 /**
  * Implementation used by PoolManager.
  *
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 public class PoolManagerImpl {

@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -25,6 +28,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -44,7 +50,6 @@ import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.LonerDistributionManager;
 import com.gemstone.gemfire.internal.AvailablePort;
@@ -56,17 +61,19 @@ import com.gemstone.gemfire.security.templates.DummyAuthenticator;
 import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-public class DistributedRegionFunctionExecutionDUnitTest extends
-    DistributedTestCase {
+@Category(DistributedTest.class)
+public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4DistributedTestCase {
 
   VM replicate1 = null;
 
@@ -86,10 +93,6 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   
   public static final Function functionWithNoResultThrowsException = new MyFunctionException();
 
-  public DistributedRegionFunctionExecutionDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
@@ -106,6 +109,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     disconnectAllFromDS();
   }
 
+  @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty() {
     createCacheInVm(); // Empty
     normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
@@ -122,6 +126,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     executeFunction();
   }
   
+  @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_SendException() {
     createCacheInVm(); // Empty
     normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
@@ -138,6 +143,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     executeFunction_SendException();
   }
   
+  @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_NoLastResult() {
     createCacheInVm(); // Empty
     normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
@@ -156,6 +162,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
 
 
   
+  @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyNormal() {
     createCacheInVm(); // Empty
     normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
@@ -178,6 +185,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     }
   }
 
+  @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate() {
     createCacheInVm(); // Empty
     normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
@@ -195,6 +203,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   }
   
   
+  @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_SendException() {
     createCacheInVm(); // Empty
     normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
@@ -211,6 +220,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunction_SendException());
   }
   
+  @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_NoLastResult() {
     createCacheInVm(); // Empty
     normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
@@ -227,6 +237,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunction_NoLastResult());
   }
   
+  @Test
   public void testDistributedRegionFunctionExecutionWithFunctionInvocationTargetException() {
     createCacheInVm(); // Empty
     normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
@@ -254,6 +265,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     ex.remove();
   }
 
+  @Test
   public void testDistributedRegionFunctionExecutionWithFunctionInvocationTargetException_WithoutHA() {
     createCacheInVm(); // Empty
     normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
@@ -288,6 +300,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     ex.remove();
   }
 
+  @Test
   public void testDistributedRegionFunctionExecutionWithFunctionInvocationTargetExceptionForEmptyDataPolicy() {
     createCacheInVm(); // Empty
     normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
@@ -315,6 +328,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     ex.remove();
   }
 
+  @Test
   public void testDistributedRegionFunctionExecutionWithFunctionInvocationTargetExceptionForEmptyDataPolicy_WithoutHA() {
     createCacheInVm(); // Empty
     normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
@@ -345,6 +359,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     ex.remove();
   }
 
+  @Test
   public void testDistributedRegionFunctionExecutionHACacheClosedException() {
     VM empty = normal;
 
@@ -385,6 +400,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     }
   }
   
+  @Test
   public void testDistributedRegionFunctionExecutionHANodeFailure() {
     VM empty = normal;
 
@@ -418,6 +434,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   }
   
 
+  @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_ClientServer() {
     VM empty1 = replicate3;
     VM empty2 = normal;
@@ -437,6 +454,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     executeFunction();
   }
   
+  @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_ClientServer_SendException() {
     VM empty1 = replicate3;
     VM empty2 = normal;
@@ -455,7 +473,9 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
 
     executeFunction_SendException();
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-632: random ports, eats exceptions
+  @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_ClientServer_NoLastResult() {
     VM empty1 = replicate3;
     VM empty2 = normal;
@@ -489,6 +509,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
    * Ensure that the while executing the function if the servers is down then
    * the execution is failover to other available server
    */
+  @Test
   public void testServerFailoverWithTwoServerAliveHA()
       throws InterruptedException {
 
@@ -524,6 +545,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
 
   }
   
+  @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyNormal_ClientServer() {
     VM normal1 = normal;
     VM normal2 = replicate3;
@@ -557,6 +579,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     }
   }
 
+  @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_ClientServer() {
     VM empty = replicate3;
     
@@ -577,6 +600,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     executeUnregisteredFunction();
   }
   
+  @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_ClientServer_WithoutRegister() {
     VM empty = replicate3;
     
@@ -597,6 +621,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     executeFunction();
   }
   
+  @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_ClientServer_FunctionInvocationTargetException() {
     VM empty = replicate3;
 
@@ -626,6 +651,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     ex.remove();
   }
 
+  @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_ClientServer_FunctionInvocationTargetException_WithoutHA() {
     VM empty = replicate3;
 
@@ -663,6 +689,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     ex.remove();
   }
 
+  @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_ClientServer_FunctionInvocationTargetException() {
     VM empty1 = replicate3;
     VM empty2 = normal;
@@ -691,6 +718,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     ex.remove();
   }
 
+  @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_ClientServer_FunctionInvocationTargetException_WithoutHA() {
     VM empty1 = replicate3;
     VM empty2 = normal;
@@ -727,6 +755,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     ex.remove();
   }
 
+  @Test
   public void testBug40714() {
     VM empty = replicate3;
     normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
@@ -757,6 +786,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
    * lonerDistribuedSystem
    */
 
+  @Test
   public void testBug41118() {
     replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.bug41118());
   }
@@ -766,6 +796,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
    * is not thrown. We have to grep for this exception in logs for any
    * occerence.
    */
+  @Test
   public void testBug41367() {
     VM client = replicate1;
     VM server = replicate2;
@@ -790,6 +821,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
     }
   }
   
+  @Test
   public void testFunctionWithNoResultThrowsException(){
     IgnoredException.addIgnoredException("RuntimeException");
     replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
@@ -817,11 +849,11 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   }
 
   public static void bug41118(){
-    InternalDistributedSystem ds = new DistributedRegionFunctionExecutionDUnitTest("temp").getSystem();
+    InternalDistributedSystem ds = new DistributedRegionFunctionExecutionDUnitTest().getSystem();
     assertNotNull(ds);
     ds.disconnect();
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
+    props.setProperty(MCAST_PORT, "0");
     ds = (InternalDistributedSystem)DistributedSystem.connect(props);
     
     DM dm = ds.getDistributionManager();
@@ -903,34 +935,33 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
   }
   
   public static void createCacheInVm() {
-    new DistributedRegionFunctionExecutionDUnitTest("temp")
+    new DistributedRegionFunctionExecutionDUnitTest()
         .createCache(new Properties());
   }
 
   public static void createCacheInVm_41367() {
     Properties props = new Properties();
-    props.put(DistributionConfig.NAME_NAME, "SecurityServer");
-    props.put("security-client-authenticator", DummyAuthenticator.class.getName() + ".create");
-    new DistributedRegionFunctionExecutionDUnitTest("temp").createCache(props);
+    props.put(NAME, "SecurityServer");
+    props.put(SECURITY_CLIENT_AUTHENTICATOR, DummyAuthenticator.class.getName() + ".create");
+    new DistributedRegionFunctionExecutionDUnitTest().createCache(props);
   }
 
   public static void createCacheInClientVm() {
     Properties props = new Properties();
-    props.put("mcast-port", "0");
-    props.put("locators", "");
-    new DistributedRegionFunctionExecutionDUnitTest("temp")
-        .createCache(new Properties());
+    props.put(MCAST_PORT, "0");
+    props.put(LOCATORS, "");
+    new DistributedRegionFunctionExecutionDUnitTest().createCache(new Properties());
   }
 
   public static void createCacheInClientVm_41367() {
     Properties props = new Properties();
-    props.put("mcast-port", "0");
-    props.put("locators", "");
-    props.put(DistributionConfig.NAME_NAME, "SecurityClient");
-    props.put("security-client-auth-init", UserPasswordAuthInit.class.getName() + ".create");
+    props.put(MCAST_PORT, "0");
+    props.put(LOCATORS, "");
+    props.put(NAME, "SecurityClient");
+    props.put(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName() + ".create");
     props.put("security-username", "reader1");
     props.put("security-password", "reader1");
-    new DistributedRegionFunctionExecutionDUnitTest("temp").createCache(props);
+    new DistributedRegionFunctionExecutionDUnitTest().createCache(props);
   }
 
   public static void executeFunction() {
@@ -990,7 +1021,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends
           .getResult();
       fail("FunctionException expected : Function did not send last result");
     }
-    catch (Exception ex) {
+    catch (Exception ex) { // TODO: this is too broad -- catch just the expected exception
       assertTrue(ex.getMessage().contains("did not send last result"));
     }
   }

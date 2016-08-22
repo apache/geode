@@ -32,10 +32,6 @@ dependencies {
     testCompile 'org.apache.lucene:lucene-test-framework:' + project.'lucene.version'
     testCompile 'org.apache.lucene:lucene-codecs:' + project.'lucene.version'
     testCompile files(project(':geode-core').sourceSets.test.output)
-
-    // the following test dependencies are needed for mocking cache instance
-    testRuntime 'org.apache.hadoop:hadoop-common:' + project.'hadoop.version'
-    testRuntime 'org.apache.hadoop:hadoop-hdfs:' + project.'hadoop.version'
 }
 
 //The lucene integration tests don't have any issues that requiring forking

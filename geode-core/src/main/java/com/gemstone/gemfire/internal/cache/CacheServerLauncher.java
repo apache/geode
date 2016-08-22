@@ -17,29 +17,12 @@
 
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.PrintStream;
-import java.io.Serializable;
-import java.net.URL;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
@@ -55,32 +38,40 @@ import com.gemstone.gemfire.internal.process.StartupStatusListener;
 import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.internal.util.JavaCommandBuilder;
 
+import java.io.*;
+import java.net.URL;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOG_FILE;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
+
 /**
  * Launcher program to start a cache server.
  *
  *
- * @since 2.0.2
+ * @since GemFire 2.0.2
  */
 public class CacheServerLauncher  {
 
   /** Is this VM a dedicated Cache Server?  This value is used mainly by the admin API. */
-  public static boolean isDedicatedCacheServer = Boolean.getBoolean("gemfire.isDedicatedServer");
+  public static boolean isDedicatedCacheServer = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "isDedicatedServer");
 
-  public static boolean ASSIGN_BUCKETS = Boolean.getBoolean("gemfire.CacheServerLauncher.assignBucketsToPartitions");
+  public static boolean ASSIGN_BUCKETS = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "CacheServerLauncher.assignBucketsToPartitions");
 
   //default is to exit if property not defined
-  public static boolean DONT_EXIT_AFTER_LAUNCH = Boolean.getBoolean("gemfire.CacheServerLauncher.dontExitAfterLaunch");
+  public static boolean DONT_EXIT_AFTER_LAUNCH = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "CacheServerLauncher.dontExitAfterLaunch");
 
   /** Should the launch command be printed? */
   public static final boolean PRINT_LAUNCH_COMMAND = Boolean.getBoolean(
     CacheServerLauncher.class.getSimpleName() + ".PRINT_LAUNCH_COMMAND");
-  
-  private static final long STATUS_WAIT_TIME 
-    = Long.getLong("gemfire.CacheServerLauncher.STATUS_WAIT_TIME_MS", 15000);
+
+  private static final long STATUS_WAIT_TIME
+      = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "CacheServerLauncher.STATUS_WAIT_TIME_MS", 15000);
   
   /** How long to wait for a cache server to stop */
-  private static final long SHUTDOWN_WAIT_TIME 
-    = Long.getLong("gemfire.CacheServerLauncher.SHUTDOWN_WAIT_TIME_MS", 20000);
+  private static final long SHUTDOWN_WAIT_TIME
+      = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "CacheServerLauncher.SHUTDOWN_WAIT_TIME_MS", 20000);
 
   protected final String baseName;
   protected final String defaultLogFileName;
@@ -262,7 +253,7 @@ public class CacheServerLauncher  {
   protected static final String CLASSPATH = "classpath";
   protected static final String REBALANCE = "rebalance";
   protected static final String SERVER_PORT = "server-port";
-  protected static final String SERVER_BIND_ADDRESS = "server-bind-address";
+  protected static final String SERVER_BIND_ADDRESS_NAME = SERVER_BIND_ADDRESS;
   protected static final String DISABLE_DEFAULT_SERVER = "disable-default-server";
   public static final String CRITICAL_HEAP_PERCENTAGE =
     "critical-heap-percentage";
@@ -272,7 +263,7 @@ public class CacheServerLauncher  {
       "critical-off-heap-percentage";
   public static final String EVICTION_OFF_HEAP_PERCENTAGE =
       "eviction-off-heap-percentage";
-  protected static final String LOCK_MEMORY = "lock-memory";
+  protected static final String LOCK_MEMORY = ConfigurationProperties.LOCK_MEMORY;
 
   protected final File processDirOption(final Map<String, Object> options, final String dirValue) throws FileNotFoundException {
     final File inputWorkingDirectory = new File(dirValue);
@@ -318,7 +309,7 @@ public class CacheServerLauncher  {
         if (System.getProperty("os.name").indexOf("Windows") >= 0) {
           throw new IllegalArgumentException("Unable to lock memory on this operating system");
         }
-        props.put(DistributionConfig.LOCK_MEMORY_NAME, "true");
+        props.put(LOCK_MEMORY, "true");
       }
       else if (arg.startsWith("-rebalance")) {
         options.put(REBALANCE, Boolean.TRUE);
@@ -339,7 +330,7 @@ public class CacheServerLauncher  {
         options.put(EVICTION_OFF_HEAP_PERCENTAGE, arg);
       }
       else if (arg.startsWith("-server-bind-address")) {
-        options.put(SERVER_BIND_ADDRESS, arg);
+        options.put(SERVER_BIND_ADDRESS_NAME, arg);
       }
       else if (arg.startsWith("-J")) {
         String vmArg = arg.substring(2);
@@ -371,7 +362,7 @@ public class CacheServerLauncher  {
     }
 
     // -J-Djava.awt.headless=true has been added for Mac platform where it
-    // causes an icon to appear for sqlf launched procs
+    // causes an icon to appear for launched procs
     // TODO: check which library/GemFire code causes awt to be touched
     vmArgs.add("-Djava.awt.headless=true");
 
@@ -444,13 +435,13 @@ public class CacheServerLauncher  {
         options.put(DISABLE_DEFAULT_SERVER, Boolean.TRUE);
       }
       else if (arg.startsWith("-lock-memory")) {
-        props.put(DistributionConfig.LOCK_MEMORY_NAME, "true");
+        props.put(LOCK_MEMORY, "true");
       }
       else if (arg.startsWith("-server-port")) {
         options.put(SERVER_PORT, arg.substring(arg.indexOf("=") + 1));
       }
       else if (arg.startsWith("-server-bind-address")) {
-        options.put(SERVER_BIND_ADDRESS, arg.substring(arg.indexOf("=") + 1));
+        options.put(SERVER_BIND_ADDRESS_NAME, arg.substring(arg.indexOf("=") + 1));
       }
       else if (arg.startsWith("-" + CRITICAL_HEAP_PERCENTAGE)) {
         options.put(CRITICAL_HEAP_PERCENTAGE, arg.substring(arg.indexOf("=") + 1));
@@ -655,7 +646,7 @@ public class CacheServerLauncher  {
       serverPort.set(Integer.parseInt(serverPortString));
     }
 
-    serverBindAddress.set((String) options.get(SERVER_BIND_ADDRESS));
+    serverBindAddress.set((String) options.get(SERVER_BIND_ADDRESS_NAME));
     disableDefaultServer.set((Boolean) options.get(DISABLE_DEFAULT_SERVER));
     workingDir = new File(System.getProperty("user.dir"));
 
@@ -668,15 +659,15 @@ public class CacheServerLauncher  {
     // properly configure logging, the declarative caching file, etc.
     final Properties props = (Properties) options.get(PROPERTIES);
 
-    if (props.getProperty(DistributionConfig.LOG_FILE_NAME) == null && CacheServerLauncher.isLoggingToStdOut()) {
+    if (props.getProperty(LOG_FILE) == null && CacheServerLauncher.isLoggingToStdOut()) {
       // Check First if the gemfire.properties set the log-file. If they do, we shouldn't override that default
       final Properties gemfireProperties = new Properties();
 
       DistributionConfigImpl.loadGemFireProperties(gemfireProperties);
 
-      if (gemfireProperties.get(DistributionConfig.LOG_FILE_NAME) == null) {
+      if (gemfireProperties.get(LOG_FILE) == null) {
         // Do not allow the cache server to log to stdout, override the logger with #defaultLogFileName
-        props.setProperty(DistributionConfig.LOG_FILE_NAME, defaultLogFileName);
+        props.setProperty(LOG_FILE, defaultLogFileName);
       }
     }
 
@@ -1206,7 +1197,7 @@ public class CacheServerLauncher  {
 
   /**
    * Reads {@link DistributedSystem#PROPERTY_FILE} and determines if the
-   * {@link DistributionConfig#LOG_FILE_NAME} property is set to stdout
+   * {@link ConfigurationProperties#LOG_FILE} property is set to stdout
    * @return true if the logging would go to stdout
    */
   private static boolean isLoggingToStdOut() {
@@ -1220,7 +1211,7 @@ public class CacheServerLauncher  {
         System.out.println("Failed reading " + url);
         System.exit( 1 );
       }
-      final String logFile = gfprops.getProperty(DistributionConfig.LOG_FILE_NAME);
+      final String logFile = gfprops.getProperty(LOG_FILE);
       if ( logFile == null || logFile.length() == 0 ) {
         return true;
       }
@@ -1244,7 +1235,7 @@ public class CacheServerLauncher  {
 
     commandLineWrapper.add((String) options.get(DISABLE_DEFAULT_SERVER));
     commandLineWrapper.add((String) options.get(SERVER_PORT));
-    commandLineWrapper.add((String) options.get(SERVER_BIND_ADDRESS));
+    commandLineWrapper.add((String) options.get(SERVER_BIND_ADDRESS_NAME));
 
     String criticalHeapThreshold = (String)options.get(CRITICAL_HEAP_PERCENTAGE);
     if (criticalHeapThreshold != null) {
@@ -1272,9 +1263,9 @@ public class CacheServerLauncher  {
       commandLineWrapper.add(key + "=" + props.getProperty(key.toString()));
     }
 
-    if (props.getProperty(DistributionConfig.LOG_FILE_NAME) == null && CacheServerLauncher.isLoggingToStdOut()) {
+    if (props.getProperty(LOG_FILE) == null && CacheServerLauncher.isLoggingToStdOut()) {
       // Do not allow the cache server to log to stdout; override the logger with #defaultLogFileName
-      commandLineWrapper.add(DistributionConfig.LOG_FILE_NAME + "=" + defaultLogFileName);
+      commandLineWrapper.add(LOG_FILE + "=" + defaultLogFileName);
     }
   }
 

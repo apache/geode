@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.admin.jmx;
 
 import com.gemstone.gemfire.admin.DistributedSystemConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 //import com.gemstone.gemfire.admin.internal.InetAddressUtil;
 
 /**
@@ -272,14 +273,13 @@ import com.gemstone.gemfire.admin.DistributedSystemConfig;
  * </dl>
  * 
  *
- * @since 4.0
+ * @since GemFire 4.0
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface AgentConfig extends DistributedSystemConfig {
 
   /** The prefix for JMX Agent configuration system properties */
-  public static final String SYSTEM_PROPERTY_PREFIX =
-    "gemfire.agent.";
+  public static final String SYSTEM_PROPERTY_PREFIX = DistributionConfig.GEMFIRE_PREFIX + "agent.";
 
   /** The default "propertyFile" value */
   public static final String DEFAULT_PROPERTY_FILE = "agent.properties";
@@ -413,7 +413,7 @@ public interface AgentConfig extends DistributedSystemConfig {
   /** 
    * The name of the "rmi-server-port" property
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final String RMI_SERVER_PORT_NAME = "rmi-server-port";
 
@@ -421,7 +421,7 @@ public interface AgentConfig extends DistributedSystemConfig {
    * The default value of the {@linkplain #RMI_SERVER_PORT_NAME rmi-server-port} 
    * property (0)
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final int DEFAULT_RMI_SERVER_PORT = 0;
 
@@ -656,7 +656,7 @@ public interface AgentConfig extends DistributedSystemConfig {
    * See <a href="#rmi-server-port">description</a> above.
    * 
    * @return the value set for rmi-server-port
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public int getRmiServerPort();
 
@@ -666,7 +666,7 @@ public interface AgentConfig extends DistributedSystemConfig {
    * See <a href="#rmi-server-port">description</a> above.
    * 
    * @param port rmi-server-port to set. 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void setRmiServerPort(int port);
 

@@ -16,22 +16,24 @@
  */
 package com.gemstone.gemfire.rest.internal.web.controllers;
 
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.Collections;
+
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.rest.internal.web.RestFunctionTemplate;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
+@Category(DistributedTest.class)
 public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase {
-
-  public RestAPIsOnGroupsFunctionExecutionDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   protected String getFunctionID() {
@@ -39,15 +41,16 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
   }
 
   private void setupCacheWithGroupsAndFunction() {
-    restURLs.add(vm0.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm0, "g0,gm")));
-    restURLs.add(vm1.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm1, "g1")));
-    restURLs.add(vm2.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm2, "g0,g1")));
+    restURLs.add(vm0.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm0.getHost().getHostName(), "g0,gm")));
+    restURLs.add(vm1.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm1.getHost().getHostName(), "g1")));
+    restURLs.add(vm2.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm2.getHost().getHostName(), "g0,g1")));
 
     vm0.invoke("registerFunction(new OnGroupsFunction())", () -> FunctionService.registerFunction(new OnGroupsFunction()));
     vm1.invoke("registerFunction(new OnGroupsFunction())", () -> FunctionService.registerFunction(new OnGroupsFunction()));
     vm2.invoke("registerFunction(new OnGroupsFunction())", () -> FunctionService.registerFunction(new OnGroupsFunction()));
   }
 
+  @Test
   public void testonGroupsExecutionOnAllMembers() {
     setupCacheWithGroupsAndFunction();
 
@@ -61,6 +64,7 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
     restURLs.clear();
   }
 
+  @Test
   public void testonGroupsExecutionOnAllMembersWithFilter() {
     setupCacheWithGroupsAndFunction();
 
@@ -74,6 +78,7 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
     restURLs.clear();
   }
 
+  @Test
   public void testBasicP2PFunctionSelectedGroup() {
     setupCacheWithGroupsAndFunction();
 

@@ -16,12 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -36,25 +32,9 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * A region operation is done on the same key that is about to be rolled or has
  * just been rolled and the region operation is verified to have been correctly
  * executed.
- * 
- *  
  */
 @Category(IntegrationTest.class)
-public class ConcurrentFlushingAndRegionOperationsJUnitTest extends
-    DiskRegionTestingBase
-{
-
-  @Before
-  public void setUp() throws Exception
-  {
-    super.setUp();
-  }
-
-  @After
-  public void tearDown() throws Exception
-  {
-    super.tearDown();
-  }
+public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTestingBase {
 
   protected boolean alreadyComeHere = false;
 
@@ -84,8 +64,8 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends
     region.put("Key", "Value1");
     ((LocalRegion)region).getDiskRegion().flushForTesting();
     try {
-      Assert.assertEquals("Value2", region.get("Key"));
-      Assert.assertEquals("Value2", getValueOnDisk(region));
+      assertEquals("Value2", region.get("Key"));
+      assertEquals("Value2", getValueOnDisk(region));
     }
     catch (EntryNotFoundException e) {
       logWriter.error("Exception occured", e);
@@ -118,7 +98,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends
     region.put("Key", "Value1");
     ((LocalRegion)region).getDiskRegion().flushForTesting();
     try {
-      Assert.assertEquals("Value1", getValueOnDisk(region));
+      assertEquals("Value1", getValueOnDisk(region));
     }
     catch (EntryNotFoundException e) {
       logWriter.error("Exception occured", e);
@@ -320,7 +300,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends
           long newOplogOffset = id.getOffsetInOplog();
           id.setOplogId(oldOplogId);
           id.setOffsetInOplog(oldOplogOffset);
-          Assert.assertEquals("Value1", ((LocalRegion)region).getDiskRegion()
+          assertEquals("Value1", ((LocalRegion)region).getDiskRegion()
               .getNoBuffer(id));
           id.setOplogId(newOplogId);
           id.setOffsetInOplog(newOplogOffset);
@@ -336,7 +316,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends
     ((LocalRegion)region).getDiskRegion().flushForTesting();
     try {
 //       region.getCache().getLogger().info("getting value2");
-      Assert.assertEquals("Value2", region.get("Key"));
+      assertEquals("Value2", region.get("Key"));
     }
     catch (Exception e) {
       logWriter.error("Exception occured", e);
@@ -346,7 +326,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends
     ((LocalRegion)region).getDiskRegion().flushForTesting();
 
     try {
-      Assert.assertEquals("Value2", getValueOnDisk(region));
+      assertEquals("Value2", getValueOnDisk(region));
     }
     catch (EntryNotFoundException e) {
       logWriter.error("Exception occured", e);
@@ -372,7 +352,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends
     region.put("Key", "Value1");
     ((LocalRegion)region).getDiskRegion().flushForTesting();
     try {
-      Assert.assertEquals("Value1", getValueOnDisk(region));
+      assertEquals("Value1", getValueOnDisk(region));
     }
     catch (EntryNotFoundException e) {
       logWriter.error("Exception occured", e);

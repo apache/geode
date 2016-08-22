@@ -19,26 +19,25 @@
  */
 package com.gemstone.gemfire.cache.query.internal;
 
-import com.gemstone.gemfire.cache.query.Struct;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.cache.query.types.StructType;
-import com.gemstone.gemfire.cache.query.internal.types.*;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import static org.junit.Assert.*;
 
 import java.util.Iterator;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.cache.query.Struct;
+import com.gemstone.gemfire.cache.query.internal.types.ObjectTypeImpl;
+import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
+import com.gemstone.gemfire.cache.query.types.ObjectType;
+import com.gemstone.gemfire.cache.query.types.StructType;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
 /**
- * Test StructsBag Limit behaviour
- * 
+ * Test StructBag Limit behaviour
  */
 @Category(UnitTest.class)
 public class StructBagLimitBehaviourJUnitTest extends ResultsBagLimitBehaviourJUnitTest {
-
-  public StructBagLimitBehaviourJUnitTest(String testName) {
-    super(testName);
-  }
 
   public ResultsBag getBagObject(Class clazz) {
     ObjectType[] types = new ObjectType[] { new ObjectTypeImpl(clazz),
@@ -58,6 +57,7 @@ public class StructBagLimitBehaviourJUnitTest extends ResultsBagLimitBehaviourJU
     }
   }
 
+  @Test
   public void testRemoveAllStructBagSpecificMthod() {
     StructBag bag1 = (StructBag)getBagObject(Integer.class);
     // Add Integer & null Objects
@@ -91,6 +91,7 @@ public class StructBagLimitBehaviourJUnitTest extends ResultsBagLimitBehaviourJU
     assertFalse(itr.hasNext());
   }
 
+  @Test
   public void testRetainAllStructBagSpecific() {
     StructBag bag1 = (StructBag)getBagObject(Integer.class);
     // Add Integer & null Objects

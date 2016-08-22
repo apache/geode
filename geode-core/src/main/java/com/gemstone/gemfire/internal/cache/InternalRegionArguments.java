@@ -17,9 +17,10 @@
 package com.gemstone.gemfire.internal.cache;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import com.gemstone.gemfire.cache.query.internal.IndexUpdater;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.LocalRegion.TestCallable;
 import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor;
@@ -30,14 +31,14 @@ import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
  * An internal version of Region Attributes that allows for additional information
  * to be passed to the Region constructors, typically for internal purposes, for example
  * internally GemFire may need use a Region and flag it for internal use only.
- * @since 4.2.3
+ * @since GemFire 4.2.3
  */
 public final class InternalRegionArguments
 {
   private boolean isUsedForPartitionedRegionAdmin;
   private boolean isUsedForSerialGatewaySenderQueue;
   private boolean isUsedForParallelGatewaySenderQueue;
-  private boolean isUsedForHDFSParallelGatewaySenderQueue = false;
+  private boolean isInternalRegion;
   private int bucketRedundancy;
   private boolean isUsedForPartitionedRegionBucket;
   private RegionAdvisor partitionedRegionAdvisor;
@@ -56,8 +57,6 @@ public final class InternalRegionArguments
   private DiskRegion diskRegion;
   private PartitionedRegion partitionedRegion;
   private TestCallable testCallable;
-  private IndexUpdater indexUpdater;
-  private boolean keyRequiresRegionContext;
 
   private AbstractGatewaySender parallelGatewaySender;
   private AbstractGatewaySender serialGatewaySender;
@@ -67,6 +66,7 @@ public final class InternalRegionArguments
   private List indexes;
   private boolean declarativeIndexCreation;
 
+  private Map<String,CacheServiceProfile> cacheServiceProfiles;
 
   /* methods that set and retrieve internal state used to configure a Region */
 
@@ -230,25 +230,6 @@ public final class InternalRegionArguments
     return this.testCallable;
   }
 
-  // SQLFabric index manager
-  public IndexUpdater getIndexUpdater() {
-    return this.indexUpdater;
-  }
-
-  public InternalRegionArguments setIndexUpdater(IndexUpdater indexUpdater) {
-    this.indexUpdater = indexUpdater;
-    return this;
-  }
-
-  public boolean keyRequiresRegionContext() {
-    return this.keyRequiresRegionContext;
-  }
-
-  public InternalRegionArguments setKeyRequiresRegionContext(boolean v) {
-    this.keyRequiresRegionContext = v;
-    return this;
-  }
-
   public InternalRegionArguments setUserAttribute(Object userAttr) {
     this.userAttribute = userAttr;
     return this;
@@ -273,26 +254,11 @@ public final class InternalRegionArguments
     this.isUsedForParallelGatewaySenderQueue = queueFlag;
     return this;
   }
-  public InternalRegionArguments setIsUsedForHDFSParallelGatewaySenderQueue(
-      boolean queueFlag) {
-    this.isUsedForHDFSParallelGatewaySenderQueue = queueFlag;
-    return this;
-  }
 
   public boolean isUsedForParallelGatewaySenderQueue() {
     return this.isUsedForParallelGatewaySenderQueue;
   }
   
-  public boolean isUsedForHDFSParallelGatewaySenderQueue() {
-    return this.isUsedForHDFSParallelGatewaySenderQueue;
-  }
-  
-  public boolean isReadWriteHDFSRegion() {
-    return isUsedForPartitionedRegionBucket()
-        && getPartitionedRegion().getHDFSStoreName() != null
-        && !getPartitionedRegion().getHDFSWriteOnly();
-  }
-
   public InternalRegionArguments setParallelGatewaySender(
       AbstractGatewaySender pgSender) {
     this.parallelGatewaySender = pgSender;
@@ -332,5 +298,26 @@ public final class InternalRegionArguments
   
   public boolean getDeclarativeIndexCreation() {
     return this.declarativeIndexCreation;
+  }
+
+  public InternalRegionArguments addCacheServiceProfile(CacheServiceProfile profile) {
+    if(this.cacheServiceProfiles == null) {
+      this.cacheServiceProfiles = new HashMap<>();
+    }
+    this.cacheServiceProfiles.put(profile.getId(), profile);
+    return this;
+  }
+
+  public Map<String,CacheServiceProfile> getCacheServiceProfiles() {
+    return this.cacheServiceProfiles;
+  }
+
+  public boolean isInternalRegion() {
+    return isInternalRegion;
+  }
+
+  public InternalRegionArguments setInternalRegion(final boolean internalRegion) {
+    isInternalRegion = internalRegion;
+    return this;
   }
 }

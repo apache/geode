@@ -38,8 +38,6 @@ import com.gemstone.gemfire.cache.InterestPolicy;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.SubscriptionAttributes;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreFactoryImpl;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
 import com.gemstone.gemfire.distributed.Role;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -89,7 +87,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
   protected static final int REQUIRES_NOTIFICATION_MASK = 0x8000;
   private static final int HAS_CACHE_SERVER_MASK = 0x10000;
   private static final int REQUIRES_OLD_VALUE_MASK = 0x20000;
-  private static final int MEMBER_UNINITIALIZED_MASK = 0x40000;
+  // unused 0x40000;
   private static final int PERSISTENCE_INITIALIZED_MASK = 0x80000;
   //Important below mentioned bit masks are not available 
   /**
@@ -101,6 +99,8 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
 
   private static final int ASYNC_EVENT_QUEUE_IDS_MASK = 0x400000;
   private static final int IS_OFF_HEAP_MASK =           0x800000;
+  private static final int CACHE_SERVICE_PROFILES_MASK = 0x1000000;
+
   
   // moved initializ* to DistributionAdvisor
 
@@ -229,8 +229,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
         CacheProfile prof = (CacheProfile)profile;
 
         // if region in cache is not yet initialized, exclude
-        if (!prof.regionInitialized          // fix for bug 41102
-            || prof.memberUnInitialized) {
+        if (!prof.regionInitialized) { // fix for bug 41102
           return false;
         }
 
@@ -258,7 +257,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
   /**
    * Same as adviseCacheOp but only includes members that are playing the
    * specified role.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public Set adviseCacheOpRole(final Role role) {
     return adviseFilter(new Filter() {
@@ -267,10 +266,6 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
           CacheProfile cp = (CacheProfile)profile;
           // if region in cache is not yet initialized, exclude
           if (!cp.regionInitialized) {
-            return false;
-          }
-          // if member is not yet initialized, exclude
-          if (cp.memberUnInitialized) {
             return false;
           }
           if (!cp.cachedOrAllEventsWithListener()) {
@@ -327,8 +322,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
       public boolean include(Profile profile) {
         assert profile instanceof CacheProfile;
         CacheProfile cp = (CacheProfile)profile;
-        if (cp.dataPolicy.withReplication() && cp.regionInitialized
-            && !cp.memberUnInitialized) {
+        if (cp.dataPolicy.withReplication() && cp.regionInitialized) {
           return true;
         }
         return false;
@@ -348,10 +342,6 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
         CacheProfile cp = (CacheProfile)profile;
         // if region in cache is not yet initialized, exclude
         if (!cp.regionInitialized) {
-          return false;
-        }
-        // if member is not yet initialized, exclude
-        if (cp.memberUnInitialized) {
           return false;
         }
         DataPolicy dp = cp.dataPolicy;
@@ -449,7 +439,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
   /**
    * returns the set of all the members in the system which requires old values
    * and are not yet finished with initialization (including GII).
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public Set adviseRequiresOldValueInCacheOp( ) {
     return adviseFilter(new Filter() {
@@ -538,20 +528,12 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
      * This information may be incorrect for a PartitionedRegion, but
      * may be relied upon for DistributedRegions (including BucketRegions)
      * 
-     * @since prpersist this field is now overloaded for partitioned regions with persistence.
+     * @since GemFire prpersist this field is now overloaded for partitioned regions with persistence.
      * In the case of pr persistence, this field indicates that the region has finished
      * recovery from disk.
      */
     public boolean regionInitialized;
 
-    /**
-     * True when member is still not ready to receive cache operations. Note
-     * that {@link #regionInitialized} may be still true so other members can
-     * proceed with GII etc. Currently used by SQLFabric to indicate that DDL
-     * replay is in progress and so cache operations/functions should not be
-     * routed to that node.
-     */
-    public boolean memberUnInitialized = false;
     
     /**
      * True when a members persistent store is initialized. Note that
@@ -568,6 +550,8 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
      * local profiles (i.e., a profile representing this vm)
      */
     public boolean hasCacheServer = false;
+
+    public List<CacheServiceProfile> cacheServiceProfiles = new ArrayList<>();
 
     /** for internal use, required for DataSerializer.readObject */
     public CacheProfile() {
@@ -613,7 +597,6 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
       if (this.isGatewayEnabled) s |= IS_GATEWAY_ENABLED_MASK;
       if (this.isPersistent) s |= PERSISTENT_MASK;
       if (this.regionInitialized) s|= REGION_INITIALIZED_MASK;
-      if (this.memberUnInitialized) s |= MEMBER_UNINITIALIZED_MASK;
       if (this.persistentID != null) s|= PERSISTENT_ID_MASK;
       if (this.hasCacheServer) s|= HAS_CACHE_SERVER_MASK;
       if (this.requiresOldValueInEvents) s|= REQUIRES_OLD_VALUE_MASK;
@@ -621,6 +604,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
       if (!this.gatewaySenderIds.isEmpty()) s |= GATEWAY_SENDER_IDS_MASK;
       if (!this.asyncEventQueueIds.isEmpty()) s |= ASYNC_EVENT_QUEUE_IDS_MASK;
       if (this.isOffHeap) s |= IS_OFF_HEAP_MASK;
+      if (!this.cacheServiceProfiles.isEmpty()) s |= CACHE_SERVICE_PROFILES_MASK;
       Assert.assertTrue(!this.scope.isLocal());
       return s;
     }
@@ -690,7 +674,6 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
       this.isGatewayEnabled = (s & IS_GATEWAY_ENABLED_MASK) != 0;
       this.isPersistent = (s & PERSISTENT_MASK) != 0;
       this.regionInitialized = ( (s & REGION_INITIALIZED_MASK) != 0 );
-      this.memberUnInitialized = (s & MEMBER_UNINITIALIZED_MASK) != 0;
       this.hasCacheServer = ( (s & HAS_CACHE_SERVER_MASK) != 0 );
       this.requiresOldValueInEvents = ((s & REQUIRES_OLD_VALUE_MASK) != 0);
       this.persistenceInitialized = (s & PERSISTENCE_INITIALIZED_MASK) != 0;
@@ -699,7 +682,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
 
     /**
      * Sets the SubscriptionAttributes for the region that this profile is on
-     * @since 5.0
+     * @since GemFire 5.0
      */
     public void setSubscriptionAttributes(SubscriptionAttributes sa) {
       this.subscriptionAttributes = sa;
@@ -724,6 +707,14 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
      */
     public boolean allEvents() {
       return this.subscriptionAttributes.getInterestPolicy().isAll();
+    }
+
+    public void addCacheServiceProfile(CacheServiceProfile profile) {
+      this.cacheServiceProfiles.add(profile);
+    }
+
+    private boolean hasCacheServiceProfiles(int bits) {
+      return (bits & CACHE_SERVICE_PROFILES_MASK) != 0;
     }
 
     /**
@@ -831,9 +822,12 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
         writeSet(asyncEventQueueIds, out);
       }
       DataSerializer.writeObject(this.filterProfile, out);
+      if (!cacheServiceProfiles.isEmpty()) {
+        DataSerializer.writeObject(cacheServiceProfiles, out);
+      }
     }
 
-    private void writeSet(Set<String> set, DataOutput out) throws IOException {
+    private void writeSet(Set<?> set, DataOutput out) throws IOException {
       // to fix bug 47205 always serialize the Set as a HashSet.
       out.writeByte(DSCODE.HASH_SET);
       InternalDataSerializer.writeSet(set, out);
@@ -855,6 +849,9 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
         asyncEventQueueIds = DataSerializer.readObject(in);
       }
       this.filterProfile = DataSerializer.readObject(in);
+      if (hasCacheServiceProfiles(bits)) {
+        cacheServiceProfiles = DataSerializer.readObject(in);
+      }
     }
 
     @Override
@@ -873,8 +870,6 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
       sb.append("; scope=" + this.scope);
       sb.append("; regionInitialized=").append(
           String.valueOf(this.regionInitialized));
-      sb.append("; memberUnInitialized=").append(
-          String.valueOf(this.memberUnInitialized));
       sb.append("; inRecovery=" + this.inRecovery);
       sb.append("; subcription=" + this.subscriptionAttributes);
       sb.append("; isPartitioned=" + this.isPartitioned);
@@ -887,6 +882,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
       sb.append("; gatewaySenderIds =" + this.gatewaySenderIds);
       sb.append("; asyncEventQueueIds =" + this.asyncEventQueueIds);
       sb.append("; IsOffHeap=" + this.isOffHeap);
+      sb.append("; cacheServiceProfiles=" + this.cacheServiceProfiles);
     }
   }
 
@@ -1000,7 +996,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
    * memberIds
    * @param oldRecipients the <code>Set</code> of memberIds that have received the message
    * @return the set of new replicate's memberIds
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public Set adviseNewReplicates(final Set oldRecipients)
   {
@@ -1025,7 +1021,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
    * Provide all the replicates including persistent replicates.
    * 
    * @return the set of replicate's memberIds
-   * @since 5.8
+   * @since GemFire 5.8
    */
   public Set<InternalDistributedMember> adviseReplicates() {
     return adviseFilter(new Filter() {
@@ -1044,7 +1040,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
    * Provide only the preloadeds given a set of existing memberIds
    * 
    * @return the set of preloaded's memberIds
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public Set advisePreloadeds() {
     return adviseFilter(new Filter() {
@@ -1064,7 +1060,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
    * memberIds
    * 
    * @return the set of replicate's memberIds
-   * @since 5.8
+   * @since GemFire 5.8
    */
   public Set adviseEmptys() {
     return adviseFilter(new Filter() {
@@ -1082,7 +1078,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
    * Provide only the normals (having DataPolicy.NORMAL) given a set of existing memberIds
    * 
    * @return the set of normal's memberIds
-   * @since 5.8
+   * @since GemFire 5.8
    */
   public Set adviseNormals() {
     return adviseFilter(new Filter() {
@@ -1228,29 +1224,15 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
       public boolean include(final Profile profile) {
         if (profile instanceof CacheProfile) {
           final CacheProfile cp = (CacheProfile)profile;
-          /*Since HDFS queues are created only when a region is created, this check is 
-           * unnecessary. Also this check is creating problem because hdfs queue is not 
-           * created on an accessor. Hence removing this check for hdfs queues. */
-          Set<String> allAsyncEventIdsNoHDFS = removeHDFSQueues(allAsyncEventIds);
-          Set<String> profileQueueIdsNoHDFS = removeHDFSQueues(cp.asyncEventQueueIds);
-          if (allAsyncEventIdsNoHDFS.equals(profileQueueIdsNoHDFS)) {
+          if (allAsyncEventIds.equals(cp.asyncEventQueueIds)) {
             return true;
           }else{
-            differAsycnQueueIds.add(allAsyncEventIdsNoHDFS);
-            differAsycnQueueIds.add(profileQueueIdsNoHDFS);
+            differAsycnQueueIds.add(allAsyncEventIds);
+            differAsycnQueueIds.add(cp.asyncEventQueueIds);
             return false;
           }
         }
         return false;
-      }
-      private Set<String> removeHDFSQueues(Set<String> queueIds){
-        Set<String> queueIdsWithoutHDFSQueues = new HashSet<String>();
-        for (String queueId: queueIds){
-          if (!queueId.startsWith(HDFSStoreFactoryImpl.DEFAULT_ASYNC_QUEUE_ID_FOR_HDFS)){
-            queueIdsWithoutHDFSQueues.add(queueId);
-          }
-        }
-        return queueIdsWithoutHDFSQueues;
       }
     });
     return differAsycnQueueIds;

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Properties;
 
 import com.gemstone.gemfire.cache.CacheClosedException;
@@ -38,14 +47,11 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * Tests the basic use cases for PR persistence.
  *
  */
+@Category(DistributedTest.class)
 public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
   private static final int NUM_BUCKETS = 15;
   private static final int MAX_WAIT = 30 * 1000;
   static Object lockObject = new Object();
-  
-  public PersistPRKRFDUnitTest(String name) {
-    super(name);
-  }
   
   /**
    * do a put/modify/destroy while closing disk store
@@ -53,6 +59,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
    * to turn on debug, add following parameter in local.conf:
    * hydra.VmPrms-extraVMArgs += "-Ddisk.KRF_DEBUG=true";
    */
+  @Test
   public void testCloseDiskStoreWhenPut() {
     final String title = "testCloseDiskStoreWhenPut:";
     Host host = Host.getHost(0);

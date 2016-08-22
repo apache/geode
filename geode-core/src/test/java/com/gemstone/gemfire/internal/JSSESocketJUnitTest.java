@@ -16,21 +16,11 @@
  */
 package com.gemstone.gemfire.internal;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.LineNumberReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.StringReader;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Properties;
-
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.test.TestUtil;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
@@ -46,10 +36,15 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.util.test.TestUtil;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.io.*;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Test creation of server sockets and client sockets with various JSSE
@@ -57,170 +52,180 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  */
 @Category(IntegrationTest.class)
 public class JSSESocketJUnitTest {
-  public @Rule TestName name = new TestName();
-  
+  public
+  @Rule
+  TestName name = new TestName();
+
   private static final org.apache.logging.log4j.Logger logger = LogService.getLogger();
 
   ServerSocket acceptor;
   Socket server;
-  
-  static ByteArrayOutputStream baos = new ByteArrayOutputStream( );
-  
+
+  static ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
   private int randport = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-  
+
   @Before
-  public void setUp( ) throws Exception {
-    System.out.println( "\n\n########## setup " + name.getMethodName() + " ############\n\n" );
+  public void setUp() throws Exception {
+    System.out.println("\n\n########## setup " + name.getMethodName() + " ############\n\n");
     server = null;
     acceptor = null;
     baos.reset();
   }
-  
+
   @After
-  public void tearDown( ) throws Exception {
-    System.out.println( "\n\n########## teardown " + name.getMethodName() + " ############\n\n" );
-    
-    if ( server != null ) {
+  public void tearDown() throws Exception {
+    System.out.println("\n\n########## teardown " + name.getMethodName() + " ############\n\n");
+
+    if (server != null) {
       server.close();
     }
-    if ( acceptor != null ) {
+    if (acceptor != null) {
       acceptor.close();
     }
-    System.out.println( baos.toString() );
+    System.out.println(baos.toString());
   }
-  
+
   //----- test methods ------
-  
+
   @Test
-  public void testSSLSocket( ) throws Exception {
+  public void testSSLSocket() throws Exception {
     final Object[] receiver = new Object[1];
-    
+
     TestAppender.create();
-    
-    {
-      System.setProperty( "gemfire.mcast-port", "0");
-      System.setProperty( "gemfire.ssl-enabled", "true" );
-      System.setProperty( "gemfire.ssl-require-authentication", "true" );
-      System.setProperty( "gemfire.ssl-ciphers", "any" );
-      System.setProperty( "gemfire.ssl-protocols", "TLSv1.2" );
-      
-      File jks = findTestJKS();
-      System.setProperty( "javax.net.ssl.trustStore", jks.getCanonicalPath() );
-      System.setProperty( "javax.net.ssl.trustStorePassword", "password" );
-      System.setProperty( "javax.net.ssl.keyStore", jks.getCanonicalPath() );
-      System.setProperty( "javax.net.ssl.keyStorePassword", "password" );
-    }
-    
-    assertTrue(SocketCreator.getDefaultInstance().useSSL());
-    
-    Thread serverThread = startServer( receiver );
-    
-    Socket client = SocketCreator.getDefaultInstance().connectForServer( InetAddress.getByName("localhost"), randport );
-    
-    ObjectOutputStream oos = new ObjectOutputStream( client.getOutputStream() );
-    String expected = new String( "testing " + name.getMethodName() );
-    oos.writeObject( expected );
-    oos.flush();
-    
-    ThreadUtils.join(serverThread, 30 * 1000);
-    
-    client.close();
-    if ( expected.equals( receiver[0] ) ) {
-      System.out.println( "received " + receiver[0] + " as expected." );
-    } else {
-      throw new Exception( "Expected \"" + expected + "\" but received \"" + receiver[0] + "\"" );
-    }
-    
-    String logOutput = baos.toString();
-    StringReader sreader = new StringReader( logOutput );
-    LineNumberReader reader = new LineNumberReader( sreader );
-    int peerLogCount = 0;
-    String line = null;
-    while( (line = reader.readLine()) != null ) {
-      
-      if (line.matches( ".*peer CN=.*" ) ) {
-        System.out.println( "Found peer log statement." );
-        peerLogCount++;
+
+    // Get original base log level
+    Level originalBaseLevel = LogService.getBaseLogLevel();
+    try {
+      // Set base log level to debug to log the SSL messages
+      LogService.setBaseLogLevel(Level.DEBUG);
+      {
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + SSL_ENABLED, "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + SSL_REQUIRE_AUTHENTICATION, "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + SSL_CIPHERS, "any");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + SSL_PROTOCOLS, "TLSv1.2");
+
+        File jks = findTestJKS();
+        System.setProperty("javax.net.ssl.trustStore", jks.getCanonicalPath());
+        System.setProperty("javax.net.ssl.trustStorePassword", "password");
+        System.setProperty("javax.net.ssl.keyStore", jks.getCanonicalPath());
+        System.setProperty("javax.net.ssl.keyStorePassword", "password");
       }
-    }
-    if ( peerLogCount != 2 ) {
-      throw new Exception( "Expected to find to peer identities logged." );
+
+      assertTrue(SocketCreator.getDefaultInstance().useSSL());
+
+      Thread serverThread = startServer(receiver);
+
+      Socket client = SocketCreator.getDefaultInstance().connectForServer(InetAddress.getByName("localhost"), randport);
+
+      ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
+      String expected = new String("testing " + name.getMethodName());
+      oos.writeObject(expected);
+      oos.flush();
+
+      ThreadUtils.join(serverThread, 30 * 1000);
+
+      client.close();
+      if (expected.equals(receiver[0])) {
+        System.out.println("received " + receiver[0] + " as expected.");
+      } else {
+        throw new Exception("Expected \"" + expected + "\" but received \"" + receiver[0] + "\"");
+      }
+
+      String logOutput = baos.toString();
+      StringReader sreader = new StringReader(logOutput);
+      LineNumberReader reader = new LineNumberReader(sreader);
+      int peerLogCount = 0;
+      String line = null;
+      while ((line = reader.readLine()) != null) {
+
+        if (line.matches(".*peer CN=.*")) {
+          System.out.println("Found peer log statement.");
+          peerLogCount++;
+        }
+      }
+      if (peerLogCount != 2) {
+        throw new Exception("Expected to find to peer identities logged.");
+      }
+    } finally {
+      // Reset original base log level
+      LogService.setBaseLogLevel(originalBaseLevel);
     }
   }
-  
-  /** not actually related to this test class, but this is as good a place
-      as any for this little test of the client-side ability to tell gemfire
-      to use a given socket factory.  We just test the connectForClient method
-      to see if it's used */
+
+  /**
+   * not actually related to this test class, but this is as good a place
+   * as any for this little test of the client-side ability to tell gemfire
+   * to use a given socket factory.  We just test the connectForClient method
+   * to see if it's used
+   */
   @Test
   public void testClientSocketFactory() {
-    System.getProperties().put("gemfire.clientSocketFactory",
-      TSocketFactory.class.getName());
-    System.getProperties().remove( "gemfire.ssl-enabled");
+    System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + "clientSocketFactory",
+        TSocketFactory.class.getName());
+    System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + SSL_ENABLED);
     SocketCreator.getDefaultInstance(new Properties());
     factoryInvoked = false;
     try {
       try {
         Socket sock = SocketCreator.getDefaultInstance().connectForClient("localhost", 12345,
-          0);
+            0);
         sock.close();
         fail("socket factory was not invoked");
       } catch (IOException e) {
         assertTrue("socket factory was not invoked: " + factoryInvoked, factoryInvoked);
       }
     } finally {
-      System.getProperties().remove("gemfire.clientSocketFactory");
+      System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + "clientSocketFactory");
       SocketCreator.getDefaultInstance().initializeClientSocketFactory();
     }
   }
-  
+
   static boolean factoryInvoked;
-  
-  public static class TSocketFactory implements com.gemstone.gemfire.distributed.ClientSocketFactory
-  {
+
+  public static class TSocketFactory implements com.gemstone.gemfire.distributed.ClientSocketFactory {
     public TSocketFactory() {
     }
-    
+
     public Socket createSocket(InetAddress address, int port) throws IOException {
       JSSESocketJUnitTest.factoryInvoked = true;
       throw new IOException("splort!");
     }
   }
-  
-  
+
   //------------- utilities -----
-  
+
   private File findTestJKS() {
     return new File(TestUtil.getResourcePath(getClass(), "/ssl/trusted.keystore"));
   }
-  
-  private Thread startServer( final Object[] receiver ) throws Exception {
-    final ServerSocket ss = SocketCreator.getDefaultInstance().createServerSocket( randport, 0, InetAddress.getByName( "localhost" ) );
-    
-    
-    Thread t = new Thread( new Runnable() {
-      public void run( ) {
+
+  private Thread startServer(final Object[] receiver) throws Exception {
+    final ServerSocket ss = SocketCreator.getDefaultInstance().createServerSocket(randport, 0, InetAddress.getByName("localhost"));
+
+    Thread t = new Thread(new Runnable() {
+      public void run() {
         try {
-        Socket s = ss.accept();
-        SocketCreator.getDefaultInstance().configureServerSSLSocket( s );
-        ObjectInputStream ois = new ObjectInputStream( s.getInputStream() );
-        receiver[0] = ois.readObject( );
-        server = s;
-        acceptor = ss;
-        } catch ( Exception e ) {
+          Socket s = ss.accept();
+          SocketCreator.getDefaultInstance().configureServerSSLSocket(s);
+          ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
+          receiver[0] = ois.readObject();
+          server = s;
+          acceptor = ss;
+        } catch (Exception e) {
           e.printStackTrace();
           receiver[0] = e;
         }
       }
-    }, name.getMethodName() + "-server" );
+    }, name.getMethodName() + "-server");
     t.start();
     return t;
   }
 
   public static final class TestAppender extends AbstractAppender {
     private static final String APPENDER_NAME = TestAppender.class.getName();
-    private final static String SOCKET_CREATOR_CLASSNAME= SocketCreator.class.getName();
-    
+    private final static String SOCKET_CREATOR_CLASSNAME = SocketCreator.class.getName();
+
     private TestAppender() {
       super(APPENDER_NAME, null, PatternLayout.createDefaultLayout());
       start();
@@ -230,7 +235,7 @@ public class JSSESocketJUnitTest {
       Appender appender = new TestAppender();
       Logger socketCreatorLogger = (Logger) LogManager.getLogger(SOCKET_CREATOR_CLASSNAME);
       LoggerConfig config = socketCreatorLogger.getContext().getConfiguration().getLoggerConfig(SOCKET_CREATOR_CLASSNAME);
-      config.addAppender(appender, Level.INFO, null);
+      config.addAppender(appender, Level.DEBUG, null);
       return appender;
     }
 

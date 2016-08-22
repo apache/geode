@@ -16,25 +16,25 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
-import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
-import com.gemstone.gemfire.internal.cache.tier.Command;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.*;
-import com.gemstone.gemfire.cache.query.CqException;
-import com.gemstone.gemfire.cache.query.CqQuery;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
-import com.gemstone.gemfire.cache.query.internal.cq.CqQueryImpl;
-import com.gemstone.gemfire.cache.query.internal.cq.CqService;
-import com.gemstone.gemfire.cache.query.internal.cq.CqServiceImpl;
-import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+
+import com.gemstone.gemfire.cache.query.CqException;
+import com.gemstone.gemfire.cache.query.internal.cq.CqQueryImpl;
+import com.gemstone.gemfire.cache.query.internal.cq.CqService;
+import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
+import com.gemstone.gemfire.distributed.internal.DistributionStats;
+import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
+import com.gemstone.gemfire.internal.cache.tier.Command;
+import com.gemstone.gemfire.internal.cache.tier.MessageType;
+import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerStats;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
+import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.security.AuthorizeRequest;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 
 public class StopCQ extends BaseCQCommand {
@@ -88,7 +88,9 @@ public class StopCQ extends BaseCQCommand {
         serverCqName = cqService.constructServerCqName(cqName, id);
       }
       InternalCqQuery cqQuery = cqService.getCq(serverCqName);
-      
+
+      GeodeSecurityUtil.authorizeDataManage();
+
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {
         String queryStr = null;

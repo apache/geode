@@ -18,6 +18,10 @@ package com.gemstone.gemfire;
 
 //import com.gemstone.gemfire.distributed.DistributedSystem;
 
+import java.util.function.DoubleSupplier;
+import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
+
 /**
  * Instances of this interface maintain the values of various application-defined
  * statistics.  The statistics themselves are described by an instance
@@ -47,7 +51,7 @@ package com.gemstone.gemfire;
  * @see <A href="package-summary.html#statistics">Package introduction</A>
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  *
  */
 public interface Statistics {
@@ -441,4 +445,243 @@ public interface Statistics {
    *         type <code>double</code>.
    */
   public void incDouble(String name, double delta);
+
+  /**
+   * Provide a callback to compute the value of this statistic
+   * every sample interval and use that as the value of the stat.
+   * <p>
+   * The callback should return quickly because it is invoked on a shared thread.
+   * It should not do any expensive computations, network calls, or access any resources
+   * under locks that may be locked by long running processes.
+   * <p>
+   * This callback will only be invoked if the distributed system property
+   * statistic-sampling-enabled is set to true, and it will be invoked at intervals
+   * determined by the statistic-sampling-rate.
+   * <p>
+   * Get methods are not guaranteed to recompute a new value, they may return
+   * the last sampled value
+   * @param id a statistic id obtained with {@link #nameToId}
+   * or {@link StatisticsType#nameToId}.
+   * @param supplier a callback that will return the value of the stat. This
+   * replaces any previously registered supplier. If the passed in suppplier is null, it
+   * will remove any existing supplier
+   * @return the previously registered supplier, or null if there was no previously registered supplier
+   * @throws IllegalArgumentException If the id is invalid.
+   * @since Geode 1.0
+   */
+  public IntSupplier setIntSupplier(int id, IntSupplier supplier);
+
+  /**
+   * Provide a callback to compute the value of this statistic
+   * every sample interval and use that as the value of the stat.
+   * <p>
+   * The callback should return quickly because it is invoked on a shared thread.
+   * It should not do any expensive computations, network calls, or access any resources
+   * under locks that may be locked by long running processes.
+   * <p>
+   * This callback will only be invoked if the distributed system property
+   * statistic-sampling-enabled is set to true, and it will be invoked at intervals
+   * determined by the statistic-sampling-rate.
+   * <p>
+   * Get methods are not guaranteed to recompute a new value, they may return
+   * the last sampled value
+   * @param name the nane of the statistic to update
+   * @param supplier a callback that will return the value of the stat. This
+   * replaces any previously registered supplier. If the passed in suppplier is null, it
+   * will remove any existing supplier
+   * @return the previously registered supplier, or null if there was no previously registered supplier
+   * @throws IllegalArgumentException
+   *         If no statistic exists with name <code>name</code> or
+   *         if the statistic named <code>name</code> is not of
+   *         type <code>int</code>.
+   * @since Geode 1.0
+   */
+  public IntSupplier setIntSupplier(String name, IntSupplier supplier);
+
+
+  /**
+   * Provide a callback to compute the value of this statistic
+   * every sample interval and use that as the value of the stat.
+   * <p>
+   * The callback should return quickly because it is invoked on a shared thread.
+   * It should not do any expensive computations, network calls, or access any resources
+   * under locks that may be locked by long running processes.
+   * <p>
+   * This callback will only be invoked if the distributed system property
+   * statistic-sampling-enabled is set to true, and it will be invoked at intervals
+   * determined by the statistic-sampling-rate.
+   * <p>
+   * Get methods are not guaranteed to recompute a new value, they may return
+   * the last sampled value
+   * @param descriptor the descriptor of the statistic to update
+   * @param supplier a callback that will return the value of the stat. This
+   * replaces any previously registered supplier. If the passed in suppplier is null, it
+   * will remove any existing supplier
+   * @return the previously registered supplier, or null if there was no previously registered supplier
+   * @throws IllegalArgumentException
+   *         If no statistic exists with the given <code>descriptor</code> or
+   *         if the described statistic is not of
+   *         type <code>int</code>.
+   * @since Geode 1.0
+   */
+  public IntSupplier setIntSupplier(StatisticDescriptor descriptor, IntSupplier supplier);
+
+  /**
+   * Provide a callback to compute the value of this statistic
+   * every sample interval and use that as the value of the stat.
+   * <p>
+   * The callback should return quickly because it is invoked on a shared thread.
+   * It should not do any expensive computations, network calls, or access any resources
+   * under locks that may be locked by long running processes.
+   * <p>
+   * This callback will only be invoked if the distributed system property
+   * statistic-sampling-enabled is set to true, and it will be invoked at intervals
+   * determined by the statistic-sampling-rate.
+   * <p>
+   * Get methods are not guaranteed to recompute a new value, they may return
+   * the last sampled value
+   * @param id a statistic id obtained with {@link #nameToId}
+   * or {@link StatisticsType#nameToId}.
+   * @param supplier a callback that will return the value of the stat. This
+   * replaces any previously registered supplier. If the passed in suppplier is null, it
+   * will remove any existing supplier
+   * @return the previously registered supplier, or null if there was no previously registered supplier
+   * @throws IllegalArgumentException If the id is invalid.
+   * @since Geode 1.0
+   */
+  public LongSupplier setLongSupplier(int id, LongSupplier supplier);
+
+  /**
+   * Provide a callback to compute the value of this statistic
+   * every sample interval and use that as the value of the stat.
+   * <p>
+   * The callback should return quickly because it is invoked on a shared thread.
+   * It should not do any expensive computations, network calls, or access any resources
+   * under locks that may be locked by long running processes.
+   * <p>
+   * This callback will only be invoked if the distributed system property
+   * statistic-sampling-enabled is set to true, and it will be invoked at intervals
+   * determined by the statistic-sampling-rate.
+   * <p>
+   * Get methods are not guaranteed to recompute a new value, they may return
+   * the last sampled value
+   * @param name the nane of the statistic to update
+   * @param supplier a callback that will return the value of the stat. This
+   * replaces any previously registered supplier. If the passed in suppplier is null, it
+   * will remove any existing supplier
+   * @return the previously registered supplier, or null if there was no previously registered supplier
+   * @throws IllegalArgumentException
+   *         If no statistic exists with name <code>name</code> or
+   *         if the statistic named <code>name</code> is not of
+   *         type <code>long</code>.
+   */
+  public LongSupplier setLongSupplier(String name, LongSupplier supplier);
+
+
+  /**
+   * Provide a callback to compute the value of this statistic
+   * every sample interval and use that as the value of the stat.
+   * <p>
+   * The callback should return quickly because it is invoked on a shared thread.
+   * It should not do any expensive computations, network calls, or access any resources
+   * under locks that may be locked by long running processes.
+   * <p>
+   * This callback will only be invoked if the distributed system property
+   * statistic-sampling-enabled is set to true, and it will be invoked at intervals
+   * determined by the statistic-sampling-rate.
+   * <p>
+   * Get methods are not guaranteed to recompute a new value, they may return
+   * the last sampled value
+   * @param descriptor the descriptor of the statistic to update
+   * @param supplier a callback that will return the value of the stat. This
+   * replaces any previously registered supplier. If the passed in suppplier is null, it
+   * will remove any existing supplier
+   * @return the previously registered supplier, or null if there was no previously registered supplier
+   * @throws IllegalArgumentException
+   *         If no statistic exists with the given <code>descriptor</code> or
+   *         if the described statistic is not of
+   *         type <code>long</code>.
+   * @since Geode 1.0
+   */
+  public LongSupplier setLongSupplier(StatisticDescriptor descriptor, LongSupplier supplier);
+
+  /**
+   * Provide a callback to compute the value of this statistic
+   * every sample interval and use that as the value of the stat.
+   * <p>
+   * The callback should return quickly because it is invoked on a shared thread.
+   * It should not do any expensive computations, network calls, or access any resources
+   * under locks that may be locked by double running processes.
+   * <p>
+   * This callback will only be invoked if the distributed system property
+   * statistic-sampling-enabled is set to true, and it will be invoked at intervals
+   * determined by the statistic-sampling-rate.
+   * <p>
+   * Get methods are not guaranteed to recompute a new value, they may return
+   * the last sampled value
+   * @param id a statistic id obtained with {@link #nameToId}
+   * or {@link StatisticsType#nameToId}.
+   * @param supplier a callback that will return the value of the stat. This
+   * replaces any previously registered supplier. If the passed in suppplier is null, it
+   * will remove any existing supplier
+   * @return the previously registered supplier, or null if there was no previously registered supplier
+   * @throws IllegalArgumentException If the id is invalid.
+   * @since Geode 1.0
+   */
+  public DoubleSupplier setDoubleSupplier(int id, DoubleSupplier supplier);
+
+  /**
+   * Provide a callback to compute the value of this statistic
+   * every sample interval and use that as the value of the stat.
+   * <p>
+   * The callback should return quickly because it is invoked on a shared thread.
+   * It should not do any expensive computations, network calls, or access any resources
+   * under locks that may be locked by double running processes.
+   * <p>
+   * This callback will only be invoked if the distributed system property
+   * statistic-sampling-enabled is set to true, and it will be invoked at intervals
+   * determined by the statistic-sampling-rate.
+   * <p>
+   * Get methods are not guaranteed to recompute a new value, they may return
+   * the last sampled value
+   * @param name the nane of the statistic to update
+   * @param supplier a callback that will return the value of the stat. This
+   * replaces any previously registered supplier. If the passed in suppplier is null, it
+   * will remove any existing supplier
+   * @return the previously registered supplier, or null if there was no previously registered supplier
+   * @throws IllegalArgumentException
+   *         If no statistic exists with name <code>name</code> or
+   *         if the statistic named <code>name</code> is not of
+   *         type <code>double</code>.
+   * @since Geode 1.0
+   */
+  public DoubleSupplier setDoubleSupplier(String name, DoubleSupplier supplier);
+
+
+  /**
+   * Provide a callback to compute the value of this statistic
+   * every sample interval and use that as the value of the stat.
+   * <p>
+   * The callback should return quickly because it is invoked on a shared thread.
+   * It should not do any expensive computations, network calls, or access any resources
+   * under locks that may be locked by double running processes.
+   * <p>
+   * This callback will only be invoked if the distributed system property
+   * statistic-sampling-enabled is set to true, and it will be invoked at intervals
+   * determined by the statistic-sampling-rate.
+   * <p>
+   * Get methods are not guaranteed to recompute a new value, they may return
+   * the last sampled value
+   * @param descriptor the descriptor of the statistic to update
+   * @param supplier a callback that will return the value of the stat. This
+   * replaces any previously registered supplier. If the passed in suppplier is null, it
+   * will remove any existing supplier
+   * @return the previously registered supplier, or null if there was no previously registered supplier
+   * @throws IllegalArgumentException
+   *         If no statistic exists with the given <code>descriptor</code> or
+   *         if the described statistic is not of
+   *         type <code>double</code>.
+   * @since Geode 1.0
+   */
+  public DoubleSupplier setDoubleSupplier(StatisticDescriptor descriptor, DoubleSupplier supplier);
 }

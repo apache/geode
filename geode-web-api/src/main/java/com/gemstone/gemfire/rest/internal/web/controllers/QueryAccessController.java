@@ -57,7 +57,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
  * The QueryingController class serves all HTTP REST requests related to the gemfire querying
  * <p/>
  * @see org.springframework.stereotype.Controller
- * @since 8.0
+ * @since GemFire 8.0
  */
 
 @Controller("queryController")

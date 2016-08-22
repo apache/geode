@@ -96,7 +96,7 @@ import java.util.concurrent.TimeUnit;
  * Developer Guide for details on using transactions with Partitioned Regions.
  * 
  * 
- * @since 4.0
+ * @since GemFire 4.0
  * 
  * @see Cache
  * 
@@ -106,7 +106,7 @@ public interface CacheTransactionManager {
      *
      * @throws IllegalStateException if the thread is already associated with a transaction
      *
-     * @since 4.0
+     * @since GemFire 4.0
      */
     public void begin();
 
@@ -142,7 +142,7 @@ public interface CacheTransactionManager {
      *  this method completes, the thread is no longer associated with a
      *  transaction and the transaction context is destroyed.
      *
-     * @since 4.0
+     * @since GemFire 4.0
      * 
      * @throws IllegalStateException if the thread is not associated with a transaction
      */
@@ -155,7 +155,7 @@ public interface CacheTransactionManager {
    * 
    * @return the transaction identifier of the suspended transaction or null if
    *         the thread was not associated with a transaction
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public TransactionId suspend();
 
@@ -169,7 +169,7 @@ public interface CacheTransactionManager {
    *           if the thread is associated with a transaction or if
    *           {@link #isSuspended(TransactionId)} would return false for the
    *           given transactionId
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    * @see #tryResume(TransactionId)
    */
   public void resume(TransactionId transactionId);
@@ -181,7 +181,7 @@ public interface CacheTransactionManager {
    * 
    * @param transactionId
    * @return true if the transaction is in suspended state, false otherwise
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    * @see #exists(TransactionId)
    */
   public boolean isSuspended(TransactionId transactionId);
@@ -201,7 +201,7 @@ public interface CacheTransactionManager {
    * @param transactionId
    *          the transaction to resume
    * @return true if the transaction was resumed, false otherwise
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public boolean tryResume(TransactionId transactionId);
 
@@ -224,7 +224,7 @@ public interface CacheTransactionManager {
    * @param unit
    *          the time unit of the <code>time</code> argument
    * @return true if the transaction was resumed, false otherwise
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    * @see #tryResume(TransactionId)
    */
   public boolean tryResume(TransactionId transactionId, long time, TimeUnit unit);
@@ -237,7 +237,7 @@ public interface CacheTransactionManager {
    * @param transactionId
    *          the given transaction identifier
    * @return true if the transaction is in progress, false otherwise.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    * @see #isSuspended(TransactionId)
    */
   public boolean exists(TransactionId transactionId);
@@ -246,7 +246,7 @@ public interface CacheTransactionManager {
      *
      * @return true if a transaction exists, false otherwise
      *
-     * @since 4.0
+     * @since GemFire 4.0
      */
     public boolean exists();
 
@@ -254,7 +254,7 @@ public interface CacheTransactionManager {
      *
      * @return the transaction identifier or null if no transaction exists
      *
-     * @since 4.0
+     * @since GemFire 4.0
      */
     public TransactionId getTransactionId();
 
@@ -271,7 +271,7 @@ public interface CacheTransactionManager {
     /** Returns an array of all the transaction listeners on this cache.
      * Modifications to the returned array will not effect what listeners are on this cache.
      * @return the cache's <code>TransactionListener</code>s; an empty array if no listeners
-     * @since 5.0
+     * @since GemFire 5.0
      */
     public TransactionListener[] getListeners();
 
@@ -291,7 +291,7 @@ public interface CacheTransactionManager {
      * Adds a transaction listener to the end of the list of transaction listeners on this cache.
      * @param aListener the user defined transaction listener to add to the cache.
      * @throws IllegalArgumentException if <code>aListener</code> is null
-     * @since 5.0
+     * @since GemFire 5.0
      */
     public void addListener(TransactionListener aListener);
     /**
@@ -301,14 +301,14 @@ public interface CacheTransactionManager {
      * be called on it; otherwise does nothing.
      * @param aListener the transaction listener to remove from the cache.
      * @throws IllegalArgumentException if <code>aListener</code> is null
-     * @since 5.0
+     * @since GemFire 5.0
      */
     public void removeListener(TransactionListener aListener);
     /**
      * Removes all transaction listeners, calling {@link CacheCallback#close} on each of them, and then adds each listener in the specified array.
      * @param newListeners a possibly null or empty array of listeners to add to this cache.
      * @throws IllegalArgumentException if the <code>newListeners</code> array has a null element
-     * @since 5.0
+     * @since GemFire 5.0
      */
     public void initListeners(TransactionListener[] newListeners);
 
@@ -316,7 +316,7 @@ public interface CacheTransactionManager {
      * Set the TransactionWriter for the cache
      * @param writer
      * @see TransactionWriter
-     * @since 6.5
+     * @since GemFire 6.5
      */
     public void setWriter(TransactionWriter writer);
 
@@ -324,7 +324,7 @@ public interface CacheTransactionManager {
      * Returns the current {@link TransactionWriter}
      * @see CacheTransactionManager#setWriter(TransactionWriter)
      * @return the current {@link TransactionWriter}
-     * @since 6.5
+     * @since GemFire 6.5
      */
     public TransactionWriter getWriter();
     
@@ -335,7 +335,7 @@ public interface CacheTransactionManager {
      * 
      * @throws IllegalStateException if a transaction is already in progress
      * and this method sets the distributed mode to a different value.
-     * @since 9.0
+     * @since Geode 1.0
      */
     public void setDistributed(boolean distributed);
     
@@ -343,7 +343,7 @@ public interface CacheTransactionManager {
      * Returns the execution mode of transactions
      * @return true if distributed,
      * false otherwise.
-     * @since 9.0
+     * @since Geode 1.0
      */
     public boolean isDistributed();
 }

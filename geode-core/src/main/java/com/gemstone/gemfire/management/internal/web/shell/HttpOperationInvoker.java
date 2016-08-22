@@ -22,7 +22,7 @@ import com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker;
  * The HttpOperationInvoker interface is a marker interface for HTTP-based OperationInvokers.
  * <p/>
  * @see com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public interface HttpOperationInvoker extends OperationInvoker {

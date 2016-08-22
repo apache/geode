@@ -16,29 +16,6 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.net.Inet4Address;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.logging.Level;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.Locator;
@@ -47,13 +24,29 @@ import com.gemstone.gemfire.internal.Config;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.net.*;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.logging.Level;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 /**
  * Tests the functionality of the {@link InternalDistributedSystem}
  * class.  Mostly checks configuration error checking.
  *
  *
- * @since 2.1
+ * @since GemFire 2.1
  */
 @Category(IntegrationTest.class)
 public class InternalDistributedSystemJUnitTest 
@@ -108,11 +101,9 @@ public class InternalDistributedSystemJUnitTest
   @Test
   public void testDefaultProperties() {
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     DistributionConfig config = createSystem(props).getConfig();
 
     assertEquals(DistributionConfig.DEFAULT_NAME, config.getName());
@@ -122,17 +113,17 @@ public class InternalDistributedSystemJUnitTest
     assertEquals(DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[0], config.getMembershipPortRange()[0]);
     assertEquals(DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1], config.getMembershipPortRange()[1]);
 
-    if (System.getProperty("gemfire.mcast-address") == null) {
+    if (System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "mcast-address") == null) {
       assertEquals(DistributionConfig.DEFAULT_MCAST_ADDRESS, config.getMcastAddress());
     }
-    if (System.getProperty("gemfire.bind-address") == null) {
+    if (System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "bind-address") == null) {
       assertEquals(DistributionConfig.DEFAULT_BIND_ADDRESS, config.getBindAddress());
     }
 
     assertEquals(DistributionConfig.DEFAULT_LOG_FILE, config.getLogFile());
 
     //default log level gets overrided by the gemfire.properties created for unit tests.
-//    assertEquals(DistributionConfig.DEFAULT_LOG_LEVEL, config.getLogLevel());
+//    assertIndexDetailsEquals(DistributionConfig.DEFAULT_LOG_LEVEL, config.getLogLevel());
 
     assertEquals(DistributionConfig.DEFAULT_STATISTIC_SAMPLING_ENABLED,
                  config.getStatisticSamplingEnabled());
@@ -145,7 +136,7 @@ public class InternalDistributedSystemJUnitTest
 
     // ack-wait-threadshold is overridden on VM's command line using a
     // system property.  This is not a valid test.  Hrm.
-//     assertEquals(DistributionConfig.DEFAULT_ACK_WAIT_THRESHOLD, config.getAckWaitThreshold());
+//     assertIndexDetailsEquals(DistributionConfig.DEFAULT_ACK_WAIT_THRESHOLD, config.getAckWaitThreshold());
 
     assertEquals(DistributionConfig.DEFAULT_ACK_SEVERE_ALERT_THRESHOLD, config.getAckSevereAlertThreshold());
     
@@ -164,12 +155,10 @@ public class InternalDistributedSystemJUnitTest
     String name = "testGetName";
 
     Properties props = new Properties();
-    props.put(DistributionConfig.NAME_NAME, name);
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
+    props.put(NAME, name);
     // a loner is all this test needs
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
 
     DistributionConfig config = createSystem(props).getOriginalConfig();
     assertEquals(name, config.getName());
@@ -179,8 +168,8 @@ public class InternalDistributedSystemJUnitTest
   public void testMemberTimeout() {
     Properties props = new Properties();
     int memberTimeout = 100;
-    props.put("member-timeout", String.valueOf(memberTimeout));
-    props.put("mcast-port", "0");
+    props.put(MEMBER_TIMEOUT, String.valueOf(memberTimeout));
+    props.put(MCAST_PORT, "0");
 
     DistributionConfig config = createSystem(props).getOriginalConfig();
     assertEquals(memberTimeout, config.getMemberTimeout());
@@ -192,7 +181,7 @@ public class InternalDistributedSystemJUnitTest
 
     try {
       // Totally bogus locator
-      props.put(DistributionConfig.LOCATORS_NAME, "14lasfk^5234");
+      props.put(LOCATORS, "14lasfk^5234");
       createSystem(props);
       fail("Should have thrown an IllegalArgumentException");
 
@@ -202,7 +191,7 @@ public class InternalDistributedSystemJUnitTest
 
     try {
       // missing port
-      props.put(DistributionConfig.LOCATORS_NAME, "localhost[");
+      props.put(LOCATORS, "localhost[");
       createSystem(props);
       fail("Should have thrown an IllegalArgumentException");
 
@@ -212,7 +201,7 @@ public class InternalDistributedSystemJUnitTest
 
     try {
       // Missing ]
-      props.put(DistributionConfig.LOCATORS_NAME, "localhost[234ty");
+      props.put(LOCATORS, "localhost[234ty");
       createSystem(props);
       fail("Should have thrown an IllegalArgumentException");
 
@@ -222,7 +211,7 @@ public class InternalDistributedSystemJUnitTest
 
     try {
       // Malformed port
-      props.put(DistributionConfig.LOCATORS_NAME, "localhost[234ty]");
+      props.put(LOCATORS, "localhost[234ty]");
       createSystem(props);
       fail("Should have thrown an IllegalArgumentException");
 
@@ -232,7 +221,7 @@ public class InternalDistributedSystemJUnitTest
 
     try {
       // Malformed port in second locator
-      props.put(DistributionConfig.LOCATORS_NAME, "localhost[12345],localhost[sdf3");
+      props.put(LOCATORS, "localhost[12345],localhost[sdf3");
       createSystem(props);
       fail("Should have thrown an IllegalArgumentException");
 
@@ -248,11 +237,11 @@ public class InternalDistributedSystemJUnitTest
    * @throws IllegalArgumentException
    *         If <code>locators</code> is malformed
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   private void checkLocator(String locator) {
     Properties props = new Properties();
-    props.put(DistributionConfig.LOCATORS_NAME, locator);
+    props.put(LOCATORS, locator);
     new DistributionConfigImpl(props);
   }
 
@@ -260,7 +249,7 @@ public class InternalDistributedSystemJUnitTest
    * Tests that both the traditional syntax ("host[port]") and post
    * bug-32306 syntax ("host:port") can be used with locators.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   @Test
   public void testLocatorSyntax() throws Exception {
@@ -289,10 +278,12 @@ public class InternalDistributedSystemJUnitTest
    *
    * @deprecated This test creates a "loner" distributed system
    */
-  public void _testEmptyLocators() {
+  @Ignore
+  @Test
+  public void testEmptyLocators() {
     Properties props = new Properties();
-    props.put(DistributionConfig.MCAST_PORT_NAME, String.valueOf(0));
-    props.put(DistributionConfig.LOCATORS_NAME, "");
+    props.put(MCAST_PORT, String.valueOf(0));
+    props.put(LOCATORS, "");
     try {
       createSystem(props);
       fail("Should have thrown an IllegalArgumentException");
@@ -309,12 +300,10 @@ public class InternalDistributedSystemJUnitTest
   public void testGetLogLevel() {
     Level logLevel = Level.FINER;
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.put(DistributionConfig.LOG_LEVEL_NAME, logLevel.toString());
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.put(LOG_LEVEL, logLevel.toString());
 
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(logLevel.intValue(), config.getLogLevel());
@@ -324,7 +313,7 @@ public class InternalDistributedSystemJUnitTest
   public void testInvalidLogLevel() {
     try {
       Properties props = new Properties();
-      props.put(DistributionConfig.LOG_LEVEL_NAME, "blah blah blah");
+      props.put(LOG_LEVEL, "blah blah blah");
       createSystem(props);
       fail("Should have thrown an IllegalArgumentException");
 
@@ -336,12 +325,10 @@ public class InternalDistributedSystemJUnitTest
   @Test
   public void testGetStatisticSamplingEnabled() {
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.put(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.put(STATISTIC_SAMPLING_ENABLED, "true");
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(true, config.getStatisticSamplingEnabled());
   }
@@ -350,12 +337,10 @@ public class InternalDistributedSystemJUnitTest
   public void testGetStatisticSampleRate() {
     String rate = String.valueOf(DistributionConfig.MIN_STATISTIC_SAMPLE_RATE);
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.put(DistributionConfig.STATISTIC_SAMPLE_RATE_NAME, rate);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.put(STATISTIC_SAMPLE_RATE, rate);
     DistributionConfig config = createSystem(props).getConfig();
     // The fix for 48228 causes the rate to be 1000 even if we try to set it less
     assertEquals(1000, config.getStatisticSampleRate());
@@ -364,9 +349,9 @@ public class InternalDistributedSystemJUnitTest
   @Test
   public void testMembershipPortRange() {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, "5100-5200");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(MEMBERSHIP_PORT_RANGE, "5100-5200");
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(5100, config.getMembershipPortRange()[0]);
     assertEquals(5200, config.getMembershipPortRange()[1]);
@@ -375,9 +360,9 @@ public class InternalDistributedSystemJUnitTest
   @Test
   public void testBadMembershipPortRange() {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, "5200-5100");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(MEMBERSHIP_PORT_RANGE, "5200-5100");
     Object exception = null;
     try {
       createSystem(props).getConfig();
@@ -391,12 +376,10 @@ public class InternalDistributedSystemJUnitTest
   public void testGetStatisticArchiveFile() {
     String fileName = "testGetStatisticArchiveFile";
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.put(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, fileName);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.put(STATISTIC_ARCHIVE_FILE, fileName);
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(fileName, config.getStatisticArchiveFile().getName());
   }
@@ -406,15 +389,15 @@ public class InternalDistributedSystemJUnitTest
    * gemfire.ack-wait-threshold system property is set on this VM,
    * thus overriding the value passed into the API.
    */
-  public void _testGetAckWaitThreshold() {
+  @Ignore
+  @Test
+  public void testGetAckWaitThreshold() {
     String time = String.valueOf(DistributionConfig.MIN_ACK_WAIT_THRESHOLD);
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, time);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.put(ACK_WAIT_THRESHOLD, time);
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(Integer.parseInt(time), config.getAckWaitThreshold());
   }
@@ -424,9 +407,11 @@ public class InternalDistributedSystemJUnitTest
    * gemfire.ack-wait-threshold system property is set on this VM,
    * thus overriding the value passed into the API.
    */
-  public void _testInvalidAckWaitThreshold() {
+  @Ignore
+  @Test
+  public void testInvalidAckWaitThreshold() {
     Properties props = new Properties();
-    props.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, "blah");
+    props.put(ACK_WAIT_THRESHOLD, "blah");
     try {
       createSystem(props);
       fail("Should have thrown an IllegalArgumentException");
@@ -440,12 +425,10 @@ public class InternalDistributedSystemJUnitTest
   public void testGetCacheXmlFile() {
     String fileName = "blah";
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.put(DistributionConfig.CACHE_XML_FILE_NAME, fileName);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.put(CACHE_XML_FILE, fileName);
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(fileName, config.getCacheXmlFile().getPath());
   }
@@ -454,12 +437,10 @@ public class InternalDistributedSystemJUnitTest
   public void testGetArchiveDiskSpaceLimit() {
     String value = String.valueOf(DistributionConfig.MIN_ARCHIVE_DISK_SPACE_LIMIT);
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.put(DistributionConfig.ARCHIVE_DISK_SPACE_LIMIT_NAME, value);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.put(ARCHIVE_DISK_SPACE_LIMIT, value);
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(Integer.parseInt(value), config.getArchiveDiskSpaceLimit());
   }
@@ -467,7 +448,7 @@ public class InternalDistributedSystemJUnitTest
   @Test
   public void testInvalidArchiveDiskSpaceLimit() {
     Properties props = new Properties();
-    props.put(DistributionConfig.ARCHIVE_DISK_SPACE_LIMIT_NAME, "blah");
+    props.put(ARCHIVE_DISK_SPACE_LIMIT, "blah");
     try {
       createSystem(props);
       fail("Should have thrown an IllegalArgumentException");
@@ -481,12 +462,10 @@ public class InternalDistributedSystemJUnitTest
   public void testGetArchiveFileSizeLimit() {
     String value = String.valueOf(DistributionConfig.MIN_ARCHIVE_FILE_SIZE_LIMIT);
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.put(DistributionConfig.ARCHIVE_FILE_SIZE_LIMIT_NAME, value);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.put(ARCHIVE_FILE_SIZE_LIMIT, value);
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(Integer.parseInt(value), config.getArchiveFileSizeLimit());
   }
@@ -494,7 +473,7 @@ public class InternalDistributedSystemJUnitTest
   @Test
   public void testInvalidArchiveFileSizeLimit() {
     Properties props = new Properties();
-    props.put(DistributionConfig.ARCHIVE_FILE_SIZE_LIMIT_NAME, "blah");
+    props.put(ARCHIVE_FILE_SIZE_LIMIT, "blah");
     try {
       createSystem(props);
       fail("Should have thrown an IllegalArgumentException");
@@ -508,12 +487,10 @@ public class InternalDistributedSystemJUnitTest
   public void testGetLogDiskSpaceLimit() {
     String value = String.valueOf(DistributionConfig.MIN_LOG_DISK_SPACE_LIMIT);
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.put(DistributionConfig.LOG_DISK_SPACE_LIMIT_NAME, value);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.put(LOG_DISK_SPACE_LIMIT, value);
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(Integer.parseInt(value), config.getLogDiskSpaceLimit());
   }
@@ -521,7 +498,7 @@ public class InternalDistributedSystemJUnitTest
   @Test
   public void testInvalidLogDiskSpaceLimit() {
     Properties props = new Properties();
-    props.put(DistributionConfig.LOG_DISK_SPACE_LIMIT_NAME, "blah");
+    props.put(LOG_DISK_SPACE_LIMIT, "blah");
     try {
       createSystem(props);
       fail("Should have thrown an IllegalArgumentException");
@@ -535,12 +512,10 @@ public class InternalDistributedSystemJUnitTest
   public void testGetLogFileSizeLimit() {
     String value = String.valueOf(DistributionConfig.MIN_LOG_FILE_SIZE_LIMIT);
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.put(DistributionConfig.LOG_FILE_SIZE_LIMIT_NAME, value);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.put(LOG_FILE_SIZE_LIMIT, value);
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(Integer.parseInt(value), config.getLogFileSizeLimit());
   }
@@ -548,7 +523,7 @@ public class InternalDistributedSystemJUnitTest
   @Test
   public void testInvalidLogFileSizeLimit() {
     Properties props = new Properties();
-    props.put(DistributionConfig.LOG_FILE_SIZE_LIMIT_NAME, "blah");
+    props.put(LOG_FILE_SIZE_LIMIT, "blah");
     try {
       createSystem(props);
       fail("Should have thrown an IllegalArgumentException");
@@ -562,11 +537,9 @@ public class InternalDistributedSystemJUnitTest
   public void testAccessingClosedDistributedSystem() {
     Properties props = new Properties();
 
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     InternalDistributedSystem system = createSystem(props);
     system.disconnect();
 
@@ -594,21 +567,21 @@ public class InternalDistributedSystemJUnitTest
         return;
       }
     }
-    File propFile = new File("gemfire.properties");
+    File propFile = new File(DistributionConfig.GEMFIRE_PREFIX + "properties");
     boolean propFileExisted = propFile.exists();
     File spropFile = new File("gfsecurity.properties");
     boolean spropFileExisted = spropFile.exists();
     try {
-      System.setProperty("gemfire.log-level", "finest");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_LEVEL, "finest");
       Properties apiProps = new Properties();
-      apiProps.setProperty("groups", "foo, bar");
+      apiProps.setProperty(GROUPS, "foo, bar");
       {
         if (propFileExisted) {
-          propFile.renameTo(new File("gemfire.properties.sav"));
+          propFile.renameTo(new File(DistributionConfig.GEMFIRE_PREFIX + "properties.sav"));
         }
         Properties fileProps = new Properties();
         fileProps.setProperty("name", "myName");
-        FileWriter fw = new FileWriter("gemfire.properties");
+        FileWriter fw = new FileWriter(DistributionConfig.GEMFIRE_PREFIX + "properties");
         fileProps.store(fw, null);
         fw.close();
       }
@@ -617,22 +590,22 @@ public class InternalDistributedSystemJUnitTest
           spropFile.renameTo(new File("gfsecurity.properties.sav"));
         }
         Properties fileProps = new Properties();
-        fileProps.setProperty("statistic-sample-rate", "999");
+        fileProps.setProperty(STATISTIC_SAMPLE_RATE, "999");
         FileWriter fw = new FileWriter("gfsecurity.properties");
         fileProps.store(fw, null);
         fw.close();
       }
       DistributionConfigImpl dci = new DistributionConfigImpl(apiProps);
-      assertEquals(null, dci.getAttributeSource("mcast-port"));
-      assertEquals(ConfigSource.api(), dci.getAttributeSource("groups"));
-      assertEquals(ConfigSource.sysprop(), dci.getAttributeSource("log-level"));
+      assertEquals(null, dci.getAttributeSource(MCAST_PORT));
+      assertEquals(ConfigSource.api(), dci.getAttributeSource(GROUPS));
+      assertEquals(ConfigSource.sysprop(), dci.getAttributeSource(LOG_LEVEL));
       assertEquals(ConfigSource.Type.FILE, dci.getAttributeSource("name").getType());
-      assertEquals(ConfigSource.Type.SECURE_FILE, dci.getAttributeSource("statistic-sample-rate").getType());
+      assertEquals(ConfigSource.Type.SECURE_FILE, dci.getAttributeSource(STATISTIC_SAMPLE_RATE).getType());
     } finally {
-      System.clearProperty("gemfire.log-level");
+      System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "log-level");
       propFile.delete();
       if (propFileExisted) {
-        new File("gemfire.properties.sav").renameTo(propFile);
+        new File(DistributionConfig.GEMFIRE_PREFIX + "properties.sav").renameTo(propFile);
       }
       spropFile.delete();
       if (spropFileExisted) {
@@ -648,9 +621,9 @@ public class InternalDistributedSystemJUnitTest
     String name = "BLAH";
     Properties props = new Properties();
     // a loner is all this test needs
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.setProperty(DistributionConfig.NAME_NAME, name);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(NAME, name);
     createSystem(props);
   }
 
@@ -659,12 +632,10 @@ public class InternalDistributedSystemJUnitTest
     Level level = Level.FINE;
 
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.put(DistributionConfig.LOG_LEVEL_NAME, level.toString());
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.put(LOG_LEVEL, level.toString());
     InternalDistributedSystem system = createSystem(props);
     assertEquals(level.intValue(), system.getConfig().getLogLevel());
     assertEquals(level.intValue(), ((InternalLogWriter) system.getLogWriter()).getLogWriterLevel());
@@ -674,8 +645,8 @@ public class InternalDistributedSystemJUnitTest
   public void testStartLocator() {
     Properties props = new Properties();
     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    props.setProperty("mcast-port", "0");
-    props.setProperty("start-locator", "localhost[" + unusedPort + "],server=false,peer=true");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(START_LOCATOR, "localhost[" + unusedPort + "],server=false,peer=true");
     deleteStateFile(unusedPort);
     createSystem(props);
     Collection locators = Locator.getLocators();
@@ -683,8 +654,8 @@ public class InternalDistributedSystemJUnitTest
     Locator locator = (Locator) locators.iterator().next();
     Assert.assertTrue(locator.isPeerLocator());
 //    Assert.assertFalse(locator.isServerLocator()); server location is forced on while licensing is disabled in GemFire
-//    Assert.assertEquals("127.0.0.1", locator.getBindAddress().getHostAddress());  removed this check for ipv6 testing
-    Assert.assertEquals(unusedPort, locator.getPort());
+//    Assert.assertIndexDetailsEquals("127.0.0.1", locator.getBindAddress().getHostAddress());  removed this check for ipv6 testing
+    Assert.assertEquals(unusedPort, locator.getPort().intValue());
     deleteStateFile(unusedPort);
   }
 
@@ -698,13 +669,13 @@ public class InternalDistributedSystemJUnitTest
   @Test
   public void testValidateProps() {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     Config config1 = new DistributionConfigImpl(props, false);
     InternalDistributedSystem sys = InternalDistributedSystem.newInstance(config1.toProperties());
     try {
 
-    props.put("mcast-port", "1");
+      props.put(MCAST_PORT, "1");
     Config config2 = new DistributionConfigImpl(props, false);
 
     try {
@@ -721,9 +692,9 @@ public class InternalDistributedSystemJUnitTest
   @Test
   public void testDeprecatedSSLProps() {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.setProperty("ssl-enabled", "true");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(SSL_ENABLED, "true");
     Config config1 = new DistributionConfigImpl(props, false);
     Properties props1 = config1.toProperties();
     // For the deprecated ssl-* properties a decision was made
@@ -732,12 +703,12 @@ public class InternalDistributedSystemJUnitTest
     // and its use in toProperties.
     // The other thing that is done is the ssl-* props are copied to cluster-ssl-*.
     // The following two assertions demonstrate this.
-    assertEquals(null, props1.getProperty("ssl-enabled"));
-    assertEquals("true", props1.getProperty("cluster-ssl-enabled"));
+    assertEquals(null, props1.getProperty(SSL_ENABLED));
+    assertEquals("true", props1.getProperty(CLUSTER_SSL_ENABLED));
     Config config2 = new DistributionConfigImpl(props1, false);
     assertEquals(true, config1.sameAs(config2));
     Properties props3 = new Properties(props1);
-    props3.setProperty("ssl-enabled", "false");
+    props3.setProperty(SSL_ENABLED, "false");
     Config config3 = new DistributionConfigImpl(props3, false);
     assertEquals(false, config1.sameAs(config3));
   }

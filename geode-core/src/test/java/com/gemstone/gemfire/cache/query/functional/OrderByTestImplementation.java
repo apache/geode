@@ -164,7 +164,7 @@ public abstract class OrderByTestImplementation {
             fail("<IDIndexPf1> was expected but found "
                 + itr.next().toString());
           }
-          // assertEquals("statusIndexPf1",itr.next().toString());
+          // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();
@@ -314,7 +314,7 @@ public abstract class OrderByTestImplementation {
           limit = Integer.parseInt(queries[i].substring(indexLimit+5).trim());
         }
         assertTrue(!limitQuery || rcw.size() <= limit);
-        //assertEquals("Set",rcw.getCollectionType().getSimpleClassName());
+        //assertIndexDetailsEquals("Set",rcw.getCollectionType().getSimpleClassName());
         String colType = rcw.getCollectionType().getSimpleClassName();
         if (!(colType.equals("Ordered") || colType.equals("LinkedHashSet"))) {
           fail("The collection type " + colType + " is not expexted");
@@ -329,7 +329,7 @@ public abstract class OrderByTestImplementation {
             fail("<IDIndexPf1> was expected but found "
                 + itr.next().toString());
           }
-          // assertEquals("statusIndexPf1",itr.next().toString());
+          // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();
@@ -429,7 +429,7 @@ public abstract class OrderByTestImplementation {
             fail("<IDIndexPf1> was expected but found "
                 + itr.next().toString());
           }
-          // assertEquals("statusIndexPf1",itr.next().toString());
+          // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();
@@ -512,7 +512,7 @@ public abstract class OrderByTestImplementation {
             fail("<IDIndexPf1> was expected but found "
                 + itr.next().toString());
           }
-          // assertEquals("statusIndexPf1",itr.next().toString());
+          // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();
@@ -615,7 +615,7 @@ public abstract class OrderByTestImplementation {
             fail("<IDIndexPf1> was expected but found "
                 + indexUsed);
           }
-          // assertEquals("statusIndexPf1",itr.next().toString());
+          // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();
@@ -699,7 +699,7 @@ public abstract class OrderByTestImplementation {
             fail("<IDIndexPf1> was expected but found "
                 + indexUsed);
           }
-          // assertEquals("statusIndexPf1",itr.next().toString());
+          // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();
@@ -783,7 +783,7 @@ public abstract class OrderByTestImplementation {
             fail("<PKIDIndexPf1> was expected but found "
                 + indexUsed);
           }
-          // assertEquals("statusIndexPf1",itr.next().toString());
+          // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();

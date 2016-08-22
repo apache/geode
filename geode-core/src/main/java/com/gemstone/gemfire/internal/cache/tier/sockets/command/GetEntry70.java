@@ -24,12 +24,13 @@ import com.gemstone.gemfire.internal.cache.NonLocalRegionEntry;
 import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 /**
  * getEntry(key) operation performed on server.
  * Extends Request, and overrides getValueAndIsObject() in Request
  * so as to not invoke loader.
- * @since 6.6
+ * @since GemFire 6.6
  */
 public class GetEntry70 extends Get70 {
 

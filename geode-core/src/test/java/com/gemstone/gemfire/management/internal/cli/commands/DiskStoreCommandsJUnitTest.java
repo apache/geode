@@ -24,22 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.execute.Execution;
-import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
-import com.gemstone.gemfire.internal.util.CollectionUtils;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.cli.domain.DiskStoreDetails;
-import com.gemstone.gemfire.management.internal.cli.functions.DescribeDiskStoreFunction;
-import com.gemstone.gemfire.management.internal.cli.functions.ListDiskStoresFunction;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.util.DiskStoreNotFoundException;
-import com.gemstone.gemfire.management.internal.cli.util.MemberNotFoundException;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
@@ -48,6 +32,22 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.execute.Execution;
+import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
+import com.gemstone.gemfire.cache.execute.ResultCollector;
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
+import com.gemstone.gemfire.internal.util.CollectionUtils;
+import com.gemstone.gemfire.management.internal.cli.domain.DiskStoreDetails;
+import com.gemstone.gemfire.management.internal.cli.functions.DescribeDiskStoreFunction;
+import com.gemstone.gemfire.management.internal.cli.functions.ListDiskStoresFunction;
+import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+import com.gemstone.gemfire.management.internal.cli.util.DiskStoreNotFoundException;
+import com.gemstone.gemfire.management.internal.cli.util.MemberNotFoundException;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
 
 /**
  * The DiskStoreCommandsJUnitTest class is a test suite of test cases testing the contract and functionality of the
@@ -63,7 +63,7 @@ import org.junit.experimental.categories.Category;
  * @see org.jmock.lib.legacy.ClassImposteriser
  * @see org.junit.Assert
  * @see org.junit.Test
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(UnitTest.class)
 public class DiskStoreCommandsJUnitTest {
@@ -83,14 +83,14 @@ public class DiskStoreCommandsJUnitTest {
     mockContext = null;
   }
 
-  protected DiskStoreCommands createDiskStoreCommands(final Cache cache,
+  private DiskStoreCommands createDiskStoreCommands(final Cache cache,
                                                       final DistributedMember distributedMember,
                                                       final Execution functionExecutor)
   {
     return new TestDiskStoreCommands(cache, distributedMember, functionExecutor);
   }
 
-  protected DiskStoreDetails createDiskStoreDetails(final String memberId, final String diskStoreName) {
+  private DiskStoreDetails createDiskStoreDetails(final String memberId, final String diskStoreName) {
     return new DiskStoreDetails(diskStoreName, memberId);
   }
 
@@ -364,7 +364,7 @@ public class DiskStoreCommandsJUnitTest {
     assertEquals(expectedDiskStores, actualDiskStores);
   }
 
-  protected static class TestDiskStoreCommands extends DiskStoreCommands {
+  private static class TestDiskStoreCommands extends DiskStoreCommands {
 
     private final Cache cache;
     private final DistributedMember distributedMember;

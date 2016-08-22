@@ -14,27 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.offheap;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -53,9 +45,23 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
   private MemoryAllocator ma;
+  private static Boolean assertionsEnabled;
 
-  static {
+  @BeforeClass
+  public static void setUpOnce() {
+    try {
+      assert false;
+      assertionsEnabled = false;
+    } catch (AssertionError e) {
+      assertionsEnabled = true;
+    }
     ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
+    System.out.println("assertionsEnabled = " + assertionsEnabled);
+  }
+
+  @AfterClass
+  public static void tearDownOnce() {
+    ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(assertionsEnabled);
   }
 
   @Before
@@ -817,7 +823,7 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     assertThat(chunk.getDataValue()).isNull();
   }
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test(expected = AssertionError.class)
   public void getRawBytesShouldThrowExceptionIfValueIsCompressed() {
     Object regionEntryValue = getValue();
     byte[] regionEntryValueAsBytes = convertValueToByteArray(regionEntryValue);

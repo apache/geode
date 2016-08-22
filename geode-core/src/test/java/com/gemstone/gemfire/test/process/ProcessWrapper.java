@@ -16,17 +16,14 @@
  */
 package com.gemstone.gemfire.test.process;
 
-import static org.junit.Assert.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
+import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -34,14 +31,12 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.internal.logging.LogService;
+import static org.junit.Assert.fail;
 
 /**
  * Wraps spawned {@link java.lang.Process} to capture output and provide interaction with the process.
  *
- * @since 4.1.1
+ * @since GemFire 4.1.1
  */
 public class ProcessWrapper {
   private static final Logger logger = LogService.getLogger();
@@ -281,7 +276,7 @@ public class ProcessWrapper {
 
     if (properties != null) {
       for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-        if (!entry.getKey().equals("log-file")) {
+        if (!entry.getKey().equals(LOG_FILE)) {
           jvmArgumentsList.add("-D" + entry.getKey() + "=" + entry.getValue());
         }
       }

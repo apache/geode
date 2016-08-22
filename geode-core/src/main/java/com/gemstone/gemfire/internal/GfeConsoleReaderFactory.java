@@ -30,7 +30,7 @@ import com.gemstone.gemfire.management.internal.cli.util.GfshConsoleReader;
  * <code>System.console()</code>
  * 
  * 
- * @since 7.0.1
+ * @since GemFire 7.0.1
  */
 public class GfeConsoleReaderFactory {
   private static GfeConsoleReader defaultConsoleReader = createConsoleReader();

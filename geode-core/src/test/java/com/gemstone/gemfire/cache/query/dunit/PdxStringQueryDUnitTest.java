@@ -16,12 +16,16 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -54,69 +58,66 @@ import com.gemstone.gemfire.cache.query.internal.index.RangeIndex;
 import com.gemstone.gemfire.cache.query.types.CollectionType;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
 import com.gemstone.gemfire.pdx.internal.PdxString;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class PdxStringQueryDUnitTest extends CacheTestCase{
+@Category(DistributedTest.class)
+public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
+  final String rootRegionName = "root";
+  final String regionName = "PdxTest";
+  final String regName = "/" + rootRegionName + "/" + regionName;
   private static int bridgeServerPort;
 
-  public PdxStringQueryDUnitTest(String name) {
-    super(name);
-   }
-
-  private final String rootRegionName = "root";
-  private final String regionName = "PdxTest";
-  private final String regName = "/" + rootRegionName + "/" + regionName;
   private final static int orderByQueryIndex = 11;
   private final static int [] groupByQueryIndex = new int[]{7, 8, 9,10};
   
-  private final String[] queryString = new String[] { 
-      "SELECT pos.secId FROM " + regName + " p, p.positions.values pos WHERE pos.secId LIKE '%L'",//0
-      "SELECT pos.secId FROM " + regName + " p, p.positions.values pos where pos.secId = 'IBM'",//1
-      "SELECT pos.secId, p.status FROM " + regName + " p, p.positions.values pos where pos.secId > 'APPL'",//2
-      "SELECT pos.secId FROM " + regName + " p, p.positions.values pos WHERE pos.secId > 'APPL' and pos.secId < 'SUN'",//3
-      "select pos.secId from " + regName + " p, p.positions.values pos where pos.secId  IN SET ('YHOO', 'VMW')",//4
-      "select pos.secId from " + regName + " p, p.positions.values pos where NOT (pos.secId = 'VMW')",//5
-      "select pos.secId from " + regName + " p, p.positions.values pos where NOT (pos.secId IN SET('SUN', 'ORCL')) ",//6
-      "select pos.secId , count(pos.id) from " + regName + " p, p.positions.values pos where  pos.secId > 'APPL' group by pos.secId ",//7
-      "select pos.secId , sum(pos.id) from " + regName + " p, p.positions.values pos where  pos.secId > 'APPL' group by pos.secId ",//8,
-      "select pos.secId , count(distinct pos.secId) from " + regName + " p, p.positions.values pos where  pos.secId > 'APPL' group by pos.secId ",//9
-      "select  count(distinct pos.secId) from " + regName + " p, p.positions.values pos where  pos.secId > 'APPL' ",//10
-      "SELECT distinct pos.secId FROM " + regName + " p, p.positions.values pos order by pos.secId",//11
-      "SELECT distinct pos.secId FROM " + regName + " p, p.positions.values pos WHERE p.ID > 1 order by pos.secId limit 5",//12
+  private final String[] queryString = new String[] {
+    "SELECT pos.secId FROM " + regName + " p, p.positions.values pos WHERE pos.secId LIKE '%L'",//0
+    "SELECT pos.secId FROM " + regName + " p, p.positions.values pos where pos.secId = 'IBM'",//1
+    "SELECT pos.secId, p.status FROM " + regName + " p, p.positions.values pos where pos.secId > 'APPL'",//2
+    "SELECT pos.secId FROM " + regName + " p, p.positions.values pos WHERE pos.secId > 'APPL' and pos.secId < 'SUN'",//3
+    "select pos.secId from " + regName + " p, p.positions.values pos where pos.secId  IN SET ('YHOO', 'VMW')",//4
+    "select pos.secId from " + regName + " p, p.positions.values pos where NOT (pos.secId = 'VMW')",//5
+    "select pos.secId from " + regName + " p, p.positions.values pos where NOT (pos.secId IN SET('SUN', 'ORCL')) ",//6
+    "select pos.secId , count(pos.id) from " + regName + " p, p.positions.values pos where  pos.secId > 'APPL' group by pos.secId ",//7
+    "select pos.secId , sum(pos.id) from " + regName + " p, p.positions.values pos where  pos.secId > 'APPL' group by pos.secId ",//8,
+    "select pos.secId , count(distinct pos.secId) from " + regName + " p, p.positions.values pos where  pos.secId > 'APPL' group by pos.secId ",//9
+    "select  count(distinct pos.secId) from " + regName + " p, p.positions.values pos where  pos.secId > 'APPL' ",//10
+    "SELECT distinct pos.secId FROM " + regName + " p, p.positions.values pos order by pos.secId",//11
+    "SELECT distinct pos.secId FROM " + regName + " p, p.positions.values pos WHERE p.ID > 1 order by pos.secId limit 5",//12
  };
 
- private final String[] queryString2 = new String[] { 
-      "SELECT pos.secIdIndexed FROM " + regName + " p, p.positions.values pos WHERE pos.secIdIndexed LIKE '%L'",//0
-      "SELECT pos.secIdIndexed FROM " + regName + " p, p.positions.values pos where pos.secIdIndexed = 'IBM'",//1
-      "SELECT pos.secIdIndexed, p.status FROM " + regName + " p, p.positions.values pos where pos.secIdIndexed > 'APPL'",//2
-      "SELECT pos.secIdIndexed FROM " + regName + " p, p.positions.values pos WHERE pos.secIdIndexed > 'APPL' and pos.secIdIndexed < 'SUN'",//3
-      "select pos.secIdIndexed from " + regName + " p, p.positions.values pos where pos.secIdIndexed  IN SET ('YHOO', 'VMW')",//4
-      "select pos.secIdIndexed from " + regName + " p, p.positions.values pos where NOT (pos.secIdIndexed = 'VMW')",//5
-      "select pos.secIdIndexed from " + regName + " p, p.positions.values pos where NOT (pos.secIdIndexed IN SET('SUN', 'ORCL')) ",//6
-      "select pos.secIdIndexed , count(pos.id) from " + regName + " p, p.positions.values pos where  pos.secIdIndexed > 'APPL' group by pos.secIdIndexed ",//7
-      "select pos.secIdIndexed , sum(pos.id) from " + regName + " p, p.positions.values pos where  pos.secIdIndexed > 'APPL' group by pos.secIdIndexed ",//8
-      "select pos.secIdIndexed , count(distinct pos.secIdIndexed) from " + regName + " p, p.positions.values pos where  pos.secIdIndexed > 'APPL' group by pos.secIdIndexed ",//9
-      "select  count(distinct pos.secIdIndexed) from " + regName + " p, p.positions.values pos where  pos.secIdIndexed > 'APPL'  ",//10
-      "SELECT distinct pos.secIdIndexed FROM " + regName + " p, p.positions.values pos order by pos.secIdIndexed",//11
-      "SELECT distinct pos.secIdIndexed FROM " + regName + " p, p.positions.values pos WHERE p.ID > 1 order by pos.secIdIndexed limit 5",//12
+ private final String[] queryString2 = new String[] {
+   "SELECT pos.secIdIndexed FROM " + regName + " p, p.positions.values pos WHERE pos.secIdIndexed LIKE '%L'",//0
+   "SELECT pos.secIdIndexed FROM " + regName + " p, p.positions.values pos where pos.secIdIndexed = 'IBM'",//1
+   "SELECT pos.secIdIndexed, p.status FROM " + regName + " p, p.positions.values pos where pos.secIdIndexed > 'APPL'",//2
+   "SELECT pos.secIdIndexed FROM " + regName + " p, p.positions.values pos WHERE pos.secIdIndexed > 'APPL' and pos.secIdIndexed < 'SUN'",//3
+   "select pos.secIdIndexed from " + regName + " p, p.positions.values pos where pos.secIdIndexed  IN SET ('YHOO', 'VMW')",//4
+   "select pos.secIdIndexed from " + regName + " p, p.positions.values pos where NOT (pos.secIdIndexed = 'VMW')",//5
+   "select pos.secIdIndexed from " + regName + " p, p.positions.values pos where NOT (pos.secIdIndexed IN SET('SUN', 'ORCL')) ",//6
+   "select pos.secIdIndexed , count(pos.id) from " + regName + " p, p.positions.values pos where  pos.secIdIndexed > 'APPL' group by pos.secIdIndexed ",//7
+   "select pos.secIdIndexed , sum(pos.id) from " + regName + " p, p.positions.values pos where  pos.secIdIndexed > 'APPL' group by pos.secIdIndexed ",//8
+   "select pos.secIdIndexed , count(distinct pos.secIdIndexed) from " + regName + " p, p.positions.values pos where  pos.secIdIndexed > 'APPL' group by pos.secIdIndexed ",//9
+   "select  count(distinct pos.secIdIndexed) from " + regName + " p, p.positions.values pos where  pos.secIdIndexed > 'APPL'  ",//10
+   "SELECT distinct pos.secIdIndexed FROM " + regName + " p, p.positions.values pos order by pos.secIdIndexed",//11
+   "SELECT distinct pos.secIdIndexed FROM " + regName + " p, p.positions.values pos WHERE p.ID > 1 order by pos.secIdIndexed limit 5",//12
  };
 
+  @Test
   public void testReplicatedRegionNoIndex() throws CacheException {
     final Host host = Host.getHost(0);
     VM server0 = host.getVM(0);
@@ -128,7 +129,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server1 and create index
     server0.invoke(new CacheSerializableRunnable("Create Server1") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(false,false,false);
+        configAndStartBridgeServer(false, false, false);
         // create a local query service
         QueryService localQueryService = null;
         try {
@@ -139,7 +140,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
         Index index = null;
         // create an index on statusIndexed is created
          try {
-           index = localQueryService.createIndex("secIdIndex2", "pos.secIdIndexed", regName  + " p, p.positions.values pos");
+           index = localQueryService.createIndex("secIdIndex2", "pos.secIdIndexed", regName + " p, p.positions.values pos");
              if(!(index instanceof RangeIndex)){
                fail("Range Index should have been created instead of " + index.getClass());
              }
@@ -152,7 +153,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server2
     server1.invoke(new CacheSerializableRunnable("Create Server2") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(false,false, false);
+        configAndStartBridgeServer(false, false, false);
         Region region = getRootRegion().getSubregion(regionName);
       }
     });
@@ -160,7 +161,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server3
     server2.invoke(new CacheSerializableRunnable("Create Server3") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(false,false, false);
+        configAndStartBridgeServer(false, false, false);
         Region region = getRootRegion().getSubregion(regionName);
       }
     });
@@ -368,13 +369,14 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
         }
       }
     });
-    
-    this.closeClient(server2);
-    this.closeClient(client);
-    this.closeClient(server1);
-    this.closeClient(server0);
+
+    closeClient(server2);
+    closeClient(client);
+    closeClient(server1);
+    closeClient(server0);
   }
 
+  @Test
   public void testRepliacatedRegionCompactRangeIndex() throws CacheException {
     final Host host = Host.getHost(0);
     VM server0 = host.getVM(0);
@@ -386,7 +388,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server1 and create index
     server0.invoke(new CacheSerializableRunnable("Create Server1") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(false,false,false);
+        configAndStartBridgeServer(false, false, false);
         // create a local query service
         QueryService localQueryService = null;
         try {
@@ -410,7 +412,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server2
     server1.invoke(new CacheSerializableRunnable("Create Server2") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(false,false, false);
+        configAndStartBridgeServer(false, false, false);
         Region region = getRootRegion().getSubregion(regionName);
       }
     });
@@ -418,7 +420,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server3
     server2.invoke(new CacheSerializableRunnable("Create Server3") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(false,false, false);
+        configAndStartBridgeServer(false, false, false);
         Region region = getRootRegion().getSubregion(regionName);
       }
     });
@@ -582,13 +584,14 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
         }
       }
     });
-    
-    this.closeClient(server2);
-    this.closeClient(client);
-    this.closeClient(server1);
-    this.closeClient(server0);
+
+    closeClient(server2);
+    closeClient(client);
+    closeClient(server1);
+    closeClient(server0);
   }
   
+  @Test
   public void testReplicatedRegionRangeIndex() throws CacheException {
     final Host host = Host.getHost(0);
     VM server0 = host.getVM(0);
@@ -599,7 +602,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server1 and create index
     server0.invoke(new CacheSerializableRunnable("Create Server1") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(false,false,false);
+        configAndStartBridgeServer(false, false, false);
         // create a local query service
         QueryService localQueryService = null;
         try {
@@ -610,7 +613,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
         // Verify the type of index created  
         Index index = null;
           try {
-           index = localQueryService.createIndex("secIdIndex", "pos.secId", regName  + " p, p.positions.values pos");
+           index = localQueryService.createIndex("secIdIndex", "pos.secId", regName + " p, p.positions.values pos");
             if(!(index instanceof RangeIndex) ){
                fail("Range Index should have been created instead of "+ index.getClass());
              }
@@ -623,7 +626,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server2
     server1.invoke(new CacheSerializableRunnable("Create Server2") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(false,false, false);
+        configAndStartBridgeServer(false, false, false);
         Region region = getRootRegion().getSubregion(regionName);
       }
     });
@@ -631,7 +634,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server3
     server2.invoke(new CacheSerializableRunnable("Create Server3") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(false,false, false);
+        configAndStartBridgeServer(false, false, false);
         Region region = getRootRegion().getSubregion(regionName);
       }
     });
@@ -786,13 +789,14 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
         }
       }
     });
-    
-    this.closeClient(server2);
-    this.closeClient(client);
-    this.closeClient(server1);
-    this.closeClient(server0);
+
+    closeClient(server2);
+    closeClient(client);
+    closeClient(server1);
+    closeClient(server0);
   }
   
+  @Test
   public void testPartitionRegionNoIndex() throws CacheException {
     final Host host = Host.getHost(0);
     VM server0 = host.getVM(0);
@@ -804,7 +808,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server1 and create index
     server0.invoke(new CacheSerializableRunnable("Create Server1") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(isPr,false,false);
+        configAndStartBridgeServer(isPr, false, false);
         // create a local query service
         QueryService localQueryService = null;
         try {
@@ -816,7 +820,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
         Index index = null;
         // In the NO_INDEX case where no indexes are used an index on another field statusIndexed is created
          try {
-           index = localQueryService.createIndex("secIdIndex", "pos.secIdIndexed", regName  + " p, p.positions.values pos");
+           index = localQueryService.createIndex("secIdIndex", "pos.secIdIndexed", regName + " p, p.positions.values pos");
            if(index instanceof PartitionedIndex){
                for(Object o : ((PartitionedIndex)index).getBucketIndexes()){
                  if(!(o instanceof RangeIndex) ){
@@ -836,7 +840,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server2
     server1.invoke(new CacheSerializableRunnable("Create Server2") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(isPr,false, false);
+        configAndStartBridgeServer(isPr, false, false);
         Region region = getRootRegion().getSubregion(regionName);
       }
     });
@@ -844,7 +848,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server3
     server2.invoke(new CacheSerializableRunnable("Create Server3") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(isPr,false, false);
+        configAndStartBridgeServer(isPr, false, false);
         Region region = getRootRegion().getSubregion(regionName);
       }
     });
@@ -1051,13 +1055,14 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
         }
       }
     });
-    
-    this.closeClient(server2);
-    this.closeClient(client);
-    this.closeClient(server1);
-    this.closeClient(server0);
+
+    closeClient(server2);
+    closeClient(client);
+    closeClient(server1);
+    closeClient(server0);
   }
   
+  @Test
   public void testPartitionRegionCompactRangeIndex() throws CacheException {
     final Host host = Host.getHost(0);
     VM server0 = host.getVM(0);
@@ -1069,7 +1074,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server1 and create index
     server0.invoke(new CacheSerializableRunnable("Create Server1") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(isPr,false,false);
+        configAndStartBridgeServer(isPr, false, false);
         // create a local query service
         QueryService localQueryService = null;
         try {
@@ -1100,7 +1105,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server2
     server1.invoke(new CacheSerializableRunnable("Create Server2") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(isPr,false, false);
+        configAndStartBridgeServer(isPr, false, false);
         Region region = getRootRegion().getSubregion(regionName);
       }
     });
@@ -1108,7 +1113,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server3
     server2.invoke(new CacheSerializableRunnable("Create Server3") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(isPr,false, false);
+        configAndStartBridgeServer(isPr, false, false);
         Region region = getRootRegion().getSubregion(regionName);
       }
     });
@@ -1278,13 +1283,14 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
         }
       }
     });
-    
-    this.closeClient(server2);
-    this.closeClient(client);
-    this.closeClient(server1);
-    this.closeClient(server0);
+
+    closeClient(server2);
+    closeClient(client);
+    closeClient(server1);
+    closeClient(server0);
   }
   
+  @Test
   public void testPartitionRegionRangeIndex() throws CacheException {
     final Host host = Host.getHost(0);
     VM server0 = host.getVM(0);
@@ -1296,7 +1302,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server1 and create index
     server0.invoke(new CacheSerializableRunnable("Create Server1") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(isPr,false,false);
+        configAndStartBridgeServer(isPr, false, false);
         // create a local query service
         QueryService localQueryService = null;
         try {
@@ -1307,7 +1313,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
         // Verify the type of index created  
         Index index = null;
           try {
-           index = localQueryService.createIndex("secIdIndex", "pos.secId", regName  + " p, p.positions.values pos");
+           index = localQueryService.createIndex("secIdIndex", "pos.secId", regName + " p, p.positions.values pos");
             if(index instanceof PartitionedIndex){
                for(Object o : ((PartitionedIndex)index).getBucketIndexes()){
                  if(!(o instanceof RangeIndex) ){
@@ -1327,7 +1333,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server2
     server1.invoke(new CacheSerializableRunnable("Create Server2") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(isPr,false, false);
+        configAndStartBridgeServer(isPr, false, false);
         Region region = getRootRegion().getSubregion(regionName);
       }
     });
@@ -1335,7 +1341,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server3
     server2.invoke(new CacheSerializableRunnable("Create Server3") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(isPr,false, false);
+        configAndStartBridgeServer(isPr, false, false);
         Region region = getRootRegion().getSubregion(regionName);
       }
     });
@@ -1505,13 +1511,14 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
         }
       }
     });
-    
-    this.closeClient(server2);
-    this.closeClient(client);
-    this.closeClient(server1);
-    this.closeClient(server0);
+
+    closeClient(server2);
+    closeClient(client);
+    closeClient(server1);
+    closeClient(server0);
   }
 
+  @Test
   public void testNullPdxString() throws CacheException {
     final Host host = Host.getHost(0);
     VM server0 = host.getVM(0);
@@ -1523,7 +1530,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server1 and create index
     server0.invoke(new CacheSerializableRunnable("Create Server1") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(isPr,false,false);
+        configAndStartBridgeServer(isPr, false, false);
         // create a local query service
         QueryService localQueryService = null;
         try {
@@ -1554,7 +1561,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server2
     server1.invoke(new CacheSerializableRunnable("Create Server2") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(isPr,false, false);
+        configAndStartBridgeServer(isPr, false, false);
         Region region = getRootRegion().getSubregion(regionName);
       }
     });
@@ -1562,7 +1569,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
     // Start server3
     server2.invoke(new CacheSerializableRunnable("Create Server3") {
       public void run2() throws CacheException {
-        configAndStartBridgeServer(isPr,false, false);
+        configAndStartBridgeServer(isPr, false, false);
         Region region = getRootRegion().getSubregion(regionName);
       }
     });
@@ -1642,8 +1649,8 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
         }
         
         // Querying the fields with null values
-        String[] qs = {"SELECT pos.secId FROM " + regName + "  p, p.positions.values pos where p.status = null",
-                      "SELECT p.pkid FROM " + regName + "  p, p.positions.values pos where pos.secId = null"};
+        String[] qs = { "SELECT pos.secId FROM " + regName + "  p, p.positions.values pos where p.status = null",
+          "SELECT p.pkid FROM " + regName + "  p, p.positions.values pos where pos.secId = null"};
         
         for(int i = 0; i <2; i++){
           try {
@@ -1665,11 +1672,11 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
         }
       }
      });
- 
-    this.closeClient(server2);
-    this.closeClient(client);
-    this.closeClient(server1);
-    this.closeClient(server0);
+
+    closeClient(server2);
+    closeClient(client);
+    closeClient(server1);
+    closeClient(server0);
   }
   
  
@@ -1759,7 +1766,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
           if (p1 instanceof Struct) { 
             Object[] values1 = ((Struct)p1).getFieldValues(); 
             Object[] values2 = ((Struct)p2).getFieldValues(); 
-            //test.assertEquals(values1.length, values2.length); 
+            //test.assertIndexDetailsEquals(values1.length, values2.length);
             if(values1.length != values2.length) { 
               ok = false; 
               break outer; 
@@ -1794,6 +1801,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
    * 
    * @throws CacheException
    */
+  @Test
   public void testPRQueryForDuplicates() throws CacheException {
     final String regionName = "exampleRegion";
     final Host host = Host.getHost(0);
@@ -1878,14 +1886,13 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
       }
     });
     
-    Invoke.invokeInEveryVM(DistributedTestCase.class, "disconnectFromDS");
+    disconnectAllFromDS();
   }
-   
+
   protected void configAndStartBridgeServer(boolean isPr, boolean isAccessor, boolean asyncIndex) {
     AttributesFactory factory = new AttributesFactory();
     if (isPr) {
       PartitionAttributesFactory paf = new PartitionAttributesFactory();
-      //factory.setDataPolicy(DataPolicy.PARTITION);
       if (isAccessor){
         paf.setLocalMaxMemory(0);
       }
@@ -1893,7 +1900,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
       factory.setPartitionAttributes(prAttr);
     } else {
       factory.setScope(Scope.DISTRIBUTED_ACK);
-      factory.setDataPolicy(DataPolicy.REPLICATE);      
+      factory.setDataPolicy(DataPolicy.REPLICATE);
     }
     if (asyncIndex) {
       factory.setIndexMaintenanceSynchronous(!asyncIndex);
@@ -1905,6 +1912,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
       Assert.fail("While starting CacheServer", ex);
     }
   }
+
   /**
    * Starts a bridge server on the given port, using the given
    * deserializeValues and notifyBySubscription to serve up the
@@ -1932,20 +1940,20 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
 
   /* Close Client */
   public void closeClient(VM client) {
-    SerializableRunnable closeCache =
-      new CacheSerializableRunnable("Close Client") {
-      public void run2() throws CacheException {
-        LogWriterUtils.getLogWriter().info("### Close Client. ###");
-        try {
-          closeCache();
-          disconnectFromDS();
-        } catch (Exception ex) {
-          LogWriterUtils.getLogWriter().info("### Failed to get close client. ###");
-        }
-      }
-    };
-    
-    client.invoke(closeCache);
+      SerializableRunnable closeCache =
+        new CacheSerializableRunnable("Close Client") {
+          public void run2() throws CacheException {
+            LogWriterUtils.getLogWriter().info("### Close Client. ###");
+            try {
+              closeCache();
+              disconnectFromDS();
+            } catch (Exception ex) {
+              LogWriterUtils.getLogWriter().info("### Failed to get close client. ###");
+            }
+          }
+        };
+
+      client.invoke(closeCache);
   }
   
   public void createPool(VM vm, String poolName, String server, int port, boolean subscriptionEnabled) {

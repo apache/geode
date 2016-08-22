@@ -16,11 +16,17 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static org.junit.Assert.*;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -46,71 +52,75 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * This class tests the functionality of a cache {@link Region region}
  * that has a scope of {@link Scope#DISTRIBUTED_ACK distributed ACK}
  * and {@link PartitionAttributes partition-attributes}.
  *
- * @since 5.1
+ * @since GemFire 5.1
  */
+@Category(DistributedTest.class)
 public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
-  
+
+  public static boolean InvalidateInvoked = false;
+
   static int oldLogLevel;
 
-  public PartitionedRegionDUnitTest(String name) {
-    super(name);
+  @Override
+  protected boolean supportsSubregions() {
+    return false;
   }
   
-  /*
-   * (non-Javadoc)
-   * @see com.gemstone.gemfire.cache30.RegionTestCase#supportsSubregions()
-   */
-  protected boolean supportsSubregions() { return false; }
-  
-  /*
-   * (non-Javadoc)
-   * @see com.gemstone.gemfire.cache30.MultiVMRegionTestCase#supportsNetLoad()
-   */
-  protected boolean supportsNetLoad() { return false; }
+  @Override
+  protected boolean supportsNetLoad() {
+    return false;
+  }
 
-  /*
-   * (non-Javadoc)
-   * @see com.gemstone.gemfire.cache30.MultiVMRegionTestCase#supportsReplication()
-   */
-  protected boolean supportsReplication() { return false; }
+  @Override
+  protected boolean supportsReplication() {
+    return false;
+  }
   
-  /*
-   * (non-Javadoc)
-   * @see com.gemstone.gemfire.cache30.MultiVMRegionTestCase#supportsTransactions()
-   */
-  protected boolean supportsTransactions() { return false; }
+  @Override
+  protected boolean supportsTransactions() {
+    return false;
+  }
   
-  /*
-   * (non-Javadoc)
-   * @see com.gemstone.gemfire.cache30.RegionTestCase#supportsLocalDestroyAndLocalInvalidate()
-   */
-  protected boolean supportsLocalDestroyAndLocalInvalidate() { return false; }
+  protected boolean supportsLocalDestroyAndLocalInvalidate() {
+    return false;
+  }
   
+  @Ignore("TODO: test is not implemented for partioned regions")
+  @Override
+  @Test
   public void testCacheLoaderModifyingArgument() throws InterruptedException {
     // TODO, implement a specific PR related test that properly reflects primary allocation
     // and event deliver based on that allocation
   }
 
+  @Ignore("TODO: test is not implemented for partioned regions")
+  @Override
+  @Test
   public void testLocalAndRemoteCacheWriters() throws InterruptedException {
     // TODO, implement a specific PR related test that properly reflects primary allocation
     // and event deliver based on that allocation
   }
 
+  @Ignore("TODO: test is not implemented for partioned regions")
+  @Override
+  @Test
   public void testLocalCacheLoader() {
     // TODO, implement a specific PR related test that properly reflects primary allocation
     // and event deliver based on that allocation
   }
-  
 
   /**
    * Returns region attributes for a partitioned region with distributed-ack scope
    */
+  @Override
   protected RegionAttributes getRegionAttributes() {
     AttributesFactory factory = new AttributesFactory();
     factory.setEarlyAck(false);
@@ -160,17 +170,12 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
     }
   }
     
-  //////////////////////  Test Methods  //////////////////////
-
-  public static boolean InvalidateInvoked = false;
-  
   /**
    * Bug #47235 concerns assertion failures being thrown when there is a
    * member that receives adjunct messages (as in a WAN gateway, a peer
    * with clients, etc).
-   * 
-   * @throws Exception
    */
+  @Test
   public void testRegionInvalidationWithAdjunctMessages() throws Exception {
     final String name = getUniqueName();
     VM vm1 = Host.getHost(0).getVM(1);
@@ -210,12 +215,9 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
   /**
    * Tests the compatibility of creating certain kinds of subregions
    * of a local region.
-   *
-   * @see Region#createSubregion
    */
-  public void testIncompatibleSubregions()
-    throws CacheException, InterruptedException {
-
+  @Test
+  public void testIncompatibleSubregions() throws CacheException, InterruptedException {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -250,7 +252,6 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
         }
       });
   } 
-  
 
   private void setupExtendedTest(final String regionName, final int numVals) {
     Host host = Host.getHost(0);
@@ -309,6 +310,8 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
   /**
    * test with multiple vms and a decent spread of keys
    */
+  @Category(FlakyTest.class) // GEODE-555: retry loops, use of Random
+  @Test
   public void testExtendedKeysValues() {
     final String regionName = getUniqueName();
     final int numEntries = 20000;
@@ -354,7 +357,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
               assertTrue("should have been end of keys iteration", !keysIt.hasNext());
               assertTrue("should have been end of entries iteration", !entriesIt.hasNext());
             }
-            catch (Exception ex) {
+            catch (Exception ex) { // TODO: remove all of this and just disconnect DS in tear down
               try {
                 getRootRegion().getSubregion(regionName).destroyRegion();
               }
@@ -371,76 +374,59 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
   }
   
   // these tests make no sense for partitioned regions
+
+  @Ignore("Not implemented for partitioned regions")
+  @Override
+  @Test
   public void testDefinedEntryUpdated() {
-    unimplemented();
   }
+
+  @Ignore("Not implemented for partitioned regions")
+  @Override
+  @Test
   public void testRemoteCacheListener() {
-    unimplemented();
   }
   
-  
-  // these tests require getEntry support - need an alternative way of checking
-  // the results that can be overridden here
-//  public void testDistributedUpdate() {
-//    unimplemented();
-//  }
-//  public void testDistributedPutNoUpdate() {
-//    unimplemented();
-//  }
-//  public void testDistributedInvalidate() {
-//    unimplemented();
-//  }
-//  public void testDistributedInvalidate4() {
-//    unimplemented();
-//  }
-//  public void testContainsKey() {
-//    unimplemented();
-//  }
-//  public void testBadRegionAccess() {
-//    unimplemented();
-//  }
-//  public void testPutNonExistentEntry() {
-//    unimplemented();
-//  }
-//  public void testDestroyEntry() {
-//    unimplemented();
-//  }
-//  public void testInvalidateEntry() {
-//    unimplemented();
-//  }
-//  public void testDistributedDestroy() {
-//    unimplemented();
-//  }
-  
-
   // user attributes aren't supported in partitioned regions at this time (5.1)
-  public void testEntryUserAttribute() {
-    unimplemented();
-  }
 
+  @Ignore("Not implemented for partitioned regions")
+  @Override
+  @Test
+  public void testEntryUserAttribute() {
+  }
   
   // these tests require misc Region operations not currently supported by PRs
+
+  @Ignore("Not implemented for partitioned regions")
+  @Override
+  @Test
   public void testInvalidateRegion() {
-    unimplemented();
-  }
-  public void testLocalDestroyRegion() {
-    unimplemented();
-  }
-  public void testLocalInvalidateRegion() {
-    unimplemented();
-  }
-  public void testSnapshot() {
-    unimplemented();
-  }
-  public void testRootSnapshot() {
-    unimplemented();
   }
 
-  private void unimplemented() {
-//    StackTraceElement stack[] = new Exception("dummy").getStackTrace();
-//    getLogWriter().info(stack[1].getClassName() + "." + stack[1].getMethodName()
-//        + ": this test is not implemented for PartitionedRegions at this time");
+  @Ignore("Not implemented for partitioned regions")
+  @Override
+  @Test
+  public void testLocalDestroyRegion() {
   }
+
+  @Ignore("Not implemented for partitioned regions")
+  @Override
+  @Test
+  public void testLocalInvalidateRegion() {
+  }
+
+  @Ignore("Not implemented for partitioned regions")
+  @Override
+  @Test
+  public void testSnapshot() {
+  }
+
+  @Ignore("Not implemented for partitioned regions")
+  @Override
+  @Test
+  public void testRootSnapshot() {
+  }
+
   static class PoisonedKey implements Serializable {
     static volatile boolean poisoned = false;
     static volatile boolean poisonDetected = false;
@@ -454,7 +440,8 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
       poisonDetected = false; // restore default static value
       return result;
     }
-    
+
+    @Override
     public int hashCode() {
       int result = k.hashCode();
       synchronized (PoisonedKey.class) {
@@ -470,7 +457,8 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
     PoisonedKey(String s) {
       this.k = s;
     }
-    
+
+    @Override
     public boolean equals(Object o) {
       if (o == null) {
         return false;
@@ -486,6 +474,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
     }
   }
   
+  @Test
   public void testBadHash() {
     final String regionName = getUniqueName();
     Host host = Host.getHost(0);

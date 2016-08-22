@@ -16,7 +16,20 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+import static com.gemstone.gemfire.cache.query.Utils.createPortfolioData;
+
 import java.util.Arrays;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -41,17 +54,17 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Test creates a local region. Creates and removes index in a parallel running thread.
  * Then destroys and puts back entries in separated thread in the same region and runs
  * query parallely and checks for UNDEFINED values in result set of the query.
- *
- *
  */
-public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCase {
 
-  PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper("");
+  PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();
 
   String name;
 
@@ -67,19 +80,25 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
   /**
    * @param name
    */
-  public InitializeIndexEntryDestroyQueryDUnitTest(String name) {
-    super(name);
+  public InitializeIndexEntryDestroyQueryDUnitTest() {
+    super();
   }
-
+  public void setCacheInVMs(VM... vms) {
+    for (VM vm : vms) {
+      vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    }
+  }
+  @Test
   public void testAsyncIndexInitDuringEntryDestroyAndQuery() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
+    setCacheInVMs(vm0);
     name = "PartionedPortfolios";
     //Create Local Region
     vm0.invoke(new CacheSerializableRunnable("Create local region with asynchronous index maintenance") {
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
+        Cache cache = getCache();
         Region localRegion = null;
         try {
           AttributesFactory attr = new AttributesFactory();
@@ -99,7 +118,7 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
     });
 
 
-    final PortfolioData[] portfolio = PRQHelp.createPortfolioData(cnt, cntDest);
+    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
     // Putting the data into the PR's created
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio,
         cnt, cntDest));
@@ -109,11 +128,9 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
       @Override
       public void run2() throws CacheException {
 
-        Region r = PRQHelp.getCache().getRegion(name);
-
         for (int i=0; i<cntDest; i++) {
           //Create Index first to go in hook.
-          Cache cache = PRQHelp.getCache();
+          Cache cache = getCache();
           Index index = null;
           try {
             index = cache.getQueryService().createIndex("statusIndex", "p.status", "/"+name+" p");
@@ -125,7 +142,7 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
 
           Wait.pause(100);
 
-          PRQHelp.getCache().getQueryService().removeIndex(index);
+          getCache().getQueryService().removeIndex(index);
 
           Wait.pause(100);
         }
@@ -137,22 +154,20 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
 
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
-
         // Do a put in region.
-        Region r = PRQHelp.getCache().getRegion(name);
+        Region r = getCache().getRegion(name);
 
         for (int i=0, j=0; i<1000; i++,j++) {
 
           PortfolioData p = (PortfolioData)r.get(j);
 
-          PRQHelp.getCache().getLogger().fine("Going to destroy the value" + p);
+          getCache().getLogger().fine("Going to destroy the value" + p);
           r.destroy(j);
 
           Wait.pause(100);
 
           //Put the value back again.
-          PRQHelp.getCache().getLogger().fine("Putting the value back" + p);
+          getCache().getLogger().fine("Putting the value back" + p);
           r.put(j, p);
 
           //Reset j
@@ -167,12 +182,10 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
 
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
-
         // Do a put in region.
-        Region r = PRQHelp.getCache().getRegion(name);
+        Region r = getCache().getRegion(name);
 
-        Query query = PRQHelp.getCache().getQueryService().newQuery("select * from /"+name+" p where p.status = 'active'");
+        Query query = getCache().getQueryService().newQuery("select * from /"+name+" p where p.status = 'active'");
 
         //Now run the query
         SelectResults results = null;
@@ -181,7 +194,7 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
         for (int i=0; i<500; i++) {
 
           try {
-            PRQHelp.getCache().getLogger().fine("Querying the region");
+            getCache().getLogger().fine("Querying the region");
             results = (SelectResults)query.execute();
           } catch (Exception e) {
             e.printStackTrace();
@@ -207,16 +220,18 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1036: uses PRQueryDUnitHelper, time sensitive, async actions, overly long joins (16+ minutes), eats exceptions (fixed 1), thread sleeps
+  @Test
   public void testAsyncIndexInitDuringEntryDestroyAndQueryOnPR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-
+    setCacheInVMs(vm0);
     name = "PartionedPortfoliosPR";
     //Create Local Region
     vm0.invoke(new CacheSerializableRunnable("Create local region with asynchronous index maintenance") {
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
+        Cache cache = getCache();
         Region partitionRegion = null;
         try {
           AttributesFactory attr = new AttributesFactory();
@@ -235,7 +250,7 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
     });
 
 
-    final PortfolioData[] portfolio = PRQHelp.createPortfolioData(cnt, cntDest);
+    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
     // Putting the data into the PR's created
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio,
         cnt, cntDest));
@@ -244,26 +259,20 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
 
       @Override
       public void run2() throws CacheException {
-
-        Region r = PRQHelp.getCache().getRegion(name);
-
         for (int i=0; i<cntDest; i++) {
           //Create Index first to go in hook.
-          Cache cache = PRQHelp.getCache();
+          Cache cache = getCache();
           Index index = null;
           try {
             index = cache.getQueryService().createIndex("statusIndex", "p.status", "/"+name+" p");
           } catch (Exception e1) {
             e1.printStackTrace();
-            fail("Index creation failed");
+            Assert.fail("Index creation failed", e1);
           }
           assertNotNull(index);
 
-          //pause(100);
+          getCache().getQueryService().removeIndex(index);
 
-          PRQHelp.getCache().getQueryService().removeIndex(index);
-
-          //pause(100);
         }
       }
     });
@@ -273,22 +282,20 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
 
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
-
         // Do a put in region.
-        Region r = PRQHelp.getCache().getRegion(name);
+        Region r = getCache().getRegion(name);
 
         for (int i=0, j=0; i<1000; i++,j++) {
 
           PortfolioData p = (PortfolioData)r.get(j);
 
-          PRQHelp.getCache().getLogger().fine("Going to destroy the value" + p);
+          getCache().getLogger().fine("Going to destroy the value" + p);
           r.destroy(j);
 
           Wait.pause(20);
 
           //Put the value back again.
-          PRQHelp.getCache().getLogger().fine("Putting the value back" + p);
+          getCache().getLogger().fine("Putting the value back" + p);
           r.put(j, p);
 
           //Reset j
@@ -303,12 +310,8 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
 
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
-
         // Do a put in region.
-        Region r = PRQHelp.getCache().getRegion(name);
-
-        Query query = PRQHelp.getCache().getQueryService().newQuery("select * from /"+name+" p where p.status = 'active'");
+        Query query = getCache().getQueryService().newQuery("select * from /"+name+" p where p.status = 'active'");
 
         //Now run the query
         SelectResults results = null;
@@ -317,10 +320,10 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
         for (int i=0; i<500; i++) {
 
           try {
-            PRQHelp.getCache().getLogger().fine("Querying the region");
+            getCache().getLogger().fine("Querying the region");
             results = (SelectResults)query.execute();
           } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(); // TODO: eats exceptions
           }
 
           for (Object obj : results) {
@@ -332,27 +335,28 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
       }
     });
 
-    ThreadUtils.join(asyInvk0, 1000 * 1000);
+    ThreadUtils.join(asyInvk0, 1000 * 1000); // TODO: this is way too long: 16.67 minutes!
     if (asyInvk0.exceptionOccurred()) {
       Assert.fail("asyInvk0 failed", asyInvk0.getException());
     }
     
-    ThreadUtils.join(asyInvk1, 1000 * 1000);
+    ThreadUtils.join(asyInvk1, 1000 * 1000); // TODO: this is way too long: 16.67 minutes!
     if (asyInvk1.exceptionOccurred()) {
       Assert.fail("asyInvk1 failed", asyInvk1.getException());
     }
   }
 
+  @Test
   public void testConcurrentRemoveIndexAndQueryOnPR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-
+    setCacheInVMs(vm0);
     name = "PartionedPortfoliosPR";
     //Create Local Region
     vm0.invoke(new CacheSerializableRunnable("Create local region with asynchronous index maintenance") {
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
+        Cache cache = getCache();
         Region partitionRegion = null;
         try {
           AttributesFactory attr = new AttributesFactory();
@@ -372,7 +376,7 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
     });
 
 
-    final PortfolioData[] portfolio = PRQHelp.createPortfolioData(cnt, cntDest);
+    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
     // Putting the data into the PR's created
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
 
@@ -381,10 +385,8 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
       @Override
       public void run2() throws CacheException {
 
-        Region r = PRQHelp.getCache().getRegion(name);
-
           //Create Index first to go in hook.
-          Cache cache = PRQHelp.getCache();
+          Cache cache = getCache();
           Index sindex = null;
           Index iindex = null;
           Index pkindex = null;
@@ -406,19 +408,15 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
 
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
-
         // Do a put in region.
-        Region r = PRQHelp.getCache().getRegion(name);
-
-        Query query = PRQHelp.getCache().getQueryService().newQuery("select * from /"+name+" p where p.status = 'active' and p.ID > 0 and p.pk != ' ' ");
+        Query query = getCache().getQueryService().newQuery("select * from /"+name+" p where p.status = 'active' and p.ID > 0 and p.pk != ' ' ");
         //Now run the query
         SelectResults results = null;
 
         for (int i=0; i<10; i++) {
 
           try {
-            PRQHelp.getCache().getLogger().fine("Querying the region with " + query);
+            getCache().getLogger().fine("Querying the region with " + query);
             results = (SelectResults)query.execute();
           } catch (Exception e) {
             Assert.fail("Query: " + query + " execution failed with exception", e);
@@ -438,15 +436,12 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
       @Override
       public void run2() throws CacheException {
 
-        Region r = PRQHelp.getCache().getRegion(name);
+        Region r = getCache().getRegion(name);
 
           //Create Index first to go in hook.
-          Cache cache = PRQHelp.getCache();
-       
-          PRQHelp.getCache().getQueryService().removeIndexes(r);
+          getCache().getQueryService().removeIndexes(r);
 
-          //pause(100);
-        
+
       }
     });
 

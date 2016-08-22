@@ -20,7 +20,7 @@ import javax.print.attribute.EnumSyntax;
 
 /** The algorithm used to determine when to perform an {@link com.gemstone.gemfire.cache.EvictionAction}
  * 
- * @since 5.0
+ * @since GemFire 5.0
  * @see com.gemstone.gemfire.cache.EvictionAction
  * @see com.gemstone.gemfire.internal.cache.EvictionAttributesImpl
  */
@@ -98,7 +98,7 @@ public final class EvictionAlgorithm extends EnumSyntax
   /**
    * Returns the eviction action the corresponds to the given parameter.
    * Returns <code>null</code> if no action corresponds.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static EvictionAlgorithm parseValue(int v) {
     if (v < 0 || v >= enumValueTable.length) {

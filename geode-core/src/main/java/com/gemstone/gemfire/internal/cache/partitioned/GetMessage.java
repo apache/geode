@@ -17,47 +17,30 @@
 
 package com.gemstone.gemfire.internal.cache.partitioned;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Set;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.TransactionDataNotColocatedException;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DirectReplyProcessor;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.ReplyException;
-import com.gemstone.gemfire.distributed.internal.ReplyMessage;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.distributed.internal.ReplySender;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.BucketRegion;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.cache.BucketRegion.RawValue;
 import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
 import com.gemstone.gemfire.internal.cache.DataLocationException;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 import com.gemstone.gemfire.internal.cache.KeyInfo;
-import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
 import com.gemstone.gemfire.internal.cache.PrimaryBucketException;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.TXStateProxy;
 import com.gemstone.gemfire.internal.cache.Token;
+import com.gemstone.gemfire.internal.cache.VersionTagHolder;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -65,6 +48,13 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.util.BlobHelper;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * This message is used as the request for a
@@ -74,7 +64,7 @@ import com.gemstone.gemfire.internal.util.BlobHelper;
  * Since the {@link com.gemstone.gemfire.cache.Region#get(Object)}operation is
  * used <bold>very </bold> frequently the performance of this class is critical.
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 public final class GetMessage extends PartitionMessageWithDirectReply
   {
@@ -92,11 +82,9 @@ public final class GetMessage extends PartitionMessageWithDirectReply
   
   private boolean returnTombstones;
 
-  private boolean allowReadFromHDFS;
   // reuse some flags
   protected static final int HAS_LOADER = NOTIFICATION_ONLY;
   protected static final int CAN_START_TX = IF_NEW;
-  protected static final int READ_FROM_HDFS = IF_OLD;
 
   /**
    * Empty constructor to satisfy {@link DataSerializer} requirements
@@ -105,18 +93,17 @@ public final class GetMessage extends PartitionMessageWithDirectReply
   }
   
   private GetMessage(InternalDistributedMember recipient, int regionId,
-      DirectReplyProcessor processor,
-      final Object key, final Object aCallbackArgument, ClientProxyMembershipID context,
-      boolean returnTombstones, boolean allowReadFromHDFS) {
+                     DirectReplyProcessor processor,
+                     final Object key, final Object aCallbackArgument, ClientProxyMembershipID context,
+                     boolean returnTombstones) {
     super(recipient, regionId, processor);
     this.key = key;
     this.cbArg = aCallbackArgument;
     this.context = context;
     this.returnTombstones = returnTombstones;
-	this.allowReadFromHDFS = allowReadFromHDFS;
   }
 
-  private static final boolean ORDER_PR_GETS = Boolean.getBoolean("gemfire.order-pr-gets");
+    private static final boolean ORDER_PR_GETS = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "order-pr-gets");
 
   @Override
   final public int getProcessorType()
@@ -182,15 +169,12 @@ public final class GetMessage extends PartitionMessageWithDirectReply
     Object val = null;
     try {
     if (ds != null) {
-      EntryEventImpl event = EntryEventImpl.createVersionTagHolder();
+      VersionTagHolder event = new VersionTagHolder();
       try {
-        if (r.keyRequiresRegionContext()) {
-          ((KeyWithRegionContext)this.key).setRegionContext(r);
-        }
         KeyInfo keyInfo = r.getKeyInfo(key, cbArg);
         boolean lockEntry = forceUseOfPRExecutor || isDirectAck();
         
-        val = r.getDataView().getSerializedValue(r, keyInfo, !lockEntry, this.context, event, returnTombstones, allowReadFromHDFS);
+        val = r.getDataView().getSerializedValue(r, keyInfo, !lockEntry, this.context, event, returnTombstones);
         
         if(val == BucketRegion.REQUIRES_ENTRY_LOCK) {
           Assert.assertTrue(!lockEntry);
@@ -214,8 +198,6 @@ public final class GetMessage extends PartitionMessageWithDirectReply
       catch (DataLocationException e) {
         sendReply(getSender(), getProcessorId(), dm, new ReplyException(e), r, startTime);
         return false;
-      } finally {
-        event.release();
       }
 
       if (logger.isTraceEnabled(LogMarker.DM)) {
@@ -273,14 +255,12 @@ public final class GetMessage extends PartitionMessageWithDirectReply
   @Override
   protected short computeCompressedShort(short s) {
     s = super.computeCompressedShort(s);
-    if (this.allowReadFromHDFS) s |= READ_FROM_HDFS;
     return s;
   }
 
   @Override
   protected void setBooleans(short s, DataInput in) throws ClassNotFoundException, IOException {
     super.setBooleans(s, in);
-    if ((s & READ_FROM_HDFS) != 0) this.allowReadFromHDFS = true;
   }
 
   public void setKey(Object key)
@@ -304,15 +284,18 @@ public final class GetMessage extends PartitionMessageWithDirectReply
    * @throws ForceReattemptException if the peer is no longer available
    */
   public static GetResponse send(InternalDistributedMember recipient,
-      PartitionedRegion r, final Object key, final Object aCallbackArgument,
-      ClientProxyMembershipID requestingClient, boolean returnTombstones, boolean allowReadFromHDFS)
+                                 PartitionedRegion r,
+                                 final Object key,
+                                 final Object aCallbackArgument,
+                                 ClientProxyMembershipID requestingClient,
+                                 boolean returnTombstones)
       throws ForceReattemptException
   {
     Assert.assertTrue(recipient != null,
         "PRDistribuedGetReplyMessage NULL reply message");
     GetResponse p = new GetResponse(r.getSystem(), Collections.singleton(recipient), key);
     GetMessage m = new GetMessage(recipient, r.getPRId(), p,
-        key, aCallbackArgument, requestingClient, returnTombstones, allowReadFromHDFS);
+        key, aCallbackArgument, requestingClient, returnTombstones);
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(LocalizedStrings.GetMessage_FAILED_SENDING_0.toLocalizedString(m));
@@ -330,7 +313,7 @@ public final class GetMessage extends PartitionMessageWithDirectReply
    * is used <bold>very </bold> frequently the performance of this class is
    * critical.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static final class GetReplyMessage extends ReplyMessage
    {
@@ -351,7 +334,6 @@ public final class GetMessage extends PartitionMessageWithDirectReply
     // static values for valueType
     static final byte VALUE_IS_SERIALIZED_OBJECT = 0;
     static final byte VALUE_IS_BYTES = 1;
-    /** came from partial SQLF merge and reconciling with it but not used yet */
     //static final byte VALUE_IS_OBJECT = 2;
     static final byte VALUE_IS_INVALID = 3;
     static final byte VALUE_IS_TOMBSTONE = 4;
@@ -537,7 +519,7 @@ public final class GetMessage extends PartitionMessageWithDirectReply
    * A processor to capture the value returned by {@link 
    * com.gemstone.gemfire.internal.cache.partitioned.GetMessage.GetReplyMessage}
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static class GetResponse extends PartitionResponse {
     private volatile GetReplyMessage getReply;

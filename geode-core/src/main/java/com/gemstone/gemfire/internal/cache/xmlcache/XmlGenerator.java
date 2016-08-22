@@ -25,7 +25,7 @@ import org.xml.sax.SAXException;
  * {@link #getNamspaceUri()} .
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public interface XmlGenerator<T> {
 
@@ -33,7 +33,7 @@ public interface XmlGenerator<T> {
    * Get XML Namespace this parser is responsible for.
    * 
    * @return XML Namespace.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   String getNamspaceUri();
 
@@ -43,7 +43,7 @@ public interface XmlGenerator<T> {
   // *
   // * @param logWriter
   // * current XML config {@link LogWriter}.
-  // * @since 8.1
+  // * @since GemFire 8.1
   // */
   // void setLogWriter(LogWriterI18n logWriter);
   //
@@ -54,7 +54,7 @@ public interface XmlGenerator<T> {
    * @param cacheXmlGenerator
    *          to generate configuration to.
    * @throws SAXException
-   * @since 8.1
+   * @since GemFire 8.1
    */
   void generate(CacheXmlGenerator cacheXmlGenerator) throws SAXException;
 

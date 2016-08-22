@@ -16,10 +16,11 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
 import com.gemstone.gemfire.internal.AvailablePort;
@@ -29,13 +30,13 @@ import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,33 +46,38 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
+
 /**
  * A distributed test suite of test cases for testing the queue commands that are part of Gfsh.
  *
- * @since 8.0
+ * @since GemFire 8.0
  */
+@Category(DistributedTest.class)
 public class QueueCommandsDUnitTest extends CliCommandTestBase {
+
   private static final long serialVersionUID = 1L;
 
   final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
-
-  public QueueCommandsDUnitTest(final String testName) {
-    super(testName);
-  }
 
   @Override
   public final void preSetUp() throws Exception {
     disconnectAllFromDS();
   }
 
+  @Test
   public void testAsyncEventQueue() throws IOException {
     final String queue1Name = "testAsyncEventQueue1";
     final String queue2Name = "testAsyncEventQueue2";
     final String diskStoreName = "testAsyncEventQueueDiskStore";
 
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group0");
-    createDefaultSetup(localProps);
+    localProps.setProperty(GROUPS, "Group0");
+    setUpJmxManagerOnVm0ThenConnect(localProps);
 
     CommandResult cmdResult = executeCommand(CliStrings.LIST_ASYNC_EVENT_QUEUES);
     assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -86,8 +92,8 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
         diskStoreDir.mkdirs();
 
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.NAME_NAME, vm1Name);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
+        localProps.setProperty(NAME, vm1Name);
+        localProps.setProperty(GROUPS, "Group1");
         getSystem(localProps);
         getCache();
       }
@@ -98,8 +104,8 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
     vm2.invoke(new SerializableRunnable() {
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.NAME_NAME, vm2Name);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group2");
+        localProps.setProperty(NAME, vm2Name);
+        localProps.setProperty(GROUPS, "Group2");
         getSystem(localProps);
         getCache();
       }
@@ -161,6 +167,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
     commandStringBuilder.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER,
         "com.qcdunit.QueueCommandsDUnitTestHelper");
     commandStringBuilder.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISKSYNCHRONOUS, "false");
+    commandStringBuilder.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__FORWARD_EXPIRATION_DESTROY, "true");
     commandStringBuilder.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER,
         "com.qcdunit.QueueCommandsDUnitTestHelper");
     commandStringBuilder.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE, "param1");
@@ -202,6 +209,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
         assertEquals(queue.getGatewayEventSubstitutionFilter().getClass().getName(),
             "com.qcdunit.QueueCommandsDUnitTestHelper");
         assertEquals(queue.isDiskSynchronous(), false);
+        assertEquals(queue.isForwardExpirationDestroy(), true);
         assertEquals(queue.getAsyncEventListener().getClass().getName(), "com.qcdunit.QueueCommandsDUnitTestHelper");
       }
     });
@@ -236,6 +244,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
   /**
    * Asserts that creating async event queues correctly updates the shared configuration.
    */
+  @Test
   public void testCreateUpdatesSharedConfig() throws IOException {
     disconnectAllFromDS();
 
@@ -250,10 +259,10 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
 
         final File locatorLogFile = new File("locator-" + locatorPort + ".log");
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(DistributionConfig.NAME_NAME, "Locator");
-        locatorProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
-        locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+        locatorProps.setProperty(NAME, "Locator");
+        locatorProps.setProperty(MCAST_PORT, "0");
+        locatorProps.setProperty(LOG_LEVEL, "fine");
+        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
         try {
           final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null,
               locatorProps);
@@ -269,7 +278,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
               return "Waiting for shared configuration to be started";
             }
           };
-          Wait.waitForCriterion(wc, 5000, 500, true);
+          waitForCriterion(wc, 5000, 500, true);
         } catch (IOException ioex) {
           fail("Unable to create a locator with a shared configuration");
         }
@@ -278,9 +287,9 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
 
     // Start the default manager
     Properties managerProps = new Properties();
-    managerProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    managerProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-    createDefaultSetup(managerProps);
+    managerProps.setProperty(MCAST_PORT, "0");
+    managerProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+    setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);
@@ -288,9 +297,9 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
       @Override
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
+        localProps.setProperty(MCAST_PORT, "0");
+        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+        localProps.setProperty(GROUPS, groupName);
         getSystem(localProps);
         assertNotNull(getCache());
       }
@@ -336,7 +345,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
           xmlFromConfig = sharedConfig.getConfiguration(groupName).getCacheXmlContent();
           assertTrue(xmlFromConfig.contains(queueName));
         } catch (Exception e) {
-          Assert.fail("Error occurred in cluster configuration service", e);
+          fail("Error occurred in cluster configuration service", e);
         }
       }
     });
@@ -353,10 +362,10 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
         assertTrue(cache.isClosed());
 
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
-        localProps.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "true");
+        localProps.setProperty(MCAST_PORT, "0");
+        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+        localProps.setProperty(GROUPS, groupName);
+        localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         getSystem(localProps);
         cache = getCache();
         assertNotNull(cache);
@@ -377,7 +386,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
           executeCommand("undeploy --jar=" + fileToDelete.getName());
         }
       } catch (IOException e) {
-        LogWriterUtils.getLogWriter().error("Unable to delete file", e);
+        getLogWriter().error("Unable to delete file", e);
       }
     }
     this.filesToBeDeleted.clear();

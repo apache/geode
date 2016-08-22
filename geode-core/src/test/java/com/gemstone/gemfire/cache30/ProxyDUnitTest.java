@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,17 +57,18 @@ import com.gemstone.gemfire.test.dunit.VM;
  * Make sure that operations are distributed and done in
  * regions remote from a PROXY
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
-public class ProxyDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class ProxyDUnitTest extends JUnit4CacheTestCase {
 
   private transient Region r;
   private transient DistributedMember otherId;
   protected transient int clInvokeCount;
   protected transient CacheEvent clLastEvent;
   
-  public ProxyDUnitTest(String name) {
-    super(name);
+  public ProxyDUnitTest() {
+    super();
   }
 
   private VM getOtherVm() {
@@ -532,13 +542,16 @@ public class ProxyDUnitTest extends CacheTestCase {
     assertTrue(r.isDestroyed());
   }
   
+  @Test
   public void testDistributedOpsPROXY() throws CacheException {
     distributedOps(DataPolicy.EMPTY, InterestPolicy.CACHE_CONTENT);
   }
 
+  @Test
   public void testRemoteOriginOpsPROXY() throws CacheException {
     remoteOriginOps(DataPolicy.EMPTY, InterestPolicy.CACHE_CONTENT);
   }
+  @Test
   public void testRemoteOriginOpsPROXY_ALL() throws CacheException {
     remoteOriginOps(DataPolicy.EMPTY, InterestPolicy.ALL);
   }

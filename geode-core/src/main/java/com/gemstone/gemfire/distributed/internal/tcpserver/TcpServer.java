@@ -16,50 +16,24 @@
  */
 package com.gemstone.gemfire.distributed.internal.tcpserver;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.io.StreamCorruptedException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.URL;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
+import com.gemstone.gemfire.CancelException;
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.distributed.internal.*;
+import com.gemstone.gemfire.internal.*;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
+
+import javax.net.ssl.SSLException;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.net.ssl.SSLException;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.PoolStatHelper;
-import com.gemstone.gemfire.distributed.internal.PooledExecutorWithDMStats;
-import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
-import com.gemstone.gemfire.internal.DSFIDFactory;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.VersionedDataInputStream;
-import com.gemstone.gemfire.internal.VersionedDataOutputStream;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * TCP server which listens on a port and delegates requests to a request
@@ -69,8 +43,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * This code was factored out of GossipServer.java to allow multiple handlers to
  * share the same gossip server port.
  * 
- * @since 5.7
- * 
+ * @since GemFire 5.7
  */
 public class TcpServer {
   /**
@@ -99,15 +72,16 @@ public class TcpServer {
   public static int OLDTESTVERSION = OLDGOSSIPVERSION;
 
   public static final long SHUTDOWN_WAIT_TIME = 60 * 1000;
-  private static int MAX_POOL_SIZE = Integer.getInteger("gemfire.TcpServer.MAX_POOL_SIZE", 100).intValue();
+  private static int MAX_POOL_SIZE = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.MAX_POOL_SIZE", 100).intValue();
   private static int POOL_IDLE_TIMEOUT = 60 * 1000;
   
   private static final Logger log = LogService.getLogger();
-  
-  protected/*GemStoneAddition*/ final/*GemStoneAddition*/ static int READ_TIMEOUT = Integer.getInteger("gemfire.TcpServer.READ_TIMEOUT", 60 * 1000).intValue();
+
+  protected/*GemStoneAddition*/ final/*GemStoneAddition*/ static int READ_TIMEOUT = Integer
+      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT", 60 * 1000).intValue();
   //This is for backwards compatibility. The p2p.backlog flag used to be the only way to configure the locator backlog.
   private static final int P2P_BACKLOG = Integer.getInteger("p2p.backlog", 1000).intValue();
-  private static final int BACKLOG = Integer.getInteger("gemfire.TcpServer.BACKLOG", P2P_BACKLOG).intValue();
+  private static final int BACKLOG = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.BACKLOG", P2P_BACKLOG).intValue();
 
   // private int port=7500;
   private final int port;
@@ -128,7 +102,7 @@ public class TcpServer {
    * handled by this member "With different GOSSIPVERION". If GOSSIPVERIONS
    * are same for then current GOSSIPVERSION should be used.
    *
-   * @since 7.1
+   * @since GemFire 7.1
    */
   static {
     GOSSIP_TO_GEMFIRE_VERSION_MAP.put(GOSSIPVERSION, Version.GFE_71.ordinal());
@@ -183,28 +157,22 @@ public class TcpServer {
   
   public void start() throws IOException {
     this.shuttingDown = false;
-    handler.init(this);
     startServerThread();
+    handler.init(this);
   }
   
   private void startServerThread() throws IOException {
     if (srv_sock == null || srv_sock.isClosed()) {
       if (bind_address == null) {
-        srv_sock = SocketCreator.getDefaultInstance().createServerSocket(port,
-            BACKLOG);
-        // srv_sock=new ServerSocket(port, 20); // backlog of 20 connections
+        srv_sock = SocketCreator.getDefaultInstance().createServerSocket(port, BACKLOG);
         bind_address = srv_sock.getInetAddress();
-      } else
-        srv_sock = SocketCreator.getDefaultInstance().createServerSocket(port,
-            BACKLOG, bind_address);
-      // srv_sock=new ServerSocket(port, 20, bind_address); // backlog of 20
-      // connections
-      {
-        if (log.isInfoEnabled())
-          log.info("Locator was created at " + new Date());
-        if (log.isInfoEnabled())
-          log.info("Listening on port " + port + " bound on address "
-              + bind_address);
+      } else {
+        srv_sock = SocketCreator.getDefaultInstance().createServerSocket(port, BACKLOG, bind_address);
+      }
+
+      if (log.isInfoEnabled()) {
+        log.info("Locator was created at " + new Date());
+        log.info("Listening on port " + getPort() + " bound on address " + bind_address);
       }
       srv_sock.setReuseAddress(true); // GemStoneAddition
     }
@@ -243,6 +211,20 @@ public class TcpServer {
   
   public SocketAddress getBindAddress() {
     return srv_sock.getLocalSocketAddress(); 
+  }
+
+  /**
+   * Returns the value of the bound port. If the server was initialized with a port of 0 indicating that any
+   * ephemeral port should be used, this method will return the actual bound port.
+   *
+   * @return the port bound to this socket or 0 if the socket is closed or otherwise not connected
+   */
+  public int getPort() {
+    if (srv_sock != null && !srv_sock.isClosed()) {
+      return srv_sock.getLocalPort();
+    }
+
+    return 0;
   }
 
   protected void run() {

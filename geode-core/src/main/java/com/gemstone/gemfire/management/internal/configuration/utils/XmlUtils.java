@@ -77,7 +77,7 @@ public class XmlUtils {
    * @throws ParserConfigurationException 
    * @throws SAXException 
    * @throws IOException 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public static Document createDocumentFromReader(final Reader reader) throws SAXException, ParserConfigurationException, IOException {
     Document doc = null;
@@ -193,7 +193,7 @@ public class XmlUtils {
    * @param type
    * @return <code>true</code> if element allows multiple, otherwise
    *         <code>false</code>.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private static boolean isMultiple(final LinkedHashMap<String, CacheElement> elementOrderMap, final String namespace, final String type) {
     if (CacheXml.GEODE_NAMESPACE.equals(namespace)) {
@@ -215,7 +215,7 @@ public class XmlUtils {
    * @param type
    * @return position of the element if in map, otherwise
    *         {@link Integer#MAX_VALUE}.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private static int getElementOrder(final LinkedHashMap<String, CacheElement> elementOrderMap, final String namespace, final String type) {
     if (CacheXml.GEODE_NAMESPACE.equals(namespace)) {
@@ -277,7 +277,7 @@ public class XmlUtils {
    * @param schemaLocation
    *          attribute value to build schema location map from.
    * @return {@link Map} of schema namespace URIs to location URLs.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public static final Map<String, List<String>> buildSchemaLocationMap(final String schemaLocation) {
     return buildSchemaLocationMap(new HashMap<String, List<String>>(), schemaLocation);
@@ -296,7 +296,7 @@ public class XmlUtils {
   * @param schemaLocation
   *          attribute value to build schema location map from.
   * @return {@link Map} of schema namespace URIs to location URLs.
-  * @since 8.1
+  * @since GemFire 8.1
   */
  static final Map<String, List<String>> buildSchemaLocationMap(Map<String, List<String>> schemaLocationMap, final String schemaLocation) {
    if (null == schemaLocation) {
@@ -464,7 +464,7 @@ public class XmlUtils {
    *          Schema location to upgrade to.
    * @throws XPathExpressionException 
    * @throws ParserConfigurationException 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   // UnitTest SharedConfigurationTest.testCreateAndUpgradeDocumentFromXml()
   public static Document upgradeSchema(Document document, final String namespaceUri, final String schemaLocation, String schemaVersion) throws XPathExpressionException, ParserConfigurationException {
@@ -546,7 +546,7 @@ public class XmlUtils {
    * 
    * @param schemaLocationMap
    *          {@link Map} to get schema locations from.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private static final String getSchemaLocationValue(final Map<String, List<String>> schemaLocationMap) {
     final StringBuilder sb = new StringBuilder();
@@ -567,7 +567,7 @@ public class XmlUtils {
    * @param root
    *          {@link Element} to get namespaces and prefixes from.
    * @return {@link Map} of namespace URIs to prefixes.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private static final Map<String, String> buildNamespacePrefixMap(final Element root) {
     final HashMap<String, String> namespacePrefixMap = new HashMap<>();
@@ -610,7 +610,7 @@ public class XmlUtils {
    *          new Namespace URI to change to.
    * @throws XPathExpressionException
    * @return the modified version of the passed in node. 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   static final Node changeNamespace(final Node node, final String oldNamespaceUri, final String newNamespaceUri) throws XPathExpressionException {
     Node result = null;

@@ -39,7 +39,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * generically to peers in a {@link DistributedSystem} or servers in a {@link Pool}.  
  * </p>
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public final class FunctionService {
   private static final FunctionServiceManager functionSvcMgr= new FunctionServiceManager();
@@ -69,7 +69,7 @@ public final class FunctionService {
    * @return Execution
    * @throws FunctionException
    *                 if the region passed in is null
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static Execution onRegion(Region region) {
     return functionSvcMgr.onRegion(region);
@@ -87,7 +87,7 @@ public final class FunctionService {
    * @return Execution
    * @throws FunctionException
    *                 if Pool instance passed in is null
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static Execution onServer(Pool pool) {
     return functionSvcMgr.onServer(pool);
@@ -104,7 +104,7 @@ public final class FunctionService {
    * @return Execution
    * @throws FunctionException
    *                 if Pool instance passed in is null
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static Execution onServers(Pool pool) {
     return functionSvcMgr.onServers(pool);
@@ -123,7 +123,7 @@ public final class FunctionService {
    * @return Execution
    * @throws FunctionException
    *                 if cache is null, is not on a client, or it does not have a default pool
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static Execution onServer(RegionService regionService) {
     return functionSvcMgr.onServer(regionService);
@@ -141,7 +141,7 @@ public final class FunctionService {
    * @return Execution
    * @throws FunctionException
    *                 if cache is null, is not on a client, or it does not have a default pool
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static Execution onServers(RegionService regionService) {
     return functionSvcMgr.onServers(regionService);
@@ -162,7 +162,7 @@ public final class FunctionService {
    * @return Execution
    * @throws FunctionException
    *                 if either input parameter is null
-   * @since 6.0
+   * @since GemFire 6.0
    * @deprecated use {@link #onMember(DistributedMember)} instead
    */
   public static Execution onMember(DistributedSystem system,
@@ -182,7 +182,7 @@ public final class FunctionService {
    * 
    * @throws FunctionException
    *                 if DistributedSystem instance passed is null
-   * @since 6.0
+   * @since GemFire 6.0
    * @deprecated use {@link #onMember(String...)} instead
    */
   public static Execution onMembers(DistributedSystem system) {
@@ -202,7 +202,7 @@ public final class FunctionService {
    *                executed
    * @throws FunctionException
    *                 if DistributedSystem instance passed is null
-   * @since 6.0
+   * @since GemFire 6.0
    * @deprecated use {@link #onMembers(Set)} instead
    */
   public static Execution onMembers(DistributedSystem system,
@@ -222,7 +222,7 @@ public final class FunctionService {
    * @return Execution
    * @throws FunctionException
    *           if distributedMember is null
-   * @since 7.0
+   * @since GemFire 7.0
    * 
    */
   public static Execution onMember(DistributedMember distributedMember) {
@@ -247,7 +247,7 @@ public final class FunctionService {
    * 
    * @throws FunctionException
    *           if no members are found belonging to the provided groups
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static Execution onMembers(String... groups) {
     return functionSvcMgr.onMembers(getDistributedSystem(), groups);
@@ -264,7 +264,7 @@ public final class FunctionService {
    *          executed
    * @throws FunctionException
    *           if distributedMembers is null
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static Execution onMembers(Set<DistributedMember> distributedMembers) {
     return functionSvcMgr.onMembers(getDistributedSystem(), distributedMembers);
@@ -283,7 +283,7 @@ public final class FunctionService {
    * @return Execution
    * @throws FunctionException
    *           if no members are found belonging to the provided groups
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static Execution onMember(String... groups) {
     return functionSvcMgr.onMember(getDistributedSystem(), groups);
@@ -297,7 +297,7 @@ public final class FunctionService {
    * @return Function
    * @throws FunctionException
    *                 if functionID passed is null
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static Function getFunction(String functionId) {
     return functionSvcMgr.getFunction(functionId);
@@ -315,7 +315,7 @@ public final class FunctionService {
    * @throws FunctionException
    *                 if function instance passed is null or Function.getId()
    *                 returns null
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static void registerFunction(Function function) {
     functionSvcMgr.registerFunction(function);
@@ -329,7 +329,7 @@ public final class FunctionService {
    * @throws FunctionException
    *                 if function instance passed is null or Function.getId()
    *                 returns null
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static void unregisterFunction(String functionId) {
     functionSvcMgr.unregisterFunction(functionId);
@@ -341,7 +341,7 @@ public final class FunctionService {
    * @throws FunctionException
    *                 if function instance passed is null or Function.getId()
    *                 returns null
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static boolean isRegistered(String functionId) {
     return functionSvcMgr.isRegistered(functionId);
@@ -352,7 +352,7 @@ public final class FunctionService {
    * Returns all locally registered functions
    * @return A view of registered functions as a Map
    *         of {@link Function#getId()} to {@link Function}
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static Map<String, Function> getRegisteredFunctions() {
     return functionSvcMgr.getRegisteredFunctions();

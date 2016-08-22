@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -29,6 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
@@ -70,7 +77,6 @@ import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.dunit.Assert;
@@ -86,52 +92,49 @@ import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests putAll for c/s. Also tests removeAll
  * 
- * @since 5.0.23
+ * @since GemFire 5.0.23
  */
+@Category(DistributedTest.class)
 @SuppressWarnings("serial")
 public class PutAllCSDUnitTest extends ClientServerTestCase {
 
   final int numberOfEntries = 100;
-  
   final int testEndPointSwitchNumber = 200;
-  
   final int thousandEntries = 1000;
-  
   final int TOTAL_BUCKETS = 10;
 
   static Object lockObject = new Object();
-
   static Object lockObject2 = new Object();
-  
   static Object lockObject3 = new Object();
-  
   static Object lockObject4 = new Object();
   
   final String expectedExceptions = PutAllPartialResultException.class.getName()+"||"
   + ServerConnectivityException.class.getName()+"||"+RegionDestroyedException.class.getName()+"||java.net.ConnectException";
 
-  // public static void caseTearDown() throws Exception {
-  // disconnectAllFromDS();
-  // }
+  List<VersionTag> client1Versions = null;
+  List<VersionTag> client2Versions = null;
 
-  /**
-   * Creates a new <code>GemFireMemberStatusDUnitTest</code>
-   */
-  public PutAllCSDUnitTest(String name) {
-    super(name);
-  }
+  List<VersionTag> client1RAVersions = null;
+  List<VersionTag> client2RAVersions = null;
 
-  // ////// Test Methods
+  List<String> expectedVersions = null;
+  List<String> actualVersions = null;
+
+  List<String> expectedRAVersions = null;
+  List<String> actualRAVersions = null;
 
   private static void checkRegionSize(final Region region, final int expectedSize) {
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return region.size() == expectedSize; 
       }
+      @Override
       public String description() {
         return null;
       }
@@ -142,10 +145,9 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
   
   /**
    * Tests putAll to one server.
-   * 
-   * @throws InterruptedException
    */
-public void testOneServer() throws CacheException, InterruptedException {
+  @Test
+  public void testOneServer() throws CacheException, InterruptedException {
     final String title = "testOneServer:";
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);
@@ -160,6 +162,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     createClient(client2, regionName, serverHost, new int[] {serverPort}, -1, -1, false, true, true);
 
     server.invoke(new CacheSerializableRunnable(title+"server add listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -167,6 +170,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client2.invoke(new CacheSerializableRunnable(title+"client2 registerInterest and add listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -178,6 +182,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client1.invoke(new CacheSerializableRunnable(title+"client1 create local region and run putAll") {
+      @Override
       public void run2() throws CacheException {
         AttributesFactory factory2 = new AttributesFactory();
         factory2.setScope(Scope.LOCAL);
@@ -190,9 +195,10 @@ public void testOneServer() throws CacheException, InterruptedException {
     });   
         
     AsyncInvocation async1 = client1.invokeAsync(new CacheSerializableRunnable(title+"client1 create CQ") {
+      @Override
       public void run2() throws CacheException {
         // create a CQ for key 10-20
- 	Region localregion = getRootRegion().getSubregion("localsave");
+ 	      Region localregion = getRootRegion().getSubregion("localsave");
         CqAttributesFactory cqf1 = new CqAttributesFactory();
         EOCQEventListener EOCQListener = new EOCQEventListener(localregion);
         cqf1.addCqListener(EOCQListener);
@@ -241,6 +247,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
     
     server.invoke(new CacheSerializableRunnable(title+"verify Bridge Server") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(numberOfEntries, region.size());
@@ -253,6 +260,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     // verify CQ is ready
     client1.invoke(new CacheSerializableRunnable(title+"verify CQ is ready") {
+      @Override
       public void run2() throws CacheException {
         Region localregion = getRootRegion().getSubregion("localsave");
         waitTillNotify(lockObject, 10000, (localregion.size()>0));
@@ -262,6 +270,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     // verify registerInterest result at client2
     client2.invoke(new CacheSerializableRunnable(title+"verify client2") {
+      @Override
       public void run2() throws CacheException {
         final Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, numberOfEntries);
@@ -283,6 +292,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     
     // verify CQ result at client1
     client1.invoke(new CacheSerializableRunnable(title+"Verify client1") {
+      @Override
       public void run2() throws CacheException {
         Region localregion = getRootRegion().getSubregion("localsave");
         for (int i=10; i<15; i++) {
@@ -305,6 +315,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       }
     });
     client2.invoke(new CacheSerializableRunnable(title+"verify client2") {
+      @Override
       public void run2() throws CacheException {
         final Region region = getRootRegion().getSubregion(regionName);
         LinkedHashMap map = new LinkedHashMap();
@@ -316,6 +327,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
     // verify CQ result at client1
     client1.invoke(new CacheSerializableRunnable(title+"Verify client1") {
+      @Override
       public void run2() throws CacheException {
         Region localregion = getRootRegion().getSubregion("localsave");
         for (int i=10; i<20; i++) {
@@ -368,6 +380,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // Test Exception handling
     // verify CQ is ready
     client1.invoke(new CacheSerializableRunnable(title+"test exception handling") {
+      @Override
       public void run2() throws CacheException {
     	Region region = getRootRegion().getSubregion(regionName);
         Map m = null;
@@ -410,9 +423,8 @@ public void testOneServer() throws CacheException, InterruptedException {
 
   /**
    * Tests putAll afterUpdate event contained oldValue.
-   * 
-   * @throws InterruptedException
    */
+  @Test
   public void testOldValueInEvent() throws CacheException, InterruptedException {
     final String title = "testOldValueInEvent:";
     final Host host = Host.getHost(0);
@@ -431,6 +443,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     createClient(client2, regionName, serverHost, new int[] {serverPort2}, -1, -1, false, true, true);
   
     client2.invoke(new CacheSerializableRunnable(title+"client2 registerInterest and add listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -442,6 +455,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
   
     client1.invoke(new CacheSerializableRunnable(title+"client1 create local region and run putAll") {
+      @Override
       public void run2() throws CacheException {
         // create keys
         Region region = getRootRegion().getSubregion(regionName);
@@ -457,6 +471,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     
     // verify 41890, the local PUTALL_UPDATE event should contain old value
     client1.invoke(new CacheSerializableRunnable(title+"verify after update events") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         waitTillNotify(lockObject, 20000, (region.size() == numberOfEntries));
@@ -464,6 +479,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
         
     client2.invoke(new CacheSerializableRunnable(title+"verify after update events") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         waitTillNotify(lockObject, 20000, (region.size() == numberOfEntries));
@@ -479,9 +495,9 @@ public void testOneServer() throws CacheException, InterruptedException {
    * client to a replicated region 2) putAll from a multi-threaded client to a
    * replicated region 3)
    */
+  @Test
   public void test2Server() throws CacheException, InterruptedException {
     final String title = "test2Server:";
-//    disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -500,6 +516,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     createBridgeClient(client2, regionName, serverHost, new int[] {serverPort2}, -1, -1, true);
 
     client2.invoke(new CacheSerializableRunnable(title+"client2 add listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -507,6 +524,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });   
 
     client1.invoke(new CacheSerializableRunnable(title+"client1 add listener and putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -522,6 +540,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 1, its data are from client
     server1.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 1") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().setCacheWriter(new MyWriter("key-"));
@@ -536,6 +555,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 2, because its data are from distribution
     server2.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 2") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().setCacheWriter(new MyWriter("key-"));
@@ -548,6 +568,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client2.invoke(new CacheSerializableRunnable(title+"client2 verify putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, numberOfEntries);
@@ -560,6 +581,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });   
 
     client1.invoke(new CacheSerializableRunnable(title+"client1 removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         doRemoveAll(regionName, "key-", numberOfEntries);
@@ -570,6 +592,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 1, its data are from client
     server1.invoke(new CacheSerializableRunnable(title
         + "verify removeAll Bridge Server 1") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(0, region.size());
@@ -582,6 +605,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 2, because its data are from distribution
     server2.invoke(new CacheSerializableRunnable(title
         + "verify removeAll Bridge Server 2") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(0, region.size());
@@ -593,6 +617,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client2.invoke(new CacheSerializableRunnable(title+"client2 verify removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, 0);
@@ -603,12 +628,14 @@ public void testOneServer() throws CacheException, InterruptedException {
     // Execute client putAll from multithread client
     AsyncInvocation async1 = client1.invokeAsync(new CacheSerializableRunnable(
         title + "async putAll1 from client1") {
+      @Override
       public void run2() throws CacheException {
         doPutAll(regionName, "async1key-", numberOfEntries);
       }
     });
     AsyncInvocation async2 = client1.invokeAsync(new CacheSerializableRunnable(
         title + "async putAll2 from client1") {
+      @Override
       public void run2() throws CacheException {
         doPutAll(regionName, "async2key-", numberOfEntries);
       }
@@ -620,6 +647,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     client1.invoke(new CacheSerializableRunnable(title
         + "verify client 1 for async keys") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(numberOfEntries*2, region.size());
@@ -642,6 +670,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 1 for asyn keys
     server1.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 1 for async keys") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(numberOfEntries*2, region.size());
@@ -663,6 +692,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 2 for asyn keys
     server2.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 2 for async keys") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(numberOfEntries*2, region.size());
@@ -682,6 +712,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       }
     });
     client2.invoke(new CacheSerializableRunnable(title+"client2 verify async putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, numberOfEntries*2);
@@ -702,12 +733,14 @@ public void testOneServer() throws CacheException, InterruptedException {
       // Execute client removeAll from multithread client
       AsyncInvocation async1 = client1.invokeAsync(new CacheSerializableRunnable(
           title + "async putAll1 from client1") {
+        @Override
         public void run2() throws CacheException {
           doRemoveAll(regionName, "async1key-", numberOfEntries);
         }
       });
       AsyncInvocation async2 = client1.invokeAsync(new CacheSerializableRunnable(
           title + "async putAll2 from client1") {
+        @Override
         public void run2() throws CacheException {
           doRemoveAll(regionName, "async2key-", numberOfEntries);
         }
@@ -718,6 +751,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     }
 
     client1.invoke(new CacheSerializableRunnable(title+"client1 removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         doRemoveAll(regionName, "key-", numberOfEntries);
@@ -728,6 +762,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 1, its data are from client
     server1.invoke(new CacheSerializableRunnable(title
         + "verify async removeAll Bridge Server 1") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(0, region.size());
@@ -737,6 +772,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 2, because its data are from distribution
     server2.invoke(new CacheSerializableRunnable(title
         + "verify async removeAll Bridge Server 2") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(0, region.size());
@@ -744,6 +780,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client2.invoke(new CacheSerializableRunnable(title+"client2 verify async removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, 0);
@@ -753,6 +790,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // Execute p2p putAll
     server1.invoke(new CacheSerializableRunnable(title
         + "server1 execute P2P putAll") {
+      @Override
       public void run2() throws CacheException {
         doPutAll(regionName, "p2pkey-", numberOfEntries);
         Region region = getRootRegion().getSubregion(regionName);
@@ -770,6 +808,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 2 for p2p keys
     server2.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 2 for p2p keys") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         long ts1 = 0;
@@ -783,6 +822,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       }
     });
     client2.invoke(new CacheSerializableRunnable(title+"client2 verify p2p putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, numberOfEntries);
@@ -794,6 +834,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       }
     });   
     client1.invoke(new CacheSerializableRunnable(title+"client1 verify p2p putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, numberOfEntries);
@@ -808,6 +849,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // Execute p2p removeAll
     server1.invoke(new CacheSerializableRunnable(title
         + "server1 execute P2P removeAll") {
+      @Override
       public void run2() throws CacheException {
         doRemoveAll(regionName, "p2pkey-", numberOfEntries);
         Region region = getRootRegion().getSubregion(regionName);
@@ -817,6 +859,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 2, because its data are from distribution
     server2.invoke(new CacheSerializableRunnable(title
         + "verify p2p removeAll Bridge Server 2") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(0, region.size());
@@ -824,6 +867,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client2.invoke(new CacheSerializableRunnable(title+"client2 verify p2p removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, 0);
@@ -831,6 +875,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client1.invoke(new CacheSerializableRunnable(title+"client1 verify p2p removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, 0);
@@ -840,6 +885,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // putAll at client2 to trigger local-invalidates at client1
     client2.invoke(new CacheSerializableRunnable(title
         + "execute putAll on client2 for key 0-10") {
+      @Override
       public void run2() throws CacheException {
         doPutAll(regionName, "key-", 10);
       }
@@ -848,15 +894,18 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify client 2 for key 0-10
     client1.invoke(new CacheSerializableRunnable(title
         + "verify client1 for local invalidate") {
+      @Override
       public void run2() throws CacheException {
         final Region region = getRootRegion().getSubregion(regionName);
         for (int i = 0; i < 10; i++) {
           final int ii = i;
           WaitCriterion ev = new WaitCriterion() {
+            @Override
             public boolean done() {
               Entry entry = region.getEntry("key-" + ii);
               return entry != null  &&  entry.getValue() == null;
             }
+            @Override
             public String description() {
               return null;
             }
@@ -875,10 +924,10 @@ public void testOneServer() throws CacheException, InterruptedException {
     stopBridgeServers(getCache());
   }
 
-  
   /* same as test2Server(), but all the servers are using policy normal */
   private int createServerRegion(VM vm, final String regionName, final boolean CCE) {
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setConcurrencyChecksEnabled(CCE);
@@ -901,7 +950,6 @@ public void testOneServer() throws CacheException, InterruptedException {
   
   public void doTest2NormalServerCCE(boolean CCE) throws CacheException, InterruptedException {
     final String title = "doTest2NormalServerCCE="+CCE+":";
-//    disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -919,6 +967,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     createBridgeClient(client2, regionName, serverHost, new int[] {serverPort2}, -1, 59000, true);
     
     client2.invoke(new CacheSerializableRunnable(title+"client2 add listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -927,6 +976,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     // test case 1: putAll and removeAll to server1
     client1.invoke(new CacheSerializableRunnable(title+"client1 add listener and putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -943,6 +993,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 1, its data are from client
     server1.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 1") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().setCacheWriter(new MyWriter("case1-"));
@@ -957,6 +1008,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     server2.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 2") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().setCacheWriter(new MyWriter("case1-"));
@@ -966,6 +1018,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client1.invoke(new CacheSerializableRunnable(title+"client1 removeAll") {
+      @Override
       public void run2() throws CacheException {
         LocalRegion region = (LocalRegion)getRootRegion().getSubregion(regionName);
         assertEquals(numberOfEntries+1, region.size());
@@ -979,6 +1032,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 1, its data are from client
     server1.invoke(new CacheSerializableRunnable(title
         + "verify removeAll Bridge Server 1") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(0, region.size());
@@ -991,6 +1045,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 2, because its data are from distribution
     server2.invoke(new CacheSerializableRunnable(title
         + "verify removeAll Bridge Server 2") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(0, region.size());
@@ -1002,6 +1057,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client2.invoke(new CacheSerializableRunnable(title+"client2 verify removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, 0);
@@ -1010,6 +1066,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     // test case 2: putAll to server1, removeAll to server2
     client1.invoke(new CacheSerializableRunnable(title+"client1 add listener and putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         doPutAll(regionName, "case2-", numberOfEntries);
@@ -1024,6 +1081,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 1, its data are from client
     server1.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 1") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(numberOfEntries, region.size());
@@ -1036,6 +1094,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     server2.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 2") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         // normal policy will not distribute create events
@@ -1044,6 +1103,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client2.invoke(new CacheSerializableRunnable(title+"client1 removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         doRemoveAll(regionName, "case2-", numberOfEntries);
@@ -1053,6 +1113,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     server1.invoke(new CacheSerializableRunnable(title
         + "verify removeAll Bridge Server 1") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(100, region.size());
@@ -1061,6 +1122,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     server2.invoke(new CacheSerializableRunnable(title
         + "verify removeAll Bridge Server 2") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(0, region.size());
@@ -1068,6 +1130,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client1.invoke(new CacheSerializableRunnable(title+"client1 verify removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, 100);
@@ -1077,6 +1140,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     // test case 3: removeAll a list with duplicated keys 
     client1.invoke(new CacheSerializableRunnable(title+"put 3 keys then removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.put("case3-1", "case3-1");
@@ -1096,6 +1160,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 1, its data are from client
     server1.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 1") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(0, region.size());
@@ -1106,14 +1171,16 @@ public void testOneServer() throws CacheException, InterruptedException {
     // Stop server
     stopBridgeServers(getCache());
   }
-  
+
+  @Test
   public void test2NormalServerCCE() throws CacheException, InterruptedException {
     doTest2NormalServerCCE(true);
     disconnectAllFromDS();
     doTest2NormalServerCCE(false);
     disconnectAllFromDS();
   }
-  
+
+  @Test
   public void testPRServerRVDuplicatedKeys() throws CacheException, InterruptedException {
     doRVDuplicatedKeys(true, 1);
     disconnectAllFromDS();
@@ -1125,7 +1192,6 @@ public void testOneServer() throws CacheException, InterruptedException {
   
   public void doRVDuplicatedKeys(final boolean isPR, final int redundantCopies) throws CacheException, InterruptedException {
     final String title = "doRVDuplicatedKeys:";
-    //  disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -1144,6 +1210,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     createBridgeClient(client2, regionName, serverHost, new int[] {serverPort2}, -1, 59000, false);
 
     client2.invoke(new CacheSerializableRunnable(title+"client2 add listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -1151,6 +1218,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });   
 
     client1.invoke(new CacheSerializableRunnable(title+"client1 add listener and putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -1165,6 +1233,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     // test case 3: removeAll a list with duplicated keys 
     client1.invoke(new CacheSerializableRunnable(title+"put 3 keys then removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.put("case3-1", "case3-1");
@@ -1175,6 +1244,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     client2.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 2") {
+      @Override
       public void run2() throws CacheException {
         Wait.pause(5000);
         Region region = getRootRegion().getSubregion(regionName);
@@ -1188,6 +1258,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client1.invoke(new CacheSerializableRunnable(title+"put 3 keys then removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         ArrayList keys = new ArrayList();
@@ -1207,6 +1278,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     server1.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 1") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         Region.Entry re = region.getEntry("case3-1");
@@ -1220,6 +1292,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     server2.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 2") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         Region.Entry re = region.getEntry("case3-1");
@@ -1233,6 +1306,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     client2.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 2") {
+      @Override
       public void run2() throws CacheException {
         Wait.pause(5000);
         Region region = getRootRegion().getSubregion(regionName);
@@ -1249,12 +1323,14 @@ public void testOneServer() throws CacheException, InterruptedException {
     // Stop server
     stopBridgeServers(getCache());
   }
-  
+
+  @Test
   public void testBug51725() throws CacheException, InterruptedException {
     doBug51725(false);
     disconnectAllFromDS();
   }
 
+  @Test
   public void testBug51725_singlehup() throws CacheException, InterruptedException {
     doBug51725(true);
     disconnectAllFromDS();
@@ -1271,8 +1347,6 @@ public void testOneServer() throws CacheException, InterruptedException {
     int client2Size;
     int server1Size;
     int server2Size;
-
-//    disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
@@ -1296,6 +1370,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     client2.invoke(addExceptionTag1(expectedExceptions));
 
     client2.invoke(new CacheSerializableRunnable(title+"client2 add listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -1306,6 +1381,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
     
     client1.invoke(new CacheSerializableRunnable(title+"put 3 keys then removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -1317,6 +1393,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     
     closeCache(server2);
     client1.invoke(new CacheSerializableRunnable(title+"putAll from client again") {
+      @Override
       public void run2() throws CacheException {
         LocalRegion region = (LocalRegion)getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -1355,6 +1432,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
     
     client2.invoke(new CacheSerializableRunnable(title+"verify entries from client2") {
+      @Override
       public void run2() throws CacheException {
         Wait.pause(5000);
         Region region = getRootRegion().getSubregion(regionName);
@@ -1373,9 +1451,9 @@ public void testOneServer() throws CacheException, InterruptedException {
   /**
    * Tests putAll to 2 PR servers.
    */
+  @Test
   public void testPRServer() throws CacheException, InterruptedException {
     final String title = "testPRServer:";
-//    disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -1393,6 +1471,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     createBridgeClient(client2, regionName, serverHost, new int[] {serverPort2}, -1, 59000, false);
     
     client2.invoke(new CacheSerializableRunnable(title+"client2 add listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -1400,6 +1479,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });   
     
     client1.invoke(new CacheSerializableRunnable(title+"client1 add listener and putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -1415,6 +1495,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 1, its data are from client
     server1.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 1") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().setCacheWriter(new MyWriter("key-"));
@@ -1429,6 +1510,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 2, because its data are from distribution
     server2.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 2") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().setCacheWriter(new MyWriter("key-"));
@@ -1441,6 +1523,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
     client2.invoke(new CacheSerializableRunnable(title
         + "verify client2") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, numberOfEntries);
@@ -1453,6 +1536,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client1.invoke(new CacheSerializableRunnable(title+"client1 removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         doRemoveAll(regionName, "key-", numberOfEntries);
@@ -1463,6 +1547,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 1, its data are from client
     server1.invoke(new CacheSerializableRunnable(title
         + "verify removeAll Bridge Server 1") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(0, region.size());
@@ -1476,6 +1561,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 2, because its data are from distribution
     server2.invoke(new CacheSerializableRunnable(title
         + "verify removeAll Bridge Server 2") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(0, region.size());
@@ -1487,6 +1573,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client2.invoke(new CacheSerializableRunnable(title+"client2 verify removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, 0);
@@ -1495,25 +1582,28 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     // Execute client putAll from multithread client
     {
-    AsyncInvocation async1 = client1.invokeAsync(new CacheSerializableRunnable(
-        title + "async putAll1 from client1") {
-      public void run2() throws CacheException {
-        doPutAll(regionName, "async1key-", numberOfEntries);
-      }
-    });
-    AsyncInvocation async2 = client1.invokeAsync(new CacheSerializableRunnable(
-        title + "async putAll2 from client1") {
-      public void run2() throws CacheException {
-        doPutAll(regionName, "async2key-", numberOfEntries);
-      }
-    });
+      AsyncInvocation async1 = client1.invokeAsync(new CacheSerializableRunnable(
+          title + "async putAll1 from client1") {
+        @Override
+        public void run2() throws CacheException {
+          doPutAll(regionName, "async1key-", numberOfEntries);
+        }
+      });
+      AsyncInvocation async2 = client1.invokeAsync(new CacheSerializableRunnable(
+          title + "async putAll2 from client1") {
+        @Override
+        public void run2() throws CacheException {
+          doPutAll(regionName, "async2key-", numberOfEntries);
+        }
+      });
 
-    ThreadUtils.join(async1, 30 * 1000);
-    ThreadUtils.join(async2, 30 * 1000);
+      ThreadUtils.join(async1, 30 * 1000);
+      ThreadUtils.join(async2, 30 * 1000);
     }
-    
+
     client1.invoke(new CacheSerializableRunnable(title
         + "verify client 1 for async keys") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(numberOfEntries*2, region.size());
@@ -1536,6 +1626,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 2 for asyn keys
     server2.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 2 for async keys") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         long ts1 = 0, ts2 = 0;
@@ -1555,6 +1646,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client2.invoke(new CacheSerializableRunnable(title+"client2 verify async putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, numberOfEntries*2);
@@ -1575,12 +1667,14 @@ public void testOneServer() throws CacheException, InterruptedException {
       // Execute client removeAll from multithread client
       AsyncInvocation async1 = client1.invokeAsync(new CacheSerializableRunnable(
           title + "async putAll1 from client1") {
+        @Override
         public void run2() throws CacheException {
           doRemoveAll(regionName, "async1key-", numberOfEntries);
         }
       });
       AsyncInvocation async2 = client1.invokeAsync(new CacheSerializableRunnable(
           title + "async putAll2 from client1") {
+        @Override
         public void run2() throws CacheException {
           doRemoveAll(regionName, "async2key-", numberOfEntries);
         }
@@ -1591,6 +1685,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     }
 
     client1.invoke(new CacheSerializableRunnable(title+"client1 removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         doRemoveAll(regionName, "key-", numberOfEntries);
@@ -1601,6 +1696,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 1, its data are from client
     server1.invoke(new CacheSerializableRunnable(title
         + "verify async removeAll Bridge Server 1") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(0, region.size());
@@ -1610,6 +1706,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 2, because its data are from distribution
     server2.invoke(new CacheSerializableRunnable(title
         + "verify async removeAll Bridge Server 2") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(0, region.size());
@@ -1617,6 +1714,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client2.invoke(new CacheSerializableRunnable(title+"client2 verify async removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, 0);
@@ -1626,6 +1724,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // Execute p2p putAll
     server1.invoke(new CacheSerializableRunnable(title
         + "server1 execute P2P putAll") {
+      @Override
       public void run2() throws CacheException {
         doPutAll(regionName, "p2pkey-", numberOfEntries);
         Region region = getRootRegion().getSubregion(regionName);
@@ -1643,6 +1742,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 2 for p2p keys
     server2.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 2 for async keys") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         long ts1 = 0;
@@ -1656,6 +1756,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       }
     });
     client2.invoke(new CacheSerializableRunnable(title+"client2 verify p2p putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, numberOfEntries);
@@ -1667,6 +1768,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       }
     });   
     client1.invoke(new CacheSerializableRunnable(title+"client1 verify p2p putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, numberOfEntries);
@@ -1681,6 +1783,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // Execute p2p removeAll
     server1.invoke(new CacheSerializableRunnable(title
         + "server1 execute P2P removeAll") {
+      @Override
       public void run2() throws CacheException {
         doRemoveAll(regionName, "p2pkey-", numberOfEntries);
         Region region = getRootRegion().getSubregion(regionName);
@@ -1690,6 +1793,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 2, because its data are from distribution
     server2.invoke(new CacheSerializableRunnable(title
         + "verify p2p removeAll Bridge Server 2") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(0, region.size());
@@ -1697,6 +1801,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client2.invoke(new CacheSerializableRunnable(title+"client2 verify p2p removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, 0);
@@ -1704,6 +1809,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client1.invoke(new CacheSerializableRunnable(title+"client1 verify p2p removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         checkRegionSize(region, 0);
@@ -1713,6 +1819,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // putAll at client2 to trigger local-invalidates at client1
     client2.invoke(new CacheSerializableRunnable(title
         + "execute putAll on client2 for key 0-10") {
+      @Override
       public void run2() throws CacheException {
         doPutAll(regionName, "key-", 10);
       }
@@ -1721,15 +1828,18 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify client 2 for key 0-10
     client1.invoke(new CacheSerializableRunnable(title
         + "verify client1 for local invalidate") {
+      @Override
       public void run2() throws CacheException {
         final Region region = getRootRegion().getSubregion(regionName);
         for (int i = 0; i < 10; i++) {
           final int ii = i;
           WaitCriterion ev = new WaitCriterion() {
+            @Override
             public boolean done() {
               Entry entry = region.getEntry("key-" + ii);
               return entry != null && entry.getValue() == null;
             }
+            @Override
             public String description() {
               return null;
             }
@@ -1746,9 +1856,12 @@ public void testOneServer() throws CacheException, InterruptedException {
     stopBridgeServers(getCache());
   }
 
-  // Checks to see if a client does a destroy that throws an exception from CacheWriter beforeDestroy
-  // that the size of the region is still correct.
-  // See bug 51583.
+  /**
+   * Checks to see if a client does a destroy that throws an exception from CacheWriter beforeDestroy
+   * that the size of the region is still correct.
+   * See bug 51583.
+   */
+  @Test
   public void testClientDestroyOfUncreatedEntry() throws CacheException, InterruptedException {
     final String title = "testClientDestroyOfUncreatedEntry:";
 
@@ -1768,6 +1881,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     server1.invoke(new CacheSerializableRunnable(title
         + "server1 add cacheWriter") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         // Install cacheWriter that causes the very first destroy to fail
@@ -1777,6 +1891,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     assertEquals(0, getRegionSize(server1, regionName));
     client1.invoke(new CacheSerializableRunnable(title+"client1 destroy") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         try {
@@ -1798,9 +1913,9 @@ public void testOneServer() throws CacheException, InterruptedException {
   /**
    * Tests partial key putAll and removeAll to 2 servers with local region
    */
+  @Test
   public void testPartialKeyInLocalRegion() throws CacheException, InterruptedException {
     final String title = "testPartialKeyInLocalRegion:";
-//    disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
@@ -1824,6 +1939,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     server1.invoke(new CacheSerializableRunnable(title
         + "server1 add cacheWriter") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         // let the server to trigger exception after created 15 keys
@@ -1832,6 +1948,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client2.invoke(new CacheSerializableRunnable(title+"client2 add listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -1842,6 +1959,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });   
 
     client1.invoke(new CacheSerializableRunnable(title+"client1 putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
 
@@ -1859,9 +1977,11 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     {
     WaitCriterion waitForSizes = new WaitCriterion() {
+      @Override
       public String description() {
         return "waiting for conditions to be met";
       }
+      @Override
       public boolean done() {
         int c1Size = getRegionSize(client1, regionName);
         int c2Size = getRegionSize(client2, regionName);
@@ -1895,6 +2015,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // reset cacheWriter's count to allow another 15 keys to be created
     server1.invoke(new CacheSerializableRunnable(title
         + "server1 add cacheWriter") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         // let the server to trigger exception after created 15 keys
@@ -1904,6 +2025,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     // p2p putAll on DR and expect exception
     server2.invoke(new CacheSerializableRunnable(title+"server2 add listener and putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -1923,9 +2045,11 @@ public void testOneServer() throws CacheException, InterruptedException {
     
     {
       WaitCriterion waitForSizes = new WaitCriterion() {
+        @Override
         public String description() {
           return "waiting for conditions to be met";
         }
+        @Override
         public boolean done() {
           int c1Size = getRegionSize(client1, regionName);
           int c2Size = getRegionSize(client2, regionName);
@@ -1957,6 +2081,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // now do a removeAll that is not allowed to remove everything
     server1.invoke(new CacheSerializableRunnable(title
         + "server1 add cacheWriter") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         // server triggers exception after destroying 5 keys
@@ -1964,6 +2089,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       }
     });
     client1.invoke(new CacheSerializableRunnable(title+"client1 removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
 
@@ -1980,9 +2106,11 @@ public void testOneServer() throws CacheException, InterruptedException {
     });   
     {
       WaitCriterion waitForSizes = new WaitCriterion() {
+        @Override
         public String description() {
           return "waiting for conditions to be met";
         }
+        @Override
         public boolean done() {
           int c1Size = getRegionSize(client1, regionName);
           int c2Size = getRegionSize(client2, regionName);
@@ -2014,6 +2142,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // reset cacheWriter's count to allow another 5 keys to be destroyed
     server1.invoke(new CacheSerializableRunnable(title
         + "server1 add cacheWriter") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         // server triggers exception after destroying 5 keys
@@ -2023,6 +2152,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     // p2p putAll on DR and expect exception
     server2.invoke(new CacheSerializableRunnable(title+"server2 add listener and removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -2039,9 +2169,11 @@ public void testOneServer() throws CacheException, InterruptedException {
     
     {
       WaitCriterion waitForSizes = new WaitCriterion() {
+        @Override
         public String description() {
           return "waiting for conditions to be met";
         }
+        @Override
         public boolean done() {
           int c1Size = getRegionSize(client1, regionName);
           int c2Size = getRegionSize(client2, regionName);
@@ -2083,9 +2215,9 @@ public void testOneServer() throws CacheException, InterruptedException {
    * side is different between PR and LR. PR does it in postPutAll.
    * It's not running in singleHop putAll
    */
+  @Test
   public void testPartialKeyInPR() throws CacheException, InterruptedException {
     final String title = "testPartialKeyInPR:";
-//    disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -2109,6 +2241,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     server1.invoke(new CacheSerializableRunnable(title
         + "server1 add slow listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(true));
@@ -2119,6 +2252,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     
     server2.invoke(new CacheSerializableRunnable(title
         + "server2 add slow listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(server2, true, sc_server2, 10));
@@ -2126,6 +2260,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
     
     client2.invoke(new CacheSerializableRunnable(title+"client2 add listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -2136,6 +2271,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });   
 
     AsyncInvocation async1 = client1.invokeAsync(new CacheSerializableRunnable(title+"client1 add listener and putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -2168,7 +2304,6 @@ public void testOneServer() throws CacheException, InterruptedException {
     int client2Size = getRegionSize(client2, regionName);
     int server1Size = getRegionSize(server1, regionName);
     LogWriterUtils.getLogWriter().info("region sizes: "+client1Size+","+client2Size+","+server1Size);
-//    assertEquals(server1Size, client1Size);
 
     // restart server2
     createBridgeServer(server2, regionName, serverPort2, true, 0, "ds1");
@@ -2182,6 +2317,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     closeCache(server2);
     server1Size = getRegionSize(server1, regionName);
     client1.invoke(new CacheSerializableRunnable(title+"client1 does putAll again") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
 
@@ -2215,6 +2351,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // add a cacheWriter for server to stop after created 15 keys
     server1.invoke(new CacheSerializableRunnable(title
         + "server1 execute P2P putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         // let the server to trigger exception after created 15 keys
@@ -2224,6 +2361,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     // p2p putAll on PR and expect exception
     server2.invoke(new CacheSerializableRunnable(title+"server2 add listener and putAll") {
+      @Override
       public void run2() throws CacheException {
         // create keys
         try {
@@ -2255,6 +2393,7 @@ public void testOneServer() throws CacheException, InterruptedException {
    * side is different between PR and LR. PR does it in postPutAll.
    * This is a singlehop putAll test.
    */
+  @Test
   public void testPartialKeyInPRSingleHop() throws CacheException, InterruptedException {
     final String title = "testPartialKeyInPRSingleHop_";
     final int cacheWriterAllowedKeyNum = 16;
@@ -2281,6 +2420,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     try {
       client2.invoke(new CacheSerializableRunnable(title + "client2 add listener") {
+        @Override
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(regionName);
           region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -2291,16 +2431,19 @@ public void testOneServer() throws CacheException, InterruptedException {
       });
 
       client1.invoke(new CacheSerializableRunnable(title + "do some putAll to get ClientMetaData for future putAll") {
+        @Override
         public void run2() throws CacheException {
           doPutAll(regionName, "key-", numberOfEntries);
         }
       });
 
       WaitCriterion waitForSizes = new WaitCriterion() {
+        @Override
         public String description() {
           return "waiting for conditions to be met";
         }
 
+        @Override
         public boolean done() {
           int c1Size = getRegionSize(client1, regionName);
           int c2Size = getRegionSize(client2, regionName);
@@ -2330,6 +2473,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
       server1.invoke(new CacheSerializableRunnable(title
         + "server1 add slow listener") {
+        @Override
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(regionName);
           region.getAttributesMutator().addCacheListener(new MyListener(true));
@@ -2340,6 +2484,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       final SharedCounter sc_server2 = new SharedCounter("server2");
       server2.invoke(new CacheSerializableRunnable(title
         + "server2 add slow listener") {
+        @Override
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(regionName);
           region.getAttributesMutator().addCacheListener(new MyListener(server2, true, sc_server2, 10));
@@ -2347,6 +2492,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       });
 
       AsyncInvocation async1 = client1.invokeAsync(new CacheSerializableRunnable(title + "client1 add listener and putAll") {
+        @Override
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(regionName);
           region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -2368,7 +2514,6 @@ public void testOneServer() throws CacheException, InterruptedException {
         Assert.fail("putAll client threw an exception", async1.getException());
       }
 
-
       // restart server2
       System.out.println("restarting server 2");
       createBridgeServer(server2, regionName, serverPort2, true, 0, "ds1");
@@ -2381,6 +2526,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       // close a server to re-run the test
       closeCache(server2);
       client1.invoke(new CacheSerializableRunnable(title + "client1 does putAll again") {
+        @Override
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(regionName);
 
@@ -2403,6 +2549,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       // add a cacheWriter for server to fail putAll after it created cacheWriterAllowedKeyNum keys
       server1.invoke(new CacheSerializableRunnable(title
         + "server1 add cachewriter to throw exception after created some keys") {
+        @Override
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(regionName);
           region.getAttributesMutator().setCacheWriter(new MyWriter(cacheWriterAllowedKeyNum));
@@ -2410,6 +2557,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       });
 
       client1.invoke(new CacheSerializableRunnable(title + "client1 does putAll once more") {
+        @Override
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(regionName);
 
@@ -2434,17 +2582,16 @@ public void testOneServer() throws CacheException, InterruptedException {
   }
 
   /**
-   * Set redundency=1 to see if retry succeeded after PRE
+   * Set redundancy=1 to see if retry succeeded after PRE
    * This is a singlehop putAll test.
    */
+  @Test
   public void testPartialKeyInPRSingleHopWithRedundency() throws CacheException, InterruptedException {
     final String title = "testPartialKeyInPRSingleHopWithRedundency_";
     int client1Size;
     int client2Size;
     int server1Size;
     int server2Size;
-
-//    disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
@@ -2467,6 +2614,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     client2.invoke(addExceptionTag1(expectedExceptions));
 
     client2.invoke(new CacheSerializableRunnable(title+"client2 add listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -2477,15 +2625,18 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
     
     client1.invoke(new CacheSerializableRunnable(title+"do some putAll to get ClientMetaData for future putAll") {
+      @Override
       public void run2() throws CacheException {
         doPutAll(regionName, "key-", numberOfEntries);
       }
     });
     
     WaitCriterion waitForSizes = new WaitCriterion() {
+      @Override
       public String description() {
         return "waiting for conditions to be met";
       }
+      @Override
       public boolean done() {
         int c1Size = getRegionSize(client1, regionName);
         int c2Size = getRegionSize(client2, regionName);
@@ -2520,6 +2671,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     server1.invoke(new CacheSerializableRunnable(title
         + "server1 add slow listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(true));
@@ -2529,6 +2681,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     final SharedCounter sc_server2 = new SharedCounter("server2");
     server2.invoke(new CacheSerializableRunnable(title
         + "server2 add slow listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(server2, true, sc_server2, 10));
@@ -2536,6 +2689,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
     
     AsyncInvocation async1 = client1.invokeAsync(new CacheSerializableRunnable(title+"client1 add listener and putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -2575,6 +2729,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     closeCache(server2);
     server1Size = getRegionSize(server1, regionName);
     client1.invoke(new CacheSerializableRunnable(title+"client1 does putAll again") {
+      @Override
       public void run2() throws CacheException {
         doPutAll(regionName, title+"again:", numberOfEntries);
       }
@@ -2597,10 +2752,9 @@ public void testOneServer() throws CacheException, InterruptedException {
    * Tests bug 41403: let 2 sub maps both failed with partial key applied. 
    * This is a singlehop putAll test.
    */
+  @Test
   public void testEventIdMisorderInPRSingleHop() throws CacheException, InterruptedException {
     final String title = "testEventIdMisorderInPRSingleHop_";
-
-//    disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
@@ -2626,8 +2780,8 @@ public void testOneServer() throws CacheException, InterruptedException {
     {
       // Create local region
       Properties config = new Properties();
-      config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      config.setProperty(DistributionConfig.LOCATORS_NAME, "");
+      config.setProperty(MCAST_PORT, "0");
+      config.setProperty(LOCATORS, "");
       getSystem(config);
 
       // Create Region
@@ -2652,6 +2806,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     addExceptionTag1(expectedExceptions);
     
     client1.invoke(new CacheSerializableRunnable(title+"do some putAll to get ClientMetaData for future putAll") {
+      @Override
       public void run2() throws CacheException {
         doPutAll(regionName, "key-", numberOfEntries);
       }
@@ -2665,6 +2820,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     server1.invoke(new CacheSerializableRunnable(title
         + "server1 add slow listener") {
+      @Override
       public void run2() throws CacheException {
         Region r = getRootRegion().getSubregion(regionName);
         r.getAttributesMutator().addCacheListener(new MyListener(server1, true, sc_server1, 10));
@@ -2673,6 +2829,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     server2.invoke(new CacheSerializableRunnable(title
         + "server2 add slow listener") {
+      @Override
       public void run2() throws CacheException {
         Region r = getRootRegion().getSubregion(regionName);
         r.getAttributesMutator().addCacheListener(new MyListener(server2, true, sc_server2, 10));
@@ -2681,6 +2838,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     server3.invoke(new CacheSerializableRunnable(title
         + "server3 add slow listener") {
+      @Override
       public void run2() throws CacheException {
         Region r = getRootRegion().getSubregion(regionName);
         r.getAttributesMutator().addCacheListener(new MyListener(true, sc_server3));
@@ -2694,6 +2852,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     LogWriterUtils.getLogWriter().info("region sizes: "+client1Size+","+server1Size+","+server2Size+","+server3Size);
 
     AsyncInvocation async1 = client1.invokeAsync(new CacheSerializableRunnable(title+"client1 add listener and putAll") {
+      @Override
       public void run2() throws CacheException {
         Region r = getRootRegion().getSubregion(regionName);
         r.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -2710,6 +2869,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     
     server3.invoke(new CacheSerializableRunnable(title
         + "server3 print counter") {
+      @Override
       public void run2() throws CacheException {
         Region r = getRootRegion().getSubregion(regionName);
         MyListener l = (MyListener)r.getAttributes().getCacheListeners()[0];
@@ -2718,7 +2878,6 @@ public void testOneServer() throws CacheException, InterruptedException {
         assertEquals(0, l.sc.num_update_event);
       }
     });
-
 
     LogWriterUtils.getLogWriter().info("event counters : "+myListener.sc);
     assertEquals(numberOfEntries, myListener.sc.num_create_event);
@@ -2738,14 +2897,13 @@ public void testOneServer() throws CacheException, InterruptedException {
    * Tests while putAll to 2 distributed servers, one server failed over Add a
    * listener to slow down the processing of putAll
    */
-  public void test2FailOverDistributedServer() throws CacheException,
-      InterruptedException {
+  @Test
+  public void test2FailOverDistributedServer() throws CacheException, InterruptedException {
     IgnoredException.addIgnoredException("Broken pipe");
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("Unexpected IOException");
     final String title = "test2FailOverDistributedServer:";
-//    disconnectAllFromDS();
-    
+
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
     VM server2 = host.getVM(1);
@@ -2763,6 +2921,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     createBridgeClient(client2, regionName, serverHost, new int[] {serverPort2, serverPort1}, -1, -1, true);
 
     server1.invoke(new CacheSerializableRunnable(title+"server1 add slow listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(true));
@@ -2770,6 +2929,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
     
     server2.invoke(new CacheSerializableRunnable(title+"server2 add slow listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(true));
@@ -2777,6 +2937,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });   
 
     client1.invoke(new CacheSerializableRunnable(title+"client1 registerInterest") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -2788,6 +2949,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client2.invoke(new CacheSerializableRunnable(title+"client2 registerInterest") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -2801,6 +2963,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // Execute client putAll from multithread client
     AsyncInvocation async1 = client1.invokeAsync(new CacheSerializableRunnable(
         title + "async putAll1 from client1") {
+      @Override
       public void run2() throws CacheException {
         doPutAll(regionName, "async1key-", numberOfEntries);
       }
@@ -2810,6 +2973,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     Wait.pause(2000);
     server1.invoke(new CacheSerializableRunnable(title
         + "stop Bridge Server 1") {
+      @Override
       public void run2() throws CacheException {
         stopOneBridgeServer(serverPort1);
       }
@@ -2820,6 +2984,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify bridge server 2 for asyn keys
     server2.invoke(new CacheSerializableRunnable(title
         + "verify Bridge Server 2 for async keys") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         long ts1 = 0;
@@ -2840,6 +3005,7 @@ public void testOneServer() throws CacheException, InterruptedException {
   /**
    * Tests while putAll timeout's exception
    */
+  @Test
   public void testClientTimeOut() throws CacheException, InterruptedException {
     final String title = "testClientTimeOut:";
     disconnectAllFromDS();
@@ -2861,6 +3027,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     createBridgeClient(client2, regionName, serverHost, new int[] {serverPort2, serverPort1}, -1, -1, true);
 
     server1.invoke(new CacheSerializableRunnable(title+"server1 add slow listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(true));
@@ -2868,6 +3035,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     server2.invoke(new CacheSerializableRunnable(title+"server2 add slow listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(true));
@@ -2878,6 +3046,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // Execute client putAll
     client1.invoke(new CacheSerializableRunnable(title
         + "client1 execute putAll") {
+      @Override
       public void run2() throws CacheException {
         boolean exceptionTriggered = false;
         try {
@@ -2898,6 +3067,7 @@ public void testOneServer() throws CacheException, InterruptedException {
   /**
    * Tests while putAll timeout at endpoint1 and switch to endpoint2
    */
+  @Test
   public void testEndPointSwitch() throws CacheException, InterruptedException {
     IgnoredException.addIgnoredException("Broken pipe");
     IgnoredException.addIgnoredException("Connection reset");
@@ -2923,6 +3093,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     // only add slow listener to server1, because we wish it to succeed 
     server1.invoke(new CacheSerializableRunnable(title+"server1 add slow listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(true));
@@ -2931,6 +3102,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     // only register interest on client2
     client2.invoke(new CacheSerializableRunnable(title+"client2 registerInterest") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -2941,6 +3113,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     
     // Execute client1 putAll
     client1.invoke(new CacheSerializableRunnable(title + "putAll from client1") {
+      @Override
       public void run2() throws CacheException {
         try {
           doPutAll(regionName, title, testEndPointSwitchNumber);
@@ -2953,6 +3126,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify client 2 for all keys
     client2.invoke(new CacheSerializableRunnable(title
         + "verify Bridge client2 for keys arrived finally") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         waitTillNotify(lockObject3, 100000, (region.size() == testEndPointSwitchNumber));
@@ -2965,11 +3139,11 @@ public void testOneServer() throws CacheException, InterruptedException {
     stopBridgeServers(getCache());
   }
 
-
   /**
    * Tests while putAll to 2 distributed servers, one server failed over Add a
    * listener to slow down the processing of putAll
    */
+  @Test
   public void testHADRFailOver() throws CacheException, InterruptedException {
     final String title = "testHADRFailOver:";
     disconnectAllFromDS();
@@ -2996,6 +3170,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     client2.invoke(addExceptionTag1(expectedExceptions));
 
     client1.invoke(new CacheSerializableRunnable(title+"client1 registerInterest") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.registerInterest("ALL_KEYS");
@@ -3004,6 +3179,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client2.invoke(new CacheSerializableRunnable(title+"client2 registerInterest") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(false));
@@ -3015,6 +3191,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // Server2 do a putAll to use HARegionQueues
     AsyncInvocation async1 = server2.invokeAsync(new CacheSerializableRunnable(
         title + "async putAll1 from server2") {
+      @Override
       public void run2() throws CacheException {
         doPutAll(regionName, title+"1:", thousandEntries);
       }
@@ -3023,6 +3200,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // client1 do a putAll to start HARegionQueues
     AsyncInvocation async2 = client1.invokeAsync(new CacheSerializableRunnable(
         title + "async putAll1 from client1") {
+      @Override
       public void run2() throws CacheException {
         doPutAll(regionName, title+"2:", thousandEntries);
       }
@@ -3031,6 +3209,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     Wait.pause(2000);
     server1.invoke(new CacheSerializableRunnable(title
         + "stop Bridge Server 1") {
+      @Override
       public void run2() throws CacheException {
         stopOneBridgeServer(serverPort1);
       }
@@ -3042,6 +3221,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify client 2 for asyn keys
     client2.invokeAsync(new CacheSerializableRunnable(title
         + "verify Bridge client2 for async keys") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         waitTillNotify(lockObject4, 100000, (region.size() == thousandEntries*2));
@@ -3063,7 +3243,9 @@ public void testOneServer() throws CacheException, InterruptedException {
    * Test TX for putAll. There's no TX for c/s. We only test P2P
    * This is disabled because putAll in TX is disabled.
    */
-  public void no_testTX() throws CacheException, InterruptedException {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testTX() throws CacheException, InterruptedException {
     final String title = "testTX:";
     disconnectAllFromDS();
     final Host host = Host.getHost(0);
@@ -3081,6 +3263,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     // add slow listener
     server1.invoke(new CacheSerializableRunnable(title+"server1 add slow listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(true));
@@ -3088,6 +3271,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
     
     server2.invoke(new CacheSerializableRunnable(title+"server2 add slow listener") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.getAttributesMutator().addCacheListener(new MyListener(true));
@@ -3097,6 +3281,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // TX1: server1 do a putAll
     AsyncInvocation async1 = server1.invokeAsync(new CacheSerializableRunnable(
         title + "TX1: async putAll from server1") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         // Get JNDI(Java Naming and Directory interface) context
@@ -3124,6 +3309,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // TX2: server2 do a putAll
     AsyncInvocation async2 = server2.invokeAsync(new CacheSerializableRunnable(
         title + "TX2: async putAll from server2") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         // Get JNDI(Java Naming and Directory interface) context
@@ -3149,6 +3335,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // TX3: server2 do a putAll in another thread
     AsyncInvocation async3 = server2.invokeAsync(new CacheSerializableRunnable(
         title + "TX3: async putAll from server2") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
 
@@ -3181,6 +3368,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     // verify server 2 for asyn keys
     server2.invoke(new CacheSerializableRunnable(title
         + "verify Bridge server2 for keys") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
 
@@ -3220,12 +3408,8 @@ public void testOneServer() throws CacheException, InterruptedException {
     stopBridgeServers(getCache());
   }
 
-
-  List<VersionTag> client1Versions = null;
-  List<VersionTag> client2Versions = null;
-
+  @Test
   public void testVersionsOnClientsWithNotificationsOnly() {
-    
     final String title = "testVersionsInClients";
     disconnectAllFromDS();
 
@@ -3251,6 +3435,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     client2.invoke(addExceptionTag1(expectedExceptions));
     
     client1.invoke(new CacheSerializableRunnable(title+"client1 putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         doPutAll(regionName, "key-", numberOfEntries*2);
@@ -3260,6 +3445,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
 
     client2.invoke(new CacheSerializableRunnable(title+"client2 versions collection") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.registerInterest("ALL_KEYS");
@@ -3268,6 +3454,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client1Versions = (List<VersionTag>) client1.invoke(new SerializableCallable(title+"client1 versions collection") {
+      @Override
       public Object call() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(numberOfEntries*2, region.size());
@@ -3288,6 +3475,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     client2Versions = (List<VersionTag>) client2.invoke(new SerializableCallable(title+"client2 versions collection") {
       
+      @Override
       public Object call() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(numberOfEntries*2, region.size());
@@ -3315,15 +3503,13 @@ public void testOneServer() throws CacheException, InterruptedException {
         fail("client 2 does not have the tag contained in client 1" + tag);
       }
     }
-    
   }
 
-  List<VersionTag> client1RAVersions = null;
-  List<VersionTag> client2RAVersions = null;
-
-  // basically same test as testVersionsOnClientsWithNotificationsOnly but also do a removeAll
+  /**
+   * basically same test as testVersionsOnClientsWithNotificationsOnly but also do a removeAll
+   */
+  @Test
   public void testRAVersionsOnClientsWithNotificationsOnly() {
-    
     final String title = "testRAVersionsInClients";
     disconnectAllFromDS();
 
@@ -3349,6 +3535,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     client2.invoke(addExceptionTag1(expectedExceptions));
     
     client1.invoke(new CacheSerializableRunnable(title+"client1 putAll+removeAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         doPutAll(regionName, "key-", numberOfEntries*2);
@@ -3358,8 +3545,8 @@ public void testOneServer() throws CacheException, InterruptedException {
       }
     });
 
-
     client2.invoke(new CacheSerializableRunnable(title+"client2 versions collection") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.registerInterest("ALL_KEYS");
@@ -3369,6 +3556,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client1RAVersions = (List<VersionTag>) client1.invoke(new SerializableCallable(title+"client1 versions collection") {
+      @Override
       public Object call() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(numberOfEntries, region.size());
@@ -3389,6 +3577,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client2RAVersions = (List<VersionTag>) client2.invoke(new SerializableCallable(title+"client2 versions collection") {
+      @Override
       public Object call() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(numberOfEntries, region.size());
@@ -3419,11 +3608,8 @@ public void testOneServer() throws CacheException, InterruptedException {
     }
   }
   
-  List<String> expectedVersions = null;
-  List<String> actualVersions = null;
-
+  @Test
   public void testVersionsOnServersWithNotificationsOnly() {
-    
     final String title = "testVersionsOnServers";
     disconnectAllFromDS();
 
@@ -3450,6 +3636,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     
 
     client1.invoke(new CacheSerializableRunnable(title+"client2 versions collection") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.registerInterest("ALL_KEYS");
@@ -3458,6 +3645,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     server1.invoke(new CacheSerializableRunnable(title+"client1 putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         doPutAll(regionName, "key-", numberOfEntries*2);
@@ -3466,6 +3654,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     expectedVersions = (List<String>) server1.invoke(new SerializableCallable(title+"server1 versions collection") {
+      @Override
       public Object call() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(numberOfEntries*2, region.size());
@@ -3494,6 +3683,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     
     actualVersions = (List<String>) client1.invoke(new SerializableCallable(title+"client2 versions collection") {
       
+      @Override
       public Object call() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(numberOfEntries*2, region.size());
@@ -3523,10 +3713,11 @@ public void testOneServer() throws CacheException, InterruptedException {
     }
     
   }
-  List<String> expectedRAVersions = null;
-  List<String> actualRAVersions = null;
 
-  // Same test as testVersionsOnServersWithNotificationsOnly but also does a removeAll
+  /**
+   * Same test as testVersionsOnServersWithNotificationsOnly but also does a removeAll
+   */
+  @Test
   public void testRAVersionsOnServersWithNotificationsOnly() {
     
     final String title = "testRAVersionsOnServers";
@@ -3553,8 +3744,8 @@ public void testOneServer() throws CacheException, InterruptedException {
     server3.invoke(addExceptionTag1(expectedExceptions));
     client1.invoke(addExceptionTag1(expectedExceptions));
     
-
     client1.invoke(new CacheSerializableRunnable(title+"client2 versions collection") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         region.registerInterest("ALL_KEYS");
@@ -3563,6 +3754,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     server1.invoke(new CacheSerializableRunnable(title+"client1 putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         doPutAll(regionName, "key-", numberOfEntries*2);
@@ -3573,6 +3765,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     expectedRAVersions = (List<String>) server1.invoke(new SerializableCallable(title+"server1 versions collection") {
+      @Override
       public Object call() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(numberOfEntries, region.size());
@@ -3601,6 +3794,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     
     actualRAVersions = (List<String>) client1.invoke(new SerializableCallable(title+"client2 versions collection") {
       
+      @Override
       public Object call() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(numberOfEntries, region.size());
@@ -3629,12 +3823,10 @@ public void testOneServer() throws CacheException, InterruptedException {
         fail("client 2 does not have the tag contained in client 1" + keyTag);
       }
     }
-    
   }
 
-
+  @Test
   public void testVersionsOnReplicasAfterPutAllAndRemoveAll() {
-    
     final String title = "testVersionsOnReplicas";
     client1Versions = null;
     client2Versions = null;
@@ -3660,6 +3852,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     client1.invoke(addExceptionTag1(expectedExceptions));
     
     client1.invoke(new CacheSerializableRunnable(title+"client1 putAll") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         doPutAll(regionName, "key-", numberOfEntries*2);
@@ -3670,6 +3863,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     });
 
     client1Versions = (List<VersionTag>) server1.invoke(new SerializableCallable(title+"client1 versions collection") {
+      @Override
       public Object call() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(numberOfEntries, region.size());
@@ -3691,6 +3885,7 @@ public void testOneServer() throws CacheException, InterruptedException {
 
     client2Versions = (List<VersionTag>) server2.invoke(new SerializableCallable(title+"client2 versions collection") {
       
+      @Override
       public Object call() throws CacheException {
         Region region = getRootRegion().getSubregion(regionName);
         assertEquals(numberOfEntries, region.size());
@@ -3719,16 +3914,16 @@ public void testOneServer() throws CacheException, InterruptedException {
         fail("client 2 have the tag NOT contained in client 1" + tag);
       }
     }
-    
   }
 
   private int createBridgeServer(VM server, final String regionName, final int serverPort, final boolean createPR, final int redundantCopies, final String diskStoreName) {
     return (Integer)server.invoke(new SerializableCallable("Create server") {
+      @Override
       @SuppressWarnings("synthetic-access")
       public Object call() throws Exception {
         // Create DS
         Properties config = new Properties();
-        config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
+        config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
         getSystem(config);
 
         // Create Region
@@ -3793,15 +3988,17 @@ public void testOneServer() throws CacheException, InterruptedException {
     createClient(client, regionName, serverHost, serverPorts, redundancy, readTimeOut, receiveInvalidates,
             concurrencyChecks, enableSingleHop, true /*subscriptionEnabled*/);
   }
+
   private void createClient(VM client, final String regionName, final String serverHost, final int[] serverPorts,
       final int redundency, final int readTimeOut, final boolean receiveInvalidates, final boolean concurrencyChecks,
       final boolean enableSingleHop, final boolean subscriptionEnabled) {
     client.invoke(new CacheSerializableRunnable("Create client") {
+      @Override
       public void run2() throws CacheException {
         // Create DS
         Properties config = new Properties();
-        config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        config.setProperty(DistributionConfig.LOCATORS_NAME, "");
+        config.setProperty(MCAST_PORT, "0");
+        config.setProperty(LOCATORS, "");
         getSystem(config);
 
         // Create Region
@@ -3877,7 +4074,7 @@ public void testOneServer() throws CacheException, InterruptedException {
           }
         }
         catch (InterruptedException e) {
-          fail("interrupted");
+          fail("interrupted", e);
         }
       }
     }
@@ -3903,6 +4100,7 @@ public void testOneServer() throws CacheException, InterruptedException {
   
   protected void closeCache(VM vm0) {
     SerializableRunnable close = new SerializableRunnable() {
+      @Override
       public void run() {
         Cache cache = getCache();
         cache.close();
@@ -3914,6 +4112,7 @@ public void testOneServer() throws CacheException, InterruptedException {
   
   protected void closeCacheAsync(VM vm0) {
     SerializableRunnable close = new SerializableRunnable() {
+      @Override
       public void run() {
         Cache cache = getCache();
         cache.close();
@@ -3926,25 +4125,9 @@ public void testOneServer() throws CacheException, InterruptedException {
   protected int getRegionSize(VM vm, final String regionName) {
     SerializableCallable getRegionSize = new SerializableCallable("get region size") {
       
+      @Override
       public Object call() throws Exception {
         Region region = getRootRegion().getSubregion(regionName);
-//        if (region instanceof PartitionedRegion) {
-//          PartitionedRegion pr = (PartitionedRegion)region;
-//          System.out.println("keySet for PR:"+pr.getFullPath()+":total="+pr.localEntries().size()+":region size="+region.size());
-//          Iterator itor = pr.localEntries().iterator();
-//          while (itor.hasNext()) {
-//            System.out.println(itor.next());
-//          }
-//        }
-
-//        if (VM.getCurrentVMNum() == 2) {
-//          Iterator it = region.entrySet().iterator();
-//          for (int i=0; it.hasNext(); i++) {
-//            Region.Entry e = (Region.Entry)it.next();
-//            getLogWriter().info("#"+i+": " + e.getKey() + " = " + e.getValue());
-//          }
-//          getLogWriter().info(((LocalRegion)region).getCache().getTombstoneService().toString());
-//        }
         return new Integer(region.size());
       }
     };
@@ -3953,6 +4136,7 @@ public void testOneServer() throws CacheException, InterruptedException {
   }
 
   public static class TestObject implements DataSerializable {
+
     protected String _ticker;
 
     protected int _price;
@@ -3984,6 +4168,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       return this._ts;
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       // System.out.println("Is serializing in WAN: " +
       // GatewayEventImpl.isSerializingValue());
@@ -3992,6 +4177,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       out.writeLong(this._ts);
     }
 
+    @Override
     public void fromData(DataInput in) throws IOException,
         ClassNotFoundException {
       // System.out.println("Is deserializing in WAN: " +
@@ -4008,6 +4194,7 @@ public void testOneServer() throws CacheException, InterruptedException {
         return false;
     }
 
+    @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
       sb.append("Price=" + this._price);
@@ -4015,7 +4202,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     }
   }
 
-  class EOCQEventListener implements CqListener {
+  static class EOCQEventListener implements CqListener {
 
     Region localregion;
 
@@ -4027,9 +4214,11 @@ public void testOneServer() throws CacheException, InterruptedException {
       localregion = region;
     }
 
+    @Override
     public void onError(CqEvent cqEvent) {
     }
 
+    @Override
     public void onEvent(CqEvent cqEvent) {
       if (cqEvent.getQueryOperation() == Operation.DESTROY) return;
       Object key = cqEvent.getKey();
@@ -4045,12 +4234,13 @@ public void testOneServer() throws CacheException, InterruptedException {
       LogWriterUtils.getLogWriter().info("CQListener:TestObject:" + key + ":" + newValue);
     }
 
+    @Override
     public void close() {
     }
-    
   }
 
-  class SharedCounter implements Serializable {
+  static class SharedCounter implements Serializable {
+
     public String owner;
     public int num_create_event;
     public int num_update_event;
@@ -4065,6 +4255,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       num_destroy_event = 0;
     }
     
+    @Override
     public String toString() {
       String str = "Owner="+owner+",create="+num_create_event
           +",update="+num_update_event
@@ -4073,6 +4264,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       return str;
     }
   }
+
   class MyListener extends CacheListenerAdapter implements Declarable {
 
     boolean delay = false;
@@ -4100,9 +4292,11 @@ public void testOneServer() throws CacheException, InterruptedException {
       this.closeCacheAtItem = closeCacheAtItem;
     }
 
+    @Override
     public void init(Properties props) {
     }
 
+    @Override
     public void afterCreate(EntryEvent event) {
       sc.num_create_event++;
       if (closeCacheAtItem != -1 && sc.num_create_event >= closeCacheAtItem) {
@@ -4146,6 +4340,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       }
     }
 
+    @Override
     public void afterUpdate(EntryEvent event) {
       sc.num_update_event++;
       LogWriterUtils.getLogWriter().fine(
@@ -4180,12 +4375,14 @@ public void testOneServer() throws CacheException, InterruptedException {
       }
     }
 
+    @Override
     public void afterInvalidate(EntryEvent event) {
       sc.num_invalidate_event++;
       LogWriterUtils.getLogWriter()
           .info("local invalidate is triggered for " + event.getKey()+":num_invalidte_event="+sc.num_invalidate_event);
     }
 
+    @Override
     public void afterDestroy(EntryEvent event) {
       sc.num_destroy_event++;
       if (event.getOperation().isRemoveAll()) {
@@ -4196,10 +4393,13 @@ public void testOneServer() throws CacheException, InterruptedException {
     }
   }
 
-  // we need cacheWriter for to slow down P2P operations, listener only works
-  // for c/s
-  // in this case
-  class MyWriter extends CacheWriterAdapter implements Declarable {
+  /**
+   * we need cacheWriter for to slow down P2P operations, listener only works
+   * for c/s
+   * in this case
+   */
+  static class MyWriter extends CacheWriterAdapter implements Declarable {
+
     int exceptionAtItem = -1;
     public int num_created;
     public int num_destroyed;
@@ -4213,9 +4413,11 @@ public void testOneServer() throws CacheException, InterruptedException {
       this.keystub = keystub;
     }
 
+    @Override
     public void init(Properties props) {
     }
 
+    @Override
     public synchronized void beforeCreate(EntryEvent event) {
       if (exceptionAtItem != -1 && num_created >= exceptionAtItem) {
         throw new CacheWriterException("Triggered exception as planned, created "+num_created+" keys.");
@@ -4240,6 +4442,7 @@ public void testOneServer() throws CacheException, InterruptedException {
       num_created++;
     }
 
+    @Override
     public void beforeUpdate(EntryEvent event) {
       LogWriterUtils.getLogWriter()
           .info(

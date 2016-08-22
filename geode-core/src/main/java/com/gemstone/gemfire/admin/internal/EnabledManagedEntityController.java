@@ -16,12 +16,6 @@
  */
 package com.gemstone.gemfire.admin.internal;
 
-import java.io.File;
-import java.util.Iterator;
-import java.util.Properties;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.admin.AdminDistributedSystem;
 import com.gemstone.gemfire.admin.DistributedSystemConfig;
 import com.gemstone.gemfire.admin.ManagedEntity;
@@ -32,6 +26,13 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.util.Iterator;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Implements the actual administration (starting, stopping, etc.) of
@@ -46,7 +47,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * This class is a refactoring of <code>Systemcontroller</code>,
  * <code>RemoteCommand</code>, and <code>LocatorRemoteCommand</code>.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 class EnabledManagedEntityController implements ManagedEntityController {
   private static final Logger logger = LogService.getLogger();
@@ -314,19 +315,19 @@ class EnabledManagedEntityController implements ManagedEntityController {
     Properties sslProps = (Properties) config.getSSLProperties().clone();
     // add ssl-enabled, etc...
     sslProps.setProperty(prefix +
-                         DistributionConfig.MCAST_PORT_NAME,
+            MCAST_PORT,
                          "0");
     sslProps.setProperty(prefix +
-                         DistributionConfig.SSL_ENABLED_NAME,
+                         SSL_ENABLED,
                          String.valueOf(config.isSSLEnabled()));
     sslProps.setProperty(prefix +
-                         DistributionConfig.SSL_CIPHERS_NAME,
+                         SSL_CIPHERS,
                          config.getSSLCiphers());
     sslProps.setProperty(prefix +
-                         DistributionConfig.SSL_PROTOCOLS_NAME,
+                         SSL_PROTOCOLS,
                          config.getSSLProtocols());
     sslProps.setProperty(prefix +
-                         DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME,
+                         SSL_REQUIRE_AUTHENTICATION,
                          String.valueOf(config.isSSLAuthenticationRequired()));
     return sslProps;
   }

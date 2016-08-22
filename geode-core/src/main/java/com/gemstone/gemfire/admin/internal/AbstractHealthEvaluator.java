@@ -39,7 +39,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * aren't meant to be.
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  * */
 public abstract class AbstractHealthEvaluator  {
 

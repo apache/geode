@@ -17,15 +17,15 @@
 package com.gemstone.gemfire.management.internal.web.controllers;
 
 import static com.gemstone.gemfire.management.internal.cli.i18n.CliStrings.*;
-import static junitparams.JUnitParamsRunner.$;
+import static junitparams.JUnitParamsRunner.*;
 import static org.assertj.core.api.Assertions.*;
+
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -34,7 +34,6 @@ import junitparams.Parameters;
  * Unit tests for WanCommandsController. 
  * 
  * Introduced for GEODE-213 "JMX -http manager treats "start gateway-sender" as "start gateway-receiver"
- *  
  */
 @SuppressWarnings("unused")
 @Category(UnitTest.class)
@@ -127,7 +126,8 @@ public class WanCommandsControllerJUnitTest {
    * performed by two different classes. Then we could mock the executor
    * class while testing just the command string definition class.
    */
-  public static class TestableWanCommandsController extends WanCommandsController {
+  private static class TestableWanCommandsController extends WanCommandsController {
+
     protected String testableCommand;
     
     @Override

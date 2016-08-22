@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
  * Requests remote locators of a remote WAN site
  * 
  * 
- * @since 6.6
+ * @since GemFire 6.6
  * 
  */
 public class RemoteLocatorJoinRequest implements DataSerializableFixedID {

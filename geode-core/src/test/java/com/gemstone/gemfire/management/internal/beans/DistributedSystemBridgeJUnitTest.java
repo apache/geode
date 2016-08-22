@@ -68,7 +68,7 @@ public class DistributedSystemBridgeJUnitTest {
   }
   
   @Test
-  public void testSucessfulBackup() throws Exception {
+  public void testSuccessfulBackup() throws Exception {
     DM dm = cache.getDistributionManager();
     
     DistributedSystemBridge bridge = new DistributedSystemBridge(null);
@@ -97,7 +97,6 @@ public class DistributedSystemBridgeJUnitTest {
       bridge.backupAllMembers("/tmp", null);
       fail("Should have failed with an exception");
     } catch(RuntimeException expected) {
-      
     }
     
     verify(dm).putOutgoing(isA(FinishBackupRequest.class));

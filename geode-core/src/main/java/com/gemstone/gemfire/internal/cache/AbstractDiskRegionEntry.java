@@ -67,9 +67,4 @@ public abstract class AbstractDiskRegionEntry
       GatewaySenderEventImpl.release(this._getValue()); // OFFHEAP _getValue ok
     }
   }
-  @Override
-  public void afterValueOverflow(RegionEntryContext context) {
-    //NO OP
-    //Overridden in sqlf RegionEntry
-  }
 }

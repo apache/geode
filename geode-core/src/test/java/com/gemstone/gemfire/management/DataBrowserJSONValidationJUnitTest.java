@@ -16,27 +16,12 @@
  */
 package com.gemstone.gemfire.management;
 
-import static org.junit.Assert.fail;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Properties;
-
-import org.json.JSONObject;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.data.Position;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.management.internal.beans.QueryDataFunction;
@@ -49,9 +34,21 @@ import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.PdxInstanceFactory;
 import com.gemstone.gemfire.pdx.internal.PdxInstanceFactoryImpl;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.json.JSONObject;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
 
 /**
- * @since 8.1
+ * @since GemFire 8.1
  *
  */
 @Category(IntegrationTest.class)
@@ -93,14 +90,14 @@ public class DataBrowserJSONValidationJUnitTest {
     // System.setProperty("gemfire.stats.debug.debugSampleCollector", "true");
 
     final Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("enable-time-statistics", "true");
-    props.setProperty("statistic-sampling-enabled", "false");
-    props.setProperty("statistic-sample-rate", "60000");
-    props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-    props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
-    props.setProperty(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "0");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(ENABLE_TIME_STATISTICS, "true");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
+    props.setProperty(STATISTIC_SAMPLE_RATE, "60000");
+    props.setProperty(JMX_MANAGER, "true");
+    props.setProperty(JMX_MANAGER_START, "true");
+    props.setProperty(JMX_MANAGER_HTTP_PORT, "0");
+    props.setProperty(JMX_MANAGER_PORT, "0");
 
     this.system = (InternalDistributedSystem) DistributedSystem.connect(props);
 

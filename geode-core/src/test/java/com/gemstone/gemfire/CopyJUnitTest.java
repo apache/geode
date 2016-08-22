@@ -16,28 +16,28 @@
  */
 package com.gemstone.gemfire;
 
-import static org.junit.Assert.*;
-
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.*;
+import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
+import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.WritablePdxInstance;
-import com.gemstone.gemfire.cache.util.*;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * Tests the functionality of the {@link CopyHelper#copy} method
  * and the builtin copy-on-get Cache functions.
  *
- * @since 4.0
+ * @since GemFire 4.0
  *
  */
 @Category(IntegrationTest.class)
@@ -51,7 +51,7 @@ public class CopyJUnitTest {
   
   private void createCache(boolean copyOnRead) throws CacheException {
     Properties p = new Properties();
-    p.setProperty("mcast-port", "0"); // loner
+    p.setProperty(MCAST_PORT, "0"); // loner
     this.cache = CacheFactory.create(DistributedSystem.connect(p));
     this.cache.setCopyOnRead(copyOnRead);
 

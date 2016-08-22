@@ -19,7 +19,7 @@ package com.gemstone.gemfire.cache.wan;
 
 /**
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface GatewayReceiverFactory {
   /**
@@ -97,7 +97,7 @@ public interface GatewayReceiverFactory {
   /**
    * Sets the manual start boolean property for this
    * <code>GatewayReceiver</code>. 
-   * @since 8.1
+   * @since GemFire 8.1
    * Default is true i.e. the <code>GatewayReceiver</code> will not start automatically once created.
    * Ideal default value should be false to match with GatewaySender
    * counterpart. But to not to break the existing functionality default value

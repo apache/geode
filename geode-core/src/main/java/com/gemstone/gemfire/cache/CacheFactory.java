@@ -19,6 +19,7 @@ package com.gemstone.gemfire.cache;
 
 import java.util.Properties;
 
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.GemFireVersion;
@@ -76,7 +77,7 @@ Applications that need to explicitly control the individual region attributes ca
  *
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class CacheFactory {
 
@@ -86,16 +87,17 @@ public class CacheFactory {
        
   /**
    * Creates a default cache factory.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public CacheFactory() {
     this(null);
   }
   /**
    * Create a CacheFactory initialized with the given gemfire properties.
-   * For a list of valid gemfire properties see {@link DistributedSystem}.
+   * For a list of valid GemFire properties and their meanings
+   * see {@linkplain ConfigurationProperties}.
    * @param props the gemfire properties to initialize the factory with.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public CacheFactory(Properties props) {
     if (props == null) {
@@ -106,11 +108,12 @@ public class CacheFactory {
 
   /**
    * Sets a gemfire property that will be used when creating the Cache.
-   * For a list of valid gemfire properties see {@link DistributedSystem}.
+   * For a list of valid GemFire properties and their meanings
+   * see {@link ConfigurationProperties}.
    * @param name the name of the gemfire property
    * @param value the value of the gemfire property
    * @return a reference to this CacheFactory object
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public CacheFactory set(String name, String value) {
     this.dsProps.setProperty(name, value);
@@ -209,7 +212,7 @@ public class CacheFactory {
    * @throws AuthenticationFailedException if authentication fails.
    * @throws AuthenticationRequiredException if the distributed system is in secure mode 
    *         and this new member is not configured with security credentials.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public Cache create()
     throws TimeoutException, CacheWriterException,
@@ -247,7 +250,7 @@ public class CacheFactory {
    * @param system the <code>DistributedSystem</code> the cache was created with.
    * @return the {@link Cache} associated with the specified system.
    * @throws CacheClosedException if a cache has not been created
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public static Cache getInstanceCloseOk(DistributedSystem system) {
     return basicGetInstance(system, true);
@@ -319,7 +322,7 @@ public class CacheFactory {
    *  
    *  @param readSerialized true to prefer PdxInstance
    *  @return this CacheFactory 
-   *  @since 6.6
+   *  @since GemFire 6.6
    *  @see com.gemstone.gemfire.pdx.PdxInstance 
    */
   public  CacheFactory setPdxReadSerialized(boolean readSerialized) {
@@ -333,7 +336,7 @@ public class CacheFactory {
    * added to the cache in portable data exchange format. 
    * @param serializer the serializer to use
    * @return this CacheFactory
-   * @since 6.6
+   * @since GemFire 6.6
    * @see PdxSerializer
    */
   public CacheFactory setPdxSerializer(PdxSerializer serializer) {
@@ -351,7 +354,7 @@ public class CacheFactory {
    * @param diskStoreName the name of the disk store to use
    * for the PDX metadata.
    * @return this CacheFactory
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public CacheFactory setPdxDiskStore(String diskStoreName) {
     this.cacheConfig.setPdxDiskStore(diskStoreName);
@@ -368,7 +371,7 @@ public class CacheFactory {
    * @param isPersistent
    *          true if the metadata should be persistent
    * @return this CacheFactory
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public CacheFactory setPdxPersistent(boolean isPersistent) {
     this.cacheConfig.setPdxPersistent(isPersistent);
@@ -386,7 +389,7 @@ public class CacheFactory {
    * @param ignore <code>true</code> if fields not read during pdx deserialization should be ignored;
    * <code>false</code>, the default, if they should be preserved.
    * @return this CacheFactory
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public CacheFactory setPdxIgnoreUnreadFields(boolean ignore) {
     this.cacheConfig.setPdxIgnoreUnreadFields(ignore);

@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package com.gemstone.gemfire.codeAnalysis;
+
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
@@ -23,21 +24,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
-
 import com.gemstone.gemfire.codeAnalysis.decode.CompiledClass;
 import com.gemstone.gemfire.codeAnalysis.decode.CompiledCode;
 import com.gemstone.gemfire.codeAnalysis.decode.CompiledMethod;
 
-
 /**
  * A class used to store the names of dataserializable classes and the sizes
  * of their toData/fromData methods.
- * 
- *
  */
 public class ClassAndMethodDetails implements Comparable {
+
   static String[] hexChars;
+
   public String className;
   public Map<String, byte[]> methodCode = new HashMap<String, byte[]>();
   

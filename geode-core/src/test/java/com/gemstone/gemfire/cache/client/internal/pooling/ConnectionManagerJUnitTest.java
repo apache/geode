@@ -16,7 +16,27 @@
  */
 package com.gemstone.gemfire.cache.client.internal.pooling;
 
-import static org.junit.Assert.fail;
+import com.gemstone.gemfire.CancelCriterion;
+import com.gemstone.gemfire.cache.client.AllConnectionsInUseException;
+import com.gemstone.gemfire.cache.client.NoAvailableServersException;
+import com.gemstone.gemfire.cache.client.internal.*;
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.ServerLocation;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.internal.cache.PoolStats;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ServerQueueStatus;
+import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import com.gemstone.gemfire.internal.logging.LocalLogWriter;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,44 +51,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.cache.client.AllConnectionsInUseException;
-import com.gemstone.gemfire.cache.client.NoAvailableServersException;
-import com.gemstone.gemfire.cache.client.internal.ClientUpdater;
-import com.gemstone.gemfire.cache.client.internal.Connection;
-import com.gemstone.gemfire.cache.client.internal.ConnectionFactory;
-import com.gemstone.gemfire.cache.client.internal.ConnectionStats;
-import com.gemstone.gemfire.cache.client.internal.Endpoint;
-import com.gemstone.gemfire.cache.client.internal.EndpointManager;
-import com.gemstone.gemfire.cache.client.internal.EndpointManagerImpl;
-import com.gemstone.gemfire.cache.client.internal.Op;
-import com.gemstone.gemfire.cache.client.internal.QueueManager;
-import com.gemstone.gemfire.cache.client.internal.ServerBlackList;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.PoolStats;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ServerQueueStatus;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LocalLogWriter;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-/**
- *
- */
 @Category(IntegrationTest.class)
 public class ConnectionManagerJUnitTest {
+
   private static final long TIMEOUT = 30 * 1000;
   //This is added for some windows machines which think the connection expired
   //before the idle timeout due to precision issues.
@@ -88,8 +77,8 @@ public class ConnectionManagerJUnitTest {
     factory = new DummyFactory();
     
     Properties properties = new Properties();
-    properties.put(DistributionConfig.MCAST_PORT_NAME, "0");
-    properties.put(DistributionConfig.LOCATORS_NAME, "");
+    properties.put(MCAST_PORT, "0");
+    properties.put(LOCATORS, "");
     ds = DistributedSystem.connect(properties);
     background = Executors.newSingleThreadScheduledExecutor();
     poolStats = new PoolStats(ds, "connectionManagerJUnitTest");
@@ -228,7 +217,7 @@ public class ConnectionManagerJUnitTest {
 //    }
 //    
 //  }
-  
+
   @Test
   public void testIdleExpiration() throws InterruptedException, AllConnectionsInUseException, NoAvailableServersException {
     final long nanoToMillis = 1000000;
@@ -448,8 +437,8 @@ public class ConnectionManagerJUnitTest {
     
 //     //wait to make sure checked out connections aren't timed out
 //     Thread.sleep(idleTimeout + 100);
-//     Assert.assertEquals(5,factory.creates);
-//     Assert.assertEquals(0,factory.destroys);
+//     Assert.assertIndexDetailsEquals(5,factory.creates);
+//     Assert.assertIndexDetailsEquals(0,factory.destroys);
     
 //     manager.returnConnection(conn1);
 //     manager.returnConnection(conn2);
@@ -468,8 +457,8 @@ public class ConnectionManagerJUnitTest {
 //     long elapsed = System.currentTimeMillis() - start;
 //     Assert.assertTrue(elapsed > idleTimeout);
     
-//     Assert.assertEquals(5,factory.creates);
-//     Assert.assertEquals(3,factory.destroys);
+//     Assert.assertIndexDetailsEquals(5,factory.creates);
+//     Assert.assertIndexDetailsEquals(3,factory.destroys);
   }
   
   @Test

@@ -28,7 +28,6 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.CustomEvictionAttributes;
 import com.gemstone.gemfire.cache.CustomExpiry;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
@@ -58,7 +57,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * modified.  This class is public for testing purposes.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class RegionAttributesCreation extends UserSpecifiedRegionAttributes implements Serializable {
   private static final long serialVersionUID = 2241078661206355376L;
@@ -120,11 +119,9 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   private File[] diskDirs;
   private int[] diskSizes;
   /** disk store name of the region
-  * @since prPersistPrint2 
+  * @since GemFire prPersistPrint2
   * */
   private String diskStoreName;
-  private String hdfsStoreName;
-  private boolean hdfsWriteOnly = false;
   private boolean isDiskSynchronous = AttributesFactory.DEFAULT_DISK_SYNCHRONOUS;
   
   private boolean cloningEnabled = false;
@@ -134,12 +131,12 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   private boolean indexMaintenanceSynchronous;
   /** The attributes's id
    *
-   * @since 4.1 */
+   * @since GemFire 4.1 */
   private String id;
 
   /** The id of the attributes that this attributes "inherits"
    *
-   * @since 4.1 */
+   * @since GemFire 4.1 */
   private String refid;
 
   /** The partitioning attributes */
@@ -153,41 +150,41 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   /**
    * Whether to mark this region as a publisher
    *
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    */
   private boolean publisher;
 
   /**
    * Whether to enable subscription conflation for this region
    *
-   * @since 4.2
+   * @since GemFire 4.2
    */
   private boolean enableSubscriptionConflation;
 
   /**
    * Whether to enable a async conflation for this region
    *
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    */
   private boolean enableAsyncConflation;
   
   /**
    * The client to server Connection Pool
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private String poolName;
   
   /**
    * The region compressor.
    * 
-   * @since 8.0
+   * @since GemFire 8.0
    */
   private Compressor compressor;
   
   /**
    * True if usage of off-heap memory is enabled for this region.
-   * @since 9.0
+   * @since Geode 1.0
    */
   private boolean offHeap;
 
@@ -206,12 +203,10 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     this(cc, getDefaultAttributes(cc), true);
   }
 
-  // used by sqlfabric
   public RegionAttributesCreation() {
     this(defaultAttributes, true);
   }
 
-  // used by sqlfabric
   public RegionAttributesCreation(RegionAttributes attrs, boolean defaults) {
     this(null, attrs, defaults);
   }
@@ -271,8 +266,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     this.poolName = attrs.getPoolName();
     this.multicastEnabled = attrs.getMulticastEnabled();
     this.cloningEnabled = attrs.getCloningEnabled();
-	this.hdfsStoreName = attrs.getHDFSStoreName();
-    
+
     this.compressor = attrs.getCompressor();
     this.offHeap = attrs.getOffHeap();
     if (attrs instanceof UserSpecifiedRegionAttributes) {
@@ -499,10 +493,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     }
     if(this.cloningEnabled != other.getCloningEnabled()){
       throw new RuntimeException(LocalizedStrings.RegionAttributesCreation__CLONING_ENABLE_IS_NOT_THE_SAME_THIS_0_OTHER_1.toLocalizedString(new Object[] {Boolean.valueOf(this.cloningEnabled), Boolean.valueOf(other.getCloningEnabled())}));
-    }
- 	if (! equal(this.hdfsStoreName, other.getHDFSStoreName())) {
-      //TODO:HDFS write a new exception string
-      throw new RuntimeException(" HDFS Store name does not match");
     }
     if(! equal(this.compressor, other.getCompressor())) {
       throw new RuntimeException("Compressors are not the same.");
@@ -1002,7 +992,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   /**
    * Sets the id of the region attributes being created
    *
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public void setId(String id) {
     this.id = id;
@@ -1011,7 +1001,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   /**
    * Returns the id of the region attributes being created
    *
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public String getId() {
     return this.id;
@@ -1020,7 +1010,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   /**
    * Sets the refid of the region attributes being created
    *
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public void setRefid(String refid) {
     this.refid = refid;
@@ -1029,7 +1019,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   /**
    * Returns the refid of the region attributes being created
    *
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public String getRefid() {
     return this.refid;
@@ -1045,7 +1035,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
    * @throws IllegalStateException
    *         If no region attributes named <code>refid</code> exist.
    *
-   * @since 4.1
+   * @since GemFire 4.1
    */
   void inheritAttributes(Cache cache) {
     inheritAttributes(cache, true);
@@ -1448,25 +1438,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
         setDiskSynchronous(parent.isDiskSynchronous());
       }
     }
-    if (!hasHDFSStoreName()) {
-      if (parentIsUserSpecified) {
-        if (parentWithHas.hasHDFSStoreName()) {
-          setHDFSStoreName(parent.getHDFSStoreName());
-        }
-      } else {
-        setHDFSStoreName(parent.getHDFSStoreName());
-      }
-    }
-    if (!hasHDFSWriteOnly()) {
-      if (parentIsUserSpecified) {
-        if (parentWithHas.hasHDFSWriteOnly()) {
-          setHDFSWriteOnly(parent.getHDFSWriteOnly());
-        }
-      } else {
-        setHDFSWriteOnly(parent.getHDFSWriteOnly());
-      }
-    }
-    
+
     if(!hasCompressor()) {
       if (parentIsUserSpecified) {
         if (parentWithHas.hasCompressor()) {
@@ -1529,12 +1501,12 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     setHasMembershipAttributes(true);
   }
 
-  /** @since 5.0 */
+  /** @since GemFire 5.0 */
   public SubscriptionAttributes getSubscriptionAttributes() {
     return this.subscriptionAttributes;
   }
 
-  /** @since 5.0 */
+  /** @since GemFire 5.0 */
   public void setSubscriptionAttributes(SubscriptionAttributes pa) {
     this.subscriptionAttributes = pa;
     setHasSubscriptionAttributes(true);
@@ -1552,15 +1524,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   public EvictionAttributes getEvictionAttributes()
   {
     return this.evictionAttributes;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public CustomEvictionAttributes getCustomEvictionAttributes() {
-    // TODO: HDFS: no support for configuring this from XML yet
-    return null;
   }
 
   public void setPoolName(String poolName) {
@@ -1654,21 +1617,5 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   
   public Set<String> getGatewaySenderIds() {
     return this.gatewaySenderIds;
-  }
-  public String getHDFSStoreName() {
-    return this.hdfsStoreName;
-  }
-  public void setHDFSStoreName(String hdfsStoreName) {
-    //TODO:HDFS : throw an exception if a disk store is already configured
-    // and vice versa
-    this.hdfsStoreName = hdfsStoreName;
-    setHasHDFSStoreName(true);
-  }
-  public void setHDFSWriteOnly(boolean writeOnly) {
-    this.hdfsWriteOnly= writeOnly;
-    setHasHDFSWriteOnly(true);
-  }
-  public boolean getHDFSWriteOnly() {
-    return hdfsWriteOnly;
   }
 }

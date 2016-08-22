@@ -21,7 +21,7 @@ package com.gemstone.gemfire.distributed;
  * A <code>LockServiceDestroyedException</code> is thrown when attempting
  * use a distributed lock service that has been destroyed.
  *
- * @since     4.0
+ * @since GemFire     4.0
  */
 public class LockServiceDestroyedException extends IllegalStateException {
 private static final long serialVersionUID = 7528711924957352636L;

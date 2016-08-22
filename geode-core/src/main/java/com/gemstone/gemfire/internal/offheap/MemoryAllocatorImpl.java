@@ -16,30 +16,18 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.internal.cache.BucketRegion;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This allocator is somewhat like an Arena allocator.
@@ -50,13 +38,13 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  * If we can not find enough free memory then all the existing free memory is defragmented.
  * If we still do not have enough to make the allocation an exception is thrown.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 public class MemoryAllocatorImpl implements MemoryAllocator {
 
   static final Logger logger = LogService.getLogger();
-  
-  public static final String FREE_OFF_HEAP_MEMORY_PROPERTY = "gemfire.free-off-heap-memory";
+
+  public static final String FREE_OFF_HEAP_MEMORY_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "free-off-heap-memory";
   
   private volatile OffHeapMemoryStats stats;
   
@@ -82,7 +70,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
     return result;
   }
 
-  private static final boolean DO_EXPENSIVE_VALIDATION = Boolean.getBoolean("gemfire.OFF_HEAP_DO_EXPENSIVE_VALIDATION");
+  private static final boolean DO_EXPENSIVE_VALIDATION = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_DO_EXPENSIVE_VALIDATION");
   
   public static MemoryAllocator create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats, int slabCount, 
       long offHeapMemorySize, long maxSlabSize) {

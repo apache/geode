@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -36,23 +37,11 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import jline.Terminal;
-
-import jline.console.ConsoleReader;
-import org.springframework.shell.core.AbstractShell;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.ExecutionStrategy;
-import org.springframework.shell.core.ExitShellRequest;
-import org.springframework.shell.core.JLineLogHandler;
-import org.springframework.shell.core.JLineShell;
-import org.springframework.shell.core.Parser;
-import org.springframework.shell.event.ShellStatus.Status;
-
 import com.gemstone.gemfire.internal.Banner;
 import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.lang.ClassUtils;
 import com.gemstone.gemfire.internal.process.signal.AbstractSignalNotificationHandler;
+import com.gemstone.gemfire.internal.util.HostName;
 import com.gemstone.gemfire.internal.util.SunAPINotFoundException;
 import com.gemstone.gemfire.management.cli.CommandProcessingException;
 import com.gemstone.gemfire.management.cli.Result;
@@ -73,6 +62,19 @@ import com.gemstone.gemfire.management.internal.cli.shell.jline.GfshUnsupportedT
 import com.gemstone.gemfire.management.internal.cli.shell.unsafe.GfshSignalHandler;
 import com.gemstone.gemfire.management.internal.cli.util.CommentSkipHelper;
 
+import org.springframework.shell.core.AbstractShell;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.Converter;
+import org.springframework.shell.core.ExecutionStrategy;
+import org.springframework.shell.core.ExitShellRequest;
+import org.springframework.shell.core.JLineLogHandler;
+import org.springframework.shell.core.JLineShell;
+import org.springframework.shell.core.Parser;
+import org.springframework.shell.event.ShellStatus.Status;
+
+import jline.Terminal;
+import jline.console.ConsoleReader;
+
 /**
  * Extends an interactive shell provided by <a
  * href="https://github.com/SpringSource/spring-shell">Spring Shell</a> library.
@@ -88,7 +90,7 @@ import com.gemstone.gemfire.management.internal.cli.util.CommentSkipHelper;
  * information like: environment TODO
  *
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class Gfsh extends JLineShell {
   public static final int     DEFAULT_APP_FETCH_SIZE                 = 1000;
@@ -279,7 +281,7 @@ public class Gfsh extends JLineShell {
   private void initializeEnvironment() {
     env.put(ENV_SYS_USER,              System.getProperty("user.name"));
     env.put(ENV_SYS_USER_HOME,         System.getProperty("user.home"));
-    env.put(ENV_SYS_HOST_NAME,         System.getProperty("user.name"));
+    env.put(ENV_SYS_HOST_NAME,         new HostName().determineHostName());
     env.put(ENV_SYS_CLASSPATH,         System.getProperty("java.class.path"));
     env.put(ENV_SYS_JAVA_VERSION,      System.getProperty("java.version"));
     env.put(ENV_SYS_OS,                System.getProperty("os.name"));
@@ -294,9 +296,6 @@ public class Gfsh extends JLineShell {
     readonlyAppEnv.add(ENV_APP_LOG_FILE);
     env.put(ENV_APP_PWD,                        System.getProperty("user.dir"));
     readonlyAppEnv.add(ENV_APP_PWD);
-// Enable when "use region" command is required. See #46110
-//    env.put(CliConstants.ENV_APP_CONTEXT_PATH,               CliConstants.DEFAULT_APP_CONTEXT_PATH);
-//    readonlyAppEnv.add(CliConstants.ENV_APP_CONTEXT_PATH);
     env.put(ENV_APP_FETCH_SIZE,                 String.valueOf(DEFAULT_APP_FETCH_SIZE));
     env.put(ENV_APP_LAST_EXIT_STATUS,           String.valueOf(DEFAULT_APP_LAST_EXIT_STATUS));
     readonlyAppEnv.add(ENV_APP_LAST_EXIT_STATUS);
@@ -499,7 +498,7 @@ public class Gfsh extends JLineShell {
     if (full) {
       return GemFireVersion.asString();
     } else {
-      return "v" + GemFireVersion.getGemFireVersion();
+      return GemFireVersion.getGemFireVersion();
     }
   }
 
@@ -607,11 +606,11 @@ public class Gfsh extends JLineShell {
     String originalString = expandedPropCommandsMap.get(processedLine);
     if (originalString != null) {
       // In history log the original command string & expanded line as a comment
-      super.logCommandToOutput(GfshHistory.toHistoryLoggable(originalString));
-      super.logCommandToOutput(GfshHistory.toHistoryLoggable("// Post substitution"));
-      super.logCommandToOutput(GfshHistory.toHistoryLoggable("//" + processedLine));
+      super.logCommandToOutput(GfshHistory.redact(originalString));
+      super.logCommandToOutput(GfshHistory.redact("// Post substitution"));
+      super.logCommandToOutput(GfshHistory.redact("//" + processedLine));
     } else {
-      super.logCommandToOutput(GfshHistory.toHistoryLoggable(processedLine));
+      super.logCommandToOutput(GfshHistory.redact(processedLine));
     }
   }
 
@@ -1028,6 +1027,13 @@ public class Gfsh extends JLineShell {
   @Override
   protected String getHistoryFileName() {
     return gfshConfig.getHistoryFileName();
+  }
+
+  public void clearHistory() {
+    gfshHistory.clear();
+    if(!gfshConfig.deleteHistoryFile()){
+      printAsWarning("Gfsh history file is not deleted");
+    }
   }
 
   public String getLogFilePath() {

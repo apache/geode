@@ -25,7 +25,7 @@ import com.gemstone.gemfire.internal.cache.InternalCache;
 /**
  * Helper class that maintains a weak hashmap of referenced regions
  *
- * @since 2.0.2
+ * @since GemFire 2.0.2
  */
 public class CachedRegionHelper {
 
@@ -81,7 +81,7 @@ public class CachedRegionHelper {
 
   public boolean isShutdown() {
     return shutdown 
-        || cache.getCancelCriterion().cancelInProgress() != null;
+        || cache.getCancelCriterion().isCancelInProgress();
   }
 
   public void close() {

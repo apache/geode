@@ -16,34 +16,25 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheExistsException;
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.query.CacheUtils;
 import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexExistsException;
-import com.gemstone.gemfire.cache.query.IndexNameConflictException;
-import com.gemstone.gemfire.cache.query.IndexType;
 import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
@@ -53,9 +44,6 @@ import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
 import com.gemstone.gemfire.cache.query.internal.index.PartitionedIndex;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.cache30.CertifiableTestCacheListener;
-import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.FileUtil;
@@ -73,9 +61,12 @@ import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 
-public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
 
   static private final String WAIT_PROPERTY = "QueryIndexBuckets.maxWaitTime";
 
@@ -128,11 +119,6 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
 
   private String persistentOverFlowRegName = "PersistentOverflowPortfolios";
 
-  /** Creates a new instance of QueryIndexUsingXMLDUnitTest */
-  public QueryIndexUsingXMLDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     //Workaround for #52008
@@ -150,6 +136,7 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
   /**
    * Creates partitioned index from an xml description.
    */
+  @Test
   public void testCreateIndexThroughXML() throws Exception
   {
 
@@ -217,6 +204,7 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
   /**
    * Creates partitioned index from an xml description.
    */
+  @Test
   public void testCreateIndexWhileDoingGII() throws Exception
   {
 
@@ -268,10 +256,10 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
     vm1.invoke(close());
   }
 
- 
   /**
    * Creates partitioned index from an xml description.
    */
+  @Test
   public void testReplicatedRegionCreateIndexWhileDoingGII() throws Exception
   {
 
@@ -317,9 +305,11 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
     vm0.invoke(close());
     vm1.invoke(close());
   }
+
   /**
    * Creates persistent partitioned index from an xml description.
    */
+  @Test
   public void testPersistentPRRegionCreateIndexWhileDoingGII() throws Exception
   {
 
@@ -349,7 +339,7 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
     vm0.invoke(prIndexCreationCheck(persistentRegName, "secIndex", 50));
     vm1.invoke(prIndexCreationCheck(persistentRegName, "secIndex", 50));
     
-  //check hash index creation
+    //check hash index creation
     vm0.invoke(prIndexCreationCheck(persistentRegNameWithHash, statusIndex, 50));
     vm1.invoke(prIndexCreationCheck(persistentRegNameWithHash, statusIndex, 50));
     vm0.invoke(prIndexCreationCheck(persistentRegNameWithHash, idIndex, 50));
@@ -381,10 +371,10 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
     vm1.invoke(close());
   }
 
-
   /**
    * Creates partitioned index from an xml description.
    */
+  @Test
   public void testCreateIndexWhileDoingGIIWithEmptyPRRegion() throws Exception
   {
 
@@ -420,8 +410,9 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
   }
 
   /**
-   * Creats partitioned index from an xml discription.
+   * Creates partitioned index from an xml description.
    */
+  @Test
   public void testCreateAsyncIndexWhileDoingGII() throws Exception
   {
 
@@ -468,6 +459,7 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
   /**
    * Creates indexes and compares the results between index and non-index results.
    */
+  @Test
   public void testCreateIndexWhileDoingGIIAndCompareQueryResults() throws Exception
   {
 
@@ -516,9 +508,7 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
     vm1.invoke(indexCreationCheck(repRegName, "secIndex"));
     vm1.invoke(prIndexCreationCheck(persistentRegNameWithHash, "secIndex", 50));
     vm1.invoke(indexCreationCheck(repRegNameWithHash, "secIndex"));
-   
-   
- 
+
     // Execute query and verify index usage    
     vm0.invoke(executeQueryAndCompareResult(name, true));
     vm1.invoke(executeQueryAndCompareResult(name, true));
@@ -531,6 +521,7 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
   /**
    * Creates async partitioned index from an xml description.
    */
+  @Test
   public void testCreateAsyncIndexWhileDoingGIIAndQuery() throws Exception
   {
 
@@ -581,7 +572,9 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
    * <p>
    * DISABLED.  This test is disabled due to a high rate of failure.  See ticket #52167
    */
-  public void disabled_testCreateAsyncIndexWhileDoingGIIAndCompareQueryResults() throws Exception
+  @Ignore("TODO: test is disabled because of #52167")
+  @Test
+  public void testCreateAsyncIndexWhileDoingGIIAndCompareQueryResults() throws Exception
   {
 
     Host host = Host.getHost(0);
@@ -625,6 +618,7 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
     vm1.invoke(close());
   }
   
+  @Test
   public void testIndexCreationForReplicatedPersistentOverFlowRegionOnRestart() throws Exception
   {
     Host host = Host.getHost(0);
@@ -650,8 +644,7 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
     vm0.invoke(close());
     
   }
-  
-  
+
   public CacheSerializableRunnable setTestHook()
   {
     SerializableRunnable sr = new CacheSerializableRunnable("TestHook") {
@@ -668,13 +661,6 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
             }
           }
         };
-        /*
-        try {
-          ClassLoader.getSystemClassLoader().loadClass(IndexManager.class.getName());
-        } catch (Exception ex) {
-          fail("Failed to load IndexManager.class");
-        }
-        */
         IndexManager.testHook = new IndexTestHook();
       }
     };
@@ -692,6 +678,7 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
     };
     return (CacheSerializableRunnable)sr;
   }
+
   public CacheSerializableRunnable createIndexThrougXML(final String vmid,
       final String regionName, final String xmlFileName)
   {
@@ -944,13 +931,12 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
     } 
     return basicGetSystem();
   }
-  
-  
+
   private Cache getCache(InternalDistributedSystem system) {
     Cache cache = basicGetCache();
     if (cache == null) {
       try {
-        System.setProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
         cache = CacheFactory.create(system); 
       } catch (CacheExistsException e) {
         Assert.fail("the cache already exists", e);
@@ -961,20 +947,23 @@ public class QueryIndexUsingXMLDUnitTest extends CacheTestCase {
       } catch (Exception ex) {
         Assert.fail("Checked exception while initializing cache??", ex);
       } finally {
-        System.clearProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
+        System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
       }      
     }
     return cache;
   }
   
   public static class QueryObserverImpl extends QueryObserverAdapter {
+
     boolean isIndexesUsed = false;
     ArrayList indexesUsed = new ArrayList();
 
+    @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
       indexesUsed.add(index.getName());
     }
 
+    @Override
     public void afterIndexLookup(Collection results) {
       if (results != null) {
         isIndexesUsed = true;

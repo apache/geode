@@ -16,23 +16,20 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
+import com.examples.snapshot.MyObject;
+import com.examples.snapshot.MyPdxSerializer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
-
-import junit.framework.TestCase;
-
-import com.examples.snapshot.MyObject;
-import com.examples.snapshot.MyPdxSerializer;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DiskStore;
@@ -40,12 +37,11 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.snapshot.RegionGenerator;
 import com.gemstone.gemfire.cache.snapshot.RegionGenerator.RegionType;
 import com.gemstone.gemfire.cache.snapshot.RegionGenerator.SerializationType;
-import com.gemstone.gemfire.cache.snapshot.SnapshotIterator;
-import com.gemstone.gemfire.cache.snapshot.SnapshotReader;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class OfflineSnapshotJUnitTest {
+
   private RegionGenerator rgen;
   
   private Cache cache;
@@ -94,7 +90,7 @@ public class OfflineSnapshotJUnitTest {
     }
   }
   
-  public Map<Integer, MyObject> createExpected(SerializationType type, int count) {
+  private Map<Integer, MyObject> createExpected(SerializationType type, int count) {
     Map<Integer, MyObject> expected = new HashMap<Integer, MyObject>();
     for (int i = 0; i < count; i++) {
       expected.put(i, rgen.createData(type, i, "The number is " + i));
@@ -124,10 +120,10 @@ public class OfflineSnapshotJUnitTest {
     }
   }
 
-  public void reset() {
+  private void reset() {
     CacheFactory cf = new CacheFactory()
-        .set("mcast-port", "0")
-        .set("log-level", "error")
+        .set(MCAST_PORT, "0")
+        .set(LOG_LEVEL, "error")
         .setPdxSerializer(new MyPdxSerializer())
         .setPdxPersistent(true);
     

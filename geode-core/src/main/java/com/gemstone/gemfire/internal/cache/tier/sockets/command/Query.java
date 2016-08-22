@@ -23,14 +23,12 @@ import java.io.IOException;
 import java.util.Set;
 
 import com.gemstone.gemfire.cache.operations.QueryOperationContext;
-import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.cache.query.QueryExecutionLowMemoryException;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.tier.Command;
-import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
 import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommandQuery;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
@@ -71,31 +69,31 @@ public class Query extends BaseCommandQuery {
       logger.debug("{}: Received query request from {} queryString: {}", servConn.getName(), servConn.getSocketString(), queryString);
     }
     try {
-    // Create query
+      // Create query
       QueryService queryService = ((GemFireCacheImpl)servConn.getCachedRegionHelper().getCache())
-        .getLocalQueryService();
-    com.gemstone.gemfire.cache.query.Query query = queryService
-        .newQuery(queryString);
-    Set regionNames = ((DefaultQuery)query).getRegionsInQuery(null);
+          .getLocalQueryService();
+      com.gemstone.gemfire.cache.query.Query query = queryService
+          .newQuery(queryString);
+      Set regionNames = ((DefaultQuery)query).getRegionsInQuery(null);
 
-    // Authorization check
-    QueryOperationContext queryContext = null;
-    AuthorizeRequest authzRequest = servConn.getAuthzRequest();
-    if (authzRequest != null) {
-      queryContext = authzRequest.queryAuthorize(queryString, regionNames);
-      String newQueryString = queryContext.getQuery();
-      if (queryString != null && !queryString.equals(newQueryString)) {
-        query = queryService.newQuery(newQueryString);
-        queryString = newQueryString;
-        regionNames = queryContext.getRegionNames();
-        if (regionNames == null) {
-          regionNames = ((DefaultQuery)query).getRegionsInQuery(null);
+      // Authorization check
+      QueryOperationContext queryContext = null;
+      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      if (authzRequest != null) {
+        queryContext = authzRequest.queryAuthorize(queryString, regionNames);
+        String newQueryString = queryContext.getQuery();
+        if (queryString != null && !queryString.equals(newQueryString)) {
+          query = queryService.newQuery(newQueryString);
+          queryString = newQueryString;
+          regionNames = queryContext.getRegionNames();
+          if (regionNames == null) {
+            regionNames = ((DefaultQuery)query).getRegionsInQuery(null);
+          }
         }
       }
-    }
 
-    processQuery(msg, query, queryString, regionNames, start, null,
-        queryContext, servConn, true);
+      processQuery(msg, query, queryString, regionNames, start, null,
+          queryContext, servConn, true);
     } catch (QueryInvalidException e) {
       throw new QueryInvalidException(e.getMessage()
           + queryString );

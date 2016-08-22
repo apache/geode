@@ -14,24 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.cache;
-
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.Arrays;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
-
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
 
 /**
  * Disk region perf test for Persist only with Async writes and  Buffer.
@@ -43,25 +36,25 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * The disk properties will ensure that very many oplog files are created.
  * 
  * This test is currently not being executed and is marked with an underscore
- *  
  */
 @Category(IntegrationTest.class)
-public class Bug34179TooManyFilesOpenJUnitTest extends DiskRegionTestingBase
-{
+public class Bug34179TooManyFilesOpenJUnitTest extends DiskRegionTestingBase {
 
-  LogWriter log = null;
+  private static int ENTRY_SIZE = 1024;
 
-  DiskRegionProperties diskProps = new DiskRegionProperties();
+  private static int OP_COUNT = 100000;
+
+  private LogWriter log = null;
+
+  private DiskRegionProperties diskProps = new DiskRegionProperties();
  
-  @Before
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  protected final void postSetUp() throws Exception {
     File file1 = new File("testingDirectory/" + getName()+ "1");
     file1.mkdir();
     file1.deleteOnExit();
-   dirs = new File[1];
-   dirs[0] = file1;
+    dirs = new File[1];
+    dirs[0] = file1;
     diskProps.setDiskDirs(dirs);
      
     diskProps.setPersistBackup(true);
@@ -75,43 +68,24 @@ public class Bug34179TooManyFilesOpenJUnitTest extends DiskRegionTestingBase
     log = ds.getLogWriter();
   }
 
-  @After
-  public void tearDown() throws Exception
-  {
-    super.tearDown();
-    
-  }
-
-  
-  private static int ENTRY_SIZE = 1024;
-
-  private static int OP_COUNT = 100000;
-  
   /**
    * currently not being executed for congo but after transition to JDK 1.5, this test should be executed.
-   *
    */
-  public void _testPopulate1kbwrites()
-  {
-    try {
-      final byte[] value = new byte[ENTRY_SIZE];
-      Arrays.fill(value, (byte)77);
-      for (int i = 0; i < OP_COUNT; i++) {
-        region.put(new Integer(i), value);
-      }
-      closeDown(); // closes disk file which will flush all buffers
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testPopulate1kbwrites() {
+    final byte[] value = new byte[ENTRY_SIZE];
+    Arrays.fill(value, (byte)77);
+    for (int i = 0; i < OP_COUNT; i++) {
+      region.put(new Integer(i), value);
     }
-    catch (Exception ex) {
-      fail("IOException occured due to " + ex);
-    }
-
+    closeDown(); // closes disk file which will flush all buffers
   }
+
   /**
    * cleans all the directory of all the files present in them
-   *
    */
-  protected static void deleteFiles()
-  {
+  protected static void deleteFiles() {
     for (int i = 0; i < dirs.length; i++) {
       File[] files = dirs[i].listFiles();
       for (int j = 0; j < files.length; j++) {
@@ -120,11 +94,4 @@ public class Bug34179TooManyFilesOpenJUnitTest extends DiskRegionTestingBase
     }
   }
   
-  @Test
-  public void testDoNothing(){
-    //dummy method to ensure at least one test is present in this file if the other tests are commented
-  }
-  
-  
 }// end of Bug34179TooManyFilesOpenJUnitTest
-

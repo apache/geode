@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,8 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
-import junit.framework.TestCase;
-
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.CancelCriterion;
@@ -46,11 +48,9 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-/**
- *
- */
 @Category(UnitTest.class)
-public class OpExecutorImplJUnitTest extends TestCase {
+public class OpExecutorImplJUnitTest {
+
   DummyManager manager;
   private LogWriter logger;
   private DummyEndpointManager endpointManager;
@@ -65,7 +65,8 @@ public class OpExecutorImplJUnitTest extends TestCase {
   protected int getPrimary;
   protected int getBackups;
   private CancelCriterion cancelCriterion;
-  
+
+  @Before
   public void setUp() {
     this.logger = new LocalLogWriter(InternalLogWriter.FINEST_LEVEL, System.out);
     this.endpointManager = new DummyEndpointManager();
@@ -74,22 +75,23 @@ public class OpExecutorImplJUnitTest extends TestCase {
     riTracker = new RegisterInterestTracker();
     cancelCriterion = new CancelCriterion() {
 
+      @Override
       public String cancelInProgress() {
         return null;
       }
 
+      @Override
       public RuntimeException generateCancelledException(Throwable e) {
         return null;
       }
     };
   }
   
-  public void tearDown() throws InterruptedException {
-  }
-  
+  @Test
   public void testExecute() throws Exception {
     OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3, 10, false, cancelCriterion, null);
     Object result = exec.execute(new Op() {
+      @Override
       public Object attempt(Connection cnx) throws Exception {
         return "hello";
       }
@@ -108,6 +110,7 @@ public class OpExecutorImplJUnitTest extends TestCase {
     
     try {
     result = exec.execute(new Op() {
+      @Override
       public Object attempt(Connection cnx) throws Exception {
         throw new SocketTimeoutException();
       }
@@ -130,6 +133,7 @@ public class OpExecutorImplJUnitTest extends TestCase {
     
     try {
       result = exec.execute(new Op() {
+        @Override
         public Object attempt(Connection cnx) throws Exception {
           throw new ServerOperationException("Something didn't work");
         }
@@ -151,6 +155,7 @@ public class OpExecutorImplJUnitTest extends TestCase {
     
     try {
       result = exec.execute(new Op() {
+        @Override
         public Object attempt(Connection cnx) throws Exception {
           throw new IOException("Something didn't work");
         }
@@ -179,13 +184,15 @@ public class OpExecutorImplJUnitTest extends TestCase {
     getPrimary = 0;
     getBackups = 0;
   }
-  
+
+  @Test
   public void testExecuteOncePerServer() throws Exception {
     OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1, 10, false, cancelCriterion, null);
     
     manager.numServers = 5;
     try {
       exec.execute(new Op() {
+        @Override
         public Object attempt(Connection cnx) throws Exception {
           throw new IOException("Something didn't work");
         }
@@ -204,13 +211,15 @@ public class OpExecutorImplJUnitTest extends TestCase {
     assertEquals(6, invalidateConnections);
     assertEquals(6, serverCrashes);
   }
-  
+
+  @Test
   public void testRetryFailedServers() throws Exception {
     OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 10, 10, false, cancelCriterion, null);
     
     manager.numServers = 5;
     try {
       exec.execute(new Op() {
+        @Override
         public Object attempt(Connection cnx) throws Exception {
           throw new IOException("Something didn't work");
         }
@@ -230,10 +239,12 @@ public class OpExecutorImplJUnitTest extends TestCase {
     assertEquals(11, serverCrashes);
   }
 
+  @Test
   public void testExecuteOn() throws Exception {
     OpExecutorImpl exec = new OpExecutorImpl(manager,queueManager, endpointManager, riTracker, 3, 10, false, cancelCriterion, null);
     ServerLocation server = new ServerLocation("localhost", -1);
     Object result = exec.executeOn(server, new Op() {
+      @Override
       public Object attempt(Connection cnx) throws Exception {
         return "hello";
       }
@@ -252,6 +263,7 @@ public class OpExecutorImplJUnitTest extends TestCase {
     
     try {
     result = exec.executeOn(server, new Op() {
+      @Override
       public Object attempt(Connection cnx) throws Exception {
         throw new SocketTimeoutException();
       }
@@ -273,6 +285,7 @@ public class OpExecutorImplJUnitTest extends TestCase {
     
     try {
       result = exec.executeOn(server,new Op() {
+        @Override
         public Object attempt(Connection cnx) throws Exception {
           throw new ServerOperationException("Something didn't work");
         }
@@ -301,6 +314,7 @@ public class OpExecutorImplJUnitTest extends TestCase {
       logger.info(addExpected);
       try {
         result = exec.executeOn(server,new Op() {
+          @Override
             public Object attempt(Connection cnx) throws Exception {
               throw new Exception("Something didn't work");
             }
@@ -321,10 +335,12 @@ public class OpExecutorImplJUnitTest extends TestCase {
     assertEquals(1, invalidateConnections);
     assertEquals(1, serverCrashes);
   }
-  
+
+  @Test
   public void testExecuteOnAllQueueServers() {
     OpExecutorImpl exec = new OpExecutorImpl(manager,queueManager, endpointManager, riTracker, 3, 10, false, cancelCriterion, null);
     exec.executeOnAllQueueServers(new Op() {
+      @Override
       public Object attempt(Connection cnx) throws Exception {
         return "hello";
       }
@@ -342,6 +358,7 @@ public class OpExecutorImplJUnitTest extends TestCase {
     
     queueManager.backups = 3;
     exec.executeOnAllQueueServers(new Op() {
+      @Override
       public Object attempt(Connection cnx) throws Exception {
         throw new SocketTimeoutException();
       }
@@ -361,6 +378,7 @@ public class OpExecutorImplJUnitTest extends TestCase {
     queueManager.backups = 3;
     Object result = exec.executeOnQueuesAndReturnPrimaryResult(new Op() {
       int i = 0;
+      @Override
       public Object attempt(Connection cnx) throws Exception {
         i++;
         if(i < 15) {
@@ -382,10 +400,12 @@ public class OpExecutorImplJUnitTest extends TestCase {
     
   }
 
+  @Test
   public void testThreadLocalConnection() {
     OpExecutorImpl exec = new OpExecutorImpl(manager,queueManager, endpointManager, riTracker, 3, 10, true, cancelCriterion, null);
     ServerLocation server = new ServerLocation("localhost", -1);
     Op op = new Op() {
+      @Override
       public Object attempt(Connection cnx) throws Exception {
         //do nothing
         return cnx;
@@ -417,21 +437,19 @@ public class OpExecutorImplJUnitTest extends TestCase {
     assertEquals(0, returns);
   }
   
-  public class DummyManager implements ConnectionManager {
+  private class DummyManager implements ConnectionManager {
+
     protected int numServers  = Integer.MAX_VALUE;
     private int currentServer = 0;
 
-    
     public DummyManager() {
     }
-    
-    
 
+    @Override
     public void emergencyClose() {
     }
 
-
-
+    @Override
     public Connection borrowConnection(long aquireTimeout) {
       borrows++;
       return new DummyConnection(new ServerLocation("localhost", currentServer++ % numServers));
@@ -440,180 +458,217 @@ public class OpExecutorImplJUnitTest extends TestCase {
     /* (non-Javadoc)
      * @see com.gemstone.gemfire.cache.client.internal.pooling.ConnectionManager#borrowConnection(com.gemstone.gemfire.distributed.internal.ServerLocation, long)
      */
+    @Override
     public Connection borrowConnection(ServerLocation server, long aquireTimeout,boolean onlyUseExistingCnx) {
       borrows++;
       return new DummyConnection(server);
     }
 
+    @Override
     public void close(boolean keepAlive) {
-      
     }
 
-    public Map getEndpointMap() {
-      return null;
-    }
-
+    @Override
     public void returnConnection(Connection connection) {
       returns++;
       
     }
+
+    @Override
     public void returnConnection(Connection connection, boolean accessed) {
       returns++;
       
     }
 
+    @Override
     public void start(ScheduledExecutorService backgroundProcessor) {
     }
 
-    public Connection exchangeConnection(Connection conn, Set excludedServers,
-        long aquireTimeout) {
+    @Override
+    public Connection exchangeConnection(Connection conn, Set excludedServers, long aquireTimeout) {
       if(excludedServers.size() >= numServers) {
         throw new NoAvailableServersException();
       }
       exchanges++;
       return new DummyConnection(new ServerLocation("localhost", currentServer++ % numServers));
     }
+
+    @Override
     public int getConnectionCount() {
       return 0;
     }
+
+    @Override
     public Connection getConnection(Connection conn) {
       return conn;
     }
-    public void activate(Connection conn) {}
-    public void passivate(Connection conn, boolean accessed) {}
+
+    @Override
+    public void activate(Connection conn) {
+    }
+
+    @Override
+    public void passivate(Connection conn, boolean accessed) {
+    }
   }
   
-  public class DummyConnection implements Connection {
+  private class DummyConnection implements Connection {
     
     private ServerLocation server;
 
     public DummyConnection(ServerLocation serverLocation) {
       this.server = serverLocation;
     }
+
+    @Override
     public void close(boolean keepAlive) throws Exception {
     }
+
+    @Override
     public void destroy() {
       invalidateConnections++;
     }
+
+    @Override
     public boolean isDestroyed() {
       return false;
     }
+
+    @Override
     public ByteBuffer getCommBuffer() {
       return null;
     }
 
+    @Override
     public ServerLocation getServer() {
       return server;
     }
 
+    @Override
     public Socket getSocket() {
       return null;
     }
 
+    @Override
     public ConnectionStats getStats() {
       return null;
     }
-    
+
+    @Override
     public int getDistributedSystemId() {
       return 0;
     }
 
-
+    @Override
     public Endpoint getEndpoint() {
       return new Endpoint(null,null,null,null, null);
     }
 
-    public void setEndpoint(Endpoint endpoint) {
-    }
-
+    @Override
     public ServerQueueStatus getQueueStatus() {
       return null;
     }
 
+    @Override
     public Object execute(Op op) throws Exception {
       return op.attempt(this);
     }
-    
+
+    @Override
     public void emergencyClose() {
     }
-    
+
+    @Override
     public short getWanSiteVersion(){
       return -1;
     }
-    
+
+    @Override
     public void setWanSiteVersion(short wanSiteVersion){
     }
+
+    @Override
     public InputStream getInputStream() {
       return null;
     }
+
+    @Override
     public OutputStream getOutputStream() {
       return null;
-    } 
+    }
+
+    @Override
     public void setConnectionID(long id) {
     }
+
+    @Override
     public long getConnectionID() {
       return 0;
     }
   }
   
-    
-  public class DummyEndpointManager implements EndpointManager {
+  private class DummyEndpointManager implements EndpointManager {
 
-    
-
+    @Override
     public void addListener(EndpointListener listener) {
     }
 
+    @Override
     public void close() {
     }
 
+    @Override
     public Endpoint referenceEndpoint(ServerLocation server, DistributedMember memberId) {
       return null;
     }
 
+    @Override
     public Map getEndpointMap() {
       return null;
     }
 
+    @Override
     public void removeListener(EndpointListener listener) {
-      
     }
 
+    @Override
     public void serverCrashed(Endpoint endpoint) {
       serverCrashes++;
     }
+
+    @Override
     public int getConnectedServerCount() {
       return 0;
     }
 
-    public void fireEndpointNowInUse(Endpoint endpoint) {
-      // TODO Auto-generated method stub
-      
-    }
-
+    @Override
     public Map getAllStats() {
       return null;
     }
 
+    @Override
     public String getPoolName() {
       return null;
     }
   }
   
-  public class DummyQueueManager implements QueueManager {
+  private class DummyQueueManager implements QueueManager {
+
     int backups = 0;
     int currentServer = 0;
+
     public QueueConnections getAllConnectionsNoWait() {
       return getAllConnections();
     }
-    
+
+    @Override
     public void emergencyClose() {
     }
 
-
-
+    @Override
     public QueueConnections getAllConnections() {
       return new QueueConnections() {
+        @Override
         public List getBackups() {
           getBackups++;
           ArrayList result = new ArrayList(backups);
@@ -622,41 +677,47 @@ public class OpExecutorImplJUnitTest extends TestCase {
           }
           return result;
         }
+        @Override
         public Connection getPrimary() {
           getPrimary++;
           return new DummyConnection(new ServerLocation("localhost", currentServer++));
         }
+        @Override
         public QueueConnectionImpl getConnection(Endpoint ep) {
           return null;
         }
       };
     }
 
+    @Override
     public void close(boolean keepAlive) {
     }
 
+    @Override
     public void start(ScheduledExecutorService background) {
     }
-    
-    
+
+    @Override
     public QueueState getState() {
       return null;
     }
 
+    @Override
     public InternalPool getPool() {
       return null;
     }
 
+    @Override
     public void readyForEvents(InternalDistributedSystem system) {
     }
-    
+
+    @Override
     public InternalLogWriter getSecurityLogger() {
       return null;
     }
 
+    @Override
     public void checkEndpoint(ClientUpdater qc, Endpoint endpoint) {
-      // TODO Auto-generated method stub
-      
     }
   }
 

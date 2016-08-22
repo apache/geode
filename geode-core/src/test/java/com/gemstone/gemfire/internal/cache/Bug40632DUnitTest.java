@@ -16,60 +16,25 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import static org.junit.Assert.*;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.ExpirationAction;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.LoaderHelper;
 import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.control.RebalanceOperation;
-import com.gemstone.gemfire.cache.control.RebalanceResults;
-import com.gemstone.gemfire.cache.control.ResourceManager;
-import com.gemstone.gemfire.cache.partition.PartitionMemberInfo;
-import com.gemstone.gemfire.cache.partition.PartitionRebalanceInfo;
-import com.gemstone.gemfire.cache.partition.PartitionRegionInfo;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.PRHARedundancyProvider;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
-import com.gemstone.gemfire.internal.cache.control.ResourceManagerStats;
-import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-/**
- *
- */
-public class Bug40632DUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class Bug40632DUnitTest extends JUnit4CacheTestCase {
 
-  /**
-   * @param name
-   */
-  public Bug40632DUnitTest(String name) {
-    super(name);
-  }
-  
-  public void testLocalDestroyIdleTimeout() {
+  @Test
+  public void testLocalDestroyIdleTimeout() throws Exception {
     Cache cache = getCache();
     AttributesFactory attr = new AttributesFactory();
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -84,11 +49,11 @@ public class Bug40632DUnitTest extends CacheTestCase {
       cache.createRegion("region1", attr.create());
       fail("We should not have been able to create the region");
     } catch(IllegalStateException expected) {
-      
     }
   }
   
-  public void testLocalDestroyTimeToLive() {
+  @Test
+  public void testLocalDestroyTimeToLive() throws Exception {
     Cache cache = getCache();
     AttributesFactory attr = new AttributesFactory();
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -100,14 +65,14 @@ public class Bug40632DUnitTest extends CacheTestCase {
     attr.setEntryTimeToLive(new ExpirationAttributes(1000, ExpirationAction.LOCAL_DESTROY));
     attr.setPartitionAttributes(prAttr);
     try {
-    cache.createRegion("region1", attr.create());
-    fail("We should not have been able to create the region");
+      cache.createRegion("region1", attr.create());
+      fail("We should not have been able to create the region");
     } catch(IllegalStateException expected) {
-      
     }
   }
   
-  public void testLocalInvalidateIdleTimeout() {
+  @Test
+  public void testLocalInvalidateIdleTimeout() throws Exception {
     Cache cache = getCache();
     AttributesFactory attr = new AttributesFactory();
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -119,14 +84,14 @@ public class Bug40632DUnitTest extends CacheTestCase {
     attr.setEntryIdleTimeout(new ExpirationAttributes(1000, ExpirationAction.LOCAL_INVALIDATE));
     attr.setPartitionAttributes(prAttr);
     try {
-    cache.createRegion("region1", attr.create());
-    fail("We should not have been able to create the region");
+      cache.createRegion("region1", attr.create());
+      fail("We should not have been able to create the region");
     } catch(IllegalStateException expected) {
-      
     }
   }
   
-  public void testLocalInvalidateTimeToLive() {
+  @Test
+  public void testLocalInvalidateTimeToLive() throws Exception {
     Cache cache = getCache();
     AttributesFactory attr = new AttributesFactory();
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -138,10 +103,9 @@ public class Bug40632DUnitTest extends CacheTestCase {
     attr.setEntryTimeToLive(new ExpirationAttributes(1000, ExpirationAction.LOCAL_INVALIDATE));
     attr.setPartitionAttributes(prAttr);
     try {
-    cache.createRegion("region1", attr.create());
-    fail("We should not have been able to create the region");
+      cache.createRegion("region1", attr.create());
+      fail("We should not have been able to create the region");
     } catch(IllegalStateException expected) {
-      
     }
   }
 }

@@ -16,9 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -32,17 +38,17 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Bug Test for bug#36457
@@ -52,8 +58,9 @@ import com.gemstone.gemfire.test.dunit.VM;
  * error because the region has been destroyed on the server and hence falsely
  * marks the server dead.
  */
-public class Bug36457DUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class Bug36457DUnitTest extends JUnit4DistributedTestCase {
+
   private static Cache cache = null;
 
   private VM server1 = null;
@@ -69,8 +76,8 @@ public class Bug36457DUnitTest extends DistributedTestCase
   private static final String regionName = "Bug36457DUnitTest_Region";
 
   /** constructor */
-  public Bug36457DUnitTest(String name) {
-    super(name);
+  public Bug36457DUnitTest() {
+    super();
   }
 
   @Override
@@ -96,9 +103,9 @@ public class Bug36457DUnitTest extends DistributedTestCase
       throws Exception
   {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    new Bug36457DUnitTest("temp").createCache(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    new Bug36457DUnitTest().createCache(props);
     Pool p = PoolManager.createFactory()
       .addServer(host, port1.intValue())
       .addServer(host, port2.intValue())
@@ -123,7 +130,7 @@ public class Bug36457DUnitTest extends DistributedTestCase
 
   public static Integer createServerCache() throws Exception
   {
-    new Bug36457DUnitTest("temp").createCache(new Properties());
+    new Bug36457DUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -155,6 +162,7 @@ public class Bug36457DUnitTest extends DistributedTestCase
     }
   }
 
+  @Test
   public void testBug36457()
   {
     Integer port1 = ((Integer)server1.invoke(() -> Bug36457DUnitTest.createServerCache()));

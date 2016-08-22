@@ -16,60 +16,16 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CopyHelper;
 import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.cache.query.QueryExecutionLowMemoryException;
-import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.Struct;
-import com.gemstone.gemfire.cache.query.internal.CompiledGroupBySelect;
-import com.gemstone.gemfire.cache.query.internal.CompiledSelect;
-import com.gemstone.gemfire.cache.query.internal.CompiledSortCriterion;
-import com.gemstone.gemfire.cache.query.internal.CompiledValue;
-import com.gemstone.gemfire.cache.query.internal.CumulativeNonDistinctResults;
-import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
-import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
-import com.gemstone.gemfire.cache.query.internal.ExecutionContext;
+import com.gemstone.gemfire.cache.query.*;
+import com.gemstone.gemfire.cache.query.internal.*;
 import com.gemstone.gemfire.cache.query.internal.IndexTrackingQueryObserver.IndexInfo;
-import com.gemstone.gemfire.cache.query.internal.NWayMergeResults;
-import com.gemstone.gemfire.cache.query.internal.OrderByComparator;
-import com.gemstone.gemfire.cache.query.internal.PRQueryTraceInfo;
-import com.gemstone.gemfire.cache.query.internal.QueryExecutionContext;
-import com.gemstone.gemfire.cache.query.internal.QueryMonitor;
-import com.gemstone.gemfire.cache.query.internal.ResultsSet;
-import com.gemstone.gemfire.cache.query.internal.SortedResultsBag;
-import com.gemstone.gemfire.cache.query.internal.SortedStructBag;
-import com.gemstone.gemfire.cache.query.internal.StructSet;
 import com.gemstone.gemfire.cache.query.internal.utils.PDXUtils;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.cache.query.types.StructType;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.ReplyException;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.NanoTimer;
@@ -78,6 +34,12 @@ import com.gemstone.gemfire.internal.cache.partitioned.QueryMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.StreamingPartitionOperation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * This class sends the query on various <code>PartitionedRegion</code> data
@@ -92,7 +54,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
   /**
    * An ArrayList which might be unconsumable.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public static class MemberResultsList extends ArrayList {
     private boolean isLastChunkReceived = false;
@@ -108,12 +70,13 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
   /**
    * Simple testing interface
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public interface TestHook {
     public void hook(final int spot) throws RuntimeException;
   }
-  private static final int MAX_PR_QUERY_RETRIES = Integer.getInteger("gemfire.MAX_PR_QUERY_RETRIES", 10).intValue();
+
+  private static final int MAX_PR_QUERY_RETRIES = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_PR_QUERY_RETRIES", 10).intValue();
 
   private final PartitionedRegion pr;
   private volatile Map<InternalDistributedMember,List<Integer>> node2bucketIds;
@@ -1024,7 +987,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
    * in multipleThreads and results gained from buckets.
    * In future this can be used for adding for more information to final
    * query running info from pool threads.
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public static class PRQueryResultCollector {
 

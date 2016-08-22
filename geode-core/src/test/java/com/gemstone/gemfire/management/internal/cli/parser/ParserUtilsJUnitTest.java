@@ -16,24 +16,23 @@
  */
 package com.gemstone.gemfire.management.internal.cli.parser;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import junit.framework.TestCase;
-
-import com.gemstone.gemfire.management.internal.cli.parser.ParserUtils;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Includes tests for all utility methods in {@link ParserUtils}
- * 
- * 
  */
 @Category(UnitTest.class)
-public class ParserUtilsJUnitTest extends TestCase {
+public class ParserUtilsJUnitTest {
 
   /**
    * Test for {@link ParserUtils#split(String, String)}
    */
+  @Test
   public void testSplit() {
     String input = "something::{::}::nothing";
     String[] split = ParserUtils.split(input, "::");
@@ -46,6 +45,7 @@ public class ParserUtilsJUnitTest extends TestCase {
   /**
    * Test for {@link ParserUtils#splitValues(String, String)}
    */
+  @Test
   public void testSplitValues() {
     String input = "something::{::}::nothing::";
     String[] split = ParserUtils.splitValues(input, "::");
@@ -59,6 +59,7 @@ public class ParserUtilsJUnitTest extends TestCase {
   /**
    * Test for {@link ParserUtils#contains(String, String)}
    */
+  @Test
   public void testContains() {
     String input = "something::{::}::nothing::";
     assertTrue("Check Boolean", ParserUtils.contains(input, "::"));
@@ -69,6 +70,7 @@ public class ParserUtilsJUnitTest extends TestCase {
   /**
    * Test for {@link ParserUtils#lastIndexOf(String, String)}
    */
+  @Test
   public void testLastIndexOf() {
     String input = "something::{::}::nothing::";
     assertEquals("lastIndex", 24, ParserUtils.lastIndexOf(input, "::"));

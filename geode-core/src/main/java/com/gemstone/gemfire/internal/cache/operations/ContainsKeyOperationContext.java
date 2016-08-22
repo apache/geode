@@ -23,7 +23,7 @@ import com.gemstone.gemfire.cache.operations.KeyOperationContext;
  * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#CONTAINS_KEY} region operation having the
  * key object for the pre-operation case.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class ContainsKeyOperationContext extends KeyOperationContext {
 

@@ -30,7 +30,7 @@ import com.gemstone.gemfire.management.internal.cli.CommandRequest;
  * There could be many different implementations of OperationInvoker based on different protocols like JMX, HTTP
  * and so on.
  * <p/>
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface OperationInvoker {
 

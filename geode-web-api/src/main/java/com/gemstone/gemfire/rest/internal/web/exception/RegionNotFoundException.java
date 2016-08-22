@@ -20,7 +20,7 @@ package com.gemstone.gemfire.rest.internal.web.exception;
 /**
  * Indicates that Region does not found while trying to do some REST operation on that region.
  * <p/>
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public class RegionNotFoundException extends ResourceNotFoundException {

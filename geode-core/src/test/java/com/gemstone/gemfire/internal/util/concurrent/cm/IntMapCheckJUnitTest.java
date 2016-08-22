@@ -25,22 +25,29 @@
  */
 package com.gemstone.gemfire.internal.util.concurrent.cm;
 
-import java.io.*;
-import java.util.Map;
-import java.util.Hashtable;
-import java.util.Set;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.IdentityHashMap;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.util.JSR166TestCase;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.JSR166TestCase;
 
 @Category(IntegrationTest.class)
-public class IntMapCheckJUnitTest extends JSR166TestCase {
+public class IntMapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
 
     static int absentSize;
     static int absentMask;
@@ -52,10 +59,7 @@ public class IntMapCheckJUnitTest extends JSR166TestCase {
         if (!b) throw new Error("Failed Assertion");
     }
 
-    public IntMapCheckJUnitTest(String name) {
-      super(name);
-    }
-
+    @Test
     public void testIntMapCheck() throws Exception {
       main(new String[0]);
     }

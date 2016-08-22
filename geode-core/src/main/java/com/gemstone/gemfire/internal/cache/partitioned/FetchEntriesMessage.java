@@ -51,7 +51,6 @@ import com.gemstone.gemfire.internal.cache.BucketRegion;
 import com.gemstone.gemfire.internal.cache.CachedDeserializable;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation;
-import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
@@ -448,7 +447,7 @@ public final class FetchEntriesMessage extends PartitionMessage
   /**
    * A processor to capture the value returned by {@link 
    * com.gemstone.gemfire.internal.cache.partitioned.GetMessage.GetReplyMessage}
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static class FetchEntriesResponse extends ReplyProcessor21  {
 
@@ -542,17 +541,12 @@ public final class FetchEntriesMessage extends PartitionMessage
         try {
           ByteArrayInputStream byteStream = new ByteArrayInputStream(msg.chunk);
           DataInputStream in = new DataInputStream(byteStream);
-          final boolean requiresRegionContext = this.pr
-              .keyRequiresRegionContext();
           Object key;
           
           while (in.available() > 0) {
             deserializingKey = true;
             key = DataSerializer.readObject(in);
             if (key != null) {
-              if (requiresRegionContext) {
-                ((KeyWithRegionContext)key).setRegionContext(this.pr);
-              }
               deserializingKey = false;
               Object value = DataSerializer.readObject(in);
               VersionTag versionTag = DataSerializer.readObject(in);

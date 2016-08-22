@@ -35,7 +35,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * for a single region.
  *
  * 
- * @since 4.0
+ * @since GemFire 4.0
  * 
  */
 public class TXRegionLockRequestImpl
@@ -104,24 +104,17 @@ public class TXRegionLockRequestImpl
     final GemFireCacheImpl cache = getCache(false);
     try {
       final int size = InternalDataSerializer.readArrayLength(in);
-      boolean read = false;
       if (cache != null && size > 0) {
         this.r = (LocalRegion)cache.getRegion(this.regionPath);
-        if( this.r != null ) {
-          this.entryKeys = readEntryKeySet(this.r.keyRequiresRegionContext(), size, in);
-          read = true;
-        }
       }
-      if ( !read && size > 0 ) {
-        this.entryKeys = readEntryKeySet(false, size, in);
-      }
+      this.entryKeys = readEntryKeySet(size, in);
     } catch (CacheClosedException cce) {
       // don't throw in deserialization
       this.entryKeys = null;
     }
   }
   
-  private final Set<Object> readEntryKeySet(final boolean keyRequiresRegionContext,
+  private final Set<Object> readEntryKeySet(
       final int size, final DataInput in) throws IOException,
       ClassNotFoundException {
 
@@ -133,9 +126,6 @@ public class TXRegionLockRequestImpl
     Object key;
     for (int i = 0; i < size; i++) {
       key = DataSerializer.readObject(in);
-      if (keyRequiresRegionContext) {
-        ((KeyWithRegionContext)key).setRegionContext(this.r);
-      }
       set.add(key);
     }
 

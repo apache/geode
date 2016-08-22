@@ -35,12 +35,12 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 public class OffHeapByteSourceJUnitTest extends ByteSourceJUnitTest {
 
   @Before
-  public void setUp() throws Exception {
+  public final void setUp() throws Exception {
     MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{new SlabImpl(1024*1024)});
   }
 
   @After
-  public void tearDown() throws Exception {
+  public final void tearDown() throws Exception {
     MemoryAllocatorImpl.freeOffHeapMemory();
   }
 

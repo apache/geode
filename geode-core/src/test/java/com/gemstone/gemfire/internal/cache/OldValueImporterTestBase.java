@@ -20,36 +20,27 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl.OldValueImporter;
-import com.gemstone.gemfire.internal.offheap.OffHeapStoredObject;
-import com.gemstone.gemfire.internal.offheap.TinyStoredObject;
+import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
 import com.gemstone.gemfire.internal.offheap.NullOffHeapMemoryStats;
 import com.gemstone.gemfire.internal.offheap.NullOutOfOffHeapMemoryListener;
-import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
+import com.gemstone.gemfire.internal.offheap.OffHeapStoredObject;
 import com.gemstone.gemfire.internal.offheap.SlabImpl;
+import com.gemstone.gemfire.internal.offheap.TinyStoredObject;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 
 public abstract class OldValueImporterTestBase {
-  @Before
-  public void setUp() throws Exception {
-  }
 
-  @After
-  public void tearDown() throws Exception {
-  }
-  
   protected abstract OldValueImporter createImporter();
   protected abstract Object getOldValueFromImporter(OldValueImporter ovi);
   protected abstract void toData(OldValueImporter ovi, HeapDataOutputStream hdos) throws IOException;
   protected abstract void fromData(OldValueImporter ovi, byte[] bytes) throws IOException, ClassNotFoundException;
 
   @Test
-  public void testValueSerialization() throws IOException, ClassNotFoundException {
+  public void testValueSerialization() throws Exception {
     byte[] bytes = new byte[1024];
     HeapDataOutputStream hdos = new HeapDataOutputStream(bytes);
     OldValueImporter imsg = createImporter();

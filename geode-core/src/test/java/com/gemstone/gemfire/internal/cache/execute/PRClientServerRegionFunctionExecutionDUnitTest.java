@@ -16,13 +16,12 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import static org.junit.Assert.*;
+
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
 import java.rmi.ServerException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,6 +30,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -57,14 +60,16 @@ import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
+@Category(DistributedTest.class)
 public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServerTestBase {
+
   private static final String TEST_FUNCTION7 = TestFunction.TEST_FUNCTION7;
 
   private static final String TEST_FUNCTION2 = TestFunction.TEST_FUNCTION2;
@@ -77,10 +82,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
 
   static final String retryRegionName = "RetryDataRegion";
   
-  public PRClientServerRegionFunctionExecutionDUnitTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void test_Bug_43126_Function_Not_Registered()
       throws InterruptedException {
     createScenario();
@@ -94,6 +96,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     }
   }
 
+  @Test
   public void test_Bug43126() throws InterruptedException {
     createScenario();
     Function function = new TestFunction(true, TEST_FUNCTION2);
@@ -105,6 +108,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
    * Execution of the function on server with single key as the routing
    * object and using the name of the function
    */   
+  @Test
   public void testServerSingleKeyExecution_byName() {
     createScenario();
     Function function = new TestFunction(true,TEST_FUNCTION2);
@@ -134,16 +138,20 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     runOnAllServers(endSuspect);
   }
   
+  @Test
   public void testServerSingleKeyExecution_Bug43513_OnRegion() {
     createScenario_SingleConnection();
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.serverSingleKeyExecutionOnRegion_SingleConnection());
   }
-  
-  public void Bug47584_testServerSingleKeyExecution_Bug43513_OnServer() {
+
+  @Ignore("Bug47584")
+  @Test
+  public void testServerSingleKeyExecution_Bug43513_OnServer() {
     createScenario_SingleConnection();
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.serverSingleKeyExecutionOnServer_SingleConnection());
   }
   
+  @Test
   public void testServerSingleKeyExecution_SendException() {
     createScenario();
     Function function = new TestFunction(true,TestFunction.TEST_FUNCTION_SEND_EXCEPTION);
@@ -153,6 +161,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.serverSingleKeyExecution_SendException( isByName, toRegister));
   }
   
+  @Test
   public void testServerSingleKeyExecution_ThrowException() {
     createScenario();
     Function function = new TestFunction(true,TestFunction.TEST_FUNCTION_THROW_EXCEPTION);
@@ -162,6 +171,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.serverSingleKeyExecution_ThrowException( isByName, toRegister));
   }
   
+  @Test
   public void testClientWithoutPool_Bug41832() {
     createScenarioWith2Regions();
     Function function = new TestFunction(true,TEST_FUNCTION2);
@@ -195,6 +205,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
    * Execution of the function on server with single key as the routing
    * object and using the name of the function
    */   
+  @Test
   public void testServerExecution_NoLastResult() {
     createScenario();
     Function function = new TestFunction(true,TestFunction.TEST_FUNCTION_NO_LASTRESULT);
@@ -208,6 +219,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     ex.remove();
   }
 
+  @Test
   public void testServerSingleKeyExecution_byName_WithoutRegister() {
     createScenario();
     Function function = new TestFunction(true,TEST_FUNCTION2);
@@ -243,11 +255,13 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
    * of HA then system should retry the function execution. After 5th attempt
    * function will send Boolean as last result.
    */
+  @Test
   public void testserverSingleKeyExecution_FunctionInvocationTargetException() {
     createScenario();
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.serverSingleKeyExecution_FunctionInvocationTargetException());
   }
   
+  @Test
   public void testServerSingleKeyExecution_SocketTimeOut() {
     createScenario();
     Function function = new TestFunction(true,TestFunction.TEST_FUNCTION_SOCKET_TIMEOUT);
@@ -260,6 +274,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
    * Execution of the function on server with single key as the routing
    * object and using the instance of the function
    */
+  @Test
   public void testServerSingleKeyExecution_byInstance() {
     createScenario();
     Function function = new TestFunction(true,TEST_FUNCTION2);
@@ -273,6 +288,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
    * Execution of the inline function on server with single key as the routing
    * object
    */   
+  @Test
   public void testServerSingleKeyExecution_byInlineFunction() {
     createScenario();
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.serverSingleKeyExecution_Inline());
@@ -282,6 +298,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
    * Execution of the function on server with set multiple keys as the routing
    * object and using the name of the function
    */
+  @Test
   public void testserverMultiKeyExecution_byName(){
     createScenario();
     Function function = new TestFunction(true,TEST_FUNCTION2);
@@ -296,6 +313,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
   /*
    * Execution of the function on server with bucket as filter
    */
+  @Test
   public void testBucketFilter(){
     createScenarioForBucketFilter();
     Function function = new TestFunction(true,TestFunction.TEST_FUNCTION_BUCKET_FILTER);
@@ -313,6 +331,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     
   }
   
+  @Test
   public void testBucketFilterOverride(){
     createScenarioForBucketFilter();
     Function function = new TestFunction(true,TestFunction.TEST_FUNCTION_BUCKET_FILTER);
@@ -331,6 +350,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     
   }
   
+  @Test
   public void testserverMultiKeyExecution_SendException(){
     createScenario();
     Function function = new TestFunction(true,TestFunction.TEST_FUNCTION_SEND_EXCEPTION);
@@ -339,6 +359,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.serverMultiKeyExecution_SendException( isByName));
   }
   
+  @Test
   public void testserverMultiKeyExecution_ThrowException(){
     createScenario();
     Function function = new TestFunction(true,TestFunction.TEST_FUNCTION_THROW_EXCEPTION);
@@ -353,6 +374,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
    * Execution of the inline function on server with set multiple keys as the routing
    * object
    */
+  @Test
   public void testserverMultiKeyExecution_byInlineFunction(){
     createScenario();
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.serverMultiKeyExecution_Inline());
@@ -364,6 +386,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
    * this is the case of HA then system should retry the function execution.
    * After 5th attempt function will send Boolean as last result.
    */
+  @Test
   public void testserverMultiKeyExecution_FunctionInvocationTargetException() {
     createScenario();
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.serverMultiKeyExecution_FunctionInvocationTargetException());
@@ -373,6 +396,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
    * Execution of the function on server with set multiple keys as the routing
    * object and using the name of the function
    */
+  @Test
   public void testserverMultiKeyExecutionNoResult_byName(){
     createScenario();
     Function function = new TestFunction(false,TEST_FUNCTION7);
@@ -385,6 +409,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
    * Execution of the function on server with set multiple keys as the routing
    * object and using the instance of the function
    */
+  @Test
   public void testserverMultiKeyExecution_byInstance(){
     createScenario();
     Function function = new TestFunction(true,TEST_FUNCTION2);
@@ -398,6 +423,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
    * that the routing logic works correctly such that there is not extra
    * execution
    */
+  @Test
   public void testserverMultiKeyExecutionOnASingleBucket_byName(){
     createScenario();
     Function function = new TestFunction(true,TEST_FUNCTION2);
@@ -411,6 +437,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
    * that the routing logic works correctly such that there is not extra
    * execution
    */
+  @Test
   public void testserverMultiKeyExecutionOnASingleBucket_byInstance(){
     createScenario();
     Function function = new TestFunction(true,TEST_FUNCTION2);
@@ -1532,6 +1559,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
    * Attempt to do a client server function execution with an arg that fail deserialization
    * on the server. The client should see an exception instead of a hang if bug 43430 is fixed.
    */
+  @Test
   public void testBug43430() {
     createScenario();
     Function function = new TestFunction(true,TEST_FUNCTION2);

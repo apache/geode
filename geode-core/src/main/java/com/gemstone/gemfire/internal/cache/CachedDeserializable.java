@@ -45,7 +45,7 @@ public interface CachedDeserializable extends Sizeable
    * Gets a deserialized value for reading.
    * Differs from getDeserializedValue by leaving the value in a form
    * that will optimize future calls.
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public Object getDeserializedForReading();
   
@@ -54,7 +54,7 @@ public interface CachedDeserializable extends Sizeable
    * is thrown while converting to a string then the exception
    * will be caught and put in the returned string.
    * @return a string that represents the cached object.
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public String getStringForm();
   

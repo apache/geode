@@ -19,6 +19,7 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.membership;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.test.dunit.Wait;
@@ -70,12 +71,16 @@ public class GMSJoinLeaveTestHelper {
     Services services = membershipManager.getServices();
     return (GMSJoinLeave) services.getJoinLeave();
   }
+  
+  public static InternalDistributedMember getCurrentCoordinator() {
+    return getGmsJoinLeave().getView().getCoordinator();
+  }
 
   public static Integer getViewId() {
     return getGmsJoinLeave().getView().getViewId();
   }
 
-  private static InternalDistributedSystem getInternalDistributedSystem() {
+  public static InternalDistributedSystem getInternalDistributedSystem() {
     waitCriterion();
     return getIDS();
   }

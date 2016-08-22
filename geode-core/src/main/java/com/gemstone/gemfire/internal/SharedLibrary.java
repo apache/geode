@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.internal;
 
 import com.gemstone.gemfire.InternalGemFireError;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.lang.SystemUtils;
 import com.gemstone.gemfire.pdx.internal.unsafe.UnsafeWrapper;
 
@@ -151,7 +152,7 @@ public class SharedLibrary {
       if (is64Bit()) {
         result.append("64");
       }
-      if (Boolean.getBoolean("gemfire.debug")) {
+      if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "debug")) {
         result.append("_g");
       }
       return result.toString();
@@ -212,7 +213,7 @@ public class SharedLibrary {
     /**
      * Accessor method for the is64Bit flag
      * @return returns a boolean indicating if the 64bit native library was loaded.
-     * @since 5.1
+     * @since GemFire 5.1
      */
     public final static boolean getIs64Bit() { return PureJavaMode.is64Bit(); }
 

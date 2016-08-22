@@ -54,7 +54,7 @@ import com.gemstone.gemfire.cache.query.*; // for javadocs
  * <li>{@link Region#registerInterestRegex(String, InterestResultPolicy, boolean)}
  * </ul>
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
 public interface PoolFactory {
   /**
@@ -166,13 +166,13 @@ public interface PoolFactory {
   /**
    * The default value for whether to have single hop optimisations enabled.
    * <p>Current value: <code>true</code>.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final boolean DEFAULT_PR_SINGLE_HOP_ENABLED = true;
   /**
    * The default value for whether to use multiuser mode.
    * <p>Current value: <code>false</code>.
-   * @since 6.5
+   * @since GemFire 6.5
    */  
   public static final boolean DEFAULT_MULTIUSER_AUTHENTICATION = false;
   /**
@@ -452,7 +452,7 @@ public interface PoolFactory {
    * servers as they do not host any partitions.
    * 
    * @return a reference to <code>this</code>
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public PoolFactory setPRSingleHopEnabled(boolean enabled);
 
@@ -469,7 +469,7 @@ public interface PoolFactory {
    * 
    * @return a reference to <code>this</code>
    * @see ClientCache#createAuthenticatedView(java.util.Properties)
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public PoolFactory setMultiuserAuthentication(boolean enabled);
   

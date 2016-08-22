@@ -21,19 +21,19 @@
     xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
     version="1.0">
 
-  <!-- The default pool connects to a cache server running on  localhost at
-       port 40404. To connect to a different server host and port, modify
-       the following pool server host and port. -->
+  <!-- The default pool connects to a locator running on localhost at
+       port 10334. To connect to a different locator host and port, modify
+       the following pool locator host and port. -->
   <pool name="sessions" subscription-enabled="true">
-    <server host="localhost" port="40404"/>
+    <locator host="localhost" port="10334"/>
   </pool>
 
-  <!-- To configure the client to use a locator instead of a server, replace
-       the server pool above with the locator pool below and modify the locator
+  <!-- To configure the client to use a server instead of a locator, replace
+       the locator pool above with the server pool below and modify the server
        host and port as necessary. -->
   <!--
   <pool name="sessions" subscription-enabled="true">
-    <locator host="localhost" port="10334"/>
+    <server host="localhost" port="40404"/>
   </pool>
   -->
   

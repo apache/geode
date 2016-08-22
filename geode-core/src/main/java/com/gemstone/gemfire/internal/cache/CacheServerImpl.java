@@ -16,49 +16,19 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.InvalidValueException;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.ClientSession;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.DynamicRegionFactory;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.InterestRegistrationListener;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 import com.gemstone.gemfire.cache.server.internal.LoadMonitor;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisee;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisor;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.ResourceEvent;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.OSProcess;
@@ -74,12 +44,18 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.management.membership.ClientMembership;
 import com.gemstone.gemfire.management.membership.ClientMembershipListener;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * An implementation of the <code>CacheServer</code> interface that delegates
  * most of the heavy lifting to an {@link Acceptor}.
  * 
- * @since 4.0
+ * @since GemFire 4.0
  */
 @SuppressWarnings("deprecation")
 public class CacheServerImpl
@@ -87,22 +63,23 @@ public class CacheServerImpl
   implements DistributionAdvisee {
 
   private static final Logger logger = LogService.getLogger();
-  
-  private static final int FORCE_LOAD_UPDATE_FREQUENCY= Integer.getInteger("gemfire.BridgeServer.FORCE_LOAD_UPDATE_FREQUENCY", 10).intValue();
+
+  private static final int FORCE_LOAD_UPDATE_FREQUENCY = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "BridgeServer.FORCE_LOAD_UPDATE_FREQUENCY", 10)
+      .intValue();
   
   /** The acceptor that does the actual serving */
   private volatile AcceptorImpl acceptor;
 
   /**
    * The advisor used by this cache server.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private volatile CacheServerAdvisor advisor;
 
   /**
    * The monitor used to monitor load on this
    * bridge server and distribute load to the locators
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private volatile LoadMonitor loadMonitor;
 
@@ -118,12 +95,12 @@ public class CacheServerImpl
   
   /**
    * Needed because this guy is an advisee
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private int serialNumber; // changed on each start
 
-  public static final boolean ENABLE_NOTIFY_BY_SUBSCRIPTION_FALSE = 
-  Boolean.getBoolean("gemfire.cache-server.enable-notify-by-subscription-false");
+  public static final boolean ENABLE_NOTIFY_BY_SUBSCRIPTION_FALSE =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "cache-server.enable-notify-by-subscription-false");
   
  
   // ////////////////////// Constructors //////////////////////
@@ -287,7 +264,6 @@ public class CacheServerImpl
     setMaximumTimeBetweenPings(other.getMaximumTimeBetweenPings());
     setMaximumMessageCount(other.getMaximumMessageCount());
     setMessageTimeToLive(other.getMessageTimeToLive());
-//    setTransactionTimeToLive(other.getTransactionTimeToLive());  not implemented in CacheServer for v6.6
     setGroups(other.getGroups());
     setLoadProbe(other.getLoadProbe());
     setLoadPollInterval(other.getLoadPollInterval());
@@ -307,7 +283,6 @@ public class CacheServerImpl
   @Override
   public synchronized void start() throws IOException {
     Assert.assertTrue(this.cache != null);
-    boolean isSqlFabricSystem = ((GemFireCacheImpl)this.cache).isSqlfSystem();
     
     this.serialNumber = createSerialNumber();
     if (DynamicRegionFactory.get().isOpen()) {
@@ -346,10 +321,8 @@ public class CacheServerImpl
                                      getMaxThreads(), 
                                      getMaximumMessageCount(),
                                      getMessageTimeToLive(),
-                                     getTransactionTimeToLive(),
                                      this.loadMonitor,
                                      overflowAttributesList, 
-                                     isSqlFabricSystem,
                                      this.isGatewayReceiver,
                                      this.gatewayTransportFilters, this.tcpNoDelay);
 
@@ -400,7 +373,7 @@ public class CacheServerImpl
   /**
    * Gets the address that this bridge server can be contacted on from external
    * processes.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public String getExternalAddress() {
     return getExternalAddress(true);
@@ -571,7 +544,7 @@ public class CacheServerImpl
    * @param overFlowDir
    * @param isDiskStore
    * @return client subscription name
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static String clientMessagesRegion(GemFireCacheImpl cache, String ePolicy,
       int capacity, int port, String overFlowDir, boolean isDiskStore) {
@@ -690,7 +663,7 @@ public class CacheServerImpl
    * 
    * @param id
    * @return String
-   * @since 5.7 
+   * @since GemFire 5.7
    */
   public static String generateNameForClientMsgsRegion(int id) {
     return ClientSubscriptionConfigImpl.CLIENT_SUBSCRIPTION + "_" + id;
@@ -791,7 +764,7 @@ public class CacheServerImpl
    * @param listener
    *                The <code>InterestRegistrationListener</code> to register
    * @throws IllegalStateException if the BridgeServer has not been started
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public void registerInterestRegistrationListener(
       InterestRegistrationListener listener) {
@@ -809,7 +782,7 @@ public class CacheServerImpl
    *                The <code>InterestRegistrationListener</code> to
    *                unregister
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public void unregisterInterestRegistrationListener(
       InterestRegistrationListener listener) {
@@ -823,7 +796,7 @@ public class CacheServerImpl
    * @return a read-only set of <code>InterestRegistrationListener</code>s
    *         registered with this notifier
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public Set getInterestRegistrationListeners() {
     return getCacheClientNotifier().getInterestRegistrationListeners(); 

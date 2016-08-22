@@ -19,7 +19,18 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import com.gemstone.gemfire.cache.DynamicRegionFactory;
+import com.gemstone.gemfire.cache.RegionDestroyedException;
+import com.gemstone.gemfire.cache.ResourceException;
+import com.gemstone.gemfire.cache.operations.PutAllOperationContext;
+import com.gemstone.gemfire.cache.operations.internal.UpdateOnlyMap;
+import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
@@ -28,22 +39,16 @@ import com.gemstone.gemfire.internal.cache.PutAllPartialResultException;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.*;
+import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
+import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerStats;
+import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
+import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.cache.DynamicRegionFactory;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.ResourceException;
-import com.gemstone.gemfire.cache.operations.PutAllOperationContext;
-import com.gemstone.gemfire.cache.operations.internal.UpdateOnlyMap;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 public class PutAll extends BaseCommand {
   
@@ -116,7 +121,9 @@ public class PutAll extends BaseCommand {
         servConn.setAsTrue(RESPONDED);
         return;
       }
-      
+
+      GeodeSecurityUtil.authorizeRegionWrite(regionName);
+
       // part 1: eventID
       eventPart = msg.getPart(1);
       ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart
@@ -194,22 +201,6 @@ public class PutAll extends BaseCommand {
             map = ((UpdateOnlyMap) map).getInternalMap();
           }
         }
-      } else {
-        // no auth, so update the map based on isObjectMap here
-        /*
-         Collection entries = map.entrySet();
-         Iterator iterator = entries.iterator();
-         Map.Entry mapEntry = null;
-         while (iterator.hasNext()) {
-         mapEntry = (Map.Entry)iterator.next();
-         Object currkey = mapEntry.getKey();
-         byte[] serializedValue = (byte[])mapEntry.getValue();
-         boolean isObject = ((Boolean)isObjectMap.get(currkey)).booleanValue();
-         if (isObject) {
-         map.put(currkey, CachedDeserializableFactory.create(serializedValue));
-         }
-         }
-         */
       }
       
       if (logger.isDebugEnabled()) {

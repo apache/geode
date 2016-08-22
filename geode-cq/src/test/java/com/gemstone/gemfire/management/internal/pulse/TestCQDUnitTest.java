@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.management.internal.pulse;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.query.cq.dunit.CqQueryDUnitTest;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.management.DistributedSystemMXBean;
@@ -32,17 +41,17 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * 
  */
 
+@Category(DistributedTest.class)
 public class TestCQDUnitTest extends ManagementTestBase {
 
   private static final long serialVersionUID = 1L;
   private static final String queryName = "testClientWithFeederAndCQ_0";
   private static final String queryName2 = "testClientWithFeederAndCQ_3";
 
-  protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest(
-      "CqDataDUnitTest");
+  protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
 
-  public TestCQDUnitTest(String name) {
-    super(name);
+  public TestCQDUnitTest() {
+    super();
   }
 
   public static long getNumOfCQ() {
@@ -71,6 +80,7 @@ public class TestCQDUnitTest extends ManagementTestBase {
     return bean.getActiveCQCount();
   }
 
+  @Test
   public void testNumOfCQ() throws Exception {
     initManagement(false);
     LogWriterUtils.getLogWriter().info("started testNumOfCQ");

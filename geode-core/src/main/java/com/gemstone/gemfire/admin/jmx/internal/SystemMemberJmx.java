@@ -16,39 +16,26 @@
  */
 package com.gemstone.gemfire.admin.jmx.internal;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.management.MBeanException;
-import javax.management.MalformedObjectNameException;
-import javax.management.Notification;
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
-import javax.management.RuntimeOperationsException;
-import javax.naming.OperationNotSupportedException;
-
-import org.apache.commons.modeler.ManagedBean;
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.ConfigurationParameter;
-import com.gemstone.gemfire.admin.OperationCancelledException;
-import com.gemstone.gemfire.admin.StatisticResource;
-import com.gemstone.gemfire.admin.SystemMember;
-import com.gemstone.gemfire.admin.SystemMemberCache;
-import com.gemstone.gemfire.admin.SystemMemberCacheEvent;
-import com.gemstone.gemfire.admin.SystemMemberRegionEvent;
+import com.gemstone.gemfire.admin.*;
 import com.gemstone.gemfire.cache.Operation;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.admin.ClientMembershipMessage;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.commons.modeler.ManagedBean;
+import org.apache.logging.log4j.Logger;
+
+import javax.management.*;
+import javax.naming.OperationNotSupportedException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Defines methods that all <code>SystemMember</code> MBeans should
  * implement.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public interface SystemMemberJmx
   extends SystemMember, NotificationListener {
@@ -56,38 +43,38 @@ public interface SystemMemberJmx
    * Notification type for indicating a cache got created on a member of this 
    * distributed system.
    */
-  public static final String NOTIF_CACHE_CREATED = 
-    "gemfire.distributedsystem.cache.created";
+  public static final String NOTIF_CACHE_CREATED =
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.created";
   /** 
    * Notification type for indicating a cache is closed on a member of this 
    * distributed system.
    */
-  public static final String NOTIF_CACHE_CLOSED = 
-    "gemfire.distributedsystem.cache.closed";
+  public static final String NOTIF_CACHE_CLOSED =
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.closed";
   /** 
    * Notification type for indicating a region is created in a cache on a member 
    * of this distributed system.
    */
-  public static final String NOTIF_REGION_CREATED = 
-    "gemfire.distributedsystem.cache.region.created";
+  public static final String NOTIF_REGION_CREATED =
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.region.created";
   /** 
    * Notification type for indicating a region was removed from a cache on a 
    * member of this distributed system.
    */
-  public static final String NOTIF_REGION_LOST = 
-    "gemfire.distributedsystem.cache.region.lost";
+  public static final String NOTIF_REGION_LOST =
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.region.lost";
   
   /** Notification type for indicating client joined */
-  public static final String NOTIF_CLIENT_JOINED = 
-    "gemfire.distributedsystem.cache.client.joined";
+  public static final String NOTIF_CLIENT_JOINED =
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.client.joined";
   
   /** Notification type for indicating client left */
   public static final String NOTIF_CLIENT_LEFT =
-    "gemfire.distributedsystem.cache.client.left";
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.client.left";
   
   /** Notification type for indicating client crashed */
   public static final String NOTIF_CLIENT_CRASHED =
-    "gemfire.distributedsystem.cache.client.crashed";
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.client.crashed";
 
   /**
    * Gets the interval in seconds between config refreshes

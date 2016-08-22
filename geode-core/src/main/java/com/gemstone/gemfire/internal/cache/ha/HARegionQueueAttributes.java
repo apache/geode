@@ -19,6 +19,8 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
 /**
  * 
  * This class defines the user specified attributes of the HARegion which are
@@ -38,7 +40,7 @@ public class HARegionQueueAttributes
   /**
    * String storing the System Property key representing the blocking queue capacity 
    */
-  private static final String BLOCKING_QUEUE_CAPACITY = "gemfire.Capacity";
+  private static final String BLOCKING_QUEUE_CAPACITY = DistributionConfig.GEMFIRE_PREFIX + "Capacity";
 
   /**
    * expiry time for region entries in seconds

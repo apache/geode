@@ -25,7 +25,7 @@ import org.springframework.shell.core.MethodTarget;
 /**
  * {@link Converter} for {@link Enum}.
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 /*
  * Use this EnumConverter instead of SHL's EnumConverter. Added null check for

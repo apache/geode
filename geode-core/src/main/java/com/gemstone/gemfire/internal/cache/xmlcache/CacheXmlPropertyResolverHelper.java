@@ -29,7 +29,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 /**
  * Helper class for CacheXmlPropertyResolver. Helps in parsing ${...${}..}..${} strings.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 public class CacheXmlPropertyResolverHelper {
   private static final Logger logger = LogService.getLogger();

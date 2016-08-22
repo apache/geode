@@ -16,8 +16,14 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -26,17 +32,17 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.util.DelayedAction;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class Bug45934DUnitTest extends CacheTestCase {
-  public Bug45934DUnitTest(String name) {
-    super(name);
-  }
-  
+@Category(DistributedTest.class)
+public class Bug45934DUnitTest extends JUnit4CacheTestCase {
+
+  @Test
   public void testNormal() throws Exception {
     int count = 1000;
     Host host = Host.getHost(0);
@@ -48,8 +54,8 @@ public class Bug45934DUnitTest extends CacheTestCase {
 
     // 1. create the local cache
     CacheFactory cf = new CacheFactory();
-    cf.set("mcast-port", "45934");
-    cf.set("conserve-sockets", "false");
+    cf.set(MCAST_PORT, "45934");
+    cf.set(CONSERVE_SOCKETS, "false");
     Cache cache = getCache(cf);
 
     // 2. create normal region locally
@@ -86,8 +92,8 @@ public class Bug45934DUnitTest extends CacheTestCase {
       @Override
       public Object call() throws Exception {
         CacheFactory cf = new CacheFactory();
-        cf.set("mcast-port", "45934");
-        cf.set("conserve-sockets", "false");
+        cf.set(MCAST_PORT, "45934");
+        cf.set(CONSERVE_SOCKETS, "false");
 
         getCache(cf).<Integer, Integer> createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT)
             .create(name);

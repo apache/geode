@@ -16,19 +16,17 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.RegionAttributes;
 
 /**
  * subclass of UpdatePropagationDUnitTest to exercise partitioned regions
- *
  */
 public class UpdatePropagationPRDUnitTest extends UpdatePropagationDUnitTest {
 
-  public UpdatePropagationPRDUnitTest(String name) {
-    super(name);
-  }
-  protected RegionAttributes createCacheServerAttributes()
-  {
+  @Override
+  protected RegionAttributes createCacheServerAttributes() {
     AttributesFactory factory = new AttributesFactory();
     factory.setPartitionAttributes((new PartitionAttributesFactory()).create());
     return factory.create();

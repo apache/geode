@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * A Filesystem like interface that stores file data in gemfire regions.
+ * A Filesystem like interface that stores file data in geode regions.
  * 
  * This filesystem is safe for use with multiple threads if the threads are not
  * modifying the same files. A single file is not safe to modify by multiple
@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentMap;
  * 
  * Changes to a file may not be visible to other members of the system until the
  * FileOutputStream is closed.
+ *
  */
 public class FileSystem {
   // private final Cache cache;
@@ -40,11 +41,20 @@ public class FileSystem {
   private final ConcurrentMap<ChunkKey, byte[]> chunkRegion;
   
   static final int CHUNK_SIZE = 1024 * 1024; //1 MB
+  private final FileSystemStats stats;
 
-  public FileSystem(ConcurrentMap<String, File> fileRegion, ConcurrentMap<ChunkKey, byte[]> chunkRegion) {
-    super();
+  /**
+   * Create filesystem that will store data in the two provided regions. The fileRegion contains
+   * metadata about the files, and the chunkRegion contains the actual data. If data from either region is missing
+   * or inconsistent, no guarantees are made about what this class will do, so it's best if these regions are colocated
+   * and in the same disk store to ensure the data remains together.
+   * @param fileRegion the region to store metadata about the files
+   * @param chunkRegion the region to store actual file data.
+   */
+  public FileSystem(ConcurrentMap<String, File> fileRegion, ConcurrentMap<ChunkKey, byte[]> chunkRegion, FileSystemStats stats) {
     this.fileRegion = fileRegion;
     this.chunkRegion = chunkRegion;
+    this.stats = stats;
   }
 
   public Collection<String> listFileNames() {
@@ -57,7 +67,14 @@ public class FileSystem {
     if (null != fileRegion.putIfAbsent(name, file)) {
       throw new IOException("File exists.");
     }
+    stats.incFileCreates(1);
     // TODO unlock region ?
+    return file;
+  }
+
+  public File createTemporaryFile(final String name) throws IOException {
+    final File file = new File(this, name);
+    stats.incTemporaryFileCreates(1);
     return file;
   }
   
@@ -83,7 +100,7 @@ public class FileSystem {
     if(file == null) {
       throw new FileNotFoundException(name);
     }
-    
+
     // TODO consider removeAll with all ChunkKeys listed.
     final ChunkKey key = new ChunkKey(file.id, 0);
     while (true) {
@@ -94,6 +111,8 @@ public class FileSystem {
       }
       key.chunkId++;
     }
+
+    stats.incFileDeletes(1);
   }
   
   public void renameFile(String source, String dest) throws IOException {
@@ -117,6 +136,8 @@ public class FileSystem {
     // at the same data
 
     fileRegion.remove(source);
+
+    stats.incFileRenames(1);
   }
   
   byte[] getChunk(final File file, final int id) {
@@ -134,12 +155,14 @@ public class FileSystem {
     }
     
     final byte[] chunk = chunkRegion.get(key);
+    stats.incReadBytes(chunk.length);
     return chunk;
   }
 
   public void putChunk(final File file, final int id, final byte[] chunk) {
     final ChunkKey key = new ChunkKey(file.id, id);
     chunkRegion.put(key, chunk);
+    stats.incWrittenBytes(chunk.length);
   }
 
   void updateFile(File file) {
@@ -153,4 +176,21 @@ public class FileSystem {
   public ConcurrentMap<ChunkKey, byte[]> getChunkRegion() {
     return chunkRegion;
   }
+
+  /**
+   * Export all of the files in the filesystem to the provided directory
+   */
+  public void export(final java.io.File exportLocation) {
+
+    listFileNames().stream().forEach(fileName-> {
+      try {
+        getFile(fileName).export(exportLocation);
+      }
+      catch (FileNotFoundException e) {
+        //ignore this, it was concurrently removed
+      }
+
+    });
+  }
+
 }

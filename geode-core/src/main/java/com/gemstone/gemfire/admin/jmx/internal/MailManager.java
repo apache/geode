@@ -40,7 +40,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * provides the way to add/remove email ids. Can be used to send email in case
  * of any alerts raised / warning / failure in gemfire.
  * 
- * @since 5.1
+ * @since GemFire 5.1
  */
 public class MailManager {
 

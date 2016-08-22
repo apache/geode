@@ -19,7 +19,14 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DeltaTestImpl;
 import com.gemstone.gemfire.InvalidDeltaException;
@@ -36,23 +43,21 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-/**
- * 
- */
-public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
   protected static VM vm0 = null;
 
@@ -79,10 +84,6 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
   private static final int SERVER_TO_CLIENT = 2;
 
   private static final int CLIENT_TO_SERVER = 3;
-
-  public DeltaPropagationStatsDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -123,6 +124,7 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testS2CDeltaPropagationCleanStats() throws Exception {
     int numOfKeys = 50;
     long updates = 50;
@@ -148,6 +150,7 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testS2CDeltaPropagationFailedStats1() throws Exception {
     int numOfKeys = 25;
     long updates = 50;
@@ -178,7 +181,9 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
    * 
    * @throws Exception
    */
-  public void _testS2CDeltaPropagationFailedStats2() throws Exception {
+  @Ignore("TODO")
+  @Test
+  public void testS2CDeltaPropagationFailedStats2() throws Exception {
   }
 
   /**
@@ -186,6 +191,7 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testP2PDeltaPropagationCleanStats() throws Exception {
     int numOfKeys = 50;
     long updates = 50;
@@ -214,6 +220,7 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testP2PDeltaPropagationFailedStats1() throws Exception {
     int numOfKeys = 50, numOfkeys2 = 10;
     long updates = 50, updates2 = 50;
@@ -250,7 +257,9 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
    * 
    * @throws Exception
    */
-  public void _testP2PDeltaPropagationFailedStats2() throws Exception {
+  @Ignore("TODO")
+  @Test
+  public void testP2PDeltaPropagationFailedStats2() throws Exception {
   }
 
   /**
@@ -258,6 +267,7 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testC2SDeltaPropagationCleanStats() throws Exception {
     int numOfKeys = 50;
     long updates = 50;
@@ -290,6 +300,7 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testC2SDeltaPropagationFailedStats1() throws Exception {
     int numOfKeys = 50;
     long updates = 50;
@@ -321,7 +332,9 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
    * 
    * @throws Exception
    */
-  public void _testC2SDeltaPropagationFailedStats2() throws Exception {
+  @Ignore("TODO")
+  @Test
+  public void testC2SDeltaPropagationFailedStats2() throws Exception {
   }
 
   public static void waitForLastKey() {
@@ -522,9 +535,9 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
   public static void createClientCache(String host, Integer port)
       throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    cache = new DeltaPropagationStatsDUnitTest("temp").createCache(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    cache = new DeltaPropagationStatsDUnitTest().createCache(props);
     pool = PoolManager.createFactory().addServer(host, port)
         .setThreadLocalConnections(true).setMinConnections(1)
         .setSubscriptionEnabled(true).setSubscriptionRedundancy(0)
@@ -557,12 +570,11 @@ public class DeltaPropagationStatsDUnitTest extends DistributedTestCase {
   public static Integer createServerCache(Boolean flag, DataPolicy policy,
       Scope scope, Boolean listener) throws Exception {
     ConnectionTable.threadWantsSharedResources();
-    DeltaPropagationStatsDUnitTest test = new DeltaPropagationStatsDUnitTest(
-        "temp");
+    DeltaPropagationStatsDUnitTest test = new DeltaPropagationStatsDUnitTest();
     Properties props = new Properties();
     if (!flag) {
       props
-          .setProperty(DistributionConfig.DELTA_PROPAGATION_PROP_NAME, "false");
+          .setProperty(DELTA_PROPAGATION, "false");
     }
     cache = test.createCache(props);
     AttributesFactory factory = new AttributesFactory();

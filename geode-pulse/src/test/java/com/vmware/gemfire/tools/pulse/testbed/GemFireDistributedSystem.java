@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+
 
 /**
  * 
@@ -39,7 +41,7 @@ import java.util.Properties;
 public class GemFireDistributedSystem {
   
   private static final String SERVERS = "servers";
-  private static final String LOCATORS = "locators";
+  private static final String LOCATORS_NAME = LOCATORS;
   private static final String PEERS = "peers";
   private static final String HOSTS = "hosts";
   private static final String REGIONS = "regions";

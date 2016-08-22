@@ -42,7 +42,7 @@ import java.util.*;
 /**
  * The FunctionsController class serving REST Requests related to the function execution
  * @see org.springframework.stereotype.Controller
- * @since 8.0
+ * @since GemFire 8.0
  */
 
 @Controller("functionController")

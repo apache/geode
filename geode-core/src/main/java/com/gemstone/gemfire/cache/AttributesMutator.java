@@ -33,7 +33,7 @@ package com.gemstone.gemfire.cache;
  * @see Region#getAttributesMutator
  * @see RegionAttributes
  * @see AttributesFactory
- * @since 3.0
+ * @since GemFire 3.0
  */
 public interface AttributesMutator<K,V> {
   
@@ -118,7 +118,7 @@ public interface AttributesMutator<K,V> {
    * Adds a cache listener to the end of the list of cache listeners on this region.
    * @param aListener the user defined cache listener to add to the region.
    * @throws IllegalArgumentException if <code>aListener</code> is null
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void addCacheListener(CacheListener<K,V> aListener);
   /**
@@ -128,14 +128,14 @@ public interface AttributesMutator<K,V> {
    * be called on it; otherwise does nothing.
    * @param aListener the cache listener to remove from the region.
    * @throws IllegalArgumentException if <code>aListener</code> is null
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void removeCacheListener(CacheListener<K,V> aListener);
   /**
    * Removes all cache listeners, calling {@link CacheCallback#close} on each of them, and then adds each listener in the specified array.
    * @param newListeners a possibly null or empty array of listeners to add to this region.
    * @throws IllegalArgumentException if the <code>newListeners</code> array has a null element
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void initCacheListeners(CacheListener<K,V>[] newListeners);
   
@@ -166,23 +166,10 @@ public interface AttributesMutator<K,V> {
   public EvictionAttributesMutator getEvictionAttributesMutator();
 
   /**
-   * Changes the evictor frequency for custom eviction attributes.
-   * 
-   * @param newStart
-   *          the new start time in millis since epoch for the evictor task
-   * 
-   * @param newInterval
-   *          the new interval between evictor task invocations in millis
-   * 
-   * @return the updated {@link CustomEvictionAttributes}
-   */
-  public CustomEvictionAttributes setCustomEvictionAttributes(long newStart,
-      long newInterval);
-
-  /**
    * Sets cloning on region
+   * Note: off-heap regions always behave as if cloning is enabled.
    * @param cloningEnable
-   * @since 6.1
+   * @since GemFire 6.1
    */
   public void setCloningEnabled(boolean cloningEnable);
   /**
@@ -191,7 +178,7 @@ public interface AttributesMutator<K,V> {
    * @return True if cloning is enabled (default);
    *         false cloning is not enabled.
    *
-   * @since 6.1
+   * @since GemFire 6.1
    */
   public boolean getCloningEnabled();
   

@@ -16,21 +16,19 @@
  */
 package com.gemstone.gemfire.distributed.internal.locks;
 
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 
 @Category(IntegrationTest.class)
 public class DLockReentrantLockJUnitTest {
@@ -41,7 +39,7 @@ public class DLockReentrantLockJUnitTest {
 
   @Before
   public void setup() {
-    cache = new CacheFactory().set("mcast-port", "0").set("locators", "").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").set(LOCATORS, "").create();
     final RegionFactory<Long, String> regionFactory = cache.createRegionFactory("REPLICATE");
     regionFactory.setScope(Scope.GLOBAL);
     region = regionFactory.create("ReentrantLockRegion");

@@ -55,7 +55,7 @@ import com.gemstone.gemfire.pdx.internal.PdxUnreadData;
  * @see com.gemstone.gemfire.cache.Cache#setCopyOnRead
  * @see com.gemstone.gemfire.cache.CacheTransactionManager
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 
 public final class CopyHelper {
@@ -84,7 +84,7 @@ public final class CopyHelper {
    * </ul>
    * @param o the object to check
    * @return true if o is an instance of a well known immutable class.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public static boolean isWellKnownImmutableInstance(Object o) {
     if (o instanceof String) {
@@ -134,7 +134,7 @@ public final class CopyHelper {
    * @throws CopyException if copying fails because a class could not
    * be found or could not be serialized.
    * @see #deepCopy(Object)
-   * @since 4.0
+   * @since GemFire 4.0
    */
   @SuppressWarnings("unchecked")
   public static <T> T copy(T o) {

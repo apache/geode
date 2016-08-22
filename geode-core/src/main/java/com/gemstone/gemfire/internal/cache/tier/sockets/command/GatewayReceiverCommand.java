@@ -37,8 +37,8 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.EventIDHolder;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
@@ -194,7 +194,7 @@ public class GatewayReceiverCommand extends BaseCommand {
       int actionType = actionTypePart.getInt();
       
       long versionTimeStamp = VersionTag.ILLEGAL_VERSION_TIMESTAMP;
-      EntryEventImpl clientEvent = null;
+      EventIDHolder clientEvent = null;
       
       boolean callbackArgExists = false;
 
@@ -306,7 +306,7 @@ public class GatewayReceiverCommand extends BaseCommand {
           if (region == null) {
             handleRegionNull(servConn, regionName, batchId);
           } else {
-            clientEvent = new EntryEventImpl(eventId);
+            clientEvent = new EventIDHolder(eventId);
             if (versionTimeStamp > 0) {
               VersionTag tag = VersionTag.create(region.getVersionMember());
               tag.setIsGatewayTag(true);
@@ -319,9 +319,6 @@ public class GatewayReceiverCommand extends BaseCommand {
             try {
               byte[] value = valuePart.getSerializedForm();
               boolean isObject = valuePart.isObject();
-              if (region.keyRequiresRegionContext()) {
-                ((KeyWithRegionContext)key).setRegionContext(region);
-              }
               // [sumedh] This should be done on client while sending
               // since that is the WAN gateway
               AuthorizeRequest authzRequest = servConn.getAuthzRequest();
@@ -339,8 +336,7 @@ public class GatewayReceiverCommand extends BaseCommand {
               // attempt to update the entry
               if (!result) {
                 result = region.basicBridgePut(key, value, null, isObject,
-                    callbackArg, servConn.getProxyID(), false, clientEvent,
-                    servConn.isSqlFabricSystem());
+                    callbackArg, servConn.getProxyID(), false, clientEvent);
               }
 
               if (result || clientEvent.isConcurrencyConflict()) {
@@ -415,7 +411,7 @@ public class GatewayReceiverCommand extends BaseCommand {
           if (region == null) {
             handleRegionNull(servConn, regionName, batchId);
           } else {
-            clientEvent = new EntryEventImpl(eventId);
+            clientEvent = new EventIDHolder(eventId);
             if (versionTimeStamp > 0) {
               VersionTag tag = VersionTag.create(region.getVersionMember());
               tag.setIsGatewayTag(true);
@@ -428,9 +424,6 @@ public class GatewayReceiverCommand extends BaseCommand {
             try {
               byte[] value = valuePart.getSerializedForm();
               boolean isObject = valuePart.isObject();
-              if (region.keyRequiresRegionContext()) {
-                ((KeyWithRegionContext)key).setRegionContext(region);
-              }
               AuthorizeRequest authzRequest = servConn.getAuthzRequest();
               if (authzRequest != null) {
                 PutOperationContext putContext = authzRequest.putAuthorize(
@@ -440,8 +433,7 @@ public class GatewayReceiverCommand extends BaseCommand {
                 isObject = putContext.isObject();
               }
               boolean result = region.basicBridgePut(key, value, null, isObject,
-                  callbackArg, servConn.getProxyID(), false, clientEvent,
-                  servConn.isSqlFabricSystem());
+                  callbackArg, servConn.getProxyID(), false, clientEvent);
               if (result|| clientEvent.isConcurrencyConflict()) {
                 servConn.setModificationInfo(true, regionName, key);
                 stats.incUpdateRequest();
@@ -456,7 +448,7 @@ public class GatewayReceiverCommand extends BaseCommand {
             } catch (CancelException e) {
               // FIXME better exception hierarchy would avoid this check
               if (servConn.getCachedRegionHelper().getCache()
-                  .getCancelCriterion().cancelInProgress() != null) {
+                  .getCancelCriterion().isCancelInProgress()) {
                 if (logger.isDebugEnabled()) {
                   logger.debug("{} ignoring message of type {} from client {} because shutdown occurred during message processing.", servConn.getName(), MessageType.getString(msg.getMessageType()), servConn.getProxyID());
                 }
@@ -514,7 +506,7 @@ public class GatewayReceiverCommand extends BaseCommand {
           if (region == null) {
             handleRegionNull(servConn, regionName, batchId);
           } else {
-            clientEvent = new EntryEventImpl(eventId);
+            clientEvent = new EventIDHolder(eventId);
             if (versionTimeStamp > 0) {
               VersionTag tag = VersionTag.create(region.getVersionMember());
               tag.setIsGatewayTag(true);
@@ -524,9 +516,6 @@ public class GatewayReceiverCommand extends BaseCommand {
             }
             handleMessageRetry(region, clientEvent);
             // Destroy the entry
-            if (region.keyRequiresRegionContext()) {
-              ((KeyWithRegionContext)key).setRegionContext(region);
-            }
             try {
               AuthorizeRequest authzRequest = servConn.getAuthzRequest();
               if (authzRequest != null) {
@@ -596,7 +585,7 @@ public class GatewayReceiverCommand extends BaseCommand {
               handleRegionNull(servConn, regionName, batchId);
             } else {
 
-              clientEvent = new EntryEventImpl(eventId);
+              clientEvent = new EventIDHolder(eventId);
               
               if (versionTimeStamp > 0) {
                 VersionTag tag = VersionTag.create(region.getVersionMember());
@@ -607,9 +596,6 @@ public class GatewayReceiverCommand extends BaseCommand {
               }
               
               // Update the version tag
-              if (region.keyRequiresRegionContext()) {
-                ((KeyWithRegionContext) key).setRegionContext(region);
-              }
               try {
 
                 region.basicBridgeUpdateVersionStamp(key, callbackArg, servConn.getProxyID(), false, clientEvent);

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.util;
 
 import static org.junit.Assert.*;
@@ -49,7 +48,7 @@ import org.junit.experimental.categories.Category;
  * @see com.gemstone.gemfire.internal.util.CollectionUtils
  * @see org.junit.Assert
  * @see org.junit.Test
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(UnitTest.class)
 public class CollectionUtilsJUnitTest {

@@ -16,32 +16,20 @@
  */
 package com.gemstone.gemfire.internal.admin.remote;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.ReplyException;
-import com.gemstone.gemfire.distributed.internal.ReplyMessage;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * An instruction to all members with cache that their PR should gracefully
@@ -51,8 +39,8 @@ import com.gemstone.gemfire.internal.tcp.ConnectionTable;
 public class ShutdownAllRequest extends AdminRequest {
   
   private static final Logger logger = LogService.getLogger();
-  
-  static final long SLEEP_TIME_BEFORE_DISCONNECT_DS = Long.getLong("gemfire.sleep-before-disconnect-ds", 1000).longValue();
+
+  static final long SLEEP_TIME_BEFORE_DISCONNECT_DS = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "sleep-before-disconnect-ds", 1000).longValue();
 
   public ShutdownAllRequest() {
   }

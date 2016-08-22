@@ -16,38 +16,33 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
-
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import junit.framework.TestCase;
 
 /**
  * Tests notifications of CacheLifecycleListener from GemFireCacheImpl.
- * 
  */
 @Category(IntegrationTest.class)
 public class CacheLifecycleListenerJUnitTest  {
 
   @Test
-  public void testAddAndRemoveNull() {
+  public void testAddAndRemoveNull() throws Exception {
     GemFireCacheImpl.addCacheLifecycleListener(null);
     GemFireCacheImpl.removeCacheLifecycleListener(null);
   }
   
   @Test
-  public void testRemoveNonExistent() {
+  public void testRemoveNonExistent() throws Exception {
     final List<CacheLifecycleCallback> cacheCreatedCallbacks = new ArrayList<CacheLifecycleCallback>();
     final List<CacheLifecycleCallback> cacheClosedCallbacks = new ArrayList<CacheLifecycleCallback>();
     final TestCacheLifecycleListener listener = new TestCacheLifecycleListener(cacheCreatedCallbacks, cacheClosedCallbacks);
@@ -55,7 +50,7 @@ public class CacheLifecycleListenerJUnitTest  {
   }
   
   @Test
-  public void testCallbacks() {
+  public void testCallbacks() throws Exception {
     final List<CacheLifecycleCallback> cacheCreatedCallbacks = new ArrayList<CacheLifecycleCallback>();
     final List<CacheLifecycleCallback> cacheClosedCallbacks = new ArrayList<CacheLifecycleCallback>();
 
@@ -69,8 +64,8 @@ public class CacheLifecycleListenerJUnitTest  {
       assertTrue(cacheClosedCallbacks.isEmpty());
       
       final Properties props = new Properties();
-      props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(LOCATORS, "");
       
       final GemFireCacheImpl cache = (GemFireCacheImpl) new CacheFactory(props).create();
       try {
@@ -98,7 +93,7 @@ public class CacheLifecycleListenerJUnitTest  {
   }
 
   @Test
-  public void testRemoveBeforeCreate() {
+  public void testRemoveBeforeCreate() throws Exception {
     final List<CacheLifecycleCallback> cacheCreatedCallbacks = new ArrayList<CacheLifecycleCallback>();
     final List<CacheLifecycleCallback> cacheClosedCallbacks = new ArrayList<CacheLifecycleCallback>();
 
@@ -113,8 +108,8 @@ public class CacheLifecycleListenerJUnitTest  {
       assertTrue(cacheClosedCallbacks.isEmpty());
       
       final Properties props = new Properties();
-      props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(LOCATORS, "");
       
       final GemFireCacheImpl cache = (GemFireCacheImpl) new CacheFactory(props).create();
       try {
@@ -136,7 +131,7 @@ public class CacheLifecycleListenerJUnitTest  {
   }
   
   @Test
-  public void testRemoveBeforeClose() {
+  public void testRemoveBeforeClose() throws Exception {
     final List<CacheLifecycleCallback> cacheCreatedCallbacks = new ArrayList<CacheLifecycleCallback>();
     final List<CacheLifecycleCallback> cacheClosedCallbacks = new ArrayList<CacheLifecycleCallback>();
 
@@ -150,8 +145,8 @@ public class CacheLifecycleListenerJUnitTest  {
       assertTrue(cacheClosedCallbacks.isEmpty());
       
       final Properties props = new Properties();
-      props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(LOCATORS, "");
       
       final GemFireCacheImpl cache = (GemFireCacheImpl) new CacheFactory(props).create();
       try {
@@ -178,7 +173,7 @@ public class CacheLifecycleListenerJUnitTest  {
   }
 
   @Test
-  public void testCallbacksRepeat() {
+  public void testCallbacksRepeat() throws Exception {
     final List<CacheLifecycleCallback> cacheCreatedCallbacks = new ArrayList<CacheLifecycleCallback>();
     final List<CacheLifecycleCallback> cacheClosedCallbacks = new ArrayList<CacheLifecycleCallback>();
 
@@ -192,8 +187,8 @@ public class CacheLifecycleListenerJUnitTest  {
       assertTrue(cacheClosedCallbacks.isEmpty());
       
       final Properties props = new Properties();
-      props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(LOCATORS, "");
       
       final GemFireCacheImpl cache1 = (GemFireCacheImpl) new CacheFactory(props).create();
       try {
@@ -247,7 +242,7 @@ public class CacheLifecycleListenerJUnitTest  {
   }
 
   @Test
-  public void testAddAfterCreate() {
+  public void testAddAfterCreate() throws Exception {
     final List<CacheLifecycleCallback> cacheCreatedCallbacks = new ArrayList<CacheLifecycleCallback>();
     final List<CacheLifecycleCallback> cacheClosedCallbacks = new ArrayList<CacheLifecycleCallback>();
 
@@ -258,8 +253,8 @@ public class CacheLifecycleListenerJUnitTest  {
     assertTrue(cacheClosedCallbacks.isEmpty());
     
     final Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     
     final GemFireCacheImpl cache = (GemFireCacheImpl) new CacheFactory(props).create();
     try {
@@ -285,7 +280,7 @@ public class CacheLifecycleListenerJUnitTest  {
     }
   }
 
-  static final class CacheLifecycleCallback {
+  private static final class CacheLifecycleCallback {
     
     private final GemFireCacheImpl cache;
     private final long timeStamp;
@@ -300,7 +295,7 @@ public class CacheLifecycleListenerJUnitTest  {
     }
   }
   
-  static final class TestCacheLifecycleListener implements CacheLifecycleListener {
+  private static final class TestCacheLifecycleListener implements CacheLifecycleListener {
 
     private final List<CacheLifecycleCallback> cacheCreatedCallbacks;
     private final List<CacheLifecycleCallback> cacheClosedCallbacks;

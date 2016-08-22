@@ -21,7 +21,7 @@ package com.gemstone.gemfire.internal.lang;
  * init method.
  * <p/>
  * @see com.gemstone.gemfire.internal.lang.Initable
- * @since 8.0
+ * @since GemFire 8.0
  */
 public class Initializer {
 

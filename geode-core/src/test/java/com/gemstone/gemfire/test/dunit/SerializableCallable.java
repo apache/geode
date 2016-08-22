@@ -39,7 +39,7 @@ import java.util.concurrent.Callable;
  *       }
  *      });
  *   assertNull(vm0.invoke(putMethod));
- *   assertEquals(value, vm1.invoke(putMethod));
+ *   assertIndexDetailsEquals(value, vm1.invoke(putMethod));
  *  }
  * </PRE>
  * 

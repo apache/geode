@@ -18,7 +18,7 @@ package com.gemstone.gemfire.internal.cache.wan;
 
 import java.util.List;
 /**
- * @since 7.0
+ * @since GemFire 7.0
  *
  */
 public interface GatewaySenderEventDispatcher {

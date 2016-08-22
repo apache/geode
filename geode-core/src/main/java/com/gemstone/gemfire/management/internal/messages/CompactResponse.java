@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.admin.remote.AdminResponse;
 /**
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 //NOTE: This is copied from com/gemstone/gemfire/internal/admin/remote/CompactResponse.java
 //and modified as per requirements. (original-author Dan Smith)

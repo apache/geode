@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.compression;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.IOException;
 
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -41,7 +50,8 @@ import com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher;
  * Sanity checks on a number of basic cluster configurations with compression turned on.
  * 
  */
-public class CompressionRegionConfigDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class CompressionRegionConfigDUnitTest extends JUnit4CacheTestCase {
   /**
    * The name of our test region.
    */
@@ -66,22 +76,17 @@ public class CompressionRegionConfigDUnitTest extends CacheTestCase {
    * Creates a new CompressionRegionOperationsDUnitTest.
    * @param name a test name.
    */
-  public CompressionRegionConfigDUnitTest(String name) {
-    super(name);
+  public CompressionRegionConfigDUnitTest() {
+    super();
   }
 
   /**
    * Sanity check using two peers sharing a replicated region.
    * @throws Exception
    */
+  @Test
   public void testReplicateRegion() throws Exception {
-    Compressor compressor = null;
-    try {
-      compressor = SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
+    Compressor compressor = new SnappyCompressor();
     assertTrue(createCompressedRegionOnVm(getVM(0), REGION_NAME, DataPolicy.REPLICATE, compressor));
     assertTrue(createCompressedRegionOnVm(getVM(1), REGION_NAME, DataPolicy.REPLICATE, compressor));
     assertNull(putUsingVM(getVM(0),KEY_1,VALUE_1));
@@ -94,14 +99,9 @@ public class CompressionRegionConfigDUnitTest extends CacheTestCase {
    * Sanity check for two peers sharing a persisted replicated region.
    * @throws Exception
    */
+  @Test
   public void testReplicatePersistentRegion() throws Exception {
-    Compressor compressor = null;
-    try {
-      compressor = SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
+    Compressor compressor = new SnappyCompressor();
     assertTrue(createCompressedRegionOnVm(getVM(0), REGION_NAME, DataPolicy.PERSISTENT_REPLICATE, compressor, DISK_STORE));
     assertTrue(createCompressedRegionOnVm(getVM(1), REGION_NAME, DataPolicy.PERSISTENT_REPLICATE, compressor));
     assertNull(putUsingVM(getVM(0),KEY_1,VALUE_1));
@@ -116,14 +116,9 @@ public class CompressionRegionConfigDUnitTest extends CacheTestCase {
   /**
    * Sanity check for two peers hosting a partitioned region.
    */
+  @Test
   public void testPartitionedRegion() {
-    Compressor compressor = null;
-    try {
-      compressor = SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
+    Compressor compressor = new SnappyCompressor();
     assertTrue(createCompressedRegionOnVm(getVM(0), REGION_NAME, DataPolicy.PARTITION, compressor));
     assertTrue(createCompressedRegionOnVm(getVM(1), REGION_NAME, DataPolicy.PARTITION, compressor));
     assertNull(putUsingVM(getVM(0),KEY_1,VALUE_1));
@@ -135,14 +130,9 @@ public class CompressionRegionConfigDUnitTest extends CacheTestCase {
   /**
    * Sanity check for two peers hosting a persistent partitioned region.
    */
+  @Test
   public void testPartitionedPersistentRegion() {
-    Compressor compressor = null;
-    try {
-      compressor = SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
+    Compressor compressor = new SnappyCompressor();
     assertTrue(createCompressedRegionOnVm(getVM(0), REGION_NAME, DataPolicy.PERSISTENT_PARTITION, compressor, DISK_STORE));
     assertTrue(createCompressedRegionOnVm(getVM(1), REGION_NAME, DataPolicy.PERSISTENT_PARTITION, compressor));
     assertNull(putUsingVM(getVM(0),KEY_1,VALUE_1));
@@ -157,14 +147,9 @@ public class CompressionRegionConfigDUnitTest extends CacheTestCase {
   /**
    * Sanity check for a non caching client and a cache server.
    */
+  @Test
   public void testClientProxyRegion() {
-    Compressor compressor = null;
-    try {
-      compressor = SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
+    Compressor compressor = new SnappyCompressor();
     assertTrue(createCompressedServerRegionOnVm(getVM(0), REGION_NAME, DataPolicy.REPLICATE, compressor));
     assertTrue(createCompressedClientRegionOnVm(getVM(1), REGION_NAME, compressor, ClientRegionShortcut.PROXY));
     assertNull(putUsingClientVM(getVM(1),KEY_1,VALUE_1));
@@ -177,14 +162,9 @@ public class CompressionRegionConfigDUnitTest extends CacheTestCase {
   /**
    * Sanity check for a caching client and a cache server.
    */
+  @Test
   public void testCachingClientProxyRegion() {
-    Compressor compressor = null;
-    try {
-      compressor = SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
+    Compressor compressor = new SnappyCompressor();
     assertTrue(createCompressedServerRegionOnVm(getVM(0), REGION_NAME, DataPolicy.REPLICATE, compressor));
     assertTrue(createCompressedClientRegionOnVm(getVM(1), REGION_NAME, compressor, ClientRegionShortcut.CACHING_PROXY));
     assertNull(putUsingClientVM(getVM(1),KEY_1,VALUE_1));

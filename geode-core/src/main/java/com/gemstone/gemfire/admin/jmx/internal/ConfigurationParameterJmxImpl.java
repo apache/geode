@@ -38,7 +38,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * ConfigurationParameterImpl. Wrap all delegate calls w/ e.printStackTrace()
  * since the HttpAdaptor devours them
  *
- * @since     3.5
+ * @since GemFire     3.5
  *
  */
 public class ConfigurationParameterJmxImpl

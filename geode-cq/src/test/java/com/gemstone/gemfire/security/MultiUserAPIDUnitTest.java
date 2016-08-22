@@ -16,16 +16,6 @@
  */
 package com.gemstone.gemfire.security;
 
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
-import static com.gemstone.gemfire.security.SecurityTestUtils.*;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
-
-import java.io.IOException;
-import java.util.Properties;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLHandshakeException;
-
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.execute.FunctionService;
@@ -33,15 +23,26 @@ import com.gemstone.gemfire.cache.query.CqAttributesFactory;
 import com.gemstone.gemfire.cache.query.CqException;
 import com.gemstone.gemfire.cache.query.CqQuery;
 import com.gemstone.gemfire.cache.query.Query;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
 import com.gemstone.gemfire.security.generator.CredentialGenerator;
 import com.gemstone.gemfire.security.generator.DummyCredentialGenerator;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-@Category(DistributedTest.class)
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
+import java.io.IOException;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.security.SecurityTestUtils.NO_EXCEPTION;
+import static com.gemstone.gemfire.test.dunit.Assert.fail;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+
+@Category({ DistributedTest.class, SecurityTest.class })
 public class MultiUserAPIDUnitTest extends ClientAuthorizationTestCase {
 
   private static final String[] serverIgnoredExceptions = {
@@ -296,7 +297,7 @@ public class MultiUserAPIDUnitTest extends ClientAuthorizationTestCase {
     }
 
     if (authenticator != null) {
-      authProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR_NAME, authenticator);
+      authProps.setProperty(ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR, authenticator);
     }
 
     return SecurityTestUtils.createCacheServer(authProps, javaProps, dsPort, locatorString, 0, NO_EXCEPTION);

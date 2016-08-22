@@ -33,7 +33,7 @@ import javax.servlet.http.HttpServletRequest;
  * Class ClusterDiskThroughput This class contains implementations for getting
  * cluster's current disk throughput details and its trend over time
  * 
- * @since version 7.0.Beta
+ * @since GemFire version 7.0.Beta
  */
 
 @Component

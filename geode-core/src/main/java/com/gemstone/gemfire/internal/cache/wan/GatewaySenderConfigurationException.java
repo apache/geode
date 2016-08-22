@@ -23,7 +23,7 @@ package com.gemstone.gemfire.internal.cache.wan;
  * An exception indicating that a gateway configuration will not work with the
  * remote side of the gateway's configuration.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
 public class GatewaySenderConfigurationException extends GatewaySenderException {

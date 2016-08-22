@@ -16,28 +16,28 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.EventTracker.BulkOpHolder;
 import com.gemstone.gemfire.internal.cache.ha.ThreadIdentifier;
 import com.gemstone.gemfire.test.dunit.Assert;
@@ -46,14 +46,16 @@ import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests <code>EventTracker</code> management.
  *
- *
- * @since 6.5
+ * @since GemFire 6.5
  */
-public class EventTrackerDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class EventTrackerDUnitTest extends JUnit4CacheTestCase {
 
   /** The port on which the <code>CacheServer</code> was started in this VM */
   private static int cacheServerPort;
@@ -61,22 +63,6 @@ public class EventTrackerDUnitTest extends CacheTestCase {
   /** The <code>Cache</code>'s <code>ExpiryTask</code>'s ping interval */
   private static final String MESSAGE_TRACKING_TIMEOUT = "5000";
   
-  /**
-   * Creates a new <code>EventTrackerDUnitTest</code>
-   */
-  public EventTrackerDUnitTest(String name) {
-    super(name);
-  }
-
-  ////////  Test Methods
-  public static void caseSetUp() throws Exception {
-    disconnectAllFromDS();
-  }
-
-  public static void caseTearDown() throws Exception {
-    disconnectAllFromDS();
-  }
-
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
@@ -86,6 +72,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
    * Tests <code>EventTracker</code> is created and destroyed when a <code>Region</code> is created 
    * and destroyed.
    */
+  @Test
   public void testEventTrackerCreateDestroy() throws CacheException {
     // Verify the Cache's ExpiryTask contains no EventTrackers
     GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
@@ -124,6 +111,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
   /**
    * Tests adding threads to an <code>EventTracker</code>.
    */
+  @Test
   public void testEventTrackerAddThreadIdentifier() throws CacheException {
     Host host = Host.getHost(0);
     VM serverVM = host.getVM(0);
@@ -194,6 +182,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
   /**
    * Tests adding events to and removing events from an <code>EventTracker</code>.
    */
+  @Test
   public void testEventTrackerAddRemoveThreadIdentifier() throws CacheException {
     Host host = Host.getHost(0);
     VM serverVM = host.getVM(0);
@@ -204,7 +193,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
     serverVM.invoke(new CacheSerializableRunnable("Create server") {
       public void run2() throws CacheException {
         // Set the message tracking timeout
-        System.setProperty("gemfire.messageTrackingTimeout", MESSAGE_TRACKING_TIMEOUT);
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "messageTrackingTimeout", MESSAGE_TRACKING_TIMEOUT);
         
         // Create a distributed Region
         AttributesFactory factory = new AttributesFactory();
@@ -277,6 +266,7 @@ public class EventTrackerDUnitTest extends CacheTestCase {
    * Test to make sure we don't leak put all events in the event tracker
    * after multiple putAlls
    */
+  @Test
   public void testPutAllHoldersInEventTracker() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

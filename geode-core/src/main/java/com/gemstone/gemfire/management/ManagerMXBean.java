@@ -19,15 +19,18 @@ package com.gemstone.gemfire.management;
 import javax.management.JMException;
 
 import com.gemstone.gemfire.management.internal.Manager;
-
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
 
 /**
  * MBean that provides access to information and management functionality for a
  * {@link Manager}.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
+@ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
 public interface ManagerMXBean {
 
   /**
@@ -42,6 +45,7 @@ public interface ManagerMXBean {
    * 
    * @return True if the manager service was successfully started, false otherwise.
    */
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public boolean start() throws JMException;
 
   /**
@@ -49,6 +53,7 @@ public interface ManagerMXBean {
    * 
    * @return True if the manager service was successfully stopped, false otherwise.
    */
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public boolean stop() throws JMException;
 
   /**
@@ -62,6 +67,7 @@ public interface ManagerMXBean {
    * @param pulseURL
    *          The URL for the Pulse application.
    */
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.WRITE)
   public void setPulseURL(String pulseURL);
 
   /**
@@ -78,5 +84,6 @@ public interface ManagerMXBean {
    * @param message
    *          The status message.
    */
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.WRITE)
   public void setStatusMessage(String message);
 }

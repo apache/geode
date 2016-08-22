@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -42,7 +51,8 @@ import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation.EntryVersi
  * 
  * 
  */
-public class BackwardCompatibilitySerializationDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTestCase {
 
   private transient ByteArrayOutputStream baos;
   private transient ByteArrayInputStream bais;
@@ -56,8 +66,8 @@ public class BackwardCompatibilitySerializationDUnitTest extends CacheTestCase {
 
   public TestMessage msg = new TestMessage();
 
-  public BackwardCompatibilitySerializationDUnitTest(String name) {
-    super(name);
+  public BackwardCompatibilitySerializationDUnitTest() {
+    super();
   }
 
   @Override
@@ -166,15 +176,6 @@ public class BackwardCompatibilitySerializationDUnitTest extends CacheTestCase {
     constdsfids.add(new Byte(DataSerializableFixedID.UNDEFINED).intValue());
     constdsfids.add(new Byte(DataSerializableFixedID.RESULTS_BAG).intValue());
     constdsfids.add(new Byte(DataSerializableFixedID.GATEWAY_EVENT_IMPL_66)
-        .intValue());
-    constdsfids.add(new Byte(DataSerializableFixedID.SQLF_TYPE).intValue());
-    constdsfids.add(new Byte(DataSerializableFixedID.SQLF_DVD_OBJECT)
-        .intValue());
-    constdsfids.add(new Byte(DataSerializableFixedID.SQLF_GLOBAL_ROWLOC)
-        .intValue());
-    constdsfids.add(new Byte(DataSerializableFixedID.SQLF_GEMFIRE_KEY)
-        .intValue());
-    constdsfids.add(new Byte(DataSerializableFixedID.SQLF_FORMATIBLEBITSET)
         .intValue());
     constdsfids
         .add(new Short(DataSerializableFixedID.TOKEN_INVALID).intValue());

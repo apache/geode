@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheLoader;
@@ -35,17 +44,18 @@ import com.gemstone.gemfire.test.dunit.Wait;
  *
  * @see MultiVMRegionTestCase#testRemoteCacheLoader
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public abstract class CacheLoaderTestCase
   extends CacheWriterTestCase {
 
-  public CacheLoaderTestCase(String name) {
-    super(name);
+  public CacheLoaderTestCase() {
+    super();
   }
 
   ///////////////////////  Test Methods  ///////////////////////
 
+  @Test
   public void testCacheLoader() throws CacheException {
     final String name = this.getUniqueName();
     final Object key = this.getUniqueName();
@@ -119,15 +129,15 @@ public abstract class CacheLoaderTestCase
 //        public Object load2(LoaderHelper helper)
 //          throws CacheLoaderException {
 //
-//          assertEquals(key, helper.getKey());
-//          assertEquals(name, helper.getRegion().getName());
+//          assertIndexDetailsEquals(key, helper.getKey());
+//          assertIndexDetailsEquals(name, helper.getRegion().getName());
 //
 //          try {
 //            RegionAttributes attrs =
 //              helper.getRegion().getAttributes();
 //            if (attrs.getScope().isDistributed()) {
 //              Object result = helper.netSearch(false);
-//              assertEquals(value, result);
+//              assertIndexDetailsEquals(value, result);
 //              return result;
 //            }
 //
@@ -158,8 +168,8 @@ public abstract class CacheLoaderTestCase
 ////            public Object load2(LoaderHelper helper)
 ////              throws CacheLoaderException {
 ////
-////              assertEquals(key, helper.getKey());
-////              assertEquals(name, helper.getRegion().getName());
+////              assertIndexDetailsEquals(key, helper.getKey());
+////              assertIndexDetailsEquals(name, helper.getRegion().getName());
 ////              return value;
 ////            }
 ////          };
@@ -174,15 +184,16 @@ public abstract class CacheLoaderTestCase
 //    });
 //
 //
-//    assertEquals(value, region.get(key));
+//    assertIndexDetailsEquals(value, region.get(key));
 //    assertTrue(loader.wasInvoked());
-//    assertEquals(value, region.getEntry(key).getValue());
+//    assertIndexDetailsEquals(value, region.getEntry(key).getValue());
 //  }
 
   /**
    * Tests what happens when a {@link CacheLoader} returns
    * <code>null</code> from its {@link CacheLoader#load load} method.
    */
+  @Test
   public void testCacheLoaderNull() throws CacheException {
     TestCacheLoader loader = new TestCacheLoader() {
         public Object load2(LoaderHelper helper)
@@ -208,6 +219,7 @@ public abstract class CacheLoaderTestCase
    * Tests that a <code>CacheWriter</code> gets invoked on a
    * <code>load</code>.
    */
+  @Test
   public void testCacheWriterOnLoad() throws CacheException {
     final String name = this.getUniqueName();
     final Object key = this.getUniqueName();
@@ -269,6 +281,7 @@ public abstract class CacheLoaderTestCase
    * Tests that a <code>CacheListener</code> gets invoked on a
    * <code>load</code>.
    */
+  @Test
   public void testCacheListenerOnLoad()
     throws CacheException, InterruptedException {
 

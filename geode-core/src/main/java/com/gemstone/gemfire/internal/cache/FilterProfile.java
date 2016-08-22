@@ -73,6 +73,8 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteHashMap;
 
 /**
@@ -84,7 +86,7 @@ import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteHashMap;
  * long integers.  This reduces the size of routing information when sent
  * over the network.
  * 
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class FilterProfile implements DataSerializableFixedID {
   private static final Logger logger = LogService.getLogger();
@@ -513,20 +515,19 @@ public class FilterProfile implements DataSerializableFixedID {
   public Set registerClientInterestList(Object inputClientID,
       List keys, boolean updatesAsInvalidates) {
     Long clientID = getClientIDForMaps(inputClientID);
-    Set keysRegistered = new HashSet();
+    Set keysRegistered = new HashSet(keys);
     synchronized (interestListLock) {
-      Map<Object, Set> koi = updatesAsInvalidates?
-          getKeysOfInterestInv() : getKeysOfInterest();
-      Set interestList = koi.get(clientID);
+      Map<Object, Set> koi = updatesAsInvalidates?getKeysOfInterestInv():getKeysOfInterest();
+      CopyOnWriteHashSet interestList = (CopyOnWriteHashSet)koi.get(clientID);
       if (interestList == null) {
         interestList = new CopyOnWriteHashSet();
         koi.put(clientID, interestList);
+      } else {
+        // Get the list of keys that will be registered new, not already registered.
+        keysRegistered.removeAll(interestList.getSnapshot());
       }
-      for (Object key: keys) { 
-        if (interestList.add(key)) { 
-          keysRegistered.add(key); 
-        } 
-      } 
+      interestList.addAll(keys);
+
       if (this.region != null && this.isLocalProfile) {
         sendProfileOperation(clientID, operationType.REGISTER_KEYS, keys, updatesAsInvalidates);
       }
@@ -547,36 +548,35 @@ public class FilterProfile implements DataSerializableFixedID {
   public Set unregisterClientInterestList(Object inputClientID,
       List keys) {
     Long clientID = getClientIDForMaps(inputClientID);
-    Set keysUnregistered = new HashSet(); 
+    Set keysUnregistered = new HashSet(keys);
+    Set keysNotUnregistered = new HashSet(keys);
     synchronized (interestListLock) {
-      Set interestList = getKeysOfInterest().get(clientID);
+      CopyOnWriteHashSet interestList = (CopyOnWriteHashSet)getKeysOfInterest().get(clientID);
       if (interestList != null) {
-        for (Iterator i = keys.iterator(); i.hasNext();) { 
-          Object keyOfInterest = i.next(); 
-          if (interestList.remove(keyOfInterest)) { 
-            keysUnregistered.add(keyOfInterest); 
-          } 
-        }       
+        // Get the list of keys that are not registered but in unregister set.
+        keysNotUnregistered.removeAll(interestList.getSnapshot());
+        interestList.removeAll(keys);
+
         if (interestList.isEmpty()) {
           getKeysOfInterest().remove(clientID);
         }
       }
-      interestList = getKeysOfInterestInv().get(clientID);
+      interestList = (CopyOnWriteHashSet)getKeysOfInterestInv().get(clientID);
       if (interestList != null) {
-        for (Iterator i = keys.iterator(); i.hasNext();) { 
-          Object keyOfInterest = i.next(); 
-          if (interestList.remove(keyOfInterest)) { 
-            keysUnregistered.add(keyOfInterest); 
-          } 
-        }       
+        keysNotUnregistered.removeAll(interestList.getSnapshot());
+        interestList.removeAll(keys);
+
         if (interestList.isEmpty()) {
           getKeysOfInterestInv().remove(clientID);
         }
       }
+
       if (this.region != null && this.isLocalProfile) {
         sendProfileOperation(clientID, operationType.UNREGISTER_KEYS, keys, false);
       }
     } // synchronized
+    // Get the keys that are not unregistered.
+    keysUnregistered.removeAll(keysNotUnregistered);
     return keysUnregistered;
   }
   
@@ -1173,7 +1173,7 @@ public class FilterProfile implements DataSerializableFixedID {
       for (int idx=0; idx < size; idx++) {
         PutAllEntryData pEntry = putAllData[idx];
         if (pEntry != null) {
-          final EntryEventImpl ev = dpao.getEventForPosition(idx);
+          @Unretained final EntryEventImpl ev = dpao.getEventForPosition(idx);
           FilterRoutingInfo fri = pEntry.filterRouting;
           FilterInfo fi = null;
           if (fri != null) {
@@ -1230,7 +1230,7 @@ public class FilterProfile implements DataSerializableFixedID {
      for (int idx=0; idx < size; idx++) {
        RemoveAllEntryData pEntry = removeAllData[idx];
        if (pEntry != null) {
-         final EntryEventImpl ev = op.getEventForPosition(idx);
+         @Unretained final EntryEventImpl ev = op.getEventForPosition(idx);
          FilterRoutingInfo fri = pEntry.filterRouting;
          FilterInfo fi = null;
          if (fri != null) {

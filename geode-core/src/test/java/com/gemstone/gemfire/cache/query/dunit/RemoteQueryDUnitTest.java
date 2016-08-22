@@ -16,11 +16,21 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import cacheRunner.Portfolio;
+import cacheRunner.Position;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
@@ -38,9 +48,7 @@ import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
 import com.gemstone.gemfire.cache.query.internal.ResultsBag;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
-import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
@@ -50,25 +58,20 @@ import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
-
-import cacheRunner.Portfolio;
-import cacheRunner.Position;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests remote (client/server) query execution.
  *
- * @since 5.0.1
+ * @since GemFire 5.0.1
  */
-public class RemoteQueryDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
 
   /** The port on which the bridge server was started in this VM */
   private static int bridgeServerPort;
-
-  public RemoteQueryDUnitTest(String name) {
-    super(name);
-  }
-
-  ////////  Test Methods
 
   @Override
   public final void postSetUp() throws Exception {
@@ -83,6 +86,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
   /**
    * Tests remote predicate query execution.
    */
+  @Test
   public void testRemotePredicateQueries() throws CacheException {
 
     final String name = this.getName();
@@ -95,7 +99,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
+          config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
           InternalDistributedSystem system = getSystem(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -125,7 +129,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm1.invoke(new CacheSerializableRunnable("Create region") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          config.setProperty("mcast-port", "0");
+          config.setProperty(MCAST_PORT, "0");
           getSystem(config);
           getCache();
           AttributesFactory factory = new AttributesFactory();
@@ -199,7 +203,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
           } catch (Exception e) {
             fail("Failed executing " + queryString, e);
         }
-          assertEquals(100, results.size());
+          assertIndexDetailsEquals(100, results.size());
           assertTrue(results instanceof ResultsCollectionWrapper);
           IdComparator comparator = new IdComparator();
           Object[] resultsArray = results.toArray();
@@ -226,6 +230,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
   /**
    * Tests remote import query execution.
    */
+  @Test
   public void testRemoteImportQueries() throws CacheException {
 
     final String name = this.getName();
@@ -238,7 +243,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
+          config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
           getSystem(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -268,7 +273,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm1.invoke(new CacheSerializableRunnable("Create region") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          config.setProperty("mcast-port", "0");
+          config.setProperty(MCAST_PORT, "0");
           getSystem(config);
           getCache();
           AttributesFactory factory = new AttributesFactory();
@@ -354,6 +359,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
   /**
    * Tests remote struct query execution.
    */
+  @Test
   public void testRemoteStructQueries() throws CacheException {
 
     final String name = this.getName();
@@ -366,7 +372,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
+          config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
           getSystem(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -396,7 +402,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm1.invoke(new CacheSerializableRunnable("Create region") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          config.setProperty("mcast-port", "0");
+          config.setProperty(MCAST_PORT, "0");
           getSystem(config);
           getCache();
           AttributesFactory factory = new AttributesFactory();
@@ -480,7 +486,9 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
   /**
    * Tests remote complex query execution.
    */
-  public void __testRemoteComplexQueries() throws CacheException {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testRemoteComplexQueries() throws CacheException {
 
     final String name = this.getName();
     final Host host = Host.getHost(0);
@@ -492,7 +500,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
+          config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
           getSystem(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -629,7 +637,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm1.invoke(new CacheSerializableRunnable("Create region") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          config.setProperty("mcast-port", "0");
+          config.setProperty(MCAST_PORT, "0");
           getSystem(config);
           getCache();
           AttributesFactory factory = new AttributesFactory();
@@ -657,7 +665,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
             Assert.fail("Failed executing " + queryString, e);
           }
           LogWriterUtils.getLogWriter().fine("size: " + results.size());
-          //assertEquals(numberOfEntries, results.size());
+          //assertIndexDetailsEquals(numberOfEntries, results.size());
           assertTrue(!results.getCollectionType().allowsDuplicates() && results.getCollectionType().getElementType().isStructType());
         }
       });
@@ -674,6 +682,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
   /**
    * Tests remote full region query execution.
    */
+  @Test
   public void testRemoteFullRegionQueries() throws CacheException {
 
     final String name = this.getName();
@@ -686,7 +695,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
+          config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
           getSystem(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -716,7 +725,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm1.invoke(new CacheSerializableRunnable("Create region") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          config.setProperty("mcast-port", "0");
+          config.setProperty(MCAST_PORT, "0");
           getSystem(config);
           getCache();
           AttributesFactory factory = new AttributesFactory();
@@ -839,6 +848,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
   /**
    * Tests remote join query execution.
    */
+  @Test
   public void testRemoteJoinRegionQueries() throws CacheException {
 
     final String name = this.getName();
@@ -851,7 +861,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
+          config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
           getSystem(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -886,7 +896,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm1.invoke(new CacheSerializableRunnable("Create region") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          config.setProperty("mcast-port", "0");
+          config.setProperty(MCAST_PORT, "0");
           getSystem(config);
           getCache();
           AttributesFactory factory = new AttributesFactory();
@@ -939,6 +949,8 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
    * Tests remote query execution using a BridgeClient as the CacheWriter
    * and CacheLoader.
    */
+  @Category(FlakyTest.class) // GEODE-490: random port
+  @Test
   public void testRemoteBridgeClientQueries() throws CacheException {
 
     final String name = this.getName();
@@ -952,7 +964,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
+          config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
           getSystem(config);
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.LOCAL);
@@ -982,7 +994,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm1.invoke(new CacheSerializableRunnable("Create region") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          config.setProperty("mcast-port", "0");
+          config.setProperty(MCAST_PORT, "0");
           getSystem(config);
           PoolManager.createFactory().addServer(host0, port).setSubscriptionEnabled(true).create("clientPool");
           getCache();
@@ -997,7 +1009,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     vm2.invoke(new CacheSerializableRunnable("Create region") {
         public void run2() throws CacheException {
           Properties config = new Properties();
-          config.setProperty("mcast-port", "0");
+          config.setProperty(MCAST_PORT, "0");
           getSystem(config);
           PoolManager.createFactory().addServer(host0, port).setSubscriptionEnabled(true).create("clientPool");
           getCache();
@@ -1092,13 +1104,11 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     });
   }
 
-
   /**
    * This the dunit test for the bug no : 36434
-   * @throws Exception
    */
-
-   public void testBug36434() throws Exception
+  @Test
+  public void testBug36434() throws Exception
    {
      final String name = this.getName();
      final Host host = Host.getHost(0);
@@ -1111,7 +1121,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
      vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
          public void run2() throws CacheException {
            Properties config = new Properties();
-           config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
+           config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
            getSystem(config);
            AttributesFactory factory = new AttributesFactory();
            factory.setScope(Scope.LOCAL);
@@ -1141,7 +1151,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
      vm1.invoke(new CacheSerializableRunnable("Create region") {
          public void run2() throws CacheException {
            Properties config = new Properties();
-           config.setProperty("mcast-port", "0");
+           config.setProperty(MCAST_PORT, "0");
            getSystem(config);
            PoolManager.createFactory().addServer(host0, port).setSubscriptionEnabled(true).create("clientPool");
            getCache();
@@ -1192,17 +1202,13 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
          stopBridgeServer(getCache());
        }
      });
-
-
-
    }
 
   /**
-    * This the dunit test for the bug no : 36969
-    * @throws Exception
-    */
-
-    public void testBug36969() throws Exception
+   * This the dunit test for the bug no : 36969
+   */
+  @Test
+  public void testBug36969() throws Exception
     {
       final String name = this.getName();
       final Host host = Host.getHost(0);
@@ -1215,7 +1221,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
       vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
           public void run2() throws CacheException {
             Properties config = new Properties();
-            config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
+            config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
             getSystem(config);
             AttributesFactory factory = new AttributesFactory();
             factory.setScope(Scope.LOCAL);
@@ -1252,7 +1258,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
       vm1.invoke(new CacheSerializableRunnable("Create region") {
           public void run2() throws CacheException {
             Properties config = new Properties();
-            config.setProperty("mcast-port", "0");
+            config.setProperty(MCAST_PORT, "0");
             getSystem(config);
             PoolManager.createFactory().addServer(host0, port).setSubscriptionEnabled(true).create("clientPool");
             getCache();

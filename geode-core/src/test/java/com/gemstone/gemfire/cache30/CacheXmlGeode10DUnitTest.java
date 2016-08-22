@@ -20,8 +20,22 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.List;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.Declarable;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
@@ -30,13 +44,15 @@ import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.ResourceManagerCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 
+@Category(DistributedTest.class)
 public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
   private static final long serialVersionUID = -6437436147079728413L;
 
-  public CacheXmlGeode10DUnitTest(String name) {
-    super(name);
+  public CacheXmlGeode10DUnitTest() {
+    super();
   }
 
   
@@ -48,9 +64,10 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
   }
 
   @SuppressWarnings("rawtypes")
+  @Test
   public void testEnableOffHeapMemory() {
     try {
-      System.setProperty("gemfire."+DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + OFF_HEAP_MEMORY_SIZE, "1m");
       
       final String regionName = "testEnableOffHeapMemory";
       
@@ -74,11 +91,12 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
       assertEquals(true, ((LocalRegion)regionAfter).getOffHeap());
       regionAfter.localDestroyRegion();
     } finally {
-      System.clearProperty("gemfire."+DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME);
+      System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + OFF_HEAP_MEMORY_SIZE);
     }
   }
 
   @SuppressWarnings("rawtypes")
+  @Test
   public void testEnableOffHeapMemoryRootRegionWithoutOffHeapMemoryThrowsException() {
     final String regionName = getUniqueName();
     
@@ -105,6 +123,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
   }
   
   @SuppressWarnings({ "rawtypes", "deprecation", "unchecked" })
+  @Test
   public void testEnableOffHeapMemorySubRegionWithoutOffHeapMemoryThrowsException() {
     final String rootRegionName = getUniqueName();
     final String subRegionName = "subRegion";
@@ -144,13 +163,14 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
    * eviction-off-heap-percentage attributes
    * @throws Exception
    */
+  @Test
   public void testResourceManagerThresholds() throws Exception {
     CacheCreation cache = new CacheCreation();
     final float low = 90.0f;
     final float high = 95.0f;
 
     try {
-      System.setProperty("gemfire."+DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + OFF_HEAP_MEMORY_SIZE, "1m");
 
       Cache c;
       ResourceManagerCreation rmc = new ResourceManagerCreation();
@@ -160,8 +180,8 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
       testXml(cache);
       {
         c = getCache();
-        assertEquals(low, c.getResourceManager().getEvictionOffHeapPercentage());
-        assertEquals(high, c.getResourceManager().getCriticalOffHeapPercentage());
+        assertEquals(low, c.getResourceManager().getEvictionOffHeapPercentage(),0);
+        assertEquals(high, c.getResourceManager().getCriticalOffHeapPercentage(),0);
       }
       closeCache();
       
@@ -173,8 +193,8 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
       testXml(cache);
       {
         c = getCache();
-        assertEquals(low, c.getResourceManager().getEvictionOffHeapPercentage());
-        assertEquals(low + 1, c.getResourceManager().getCriticalOffHeapPercentage());
+        assertEquals(low, c.getResourceManager().getEvictionOffHeapPercentage(),0);
+        assertEquals(low + 1, c.getResourceManager().getCriticalOffHeapPercentage(),0);
       }
       closeCache();
   
@@ -200,8 +220,8 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
       testXml(cache);
       {
         c = getCache();
-        assertEquals(0f, c.getResourceManager().getEvictionOffHeapPercentage());
-        assertEquals(low, c.getResourceManager().getCriticalOffHeapPercentage());
+        assertEquals(0f, c.getResourceManager().getEvictionOffHeapPercentage(),0);
+        assertEquals(low, c.getResourceManager().getCriticalOffHeapPercentage(),0);
       }
       closeCache();
   
@@ -213,8 +233,8 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
       testXml(cache);
       {
         c = getCache();
-        assertEquals(low, c.getResourceManager().getEvictionOffHeapPercentage());
-        assertEquals(0f, c.getResourceManager().getCriticalOffHeapPercentage());
+        assertEquals(low, c.getResourceManager().getEvictionOffHeapPercentage(),0);
+        assertEquals(0f, c.getResourceManager().getCriticalOffHeapPercentage(),0);
       }
       closeCache();
   
@@ -225,10 +245,80 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
       cache.setResourceManagerCreation(rmc);
       testXml(cache);
       c = getCache();
-      assertEquals(0f, c.getResourceManager().getEvictionOffHeapPercentage());
-      assertEquals(0f, c.getResourceManager().getCriticalOffHeapPercentage());
+      assertEquals(0f, c.getResourceManager().getEvictionOffHeapPercentage(),0);
+      assertEquals(0f, c.getResourceManager().getCriticalOffHeapPercentage(),0);
     } finally {
-      System.clearProperty("gemfire."+DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME);
+      System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + OFF_HEAP_MEMORY_SIZE);
     }
   }
+
+  @SuppressWarnings("rawtypes")
+  @Test
+  public void testAsyncEventQueueIsForwardExpirationDestroyAttribute() {
+
+    final String regionName = "testAsyncEventQueueIsEnableEvictionAndExpirationAttribute";
+
+    // Create AsyncEventQueue with Listener
+    final CacheCreation cache = new CacheCreation();
+    AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
+
+
+    AsyncEventListener listener = new MyAsyncEventListenerGeode10();
+
+    // Test for default forwardExpirationDestroy attribute value (which is false)
+    String aeqId1 = "aeqWithDefaultFED";
+    factory.create(aeqId1,listener);
+    AsyncEventQueue aeq1 = cache.getAsyncEventQueue(aeqId1);
+    assertFalse(aeq1.isForwardExpirationDestroy());
+
+    // Test by setting forwardExpirationDestroy attribute value.
+    String aeqId2 = "aeqWithFEDsetToTrue";
+    factory.setForwardExpirationDestroy(true);
+    factory.create(aeqId2,listener);
+
+    AsyncEventQueue aeq2 = cache.getAsyncEventQueue(aeqId2);
+    assertTrue(aeq2.isForwardExpirationDestroy());
+
+    // Create region and set the AsyncEventQueue
+    final RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
+    attrs.addAsyncEventQueueId(aeqId2);
+
+    final Region regionBefore = cache.createRegion(regionName, attrs);
+    assertNotNull(regionBefore);
+    assertTrue(regionBefore.getAttributes().getAsyncEventQueueIds().size() == 1);
+
+    testXml(cache);
+
+    final Cache c = getCache();
+    assertNotNull(c);
+
+    aeq1 = c.getAsyncEventQueue(aeqId1);
+    assertFalse(aeq1.isForwardExpirationDestroy());
+
+    aeq2 = c.getAsyncEventQueue(aeqId2);
+    assertTrue(aeq2.isForwardExpirationDestroy());
+
+    final Region regionAfter = c.getRegion(regionName);
+    assertNotNull(regionAfter);
+    assertTrue(regionAfter.getAttributes().getAsyncEventQueueIds().size() == 1);
+
+    regionAfter.localDestroyRegion();
+
+    // Clear AsyncEventQueues.
+    c.close();
+  }
+
+  public static class MyAsyncEventListenerGeode10 implements AsyncEventListener, Declarable {
+
+    public boolean processEvents(List<AsyncEvent> events) {
+      return true;
+    }
+
+    public void close() {
+    }
+
+    public void init(Properties properties) {
+    }
+  }
+
 }

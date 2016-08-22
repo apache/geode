@@ -16,11 +16,21 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.concurrent;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.EntryExistsException;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.wan.BatchException70;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
@@ -32,13 +42,14 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
  * the we create concurrent serial GatewaySender with concurrency of 4
  *
  */
+@Category(DistributedTest.class)
 public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
 
   /**
    * @param name
    */
-  public ConcurrentWANPropogation_1_DUnitTest(String name) {
-    super(name);
+  public ConcurrentWANPropogation_1_DUnitTest() {
+    super();
   }
 
   private static final long serialVersionUID = 1L;
@@ -47,6 +58,7 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
    * All the test cases are similar to SerialWANPropogationDUnitTest
    * @throws Exception
    */
+  @Test
   public void testReplicatedSerialPropagation_withoutRemoteSite() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
@@ -84,8 +96,8 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.createReplicatedRegion(
       getTestMethodName() + "_RR", null, isOffHeap() ));
   
-    vm2.invoke(() -> WANTestBase.createReceiver(nyPort ));
-    vm3.invoke(() -> WANTestBase.createReceiver(nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(() -> WANTestBase.createReceiver());
     
     vm4.invoke(() -> WANTestBase.validateRegionSize(
         getTestMethodName() + "_RR", 1000 ));
@@ -95,12 +107,13 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
         getTestMethodName() + "_RR", 1000 ));
   }
   
+  @Test
   public void testReplicatedSerialPropagation() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -135,6 +148,7 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
   }
   
   
+  @Test
   public void testReplicatedSerialPropagationWithLocalSiteClosedAndRebuilt() throws Exception {
     IgnoredException.addIgnoredException("Broken pipe");
     IgnoredException.addIgnoredException("Connection reset");
@@ -143,7 +157,7 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -224,13 +238,14 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
    * 
    * @throws Exception
    */
+  @Test
   public void testReplicatedSerialPropagationWithLocalRegionDestroy() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     //these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
     //these are part of local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -304,13 +319,14 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
    * 
    * @throws Exception
    */
+  @Test
   public void testReplicatedSerialPropagationWithRemoteRegionDestroy() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     //these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
 
     //these are part of local site
@@ -373,13 +389,14 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
    * 
    * @throws Exception
    */
+  @Test
   public void testReplicatedSerialPropagationWithRemoteRegionDestroy2() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     //these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     //these are part of local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -450,6 +467,7 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
 
   }
 
+  @Test
   public void testReplicatedSerialPropagationWithRemoteRegionDestroy3()
       throws Exception {
     final String senderId = "ln";
@@ -457,7 +475,7 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
     // these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     // these are part of local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -530,18 +548,18 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
           getTestMethodName() + "_RR_1", 1000 ));
     } finally {
       System.setProperty(
-          "gemfire.GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION", "False");
+          DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION", "False");
       vm4.invoke(new CacheSerializableRunnable("UnSetting system property ") {
         public void run2() throws CacheException {
           System.setProperty(
-              "gemfire.GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION", "False");
+              DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION", "False");
         }
       });
 
       vm5.invoke(new CacheSerializableRunnable("UnSetting system property ") {
         public void run2() throws CacheException {
           System.setProperty(
-              "gemfire.GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION", "False");
+              DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION", "False");
         }
       });
     }

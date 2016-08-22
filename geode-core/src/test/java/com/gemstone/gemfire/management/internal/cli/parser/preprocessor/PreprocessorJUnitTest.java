@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.cli.parser.preprocessor;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -24,13 +24,10 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * 
  * Test for Preprocessor
- * 
- *
  */
 @Category(UnitTest.class)
-public class PreprocessorJUnitTest extends TestCase{
+public class PreprocessorJUnitTest {
   
   @Test
   public void test1Arg() {

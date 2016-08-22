@@ -39,7 +39,10 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ByteSourceJUnitTest {
-  
+
+  /**
+   * Override as needed in subclass.
+   */
   protected ByteSource createByteSource(byte[] bytes) {
     return ByteSourceFactory.wrap(bytes);
   }
@@ -617,6 +620,9 @@ public class ByteSourceJUnitTest {
     }
   }
 
+  /**
+   * Override as needed in subclass.
+   */
   protected boolean isTestOffHeap() {
     return false;
   }

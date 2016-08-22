@@ -16,6 +16,14 @@
  */
 package com.gemstone.gemfire.cache.management;
 
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+
+import javax.management.Notification;
+import javax.management.NotificationEmitter;
+import javax.management.NotificationListener;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryPoolMXBean;
@@ -25,19 +33,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.management.Notification;
-import javax.management.NotificationEmitter;
-import javax.management.NotificationListener;
-
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.admin.DistributedSystemConfig;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
  * An test class for exploring the various notification listener behaviors
@@ -46,7 +42,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
  * 
  * java -cp geode-dependencies.jar:. -Dgemfire.log-file=system.log -Dgemfire.statistic-archive-file=statsArchive.gfs com.gemstone.gemfire.cache.control.MXMemoryPoolListenerExample  
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public class MXMemoryPoolListenerExample implements NotificationListener {
   private AtomicBoolean critical = new AtomicBoolean();
@@ -105,11 +101,11 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
     }
 
     Properties dsProps = new Properties();
-    dsProps.setProperty(DistributedSystemConfig.MCAST_PORT_NAME, "0"); // Loner
-    dsProps.setProperty(DistributedSystemConfig.LOG_LEVEL_NAME, "info");
-    dsProps.setProperty(DistributionConfig.STATISTIC_SAMPLE_RATE_NAME, "200");
-    dsProps.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
-    dsProps.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
+    dsProps.setProperty(MCAST_PORT, "0"); // Loner
+    dsProps.setProperty(ConfigurationProperties.LOG_LEVEL, "info");
+    dsProps.setProperty(ConfigurationProperties.STATISTIC_SAMPLE_RATE, "200");
+    dsProps.setProperty(ConfigurationProperties.ENABLE_TIME_STATISTICS, "true");
+    dsProps.setProperty(ConfigurationProperties.STATISTIC_SAMPLING_ENABLED, "true");
     DistributedSystem ds = DistributedSystem.connect(dsProps);  
     final LogWriter logger = ds.getLogWriter();
 

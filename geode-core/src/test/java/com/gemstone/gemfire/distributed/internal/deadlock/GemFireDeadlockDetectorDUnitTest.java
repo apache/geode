@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.distributed.internal.deadlock;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -23,6 +32,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.execute.Function;
@@ -42,16 +53,13 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-/**
- *
- */
-public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
   
   private static final Set<Thread> stuckThreads = Collections.synchronizedSet(new HashSet<Thread>());
-  
-  
-  
+
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
@@ -75,10 +83,11 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
     });
   }
 
-  public GemFireDeadlockDetectorDUnitTest(String name) {
-    super(name);
+  public GemFireDeadlockDetectorDUnitTest() {
+    super();
   }
   
+  @Test
   public void testNoDeadlock() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -97,7 +106,8 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
   
   private static final Lock lock = new ReentrantLock();
   
-  
+  @Category(FlakyTest.class) // GEODE-516 & GEODE-576: async actions, thread sleeps, time sensitive
+  @Test
   public void testDistributedDeadlockWithFunction() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -144,6 +154,8 @@ public class GemFireDeadlockDetectorDUnitTest extends CacheTestCase {
     });
   }
   
+  @Category(FlakyTest.class) // GEODE-1580 uses asyncs with pauses
+  @Test
   public void testDistributedDeadlockWithDLock() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

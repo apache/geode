@@ -22,7 +22,7 @@ import com.gemstone.gemfire.cache.client.ServerConnectivityException;
  * Indicates that this client cannot contact any queue servers and
  * therefore cannot perform operations that require a queue, such as
  * registering interest.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class NoQueueServersAvailableException extends ServerConnectivityException {
 

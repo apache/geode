@@ -36,7 +36,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 
 /**
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 
 public class ContunuousQueryFunction implements Function, InternalEntity {

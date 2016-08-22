@@ -20,24 +20,15 @@
  */
 package com.gemstone.gemfire.cache.query.internal;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
-import com.gemstone.gemfire.cache.query.FunctionDomainException;
-import com.gemstone.gemfire.cache.query.NameResolutionException;
-import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.Struct;
-import com.gemstone.gemfire.cache.query.TypeMismatchException;
+import com.gemstone.gemfire.cache.query.*;
 import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
 import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
+import java.util.*;
 
 /**
  * 
@@ -47,7 +38,7 @@ public abstract class AbstractGroupOrRangeJunction extends
   /** left operand */
   final CompiledValue[] _operands;
   private static  final int INDEX_RESULT_THRESHOLD_DEFAULT = 100;
-  public static final String INDX_THRESHOLD_PROP_STR = "gemfire.Query.INDEX_THRESHOLD_SIZE";
+  public static final String INDX_THRESHOLD_PROP_STR = DistributionConfig.GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE";
   private static final int indexThresholdSize = Integer.getInteger(INDX_THRESHOLD_PROP_STR, INDEX_RESULT_THRESHOLD_DEFAULT).intValue();
   private int _operator = 0;
   private CompiledValue iterOperands;

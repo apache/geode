@@ -16,67 +16,20 @@
  */
 package com.gemstone.gemfire.admin.internal;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.AdminException;
+import com.gemstone.gemfire.admin.*;
 import com.gemstone.gemfire.admin.Alert;
-import com.gemstone.gemfire.admin.AlertLevel;
 import com.gemstone.gemfire.admin.AlertListener;
-import com.gemstone.gemfire.admin.BackupStatus;
-import com.gemstone.gemfire.admin.CacheServer;
-import com.gemstone.gemfire.admin.CacheServerConfig;
-import com.gemstone.gemfire.admin.CacheVm;
-import com.gemstone.gemfire.admin.ConfigurationParameter;
-import com.gemstone.gemfire.admin.DistributedSystemConfig;
-import com.gemstone.gemfire.admin.DistributionLocator;
-import com.gemstone.gemfire.admin.DistributionLocatorConfig;
-import com.gemstone.gemfire.admin.GemFireHealth;
-import com.gemstone.gemfire.admin.ManagedEntity;
-import com.gemstone.gemfire.admin.ManagedEntityConfig;
-import com.gemstone.gemfire.admin.OperationCancelledException;
-import com.gemstone.gemfire.admin.RuntimeAdminException;
-import com.gemstone.gemfire.admin.SystemMember;
-import com.gemstone.gemfire.admin.SystemMemberCacheListener;
-import com.gemstone.gemfire.admin.SystemMembershipEvent;
-import com.gemstone.gemfire.admin.SystemMembershipListener;
 import com.gemstone.gemfire.cache.persistence.PersistentID;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.FutureCancelledException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.Banner;
-import com.gemstone.gemfire.internal.admin.ApplicationVM;
-import com.gemstone.gemfire.internal.admin.GemFireVM;
-import com.gemstone.gemfire.internal.admin.GfManagerAgent;
-import com.gemstone.gemfire.internal.admin.GfManagerAgentConfig;
-import com.gemstone.gemfire.internal.admin.GfManagerAgentFactory;
-import com.gemstone.gemfire.internal.admin.SSLConfig;
-import com.gemstone.gemfire.internal.admin.remote.CompactRequest;
-import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
-import com.gemstone.gemfire.internal.admin.remote.MissingPersistentIDsRequest;
-import com.gemstone.gemfire.internal.admin.remote.PrepareRevokePersistentIDRequest;
-import com.gemstone.gemfire.internal.admin.remote.RemoteApplicationVM;
-import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
-import com.gemstone.gemfire.internal.admin.remote.RevokePersistentIDRequest;
-import com.gemstone.gemfire.internal.admin.remote.ShutdownAllRequest;
+import com.gemstone.gemfire.internal.admin.*;
+import com.gemstone.gemfire.internal.admin.remote.*;
 import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberPattern;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
@@ -87,11 +40,21 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppender;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppenders;
 import com.gemstone.gemfire.internal.util.concurrent.FutureResult;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.*;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Represents a GemFire distributed system for remote administration/management.
  *
- * @since     3.5
+ * @since GemFire     3.5
  */
 public class AdminDistributedSystemImpl
 implements com.gemstone.gemfire.admin.AdminDistributedSystem,
@@ -215,8 +178,12 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
     } else {      
       // LOG: create LogWriterLogger
       this.logWriter = LogWriterFactory.createLogWriterLogger(false, false, this.config.createLogConfig(), false);
-      // LOG: changed statement from config to info
-      this.logWriter.info(Banner.getString(null));
+      if (!Boolean.getBoolean(InternalLocator.INHIBIT_DM_BANNER)) {
+        // LOG: changed statement from config to info
+        this.logWriter.info(Banner.getString(null));
+      } else {
+        logger.debug("skipping banner - " + InternalLocator.INHIBIT_DM_BANNER + " is set to true");
+      }
       // Set this log writer in DistributedSystemConfigImpl
       this.config.setInternalLogWriter(this.logWriter);
     }
@@ -597,16 +564,16 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
     // set some config parms to match this system...
     ConfigurationParameter[] configParms = new ConfigurationParameter[] {
         new ConfigurationParameterImpl(
-            DistributionConfig.MCAST_PORT_NAME, 
+            MCAST_PORT,
             Integer.valueOf(this.config.getMcastPort())),
         new ConfigurationParameterImpl(
-            DistributionConfig.LOCATORS_NAME, 
+            LOCATORS,
             this.config.getLocators()),
         new ConfigurationParameterImpl(
-            DistributionConfig.MCAST_ADDRESS_NAME, 
+            MCAST_ADDRESS,
             InetAddressUtil.toInetAddress(this.config.getMcastAddress())),
         new ConfigurationParameterImpl(
-            DistributionConfig.DISABLE_TCP_NAME,
+            DISABLE_TCP,
             Boolean.valueOf(this.config.getDisableTcp()) ),
       };
     member.setConfiguration(configParms);
@@ -949,7 +916,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
    * Returns the internal admin API's agent used for administering
    * this <code>AdminDistributedSystem</code>.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public GfManagerAgent getAdminAgent() {
     return this.gfManagerAgent;
@@ -1302,7 +1269,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
    * @return constructed SystemMember instance
    * @throws com.gemstone.gemfire.admin.AdminException
    *           if construction of SystemMember instance fails
-   * @since 6.5
+   * @since GemFire 6.5
    */
   protected SystemMember createSystemMember(InternalDistributedMember member)
     throws com.gemstone.gemfire.admin.AdminException {
@@ -2016,7 +1983,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
    * @return array of CacheServer(s) having the queue for the durable client
    * @throws AdminException
    * 
-   * @since 5.6
+   * @since GemFire 5.6
    */
   public CacheServer[] getCacheServers(String durableClientId)
       throws AdminException

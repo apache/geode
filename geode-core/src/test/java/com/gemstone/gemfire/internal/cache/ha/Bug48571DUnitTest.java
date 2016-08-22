@@ -16,9 +16,16 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Region;
@@ -28,39 +35,34 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class Bug48571DUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
 
   private static VM server = null;
   private VM client = null;
   private static GemFireCacheImpl cache = null;
   
-  private static final String region = "Bug48571DUnitTest_region";
+  private static final String region = Bug48571DUnitTest.class.getSimpleName() + "_region";
   private static int numOfCreates = 0;
   private static int numOfUpdates = 0;
   private static int numOfInvalidates = 0;
   private static boolean lastKeyReceived = false;
-
-  public Bug48571DUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -87,6 +89,32 @@ public class Bug48571DUnitTest extends DistributedTestCase {
     }
   }
 
+  private static void verifyProxyHasBeenPaused() {
+    WaitCriterion criterion = new WaitCriterion() {
+      @Override
+      public boolean done() {
+        CacheClientNotifier ccn = CacheClientNotifier.getInstance();
+        Collection<CacheClientProxy> ccProxies = ccn.getClientProxies();
+
+        Iterator<CacheClientProxy> itr = ccProxies.iterator();
+
+        while (itr.hasNext()) {
+          CacheClientProxy ccp = itr.next();
+          System.out.println("proxy status " + ccp.getState());
+          if (ccp.isPaused())
+            return true;
+        }
+        return false;
+      }
+      @Override
+      public String description() {
+        return "Proxy has not paused yet";
+      }
+    };
+    Wait.waitForCriterion(criterion, 15 * 1000, 200, true);
+  }
+  
+  @Test
   public void testStatsMatchWithSize() throws Exception {
     IgnoredException.addIgnoredException("Unexpected IOException||Connection reset");
     // start a server
@@ -97,8 +125,10 @@ public class Bug48571DUnitTest extends DistributedTestCase {
     server.invoke(() -> Bug48571DUnitTest.doPuts());
     // close durable client
     client.invoke(() -> Bug48571DUnitTest.closeClientCache());
+    
+    server.invoke("verifyProxyHasBeenPaused", () -> verifyProxyHasBeenPaused() );
     // resume puts on server, add another 100.
-    server.invokeAsync(() -> Bug48571DUnitTest.resumePuts());
+    server.invokeAsync(() -> Bug48571DUnitTest.resumePuts()); // TODO: join or await result
     // start durable client
     client.invoke(() -> Bug48571DUnitTest.createClientCache(client.getHost(), port));
     // wait for full queue dispatch
@@ -107,18 +137,17 @@ public class Bug48571DUnitTest extends DistributedTestCase {
     server.invoke(() -> Bug48571DUnitTest.verifyStats());
   }
 
-
   public static int createServerCache() throws Exception {
     Properties props = new Properties();
-    props.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-    props.setProperty("log-file", "server_" + OSProcess.getId() + ".log");
-    props.setProperty("log-level", "info");
-    props.setProperty("statistic-archive-file", "server_" + OSProcess.getId()
+    props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+    props.setProperty(LOG_FILE, "server_" + OSProcess.getId() + ".log");
+    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(STATISTIC_ARCHIVE_FILE, "server_" + OSProcess.getId()
         + ".gfs");
-    props.setProperty("statistic-sampling-enabled", "true");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
     CacheFactory cf = new CacheFactory(props);
 
-    DistributedSystem ds = new Bug48571DUnitTest("Bug48571DUnitTest").getSystem(props);
+    DistributedSystem ds = new Bug48571DUnitTest().getSystem(props);
     ds.disconnect();
 
     cache = (GemFireCacheImpl)cf.create();
@@ -127,9 +156,8 @@ public class Bug48571DUnitTest extends DistributedTestCase {
     rf.setConcurrencyChecksEnabled(false);
     rf.create(region);
 
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     CacheServer server1 = cache.addCacheServer();
-    server1.setPort(port);
+    server1.setPort(0);
     server1.start();
     return server1.getPort();
   }
@@ -141,16 +169,16 @@ public class Bug48571DUnitTest extends DistributedTestCase {
   public static void createClientCache(Host host, Integer port) throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    props.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME, "durable-48571");
-    props.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, "300000");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(DURABLE_CLIENT_ID, "durable-48571");
+    props.setProperty(DURABLE_CLIENT_TIMEOUT, "300000");
 
-    props.setProperty("log-file", "client_" + OSProcess.getId() + ".log");
-    props.setProperty("log-level", "info");
-    props.setProperty("statistic-archive-file", "client_" + OSProcess.getId()
+    props.setProperty(LOG_FILE, "client_" + OSProcess.getId() + ".log");
+    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(STATISTIC_ARCHIVE_FILE, "client_" + OSProcess.getId()
         + ".gfs");
-    props.setProperty("statistic-sampling-enabled", "true");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
     ClientCacheFactory ccf = new ClientCacheFactory(props);
     ccf.setPoolSubscriptionEnabled(true);
@@ -158,7 +186,7 @@ public class Bug48571DUnitTest extends DistributedTestCase {
     ccf.setPoolSubscriptionRedundancy(0);
     ccf.addPoolServer(host.getHostName(), port);
 
-    DistributedSystem ds = new Bug48571DUnitTest("Bug48571DUnitTest").getSystem(props);
+    DistributedSystem ds = new Bug48571DUnitTest().getSystem(props);
     ds.disconnect();
 
     cache = (GemFireCacheImpl) ccf.create();
@@ -246,7 +274,6 @@ public class Bug48571DUnitTest extends DistributedTestCase {
     };
     Wait.waitForCriterion(wc, 60*1000, 500, true);
   }
-
 
   public static void verifyStats() throws Exception {
     CacheClientNotifier ccn = CacheClientNotifier.getInstance();

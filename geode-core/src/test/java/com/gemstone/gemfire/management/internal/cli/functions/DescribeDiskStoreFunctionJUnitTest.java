@@ -26,6 +26,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
+import org.jmock.lib.legacy.ClassImposteriser;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStore;
@@ -49,16 +58,6 @@ import com.gemstone.gemfire.management.internal.cli.domain.DiskStoreDetails;
 import com.gemstone.gemfire.management.internal.cli.util.DiskStoreNotFoundException;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import org.apache.logging.log4j.Logger;
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
-
 /**
  * The DescribeDiskStoreFunctionJUnitTest test suite class tests the contract and functionality of the
  * DescribeDiskStoreFunction class.
@@ -70,7 +69,7 @@ import org.junit.experimental.categories.Category;
  * @see org.jmock.Mockery
  * @see org.junit.Assert
  * @see org.junit.Test
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings({ "null", "unused" })
 @Category(UnitTest.class)
@@ -92,7 +91,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     mockContext = null;
   }
 
-  protected void assertAsyncEventQueueDetails(final Set<DiskStoreDetails.AsyncEventQueueDetails> expectedAsyncEventQueueDetailsSet, final DiskStoreDetails diskStoreDetails) {
+  private void assertAsyncEventQueueDetails(final Set<DiskStoreDetails.AsyncEventQueueDetails> expectedAsyncEventQueueDetailsSet, final DiskStoreDetails diskStoreDetails) {
     int actualCount = 0;
 
     for (final DiskStoreDetails.AsyncEventQueueDetails actualAsyncEventQueueDetails : diskStoreDetails.iterateAsyncEventQueues()) {
@@ -109,7 +108,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     assertEquals(expectedAsyncEventQueueDetailsSet.size(), actualCount);
   }
 
-  protected void assertCacheServerDetails(final Set<DiskStoreDetails.CacheServerDetails> expectedCacheServerDetailsSet, final DiskStoreDetails diskStoreDetails) {
+  private void assertCacheServerDetails(final Set<DiskStoreDetails.CacheServerDetails> expectedCacheServerDetailsSet, final DiskStoreDetails diskStoreDetails) {
     int actualCount = 0;
 
     for (final DiskStoreDetails.CacheServerDetails actualCacheServerDetails : diskStoreDetails.iterateCacheServers()) {
@@ -129,7 +128,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     assertEquals(expectedCacheServerDetailsSet.size(), actualCount);
   }
 
-  protected void assertGatewayDetails(final Set<DiskStoreDetails.GatewayDetails> expectedGatewayDetailsSet, final DiskStoreDetails diskStoreDetails) {
+  private void assertGatewayDetails(final Set<DiskStoreDetails.GatewayDetails> expectedGatewayDetailsSet, final DiskStoreDetails diskStoreDetails) {
     int actualCount = 0;
 
     for (final DiskStoreDetails.GatewayDetails actualGatewayDetails : diskStoreDetails.iterateGateways()) {
@@ -148,7 +147,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     assertEquals(expectedGatewayDetailsSet.size(), actualCount);
   }
 
-  protected void assertRegionDetails(final Set<DiskStoreDetails.RegionDetails> expectedRegionDetailsSet, final DiskStoreDetails diskStoreDetails) {
+  private void assertRegionDetails(final Set<DiskStoreDetails.RegionDetails> expectedRegionDetailsSet, final DiskStoreDetails diskStoreDetails) {
     int actualCount = 0;
 
     for (final DiskStoreDetails.RegionDetails actualRegionDetails : diskStoreDetails.iterateRegions()) {
@@ -169,11 +168,11 @@ public class DescribeDiskStoreFunctionJUnitTest {
     assertEquals(expectedRegionDetailsSet.size(), actualCount);
   }
 
-  protected DiskStoreDetails.AsyncEventQueueDetails createAsyncEventQueueDetails(final String id) {
+  private DiskStoreDetails.AsyncEventQueueDetails createAsyncEventQueueDetails(final String id) {
     return new DiskStoreDetails.AsyncEventQueueDetails(id);
   }
 
-  protected DiskStoreDetails.CacheServerDetails createCacheServerDetails(final String bindAddress,
+  private DiskStoreDetails.CacheServerDetails createCacheServerDetails(final String bindAddress,
                                                                          final int port,
                                                                          final String hostname)
   {
@@ -182,11 +181,11 @@ public class DescribeDiskStoreFunctionJUnitTest {
     return cacheServerDetails;
   }
 
-  protected DescribeDiskStoreFunction createDescribeDiskStoreFunction(final Cache cache) {
+  private DescribeDiskStoreFunction createDescribeDiskStoreFunction(final Cache cache) {
     return new TestDescribeDiskStoreFunction(cache);
   }
 
-  protected File[] createFileArray(final String... locations) {
+  private File[] createFileArray(final String... locations) {
     assert locations != null : "The locations argument cannot be null!";
 
     final File[] directories = new File[locations.length];
@@ -199,18 +198,18 @@ public class DescribeDiskStoreFunctionJUnitTest {
     return directories;
   }
 
-  protected DiskStoreDetails.GatewayDetails createGatewayDetails(final String id, final boolean persistent) {
+  private DiskStoreDetails.GatewayDetails createGatewayDetails(final String id, final boolean persistent) {
     DiskStoreDetails.GatewayDetails gatewayDetails = new DiskStoreDetails.GatewayDetails(id);
     gatewayDetails.setPersistent(persistent);
     return gatewayDetails;
   }
 
-  protected int[] createIntArray(final int... array) {
+  private int[] createIntArray(final int... array) {
     assert array != null : "The array of int values cannot be null!";
     return array;
   }
 
-  protected DiskStore createMockDiskStore(final UUID diskStoreId,
+  private DiskStore createMockDiskStore(final UUID diskStoreId,
                                           final String name,
                                           final boolean allowForceCompaction,
                                           final boolean autoCompact,
@@ -258,7 +257,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     return mockDiskStore;
   }
 
-  protected DiskStoreDetails.RegionDetails createRegionDetails(final String fullPath,
+  private DiskStoreDetails.RegionDetails createRegionDetails(final String fullPath,
                                                                final String name,
                                                                final boolean persistent,
                                                                final boolean overflow)
@@ -285,7 +284,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     }
   }
 
-  protected void setupEmptyRegionsPdxGatewaysCacheServersAndAsyncEventQueues(final InternalCache mockCache) {
+  private void setupEmptyRegionsPdxGatewaysCacheServersAndAsyncEventQueues(final InternalCache mockCache) {
     mockContext.checking(new Expectations() {{
       oneOf(mockCache).rootRegions();
       will(returnValue(Collections.emptySet()));
@@ -301,7 +300,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     }});
   }
 
-  protected Set<DiskStoreDetails.RegionDetails> setupRegionsForTestExecute(final InternalCache mockCache, final String diskStoreName) {
+  private Set<DiskStoreDetails.RegionDetails> setupRegionsForTestExecute(final InternalCache mockCache, final String diskStoreName) {
     final Region mockUserRegion = mockContext.mock(Region.class, "/UserRegion");
     final Region mockSessionRegion = mockContext.mock(Region.class, "/UserRegion/SessionRegion");
     final Region mockGuestRegion = mockContext.mock(Region.class, "/GuestRegion");
@@ -367,7 +366,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
       createRegionDetails("/UserRegion/SessionRegion", "SessionRegion", false, true));
   }
 
-  protected Set<DiskStoreDetails.GatewayDetails> setupGatewaysForTestExecute(final InternalCache mockCache, final String diskStoreName) {
+  private Set<DiskStoreDetails.GatewayDetails> setupGatewaysForTestExecute(final InternalCache mockCache, final String diskStoreName) {
     final GatewaySender mockGatewaySender = mockContext.mock(GatewaySender.class, "GatewaySender");
 
     mockContext.checking(new Expectations() {{
@@ -418,7 +417,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     return CollectionUtils.asSet(createCacheServerDetails("10.127.0.1", 10123, "rodan"));
   }
 
-  protected Set<DiskStoreDetails.AsyncEventQueueDetails> setupAsyncEventQueuesForTestExecute(final InternalCache mockCache, final String diskStoreName) {
+  private Set<DiskStoreDetails.AsyncEventQueueDetails> setupAsyncEventQueuesForTestExecute(final InternalCache mockCache, final String diskStoreName) {
     final AsyncEventQueue mockAsyncEventQueue1 = mockContext.mock(AsyncEventQueue.class, "AsyncEventQueue1");
     final AsyncEventQueue mockAsyncEventQueue2 = mockContext.mock(AsyncEventQueue.class, "AsyncEventQueue2");
     final AsyncEventQueue mockAsyncEventQueue3 = mockContext.mock(AsyncEventQueue.class, "AsyncEventQueue3");
@@ -444,7 +443,6 @@ public class DescribeDiskStoreFunctionJUnitTest {
   }
 
   @Test
-  @Ignore("Removing the old WAN broke this method. Unignore when merged")
   public void testExecute() throws Throwable {
     final UUID diskStoreId = UUID.randomUUID();
 
@@ -1410,7 +1408,6 @@ public class DescribeDiskStoreFunctionJUnitTest {
     assertTrue(function.isUsingDiskStore(mockGatewaySender, mockDiskStore));
   }
 
-
   @Test
   public void testSetPdxSerializationDetails() {
     final String diskStoreName = "testDiskStore";
@@ -1532,6 +1529,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
     assertTrue(function.isUsingDiskStore(mockQueue, mockDiskStore));
   }
+
   @Test
   public void testIsAsyncEventQueueUsingDiskStoreWhenDiskStoresMismatch() {
     final AsyncEventQueue mockQueue = mockContext.mock(AsyncEventQueue.class, "AsyncEventQueue");
@@ -1633,7 +1631,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     assertAsyncEventQueueDetails(expectedAsyncEventQueueDetails, diskStoreDetails);
   }
 
-  protected static class TestDescribeDiskStoreFunction extends DescribeDiskStoreFunction {
+  private static class TestDescribeDiskStoreFunction extends DescribeDiskStoreFunction {
 
     private final Cache cache;
 
@@ -1641,12 +1639,13 @@ public class DescribeDiskStoreFunctionJUnitTest {
       this.cache = cache;
     }
 
-    @Override protected Cache getCache() {
+    @Override
+    protected Cache getCache() {
       return this.cache;
     }
   }
 
-  protected static class TestResultSender implements ResultSender {
+  private static class TestResultSender implements ResultSender {
 
     private final List<Object> results = new LinkedList<Object>();
 
@@ -1659,14 +1658,17 @@ public class DescribeDiskStoreFunctionJUnitTest {
       return Collections.unmodifiableList(results);
     }
 
+    @Override
     public void lastResult(final Object lastResult) {
       results.add(lastResult);
     }
 
+    @Override
     public void sendResult(final Object oneResult) {
       results.add(oneResult);
     }
 
+    @Override
     public void sendException(final Throwable t) {
       this.t = t;
     }

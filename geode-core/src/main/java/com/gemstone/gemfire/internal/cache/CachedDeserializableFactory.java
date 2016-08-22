@@ -17,10 +17,9 @@
 
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.IOException;
-
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.DSCODE;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.NullDataOutputStream;
@@ -28,22 +27,17 @@ import com.gemstone.gemfire.internal.cache.lru.Sizeable;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.pdx.PdxInstance;
 
+import java.io.IOException;
+
 /**
  * Produces instances that implement CachedDeserializable.
- * @since 5.0.2
+ * @since GemFire 5.0.2
  *
  */
 public class CachedDeserializableFactory {
-  public static boolean PREFER_DESERIALIZED = ! Boolean.getBoolean("gemfire.PREFER_SERIALIZED");
-  public static boolean STORE_ALL_VALUE_FORMS = Boolean.getBoolean("gemfire.STORE_ALL_VALUE_FORMS");
+  public static boolean PREFER_DESERIALIZED = !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PREFER_SERIALIZED");
+  public static boolean STORE_ALL_VALUE_FORMS = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "STORE_ALL_VALUE_FORMS");
 
-  /**
-   * Currently GFE always wants a CachedDeserializable wrapper.
-   */
-  public static final boolean preferObject() {
-    return false;
-  }
-  
   /**
    * Creates and returns an instance of CachedDeserializable that contains the
    * specified byte array.
@@ -261,7 +255,7 @@ public class CachedDeserializableFactory {
   /**
    * Return how much memory this object will consume
    * if it is in serialized form
-   * @since 6.1.2.9
+   * @since GemFire 6.1.2.9
    */
   public static int calcSerializedMemSize(Object o) {
     int result = calcSerializedSize(o);

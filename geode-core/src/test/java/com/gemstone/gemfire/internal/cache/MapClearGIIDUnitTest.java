@@ -21,7 +21,12 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
@@ -31,7 +36,6 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionEvent;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
@@ -41,70 +45,18 @@ import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-/**
- * 
- *  
- */
-public class MapClearGIIDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
 
   protected static boolean wasGIIInProgressDuringClear = false;
 
-  public MapClearGIIDUnitTest(String name) {
-    super(name);
-  } 
   volatile static Region region;
-  /*
-  public void setUp() {
-    super.setUp();
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    vm0.invoke(() -> MapClearGIIDUnitTest.createCacheVM0());
-    vm1.invoke(() -> MapClearGIIDUnitTest.createCacheVM1());
-    System.out.println("Cache created in successfully");
-  }*/
-/*
-  public void tearDown() {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    vm0.invoke(() -> MapClearGIIDUnitTest.closeCache());
-    vm1.invoke(() -> MapClearGIIDUnitTest.closeCache());
-  }*/
-
-/*  public static void createCacheVM0() throws Exception {
-    InitialImageOperation.slowImageProcessing = 200;
-    Properties mprops = new Properties();
-    // mprops.setProperty("mcast-port", "7777");
-    
-    ds = (new MapClearGIIDUnitTest("Clear")).getSystem(mprops);
-    //ds = DistributedSystem.connect(props);
-    cache = CacheFactory.create(ds);
-    CacheObserverImpl observer = new CacheObserverImpl();
-    CacheObserverHolder.setInstance(observer);
-    LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
-  } //end of create cache for VM0
-
-  public static void createCacheVM1() throws Exception {
-    Properties mprops = new Properties();
-    // mprops.setProperty("mcast-port", "7777");
-    ds = (new MapClearGIIDUnitTest("Clear")).getSystem(mprops);
-    // ds = DistributedSystem.connect(null);
-    cache = CacheFactory.create(ds);
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setDataPolicy(DataPolicy.REPLICATE);
-    RegionAttributes attr = factory.create();
-    region = cache.createRegion("map", attr);
-    //region = region.createSubregion("map",attr);
-    for (int i = 0; i < 10000; ++i) {
-      region.put("" + i, "" + i);
-    }
-  }*/
 
   public static boolean checkImageStateFlag() throws Exception {
-    Region rgn = new MapClearGIIDUnitTest("dumb object to get cache").getCache().getRegion("/map");
+    Region rgn = new MapClearGIIDUnitTest().getCache().getRegion("/map");
     if (rgn == null) {
       fail("Map region not yet created");
     }
@@ -138,21 +90,10 @@ public class MapClearGIIDUnitTest extends CacheTestCase {
     factory.setConcurrencyChecksEnabled(true);
     RegionAttributes attr = factory.create();
 
-    region = new MapClearGIIDUnitTest("dumb object to get cache").getCache().createRegion("map", attr);
+    region = new MapClearGIIDUnitTest().getCache().createRegion("map", attr);
 
-    // region = region.createSubregion("map",attr);
     LogWriterUtils.getLogWriter().info("Region in VM0 created ");
   }
-/*
-  public static void closeCache() {
-    try {
-      cache.close();
-      ds.disconnect();
-    }
-    catch (Exception ex) {
-      ex.printStackTrace();
-    }
-  }*/
 
   public static void clearRegionInVm1() {
     // wait for profile of getInitialImage cache to show up
@@ -175,6 +116,7 @@ public class MapClearGIIDUnitTest extends CacheTestCase {
   }
 
   //test methods
+  @Test
   public void testClearImageStateFlag() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -187,7 +129,7 @@ public class MapClearGIIDUnitTest extends CacheTestCase {
         InitialImageOperation.slowImageProcessing = 10;
         InitialImageOperation.slowImageSleeps = 0;
         Properties mprops = new Properties();
-        // mprops.setProperty("mcast-port", "7777");
+        // mprops.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "7777");
         
         getSystem(mprops);
         //ds = DistributedSystem.connect(props);
@@ -201,7 +143,7 @@ public class MapClearGIIDUnitTest extends CacheTestCase {
       public void run2() throws CacheException
       {
         Properties mprops = new Properties();
-        // mprops.setProperty("mcast-port", "7777");
+        // mprops.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "7777");
         getSystem(mprops);
         // ds = DistributedSystem.connect(null);
         getCache();

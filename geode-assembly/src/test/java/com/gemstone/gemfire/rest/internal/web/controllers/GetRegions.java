@@ -29,7 +29,7 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
 /**
 * The GetRegions class is an gemfire function that gives data about available regions.
 * <p/>
-* @since 8.0
+* @since GemFire 8.0
 */
 
 public class GetRegions implements Function  {

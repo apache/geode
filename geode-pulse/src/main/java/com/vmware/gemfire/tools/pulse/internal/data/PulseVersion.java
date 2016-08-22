@@ -27,7 +27,7 @@ import java.util.ResourceBundle;
  * This class is for holding Pulse Applications Version's details (like version
  * details, build details, source details, etc) from properties file
  * 
- * @since version Helios
+ * @since GemFire version Helios
  */
 
 public class PulseVersion {

@@ -17,69 +17,21 @@
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
-import java.io.OutputStream;
-import java.net.ConnectException;
-import java.net.InetAddress;
-import java.net.NoRouteToHostException;
-import java.net.Socket;
-import java.net.SocketException;
-import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.net.ssl.SSLException;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.InvalidDeltaException;
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.StatisticsTypeFactory;
-import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.client.ServerRefusedConnectionException;
-import com.gemstone.gemfire.cache.client.internal.ClientUpdater;
-import com.gemstone.gemfire.cache.client.internal.Endpoint;
-import com.gemstone.gemfire.cache.client.internal.EndpointManager;
-import com.gemstone.gemfire.cache.client.internal.GetEventValueOp;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.client.internal.QueueManager;
+import com.gemstone.gemfire.cache.client.internal.*;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.DisconnectListener;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.InternalInstantiator;
-import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.SocketUtils;
-import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.ClientServerObserver;
-import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.*;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.versions.ConcurrentCacheModificationException;
@@ -91,10 +43,24 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
+import org.apache.logging.log4j.Logger;
+
+import javax.net.ssl.SSLException;
+import java.io.*;
+import java.net.ConnectException;
+import java.net.Socket;
+import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <code>CacheClientUpdater</code> is a thread that processes update messages
@@ -102,7 +68,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * {@linkplain com.gemstone.gemfire.cache.Region#localInvalidate(Object) invalidates}
  * the local cache based on the contents of those messages.
  * 
- * @since 3.5
+ * @since GemFire 3.5
  */
 public class CacheClientUpdater extends Thread implements ClientUpdater,
     DisconnectListener {
@@ -214,8 +180,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
   private EndpointManager eManager = null;
   private Endpoint endpoint = null;
 
-  static private final long MAX_CACHE_WAIT = 
-    Long.getLong("gemfire.CacheClientUpdater.MAX_WAIT", 120).longValue(); // seconds
+  static private final long MAX_CACHE_WAIT =
+      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "CacheClientUpdater.MAX_WAIT", 120).longValue(); // seconds
   /**
    * Return true if cache appears
    * @return true if cache appears
@@ -328,8 +294,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
 
       // set the timeout for the handshake
       mySock.setSoTimeout(handshakeTimeout);
-      tmpOut = SocketUtils.getOutputStream(mySock);
-      tmpIn = SocketUtils.getInputStream(mySock);
+      tmpOut = mySock.getOutputStream();
+      tmpIn = mySock.getInputStream();
 
       if (isDebugEnabled) {
         logger.debug("Initialized server-to-client socket with send buffer size: {} bytes and receive buffer size: {} bytes", mySock.getSendBufferSize(), mySock.getReceiveBufferSize());
@@ -772,7 +738,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
       else if (region.hasServerProxy()
           && ServerResponseMatrix.checkForValidStateAfterNotification(region,
               key, m.getMessageType()) && (withInterest || !withCQs)) {
-        EntryEventImpl newEvent = null;
+        @Released EntryEventImpl newEvent = null;
         try {
           // Create an event and put the entry
           newEvent = EntryEventImpl.create(
@@ -1578,14 +1544,14 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
       // de facto flag indicating we are to stop
       return true;
     }
-    if (cache != null && cache.getCancelCriterion().cancelInProgress() != null) {
+    if (cache != null && cache.getCancelCriterion().isCancelInProgress()) {
       // System is cancelling
       return true;
     }
 
     // The pool stuff is really sick, so it's possible for us to have a distributed
     // system that is not the same as our cache.  Check it just in case...
-    if (system.getCancelCriterion().cancelInProgress() != null) {
+    if (system.getCancelCriterion().isCancelInProgress()) {
       return true;
     }
 
@@ -1698,7 +1664,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
           
           // extract the eventId and verify if it is a duplicate event
           // if it is a duplicate event, ignore
-          // @since 5.1
+          // @since GemFire 5.1
           int numberOfParts = _message.getNumberOfParts();
           eid = _message.getPart(numberOfParts - 1);
           // TODO the message handling methods also deserialized the eventID - inefficient
@@ -1926,7 +1892,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
   /**
    * Stats for a CacheClientUpdater. Currently the only thing measured
    * are incoming bytes on the wire
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static class CCUStats implements MessageStats {
     // static fields 

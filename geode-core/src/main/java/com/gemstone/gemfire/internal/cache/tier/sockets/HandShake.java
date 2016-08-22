@@ -17,9 +17,11 @@
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 import java.io.ByteArrayInputStream;
-import java.io.DataOutput;
 import java.io.DataInputStream;
+import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.FileInputStream;
@@ -80,17 +82,16 @@ import com.gemstone.gemfire.internal.ClassLoadUtil;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalInstantiator;
-import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedDataInputStream;
 import com.gemstone.gemfire.internal.VersionedDataOutputStream;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.tier.Acceptor;
 import com.gemstone.gemfire.internal.cache.tier.ClientHandShake;
 import com.gemstone.gemfire.internal.cache.tier.ConnectionProxy;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
 import com.gemstone.gemfire.security.AuthInitialize;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
@@ -213,30 +214,30 @@ public class HandShake implements ClientHandShake
 
   public static final String PRIVATE_KEY_PASSWD_PROP = "security-server-kspasswd";
 
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   public static final byte CONFLATION_DEFAULT = 0;
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   public static final byte CONFLATION_ON = 1;
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   public static final byte CONFLATION_OFF = 2;
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   private byte clientConflation = CONFLATION_DEFAULT;
 
-  /** @since 6.0.3
+  /** @since GemFire 6.0.3
    *  List of per client property override bits.
    */
   private byte[] overrides = null;
   
   /**
    * Test hooks for per client conflation
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static byte clientConflationForTesting = 0;
   public static boolean setClientConflationForTesting = false;
 
   /**
    * Test hook for client version support
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private static Version currentClientVersion = ConnectionProxy.VERSION;
   /**
@@ -257,7 +258,7 @@ public class HandShake implements ClientHandShake
       try {
         soTimeout = sock.getSoTimeout();
         sock.setSoTimeout(timeout);
-        InputStream is = SocketUtils.getInputStream(sock);//sock.getInputStream();
+        InputStream is = sock.getInputStream();
         int valRead =  is.read();
         //this.code =  (byte)is.read();
         if (valRead == -1) {
@@ -269,7 +270,7 @@ public class HandShake implements ClientHandShake
         }
         try {
           DataInputStream dis = new DataInputStream(is);
-          DataOutputStream dos = new DataOutputStream(SocketUtils.getOutputStream(sock));//sock.getOutputStream());
+          DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
           this.clientReadTimeout = dis.readInt();
           if (clientVersion.compareTo(Version.CURRENT) < 0) {
             // versioned streams allow object serialization code to deal with older clients
@@ -279,8 +280,6 @@ public class HandShake implements ClientHandShake
           this.id = ClientProxyMembershipID.readCanonicalized(dis);
           // Note: credentials should always be the last piece in handshake for
           // Diffie-Hellman key exchange to work
-          String authenticator = this.system.getProperties().getProperty(
-              DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME);
           if (clientVersion.compareTo(Version.GFE_603) >= 0) {
             setOverrides(new byte[] { dis.readByte() });
           } else {
@@ -289,10 +288,9 @@ public class HandShake implements ClientHandShake
           //Hitesh
           if (this.clientVersion.compareTo(Version.GFE_65) < 0
               || communicationMode == Acceptor.GATEWAY_TO_GATEWAY) {
-            this.credentials = readCredentials(dis, dos, authenticator, sys);
+            this.credentials = readCredentials(dis, dos, sys);
           } else {
-            this.credentials = this
-                .readCredential(dis, dos, authenticator, sys);
+            this.credentials = this.readCredential(dis, dos, sys);
           }
         } catch(IOException ioe) {
           this.code = -2;
@@ -386,8 +384,7 @@ public class HandShake implements ClientHandShake
    private byte setClientConflation() {
      byte result = CONFLATION_DEFAULT;
      
-     String clientConflationValue = this.system.getProperties().getProperty(
-         DistributionConfig.CLIENT_CONFLATION_PROP_NAME);
+     String clientConflationValue = this.system.getProperties().getProperty(CONFLATE_EVENTS);
      if (DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_ON
          .equalsIgnoreCase(clientConflationValue)) {
        result = CONFLATION_ON;
@@ -522,8 +519,7 @@ public class HandShake implements ClientHandShake
           writeCredentials(dos, dis, p_credentials, ports != null, member, hdos);
         }
       } else {
-        String authInitMethod = this.system.getProperties().getProperty(
-            DistributionConfig.SECURITY_CLIENT_AUTH_INIT_NAME);
+        String authInitMethod = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
         acceptanceCode = writeCredential(dos, dis, authInitMethod,
             ports != null, member, hdos);
       }
@@ -899,13 +895,11 @@ public class HandShake implements ClientHandShake
   }
   
 //This assumes that authentication is the last piece of info in handshake
-  public Properties readCredential(DataInputStream dis,
-      DataOutputStream dos, String authenticator, DistributedSystem system)
+  public Properties readCredential(DataInputStream dis, DataOutputStream dos, DistributedSystem system)
       throws GemFireSecurityException, IOException {
 
     Properties credentials = null;
-    boolean requireAuthentication = (authenticator != null && authenticator
-        .length() > 0);
+    boolean requireAuthentication = GeodeSecurityUtil.isClientSecurityRequired();
     try {
       byte secureMode = dis.readByte();
       if (secureMode == CREDENTIALS_NONE) {
@@ -1163,12 +1157,11 @@ public class HandShake implements ClientHandShake
     dhSKAlgo = config.getSecurityClientDHAlgo();
     dhPrivateKey = null;
     dhPublicKey = null;
-    String authenticator = config.getSecurityClientAuthenticator();
     // Initialize the keys when either the host is a client that has
     // non-blank setting for DH symmetric algo, or this is a server
     // that has authenticator defined.
     if ((dhSKAlgo != null && dhSKAlgo.length() > 0)
-        || (authenticator != null && authenticator.length() > 0)) {
+        || GeodeSecurityUtil.isClientSecurityRequired()) {
       KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH");
       DHParameterSpec dhSpec = new DHParameterSpec(dhP, dhG, dhL);
       keyGen.initialize(dhSpec);
@@ -1272,8 +1265,8 @@ public class HandShake implements ClientHandShake
     try {
       ServerQueueStatus serverQStatus = null;
       Socket sock = conn.getSocket();
-      DataOutputStream dos = new DataOutputStream(SocketUtils.getOutputStream(sock));//sock.getOutputStream());
-      final InputStream in = SocketUtils.getInputStream(sock);//sock.getInputStream();
+      DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
+      final InputStream in = sock.getInputStream();
       DataInputStream dis = new DataInputStream(in);
       DistributedMember member = getDistributedMember(sock);
       // if running in a loner system, use the new port number in the ID to 
@@ -1294,8 +1287,7 @@ public class HandShake implements ClientHandShake
           REPLY_OK, this.clientReadTimeout, null, this.credentials, member,
           false);
       
-      String authInit = this.system.getProperties().getProperty(
-          DistributionConfig.SECURITY_CLIENT_AUTH_INIT_NAME);
+      String authInit = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
       if (communicationMode != Acceptor.GATEWAY_TO_GATEWAY
           && intermediateAcceptanceCode != REPLY_AUTH_NOT_REQUIRED
           && (authInit != null && authInit.length() != 0)) {
@@ -1378,8 +1370,8 @@ public class HandShake implements ClientHandShake
       AuthenticationFailedException, ServerRefusedConnectionException, ClassNotFoundException {
     ServerQueueStatus sqs = null;
     try {
-      DataOutputStream dos = new DataOutputStream(SocketUtils.getOutputStream(sock));//sock.getOutputStream());
-      final InputStream in = SocketUtils.getInputStream(sock);//sock.getInputStream());
+      DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
+      final InputStream in = sock.getInputStream();
       DataInputStream dis = new DataInputStream(in);
       DistributedMember member = getDistributedMember(sock);
       if (!this.multiuserSecureMode) {
@@ -1607,19 +1599,13 @@ public class HandShake implements ClientHandShake
     Properties credentials = null;
     try {
       if (authInitMethod != null && authInitMethod.length() > 0) {
-        Method instanceGetter = ClassLoadUtil.methodFromName(authInitMethod);
-        AuthInitialize auth = (AuthInitialize)instanceGetter.invoke(null,
-            (Object[])null);
-        if (auth != null) {
-          auth.init(logWriter, 
-                    securityLogWriter);
-          try {
-            credentials = auth.getCredentials(securityProperties, server,
-                isPeer);
-          }
-          finally {
-            auth.close();
-          }
+        AuthInitialize auth = GeodeSecurityUtil.getObjectOfType(authInitMethod, AuthInitialize.class);
+        auth.init(logWriter, securityLogWriter);
+        try {
+          credentials = auth.getCredentials(securityProperties, server, isPeer);
+        }
+        finally {
+          auth.close();
         }
       }
     }
@@ -1635,8 +1621,7 @@ public class HandShake implements ClientHandShake
 
   private Properties getCredentials(DistributedMember member) {
 
-    String authInitMethod = this.system.getProperties().getProperty(
-        DistributionConfig.SECURITY_CLIENT_AUTH_INIT_NAME);
+    String authInitMethod = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
     return getCredentials(authInitMethod, this.system.getSecurityProperties(),
         member, false, (InternalLogWriter)this.system.getLogWriter(), 
         (InternalLogWriter)this.system.getSecurityLogWriter());
@@ -1644,12 +1629,11 @@ public class HandShake implements ClientHandShake
 
   // This assumes that authentication is the last piece of info in handshake
   public static Properties readCredentials(DataInputStream dis,
-      DataOutputStream dos, String authenticator, DistributedSystem system)
+      DataOutputStream dos, DistributedSystem system)
       throws GemFireSecurityException, IOException {
 
+    boolean requireAuthentication = GeodeSecurityUtil.isClientSecurityRequired();
     Properties credentials = null;
-    boolean requireAuthentication = (authenticator != null && authenticator
-        .length() > 0);
     try {
       byte secureMode = dis.readByte();
       if (secureMode == CREDENTIALS_NONE) {
@@ -1791,44 +1775,49 @@ public class HandShake implements ClientHandShake
     }
     return credentials;
   }
-  
-  public static Principal verifyCredentials(String authenticatorMethod,
+
+  /**
+   * this could return either a Subject or a Principal depending on if it's integrated security or not
+   */
+  public static Object verifyCredentials(String authenticatorMethod,
       Properties credentials, Properties securityProperties, InternalLogWriter logWriter,
       InternalLogWriter securityLogWriter, DistributedMember member)
       throws AuthenticationRequiredException, AuthenticationFailedException {
 
+    if (!AcceptorImpl.isAuthenticationRequired()) {
+      return null;
+    }
+
     Authenticator auth = null;
     try {
-      if (authenticatorMethod == null || authenticatorMethod.length() == 0) {
-        return null;
+      if(AcceptorImpl.isIntegratedSecurity()){
+        String username = credentials.getProperty("security-username");
+        String password = credentials.getProperty("security-password");
+        return GeodeSecurityUtil.login(username, password);
       }
-      Method instanceGetter = ClassLoadUtil.methodFromName(authenticatorMethod);
-      auth = (Authenticator)instanceGetter.invoke(null, (Object[])null);
+      else {
+        Method instanceGetter = ClassLoadUtil.methodFromName(authenticatorMethod);
+        auth = (Authenticator) instanceGetter.invoke(null, (Object[]) null);
+        auth.init(securityProperties, logWriter, securityLogWriter);
+        return auth.authenticate(credentials, member);
+      }
+    }
+    catch(AuthenticationFailedException ex){
+      throw ex;
     }
     catch (Exception ex) {
-      throw new AuthenticationFailedException(
-          LocalizedStrings.HandShake_FAILED_TO_ACQUIRE_AUTHENTICATOR_OBJECT.toLocalizedString(), ex);
-    }
-    if (auth == null) {
-      throw new AuthenticationFailedException(
-        LocalizedStrings.HandShake_AUTHENTICATOR_INSTANCE_COULD_NOT_BE_OBTAINED.toLocalizedString()); 
-    }
-    auth.init(securityProperties, logWriter, securityLogWriter);
-    Principal principal;
-    try {
-      principal = auth.authenticate(credentials, member);
+      throw new AuthenticationFailedException(ex.getMessage(), ex);
     }
     finally {
-      auth.close();
+      if(auth!=null) auth.close();
     }
-    return principal;
   }
 
-  public Principal verifyCredentials() throws AuthenticationRequiredException,
+  public Object verifyCredentials() throws AuthenticationRequiredException,
       AuthenticationFailedException {
 
     String methodName = this.system.getProperties().getProperty(
-        DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME);
+        SECURITY_CLIENT_AUTHENTICATOR);
     return verifyCredentials(methodName, this.credentials, this.system
         .getSecurityProperties(), (InternalLogWriter)this.system.getLogWriter(), (InternalLogWriter)this.system
         .getSecurityLogWriter(), this.id.getDistributedMember());
@@ -1858,9 +1847,8 @@ public class HandShake implements ClientHandShake
       return;
     }
     String authenticator = this.system.getProperties().getProperty(
-        DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME);
-    Properties peerWanProps = readCredentials(dis, dos, authenticator,
-        this.system);
+        SECURITY_CLIENT_AUTHENTICATOR);
+    Properties peerWanProps = readCredentials(dis, dos, this.system);
     verifyCredentials(authenticator, peerWanProps, this.system
         .getSecurityProperties(), (InternalLogWriter)this.system.getLogWriter(), (InternalLogWriter)this.system
         .getSecurityLogWriter(), member);

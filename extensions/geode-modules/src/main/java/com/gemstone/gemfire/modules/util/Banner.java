@@ -26,19 +26,6 @@ import java.util.Properties;
 
 public class Banner {
 
-  private static String VERSION = "unknown";
-
-  private static Properties props = new Properties();
-
-  static {
-    InputStream is = Banner.class.getResourceAsStream("/modules-version.properties");
-    try {
-      props.load(is);
-      VERSION = props.getProperty("version");
-    } catch (IOException e) {
-    }
-  }
-
   public static String getString() {
     StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter(sw);
@@ -48,12 +35,7 @@ public class Banner {
   }
 
   private static void print(PrintWriter pw) {
-    pw.println("GemFire Modules");
-    pw.print("Modules version: ");
-    pw.println(VERSION);
+    pw.println("Geode Modules");
     GemFireVersion.print(pw);
-  }
-
-  private Banner() {
   }
 }

@@ -96,7 +96,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  *
  *
  *
- * @since 2.0 (-pids, -threads, -align, and -noblanks added in 5.1)
+ * @since GemFire 2.0 (-pids, -threads, -align, and -noblanks added in 5.1)
  */
 public class MergeLogFiles {
   private static PrintStream out = System.out;

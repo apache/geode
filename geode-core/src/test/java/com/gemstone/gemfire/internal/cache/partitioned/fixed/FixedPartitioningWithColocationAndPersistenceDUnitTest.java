@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned.fixed;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,11 +34,12 @@ import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Wait;
 
+@Category(DistributedTest.class)
 public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     FixedPartitioningTestBase {
 
-  public FixedPartitioningWithColocationAndPersistenceDUnitTest(String name) {
-    super(name);
+  public FixedPartitioningWithColocationAndPersistenceDUnitTest() {
+    super();
   }
 
   private static final long serialVersionUID = 1L;
@@ -49,6 +59,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
    * 
    */
 
+  @Test
   public void testColocation_WithFPROnChildRegion() {
     try {
       member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
@@ -90,6 +101,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
    * 
    */
 
+  @Test
   public void testColocation_FPRs_ChildUsingAttributesOfParent() {
     try {
       member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
@@ -203,6 +215,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     }
   }
 
+  @Test
   public void testColocation_FPR_Persistence_ChildUsingAttributesOfParent() {
     try {
       member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
@@ -321,6 +334,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
    * scenario,
    */
 
+  @Test
   public void testColocation_FPRs_ChildUsingAttributesOfParent_HA() {
     try {
       member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
@@ -479,6 +493,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     }
   }
 
+  @Test
   public void testColocation_FPR_Persistence_ChildUsingAttributesOfParent_HA() {
     try {
       member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
@@ -641,6 +656,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
    * Tests validate the behavior of FPR with persistence when one member is kept
    * alive and other members goes down and come up
    */
+  @Test
   public void testFPR_Persistence_OneMemberAlive() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -706,6 +722,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
    * down and comes up.
    * 
    */
+  @Test
   public void testFPR_Persistence() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -780,6 +797,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
    * Tests validate the behavior of FPR with persistence and with colocation
    * when one member is kept alive and other members goes down and come up
    */
+  @Test
   public void testColocation_FPR_Persistence_Colocation_OneMemberAlive() {
     try {
       member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
@@ -886,6 +904,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
    * 
    */
 
+  @Test
   public void testColocation_FPR_Persistence_Colocation() {
     try {
       member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
@@ -964,6 +983,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     }
   }
 
+  @Test
   public void testFPR_Persistence2() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -1026,6 +1046,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
     member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 6 ));
   }
 
+  @Test
   public void testFPR_Persistence3() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -1143,6 +1164,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
    * cache is closed respectively. Member2 is brought back and persisted data is
    * verified.
    */
+  @Test
   public void testPR_Persistence() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", null,

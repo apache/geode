@@ -16,9 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -28,9 +34,9 @@ import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -39,13 +45,14 @@ import com.gemstone.gemfire.internal.cache.HARegion;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This test points out the bug when GII of HARegion Queue is happening and at the same time it is receiving puts from peer to peer.
@@ -55,11 +62,9 @@ import com.gemstone.gemfire.test.dunit.VM;
  * 4. Start vm1 and create HARegion Queue asynchronously and notify vm0 after its creation
  * 5. Put the data from vm0 asynchronously till HARegion Queue gets created in vm1.
  * 6. Validate the data. Puts happened during GII should be missed.
- *
  */
-
-public class HAGIIBugDUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
   VM vm0 = null;
 
@@ -133,15 +138,9 @@ public class HAGIIBugDUnitTest extends DistributedTestCase
     assertNotNull(cache);
   }
 
-  
-  public void testDummy() throws Exception
-  {
-    LogWriterUtils.getLogWriter().info("This is Dummy test for the GII");  
-  }
-  
-  
-  public void _testGIIBug() throws Exception
-  {
+  @Ignore("TODO")
+  @Test
+  public void testGIIBug() throws Exception {
 
     vm0.invoke(putFromVmBeforeGII("vm0_1"));
     populateKeySet("vm0_1");
@@ -336,7 +335,7 @@ public class HAGIIBugDUnitTest extends DistributedTestCase
 
   public static void createRegionQueue() throws Exception
   {
-    new HAGIIBugDUnitTest("temp").createCache(new Properties());
+    new HAGIIBugDUnitTest().createCache(new Properties());
     HARegionQueueAttributes hattr = new HARegionQueueAttributes();
     // setting expiry time for the regionqueue.
     hattr.setExpiryTime(12000000);
@@ -359,11 +358,6 @@ public class HAGIIBugDUnitTest extends DistributedTestCase
       cache.close();
       cache.getDistributedSystem().disconnect();
     }
-  }
-
-  public HAGIIBugDUnitTest(String arg0) {
-    super(arg0);
-
   }
 
 }

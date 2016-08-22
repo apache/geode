@@ -239,13 +239,6 @@ public class MemberFunctionExecutor extends AbstractExecution {
             .toLocalizedString("bucket as filter"));
   }
 
-  @Override
-  public AbstractExecution withRoutingObjects(Set<Object> routingObjects) {
-    throw new FunctionException(
-        LocalizedStrings.ExecuteFunction_CANNOT_SPECIFY_0_FOR_DATA_INDEPENDENT_FUNCTIONS
-            .toLocalizedString("routing objects"));
-  }
-
   public InternalExecution withMemberMappedArgument(
       MemberMappedArgument argument) {
     if(argument == null){

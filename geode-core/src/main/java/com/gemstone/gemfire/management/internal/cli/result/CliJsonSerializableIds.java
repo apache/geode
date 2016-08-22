@@ -19,7 +19,7 @@ package com.gemstone.gemfire.management.internal.cli.result;
 /**
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface CliJsonSerializableIds {
   /* sample objects 11-20 */

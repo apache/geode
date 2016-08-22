@@ -21,6 +21,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.distributed.DistributedLockService;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.modules.util.CreateRegionFunction;
 import com.gemstone.gemfire.modules.util.RegionConfiguration;
@@ -125,7 +126,7 @@ public class GemFireCacheProvider implements CacheProvider {
    */
   private String getRegionType(String regionName) {
     String rType = regionAttributes
-        .getProperty("gemfire.default-region-attributes-id");
+        .getProperty(DistributionConfig.GEMFIRE_PREFIX + "default-region-attributes-id");
     if (rType == null) {
       rType = DEFAULT_REGION_TYPE;
     }
@@ -157,9 +158,8 @@ public class GemFireCacheProvider implements CacheProvider {
       String key = (String)keyObj;
       if (key.contains("region-attributes")) {
         regionAttributes.put(key, properties.get(key));
-      }
-      else if (key.startsWith("gemfire.")) {
-        gemfireOnlyProperties.setProperty(key.replace("gemfire.", ""),
+      } else if (key.startsWith(DistributionConfig.GEMFIRE_PREFIX)) {
+        gemfireOnlyProperties.setProperty(key.replace(DistributionConfig.GEMFIRE_PREFIX, ""),
             properties.getProperty(key));
       }
     }

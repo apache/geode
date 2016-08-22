@@ -23,7 +23,7 @@ package com.gemstone.gemfire.internal.cache;
  * Stats -> extra statistics
  * Disk -> entries can be on disk 
  *
- * @since 3.5.1
+ * @since GemFire 3.5.1
  *
  *
  */

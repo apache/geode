@@ -24,15 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.management.internal.cli.CommandRequest;
-import com.gemstone.gemfire.management.internal.web.AbstractWebTestCase;
-import com.gemstone.gemfire.management.internal.web.domain.Link;
-import com.gemstone.gemfire.management.internal.web.domain.LinkIndex;
-import com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest;
-import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,6 +32,15 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.ResourceAccessException;
+
+import com.gemstone.gemfire.internal.lang.StringUtils;
+import com.gemstone.gemfire.management.internal.cli.CommandRequest;
+import com.gemstone.gemfire.management.internal.web.AbstractWebTestCase;
+import com.gemstone.gemfire.management.internal.web.domain.Link;
+import com.gemstone.gemfire.management.internal.web.domain.LinkIndex;
+import com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest;
+import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * The RestHttpOperationInvokerJUnitTest class is a test suite of test cases testing the contract and functionality of the
@@ -54,7 +54,7 @@ import org.springframework.web.client.ResourceAccessException;
  * @see com.gemstone.gemfire.management.internal.web.shell.RestHttpOperationInvoker
  * @see org.junit.Assert
  * @see org.junit.Test
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 @Category(UnitTest.class)
@@ -107,28 +107,28 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
     operationInvoker = null;
   }
 
-  protected CommandRequest createCommandRequest(final String command, final Map<String, String> options) {
+  private CommandRequest createCommandRequest(final String command, final Map<String, String> options) {
     return new TestCommandRequest(command, options, Collections.<String, String>emptyMap(), null);
   }
 
-  protected CommandRequest createCommandRequest(final String command, final Map<String, String> options, final Map<String, String> environment) {
+  private CommandRequest createCommandRequest(final String command, final Map<String, String> options, final Map<String, String> environment) {
     return new TestCommandRequest(command, options, environment, null);
   }
 
-  protected CommandRequest createCommandRequest(final String command, final Map<String, String> options, final byte[][] fileData) {
+  private CommandRequest createCommandRequest(final String command, final Map<String, String> options, final byte[][] fileData) {
     return new TestCommandRequest(command, options, Collections.<String, String>emptyMap(), fileData);
   }
 
-  protected CommandRequest createCommandRequest(final String command, final Map<String, String> options, final Map<String, String> environment, final byte[][] fileData) {
+  private CommandRequest createCommandRequest(final String command, final Map<String, String> options, final Map<String, String> environment, final byte[][] fileData) {
     return new TestCommandRequest(command, options, environment, fileData);
   }
 
-  protected LinkIndex getLinkIndex() {
+  private LinkIndex getLinkIndex() {
     assertTrue("The LinkIndex was not property initialized!", linkIndex != null);
     return linkIndex;
   }
 
-  protected RestHttpOperationInvoker getOperationInvoker() {
+  private RestHttpOperationInvoker getOperationInvoker() {
     assertTrue("The RestHttpOperationInvoker was not properly initialized!", operationInvoker != null);
     return operationInvoker;
   }
@@ -412,7 +412,7 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
     }
   }
 
-  protected static final class TestCommandRequest extends CommandRequest {
+  private static final class TestCommandRequest extends CommandRequest {
 
     private final Map<String, String> commandParameters = new TreeMap<String, String>();
 

@@ -17,8 +17,8 @@
 
 package com.gemstone.gemfire.security;
 
-import java.util.Properties;
 import java.security.Principal;
+import java.util.Properties;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.CacheCallback;
@@ -40,7 +40,9 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
  * <code>public static Authenticator [method-name]();</code> i.e. it should be
  * a zero argument function.
  * 
- * @since 5.5
+ * @since GemFire 5.5
+ *
+ * @deprecated since Geode 1.0, use {@link SecurityManager} instead
  */
 public interface Authenticator extends CacheCallback {
 
@@ -59,8 +61,12 @@ public interface Authenticator extends CacheCallback {
    * @throws AuthenticationFailedException
    *                 if some exception occurs during the initialization
    */
-  public void init(Properties securityProps, LogWriter systemLogger,
+  void init(Properties securityProps, LogWriter systemLogger,
       LogWriter securityLogger) throws AuthenticationFailedException;
+
+  default void init(Properties securityProps)  throws AuthenticationFailedException{
+    init(securityProps, null, null);
+  }
 
   /**
    * Verify the credentials provided in the properties for the client/peer as
@@ -80,7 +86,11 @@ public interface Authenticator extends CacheCallback {
    * @throws AuthenticationFailedException
    *                 If the authentication of the client/peer fails.
    */
-  public Principal authenticate(Properties props, DistributedMember member)
+  Principal authenticate(Properties props, DistributedMember member)
       throws AuthenticationFailedException;
+
+  default Principal authenticate(Properties props) throws AuthenticationFailedException{
+    return authenticate(props, null);
+  }
 
 }

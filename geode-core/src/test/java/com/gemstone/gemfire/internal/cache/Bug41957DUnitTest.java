@@ -16,7 +16,13 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
@@ -32,13 +38,13 @@ import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Test for bug 41957.
@@ -46,19 +52,17 @@ import com.gemstone.gemfire.test.dunit.VM;
  * do a register interest with key&values and see if we end up with more entries
  * in the client than the eviction limit.
  *
- * @since 6.5
+ * @since GemFire 6.5
  */
- public class Bug41957DUnitTest extends ClientServerTestCase {
-
-  public Bug41957DUnitTest(String name) {
-    super(name);
-  }
+@Category(DistributedTest.class)
+public class Bug41957DUnitTest extends ClientServerTestCase {
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
 
+  @Test
   public void testBug41957() {
     final Host host = Host.getHost(0);
     final VM server = host.getVM(0);
@@ -90,7 +94,7 @@ import com.gemstone.gemfire.test.dunit.VM;
       public void run2() throws CacheException {
         // Create DS
         Properties config = new Properties();
-        config.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
+        config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
         getSystem(config);
 
         // Create Region
@@ -125,8 +129,8 @@ import com.gemstone.gemfire.test.dunit.VM;
       public void run2() throws CacheException {
         // Create DS
         Properties config = new Properties();
-        config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        config.setProperty(DistributionConfig.LOCATORS_NAME, "");
+        config.setProperty(MCAST_PORT, "0");
+        config.setProperty(LOCATORS, "");
         getSystem(config);
 
         // Create Region

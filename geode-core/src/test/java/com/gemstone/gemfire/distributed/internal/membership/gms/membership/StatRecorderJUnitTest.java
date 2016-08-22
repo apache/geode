@@ -16,14 +16,16 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.membership;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-
-import java.util.Properties;
-
+import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
+import com.gemstone.gemfire.distributed.internal.DistributionManager;
+import com.gemstone.gemfire.distributed.internal.LonerDistributionManager.DummyDMStats;
+import com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig;
+import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
+import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.StatRecorder;
+import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.jgroups.Event;
 import org.jgroups.Message;
 import org.jgroups.protocols.UNICAST3.Header;
@@ -33,16 +35,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.LonerDistributionManager.DummyDMStats;
-import com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig;
-import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.StatRecorder;
-import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import java.util.Properties;
+import java.util.concurrent.RejectedExecutionException;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.*;
 
 /**
  * This class tests the GMS StatRecorder class, which records JGroups
@@ -50,17 +52,26 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  */
 @Category(UnitTest.class)
 public class StatRecorderJUnitTest {
-  Protocol mockDownProtocol, mockUpProtocol;
-  StatRecorder recorder;
-  MyStats stats = new MyStats();
+
+  private Protocol mockDownProtocol;
+  private Protocol mockUpProtocol;
+  private StatRecorder recorder;
+  private MyStats stats;
+  private Services services;
   
   @Before
-  public void initMocks() throws Exception {
+  public void setUp() throws Exception {
+    stats = new MyStats();
+
     // create a StatRecorder that has mock up/down protocols and stats
     mockDownProtocol = mock(Protocol.class);
     mockUpProtocol = mock(Protocol.class);
+
+    services = mock(Services.class);
+    when(services.getStatistics()).thenReturn(stats);
+
     recorder = new StatRecorder();
-    recorder.setDMStats(stats);
+    recorder.setServices(services);
     recorder.setUpProtocol(mockUpProtocol);
     recorder.setDownProtocol(mockDownProtocol);
   }
@@ -92,6 +103,32 @@ public class StatRecorderJUnitTest {
     recorder.down(evt);
     assertTrue("stats.ucastRetransmits =" + stats.ucastRetransmits,
         stats.ucastRetransmits == 1);
+  }
+
+
+  @Test
+  public void recorderHandlesRejectedExecution() throws Exception {
+    Message msg = mock(Message.class);
+    when(msg.getHeader(any(Short.class))).thenReturn(Header.createDataHeader(1L, (short)1, true));
+    when(msg.size()).thenReturn(150L);
+
+    // GEODE-1178, the TP protocol may throw a RejectedExecutionException & StatRecorder should retry
+    when(mockDownProtocol.down(any(Event.class))).thenThrow(new RejectedExecutionException());
+
+    // after the first down() throws an exception we want StatRecorder to retry, so
+    // we set the Manager to say no shutdown is in progress the first time and then say
+    // one IS in progress so we can break out of the StatRecorder exception handling loop
+    when(services.getCancelCriterion()).thenReturn(new Services().getCancelCriterion());
+    Manager manager = mock(Manager.class);
+    when(services.getManager()).thenReturn(manager);
+    when(manager.shutdownInProgress()).thenReturn(Boolean.FALSE, Boolean.TRUE);
+
+    verify(mockDownProtocol, never()).down(isA(Event.class));
+
+    Event evt = new Event(Event.MSG, msg);
+    recorder.down(evt);
+
+    verify(mockDownProtocol, times(2)).down(isA(Event.class));
   }
 
   /**
@@ -130,8 +167,7 @@ public class StatRecorderJUnitTest {
     assertTrue("mcastRetransmits = " + stats.mcastRetransmits,
         stats.mcastRetransmits == 1);
   }
-  
-  
+
   /**
    * Ensure that the messenger JGroups configuration XML strings contain
    * the statistics recorder protocol
@@ -144,8 +180,8 @@ public class StatRecorderJUnitTest {
     
     // first test to see if the non-multicast stack has the recorder installed
     Properties nonDefault = new Properties();
-    nonDefault.put(DistributionConfig.MCAST_PORT_NAME, "0");
-    nonDefault.put(DistributionConfig.LOCATORS_NAME, "localhost[12345]");
+    nonDefault.put(MCAST_PORT, "0");
+    nonDefault.put(LOCATORS, "localhost[12345]");
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     when(mockConfig.getDistributionConfig()).thenReturn(config);
 
@@ -160,7 +196,7 @@ public class StatRecorderJUnitTest {
     assertTrue(jgroupsConfig.contains("gms.messenger.StatRecorder"));
     
     // now test to see if the multicast stack has the recorder installed
-    nonDefault.put(DistributionConfig.MCAST_PORT_NAME, "12345");
+    nonDefault.put(MCAST_PORT, "12345");
     config = new DistributionConfigImpl(nonDefault);
     transport = new RemoteTransportConfig(config, DistributionManager.NORMAL_DM_TYPE);
     when(mockConfig.getDistributionConfig()).thenReturn(config);
@@ -170,7 +206,8 @@ public class StatRecorderJUnitTest {
     assertTrue(jgroupsConfig.contains("gms.messenger.StatRecorder"));
   }
 
-  static class MyStats extends DummyDMStats {
+  private static class MyStats extends DummyDMStats {
+
     public int ucastMessagesReceived;
     public int ucastMessageBytesReceived;
     public int ucastMessagesSent;

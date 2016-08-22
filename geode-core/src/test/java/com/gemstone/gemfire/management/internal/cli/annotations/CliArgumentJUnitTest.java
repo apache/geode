@@ -16,20 +16,19 @@
  */
 package com.gemstone.gemfire.management.internal.cli.annotations;
 
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.*;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.management.internal.cli.annotation.CliArgument;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Includes tests for checking assignment of {@link CliArgument}
- * 
- * 
  */
 @Category(UnitTest.class)
-public class CliArgumentJUnitTest extends TestCase {
+public class CliArgumentJUnitTest {
 
   private static final String ARGUMENT_NAME = "ARGUMENT_NAME";
   private static final String ARGUMENT_HELP = "ARGUMENT_HELP";
@@ -43,169 +42,87 @@ public class CliArgumentJUnitTest extends TestCase {
   /**
    * Test for {@link CliArgument#name()}
    */
-  public void testName() {
-    try {
-      String name = ((CliArgument) (ArgumentTestingClass.class.getMethod(
-          "defaultArgumentTestingMethod", String.class)
-          .getParameterAnnotations()[0][0])).name();
-      assertNotNull(name);
-      assertEquals(MESSAGE_FOR_DEFAULT_ARGUMENT, name, ARGUMENT_NAME);
-      name = ((CliArgument) (ArgumentTestingClass.class.getMethod(
-          "argumentTestingMethod", String.class).getParameterAnnotations()[0][0]))
-          .name();
-      assertNotNull(name);
-      assertEquals(MESSAGE_FOR_ARGUMENT, name, ARGUMENT_NAME);
-    } catch (SecurityException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (NoSuchMethodException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+  @Test
+  public void testName() throws Exception {
+    String name = ((CliArgument) (ArgumentTestingClass.class.getMethod("defaultArgumentTestingMethod", String.class).getParameterAnnotations()[0][0])).name();
+    assertNotNull(name);
+    assertEquals(MESSAGE_FOR_DEFAULT_ARGUMENT, name, ARGUMENT_NAME);
+    name = ((CliArgument) (ArgumentTestingClass.class.getMethod("argumentTestingMethod", String.class).getParameterAnnotations()[0][0])).name();
+    assertNotNull(name);
+    assertEquals(MESSAGE_FOR_ARGUMENT, name, ARGUMENT_NAME);
   }
 
   /**
    * Test for {@link CliArgument#help()}
    */
-  public void testHelp() {
-    try {
-      String help = ((CliArgument) (ArgumentTestingClass.class.getMethod(
-          "defaultArgumentTestingMethod", String.class)
-          .getParameterAnnotations()[0][0])).help();
-      assertNotNull(help);
-      assertEquals(MESSAGE_FOR_DEFAULT_ARGUMENT, help, "");
-      help = ((CliArgument) (ArgumentTestingClass.class.getMethod(
-          "argumentTestingMethod", String.class).getParameterAnnotations()[0][0]))
-          .help();
-      assertNotNull(help);
-      assertEquals(MESSAGE_FOR_ARGUMENT, help, ARGUMENT_HELP);
-    } catch (SecurityException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (NoSuchMethodException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+  @Test
+  public void testHelp() throws Exception {
+    String help = ((CliArgument) (ArgumentTestingClass.class.getMethod("defaultArgumentTestingMethod", String.class).getParameterAnnotations()[0][0])).help();
+    assertNotNull(help);
+    assertEquals(MESSAGE_FOR_DEFAULT_ARGUMENT, help, "");
+    help = ((CliArgument) (ArgumentTestingClass.class.getMethod("argumentTestingMethod", String.class).getParameterAnnotations()[0][0])).help();
+    assertNotNull(help);
+    assertEquals(MESSAGE_FOR_ARGUMENT, help, ARGUMENT_HELP);
   }
 
   /**
    * Test for {@link CliArgument#mandatory()}
    */
-  public void testMandatory() {
-    try {
-      boolean mandatory = ((CliArgument) (ArgumentTestingClass.class.getMethod(
-          "defaultArgumentTestingMethod", String.class)
-          .getParameterAnnotations()[0][0])).mandatory();
-      assertEquals(MESSAGE_FOR_DEFAULT_ARGUMENT, mandatory, false);
-      mandatory = ((CliArgument) (ArgumentTestingClass.class.getMethod(
-          "argumentTestingMethod", String.class).getParameterAnnotations()[0][0]))
-          .mandatory();
-      assertEquals(MESSAGE_FOR_ARGUMENT, mandatory, ARGUMENT_MANDATORY);
-    } catch (SecurityException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (NoSuchMethodException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+  @Test
+  public void testMandatory() throws Exception {
+    boolean mandatory = ((CliArgument) (ArgumentTestingClass.class.getMethod("defaultArgumentTestingMethod", String.class).getParameterAnnotations()[0][0])).mandatory();
+    assertEquals(MESSAGE_FOR_DEFAULT_ARGUMENT, mandatory, false);
+    mandatory = ((CliArgument) (ArgumentTestingClass.class.getMethod("argumentTestingMethod", String.class).getParameterAnnotations()[0][0])).mandatory();
+    assertEquals(MESSAGE_FOR_ARGUMENT, mandatory, ARGUMENT_MANDATORY);
   }
 
   /**
    * Test for {@link CliArgument#argumentContext()}
    */
-  public void testArgumentContext() {
-    try {
-      String argumentContext = ((CliArgument) (ArgumentTestingClass.class
-          .getMethod("defaultArgumentTestingMethod", String.class)
-          .getParameterAnnotations()[0][0])).argumentContext();
-      assertNotNull(argumentContext);
-      assertEquals(MESSAGE_FOR_DEFAULT_ARGUMENT, argumentContext, "");
-      argumentContext = ((CliArgument) (ArgumentTestingClass.class.getMethod(
-          "argumentTestingMethod", String.class).getParameterAnnotations()[0][0]))
-          .argumentContext();
-      assertNotNull(argumentContext);
-      assertEquals(MESSAGE_FOR_ARGUMENT, argumentContext, ARGUMENT_CONTEXT);
-    } catch (SecurityException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (NoSuchMethodException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+  @Test
+  public void testArgumentContext() throws Exception {
+    String argumentContext = ((CliArgument) (ArgumentTestingClass.class.getMethod("defaultArgumentTestingMethod", String.class).getParameterAnnotations()[0][0])).argumentContext();
+    assertNotNull(argumentContext);
+    assertEquals(MESSAGE_FOR_DEFAULT_ARGUMENT, argumentContext, "");
+    argumentContext = ((CliArgument) (ArgumentTestingClass.class.getMethod("argumentTestingMethod", String.class).getParameterAnnotations()[0][0])).argumentContext();
+    assertNotNull(argumentContext);
+    assertEquals(MESSAGE_FOR_ARGUMENT, argumentContext, ARGUMENT_CONTEXT);
   }
 
   /**
    * Test for {@link CliArgument#systemProvided()}
    */
-  public void testSystemProvided() {
-    try {
-      boolean systemProvided = ((CliArgument) (ArgumentTestingClass.class
-          .getMethod("defaultArgumentTestingMethod", String.class)
-          .getParameterAnnotations()[0][0])).systemProvided();
-      assertEquals(MESSAGE_FOR_DEFAULT_ARGUMENT, systemProvided, false);
-      systemProvided = ((CliArgument) (ArgumentTestingClass.class.getMethod(
-          "argumentTestingMethod", String.class).getParameterAnnotations()[0][0]))
-          .systemProvided();
-      assertEquals(MESSAGE_FOR_ARGUMENT, systemProvided, SYSTEM_PROVIDED);
-    } catch (SecurityException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (NoSuchMethodException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+  @Test
+  public void testSystemProvided() throws Exception {
+    boolean systemProvided = ((CliArgument) (ArgumentTestingClass.class.getMethod("defaultArgumentTestingMethod", String.class).getParameterAnnotations()[0][0])).systemProvided();
+    assertEquals(MESSAGE_FOR_DEFAULT_ARGUMENT, systemProvided, false);
+    systemProvided = ((CliArgument) (ArgumentTestingClass.class.getMethod("argumentTestingMethod", String.class).getParameterAnnotations()[0][0])).systemProvided();
+    assertEquals(MESSAGE_FOR_ARGUMENT, systemProvided, SYSTEM_PROVIDED);
   }
 
   /**
    * Test for {@link CliArgument#unspecifiedDefaultValue()}
    */
-  public void testUnspecifiedDefaultValue() {
-    try {
-      String unspecifiedDefaultValue = ((CliArgument) (ArgumentTestingClass.class
-          .getMethod("defaultArgumentTestingMethod", String.class)
-          .getParameterAnnotations()[0][0])).unspecifiedDefaultValue();
-      assertEquals(MESSAGE_FOR_DEFAULT_ARGUMENT, unspecifiedDefaultValue,
-          "__NULL__");
-      unspecifiedDefaultValue = ((CliArgument) (ArgumentTestingClass.class
-          .getMethod("argumentTestingMethod", String.class)
-          .getParameterAnnotations()[0][0])).unspecifiedDefaultValue();
-      assertEquals(MESSAGE_FOR_ARGUMENT, unspecifiedDefaultValue,
-          ARGUMENT_UNSPECIFIED_DEFAULT_VALUE);
-    } catch (SecurityException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (NoSuchMethodException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+  @Test
+  public void testUnspecifiedDefaultValue() throws Exception {
+    String unspecifiedDefaultValue = ((CliArgument) (ArgumentTestingClass.class.getMethod("defaultArgumentTestingMethod", String.class).getParameterAnnotations()[0][0])).unspecifiedDefaultValue();
+    assertEquals(MESSAGE_FOR_DEFAULT_ARGUMENT, unspecifiedDefaultValue, "__NULL__");
+    unspecifiedDefaultValue = ((CliArgument) (ArgumentTestingClass.class.getMethod("argumentTestingMethod", String.class).getParameterAnnotations()[0][0])).unspecifiedDefaultValue();
+    assertEquals(MESSAGE_FOR_ARGUMENT, unspecifiedDefaultValue, ARGUMENT_UNSPECIFIED_DEFAULT_VALUE);
   }
 
   /**
    * Class used by the tests
-   * 
-   * 
    */
-  public static class ArgumentTestingClass {
+  private static class ArgumentTestingClass {
 
-    /**
-     * @param defaultargument
-     * @return Object
-     */
     @SuppressWarnings("unused")
-    public static Object defaultArgumentTestingMethod(
-        @CliArgument(name = ARGUMENT_NAME)
-        String defaultargument) {
+    public static Object defaultArgumentTestingMethod(@CliArgument(name = ARGUMENT_NAME) String defaultArgument) {
       return null;
     }
 
-    /**
-     * @param argument
-     * @return Object
-     */
     @SuppressWarnings("unused")
-    public static Object argumentTestingMethod(
-        @CliArgument(name = ARGUMENT_NAME, help = ARGUMENT_HELP, mandatory = ARGUMENT_MANDATORY, argumentContext = ARGUMENT_CONTEXT, systemProvided = SYSTEM_PROVIDED, unspecifiedDefaultValue = ARGUMENT_UNSPECIFIED_DEFAULT_VALUE)
-        String argument) {
+    public static Object argumentTestingMethod(@CliArgument(name = ARGUMENT_NAME, help = ARGUMENT_HELP, mandatory = ARGUMENT_MANDATORY, argumentContext = ARGUMENT_CONTEXT, systemProvided = SYSTEM_PROVIDED, unspecifiedDefaultValue = ARGUMENT_UNSPECIFIED_DEFAULT_VALUE) String argument) {
       return null;
     }
   }

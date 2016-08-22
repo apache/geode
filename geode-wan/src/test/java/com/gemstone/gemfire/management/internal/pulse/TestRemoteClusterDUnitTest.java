@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.management.internal.pulse;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Map;
 
 import javax.management.MBeanServer;
@@ -48,16 +57,18 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * 
  */
 
+@Category(DistributedTest.class)
 public class TestRemoteClusterDUnitTest extends ManagementTestBase {
 
   private static final long serialVersionUID = 1L;
 
   public static MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
 
-  public TestRemoteClusterDUnitTest(String name) throws Exception {
-    super(name);
+  public TestRemoteClusterDUnitTest() throws Exception {
+    super();
   }
 
+  @Test
   public void testMBeanCallback() throws Exception {
 
     VM nyLocator = getManagedNodeList().get(0);
@@ -84,7 +95,7 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
         getTestMethodName() + "_PR", "pn", 1, 100, false ));
 
     WANTestBase.createCacheInVMs(nyPort, nyReceiver);
-    nyReceiver.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    nyReceiver.invoke(() -> WANTestBase.createReceiver());
     nyReceiver.invoke(() -> WANTestBase.createPartitionedRegion( getTestMethodName() + "_PR", null, 1, 100, false ));
 
     WANTestBase.startSenderInVMs("pn", puneSender, managing);

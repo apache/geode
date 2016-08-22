@@ -29,7 +29,7 @@ import com.gemstone.gemfire.GemFireException;
  * <p>It can also be caused by {@link PdxWriter#writeUnreadFields(PdxUnreadFields) writeUnreadFields}
  * being called after a field is written.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  *
  */
 public class PdxFieldAlreadyExistsException extends GemFireException {

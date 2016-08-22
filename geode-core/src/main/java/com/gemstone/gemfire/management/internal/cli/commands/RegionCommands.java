@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -54,6 +56,7 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.RegionAttributesNames;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
 /***
  * Class containing implementation of commands based on region:
@@ -62,7 +65,7 @@ import com.gemstone.gemfire.management.internal.cli.util.RegionAttributesNames;
  * <li>describe region
  * </ul>
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class RegionCommands implements CommandMarker {
   private Gfsh getGfsh() {
@@ -73,7 +76,8 @@ public class RegionCommands implements CommandMarker {
   private static final GetRegionDescriptionFunction getRegionDescription = new GetRegionDescriptionFunction();
 
   @CliCommand(value = { CliStrings.LIST_REGION }, help = CliStrings.LIST_REGION__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION)
+  @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEODE_REGION)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.READ)
   public Result listRegion(
       @CliOption(key = { CliStrings.LIST_REGION__GROUP },
       optionContext = ConverterHint.MEMBERGROUP,
@@ -83,8 +87,6 @@ public class RegionCommands implements CommandMarker {
       optionContext = ConverterHint.MEMBERIDNAME,
       help = CliStrings.LIST_REGION__MEMBER__HELP)
       String memberNameOrId) {
-    
-    
     Result result = null;
     try {
       Set<RegionInformation> regionInfoSet = new LinkedHashSet<RegionInformation>();
@@ -152,7 +154,8 @@ public class RegionCommands implements CommandMarker {
   }
 
   @CliCommand(value = { CliStrings.DESCRIBE_REGION }, help = CliStrings.DESCRIBE_REGION__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEMFIRE_REGION, CliStrings.TOPIC_GEMFIRE_CONFIG } )
+  @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_CONFIG } )
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result describeRegion(
       @CliOption(key = CliStrings.DESCRIBE_REGION__NAME,
       optionContext = ConverterHint.REGIONPATH,

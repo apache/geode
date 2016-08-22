@@ -19,9 +19,9 @@ package com.gemstone.gemfire.distributed;
 import com.gemstone.gemfire.CancelException;
 
 /**
- * Thrown when a GemFire pool has been cancelled.
+ * Thrown when a GemFire connection pool has been terminated.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 
 public class PoolCancelledException extends CancelException {

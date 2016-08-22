@@ -16,8 +16,20 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.PartitionAttributes;
@@ -32,15 +44,14 @@ import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-/**
- *
- */
 @SuppressWarnings("synthetic-access")
-public class PartitionedRegionDelayedRecoveryDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCase {
   
-  public PartitionedRegionDelayedRecoveryDUnitTest(String name) {
-    super(name);
+  public PartitionedRegionDelayedRecoveryDUnitTest() {
+    super();
   }
   
   @Override
@@ -53,6 +64,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends CacheTestCase {
     InternalResourceManager.setResourceObserver(null);
   }
 
+  @Test
   public void testNoRecovery() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -125,6 +137,8 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends CacheTestCase {
     vm2.invoke(checkNoBucket);
   }
 
+  @Category(FlakyTest.class) // GEODE-860: time sensitive, thread unsafe test hook, CountDownLatch, 1 minute timeout, waitForBucketRecovery loops eating InterruptedException
+  @Test
   public void testDelay() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -177,6 +191,8 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends CacheTestCase {
     //create the region in a third VM, which won't have any buckets
     vm2.invoke(createPrRegions);
 
+    final long begin = System.currentTimeMillis();
+
     //close 1 cache, which should make the bucket drop below
     //the expected redundancy level.
     vm1.invoke(new SerializableRunnable("close cache") {
@@ -186,10 +202,12 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends CacheTestCase {
       }
     });
     
-    long elapsed = waitForBucketRecovery(vm2, 1);
+    long elapsed = waitForBucketRecovery(vm2, 1, begin);
     assertTrue("Did not wait at least 5 seconds to create the bucket. Elapsed=" + elapsed, elapsed >= 5000);
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-757: time sensitive, fails because event occurs 2 millis too soon, waitForBucketRecovery wait loop eats InterruptedException, thread unsafe test hook
+  @Test
   public void testStartupDelay() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -246,7 +264,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends CacheTestCase {
             + elapsed, elapsed < 5000);
     
     //wait for the bucket to be copied
-    elapsed = waitForBucketRecovery(vm2, 4);
+    elapsed = waitForBucketRecovery(vm2, 4, begin);
     assertTrue("Did not wait at least 5 seconds to create the bucket. Elapsed=" + elapsed, elapsed >= 5000);
     
     vm2.invoke(new SerializableCallable("wait for primary move") {
@@ -264,8 +282,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends CacheTestCase {
     });
   }
   
-  private long waitForBucketRecovery(VM vm2, final int numBuckets) {
-    final long begin = System.currentTimeMillis();
+  private long waitForBucketRecovery(VM vm2, final int numBuckets, final long begin) {
     //wait for the bucket to be copied
     Long elapsed = (Long) vm2.invoke(new SerializableCallable("putData") {
       public Object call() {
@@ -278,7 +295,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends CacheTestCase {
           } else {
             try {
               Thread.sleep(100);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException e) { // TODO: don't catch InterruptedException -- let test fail!
               e.printStackTrace();
             }
           }

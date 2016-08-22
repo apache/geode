@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Properties;
@@ -48,13 +57,14 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  *  
  */
+@Category(DistributedTest.class)
 public class PartitionedRegionHADUnitTest extends PartitionedRegionDUnitTestCase
 {
 
   //////constructor //////////
-  public PartitionedRegionHADUnitTest(String name) {
+  public PartitionedRegionHADUnitTest() {
 
-    super(name);
+    super();
   }//end of constructor
 
   public static final String PR_PREFIX = "PR";
@@ -72,6 +82,7 @@ public class PartitionedRegionHADUnitTest extends PartitionedRegionDUnitTestCase
    * of sequential cache.close() events.
    * @throws Exception
    */
+  @Test
   public void testBucketFailOverDuringCacheClose() throws Exception {
     
     final String regionName = getUniqueName();
@@ -184,6 +195,7 @@ public class PartitionedRegionHADUnitTest extends PartitionedRegionDUnitTestCase
   }
 
   //////////test methods ////////////////
+  @Test
   public void testGrabBackupBuckets() throws Throwable
   {
 
@@ -390,6 +402,7 @@ public class PartitionedRegionHADUnitTest extends PartitionedRegionDUnitTestCase
    * @see PartitionedRegionSingleNodeOperationsJUnitTest#test018BucketScope()
    * @throws Exception
    */
+  @Test
   public void testBucketsScope() throws Exception
   {
 

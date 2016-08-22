@@ -16,56 +16,69 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
+
+import java.io.File;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.geode.security.templates.SamplePostProcessor;
+import org.apache.geode.security.templates.SampleSecurityManager;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.UnmodifiableException;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import java.io.File;
-import java.lang.reflect.Method;
-import java.util.*;
-
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-/**
- * Created by jiliao on 2/2/16.
- */
 @Category(UnitTest.class)
-
 public class DistributionConfigJUnitTest {
-  static Map<String, ConfigAttribute> attributes;
-  static Map<String, Method> setters;
-  static Map<String, Method> getters;
-  static Map<String, Method> isModifiables;
-  static Map<String, Method> checkers;
-  static String[] attNames;
-  DistributionConfigImpl config;
 
-  @BeforeClass
-  public static void beforeClass() {
+  private Map<Class<?>, Class<?>> classMap;
+
+  private Map<String, ConfigAttribute> attributes;
+  private Map<String, Method> setters;
+  private Map<String, Method> getters;
+  private Map<String, Method> checkers;
+  private String[] attNames;
+
+  private DistributionConfigImpl config;
+
+  @Before
+  public void before() {
+    classMap = new HashMap<>();
+    classMap.put(boolean.class, Boolean.class);
+    classMap.put(byte.class, Byte.class);
+    classMap.put(short.class, Short.class);
+    classMap.put(char.class, Character.class);
+    classMap.put(int.class, Integer.class);
+    classMap.put(long.class, Long.class);
+    classMap.put(float.class, Float.class);
+    classMap.put(double.class, Double.class);
+
     attributes = DistributionConfig.attributes;
     setters = DistributionConfig.setters;
     getters = DistributionConfig.getters;
     attNames = DistributionConfig.dcValidAttributeNames;
     checkers = AbstractDistributionConfig.checkers;
-  }
 
-  @Before
-  public void before() {
     config = new DistributionConfigImpl(new Properties());
   }
 
   @Test
   public void testGetAttributeNames() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    assertEquals(attNames.length, 140);
+    assertEquals(attNames.length, 143);
 
     List boolList = new ArrayList();
     List intList = new ArrayList();
@@ -96,11 +109,26 @@ public class DistributionConfigJUnitTest {
     System.out.println("filelList: " + fileList);
     System.out.println();
     System.out.println("otherList: " + otherList);
+
     assertEquals(boolList.size(), 30);
     assertEquals(intList.size(), 33);
-    assertEquals(stringList.size(), 69);
+    assertEquals(stringList.size(), 72);
     assertEquals(fileList.size(), 5);
     assertEquals(otherList.size(), 3);
+  }
+
+  @Test
+  public void testAttributeDesc(){
+    String[] attNames = AbstractDistributionConfig._getAttNames();
+    for(String attName:attNames){
+      assertTrue("Does not contain description for attribute "+ attName, AbstractDistributionConfig.dcAttDescriptions.containsKey(attName));
+    }
+    List<String> attList = Arrays.asList(attNames);
+    for(Object attName:AbstractDistributionConfig.dcAttDescriptions.keySet()){
+      if(!attList.contains(attName)){
+        System.out.println("Has unused description for "+attName.toString());
+      }
+    }
   }
 
   @Test
@@ -117,7 +145,7 @@ public class DistributionConfigJUnitTest {
       assertTrue(setter.getName().startsWith("set"));
       assertEquals(setter.getParameterCount(), 1);
 
-      if (!(attr.equalsIgnoreCase(DistributionConfig.LOG_LEVEL_NAME) || attr.equalsIgnoreCase(DistributionConfig.SECURITY_LOG_LEVEL_NAME))) {
+      if (!(attr.equalsIgnoreCase(LOG_LEVEL) || attr.equalsIgnoreCase(SECURITY_LOG_LEVEL))) {
         Class clazz = attributes.get(attr).type();
         try {
           setter.invoke(mock(DistributionConfig.class), any(clazz));
@@ -137,7 +165,7 @@ public class DistributionConfigJUnitTest {
       assertTrue(getter.getName().startsWith("get"));
       assertEquals(getter.getParameterCount(), 0);
 
-      if (!(attr.equalsIgnoreCase(DistributionConfig.LOG_LEVEL_NAME) || attr.equalsIgnoreCase(DistributionConfig.SECURITY_LOG_LEVEL_NAME))) {
+      if (!(attr.equalsIgnoreCase(LOG_LEVEL) || attr.equalsIgnoreCase(SECURITY_LOG_LEVEL))) {
         Class clazz = attributes.get(attr).type();
         Class returnClass = getter.getReturnType();
         if (returnClass.isPrimitive()) {
@@ -184,10 +212,10 @@ public class DistributionConfigJUnitTest {
 
   @Test
   public void testGetAttributeObject() {
-    assertEquals(config.getAttributeObject(DistributionConfig.LOG_LEVEL_NAME), "config");
-    assertEquals(config.getAttributeObject(DistributionConfig.SECURITY_LOG_LEVEL_NAME), "config");
-    assertEquals(config.getAttributeObject(DistributionConfig.REDUNDANCY_ZONE_NAME), "");
-    assertEquals(config.getAttributeObject(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME).getClass(), Boolean.class);
+    assertEquals(config.getAttributeObject(LOG_LEVEL), "config");
+    assertEquals(config.getAttributeObject(SECURITY_LOG_LEVEL), "config");
+    assertEquals(config.getAttributeObject(REDUNDANCY_ZONE), "");
+    assertEquals(config.getAttributeObject(ENABLE_CLUSTER_CONFIGURATION).getClass(), Boolean.class);
   }
 
   @Test
@@ -212,8 +240,8 @@ public class DistributionConfigJUnitTest {
       }
     }
     assertEquals(modifiables.size(), 2);
-    assertEquals(modifiables.get(0), "http-service-port");
-    assertEquals(modifiables.get(1), "jmx-manager-http-port");
+    assertEquals(modifiables.get(0), HTTP_SERVICE_PORT);
+    assertEquals(modifiables.get(1), JMX_MANAGER_HTTP_PORT);
   }
 
   @Test
@@ -227,18 +255,18 @@ public class DistributionConfigJUnitTest {
         modifiables.add(attName);
       }
     }
-    assertEquals(modifiables.size(), 10);
-    assertEquals(modifiables.get(0), "archive-disk-space-limit");
-    assertEquals(modifiables.get(1), "archive-file-size-limit");
-    assertEquals(modifiables.get(2), "http-service-port");
-    assertEquals(modifiables.get(3), "jmx-manager-http-port");
-    assertEquals(modifiables.get(4), "log-disk-space-limit");
-    assertEquals(modifiables.get(5), "log-file-size-limit");
-    assertEquals(modifiables.get(6), "log-level");
-    assertEquals(modifiables.get(7), "statistic-archive-file");
-    assertEquals(modifiables.get(8), "statistic-sample-rate");
-    assertEquals(modifiables.get(9), "statistic-sampling-enabled");
 
+    assertEquals(modifiables.size(), 10);
+    assertEquals(modifiables.get(0), ARCHIVE_DISK_SPACE_LIMIT);
+    assertEquals(modifiables.get(1), ARCHIVE_FILE_SIZE_LIMIT);
+    assertEquals(modifiables.get(2), HTTP_SERVICE_PORT);
+    assertEquals(modifiables.get(3), JMX_MANAGER_HTTP_PORT);
+    assertEquals(modifiables.get(4), LOG_DISK_SPACE_LIMIT);
+    assertEquals(modifiables.get(5), LOG_FILE_SIZE_LIMIT);
+    assertEquals(modifiables.get(6), LOG_LEVEL);
+    assertEquals(modifiables.get(7), STATISTIC_ARCHIVE_FILE);
+    assertEquals(modifiables.get(8), STATISTIC_SAMPLE_RATE);
+    assertEquals(modifiables.get(9), STATISTIC_SAMPLING_ENABLED);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -248,27 +276,27 @@ public class DistributionConfigJUnitTest {
 
   @Test(expected = UnmodifiableException.class)
   public void testSetUnmodifiableAttributeObject() {
-    config.setAttributeObject("archive-disk-space-limit", 0, ConfigSource.api());
+    config.setAttributeObject(ARCHIVE_DISK_SPACE_LIMIT, 0, ConfigSource.api());
   }
 
   @Test
   public void testValidAttributeObject() {
-    config.setAttributeObject("http-service-port", 8080, ConfigSource.api());
+    config.setAttributeObject(HTTP_SERVICE_PORT, 8080, ConfigSource.api());
     assertEquals(config.getHttpServicePort(), 8080);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testOutOfRangeAttributeObject() {
-    config.setAttributeObject("http-service-port", -1, ConfigSource.api());
+    config.setAttributeObject(HTTP_SERVICE_PORT, -1, ConfigSource.api());
   }
 
   @Test
   public void testLogLevel() {
     config.modifiable = true;
-    config.setAttribute(DistributionConfig.LOG_LEVEL_NAME, "config", ConfigSource.api());
+    config.setAttribute(LOG_LEVEL, "config", ConfigSource.api());
     assertEquals(config.getLogLevel(), 700);
 
-    config.setAttributeObject(DistributionConfig.SECURITY_LOG_LEVEL_NAME, "debug", ConfigSource.api());
+    config.setAttributeObject(SECURITY_LOG_LEVEL, "debug", ConfigSource.api());
     assertEquals(config.getSecurityLogLevel(), 500);
   }
 
@@ -290,24 +318,38 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testAttributesAlwaysModifiable() {
     config.modifiable = false;
-    assertTrue(config.isAttributeModifiable(DistributionConfig.HTTP_SERVICE_PORT_NAME));
-    assertTrue(config.isAttributeModifiable("jmx-manager-http-port"));
+    assertTrue(config.isAttributeModifiable(HTTP_SERVICE_PORT));
+    assertTrue(config.isAttributeModifiable(JMX_MANAGER_HTTP_PORT));
 
     config.modifiable = true;
-    assertTrue(config.isAttributeModifiable(DistributionConfig.HTTP_SERVICE_PORT_NAME));
-    assertTrue(config.isAttributeModifiable("jmx-manager-http-port"));
+    assertTrue(config.isAttributeModifiable(HTTP_SERVICE_PORT));
+    assertTrue(config.isAttributeModifiable(JMX_MANAGER_HTTP_PORT));
   }
 
-  public final static Map<Class<?>, Class<?>> classMap = new HashMap<Class<?>, Class<?>>();
+  @Test
+  public void testSecurityProps(){
+    Properties props = new Properties();
+    props.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+    props.put(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
+    props.put(SECURITY_LOG_LEVEL, "config");
+    // add another non-security property to verify it won't get put in the security properties
+    props.put(ACK_WAIT_THRESHOLD, 2);
 
-  static {
-    classMap.put(boolean.class, Boolean.class);
-    classMap.put(byte.class, Byte.class);
-    classMap.put(short.class, Short.class);
-    classMap.put(char.class, Character.class);
-    classMap.put(int.class, Integer.class);
-    classMap.put(long.class, Long.class);
-    classMap.put(float.class, Float.class);
-    classMap.put(double.class, Double.class);
+    DistributionConfig config = new DistributionConfigImpl(props);
+    assertEquals(config.getSecurityProps().size(), 3);
+  }
+
+  @Test
+  public void testSecurityPropsWithNoSetter(){
+    Properties props = new Properties();
+    props.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+    props.put(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
+    props.put(SECURITY_LOG_LEVEL, "config");
+    // add another non-security property to verify it won't get put in the security properties
+    props.put(ACK_WAIT_THRESHOLD, 2);
+    props.put("security-username", "testName");
+
+    DistributionConfig config = new DistributionConfigImpl(props);
+    assertEquals(config.getSecurityProps().size(), 4);
   }
 }

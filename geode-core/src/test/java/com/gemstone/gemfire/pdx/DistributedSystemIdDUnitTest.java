@@ -16,29 +16,33 @@
  */
 package com.gemstone.gemfire.pdx;
 
-import java.io.File;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.Properties;
 
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-/**
- *
- */
-public class DistributedSystemIdDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class DistributedSystemIdDUnitTest extends JUnit4DistributedTestCase {
   
-  public DistributedSystemIdDUnitTest(String name) {
-    super(name);
+  @Override
+  public void preSetUp() {
+    disconnectAllFromDS(); // GEODE-558 test fails due to infection from another test
   }
 
+  @Test
   public void testMatchingIds() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -52,12 +56,10 @@ public class DistributedSystemIdDUnitTest extends DistributedTestCase {
     checkId(vm0, 1);
     checkId(vm1, 1);
     checkId(vm2, 1);
-    
   }
   
-  
-
-  public void testInfectousId() {
+  @Test
+  public void testInfectiousId() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -68,6 +70,7 @@ public class DistributedSystemIdDUnitTest extends DistributedTestCase {
     checkId(vm1, 1);
   }
   
+  @Test
   public void testMismatch() {
     IgnoredException.addIgnoredException("Rejected new system node");
     Host host = Host.getHost(0);
@@ -86,6 +89,7 @@ public class DistributedSystemIdDUnitTest extends DistributedTestCase {
     checkId(vm0, 1);
   }
   
+  @Test
   public void testInvalid() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -95,24 +99,22 @@ public class DistributedSystemIdDUnitTest extends DistributedTestCase {
       createLocator(vm0, "256");
       fail("Should have gotten an exception");
     } catch(Exception expected) {
-
     }
+
     try {
       createLocator(vm0, "aardvark");
       fail("Should have gotten an exception");
     } catch(Exception expected) {
-      
     }
   }
 
   private void createSystem(VM vm, final String dsId, final int locatorPort) {
-    
-    
+
     SerializableCallable createSystem = new SerializableCallable() {
       public Object call() throws Exception {
         Properties props = new Properties();
-        props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, dsId);
-        props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locatorPort + "]");
+        props.setProperty(DISTRIBUTED_SYSTEM_ID, dsId);
+        props.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
         getSystem(props);
         return null;
       }
@@ -125,13 +127,11 @@ public class DistributedSystemIdDUnitTest extends DistributedTestCase {
       public Object call() throws Exception {
         int port = AvailablePortHelper.getRandomAvailableTCPPort();
         Properties props = new Properties();
-        props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, dsId);
-        props.setProperty("mcast-port", "0");
-        props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
-        props.setProperty(DistributionConfig.START_LOCATOR_NAME, "localhost[" + port + "]");
+        props.setProperty(DISTRIBUTED_SYSTEM_ID, dsId);
+        props.setProperty(MCAST_PORT, "0");
+        props.setProperty(LOCATORS, "localhost[" + port + "]");
+        props.setProperty(START_LOCATOR, "localhost[" + port + "]");
         getSystem(props);
-//        Locator locator = Locator.startLocatorAndDS(port, File.createTempFile("locator", ""), props);
-//        system = (InternalDistributedSystem) locator.getDistributedSystem();
         return port;
       }
     };
@@ -139,7 +139,6 @@ public class DistributedSystemIdDUnitTest extends DistributedTestCase {
   }
   
   private void checkId(VM vm, final int dsId) {
-    
     
     SerializableCallable createSystem = new SerializableCallable() {
       public Object call() throws Exception {
@@ -150,7 +149,4 @@ public class DistributedSystemIdDUnitTest extends DistributedTestCase {
     };
     vm.invoke(createSystem);
   }
-  
-  
-
 }

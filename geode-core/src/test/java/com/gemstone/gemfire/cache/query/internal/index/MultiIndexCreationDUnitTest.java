@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -39,15 +48,17 @@ import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 
-public class MultiIndexCreationDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class MultiIndexCreationDUnitTest extends JUnit4CacheTestCase {
 
   private final String regionName = "MultiIndexCreationDUnitTest";
   public static volatile boolean hooked = false;
 
-  public MultiIndexCreationDUnitTest(String name) {
-    super(name);
+  public MultiIndexCreationDUnitTest() {
+    super();
   }
 
+  @Test
   public void testConcurrentMultiIndexCreationAndQuery() throws Exception {
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(1);

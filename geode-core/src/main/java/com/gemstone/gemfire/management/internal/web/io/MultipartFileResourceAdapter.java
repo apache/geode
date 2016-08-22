@@ -29,7 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @see org.springframework.core.io.AbstractResource
  * @see org.springframework.core.io.Resource
  * @see org.springframework.web.multipart.MultipartFile
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public class MultipartFileResourceAdapter extends AbstractResource {

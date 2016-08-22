@@ -16,26 +16,24 @@
  */
 package com.gemstone.gemfire.test.dunit.standalone;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.internal.FileUtil;
+import org.apache.commons.io.FileUtils;
+
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
-
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.internal.logging.LogService;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  *
@@ -53,32 +51,28 @@ public class ProcessManager {
     this.namingPort = namingPort;
     this.registry = registry;
   }
-  
-  public void launchVMs() throws IOException, NotBoundException {
-    log4jConfig = LogService.findLog4jConfigInCurrentDir();
-  }
 
   public synchronized void launchVM(int vmNum) throws IOException {
-    if(processes.containsKey(vmNum)) {
+    if (processes.containsKey(vmNum)) {
       throw new IllegalStateException("VM " + vmNum + " is already running.");
     }
-    
+
     String[] cmd = buildJavaCommand(vmNum, namingPort);
     System.out.println("Executing " + Arrays.asList(cmd));
     File workingDir = getVMDir(vmNum);
     try {
       FileUtil.delete(workingDir);
-    } catch(IOException e) {
+    } catch (IOException e) {
       //This delete is occasionally failing on some platforms, maybe due to a lingering
       //process. Allow the process to be launched anyway.
-      System.err.println("Unable to delete " + workingDir + ". Currently contains " 
-                          + Arrays.asList(workingDir.list()));
+      System.err.println("Unable to delete " + workingDir + ". Currently contains "
+          + Arrays.asList(workingDir.list()));
     }
     workingDir.mkdirs();
     if (log4jConfig != null) {
       FileUtils.copyFileToDirectory(log4jConfig, workingDir);
     }
-    
+
     //TODO - delete directory contents, preferably with commons io FileUtils
     Process process = Runtime.getRuntime().exec(cmd, null, workingDir);
     pendingVMs++;
@@ -91,26 +85,26 @@ public class ProcessManager {
   public static File getVMDir(int vmNum) {
     return new File(DUnitLauncher.DUNIT_DIR, "vm" + vmNum);
   }
-  
+
   public synchronized void killVMs() {
-    for(ProcessHolder process : processes.values()) {
-      if(process != null) {
+    for (ProcessHolder process : processes.values()) {
+      if (process != null) {
         process.kill();
       }
     }
   }
-  
+
   public synchronized boolean hasLiveVMs() {
-    for(ProcessHolder process : processes.values()) {
-      if(process != null && process.isAlive()) {
+    for (ProcessHolder process : processes.values()) {
+      if (process != null && process.isAlive()) {
         return true;
       }
     }
     return false;
   }
-  
+
   public synchronized void bounce(int vmNum) {
-    if(!processes.containsKey(vmNum)) {
+    if (!processes.containsKey(vmNum)) {
       throw new IllegalStateException("No such process " + vmNum);
     }
     try {
@@ -122,15 +116,15 @@ public class ProcessManager {
       throw new RuntimeException("Unable to restart VM " + vmNum, e);
     }
   }
-   
+
   private void linkStreams(final int vmNum, final ProcessHolder holder, final InputStream in, final PrintStream out) {
     Thread ioTransport = new Thread() {
       public void run() {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        String vmName = (vmNum==-2)? "[locator]" : "[vm_"+vmNum+"]";
+        String vmName = (vmNum == -2) ? "[locator]" : "[vm_" + vmNum + "]";
         try {
           String line = reader.readLine();
-          while(line != null) {
+          while (line != null) {
             if (line.length() == 0) {
               out.println();
             } else {
@@ -139,8 +133,8 @@ public class ProcessManager {
             }
             line = reader.readLine();
           }
-        } catch(Exception e) {
-          if(!holder.isKilled()) {
+        } catch (Exception e) {
+          if (!holder.isKilled()) {
             out.println("Error transporting IO from child process");
             e.printStackTrace(out);
           }
@@ -153,7 +147,7 @@ public class ProcessManager {
   }
 
   private String[] buildJavaCommand(int vmNum, int namingPort) {
-    String cmd = System.getProperty( "java.home" ) + File.separator + "bin" + File.separator + "java";
+    String cmd = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
     String classPath = System.getProperty("java.class.path");
     //String tmpDir = System.getProperty("java.io.tmpdir");
     String agent = getAgentString();
@@ -165,26 +159,38 @@ public class ProcessManager {
     }
 
     String jdkSuspend = vmNum == suspendVM ? "y" : "n";
+    ArrayList<String> cmds = new ArrayList<String>();
+    cmds.add(cmd);
+    cmds.add("-classpath");
+    cmds.add(classPath);
+    cmds.add("-D" + DUnitLauncher.RMI_PORT_PARAM + "=" + namingPort);
+    cmds.add("-D" + DUnitLauncher.VM_NUM_PARAM + "=" + vmNum);
+    cmds.add("-D" + DUnitLauncher.WORKSPACE_DIR_PARAM + "=" + new File(".").getAbsolutePath());
+    if (vmNum >= 0) { // let the locator print a banner
+      cmds.add("-D" + InternalLocator.INHIBIT_DM_BANNER + "=true");
+    }
+    cmds.add("-D"+LOG_LEVEL+"=" + DUnitLauncher.logLevel);
+    if (DUnitLauncher.LOG4J != null) {
+      cmds.add("-Dlog4j.configurationFile=" + DUnitLauncher.LOG4J);
+    }
+    cmds.add("-Djava.library.path=" + System.getProperty("java.library.path"));
+    cmds.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug);
+    cmds.add("-XX:+HeapDumpOnOutOfMemoryError");
+    cmds.add("-Xmx512m");
+    cmds.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE=10");
+    cmds.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "disallowMcastDefaults=true");
+    cmds.add("-ea");
+    cmds.add("-XX:+PrintGC");
+    cmds.add("-XX:+PrintGCDetails");
+    cmds.add("-XX:+PrintGCTimeStamps");
+    cmds.add(agent);
+    cmds.add(ChildVM.class.getName());
+    String[] rst = new String[cmds.size()];
+    cmds.toArray(rst);
 
-    return new String[] {
-      cmd, "-classpath", classPath,
-      "-D" + DUnitLauncher.RMI_PORT_PARAM + "=" + namingPort,
-      "-D" + DUnitLauncher.VM_NUM_PARAM + "=" + vmNum,
-      "-D" + DUnitLauncher.WORKSPACE_DIR_PARAM + "=" + new File(".").getAbsolutePath(),
-      "-DlogLevel=" + DUnitLauncher.LOG_LEVEL,
-      "-Djava.library.path=" + System.getProperty("java.library.path"),
-      "-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug,
-      "-XX:+HeapDumpOnOutOfMemoryError",
-      "-Xmx512m",
-      "-Dgemfire.DEFAULT_MAX_OPLOG_SIZE=10",
-      "-Dgemfire.disallowMcastDefaults=true",
-      "-ea",
-        "-XX:+PrintGC", "-XX:+PrintGCDetails","-XX:+PrintGCTimeStamps",
-      agent,
-      ChildVM.class.getName()
-    };
+    return rst;
   }
-  
+
   /**
    * Get the java agent passed to this process and pass it to the child VMs.
    * This was added to support jacoco code coverage reports
@@ -192,8 +198,8 @@ public class ProcessManager {
   private String getAgentString() {
     RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
     if (runtimeBean != null) {
-      for(String arg: runtimeBean.getInputArguments()) {
-        if(arg.contains("-javaagent:")) {
+      for (String arg : runtimeBean.getInputArguments()) {
+        if (arg.contains("-javaagent:")) {
           //HACK for gradle bug  GRADLE-2859. Jacoco is passing a relative path
           //That won't work when we pass this to dunit VMs in a different 
           //directory
@@ -203,7 +209,7 @@ public class ProcessManager {
         }
       }
     }
-    
+
     return "-DdummyArg=true";
   }
 
@@ -211,24 +217,24 @@ public class ProcessManager {
     pendingVMs--;
     this.notifyAll();
   }
-  
+
   public synchronized boolean waitForVMs(long timeout) throws InterruptedException {
     long end = System.currentTimeMillis() + timeout;
-    while(pendingVMs > 0) {
+    while (pendingVMs > 0) {
       long remaining = end - System.currentTimeMillis();
-      if(remaining <= 0) {
+      if (remaining <= 0) {
         return false;
       }
       this.wait(remaining);
     }
-    
+
     return true;
   }
-  
+
   private static class ProcessHolder {
     private final Process process;
     private volatile boolean killed = false;
-    
+
     public ProcessHolder(Process process) {
       this.process = process;
     }
@@ -236,7 +242,7 @@ public class ProcessManager {
     public void kill() {
       this.killed = true;
       process.destroy();
-      
+
     }
 
     public Process getProcess() {
@@ -246,7 +252,7 @@ public class ProcessManager {
     public boolean isKilled() {
       return killed;
     }
-    
+
     public boolean isAlive() {
       return !killed && process.isAlive();
     }

@@ -137,7 +137,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
           if( !(indexUsed).equals("statusIndexPf1")){
             fail("<statusIndexPf1> was expected but found "+indexUsed);
           }
-          //assertEquals("statusIndexPf1",itr.next().toString());
+          //assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();
@@ -231,7 +231,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
             fail("indices used do not match with those which are expected to be used" +
                 "<statusIndexPf1> and <empIdIndex> were expected but found " +itr.next());
           }
-          //assertEquals("statusIndexPf1",itr.next().toString());
+          //assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
       } catch (Exception e) {
@@ -843,7 +843,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
             if(  !(temp.equals("idIndexPf") || temp.equals("empIdIndexPf2") || temp.equals("statusIndexPf"))){
               fail("<idIndexPf> or <empIdIndexPf2>    was expected but found "+temp.toString());
             }
-            //assertEquals("statusIndexPf1",itr.next().toString());
+            //assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
           }
 
           if (i != 3 /* For join query without parenthesis */) {
@@ -945,7 +945,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
             if(  !(temp.equals("idIndexPf") || temp.equals("empIdIndexPf2"))){
               fail("<idIndexPf> or <empIdIndexPf2>    was expected but found "+temp.toString());
             }
-            //assertEquals("statusIndexPf1",itr.next().toString());
+            //assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
           }
 
           int indxs = observer.indexesUsed.size();
@@ -1054,7 +1054,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
               fail("<idIndexPf> or <empIdIndexPf2>    was expected but found "
                   + temp.toString());
             }
-            // assertEquals("statusIndexPf1",itr.next().toString());
+            // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
           }
 
           int indxs = observer.indexesUsed.size();
@@ -1232,7 +1232,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
             if(  !(temp.equals("ageIndexemp")||temp.equals("idIndexPf") || temp.equals("empIdIndexPf2") || temp.equals("statusIndexPf3"))){
               fail("<idIndexPf> or <empIdIndexPf2>    was expected but found "+temp.toString());
             }
-            //assertEquals("statusIndexPf1",itr.next().toString());
+            //assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
           }
 
           int indxs = observer.indexesUsed.size();

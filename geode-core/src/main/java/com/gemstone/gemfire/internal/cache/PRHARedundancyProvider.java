@@ -17,26 +17,6 @@
 
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.CacheClosedException;
@@ -46,39 +26,20 @@ import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.persistence.PartitionOfflineException;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.LonerDistributionManager;
 import com.gemstone.gemfire.distributed.internal.MembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.OneTaskOnlyExecutor;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion.RetryTimeKeeper;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore.CreateBucketResult;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
-import com.gemstone.gemfire.internal.cache.partitioned.Bucket;
-import com.gemstone.gemfire.internal.cache.partitioned.BucketBackupMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.CreateBucketMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.CreateMissingBucketsTask;
-import com.gemstone.gemfire.internal.cache.partitioned.EndBucketCreationMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.FetchPartitionDetailsMessage;
+import com.gemstone.gemfire.internal.cache.partitioned.*;
 import com.gemstone.gemfire.internal.cache.partitioned.FetchPartitionDetailsMessage.FetchPartitionDetailsResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.InternalPRInfo;
-import com.gemstone.gemfire.internal.cache.partitioned.InternalPartitionDetails;
-import com.gemstone.gemfire.internal.cache.partitioned.LoadProbe;
-import com.gemstone.gemfire.internal.cache.partitioned.ManageBackupBucketMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.ManageBucketMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.ManageBucketMessage.NodeResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.OfflineMemberDetails;
-import com.gemstone.gemfire.internal.cache.partitioned.OfflineMemberDetailsImpl;
-import com.gemstone.gemfire.internal.cache.partitioned.PRLoad;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionMemberInfoImpl;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionRegionInfoImpl;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserverAdapter;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserverHolder;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionRebalanceOp;
-import com.gemstone.gemfire.internal.cache.partitioned.RecoveryRunnable;
-import com.gemstone.gemfire.internal.cache.partitioned.RedundancyLogger;
-import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor;
 import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
 import com.gemstone.gemfire.internal.cache.partitioned.rebalance.CompositeDirector;
 import com.gemstone.gemfire.internal.cache.partitioned.rebalance.FPRDirector;
@@ -89,7 +50,16 @@ import com.gemstone.gemfire.internal.cache.persistence.PersistentStateListener;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This class provides the redundancy management for partitioned region. It will
@@ -104,9 +74,9 @@ import com.gemstone.gemfire.i18n.StringId;
 public class PRHARedundancyProvider
   {
   private static final Logger logger = LogService.getLogger();
-  
-  private static final boolean DISABLE_CREATE_BUCKET_RANDOMNESS 
-  = Boolean.getBoolean("gemfire.DISABLE_CREATE_BUCKET_RANDOMNESS");
+
+    private static final boolean DISABLE_CREATE_BUCKET_RANDOMNESS
+        = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_CREATE_BUCKET_RANDOMNESS");
 
   public static class ArrayListWithClearState<T> extends ArrayList<T> {
     private static final long serialVersionUID = 1L;
@@ -122,7 +92,7 @@ public class PRHARedundancyProvider
   }
 
   public static final String  DATASTORE_DISCOVERY_TIMEOUT_PROPERTY_NAME =
-    "gemfire.partitionedRegionDatastoreDiscoveryTimeout";
+      DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionDatastoreDiscoveryTimeout";
   static volatile Long DATASTORE_DISCOVERY_TIMEOUT_MILLISECONDS =
     Long.getLong(DATASTORE_DISCOVERY_TIMEOUT_PROPERTY_NAME);
 
@@ -442,7 +412,7 @@ public class PRHARedundancyProvider
   }
   
   public static final long INSUFFICIENT_LOGGING_THROTTLE_TIME =
-    TimeUnit.SECONDS.toNanos(Integer.getInteger("gemfire.InsufficientLoggingThrottleTime", 2).intValue());
+      TimeUnit.SECONDS.toNanos(Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "InsufficientLoggingThrottleTime", 2).intValue());
   public volatile static boolean TEST_MODE = false;
   //since 6.6, please use the distributed system property enforce-unique-host instead.
   //  public static final boolean ENFORCE_UNIQUE_HOST_STORAGE_ALLOCATION = DistributionConfig.DEFAULT_ENFORCE_UNIQUE_HOST;
@@ -462,8 +432,6 @@ public class PRHARedundancyProvider
       this.prRegion.checkReadiness();
       Set<InternalDistributedMember> available = this.prRegion
           .getRegionAdvisor().adviseInitializedDataStore();
-      // remove uninitialized members for bucket creation
-      this.prRegion.getCache().removeUnInitializedMembers(available);
       InternalDistributedMember target = null;
       available.removeAll(attempted);
       for (InternalDistributedMember member : available) {
@@ -605,8 +573,6 @@ public class PRHARedundancyProvider
         // Always go back to the advisor, see if any fresh data stores are
           // present.
         Set<InternalDistributedMember> allStores = getAllStores(partitionName);
-        // remove nodes that are not fully initialized
-        this.prRegion.getCache().removeUnInitializedMembers(allStores);
 
         loggedInsufficentStores  = checkSufficientStores(allStores, 
             loggedInsufficentStores);
@@ -755,7 +721,7 @@ public class PRHARedundancyProvider
         } catch (Exception e) {
           // if region is going down, then no warning level logs
           if (e instanceof CancelException || e instanceof CacheClosedException
-              || (prRegion.getCancelCriterion().cancelInProgress() != null)) {
+              || (prRegion.getCancelCriterion().isCancelInProgress())) {
             logger.debug("Exception trying choose a primary after bucket creation failure", e);
           }
           else {
@@ -806,7 +772,6 @@ public class PRHARedundancyProvider
       //  the parent's in case of colocation) so it is now passed
       //InternalDistributedMember targetPrimary = getPreferredDataStore(
       //    acceptedMembers, Collections.<InternalDistributedMember> emptySet());
-      this.prRegion.getCache().removeUnInitializedMembers(acceptedMembers);
       targetPrimary = getPreferredDataStore(acceptedMembers, Collections
           .<InternalDistributedMember> emptySet());
     }
@@ -867,7 +832,7 @@ public class PRHARedundancyProvider
     
     //Don't elect ourselves as primary or tell others to persist our ID if this member
     //has been destroyed.
-    if(prRegion.getCancelCriterion().cancelInProgress()  != null || prRegion.isDestroyed()) {
+    if(prRegion.getCancelCriterion().isCancelInProgress() || prRegion.isDestroyed()) {
       return;
     }
     
@@ -938,7 +903,7 @@ public class PRHARedundancyProvider
   /** 
    * Get buddy data stores on the same Host as the accepted member
    * @return set of members on the same host, not including accepted member
-   * @since gemfire59poc
+   * @since GemFire 5.9
    * 
    */
   private Set <InternalDistributedMember> getBuddyMembersInZone(
@@ -957,7 +922,7 @@ public class PRHARedundancyProvider
   /**
    * Early check for resources. This code may be executed for every put operation if
    * there are no datastores present, limit excessive logging.
-   * @since gemfire5.8
+   * @since GemFire 5.8
    */
   private void earlySufficientStoresCheck(String partitionName) {
     assert Assert.assertHoldsLock(this,false);
@@ -975,7 +940,7 @@ public class PRHARedundancyProvider
    * to once per PR after which once every {@link #INSUFFICIENT_LOGGING_THROTTLE_TIME}
    * second
    * @return true if it's time to log
-   * @since gemfire5.8
+   * @since GemFire 5.8
    */
   private boolean shouldLogInsufficientStores() {
     long now = NanoTimer.getTime();
@@ -1285,7 +1250,7 @@ public class PRHARedundancyProvider
    * @param bucketId
    * @param prName
    * @return InternalDistributedMember colocated data store
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   private InternalDistributedMember getColocatedDataStore(
       Collection<InternalDistributedMember> candidates,
@@ -1597,7 +1562,7 @@ public class PRHARedundancyProvider
 
     if (isStartup) {
       delay = this.prRegion.getPartitionAttributes().getStartupRecoveryDelay();
-      movePrimaries = !Boolean.getBoolean("gemfire.DISABLE_MOVE_PRIMARIES_ON_STARTUP");
+      movePrimaries = !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_MOVE_PRIMARIES_ON_STARTUP");
     } else {
       delay = this.prRegion.getPartitionAttributes().getRecoveryDelay();
       movePrimaries = false;
@@ -1608,9 +1573,6 @@ public class PRHARedundancyProvider
       return;
     }
     if (!PRHARedundancyProvider.this.prRegion.isDataStore()) {
-      return;
-    }
-    if (cache.isUnInitializedMember(cache.getMyId())) {
       return;
     }
     Runnable task = new RecoveryRunnable(this) {

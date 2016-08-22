@@ -22,6 +22,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -47,6 +56,7 @@ import com.gemstone.gemfire.test.dunit.VM;
  * This test is to verify creation of partition region and
  * distributed region with same name.
  */
+@Category(DistributedTest.class)
 public class PartitionedRegionWithSameNameDUnitTest extends
     PartitionedRegionDUnitTestCase
 {
@@ -73,8 +83,8 @@ public class PartitionedRegionWithSameNameDUnitTest extends
 
   static protected final int PARTITIONED_REGION = 1;
 
-  public PartitionedRegionWithSameNameDUnitTest(String name) {
-    super(name);
+  public PartitionedRegionWithSameNameDUnitTest() {
+    super();
   }
 
   /**
@@ -85,6 +95,7 @@ public class PartitionedRegionWithSameNameDUnitTest extends
    * on vm0 </br> In this test RegionExistException is expected while creating
    * region with the same as partition region.
    */
+  @Test
   public void testNameWithPartitionRegionFirstOnSameVM()
   {
     Host host = Host.getHost(0);
@@ -131,6 +142,7 @@ public class PartitionedRegionWithSameNameDUnitTest extends
    * In this test RegionExistException is expected while creating Partition
    * region with the same as region.
    */
+  @Test
   public void testNameWithDistributedRegionFirstOnSameVM()
   {
     Host host = Host.getHost(0);
@@ -174,6 +186,7 @@ public class PartitionedRegionWithSameNameDUnitTest extends
    * region.
    */
 
+  @Test
   public void testNameWithPartitionRegionFirstOnDifferentVM()
   {
     Host host = Host.getHost(0);
@@ -222,6 +235,7 @@ public class PartitionedRegionWithSameNameDUnitTest extends
    * InternalGemFireException is expected while creating region.
    */
 
+  @Test
   public void testNameWithDistributedRegionFirstOnDifferentVM()
   {
     Host host = Host.getHost(0);
@@ -263,6 +277,7 @@ public class PartitionedRegionWithSameNameDUnitTest extends
    * 2. creates partition region with the same name as distributed region on
    * vm1,vm2,vm3</br> NoException is expected.
    */
+  @Test
   public void testLocalRegionFirst()
   {
     Host host = Host.getHost(0);
@@ -305,6 +320,7 @@ public class PartitionedRegionWithSameNameDUnitTest extends
    * 2. creates distributed region scope = LOCAL with the same name as
    * partitioned region on vm1,vm2,vm3</br> NoException is expected.
    */
+  @Test
   public void testLocalRegionSecond()
   {
     Host host = Host.getHost(0);
@@ -346,6 +362,7 @@ public class PartitionedRegionWithSameNameDUnitTest extends
    * 2. Creates distributed subregion of parent region </br>
    * OperationNotSupportedException is expected.
    */
+  @Test
   public void testWithPartitionedRegionAsParentRegionAndDistributedSubRegion()
   {
     Host host = Host.getHost(0);
@@ -384,6 +401,7 @@ public class PartitionedRegionWithSameNameDUnitTest extends
    * OperationNotSupportedException is expected
    */
 
+  @Test
   public void testWithPartitionedRegionAsParentRegionAndPartitionedSubRegion()
   {
     Host host = Host.getHost(0);
@@ -422,6 +440,7 @@ public class PartitionedRegionWithSameNameDUnitTest extends
    * 3.Creates a distributed region as subregion of parent on vm1,vm2,vm3 </br>
    * In this case InternalGemFireException is expected.
    */
+  @Test
   public void testWithSubRegionPartitionedRegionFirst()
   {
     Host host = Host.getHost(0);
@@ -471,6 +490,7 @@ public class PartitionedRegionWithSameNameDUnitTest extends
    * 3.Creates a partitioned region as subregion of parent on vm1,vm2,vm3 </br>
    * In this case IllegalStateException is expected.
    */
+  @Test
   public void testWithSubRegionDistributedRegionFirst()
   {
     Host host = Host.getHost(0);

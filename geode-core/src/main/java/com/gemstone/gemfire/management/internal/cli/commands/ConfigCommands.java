@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,17 +30,11 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.management.cli.CliMetaData;
 import com.gemstone.gemfire.management.cli.ConverterHint;
@@ -62,10 +58,17 @@ import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
+
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 /****
- *
- *         Sourabh Bansod
- * @since 7.0
+ * @since GemFire 7.0
  *
  */
 public class ConfigCommands implements CommandMarker {
@@ -78,7 +81,8 @@ public class ConfigCommands implements CommandMarker {
   }
 
   @CliCommand(value = { CliStrings.DESCRIBE_CONFIG }, help = CliStrings.DESCRIBE_CONFIG__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEMFIRE_CONFIG})
+  @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
+  @ResourceOperation(resource = Resource.CLUSTER, operation= Operation.READ)
   public Result describeConfig(
       @CliOption (key = CliStrings.DESCRIBE_CONFIG__MEMBER,
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,
@@ -191,7 +195,8 @@ public class ConfigCommands implements CommandMarker {
    * @return Results of the attempt to write the configuration
    */
   @CliCommand(value = { CliStrings.EXPORT_CONFIG }, help = CliStrings.EXPORT_CONFIG__HELP)
-  @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.ConfigCommands$Interceptor", relatedTopic = {CliStrings.TOPIC_GEMFIRE_CONFIG})
+  @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.ConfigCommands$Interceptor", relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result exportConfig(
       @CliOption(key = { CliStrings.EXPORT_CONFIG__MEMBER },
                  optionContext = ConverterHint.ALL_MEMBER_IDNAME,
@@ -246,7 +251,8 @@ public class ConfigCommands implements CommandMarker {
 
 
   @CliCommand(value = { CliStrings.ALTER_RUNTIME_CONFIG }, help = CliStrings.ALTER_RUNTIME_CONFIG__HELP)
-  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEMFIRE_CONFIG})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public Result alterRuntimeConfig(
       @CliOption (key = {CliStrings.ALTER_RUNTIME_CONFIG__MEMBER},
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,
@@ -332,7 +338,7 @@ public class ConfigCommands implements CommandMarker {
       }
 
       if (statisticSamplingEnabled != null) {
-        runTimeDistributionConfigAttributes.put(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, statisticSamplingEnabled.toString());
+        runTimeDistributionConfigAttributes.put(STATISTIC_SAMPLING_ENABLED, statisticSamplingEnabled.toString());
       }
       
       
@@ -422,6 +428,7 @@ public class ConfigCommands implements CommandMarker {
       return ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.EXCEPTION_CLASS_AND_MESSAGE, e.getClass(), e.getMessage()));
     }
   }
+
   @CliAvailabilityIndicator({ CliStrings.DESCRIBE_CONFIG, CliStrings.EXPORT_CONFIG, CliStrings.ALTER_RUNTIME_CONFIG})
   public boolean configCommandsAvailable() {
     boolean isAvailable = true; // always available on server

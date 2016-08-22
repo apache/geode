@@ -20,9 +20,6 @@ import static org.junit.Assert.*;
 
 import java.util.Set;
 
-import com.gemstone.gemfire.internal.util.CollectionUtils;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
@@ -30,6 +27,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.internal.util.CollectionUtils;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * The AbstractSignalNotificationHandlerJUnitTest class is a test suite of test cases testing the contract
@@ -43,7 +43,7 @@ import org.junit.experimental.categories.Category;
  * @see org.jmock.Mockery
  * @see org.junit.Assert
  * @see org.junit.Test
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(UnitTest.class)
 public class AbstractSignalNotificationHandlerJUnitTest {
@@ -63,7 +63,7 @@ public class AbstractSignalNotificationHandlerJUnitTest {
     mockContext = null;
   }
 
-  protected AbstractSignalNotificationHandler createSignalNotificationHandler() {
+  private AbstractSignalNotificationHandler createSignalNotificationHandler() {
     return new TestSignalNotificationHandler();
   }
 
@@ -453,7 +453,7 @@ public class AbstractSignalNotificationHandlerJUnitTest {
     // notification verification handled by mockContext.assertIsSatisfied in tearDown()
   }
 
-  protected static final class TestSignalNotificationHandler extends AbstractSignalNotificationHandler {
+  private static final class TestSignalNotificationHandler extends AbstractSignalNotificationHandler {
   }
 
 }

@@ -34,7 +34,7 @@ import com.gemstone.gemfire.cache.query.types.*;
 
 /**
  * Implementation of CollectionType
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class CollectionTypeImpl extends ObjectTypeImpl implements CollectionType {
   private static final long serialVersionUID = 892402666471396897L;

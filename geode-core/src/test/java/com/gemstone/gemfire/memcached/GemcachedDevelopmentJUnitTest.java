@@ -16,11 +16,18 @@
  */
 package com.gemstone.gemfire.memcached;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import net.spy.memcached.CASResponse;
+import net.spy.memcached.CASValue;
+import net.spy.memcached.MemcachedClient;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -32,18 +39,8 @@ import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 
-import net.spy.memcached.CASResponse;
-import net.spy.memcached.CASValue;
-import net.spy.memcached.MemcachedClient;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)
 public class GemcachedDevelopmentJUnitTest {
@@ -56,7 +53,7 @@ public class GemcachedDevelopmentJUnitTest {
   
   @Before
   public void setUp() throws Exception {
-    System.setProperty("gemfire.mcast-port", "0");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
     PORT = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     this.server = new GemFireMemcachedServer("", PORT, getProtocol());
     server.start();
@@ -65,7 +62,7 @@ public class GemcachedDevelopmentJUnitTest {
   
   @After
   public void tearDown() throws Exception {
-    System.getProperties().remove("gemfire.mcast-port");
+    System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT);
     this.server.shutdown();
   }
 
@@ -156,6 +153,7 @@ public class GemcachedDevelopmentJUnitTest {
     assertNull(client.get("key1"));
   }
 
+  @Category(FlakyTest.class) // GEODE-1140: time sensitive, thread sleep
   @Test
   public void testExpiration() throws Exception {
     MemcachedClient client = bootstrapClient();

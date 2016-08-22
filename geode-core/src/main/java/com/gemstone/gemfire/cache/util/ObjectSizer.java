@@ -32,7 +32,7 @@ import com.gemstone.gemfire.internal.size.SizeClassOnceObjectSizer;
  * object sizer, which is {#link {@link #SIZE_CLASS_ONCE}
  * 
  * 
- * @since 3.0
+ * @since GemFire 3.0
  */
 public interface ObjectSizer {
 
@@ -51,7 +51,7 @@ public interface ObjectSizer {
    * time, because there is very little performance impact from sizing these
    * objects.
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final ObjectSizer SIZE_CLASS_ONCE = SizeClassOnceObjectSizer.getInstance();
 
@@ -65,14 +65,14 @@ public interface ObjectSizer {
    * For objects that are all approximately the same size, consider using
    * {@link #SIZE_CLASS_ONCE}. It will have much better performance.
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final ObjectSizer REFLECTION_SIZE = ReflectionObjectSizer.getInstance();
   
   
   /**
    * The default object sizer, currently {@link #SIZE_CLASS_ONCE}
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final ObjectSizer DEFAULT = SIZE_CLASS_ONCE;
 

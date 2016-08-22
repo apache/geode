@@ -17,26 +17,6 @@
 
 package com.gemstone.gemfire.cache.client;
 
-import static org.junit.Assert.*;
-import static org.junit.runners.MethodSorters.*;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Properties;
-
-import org.jgroups.util.UUID;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.cache.client.internal.ProxyCache;
@@ -54,10 +34,31 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.jgroups.util.UUID;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
 /**
  * Unit test for the ClientCacheFactory class
- * @since 6.5
+ * @since GemFire 6.5
  */
 @FixMethodOrder(NAME_ASCENDING)
 @Category(IntegrationTest.class)
@@ -90,8 +91,8 @@ public class ClientCacheFactoryJUnitTest {
     GemFireCacheImpl gfc = (GemFireCacheImpl)this.cc;
     assertEquals(true, gfc.isClient());
     Properties dsProps = this.cc.getDistributedSystem().getProperties();
-    assertEquals("0", dsProps.getProperty("mcast-port"));
-    assertEquals("", dsProps.getProperty("locators"));
+    assertEquals("0", dsProps.getProperty(MCAST_PORT));
+    assertEquals("", dsProps.getProperty(LOCATORS));
     Pool defPool = gfc.getDefaultPool();
     assertEquals("DEFAULT", defPool.getName());
     assertEquals(new ArrayList(), defPool.getLocators());
@@ -103,7 +104,7 @@ public class ClientCacheFactoryJUnitTest {
     }
 
     try {
-      new ClientCacheFactory().set("log-level", "severe").create();
+      new ClientCacheFactory().set(LOG_LEVEL, "severe").create();
       fail("expected create to fail");
     } catch (IllegalStateException expected) {
     }
@@ -122,13 +123,13 @@ public class ClientCacheFactoryJUnitTest {
     URL url = ClientCacheFactoryJUnitTest.class.getResource("ClientCacheFactoryJUnitTest_single_pool.xml");;
     FileUtil.copy(url, this.tmpFile);
     this.cc = new ClientCacheFactory()
-      .set("cache-xml-file", this.tmpFile.getAbsolutePath())
+        .set(CACHE_XML_FILE, this.tmpFile.getAbsolutePath())
       .create();
     GemFireCacheImpl gfc = (GemFireCacheImpl)this.cc;
     assertEquals(true, gfc.isClient());
     Properties dsProps = this.cc.getDistributedSystem().getProperties();
-    assertEquals("0", dsProps.getProperty("mcast-port"));
-    assertEquals("", dsProps.getProperty("locators"));
+    assertEquals("0", dsProps.getProperty(MCAST_PORT));
+    assertEquals("", dsProps.getProperty(LOCATORS));
     Pool defPool = gfc.getDefaultPool();
     assertEquals("my_pool_name", defPool.getName());
     assertEquals(new ArrayList(), defPool.getLocators());
@@ -141,7 +142,7 @@ public class ClientCacheFactoryJUnitTest {
   @Test
   public void test002DPsinglePool() throws Exception {
     Properties dsProps = new Properties();
-    dsProps.setProperty("mcast-port", "0");
+    dsProps.setProperty(MCAST_PORT, "0");
     DistributedSystem ds = DistributedSystem.connect(dsProps);
     Pool p = PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 7777).create("singlePool");
     this.cc = new ClientCacheFactory().create();
@@ -179,7 +180,7 @@ public class ClientCacheFactoryJUnitTest {
   @Test
   public void test003DPmultiplePool() throws Exception {
     Properties dsProps = new Properties();
-    dsProps.setProperty("mcast-port", "0");
+    dsProps.setProperty(MCAST_PORT, "0");
     DistributedSystem ds = DistributedSystem.connect(dsProps);
     PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 7777).create("p7");
     PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 6666).create("p6");
@@ -214,13 +215,13 @@ public class ClientCacheFactoryJUnitTest {
 
   @Test
   public void test004SetMethod() throws Exception {
-    this.cc = new ClientCacheFactory().set("log-level", "severe").create();
+    this.cc = new ClientCacheFactory().set(LOG_LEVEL, "severe").create();
     GemFireCacheImpl gfc = (GemFireCacheImpl)this.cc;
     assertEquals(true, gfc.isClient());
     Properties dsProps = this.cc.getDistributedSystem().getProperties();
-    assertEquals("0", dsProps.getProperty("mcast-port"));
-    assertEquals("", dsProps.getProperty("locators"));
-    assertEquals("severe", dsProps.getProperty("log-level"));
+    assertEquals("0", dsProps.getProperty(MCAST_PORT));
+    assertEquals("", dsProps.getProperty(LOCATORS));
+    assertEquals("severe", dsProps.getProperty(LOG_LEVEL));
   }
 
   @Test
@@ -233,8 +234,8 @@ public class ClientCacheFactoryJUnitTest {
     
     assertEquals(true, gfc.isClient());
     Properties dsProps = this.cc.getDistributedSystem().getProperties();
-    assertEquals("0", dsProps.getProperty("mcast-port"));
-    assertEquals("", dsProps.getProperty("locators"));
+    assertEquals("0", dsProps.getProperty(MCAST_PORT));
+    assertEquals("", dsProps.getProperty(LOCATORS));
     Pool defPool = gfc.getDefaultPool();
     assertEquals("DEFAULT", defPool.getName());
     assertEquals(new ArrayList(), defPool.getLocators());
@@ -244,8 +245,8 @@ public class ClientCacheFactoryJUnitTest {
     // make sure we can create another secure user cache
     RegionService cc2 = this.cc.createAuthenticatedView(suProps);
     assertEquals(true, gfc.isClient());
-    assertEquals("0", dsProps.getProperty("mcast-port"));
-    assertEquals("", dsProps.getProperty("locators"));
+    assertEquals("0", dsProps.getProperty(MCAST_PORT));
+    assertEquals("", dsProps.getProperty(LOCATORS));
     defPool = gfc.getDefaultPool();
     assertEquals("DEFAULT", defPool.getName());
     assertEquals(new ArrayList(), defPool.getLocators());
@@ -264,8 +265,8 @@ public class ClientCacheFactoryJUnitTest {
     GemFireCacheImpl gfc = (GemFireCacheImpl)this.cc;
     assertEquals(true, gfc.isClient());
     Properties dsProps = this.cc.getDistributedSystem().getProperties();
-    assertEquals("0", dsProps.getProperty("mcast-port"));
-    assertEquals("", dsProps.getProperty("locators"));
+    assertEquals("0", dsProps.getProperty(MCAST_PORT));
+    assertEquals("", dsProps.getProperty(LOCATORS));
     Pool defPool = gfc.getDefaultPool();
     assertEquals("DEFAULT", defPool.getName());
     assertEquals(new ArrayList(), defPool.getLocators());
@@ -275,8 +276,8 @@ public class ClientCacheFactoryJUnitTest {
     gfc = (GemFireCacheImpl)this.cc;
     assertEquals(true, gfc.isClient());
     dsProps = this.cc.getDistributedSystem().getProperties();
-    assertEquals("0", dsProps.getProperty("mcast-port"));
-    assertEquals("", dsProps.getProperty("locators"));
+    assertEquals("0", dsProps.getProperty(MCAST_PORT));
+    assertEquals("", dsProps.getProperty(LOCATORS));
     defPool = gfc.getDefaultPool();
     assertEquals("DEFAULT", defPool.getName());
     assertEquals(new ArrayList(), defPool.getLocators());

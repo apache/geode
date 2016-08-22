@@ -17,22 +17,10 @@
 
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.IOException;
-import java.util.Arrays;
-
-import org.apache.logging.log4j.Logger;
-
-import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ABSTRACT_REGION_ENTRY_FILL_IN_VALUE;
-import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE;
-
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.InvalidDeltaException;
 import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.TimeoutException;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.query.IndexMaintenanceException;
 import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
@@ -40,32 +28,20 @@ import com.gemstone.gemfire.cache.query.internal.index.IndexProtocol;
 import com.gemstone.gemfire.cache.util.GatewayConflictHelper;
 import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.ByteArrayDataInput;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.InternalStatisticsDisabledException;
-import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.cache.lru.LRUClockNode;
 import com.gemstone.gemfire.internal.cache.lru.NewLRUClockHand;
 import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
-import com.gemstone.gemfire.internal.cache.versions.ConcurrentCacheModificationException;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
-import com.gemstone.gemfire.internal.cache.versions.VersionSource;
-import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import com.gemstone.gemfire.internal.cache.versions.*;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.MemoryAllocator;
-import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
-import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
-import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.*;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
@@ -79,13 +55,20 @@ import com.gemstone.gemfire.pdx.PdxSerializationException;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 import com.gemstone.gemfire.pdx.internal.ConvertableToBytes;
 import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.util.Arrays;
+
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ABSTRACT_REGION_ENTRY_FILL_IN_VALUE;
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE;
 
 /**
  * Abstract implementation class of RegionEntry interface.
  * This is the topmost implementation class so common behavior
  * lives here.
  *
- * @since 3.5.1
+ * @since GemFire 3.5.1
  *
  *
  */
@@ -100,7 +83,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
    * 'gemfire.disableAccessTimeUpdateOnPut' system property.
    */
   protected static final boolean DISABLE_ACCESS_TIME_UPDATE_ON_PUT = Boolean
-      .getBoolean("gemfire.disableAccessTimeUpdateOnPut");
+      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableAccessTimeUpdateOnPut");
 
   /*
    * Flags for a Region Entry.
@@ -167,7 +150,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
         // by the RegionMap. It is unclear why this code is needed. ARM destroy
         // does this also and we are now doing it as phase3 of the ARM destroy.
         removePhase2();
-        rgn.getRegionMap().removeEntry(event.getKey(), this, true, event, rgn, rgn.getIndexUpdater());
+        rgn.getRegionMap().removeEntry(event.getKey(), this, true, event, rgn);
       }
     }
   }
@@ -308,10 +291,6 @@ public abstract class AbstractRegionEntry implements RegionEntry,
       }
     }
 
-    final boolean isEagerDeserialize = dst.isEagerDeserialize();
-    if (isEagerDeserialize) {
-      dst.clearEagerDeserialize();
-    }
     dst.setLastModified(mgr, getLastModified()); // fix for bug 31059
     if (v == Token.INVALID) {
       dst.setInvalid();
@@ -324,17 +303,11 @@ public abstract class AbstractRegionEntry implements RegionEntry,
     }
     else if (v instanceof CachedDeserializable) {
       // don't serialize here if it is not already serialized
-//      if(v instanceof ByteSource && CachedDeserializableFactory.preferObject()) {
-//        // For SQLFire we prefer eager deserialized
-//        dst.setEagerDeserialize();         
-//      }
       CachedDeserializable cd = (CachedDeserializable) v;
       if (!cd.isSerialized()) {
         dst.value = cd.getDeserializedForReading();
       } else {
-        /*if (v instanceof ByteSource && CachedDeserializableFactory.preferObject()) {
-          dst.value = v;
-        } else */ {
+        {
           Object tmp = cd.getValue();
           if (tmp instanceof byte[]) {
             byte[] bb = (byte[]) tmp;
@@ -369,11 +342,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
           return false;
         }
       }
-    if (CachedDeserializableFactory.preferObject()) {
-      dst.value = preparedValue;
-      dst.setEagerDeserialize();
-    }
-    else {
+    {
       try {
         HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
         BlobHelper.serializeTo(preparedValue, hdos);
@@ -429,7 +398,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
       ReferenceCountHelper.setReferenceCountOwner(null);
       return null;
     } else {
-      result = OffHeapHelper.copyAndReleaseIfNeeded(result); // sqlf does not dec ref count in this call
+      result = OffHeapHelper.copyAndReleaseIfNeeded(result);
       ReferenceCountHelper.setReferenceCountOwner(null);
       setRecentlyUsed();
       return result;
@@ -557,20 +526,18 @@ public abstract class AbstractRegionEntry implements RegionEntry,
   }
   
   
-  @Retained
   public final Object getValueInVM(RegionEntryContext context) {
     ReferenceCountHelper.createReferenceCountOwner();
-    @Retained Object v = _getValueRetain(context, true);
+    @Released Object v = _getValueRetain(context, true);
     
     if (v == null) { // should only be possible if disk entry
       v = Token.NOT_AVAILABLE;
     }
-    @Retained Object result = OffHeapHelper.copyAndReleaseIfNeeded(v); // TODO OFFHEAP keep it offheap?
+    Object result = OffHeapHelper.copyAndReleaseIfNeeded(v);
     ReferenceCountHelper.setReferenceCountOwner(null);
     return result;
   }
   
-  @Retained
   public  Object getValueInVMOrDiskWithoutFaultIn(LocalRegion owner) {
    return getValueInVM(owner);
   }
@@ -642,8 +609,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
         // Because the pr meta data region will not have an LRU.
         newValueToWrite = ((CachedDeserializable) newValueToWrite).getDeserializedValue(region, null);
         if (!create && newValueToWrite instanceof Versionable) {
-          @Retained @Released final Object oldValue = getValueInVM(region); // Heap value should always be deserialized at this point // OFFHEAP will not be deserialized
-          try {
+          final Object oldValue = getValueInVM(region); // Heap value should always be deserialized at this point // OFFHEAP will not be deserialized
           // BUGFIX for 35029. If oldValue is null the newValue should be put.
           if(oldValue == null) {
           	putValue = true;
@@ -653,9 +619,6 @@ public abstract class AbstractRegionEntry implements RegionEntry,
             Versionable ov = (Versionable) oldValue;
             putValue = nv.isNewerThan(ov);
           }  
-          } finally {
-            OffHeapHelper.release(oldValue);
-          }
         }
       }
 
@@ -772,9 +735,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
       } 
       else {
         FilterProfile fp = region.getFilterProfile();
-        // rdubey: Old value also required for SqlfIndexManager.
-        if (fp != null && ((fp.getCqCount() > 0) || expectedOldValue != null
-            || event.getRegion().getIndexUpdater() != null)) {
+        if (fp != null && ((fp.getCqCount() > 0) || expectedOldValue != null)) {
           //curValue = getValue(region); can cause deadlock will fault in the value
           // and will confuse LRU. rdubey.
           curValue = getValueOnDiskOrBuffer(region);
@@ -870,15 +831,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
         removeEntry = true;
       }
 
-      // See #47887, we do not insert a tombstone for evicted HDFS
-      // entries since the value is still present in HDFS
-      // Check if we have to evict or just do destroy.
-      boolean forceRemoveEntry = 
-          (event.isEviction() || event.isExpiration()) 
-          && event.getRegion().isUsedForPartitionedRegionBucket()
-          && event.getRegion().getPartitionedRegion().isHDFSRegion();
-
-      if (removeEntry || forceRemoveEntry) {
+      if (removeEntry) {
         boolean isThisTombstone = isTombstone();
         if(inTokenMode && !event.getOperation().isEviction()) {
           setValue(region, Token.DESTROYED);  
@@ -1289,8 +1242,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
             throw new IllegalStateException("Could not use an off heap value because it was freed");
           }
         }
-        // else it is DataAsAddress. This code just returns it as prepared.
-        // TODO OFFHEAP: Review the callers to see if they will handle DataAsAddress correctly.
+        // else it is has no refCount so just return it as prepared.
       } else {
         byte[] data;
         boolean isSerialized = !(val instanceof byte[]);
@@ -1299,17 +1251,14 @@ public abstract class AbstractRegionEntry implements RegionEntry,
             data = event.getCachedSerializedNewValue();
           } else if (val instanceof CachedDeserializable) {
             data = ((CachedDeserializable)val).getSerializedValue();
-            // TODO OFFHEAP: cache data in event?
           } else if (val instanceof PdxInstance) {
             try {
               data = ((ConvertableToBytes)val).toBytes();
-              // TODO OFFHEAP: cache data in event?
             } catch (IOException e) {
               throw new PdxSerializationException("Could not convert " + val + " to bytes", e);
             }
           } else {
             data = EntryEventImpl.serialize(val);
-            // TODO OFFHEAP: cache data in event?
           }
         } else {
           data = (byte[]) val;
@@ -1402,27 +1351,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
   /**
    * {@inheritDoc}
    */
-  @Override
-  public final boolean isMarkedForEviction() {
-    return areAnyBitsSet(MARKED_FOR_EVICTION);
-  }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public final void setMarkedForEviction() {
-    setBits(MARKED_FOR_EVICTION);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public final void clearMarkedForEviction() {
-    clearBits(~MARKED_FOR_EVICTION);
-  }
-  
   @Override
   public final synchronized void decRefCount(NewLRUClockHand lruList, LocalRegion lr) {
     if (TXManagerImpl.decRefCount(this)) {
@@ -1448,10 +1377,6 @@ public abstract class AbstractRegionEntry implements RegionEntry,
       }
     }
   }
-  /**
-   * soubhik: this method is overridden in sqlf flavor of entries.
-   * Instead of overriding this method; override areSetValue.
-   */
   protected final void _setValue(Object val) {
     setValueField(val);
   }
@@ -1956,7 +1881,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
   }
 
   private boolean isExpiredTombstone(LocalRegion region, long timestamp, boolean isTombstone) {
-    return isTombstone && (timestamp + TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT) <= region.cacheTimeMillis();
+    return isTombstone && (timestamp + TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT) <= region.cacheTimeMillis();
   }
   
   private boolean overwritingOldTombstone(LocalRegion region, VersionStamp stamp, VersionTag tag, StringBuilder verbose) {
@@ -2070,7 +1995,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
           newValue[0] = v;
         }
       };
-      TimestampedEntryEventImpl timestampedEvent =
+      @Released TimestampedEntryEventImpl timestampedEvent =
         (TimestampedEntryEventImpl)event.getTimestampedEvent(tagDsid, stampDsid, tagTime, stampTime);
 
       // gateway conflict resolvers will usually want to see the old value

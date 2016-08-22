@@ -23,7 +23,7 @@ import com.gemstone.gemfire.internal.OsStatisticsFactory;
 import com.gemstone.gemfire.internal.StatisticsManager;
 
 /**
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class TestStatisticsManager extends AbstractStatisticsFactory 
     implements StatisticsManager, OsStatisticsFactory {

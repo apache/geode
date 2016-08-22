@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.gemstone.gemfire.cache.lucene.internal.distributed;
 
 import java.io.IOException;
@@ -37,36 +36,35 @@ import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
 import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
+import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepositoryImpl;
-import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogenousLuceneSerializer;
+import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class DistributedScoringJUnitTest {
-  class TestType {
-    String txt;
 
-    public TestType(String txt) {
-      this.txt = txt;
-    }
-  }
+  private String[] indexedFields = new String[] { "txt" };
+  private HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(indexedFields);
 
-  String[] indexedFields = new String[] { "txt" };
-  HeterogenousLuceneSerializer mapper = new HeterogenousLuceneSerializer(indexedFields);
-
-  final StandardAnalyzer analyzer = new StandardAnalyzer();
-  Region<String, String> region;
+  private final StandardAnalyzer analyzer = new StandardAnalyzer();
+  private Region<String, String> region;
+  private LuceneIndexStats indexStats;
+  private FileSystemStats fileSystemStats;
 
   @Before
   public void createMocks() {
     region = Mockito.mock(Region.class);
     Mockito.when(region.isDestroyed()).thenReturn(false);
+    indexStats = Mockito.mock(LuceneIndexStats.class);
+    fileSystemStats = Mockito.mock(FileSystemStats.class);
   }
 
-  /*
+  /**
    * The goal of this test is to verify fair scoring if entries are uniformly distributed. It compares ordered results
    * from a single IndexRepository (IR) with merged-ordered results from multiple repositories (ir1, ir2, ir3). The
    * records inserted in IR are same as the combined records in irX. This simulates merging of results from buckets of a
@@ -96,7 +94,7 @@ public class DistributedScoringJUnitTest {
 
     TopEntriesCollector collector = new TopEntriesCollector();
     singleIndexRepo.query(query, 100, collector);
-    List<EntryScore> singleResult = collector.getEntries().getHits();
+    List<EntryScore<String>> singleResult = collector.getEntries().getHits();
 
     IndexRepositoryImpl distIR1 = createIndexRepo();
     populateIndex(testStrings, distIR1, 0, testStrings.length / 3);
@@ -122,14 +120,14 @@ public class DistributedScoringJUnitTest {
     distIR3.query(query, 100, collector3);
     collectors.add(collector3);
 
-    List<EntryScore> distResult = manager.reduce(collectors).getEntries().getHits();
+    List<EntryScore<String>> distResult = manager.reduce(collectors).getEntries().getHits();
     
     Assert.assertEquals(singleResult.size(), distResult.size());
     Assert.assertTrue(singleResult.size() > 0);
     
     for (Iterator single = distResult.iterator(), dist = singleResult.iterator(); single.hasNext() && dist.hasNext();) {
-      EntryScore singleScore = (EntryScore) single.next();
-      EntryScore distScore = (EntryScore) dist.next();
+      EntryScore<String> singleScore = (EntryScore<String>) single.next();
+      EntryScore<String> distScore = (EntryScore<String>) dist.next();
       Assert.assertEquals(singleScore.getKey(), distScore.getKey());
     }
   }
@@ -145,11 +143,20 @@ public class DistributedScoringJUnitTest {
   private IndexRepositoryImpl createIndexRepo() throws IOException {
     ConcurrentHashMap<String, File> fileRegion = new ConcurrentHashMap<String, File>();
     ConcurrentHashMap<ChunkKey, byte[]> chunkRegion = new ConcurrentHashMap<ChunkKey, byte[]>();
-    RegionDirectory dir = new RegionDirectory(fileRegion, chunkRegion);
+    RegionDirectory dir = new RegionDirectory(fileRegion, chunkRegion, fileSystemStats);
 
     IndexWriterConfig config = new IndexWriterConfig(analyzer);
     IndexWriter writer = new IndexWriter(dir, config);
 
-    return new IndexRepositoryImpl(region, writer, mapper);
+    return new IndexRepositoryImpl(region, writer, mapper, indexStats);
+  }
+
+  private static class TestType {
+
+    String txt;
+
+    public TestType(String txt) {
+      this.txt = txt;
+    }
   }
 }

@@ -20,7 +20,7 @@ package com.gemstone.gemfire.test.dunit;
  * Extends <code>org.junit.Assert</code> with additional assertion and fail
  * methods. 
  * 
- * These methods can be used directly: <code>Assert.assertEquals(...)</code>, 
+ * These methods can be used directly: <code>Assert.assertIndexDetailsEquals(...)</code>,
  * however, they are intended to be referenced through static import:
  *
  * <pre>

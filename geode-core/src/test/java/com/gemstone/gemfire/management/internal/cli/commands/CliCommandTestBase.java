@@ -16,9 +16,24 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.geode.security.templates.SampleSecurityManager;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.internal.cli.CommandManager;
@@ -29,47 +44,45 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-
-import util.TestException;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.rules.DistributedRestoreSystemProperties;
 
 /**
  * Base class for all the CLI/gfsh command dunit tests.
- *
  */
-public class CliCommandTestBase extends CacheTestCase {
+public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
-  private static final long serialVersionUID = 1L;
+  public static final String USE_HTTP_SYSTEM_PROPERTY = "useHTTP";
 
-  protected static final String USE_HTTP_SYSTEM_PROPERTY = "useHTTP";
+  private boolean useHttpOnConnect = Boolean.getBoolean(USE_HTTP_SYSTEM_PROPERTY);
 
   private ManagementService managementService;
 
   private transient HeadlessGfsh shell;
 
-  private boolean useHttpOnConnect = Boolean.getBoolean("useHTTP");
+  protected transient int httpPort;
+  protected transient int jmxPort;
+  protected transient String jmxHost;
+  protected transient String gfshDir;
 
-  private int httpPort;
-  private int jmxPort;
+  @Rule
+  public transient DistributedRestoreSystemProperties restoreSystemProperties = new DistributedRestoreSystemProperties();
 
-  private String jmxHost;
+  @Rule
+  public transient TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  public CliCommandTestBase(String name) {
-    super(name);
+  @Override
+  public final void postSetUp() throws Exception {
+    setUpCliCommandTestBase();
+    postSetUpCliCommandTestBase();
+  }
+
+  private void setUpCliCommandTestBase() throws Exception {
+    this.gfshDir = this.temporaryFolder.newFolder("gfsh_files").getCanonicalPath();
+  }
+
+  protected void postSetUpCliCommandTestBase() throws Exception {
   }
 
   @Override
@@ -77,7 +90,7 @@ public class CliCommandTestBase extends CacheTestCase {
     preTearDownCliCommandTestBase();
     destroyDefaultSetup();
   }
-  
+
   protected void preTearDownCliCommandTestBase() throws Exception {
   }
 
@@ -87,65 +100,76 @@ public class CliCommandTestBase extends CacheTestCase {
    * cache). When adding regions, functions, keys, whatever to your cache for tests, you'll need to use
    * Host.getHost(0).getVM(0).invoke(new SerializableRunnable() { public void run() { ... } } in order to have this
    * setup run in the same VM as the manager.
-   * <p>
    *
    * @param props the Properties used when creating the cache for this default setup.
    * @return the default testable GemFire shell.
    */
   @SuppressWarnings("serial")
-  protected final HeadlessGfsh createDefaultSetup(final Properties props) {
-    Object[] result = (Object[]) Host.getHost(0).getVM(0).invoke(new SerializableCallable() {
-      public Object call() {
-        final Object[] result = new Object[3];
-        final Properties localProps = (props != null ? props : new Properties());
-
-        try {
-          jmxHost = InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException ignore) {
-          jmxHost = "localhost";
-        }
-
-        if (!localProps.containsKey(DistributionConfig.NAME_NAME)) {
-          localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
-        }
-
-        final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-
-        jmxPort = ports[0];
-        httpPort = ports[1];
-
-        localProps.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-        localProps.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
-        localProps.setProperty(DistributionConfig.JMX_MANAGER_BIND_ADDRESS_NAME, String.valueOf(jmxHost));
-        localProps.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
-        localProps.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(httpPort));
-
-        getSystem(localProps);
-        verifyManagementServiceStarted(getCache());
-
-        result[0] = jmxHost;
-        result[1] = jmxPort;
-        result[2] = httpPort;
-
-        return result;
-      }
-    });
-
+  protected HeadlessGfsh setUpJmxManagerOnVm0ThenConnect(final Properties props) {
+    Object[] result = setUpJMXManagerOnVM(0, props);
     this.jmxHost = (String) result[0];
     this.jmxPort = (Integer) result[1];
     this.httpPort = (Integer) result[2];
-
-    return defaultShellConnect();
+    connect(this.jmxHost, this.jmxPort, this.httpPort, getDefaultShell());
+    return shell;
   }
 
-  protected boolean useHTTPByTest() {
-    return false;
+  protected Object[] setUpJMXManagerOnVM(int vm, final Properties props) {
+    return setUpJMXManagerOnVM(vm, props, null);
+  }
+
+  /**
+   * @return an object array, result[0] is jmxHost(String), result[1] is jmxPort, result[2] is httpPort
+   */
+  protected Object[] setUpJMXManagerOnVM(int vm, final Properties props, String jsonFile) {
+    Object[] result = Host.getHost(0).getVM(vm).invoke("setUpJmxManagerOnVm"+vm, () -> {
+      final Object[] results = new Object[3];
+      final Properties localProps = (props != null ? props : new Properties());
+
+      try {
+        jmxHost = InetAddress.getLocalHost().getHostName();
+      }
+      catch (UnknownHostException ignore) {
+        jmxHost = "localhost";
+      }
+
+      if (!localProps.containsKey(NAME)) {
+        localProps.setProperty(NAME, "Manager");
+      }
+
+      if (jsonFile!=null) {
+        localProps.setProperty(SampleSecurityManager.SECURITY_JSON, jsonFile);
+      }
+
+      final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+
+      jmxPort = ports[0];
+      httpPort = ports[1];
+
+      localProps.setProperty(JMX_MANAGER, "true");
+      localProps.setProperty(JMX_MANAGER_START, "true");
+      localProps.setProperty(JMX_MANAGER_BIND_ADDRESS, String.valueOf(jmxHost));
+      localProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
+      localProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
+
+      getSystem(localProps);
+      verifyManagementServiceStarted(getCache());
+
+      IgnoredException.addIgnoredException("org.eclipse.jetty.io.EofException");
+      IgnoredException.addIgnoredException("java.nio.channels.ClosedChannelException");
+
+      results[0] = jmxHost;
+      results[1] = jmxPort;
+      results[2] = httpPort;
+      return results;
+    });
+
+    return result;
   }
 
   /**
    * Destroy all of the components created for the default setup.
    */
-  @SuppressWarnings("serial")
   protected final void destroyDefaultSetup() {
     if (this.shell != null) {
       executeCommand(shell, "exit");
@@ -155,11 +179,7 @@ public class CliCommandTestBase extends CacheTestCase {
 
     disconnectAllFromDS();
 
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
-      public void run() {
-        verifyManagementServiceStopped();
-      }
-    });
+    Host.getHost(0).getVM(0).invoke("verify service stopped", () -> verifyManagementServiceStopped());
   }
 
   /**
@@ -168,7 +188,7 @@ public class CliCommandTestBase extends CacheTestCase {
    * @param cache Cache to use when creating the management service
    */
   private void verifyManagementServiceStarted(Cache cache) {
-    assert (cache != null);
+    assertTrue(cache != null);
 
     this.managementService = ManagementService.getExistingManagementService(cache);
     assertNotNull(this.managementService);
@@ -181,7 +201,6 @@ public class CliCommandTestBase extends CacheTestCase {
     try {
       manager = CommandManager.getInstance();
       Map<String, CommandTarget> commands = manager.getCommands();
-      Set set = commands.keySet();
       if (commands.size() < 1) {
         return false;
       }
@@ -201,31 +220,14 @@ public class CliCommandTestBase extends CacheTestCase {
     }
   }
 
-  /**
-   * Connect the default shell to the default JMX server.
-   *
-   * @return The default shell.
-   */
-  private HeadlessGfsh defaultShellConnect() {
-    HeadlessGfsh shell = getDefaultShell();
-    shellConnect(this.jmxHost, this.jmxPort, this.httpPort, shell);
-    return shell;
+  protected void connect(final String host, final int jmxPort, final int httpPort, HeadlessGfsh shell){
+    connect(host, jmxPort, httpPort, shell, null, null);
   }
 
-  /**
-   * Connect a shell to the JMX server at the given host and port
-   *
-   * @param host    Host of the JMX server
-   * @param jmxPort Port of the JMX server
-   * @param shell   Shell to connect
-   */
-  protected void shellConnect(final String host, final int jmxPort, final int httpPort, HeadlessGfsh shell) {
-    assert (host != null);
-    assert (shell != null);
-
+  protected void connect(final String host, final int jmxPort, final int httpPort, HeadlessGfsh shell, String username, String password){
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.CONNECT);
-    String endpoint;
 
+    String endpoint;
     if (useHttpOnConnect) {
       endpoint = "http://" + host + ":" + httpPort + "/gemfire/v1";
       command.addOption(CliStrings.CONNECT__USE_HTTP, Boolean.TRUE.toString());
@@ -234,12 +236,19 @@ public class CliCommandTestBase extends CacheTestCase {
       endpoint = host + "[" + jmxPort + "]";
       command.addOption(CliStrings.CONNECT__JMX_MANAGER, endpoint);
     }
+    if(username!=null) {
+      command.addOption(CliStrings.CONNECT__USERNAME, username);
+    }
+    if(password!=null){
+      command.addOption(CliStrings.CONNECT__PASSWORD, password);
+    }
+    System.out.println(getClass().getSimpleName()+" using endpoint: "+endpoint);
 
     CommandResult result = executeCommand(shell, command.toString());
 
     if (!shell.isConnectedAndReady()) {
-      throw new TestException(
-          "Connect command failed to connect to manager " + endpoint + " result=" + commandResultToString(result));
+      throw new AssertionError(
+        "Connect command failed to connect to manager " + endpoint + " result=" + commandResultToString(result));
     }
 
     info("Successfully connected to managing node using " + (useHttpOnConnect ? "HTTP" : "JMX"));
@@ -268,14 +277,14 @@ public class CliCommandTestBase extends CacheTestCase {
     try {
       Gfsh.SUPPORT_MUTLIPLESHELL = true;
       String shellId = getClass().getSimpleName() + "_" + getName();
-      HeadlessGfsh shell = new HeadlessGfsh(shellId, 30);
+      HeadlessGfsh shell = new HeadlessGfsh(shellId, 30, this.gfshDir);
       //Added to avoid trimming of the columns
       info("Started testable shell: " + shell);
       return shell;
     } catch (ClassNotFoundException e) {
-      throw new TestException(getStackTrace(e));
+      throw new AssertionError(e);
     } catch (IOException e) {
-      throw new TestException(getStackTrace(e));
+      throw new AssertionError(e);
     }
   }
 
@@ -338,9 +347,9 @@ public class CliCommandTestBase extends CacheTestCase {
     try {
       info("Executing command " + command + " with command Mgr " + CommandManager.getInstance());
     } catch (ClassNotFoundException cnfex) {
-      throw new TestException(getStackTrace(cnfex));
+      throw new AssertionError(cnfex);
     } catch (IOException ioex) {
-      throw new TestException(getStackTrace(ioex));
+      throw new AssertionError(ioex);
     }
 
     shell.executeCommand(command);
@@ -350,7 +359,7 @@ public class CliCommandTestBase extends CacheTestCase {
 
     CommandResult result = null;
     try {
-      result = (CommandResult) shell.getResult();
+      result = (CommandResult) shell.getResult(); // TODO: this can result in ClassCastException if command resulted in error
     } catch (InterruptedException ex) {
       error("shell received InterruptedException");
     }
@@ -376,7 +385,7 @@ public class CliCommandTestBase extends CacheTestCase {
     printStream.print(commandResultToString(commandResult));
   }
 
-  protected String commandResultToString(final CommandResult commandResult) {
+  protected static String commandResultToString(final CommandResult commandResult) {
     assertNotNull(commandResult);
 
     commandResult.resetToFirstLine();
@@ -533,25 +542,19 @@ public class CliCommandTestBase extends CacheTestCase {
     return stringToSearch.substring(startIndex, endIndex);
   }
 
-  protected static String getStackTrace(Throwable aThrowable) {
-    StringWriter sw = new StringWriter();
-    aThrowable.printStackTrace(new PrintWriter(sw, true));
-    return sw.toString();
-  }
-
   protected void info(String string) {
-    LogWriterUtils.getLogWriter().info(string);
+    getLogWriter().info(string);
   }
 
   protected void debug(String string) {
-    LogWriterUtils.getLogWriter().fine(string);
+    getLogWriter().fine(string);
   }
 
   protected void error(String string) {
-    LogWriterUtils.getLogWriter().error(string);
+    getLogWriter().error(string);
   }
 
   protected void error(String string, Throwable e) {
-    LogWriterUtils.getLogWriter().error(string, e);
+    getLogWriter().error(string, e);
   }
 }

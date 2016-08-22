@@ -16,9 +16,7 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
-import static org.mockito.Mockito.mock;
-
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import org.junit.After;
 import org.junit.experimental.categories.Category;
@@ -30,25 +28,24 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class MemoryIndexStoreWithInplaceModificationJUnitTest extends MemoryIndexStoreJUnitTest {
-	
-	public void subclassPreSetup() {
-		IndexManager.INPLACE_OBJECT_MODIFICATION_FOR_TEST = true;
-	}
-	
-	protected Region createRegion() {
-		Region region = mock(LocalRegion.class);
-		RegionAttributes ra = mock(RegionAttributes.class);
-		when(region.getAttributes()).thenReturn(ra);
-		when(ra.getInitialCapacity()).thenReturn(16);
-		when(ra.getLoadFactor()).thenReturn(.75f);
-		when(ra.getConcurrencyLevel()).thenReturn(16);
-		return region;
-	}
-	
-	@After
-	public void resetInplaceModification() {
-		IndexManager.INPLACE_OBJECT_MODIFICATION_FOR_TEST = false;
-	}
-	
-	
+
+  public void subclassPreSetup() {
+    IndexManager.INPLACE_OBJECT_MODIFICATION_FOR_TEST = true;
+  }
+
+  protected Region createRegion() {
+    Region region = mock(LocalRegion.class);
+    RegionAttributes ra = mock(RegionAttributes.class);
+    when(region.getAttributes()).thenReturn(ra);
+    when(ra.getInitialCapacity()).thenReturn(16);
+    when(ra.getLoadFactor()).thenReturn(.75f);
+    when(ra.getConcurrencyLevel()).thenReturn(16);
+    return region;
+  }
+
+  @After
+  public void resetInPlaceModification() {
+    IndexManager.INPLACE_OBJECT_MODIFICATION_FOR_TEST = false;
+  }
+
 }

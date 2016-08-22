@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.internal.statistics;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -31,6 +34,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.StatisticDescriptor;
 import com.gemstone.gemfire.Statistics;
@@ -48,18 +54,16 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.RegionMembershipListenerAdapter;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.GemFireStatSampler;
 import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.StatArchiveReader;
 import com.gemstone.gemfire.internal.StatArchiveReader.StatSpec;
+import com.gemstone.gemfire.internal.StatArchiveReader.StatValue;
 import com.gemstone.gemfire.internal.StatSamplerStats;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
-import com.gemstone.gemfire.internal.StatArchiveReader.StatValue;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
@@ -68,6 +72,8 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Integration tests for Statistics. VM0 performs puts and VM1 receives
@@ -79,10 +85,11 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * This test mimics hydratest/locators/cacheDS.conf in an attempt to reproduce
  * bug #45478. So far this test passes consistently.
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("serial")
-public class StatisticsDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class StatisticsDUnitTest extends JUnit4CacheTestCase {
 
   private static final String dir = "StatisticsDUnitTest";
 
@@ -120,8 +127,8 @@ public class StatisticsDUnitTest extends CacheTestCase {
     return puts.get();
   }
   
-  public StatisticsDUnitTest(String name) {
-    super(name);
+  public StatisticsDUnitTest() {
+    super();
   }
   
   @Override
@@ -130,6 +137,7 @@ public class StatisticsDUnitTest extends CacheTestCase {
     disconnectAllFromDS(); // because this test enabled stat sampling!
   }
   
+  @Test
   public void testPubAndSubCustomStats() throws Exception {
     final String testName = "testPubAndSubCustomStats";
 
@@ -152,9 +160,9 @@ public class StatisticsDUnitTest extends CacheTestCase {
         public void run2() throws CacheException {
           new File(dir).mkdir();
           final Properties props = new Properties();
-          props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-          props.setProperty(DistributionConfig.STATISTIC_SAMPLE_RATE_NAME, "1000");
-          props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, pubArchives[pubVM]);
+          props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+          props.setProperty(STATISTIC_SAMPLE_RATE, "1000");
+          props.setProperty(STATISTIC_ARCHIVE_FILE, pubArchives[pubVM]);
           final InternalDistributedSystem system = getSystem(props);
   
           // assert that sampler is working as expected
@@ -206,9 +214,9 @@ public class StatisticsDUnitTest extends CacheTestCase {
       public Object call() throws Exception {
         new File(dir).mkdir();
         final Properties props = new Properties();
-        props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-        props.setProperty(DistributionConfig.STATISTIC_SAMPLE_RATE_NAME, "1000");
-        props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, subArchive);
+        props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+        props.setProperty(STATISTIC_SAMPLE_RATE, "1000");
+        props.setProperty(STATISTIC_ARCHIVE_FILE, subArchive);
         final InternalDistributedSystem system = getSystem(props);
         
         final PubSubStats statistics = new PubSubStats(system, "sub-1", 1);
@@ -430,7 +438,7 @@ public class StatisticsDUnitTest extends CacheTestCase {
                 double mean = sv.getSnapshotsAverage();
                 double stdDev = sv.getSnapshotsStandardDeviation();
                 
-                assertEquals(mostRecent, max);
+                assertEquals(mostRecent, max, 0f);
   
                 double summation = 0;
                 double[] rawSnapshots = sv.getRawSnapshots();
@@ -438,7 +446,7 @@ public class StatisticsDUnitTest extends CacheTestCase {
                   //log.convertToLogWriter().info("DEBUG " + ri.getName() + " " + statName + " rawSnapshots[" + j + "] = " + rawSnapshots[j]);
                   summation += rawSnapshots[j];
                 }
-                assertEquals(mean, summation / sv.getSnapshotsSize());
+                assertEquals(mean, summation / sv.getSnapshotsSize(), 0);
                 
                 combinedPuts += mostRecent;
               }
@@ -446,7 +454,7 @@ public class StatisticsDUnitTest extends CacheTestCase {
           }
           
           // assert that sum of mostRecent values for all puts equals totalPuts
-          assertEquals((double)totalPuts, combinedPuts);
+          assertEquals((double)totalPuts, combinedPuts, 0);
           puts.getAndAdd(totalPuts);
         }
       });
@@ -513,7 +521,7 @@ public class StatisticsDUnitTest extends CacheTestCase {
               double mean = sv.getSnapshotsAverage();
               double stdDev = sv.getSnapshotsStandardDeviation();
               
-              assertEquals(mostRecent, max);
+              assertEquals(mostRecent, max,0);
 
               double summation = 0;
               double[] rawSnapshots = sv.getRawSnapshots();
@@ -521,13 +529,13 @@ public class StatisticsDUnitTest extends CacheTestCase {
                 //log.convertToLogWriter().info("DEBUG " + ri.getName() + " " + statName + " rawSnapshots[" + j + "] = " + rawSnapshots[j]);
                 summation += rawSnapshots[j];
               }
-              assertEquals(mean, summation / sv.getSnapshotsSize());
+              assertEquals(mean, summation / sv.getSnapshotsSize(),0);
               
               combinedUpdateEvents += mostRecent;
             }
           }
         }
-        assertEquals((double)totalUpdateEvents, combinedUpdateEvents);
+        assertEquals((double)totalUpdateEvents, combinedUpdateEvents,0);
       }
     });
     
@@ -606,7 +614,7 @@ public class StatisticsDUnitTest extends CacheTestCase {
   }
   
   /**
-   * @since 7.0
+   * @since GemFire 7.0
    */
   static class PubSubStats {
     
@@ -723,7 +731,7 @@ public class StatisticsDUnitTest extends CacheTestCase {
   }
   
   /**
-   * @since 7.0
+   * @since GemFire 7.0
    */
   static class UpdateListener extends CacheListenerAdapter<String, Number> {
     
@@ -740,7 +748,7 @@ public class StatisticsDUnitTest extends CacheTestCase {
   }
   
   /**
-   * @since 7.0
+   * @since GemFire 7.0
    */
   static class RegionMembershipListener extends RegionMembershipListenerAdapter<String, Number> {
     

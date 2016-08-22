@@ -17,16 +17,19 @@
 
 package com.gemstone.gemfire.internal.cache;
 
-import hydra.GsRandom;
+import static org.junit.Assert.*;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -40,25 +43,23 @@ import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Confirm that the utils used for testing work as advertised
- * @since 5.0 
  *
+ * @since GemFire 5.0
  */
-public class PartitionedRegionTestUtilsDUnitTest extends
-    PartitionedRegionDUnitTestCase
-{
+@Category(DistributedTest.class)
+public class PartitionedRegionTestUtilsDUnitTest extends PartitionedRegionDUnitTestCase {
+
   final int totalNumBuckets = 5;
-  public PartitionedRegionTestUtilsDUnitTest(String name) {
-    super(name);
-  }
 
   /**
    * Test the {@link PartitionedRegion#getSomeKeys(java.util.Random)} method, making sure it 
    * returns keys when there are keys and {@link java.util.Collections#EMPTY_SET} when there are none.
-   * @throws Exception
    */
+  @Test
   public void testGetKeys() throws Exception {
     final String r = getUniqueName();
     Host host = Host.getHost(0);
@@ -88,7 +89,7 @@ public class PartitionedRegionTestUtilsDUnitTest extends
     vm0.invoke(new CacheSerializableRunnable("GetSomeKeys") {
       public void run2() throws CacheException {
         PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(r);
-        GsRandom rand = new GsRandom(123);
+        Random rand = new Random(123);
         // Assert that its empty
         for(int i=0; i<5; i++) {
           LogWriterUtils.getLogWriter().info("Invocation " + i + " of getSomeKeys");
@@ -125,7 +126,7 @@ public class PartitionedRegionTestUtilsDUnitTest extends
               val = (Integer) pr.get(key);
               assertNotNull(val);
               assertTrue(val.intValue() >= 0);
-              assertTrue(val.intValue() < MAXKEYS); 
+              assertTrue(val.intValue() < MAXKEYS);
             }
           } catch (ClassNotFoundException cnfe) {
             Assert.fail("GetSomeKeys failed with ClassNotFoundException", cnfe);
@@ -142,7 +143,6 @@ public class PartitionedRegionTestUtilsDUnitTest extends
    * Verify that it returns nodes after a value has been placed into the PartitionedRegion.
    * @see PartitionedRegion#getAllNodes()
    */
-  
   public static class TestGetNodesKey implements DataSerializable {
     int hc; 
     public TestGetNodesKey(int hc) { this.hc = hc; }
@@ -151,6 +151,8 @@ public class PartitionedRegionTestUtilsDUnitTest extends
     public void toData(DataOutput out) throws IOException  {out.writeInt(this.hc); }
     public void fromData(DataInput in) throws IOException, ClassNotFoundException { this.hc = in.readInt(); } 
   }
+
+  @Test
   public void testGetNodes() throws Exception {
     final String r = getUniqueName();
     Host host = Host.getHost(0);
@@ -190,7 +192,6 @@ public class PartitionedRegionTestUtilsDUnitTest extends
       }
     };
 
-    
     validator.invoke(createAndTest);
     validator.invoke(new CacheSerializableRunnable("AssertGetNodesCreation1") {
       public void run2() throws CacheException
@@ -231,14 +232,13 @@ public class PartitionedRegionTestUtilsDUnitTest extends
   }
 
   /** 
-   * Test the test utiltities that allow investigation of a PartitionedRegion's local cache. 
-   * @throws Exception
+   * Test the test utilities that allow investigation of a PartitionedRegion's local cache.
    */
+  @Test
   public void testLocalCacheOps() throws Exception {
     final String r = getUniqueName();
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-//    VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     
     vm0.invoke(new CacheSerializableRunnable("CreatePR") {
@@ -280,7 +280,7 @@ public class PartitionedRegionTestUtilsDUnitTest extends
 //        p.put(key1, val1);
 //        assertFalse(p.localCacheContainsKey(key1));
 //        assertFalse(p.localCacheContainsKey(key2));
-//        assertEquals(val1, p.get(key1));
+//        assertIndexDetailsEquals(val1, p.get(key1));
 //        assertTrue(p.localCacheContainsKey(key1));
 //        assertFalse(p.localCacheContainsKey(key2));
 //
@@ -290,12 +290,12 @@ public class PartitionedRegionTestUtilsDUnitTest extends
 //        assertFalse(lset.contains(key2));
 //        
 //        // test localCacheGet
-//        assertEquals(val1, p.localCacheGet(key1));
+//        assertIndexDetailsEquals(val1, p.localCacheGet(key1));
 //        assertNull(p.localCacheGet(key2));
 //        p.put(key2, val2);
 //        assertNull(p.localCacheGet(key2));
-//        assertEquals(val2, p.get(key2));
-//        assertEquals(val2, p.localCacheGet(key2));
+//        assertIndexDetailsEquals(val2, p.get(key2));
+//        assertIndexDetailsEquals(val2, p.localCacheGet(key2));
 //      }
 //    });
 
@@ -345,9 +345,8 @@ public class PartitionedRegionTestUtilsDUnitTest extends
    * Test the test method PartitionedRegion.getAllNodes
    * Verify that it returns nodes after a value has been placed into the PartitionedRegion.
    * @see PartitionedRegion#getAllNodes()
-   * 
-   * @throws Exception
    */
+  @Test
   public void testGetBucketKeys() throws Exception {
     final String r = getUniqueName();
     Host host = Host.getHost(0);
@@ -424,7 +423,7 @@ public class PartitionedRegionTestUtilsDUnitTest extends
       val = new Integer(i);
       p.put(key, val);
       // Integer gottenVal = (Integer) p.get(key);
-      // assertEquals("Value for key: " + key + " val " + gottenVal + " wasn't expected " + val, val, gottenVal);
+      // assertIndexDetailsEquals("Value for key: " + key + " val " + gottenVal + " wasn't expected " + val, val, gottenVal);
     }
     
     // Assert that the proper number of keys are placed in each bucket 
@@ -433,15 +432,15 @@ public class PartitionedRegionTestUtilsDUnitTest extends
       assertEquals(s.size(), 1);
       key = (TestPRKey) s.iterator().next();
       assertEquals(i, key.hashCode());
-      // assertEquals(new Integer(i), p.get(key)); 
+      // assertIndexDetailsEquals(new Integer(i), p.get(key));
     }
   }
   
   /**
    * Test the test method {@link PartitionedRegion#getBucketOwnersForValidation(int)}
    * Verify that the information it discovers is the same as the local advisor.
-   * @throws Exception
    */
+  @Test
   public void testGetBucketOwners() throws Exception {
     final String rName0 = getUniqueName() + "-r0";
     final String rName1 = getUniqueName() + "-r1";
@@ -530,7 +529,7 @@ public class PartitionedRegionTestUtilsDUnitTest extends
           assertNotNull(p);
           assertEquals(3, p.getTotalNumberOfBuckets());
           // Create one bucket
-          p.put(new Integer(0), "zero"); 
+          p.put(new Integer(0), "zero");
           assertEquals(1, p.getRegionAdvisor().getCreatedBucketsCount());
         }
       }
@@ -570,6 +569,5 @@ public class PartitionedRegionTestUtilsDUnitTest extends
     datastore1.invoke(oneBucketOwner);
     datastore2.invoke(oneBucketOwner);
     datastore3.invoke(oneBucketOwner);
-
   }
 }

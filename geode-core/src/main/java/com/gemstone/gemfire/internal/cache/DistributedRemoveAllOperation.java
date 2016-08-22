@@ -55,17 +55,23 @@ import com.gemstone.gemfire.internal.cache.versions.DiskVersionTag;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
 /**
  * Handles distribution of a Region.removeAll operation.
  * 
- * @since 8.1
+ * @since GemFire 8.1
  */
 public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TODO extend DistributedCacheOperation instead
   {
   private static final Logger logger = LogService.getLogger();
 
-  protected final RemoveAllEntryData[] removeAllData;
+  /**
+   * Release is called by freeOffHeapResources.
+   */
+  @Retained protected final RemoveAllEntryData[] removeAllData;
 
   public int removeAllDataSize;
   
@@ -175,8 +181,9 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
       public boolean hasNext() {
         return DistributedRemoveAllOperation.this.removeAllDataSize > position;
       };
+      @Unretained
       public Object next() {
-        EntryEventImpl ev = getEventForPosition(position);
+        @Unretained EntryEventImpl ev = getEventForPosition(position);
         position++;
         return ev;
       };
@@ -196,6 +203,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     }
   }
 
+  @Unretained
   public EntryEventImpl getEventForPosition(int position) {
     RemoveAllEntryData entry = this.removeAllData[position];
     if (entry == null) {
@@ -205,7 +213,8 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
       return entry.event;
     }
     LocalRegion region = (LocalRegion)this.event.getRegion();
-    EntryEventImpl ev = EntryEventImpl.create(
+    // owned by this.removeAllData once entry.event = ev is done
+    @Retained EntryEventImpl ev = EntryEventImpl.create(
         region,
         entry.getOp(),
         entry.getKey(), null/* value */, this.event.getCallbackArgument(),
@@ -371,8 +380,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
      * {@link PutAllPRMessage#toData(DataOutput)} <br>
      * {@link RemotePutAllMessage#toData(DataOutput)} <br>
      */
-    public final void toData(final DataOutput out, 
-        final boolean requiresRegionContext) throws IOException {
+    public final void toData(final DataOutput out) throws IOException {
       Object key = this.key;
       DataSerializer.writeObject(key, out);
 
@@ -568,7 +576,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     }
     FilterRoutingInfo consolidated = new FilterRoutingInfo();
     for (int i=0; i<this.removeAllData.length; i++) {
-      EntryEventImpl ev = getEventForPosition(i);
+      @Unretained EntryEventImpl ev = getEventForPosition(i);
       if (ev != null) {
         FilterRoutingInfo eventRouting = advisor.adviseFilterRouting(ev, cacheOpRecipients);
         if (eventRouting != null) {
@@ -838,11 +846,12 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
      * basicOperateOnRegion
      */
     @Override
+    @Retained
     protected InternalCacheEvent createEvent(DistributedRegion rgn)
     throws EntryNotFoundException
     {
       // Gester: We have to specify eventId for the message of MAP
-      EntryEventImpl event = EntryEventImpl.create(
+      @Retained EntryEventImpl event = EntryEventImpl.create(
           rgn,
           Operation.REMOVEALL_DESTROY, null /* key */, null/* value */,
           this.callbackArg, true /* originRemote */, getSender());
@@ -876,11 +885,9 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
      * @param rgn
      *          the region the entry is removed from
      */
-    public void doEntryRemove(RemoveAllEntryData entry, DistributedRegion rgn,
-        boolean requiresRegionContext) {
-      EntryEventImpl ev = RemoveAllMessage.createEntryEvent(entry, getSender(), 
-          this.context, rgn,
-          requiresRegionContext, this.possibleDuplicate,
+    public void doEntryRemove(RemoveAllEntryData entry, DistributedRegion rgn) {
+      @Released EntryEventImpl ev = RemoveAllMessage.createEntryEvent(entry, getSender(), 
+          this.context, rgn, this.possibleDuplicate,
           this.needsRouting, this.callbackArg, true, skipCallbacks);
 //      rgn.getLogWriterI18n().info(LocalizedStrings.DEBUG, "RemoveAllMessage.doEntryRemove sender=" + getSender() +
 //          " event="+ev);
@@ -912,23 +919,20 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
      * @param sender
      * @param context
      * @param rgn
-     * @param requiresRegionContext
      * @param possibleDuplicate
      * @param needsRouting
      * @param callbackArg
      * @return the event to be used in applying the element
      */
+    @Retained
     public static EntryEventImpl createEntryEvent(RemoveAllEntryData entry,
         InternalDistributedMember sender, ClientProxyMembershipID context,
-        DistributedRegion rgn, boolean requiresRegionContext, 
+        DistributedRegion rgn,
         boolean possibleDuplicate, boolean needsRouting, Object callbackArg,
         boolean originRemote, boolean skipCallbacks) {
       final Object key = entry.getKey();
-      if (requiresRegionContext) {
-        ((KeyWithRegionContext)key).setRegionContext(rgn);
-      }
       EventID evId = entry.getEventID();
-      EntryEventImpl ev = EntryEventImpl.create(rgn, entry.getOp(),
+      @Retained EntryEventImpl ev = EntryEventImpl.create(rgn, entry.getOp(),
           key, null/* value */, callbackArg,
           originRemote, sender, !skipCallbacks,
           evId);
@@ -974,13 +978,12 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
       
       rgn.syncBulkOp(new Runnable() {
         public void run() {
-          final boolean requiresRegionContext = rgn.keyRequiresRegionContext();
           for (int i = 0; i < removeAllDataSize; ++i) {
             if (logger.isTraceEnabled()) {
               logger.trace("removeAll processing {} with {}", removeAllData[i], removeAllData[i].versionTag);
             }
             removeAllData[i].setSender(sender);
-            doEntryRemove(removeAllData[i], rgn, requiresRegionContext);
+            doEntryRemove(removeAllData[i], rgn);
           }
         }
       }, ev.getEventId());
@@ -1032,10 +1035,6 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
         EntryVersionsList versionTags = new EntryVersionsList(removeAllDataSize);
 
         boolean hasTags = false;
-        // get the "keyRequiresRegionContext" flag from first element assuming
-        // all key objects to be uniform
-        final boolean requiresRegionContext =
-          (this.removeAllData[0].key instanceof KeyWithRegionContext);
         for (int i = 0; i < this.removeAllDataSize; i++) {
           if (!hasTags && removeAllData[i].versionTag != null) {
             hasTags = true;
@@ -1043,7 +1042,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
           VersionTag<?> tag = removeAllData[i].versionTag;
           versionTags.add(tag);
           removeAllData[i].versionTag = null;
-          this.removeAllData[i].toData(out, requiresRegionContext);
+          this.removeAllData[i].toData(out);
           this.removeAllData[i].versionTag = tag;
         }
 

@@ -26,7 +26,7 @@ package com.gemstone.gemfire.admin;
  * {@link com.gemstone.gemfire.cache.server.CacheServer}
  * but is an instance of this interface.
  *
- * @since 5.7
+ * @since GemFire 5.7
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface CacheVm extends SystemMember, ManagedEntity {

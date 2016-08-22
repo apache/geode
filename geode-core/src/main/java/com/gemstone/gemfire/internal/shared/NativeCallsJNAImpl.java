@@ -60,7 +60,7 @@ import java.util.HashMap;
  * yet and its not a mature library yet, so not using it. Can revisit once this
  * changes.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 public final class NativeCallsJNAImpl {
 

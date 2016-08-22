@@ -16,12 +16,18 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-/**
- * This test is to test and validate the partitioned region creation in multiple
- * vm scenario. This will verify the functionality under distributed scenario.
- */
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import java.util.Properties;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -42,19 +48,23 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
+/**
+ * This test is to test and validate the partitioned region creation in multiple
+ * vm scenario. This will verify the functionality under distributed scenario.
+ */
 @SuppressWarnings("serial")
-public class PartitionedRegionCreationDUnitTest extends
-    PartitionedRegionDUnitTestCase
-{
+@Category(DistributedTest.class)
+public class PartitionedRegionCreationDUnitTest extends PartitionedRegionDUnitTestCase {
   /**
    * constructor
    * 
    * @param name
    */
-  public PartitionedRegionCreationDUnitTest(String name) {
+  public PartitionedRegionCreationDUnitTest() {
 
-    super(name);
+    super();
   }
 
   static Properties props = new Properties();
@@ -66,6 +76,7 @@ public class PartitionedRegionCreationDUnitTest extends
    * This tests creates partition regions with scope = DISTRIBUTED_ACK and then
    * validating thoes partition regions
    */
+  @Test
   public void testSequentialCreation() throws Exception
   {
     LogWriterUtils.getLogWriter().info("*****CREATION TEST ACK STARTED*****");
@@ -102,6 +113,7 @@ public class PartitionedRegionCreationDUnitTest extends
    */
   // TODO: fix the hang that concurent creation often runs into -- mthomas
   // 2/8/06
+  @Test
   public void testConcurrentCreation() throws Throwable
   {
     LogWriterUtils.getLogWriter().info("*****CREATION TEST NO_ACK STARTED*****");
@@ -148,6 +160,7 @@ public class PartitionedRegionCreationDUnitTest extends
    * 
    * @throws Exception
    */
+  @Test
   public void testConcurrentCreation_2() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -271,40 +284,11 @@ public class PartitionedRegionCreationDUnitTest extends
     vm3.invoke(getCacheSerializableRunnableForPRValidate(regionNamePrefix));
   }
 
-  /**
-   * Test Partitioned Region names that contain spaces
-   * @throws Exception
-   */
-  public void testPartitionedRegionNameWithSpaces() throws Exception 
-  {
-    final String rName = getUniqueName() + " with some spaces";
-    
-    CacheSerializableRunnable csr = new CacheSerializableRunnable("validateNoExceptionWhenUsingNameWithSpaces") {
-      @Override
-      public void run2() throws CacheException
-      {
-        Cache cache = getCache();
-        Region partitionedregion = null;
-        AttributesFactory attr = new AttributesFactory();
-        attr.setPartitionAttributes(new PartitionAttributesFactory()
-            .setRedundantCopies(0).create());
-        partitionedregion = cache.createRegion(rName, attr
-            .create());
-        assertNotNull("Partitioned Region ref null", partitionedregion);
-        assertNotNull("Cache does not contain PR " + rName, cache
-            .getRegion(rName));
-        assertTrue("Partitioned Region ref claims to be destroyed",
-            !partitionedregion.isDestroyed());
-      }
-    };
-    Host.getHost(0).getVM(2).invoke(csr);
-    Host.getHost(0).getVM(3).invoke(csr);
-  }
-
-  /**
+   /**
    * Test whether partition region creation is preveented when
    * an instance is created that has the incorrect redundancy
    */
+  @Test
   public void testPartitionedRegionRedundancyConflict() throws Exception
   {
     Host host = Host.getHost(0);
@@ -419,6 +403,8 @@ public class PartitionedRegionCreationDUnitTest extends
    * 
    * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-1104: time sensitive, async actions
+  @Test
   public void testPartitionRegionInitialization() throws Throwable
   {
     final String name = getUniqueName();
@@ -474,6 +460,7 @@ public class PartitionedRegionCreationDUnitTest extends
    * 
    * @throws Exception
    */
+  @Test
   public void testPartitionRegionRegistration() throws Throwable
   {
     final String name = getUniqueName();
@@ -533,6 +520,7 @@ public class PartitionedRegionCreationDUnitTest extends
    * 
    * @throws Exception
    */
+  @Test
   public void testPartitionRegionPersistenceConflicts() throws Throwable
   {
     IgnoredException.addIgnoredException("IllegalStateException");
@@ -902,6 +890,7 @@ public class PartitionedRegionCreationDUnitTest extends
    * 
    * @throws Exception
    */
+  @Test
   public void testTotalNumberOfBuckets() throws Exception
   {
     Host host = Host.getHost(0);

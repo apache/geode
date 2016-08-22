@@ -44,7 +44,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * messages have been received and applied to the cache.  Their reply messages
  * may not necessarily have been sent back or processed (if they have any).
  * 
- * @since 5.1
+ * @since GemFire 5.1
  */
 public final class HighPriorityAckedMessage extends HighPriorityDistributionMessage implements MessageWithReply {
   private static final Logger logger = LogService.getLogger();

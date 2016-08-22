@@ -26,7 +26,7 @@ import com.gemstone.gemfire.DataSerializable;
 /**
  * A request to the TCP server to provide information
  * about the server
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 public class InfoRequest implements DataSerializable {

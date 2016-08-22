@@ -68,7 +68,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * thread safety but not on its synchronization details.
  *
  *
- * @since 9.0
+ * @since Geode 1.0
  * @author Originally Doug Lea
  * @param <V> the type of values held in the set
  */
@@ -659,7 +659,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
      * @throws IllegalArgumentException if the initial capacity of
      * elements is negative or the load factor is nonpositive
      *
-     * @since 9.0
+     * @since Geode 1.0
      */
     public CompactConcurrentHashSet2(int initialCapacity, float loadFactor) {
         this(initialCapacity, loadFactor, 1);
@@ -1154,7 +1154,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
      * there are concurrent insertions or removals.
      *
      * @return the number of mappings
-     * @since 9.0
+     * @since Geode 1.0
      */
     public long mappingCount() {
         long n = sumCount();

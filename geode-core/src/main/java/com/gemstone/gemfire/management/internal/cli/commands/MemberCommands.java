@@ -22,11 +22,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -47,11 +42,19 @@ import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData.S
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
+
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
 
 /***
  *
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class MemberCommands implements CommandMarker {
   private Gfsh getGfsh() {
@@ -60,7 +63,8 @@ public class MemberCommands implements CommandMarker {
   private static final GetMemberInformationFunction getMemberInformation = new GetMemberInformationFunction();
 
   @CliCommand(value = { CliStrings.LIST_MEMBER }, help = CliStrings.LIST_MEMBER__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEMFIRE_SERVER)
+  @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEODE_SERVER)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listMember(
 		  @CliOption(key = { CliStrings.LIST_MEMBER__GROUP },
 		             unspecifiedDefaultValue = "",
@@ -104,7 +108,8 @@ public class MemberCommands implements CommandMarker {
   }
 
   @CliCommand(value = { CliStrings.DESCRIBE_MEMBER }, help = CliStrings.DESCRIBE_MEMBER__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEMFIRE_SERVER)
+  @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEODE_SERVER)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result describeMember(
   	@CliOption(key = CliStrings.DESCRIBE_MEMBER__IDENTIFIER,
   	             optionContext = ConverterHint.ALL_MEMBER_IDNAME,

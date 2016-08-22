@@ -18,17 +18,7 @@
  */
 package com.gemstone.gemfire.security;
 
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
-import static com.gemstone.gemfire.internal.AvailablePort.*;
-import static com.gemstone.gemfire.security.SecurityTestUtils.*;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
-import static com.gemstone.gemfire.test.dunit.NetworkUtils.*;
-import static com.gemstone.gemfire.test.dunit.Wait.*;
-
-import java.util.Properties;
-import javax.net.ssl.SSLHandshakeException;
-
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -44,16 +34,31 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import javax.net.ssl.SSLHandshakeException;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.internal.AvailablePort.SOCKET;
+import static com.gemstone.gemfire.internal.AvailablePort.getRandomAvailablePort;
+import static com.gemstone.gemfire.security.SecurityTestUtils.startLocator;
+import static com.gemstone.gemfire.security.SecurityTestUtils.stopLocator;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.IgnoredException.addIgnoredException;
+import static com.gemstone.gemfire.test.dunit.NetworkUtils.getIPLiteral;
+import static com.gemstone.gemfire.test.dunit.Wait.pause;
+
 /**
  * Tests peer to peer authentication in Gemfire
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
 
   private static VM locatorVM = null;
@@ -86,10 +91,10 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
     int port = getRandomAvailablePort(SOCKET);
 
     Properties props = new Properties();
-    props.setProperty(MCAST_PORT_NAME, "26753");
-    props.setProperty(LOCATORS_NAME, getIPLiteral() + "[" + port + "]");
-    props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, UserPasswordAuthInit.class.getName() + ".create");
-    props.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+    props.setProperty(MCAST_PORT, "26753");
+    props.setProperty(ConfigurationProperties.LOCATORS, getIPLiteral() + "[" + port + "]");
+    props.setProperty(ConfigurationProperties.SECURITY_PEER_AUTH_INIT, UserPasswordAuthInit.class.getName() + ".create");
+    props.setProperty(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
 
     try {
       Locator.startLocatorAndDS(port, null, null, props);
@@ -101,10 +106,10 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
 
     // Also try setting the authenticator
     props = new Properties();
-    props.setProperty(MCAST_PORT_NAME, "26753");
-    props.setProperty(LOCATORS_NAME, getIPLiteral() +"[" + port + "]");
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, LdapUserAuthenticator.class.getName() + ".create");
-    props.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+    props.setProperty(MCAST_PORT, "26753");
+    props.setProperty(LOCATORS, getIPLiteral() + "[" + port + "]");
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR, LdapUserAuthenticator.class.getName() + ".create");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
 
     try {
       Locator.startLocatorAndDS(port, null, null, props);
@@ -115,8 +120,8 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
     }
 
     props = new Properties();
-    props.setProperty(MCAST_PORT_NAME, "26753");
-    props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, UserPasswordAuthInit.class.getName() + ".create");
+    props.setProperty(MCAST_PORT, "26753");
+    props.setProperty(SECURITY_PEER_AUTH_INIT, UserPasswordAuthInit.class.getName() + ".create");
 
     try {
       getSystem(props);
@@ -128,8 +133,8 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
 
     // Also try setting the authenticator
     props = new Properties();
-    props.setProperty(MCAST_PORT_NAME, "26753");
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, LdapUserAuthenticator.class.getName() + ".create");
+    props.setProperty(MCAST_PORT, "26753");
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR, LdapUserAuthenticator.class.getName() + ".create");
 
     try {
       getSystem(props);
@@ -152,10 +157,10 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
     assertNull(gen.getJavaProperties());
 
     Properties props = new Properties();
-    props.setProperty(MCAST_PORT_NAME, "0");
-    props.setProperty(LOCATORS_NAME, getIPLiteral() + "[" + locatorPort + "]");
-    props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, "Incorrect_AuthInitialize");
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, gen.getAuthenticator());
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, getIPLiteral() + "[" + locatorPort + "]");
+    props.setProperty(SECURITY_PEER_AUTH_INIT, "Incorrect_AuthInitialize");
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR, gen.getAuthenticator());
 
     startTheLocator(props, gen.getJavaProperties(), locatorPort);
 
@@ -174,6 +179,7 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Authenticator is incorrect
    */
+  @Category(FlakyTest.class) // GEODE-1089: random port
   @Test
   public void testP2PAuthenticationWithInvalidAuthenticator() throws Exception {
     int locatorPort = getRandomAvailablePort(SOCKET);
@@ -183,10 +189,10 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
     assertNull(gen.getJavaProperties());
 
     Properties props = new Properties();
-    props.setProperty(MCAST_PORT_NAME, "0");
-    props.setProperty(LOCATORS_NAME, getIPLiteral() +"["+locatorPort+"]");
-    props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, gen.getAuthInit());
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, "xyz");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, getIPLiteral() + "[" + locatorPort + "]");
+    props.setProperty(SECURITY_PEER_AUTH_INIT, gen.getAuthInit());
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR, "xyz");
 
     startTheLocator(props, null, locatorPort);
 
@@ -202,6 +208,7 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1091: random port
   @Test
   public void testP2PAuthenticationWithNoCredentials() throws Exception {
     int locatorPort = getRandomAvailablePort(SOCKET);
@@ -213,10 +220,10 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
     assertNull(gen.getSystemProperties());
 
     Properties props = new Properties();
-    props.setProperty(MCAST_PORT_NAME, "0");
-    props.setProperty(LOCATORS_NAME, getIPLiteral() +"["+locatorPort+"]");
-    props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, gen.getAuthInit());
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, gen.getAuthenticator());
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, getIPLiteral() + "[" + locatorPort + "]");
+    props.setProperty(SECURITY_PEER_AUTH_INIT, gen.getAuthInit());
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR, gen.getAuthenticator());
 
     startTheLocator(props, null, locatorPort);
 
@@ -244,10 +251,10 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
     assertNotNull(gen.getValidCredentials(1));
 
     Properties props = new Properties();
-    props.setProperty(MCAST_PORT_NAME, "0");
-    props.setProperty(LOCATORS_NAME, getIPLiteral() +"["+locatorPort+"]");
-    props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, gen.getAuthInit());
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, gen.getAuthenticator());
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, getIPLiteral() + "[" + locatorPort + "]");
+    props.setProperty(SECURITY_PEER_AUTH_INIT, gen.getAuthInit());
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR, gen.getAuthenticator());
     props.putAll(gen.getValidCredentials(1));
 
     startTheLocator(props, gen.getJavaProperties(), locatorPort);
@@ -278,10 +285,10 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
     assertNotNull(gen.getValidCredentials(3));
 
     Properties props = new Properties();
-    props.setProperty(MCAST_PORT_NAME, "0");
-    props.setProperty(LOCATORS_NAME, getIPLiteral() +"["+locatorPort+"]");
-    props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, gen.getAuthInit());
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, gen.getAuthenticator());
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, getIPLiteral() + "[" + locatorPort + "]");
+    props.setProperty(SECURITY_PEER_AUTH_INIT, gen.getAuthInit());
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR, gen.getAuthenticator());
     props.putAll(gen.getValidCredentials(1));
 
     startTheLocator(props, null, locatorPort);
@@ -321,8 +328,6 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
   @Ignore("disabled for some reason?")
   @Test
   public void testP2PViewChangeReject() throws Exception {
-    int locatorPort = getRandomAvailablePort(SOCKET);
-
     final Host host = Host.getHost(0);
     final VM peer2 = host.getVM(1);
     final VM peer3 = host.getVM(2);
@@ -351,8 +356,8 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
     int port = getRandomAvailablePort(SOCKET);
     final String locators = getIPLiteral() +"["+port+"]";
 
-    props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, authInit);
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, authenticator);
+    props.setProperty(SECURITY_PEER_AUTH_INIT, authInit);
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR, authenticator);
     Properties credentials = gen.getValidCredentials(1);
     Properties javaProps = gen.getJavaProperties();
     props.putAll(credentials);
@@ -364,10 +369,10 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
 
       // Start the first peer with different authenticator
       props = new Properties();
-      props.setProperty(MCAST_PORT_NAME, "0");
-      props.setProperty(LOCATORS_NAME, locators);
-      props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, authInit);
-      props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, authenticator2);
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(LOCATORS, locators);
+      props.setProperty(SECURITY_PEER_AUTH_INIT, authInit);
+      props.setProperty(SECURITY_PEER_AUTHENTICATOR, authenticator2);
 
       credentials = gen.getValidCredentials(3);
       Properties javaProps2 = gen2.getJavaProperties();
@@ -378,10 +383,10 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
 
       // Start the second peer with the same authenticator as locator
       props = new Properties();
-      props.setProperty(MCAST_PORT_NAME, "0");
-      props.setProperty(LOCATORS_NAME, locators);
-      props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, authInit);
-      props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, authenticator);
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(LOCATORS, locators);
+      props.setProperty(SECURITY_PEER_AUTH_INIT, authInit);
+      props.setProperty(SECURITY_PEER_AUTHENTICATOR, authenticator);
 
       credentials = gen.getValidCredentials(7);
       javaProps = gen.getJavaProperties();
@@ -454,8 +459,8 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
     Properties credentials = gen.getValidCredentials(1);
 
     Properties props = new Properties();
-    props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, authInit);
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, gen.getAuthenticator());
+    props.setProperty(SECURITY_PEER_AUTH_INIT, authInit);
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR, gen.getAuthenticator());
     props.putAll(credentials);
 
     startTheLocator(props, null, locatorPort);
@@ -463,10 +468,10 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
     try {
       // Start the first peer with huge credentials
       props = new Properties();
-      props.setProperty(MCAST_PORT_NAME, "0");
-      props.setProperty(LOCATORS_NAME, getIPLiteral() +"["+locatorPort+"]");
-      props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, authInit);
-      props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, gen.getAuthenticator());
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(LOCATORS, getIPLiteral() + "[" + locatorPort + "]");
+      props.setProperty(SECURITY_PEER_AUTH_INIT, authInit);
+      props.setProperty(SECURITY_PEER_AUTHENTICATOR, gen.getAuthenticator());
 
       String hugeStr = "20KString";
       for (int i = 0; i <= 20000; i++) {
@@ -486,10 +491,10 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
 
       // Start the second peer with the same authenticator as locator
       props = new Properties();
-      props.setProperty(MCAST_PORT_NAME, "0");
-      props.setProperty(LOCATORS_NAME, getIPLiteral() +"["+locatorPort+"]");
-      props.setProperty(SECURITY_PEER_AUTH_INIT_NAME, authInit);
-      props.setProperty(SECURITY_PEER_AUTHENTICATOR_NAME, gen.getAuthenticator());
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(LOCATORS, getIPLiteral() + "[" + locatorPort + "]");
+      props.setProperty(SECURITY_PEER_AUTH_INIT, authInit);
+      props.setProperty(SECURITY_PEER_AUTHENTICATOR, gen.getAuthenticator());
 
       credentials = gen.getValidCredentials(7);
       props.putAll(credentials);

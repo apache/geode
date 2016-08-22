@@ -16,47 +16,46 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.disttx;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.internal.cache.ForceReattemptException;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
+@Category(DistributedTest.class)
 public class DistTXWANDUnitTest extends WANTestBase {
-
-  private static final long serialVersionUID = 1L;
-
-  public DistTXWANDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   protected final void postSetUpWANTestBase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        System.setProperty("gemfire.log-level", LogWriterUtils.getDUnitLogLevel());
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         return null;
       }
     }); 
   }
 
-  /*
+  /**
    * Disabled because it hangs with current implementation of notifying
    * adjunct receivers by sending DistTXAdjunctCommitMessage from primary at the
    * time of commit.
    */
-  public void DISABLED_testPartitionedSerialPropagation_SenderSameAsCoordinator() throws Exception {
-
-    
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testPartitionedSerialPropagation_SenderSameAsCoordinator() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -88,14 +87,13 @@ public class DistTXWANDUnitTest extends WANTestBase {
         getTestMethodName() + "_PR", 50 ));
   }
 
+  @Test
   public void testPartitionedSerialPropagation_SenderNotSameAsCoordinator() throws Exception {
-
-    
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -127,13 +125,13 @@ public class DistTXWANDUnitTest extends WANTestBase {
         getTestMethodName() + "_PR", 50 ));
   }
 
-  
+  @Test
   public void testPartitionedRegionParallelPropagation() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -181,9 +179,4 @@ public class DistTXWANDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.validateRegionSize(
         getTestMethodName() + "_PR", 5 ));
   }
-
-  public void testDummy() {
-  }
-  
 }
-

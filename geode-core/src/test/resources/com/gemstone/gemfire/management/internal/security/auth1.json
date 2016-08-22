@@ -1,14 +1,18 @@
 {
-"roles" : [	
-			{
-				"name" : "jmxReader",
-				"operationsAllowed" : ["QUERYDATA_DS"]				
-			}
-		],
-users : [
-	 		{
-	 			"name" : "tushark",
-	 			"roles" : ["jmxReader"]
-	 		}
-		]
+  "roles": [
+    {
+      "name": "jmxReader",
+      "operationsAllowed": [
+        "QUERY:EXECUTE"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "name": "tushark",
+      "roles": [
+        "jmxReader"
+      ]
+    }
+  ]
 }

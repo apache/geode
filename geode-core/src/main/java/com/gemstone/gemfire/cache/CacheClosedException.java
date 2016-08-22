@@ -27,7 +27,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
  *
  *
  * @see Cache
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class CacheClosedException extends CancelException {
 private static final long serialVersionUID = -6479561694497811262L;

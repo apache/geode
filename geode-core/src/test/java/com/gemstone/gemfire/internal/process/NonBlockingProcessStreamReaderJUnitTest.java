@@ -32,7 +32,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * 
  * None of the tests should be skipped or hang on Windows.
  * 
- * @since 8.2
+ * @since GemFire 8.2
  */
 @Category(IntegrationTest.class)
 public class NonBlockingProcessStreamReaderJUnitTest extends ProcessStreamReaderTestCase {

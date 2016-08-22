@@ -59,7 +59,6 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
-import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
@@ -72,13 +71,15 @@ import com.gemstone.gemfire.internal.cache.versions.ConcurrentCacheModificationE
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  * A Partitioned Region update message.  Meant to be sent only to
  * a bucket's primary owner.  In addition to updating an entry it is also used to
  * send Partitioned Region event information.
  *
- * @since 6.0
+ * @since GemFire 6.0
  */
 public final class PutAllPRMessage extends PartitionMessageWithDirectReply
 {
@@ -99,9 +100,6 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
 
   protected static final short HAS_BRIDGE_CONTEXT = UNRESERVED_FLAGS_START;
   protected static final short SKIP_CALLBACKS = (HAS_BRIDGE_CONTEXT << 1);
-  protected static final short FETCH_FROM_HDFS = (SKIP_CALLBACKS << 1);
-  //using the left most bit for IS_PUT_DML, the last available bit
-  protected static final short IS_PUT_DML = (short) (FETCH_FROM_HDFS << 1);
 
   private transient InternalDistributedSystem internalDs;
 
@@ -116,10 +114,6 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
   
   transient VersionedObjectList versions = null;
 
-  /** whether this operation should fetch oldValue from HDFS */
-  private boolean fetchFromHDFS;
-  
-  private boolean isPutDML;
   /**
    * Empty constructor to satisfy {@link DataSerializer}requirements
    */
@@ -127,7 +121,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
   }
 
   public PutAllPRMessage(int bucketId, int size, boolean notificationOnly,
-      boolean posDup, boolean skipCallbacks, Object callbackArg, boolean fetchFromHDFS, boolean isPutDML) {
+      boolean posDup, boolean skipCallbacks, Object callbackArg) {
     this.bucketId = Integer.valueOf(bucketId);
     putAllPRData = new PutAllEntryData[size];
     this.notificationOnly = notificationOnly;
@@ -135,8 +129,6 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
     this.skipCallbacks = skipCallbacks;
     this.callbackArg = callbackArg;
     initTxMemberId();
-    this.fetchFromHDFS = fetchFromHDFS;
-    this.isPutDML = isPutDML; 
   }
 
   public void addEntry(PutAllEntryData entry) {
@@ -273,10 +265,6 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
       EntryVersionsList versionTags = new EntryVersionsList(putAllPRDataSize);
 
       boolean hasTags = false;
-      // get the "keyRequiresRegionContext" flag from first element assuming
-      // all key objects to be uniform
-      final boolean requiresRegionContext =
-        (this.putAllPRData[0].getKey() instanceof KeyWithRegionContext);
       for (int i = 0; i < this.putAllPRDataSize; i++) {
         // If sender's version is >= 7.0.1 then we can send versions list.
         if (!hasTags && putAllPRData[i].versionTag != null) {
@@ -286,7 +274,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
         VersionTag<?> tag = putAllPRData[i].versionTag;
         versionTags.add(tag);
         putAllPRData[i].versionTag = null;
-        putAllPRData[i].toData(out, requiresRegionContext);
+        putAllPRData[i].toData(out);
         putAllPRData[i].versionTag = tag;
         // PutAllEntryData's toData did not serialize eventID to save
         // performance for DR, but in PR,
@@ -305,8 +293,6 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
     s = super.computeCompressedShort(s);
     if (this.bridgeContext != null) s |= HAS_BRIDGE_CONTEXT;
     if (this.skipCallbacks) s |= SKIP_CALLBACKS;
-    if (this.fetchFromHDFS) s |= FETCH_FROM_HDFS;
-    if (this.isPutDML) s |= IS_PUT_DML;
     return s;
   }
 
@@ -315,8 +301,6 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
       ClassNotFoundException {
     super.setBooleans(s, in);
     this.skipCallbacks = ((s & SKIP_CALLBACKS) != 0);
-    this.fetchFromHDFS = ((s & FETCH_FROM_HDFS) != 0);
-    this.isPutDML = ((s & IS_PUT_DML) != 0);
   }
 
   @Override
@@ -359,12 +343,13 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
   }
 
   /* we need a event with content for waitForNodeOrCreateBucket() */
+  @Retained
   public EntryEventImpl getFirstEvent(PartitionedRegion r) {
     if (putAllPRDataSize == 0) {
       return null;
     }
     
-    EntryEventImpl ev = EntryEventImpl.create(r, 
+    @Retained EntryEventImpl ev = EntryEventImpl.create(r, 
         putAllPRData[0].getOp(),
         putAllPRData[0].getKey(), 
         putAllPRData[0].getValue(), 
@@ -408,7 +393,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
     }
     
     DistributedPutAllOperation dpao = null;
-    EntryEventImpl baseEvent = null;
+    @Released EntryEventImpl baseEvent = null;
     BucketRegion bucketRegion = null;
     PartitionedRegionDataStore ds = r.getDataStore();
     InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
@@ -440,12 +425,8 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
     // Fix the updateMsg misorder issue
     // Lock the keys when doing postPutAll
     Object keys[] = new Object[putAllPRDataSize];
-    final boolean keyRequiresRegionContext = r.keyRequiresRegionContext();
     for (int i = 0; i < putAllPRDataSize; ++i) {
       keys[i] = putAllPRData[i].getKey();
-      if (keyRequiresRegionContext) {
-        ((KeyWithRegionContext)keys[i]).setRegionContext(r);
-      }
     }
 
     if (!notificationOnly) {
@@ -486,15 +467,12 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
            * in this request, because these request will be blocked by foundKey
            */
           for (int i=0; i<putAllPRDataSize; i++) {
-            EntryEventImpl ev = getEventFromEntry(r, myId, eventSender, i,putAllPRData,notificationOnly,bridgeContext,posDup,skipCallbacks, this.isPutDML);
+            @Released EntryEventImpl ev = getEventFromEntry(r, myId, eventSender, i,putAllPRData,notificationOnly,bridgeContext,posDup,skipCallbacks);
             try {
             key = ev.getKey();
 
             ev.setPutAllOperation(dpao);
 
-            // set the fetchFromHDFS flag
-            ev.setFetchFromHDFS(this.fetchFromHDFS);
-            
             // make sure a local update inserts a cache de-serializable
             ev.makeSerializedNewValue();
             
@@ -565,7 +543,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
       }
     } else {
       for (int i=0; i<putAllPRDataSize; i++) {
-        EntryEventImpl ev = getEventFromEntry(r, myId, eventSender, i,putAllPRData,notificationOnly,bridgeContext,posDup,skipCallbacks, this.isPutDML);
+        EntryEventImpl ev = getEventFromEntry(r, myId, eventSender, i,putAllPRData,notificationOnly,bridgeContext,posDup,skipCallbacks);
         try {
         ev.setOriginRemote(true);
         if (this.callbackArg != null) {
@@ -596,11 +574,12 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
 	return true;
   }
   
+  @Retained
   public static EntryEventImpl getEventFromEntry(LocalRegion r,
       InternalDistributedMember myId, InternalDistributedMember eventSender,
       int idx, DistributedPutAllOperation.PutAllEntryData[] data,
       boolean notificationOnly, ClientProxyMembershipID bridgeContext,
-      boolean posDup, boolean skipCallbacks, boolean isPutDML) {
+      boolean posDup, boolean skipCallbacks) {
     PutAllEntryData prd = data[idx];
     //EntryEventImpl ev = EntryEventImpl.create(r, 
        // prd.getOp(),
@@ -610,7 +589,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
       //  true/* generate Callbacks */,
       //  prd.getEventID());
     
-    EntryEventImpl ev = EntryEventImpl.create(r, prd.getOp(), prd.getKey(), prd
+    @Retained EntryEventImpl ev = EntryEventImpl.create(r, prd.getOp(), prd.getKey(), prd
         .getValue(), null, false, eventSender, !skipCallbacks, prd.getEventID());
     boolean evReturned = false;
     try {
@@ -639,7 +618,6 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
     } else {
       ev.setTailKey(prd.getTailKey());
     }
-    ev.setPutDML(isPutDML);
     evReturned = true;
     return ev;
     } finally {
@@ -845,7 +823,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
   
   /**
    * A processor to capture the value returned by {@link PutAllPRMessage}
-   * @since 5.8
+   * @since GemFire 5.8
    */
   public static class PutAllResponse extends PartitionResponse {
     private volatile boolean returnValue;

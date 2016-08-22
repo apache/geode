@@ -35,7 +35,7 @@ import com.gemstone.gemfire.i18n.StringId;
  * <code>GatewayEvent</code>s to <code>AsyncEventListener</code>
  * callback implementers. This dispatcher is used in the write-behind case.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventDispatcher{
 

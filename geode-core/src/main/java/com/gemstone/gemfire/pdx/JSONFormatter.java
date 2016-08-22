@@ -17,8 +17,8 @@
 package com.gemstone.gemfire.pdx;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
-
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -32,36 +32,50 @@ import com.gemstone.gemfire.pdx.internal.json.PdxToJSON;
 
 
 /**
- * PdxFormatter class has static methods to convert JSON document into {@link PdxInstance}
- * and methods to convert back {@link PdxInstance} into JSON Document.
- * 
- * Using this, application can put json document in gemfire cache. Application can define indexes 
- * on PdxInsatnce and then query those using OQL. Query will return the PdxInstances as results,
- * that needs to convert back into JSON document. 
- * 
- * This uses Jackson parser to parse the json document. Parser treats values in json document as 
- * number(byte, short, int, long..), string, array, object, 'true', 'false' or 'null'. Which
- * further treated as corresponding java types in PdxInstance
- * 
- * JSON objects are converted into PdxInstance
- * JSON arrays are converted into List.
- *  
+ * <p>
+ * JSONFormatter has a static method {@link JSONFormatter#fromJSON(String)} to convert a JSON
+ * document into a {@link PdxInstance} and a static method {@link JSONFormatter#toJSON(PdxInstance)}
+ * to convert a {@link PdxInstance} into a JSON Document.
+ * </p>
+ * <p>
+ * Using these methods an applications may convert a JSON document into a PdxInstance for storing in the cache.
+ * Indexes can then be defined on the PdxInstances so that queries can be performed using OQL. Queries will
+ * return PdxInstances and these can be turned back back into JSON documents using JSONFormatter.
+ * </p>
+ * <p>
+ * JSONFormatter treats values in a json document as
+ * number(byte, short, int, long..), string, array, object, 'true', 'false' or 'null'. These correspond
+ * to the following java types:
+ * </p>
+ *
+ * <table>
+ *   <th>JSON</th><th>Java</th>
+ * <tr> <td>object</td>      <td>{@link PdxInstance}</td> </tr>
+ * <tr> <td>arrays</td>      <td>{@link java.util.LinkedList}</td> </tr>
+ * <tr> <td>BigDecimal</td>  <td>{@link BigDecimal}</td> </tr>
+ * <tr> <td>BigInterger</td> <td>{@link BigInteger}</td> </tr>
+ * <tr> <td>Double</td>      <td>double</td> </tr>
+ * <tr> <td>float</td>       <td>float</td> </tr>
+ * <tr> <td>boolean</td>     <td>boolean</td> </tr>
+ * <tr> <td>Integer</td>     <td>byte, short or int</td> </tr>
+ * <tr> <td>null</td>        <td>null</td> </tr>
+ * </table>
  */
 
 public class JSONFormatter {
   
   public static final String JSON_CLASSNAME = "__GEMFIRE_JSON";
   
-  enum states {NONE, ObJECT_START,  FIELD_NAME, INNER_OBJECT_FOUND, SCALER_FOUND, LIST_FOUND, OBJECT_ENDS};
+  enum states {NONE, ObJECT_START,  FIELD_NAME, SCALER_FOUND, LIST_FOUND, LIST_ENDS, OBJECT_ENDS};
   
   private JSONFormatter() {
   }
   
   /**
-   * To create PdxInstance from JSON string
+   * Converts a JSON document into a PdxInstance
    * 
    * @return the PdxInstance.
-   * @throws JSONFormatterException if unable to parse JSON doucment
+   * @throws JSONFormatterException if unable to parse the JSON document
    */
   public static PdxInstance fromJSON(String jsonString) {
     JsonParser jp = null;
@@ -79,10 +93,10 @@ public class JSONFormatter {
   }
   
   /**
-   * To create PdxInstance from JSON string
+   * Converts a JSON document into a PdxInstance
    * 
    * @return the PdxInstance.
-   * @throws JSONFormatterException if unable to parse JSON doucment
+   * @throws JSONFormatterException if unable to parse the JSON document
    */
   public static PdxInstance fromJSON(byte[] jsonByteArray) {
     JsonParser jp = null;
@@ -105,32 +119,32 @@ public class JSONFormatter {
   }
   
   /**
-   *To create JSON string from PdxInstance
+   * Converts a PdxInstance into a JSON document
    * 
    * @return the JSON string.
-   * @throws JSONFormatterException if unable to create JSON doucment from PdxInstance
+   * @throws JSONFormatterException if unable to create the JSON document
    */
   public static String toJSON(PdxInstance pdxInstance) {
     try {
       PdxToJSON pj = new PdxToJSON(pdxInstance);
       return pj.getJSON();
     } catch (Exception e) {
-      throw new JSONFormatterException("Could not create JSON document from PdxInstance ", e);
+      throw new JSONFormatterException("Could not create JSON document from PdxInstance", e);
     }    
   }
   
   /**
-   *To create JSON byte array from PdxInstance
+   * Converts a PdxInstance into a JSON document in byte-array form
    * 
    * @return the JSON byte array.
-   * @throws JSONFormatterException if unable to create JSON doucment from PdxInstance
+   * @throws JSONFormatterException if unable to create the JSON document
    */
   public static byte[] toJSONByteArray(PdxInstance pdxInstance) {
     try {
       PdxToJSON pj = new PdxToJSON(pdxInstance);
       return pj.getJSONByteArray();
     } catch (Exception e) {
-      throw new JSONFormatterException("Could not create JSON document from PdxInstance ", e);
+      throw new JSONFormatterException("Could not create JSON document from PdxInstance", e);
     }    
   }
   
@@ -192,9 +206,10 @@ public class JSONFormatter {
         {
           //need to create array; fieldname may be there; will it case it not there
           arrayStarts(currentState);
+          currentState = states.LIST_FOUND;
           PdxListHelper list = getList(jp, currentState, null);
           currentPdxInstance.addListField(currentFieldName, list);
-          currentState = states.LIST_FOUND;
+          currentState = states.LIST_ENDS;
           currentFieldName = null;          
           break;
         }
@@ -219,7 +234,7 @@ public class JSONFormatter {
         case VALUE_NULL :
         {
           //write null
-          nullfound(currentState);
+          nullFound(currentState);
           currentState = states.SCALER_FOUND;
           currentPdxInstance.addNullField(currentFieldName);
           currentFieldName = null;
@@ -228,7 +243,7 @@ public class JSONFormatter {
         case VALUE_NUMBER_FLOAT:
         {
           //write double/float
-          doublefound(currentState);
+          doubleFound(currentState);
           currentState = states.SCALER_FOUND;
           //currentPdxInstance.addDoubleField(currentFieldName, jp.getDoubleValue());
           setNumberField(jp, currentPdxInstance, currentFieldName);
@@ -238,7 +253,7 @@ public class JSONFormatter {
         case VALUE_NUMBER_INT:
         {
          //write int
-          doublefound(currentState);
+          intFound(currentState);
           currentState = states.SCALER_FOUND;
           //currentPdxInstance.addIntField(currentFieldName, jp.getIntValue());
           setNumberField(jp, currentPdxInstance, currentFieldName);
@@ -248,7 +263,7 @@ public class JSONFormatter {
         case VALUE_STRING:
         {
           //write string
-          doublefound(currentState);
+          stringFound(currentState);
           currentState = states.SCALER_FOUND;
           currentPdxInstance.addStringField(currentFieldName, new String(jp.getText()));
           currentFieldName = null;
@@ -409,10 +424,10 @@ public class JSONFormatter {
         {
           //array is end
           arrayEnds(currentState);
+          currentState = states.LIST_ENDS;
           if(currentPdxList.getParent() == null)
             return currentPdxList;
-          currentPdxList = currentPdxList.getParent(); 
-          currentState = states.LIST_FOUND;
+          currentPdxList = currentPdxList.getParent();          
           break;
         }
         case VALUE_EMBEDDED_OBJECT :
@@ -430,7 +445,7 @@ public class JSONFormatter {
         case VALUE_NULL :
         {
           //write null
-          nullfound(currentState);
+          nullFound(currentState);
           currentState = states.SCALER_FOUND;
           currentPdxList.addNullField(null);          
           break;
@@ -438,7 +453,7 @@ public class JSONFormatter {
         case VALUE_NUMBER_FLOAT:
         {
           //write double/float
-          doublefound(currentState);
+          doubleFound(currentState);
           currentState = states.SCALER_FOUND;
           //currentPdxList.addDoubleField(jp.getDoubleValue());
           setNumberField(jp,currentPdxList);
@@ -447,7 +462,7 @@ public class JSONFormatter {
         case VALUE_NUMBER_INT:
         {
          //write int
-          doublefound(currentState);
+          intFound(currentState);
           currentState = states.SCALER_FOUND;
          // currentPdxList.addIntField(jp.getIntValue());
           setNumberField(jp,currentPdxList);
@@ -486,6 +501,8 @@ public class JSONFormatter {
     case FIELD_NAME:
     case OBJECT_ENDS://in list
     case SCALER_FOUND://inlist
+    case LIST_FOUND:
+    case LIST_ENDS:
       return true;
       default:
         throw new IllegalStateException("Object start called when state is " +currentState);
@@ -499,7 +516,7 @@ public class JSONFormatter {
     {
     case ObJECT_START: //when empty object on field
     case SCALER_FOUND:
-    case LIST_FOUND:
+    case LIST_ENDS:
     case OBJECT_ENDS://inner object closes
       return true;
       default:
@@ -515,6 +532,7 @@ public class JSONFormatter {
     case SCALER_FOUND:
     case FIELD_NAME:
     case LIST_FOUND:
+    case LIST_ENDS:
       return true;
       default:
         throw new IllegalStateException("Array start called when state is " +currentState);
@@ -529,6 +547,7 @@ public class JSONFormatter {
     case FIELD_NAME://when empty array
     case SCALER_FOUND:
     case LIST_FOUND:
+    case LIST_ENDS:  
     case OBJECT_ENDS:
       return true;
       default:
@@ -544,6 +563,7 @@ public class JSONFormatter {
     case FIELD_NAME:
     case SCALER_FOUND:
     case LIST_FOUND:
+    case LIST_ENDS:
     case OBJECT_ENDS:
       return true;
       default:
@@ -559,6 +579,7 @@ public class JSONFormatter {
     case FIELD_NAME:
     case SCALER_FOUND:
     case LIST_FOUND:
+    case LIST_ENDS:
     case OBJECT_ENDS:
       return true;
       default:
@@ -574,6 +595,7 @@ public class JSONFormatter {
     case FIELD_NAME:
     case SCALER_FOUND:
     case LIST_FOUND:
+    case LIST_ENDS:
     case OBJECT_ENDS:
       return true;
       default:
@@ -582,13 +604,14 @@ public class JSONFormatter {
     }
   }
   
-  private boolean doublefound(states currentState)
+  private boolean doubleFound(states currentState)
   {
     switch(currentState)
     {
     case FIELD_NAME:
     case SCALER_FOUND:
     case LIST_FOUND:
+    case LIST_ENDS:
     case OBJECT_ENDS:
       return true;
       default:
@@ -604,6 +627,7 @@ public class JSONFormatter {
     case ObJECT_START:
     case SCALER_FOUND:
     case LIST_FOUND:
+    case LIST_ENDS:
     case OBJECT_ENDS:
       return true;
       default:
@@ -612,13 +636,14 @@ public class JSONFormatter {
     }
   }
   
-  private boolean nullfound(states currentState)
+  private boolean nullFound(states currentState)
   {
     switch(currentState)
     {
     case FIELD_NAME:
     case SCALER_FOUND:
     case LIST_FOUND:
+    case LIST_ENDS:
     case OBJECT_ENDS:
       return true;
       default:

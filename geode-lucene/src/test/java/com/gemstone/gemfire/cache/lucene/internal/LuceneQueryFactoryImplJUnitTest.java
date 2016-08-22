@@ -18,33 +18,52 @@
  */
 package com.gemstone.gemfire.cache.lucene.internal;
 
+import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.lucene.LuceneQuery;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class LuceneQueryFactoryImplJUnitTest {
 
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
+
   @Test
-  public void test() {
-    Cache cache = Mockito.mock(Cache.class);
+  public void shouldCreateQueryWithCorrectAttributes() {
+    Cache cache = mock(Cache.class);
+    Region region = mock(Region.class);
+    when(cache.getRegion(any())).thenReturn(region);
     LuceneQueryFactoryImpl f = new LuceneQueryFactoryImpl(cache);
     f.setPageSize(5);
     f.setResultLimit(25);
     String[] projection = new String[] {"a", "b"};
     f.setProjectionFields(projection);
-    LuceneQuery<Object, Object> query = f.create("index", "region", new StringQueryProvider("test"));
+    LuceneQuery<Object, Object> query = f.create("index", "region", new StringQueryProvider("test", DEFAULT_FIELD));
     assertEquals(25, query.getLimit());
     assertEquals(5, query.getPageSize());
     assertArrayEquals(projection, query.getProjectedFieldNames());
     
     Mockito.verify(cache).getRegion(Mockito.eq("region"));
+  }
+
+  @Test
+  public void shouldThrowIllegalArgumentWhenRegionIsMissing() {
+    Cache cache = mock(Cache.class);
+    LuceneQueryFactoryImpl f = new LuceneQueryFactoryImpl(cache);
+    thrown.expect(IllegalArgumentException.class);
+    LuceneQuery<Object, Object> query = f.create("index", "region", new StringQueryProvider("test", DEFAULT_FIELD));
   }
 
 }

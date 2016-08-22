@@ -33,7 +33,7 @@ import java.net.*;
  * It contains configuration state and behavior common to all managed
  * entities.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public abstract class ManagedEntityConfigImpl
   implements ManagedEntityConfig {

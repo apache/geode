@@ -24,10 +24,7 @@ import org.apache.logging.log4j.Logger;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.operations.GetOperationContext;
 import com.gemstone.gemfire.cache.operations.internal.GetOperationContextImpl;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
@@ -38,7 +35,6 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ObjectPartList;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
-import com.gemstone.gemfire.internal.cache.tier.sockets.command.Get70.Entry;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -47,6 +43,7 @@ import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 
 /**
@@ -134,34 +131,36 @@ public class GetAllWithCallback extends BaseCommand {
       writeChunkedErrorResponse(msg, MessageType.GET_ALL_DATA_ERROR, message,
               servConn);
       servConn.setAsTrue(RESPONDED);
-    } else {
-      LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
-      if (region == null) {
-        String reason = " was not found during getAll request";
-        writeRegionDestroyedEx(msg, regionName, reason, servConn);
-        servConn.setAsTrue(RESPONDED);
-      } else {
-        // Send header
-        ChunkedMessage chunkedResponseMsg = servConn.getChunkedResponseMessage();
-        chunkedResponseMsg.setMessageType(MessageType.RESPONSE);
-        chunkedResponseMsg.setTransactionId(msg.getTransactionId());
-        chunkedResponseMsg.sendHeader();
-
-        // Send chunk response
-        try {
-          fillAndSendGetAllResponseChunks(region, regionName, keys, servConn, callback);
-          servConn.setAsTrue(RESPONDED);
-        } catch (Exception e) {
-          // If an interrupted exception is thrown , rethrow it
-          checkForInterrupt(servConn, e);
-
-          // Otherwise, write an exception message and continue
-          writeChunkedException(msg, e, false, servConn);
-          servConn.setAsTrue(RESPONDED);
-          return;
-        }
-      }
+      return;
     }
+    LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
+    if (region == null) {
+      String reason = " was not found during getAll request";
+      writeRegionDestroyedEx(msg, regionName, reason, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    }
+    // Send header
+    ChunkedMessage chunkedResponseMsg = servConn.getChunkedResponseMessage();
+    chunkedResponseMsg.setMessageType(MessageType.RESPONSE);
+    chunkedResponseMsg.setTransactionId(msg.getTransactionId());
+    chunkedResponseMsg.sendHeader();
+
+    // Send chunk response
+    try {
+      fillAndSendGetAllResponseChunks(region, regionName, keys, servConn, callback);
+      servConn.setAsTrue(RESPONDED);
+    } catch (Exception e) {
+      // If an interrupted exception is thrown , rethrow it
+      checkForInterrupt(servConn, e);
+
+      // Otherwise, write an exception message and continue
+      writeChunkedException(msg, e, false, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    }
+
+
   }
 
   private void fillAndSendGetAllResponseChunks(Region region,
@@ -203,6 +202,17 @@ public class GetAllWithCallback extends BaseCommand {
           values.addExceptionPart(key, ex);
           continue;
         }
+      }
+
+      try {
+        GeodeSecurityUtil.authorizeRegionRead(regionName, key.toString());
+      } catch (NotAuthorizedException ex) {
+        logger.warn(LocalizedMessage.create(LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1, new Object[] {
+          servConn.getName(),
+          key
+        }), ex);
+        values.addExceptionPart(key, ex);
+        continue;
       }
 
       // Get the value and update the statistics. Do not deserialize

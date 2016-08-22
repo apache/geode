@@ -36,9 +36,12 @@ package com.gemstone.gemfire.modules.session.junit;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.internal.runners.statements.Fail;
 import org.junit.internal.runners.statements.RunAfters;
 import org.junit.internal.runners.statements.RunBefores;
+import org.junit.rules.MethodRule;
+import org.junit.rules.TestRule;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
@@ -65,6 +68,9 @@ public class PerTestClassLoaderRunner extends NamedRunner {
   private TestClass testClassFromClassLoader;
   private Object beforeFromClassLoader;
   private Object afterFromClassLoader;
+  private Object ruleFromClassLoader;
+  private Object testRuleFromClassLoader;
+  private Object methodRuleFromClassLoader;
 
   /**
    * Instantiates a new test per class loader runner.
@@ -117,6 +123,9 @@ public class PerTestClassLoaderRunner extends NamedRunner {
     // See withAfters and withBefores for the reason.
     beforeFromClassLoader = classLoader.loadClass(Before.class.getName());
     afterFromClassLoader = classLoader.loadClass(After.class.getName());
+    ruleFromClassLoader = classLoader.loadClass(Rule.class.getName());
+    testRuleFromClassLoader = classLoader.loadClass(TestRule.class.getName());
+    methodRuleFromClassLoader = classLoader.loadClass(MethodRule.class.getName());
   }
 
   @Override
@@ -170,114 +179,27 @@ public class PerTestClassLoaderRunner extends NamedRunner {
     return new RunBefores(statement, befores, target);
   }
 
-//    /**
-//     * Gets the class path. This value is cached in a static variable for performance reasons.
-//     *
-//     * @return the class path
-//     */
-//    private static String getClassPath()
-//    {
-//        if (classPathDetermined)
-//        {
-//            return classPath;
-//        }
-//
-//        classPathDetermined = true;
-//        // running from maven, we have the classpath in this property.
-//        classPath = System.getProperty("surefire.test.class.path");
-//        if (classPath != null)
-//        {
-//            return classPath;
-//        }
-//
-//        // For a multi module project, running it from the top we have to find it using another way.
-//        // We also need to set useSystemClassLoader=true in the POM so that we gets a jar with the classpath in it.
-//        String booterClassPath = System.getProperty("java.class.path");
-//        Vector<String> pathItems = null;
-//        if (booterClassPath != null)
-//        {
-//            pathItems = scanPath(booterClassPath);
-//        }
-//        // Do we have just 1 entry as classpath which is a jar?
-//        if (pathItems != null && pathItems.size() == 1
-//                && isJar((String) pathItems.get(0)))
-//        {
-//            classPath = loadJarManifestClassPath((String) pathItems.get(0),
-//                    "META-INF/MANIFEST.MF");
-//        }
-//        return classPath;
-//
-//    }
+  @SuppressWarnings("unchecked")
+  @Override
+  protected List<MethodRule> rules(Object target) {
+    List<MethodRule> result = testClassFromClassLoader.getAnnotatedMethodValues(target,
+        (Class<? extends Annotation>) ruleFromClassLoader, (Class) methodRuleFromClassLoader);
 
-//    /**
-//     * Load jar manifest class path.
-//     *
-//     * @param path the path
-//     * @param fileName the file name
-//     *
-//     * @return the string
-//     */
-//    private static String loadJarManifestClassPath(String path, String fileName)
-//    {
-//        File archive = new File(path);
-//        if (!archive.exists()) {
-//            return null;
-//        }
-//        ZipFile zipFile = null;
-//
-//        try {
-//            zipFile = new ZipFile(archive);
-//        } catch (IOException io) {
-//            return null;
-//        }
-//
-//        ZipEntry entry = zipFile.getEntry(fileName);
-//        if (entry == null) {
-//            return null;
-//        } try {
-//            Manifest mf = new Manifest();
-//            mf.read(zipFile.getInputStream(entry));
-//
-//            return mf.getMainAttributes().getValue(Attributes.Name.CLASS_PATH)
-//                    .replaceAll(" ", System.getProperty("path.separator"))
-//                    .replaceAll("file:/", "");
-//        } catch (MalformedURLException e) {
-//            LOGGER.throwing("ClassLoaderTestSuite", "loadJarManifestClassPath", e);
-//        } catch (IOException e) {
-//            LOGGER.throwing("ClassLoaderTestSuite", "loadJarManifestClassPath", e);
-//        }
-//        return null;
-//    }
-//
-//    /**
-//     * Checks if is jar.
-//     *
-//     * @param pathEntry the path entry
-//     *
-//     * @return true, if is jar
-//     */
-//    private static boolean isJar(String pathEntry)
-//    {
-//        return pathEntry.endsWith(".jar") || pathEntry.endsWith(".zip");
-//    }
-//
-//    /**
-//     * Scan path for all directories.
-//     *
-//     * @param classPath the class path
-//     *
-//     * @return the vector< string>
-//     */
-//    private static Vector<String> scanPath(String classPath)
-//    {
-//        String separator = System.getProperty("path.separator");
-//        Vector<String> pathItems = new Vector<String>(10);
-//        StringTokenizer st = new StringTokenizer(classPath, separator);
-//        while (st.hasMoreTokens())
-//        {
-//            pathItems.addElement(st.nextToken());
-//        }
-//        return pathItems;
-//    }
+    result.addAll(testClassFromClassLoader.getAnnotatedFieldValues(target,
+        (Class<? extends Annotation>) ruleFromClassLoader, (Class) methodRuleFromClassLoader));
 
+    return result;
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  protected List<TestRule> getTestRules(Object target) {
+    List<TestRule> result = testClassFromClassLoader.getAnnotatedMethodValues(target,
+        (Class<? extends Annotation>) ruleFromClassLoader, (Class) testRuleFromClassLoader);
+
+    result.addAll(testClassFromClassLoader.getAnnotatedFieldValues(target,
+        (Class<? extends Annotation>) ruleFromClassLoader, (Class) testRuleFromClassLoader));
+
+    return result;
+  }
 }

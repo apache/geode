@@ -35,6 +35,7 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -116,7 +117,9 @@ public class ResultsDataSerializabilityJUnitTest {
   // network. Hence a dunit test is required for testing this functionality.
   
   /* test DataSerializability of a simple query result */
-  public void _testDataSerializability() throws Exception {
+  @Ignore
+  @Test
+  public void testDataSerializability() throws Exception {
               
     Region region = CacheUtils.createRegion("Portfolios", Portfolio.class);
     for(int i = 0; i < 10000; i++) {

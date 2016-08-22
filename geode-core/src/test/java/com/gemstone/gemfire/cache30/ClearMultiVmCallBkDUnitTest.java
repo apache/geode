@@ -22,7 +22,12 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -35,21 +40,15 @@ import com.gemstone.gemfire.cache.RegionEvent;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-/**
- *
- */
-public class ClearMultiVmCallBkDUnitTest extends DistributedTestCase{
-    
-    /** Creates a new instance of ClearMultiVmCallBkDUnitTest */
-    public ClearMultiVmCallBkDUnitTest(String name) {
-        super(name);
-    }
-    
+@Category(DistributedTest.class)
+public class ClearMultiVmCallBkDUnitTest extends JUnit4DistributedTestCase { // TODO: reformat
+
     static Cache cache;
     static Properties props = new Properties();
     static Properties propsWork = new Properties();
@@ -79,43 +78,30 @@ public class ClearMultiVmCallBkDUnitTest extends DistributedTestCase{
     }
     
     public static void createCache(){
-        try{
-            CacheListener aListener = new ListenerCallBk();
-//            props.setProperty("mcast-port", "1234");
-//            ds = DistributedSystem.connect(props);
-            ds = (new ClearMultiVmCallBkDUnitTest("temp")).getSystem(props);            
-            
-            cache = CacheFactory.create(ds);
-            AttributesFactory factory  = new AttributesFactory();
-            factory.setScope(Scope.DISTRIBUTED_ACK);
-            
-            // Set Cachelisterner : aListener
-            
-            factory.setCacheListener(aListener);
-            RegionAttributes attr = factory.create();
-            
-            region = cache.createRegion("map", attr);
-            
-            
-        } catch (Exception ex){
-            ex.printStackTrace();
-        }
+      CacheListener aListener = new ListenerCallBk();
+      ds = (new ClearMultiVmCallBkDUnitTest()).getSystem(props);
+
+      cache = CacheFactory.create(ds);
+      AttributesFactory factory  = new AttributesFactory();
+      factory.setScope(Scope.DISTRIBUTED_ACK);
+
+      // Set Cachelisterner : aListener
+
+      factory.setCacheListener(aListener);
+      RegionAttributes attr = factory.create();
+
+      region = cache.createRegion("map", attr);
     }
     
     public static void closeCache(){
-        try{
-            
-            cache.close();
-            ds.disconnect();
-            
-        } catch (Exception ex){
-            ex.printStackTrace();
-        }
+      cache.close();
+      ds.disconnect();
     }
     
     //test methods
     
-    public void testClearSingleVM(){
+  @Test
+  public void testClearSingleVM(){
         
         Host host = Host.getHost(0);
         VM vm0 = host.getVM(0);
@@ -143,7 +129,8 @@ public class ClearMultiVmCallBkDUnitTest extends DistributedTestCase{
         
     }//end of test case1
     
-     public void testClearMultiVM(){
+  @Test
+  public void testClearMultiVM(){
         
         Host host = Host.getHost(0);
         VM vm0 = host.getVM(0);
@@ -178,7 +165,7 @@ public class ClearMultiVmCallBkDUnitTest extends DistributedTestCase{
             }
         }catch(Exception ex){
             ex.printStackTrace();
-            fail("Failed while region.put");
+            fail("Failed while region.put", ex);
         }
         return obj;
     }
@@ -188,7 +175,7 @@ public class ClearMultiVmCallBkDUnitTest extends DistributedTestCase{
         try{
             obj = region.get(ob);
         } catch(Exception ex){
-            fail("Failed while region.get");
+            fail("Failed while region.get", ex);
         }
         return obj;
     }
@@ -198,7 +185,7 @@ public class ClearMultiVmCallBkDUnitTest extends DistributedTestCase{
         try{
             flag = region.containsValue(ob);
         }catch(Exception ex){
-            fail("Failed while region.containsValueMethod");
+            fail("Failed while region.containsValueMethod", ex);
         }
         return flag;
     }
@@ -208,7 +195,7 @@ public class ClearMultiVmCallBkDUnitTest extends DistributedTestCase{
         try{
             i = region.size();
         }catch(Exception ex){
-            fail("Failed while region.size");
+            fail("Failed while region.size", ex);
         }
         return i;
     }
@@ -217,7 +204,7 @@ public class ClearMultiVmCallBkDUnitTest extends DistributedTestCase{
         try{
             region.clear();
         } catch(Exception ex){
-            ex.printStackTrace();
+            fail("clearMethod failed", ex);
         }
     }
     
@@ -234,13 +221,8 @@ public class ClearMultiVmCallBkDUnitTest extends DistributedTestCase{
                 region.put(""+i, "inAfterClear");
                 afterClear = true;
             }catch (Exception e){
-                //
+              fail("afterRegionClear failed", e);
             }
-            
         }
-        
     }
-    
-    
-    
 }//end of class

@@ -26,9 +26,8 @@
  */
 package com.gemstone.gemfire.cache.query;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.junit.runners.MethodSorters.NAME_ASCENDING;
+import static org.junit.Assert.*;
+import static org.junit.runners.MethodSorters.*;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -43,8 +42,6 @@ import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import util.TestException;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -120,101 +117,13 @@ public class QueryJUnitTest {
   }
 
   @Test
-  public void test003UnicodeInRegionNameAndQuery() {
-    CacheUtils.log("testUnicodeInQuery");
-    try{
-      Region region = CacheUtils.createRegion("中æå«", Portfolio.class);
-      Portfolio p = new Portfolio(0);
-      p.unicodeṤtring = "中æå«";
-      region.put("1",p);
-      region.put("2",new Portfolio(1));
-      String queryStr = "SELECT DISTINCT * FROM " + region.getFullPath() +" WHERE unicodeṤtring = '中æå«'";
-      Query q = CacheUtils.getQueryService().newQuery(queryStr);
-      SelectResults results = (SelectResults)q.execute();
-      assertEquals(results.size(), 1);
-      p = (Portfolio)results.iterator().next();
-      assertEquals(p.unicodeṤtring, "中æå«");
-    }catch(Exception e){
-      e.printStackTrace();
-      fail("Exception during Query.execute");
-    }
-  }
-
-  @Test
-  public void test004UnicodeInRegionNameAndQueryWithIndex() {
-    try {
-      String unicode = "‰∏≠ÊñáÂ±Á´";
-      Region region = CacheUtils.createRegion(unicode, Portfolio.class);
-      CacheUtils.getQueryService().createIndex("unicodeIndex", "unicodeṤtring",
-          "/'" + unicode + "'");
-      Portfolio p = new Portfolio(0);
-      p.unicodeṤtring = unicode;
-      region.put("1", p);
-      region.put("2", new Portfolio(1));
-      String queryStr = "SELECT DISTINCT * FROM /'" + unicode
-          + "' WHERE unicodeṤtring = '" + unicode + "'";
-      Query q = CacheUtils.getQueryService().newQuery(queryStr);
-      SelectResults results = (SelectResults) q.execute();
-      assertEquals(results.size(), 1);
-      p = (Portfolio) results.iterator().next();
-      assertEquals(p.unicodeṤtring, unicode);
-
-      String unicode2 = "‰áÂ±Á∏≠Êñ´";
-      CacheUtils.createRegion(unicode2, Portfolio.class);
-      queryStr = "SELECT DISTINCT * FROM /'" + unicode + "' u1, /'" + unicode2
-          + "' u2 WHERE u1.unicodeṤtring = '" + unicode
-          + "' order by u1.unicodeṤtring  limit 1";
-      CacheUtils.log(queryStr);
-      CacheUtils.getQueryService().newQuery(queryStr).execute();
-
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Exception during Query.execute");
-    }
-  }
-
-
-  @Test
-  public void test005UnicodeInRegionNameAndQueryWithIndexUsingQuotesAsDelim() {
-    try {
-      String unicode = "‰∏≠ÊñáÂ±*+|<?>=. !@#$%^&*()_+,;:Á´[]{}?";
-      Region region = CacheUtils.createRegion(unicode, Portfolio.class);
-      CacheUtils.getQueryService().createIndex("unicodeIndex", "unicodeṤtring",
-          "/'" + unicode + "'");
-      Portfolio p = new Portfolio(0);
-      p.unicodeṤtring = unicode;
-      region.put("1", p);
-      region.put("2", new Portfolio(1));
-      String queryStr = "SELECT DISTINCT * FROM /'" + unicode
-          + "' WHERE unicodeṤtring = '" + unicode + "'";
-      Query q = CacheUtils.getQueryService().newQuery(queryStr);
-      SelectResults results = (SelectResults) q.execute();
-      assertEquals(results.size(), 1);
-      p = (Portfolio) results.iterator().next();
-      assertEquals(p.unicodeṤtring, unicode);
-
-      String unicode2 = "!@#$%^&*(|)_?+,;: Á´‰∏≠ÊñáÂ±*+<>=.[]{}?";
-      CacheUtils.createRegion(unicode2, Portfolio.class);
-      queryStr = "SELECT DISTINCT * FROM /'" + unicode + "' u1, /'" + unicode2
-          + "' u2 WHERE u1.unicodeṤtring = '" + unicode
-          + "' order by u1.unicodeṤtring  limit 1";
-      CacheUtils.log(queryStr);
-      CacheUtils.getQueryService().newQuery(queryStr).execute();
-
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Exception during Query.execute");
-    }
-  }
-
-  @Test
-  public void test006Compile() {
+  public void test003Compile() {
     CacheUtils.log("testCompile");
     //fail("The test case is empty.");
   }
   
   @Test
-  public void test007IsCompiled() {
+  public void test004IsCompiled() {
     CacheUtils.log("testIsCompiled");
     String queryStr = "SELECT DISTINCT * FROM /root";
     Query q = CacheUtils.getQueryService().newQuery(queryStr);
@@ -223,7 +132,7 @@ public class QueryJUnitTest {
   }
     
   @Test
-  public void test008GetStatistics() {
+  public void test005GetStatistics() {
     CacheUtils.log("testGetStatistics");
     String queryStr = "SELECT DISTINCT * FROM /Portfolios where status='active'";
     Query q = CacheUtils.getQueryService().newQuery(queryStr);
@@ -256,7 +165,7 @@ public class QueryJUnitTest {
   }
   
   @Test
-  public void test009GetRegionsInQuery() {
+  public void test006GetRegionsInQuery() {
     
     String queryStrs[] = new String[] {
         "SELECT DISTINCT * FROM /Portfolios where status='active'",
@@ -303,7 +212,7 @@ public class QueryJUnitTest {
   }
 
   @Test
-  public void test010UndefinedResults() {
+  public void test007UndefinedResults() {
     CacheUtils.log("testQueryExceptionLogMessage");
     Region region = CacheUtils.createRegion("Portfolios", Portfolio.class);
     region.put("1",new Portfolio(1));
@@ -337,7 +246,7 @@ public class QueryJUnitTest {
   }  
 
   @Test
-  public void test011NullCollectionField() {
+  public void test008NullCollectionField() {
     Region region = CacheUtils.createRegion("Portfolios", Portfolio.class);
     for (int i = 0; i < 10; i++) {
       Portfolio p = new Portfolio(i);
@@ -368,7 +277,7 @@ public class QueryJUnitTest {
     } catch (Exception e) {
       fail("Query execution failed " + e);
     }
-    assertEquals("Incorrect result size ", 1, sr.size());
+    assertEquals("Incorrect result size ", 2, sr.size());
   }
 
   @Test
@@ -415,7 +324,7 @@ public class QueryJUnitTest {
       try {
         q.execute(params);
       } catch (Exception e) {
-        throw new TestException("exception occured while executing query", e);
+        throw new AssertionError("exception occured while executing query", e);
       }
     }
   }
@@ -451,6 +360,4 @@ public class QueryJUnitTest {
       return exceptionsThrown.size() == 0;
     }
   }
-
-  
 }

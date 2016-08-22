@@ -67,7 +67,7 @@ public class LiveServerPinger  extends EndpointListenerAdapter {
           TimeUnit.NANOSECONDS);
       taskFutures.put(endpoint, future);
     } catch (RejectedExecutionException e) {
-      if (pool.getCancelCriterion().cancelInProgress() == null) {
+      if (!pool.getCancelCriterion().isCancelInProgress()) {
         throw e;
       }
     }

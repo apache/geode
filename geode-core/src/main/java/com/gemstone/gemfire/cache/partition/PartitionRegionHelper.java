@@ -70,7 +70,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * </pre>
  *
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * @see FunctionService#onRegion(Region)
  */
 public final class PartitionRegionHelper {
@@ -84,7 +84,7 @@ public final class PartitionRegionHelper {
    * @param r a partitioned Region
    * @throws IllegalStateException if the Region is not a {@linkplain DataPolicy#PARTITION partitioned Region}
    * @return an unmodifiable map of {@linkplain Region#getFullPath() region name} to {@link Region}
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static Map<String, Region<?, ?>> getColocatedRegions(final Region<?, ?> r) {
     Map ret;
@@ -119,7 +119,7 @@ public final class PartitionRegionHelper {
    * 
    * @param r
    * @return true if it is a partitioned Region
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static boolean isPartitionedRegion(final Region<?,?> r) {
     if (r == null) {
@@ -136,7 +136,7 @@ public final class PartitionRegionHelper {
    * @param r
    * @throws IllegalStateException
    * @return PartitionedRegion if it is a partitioned Region
-   * @since 6.0
+   * @since GemFire 6.0
    */
   private static PartitionedRegion isPartitionedCheck(final Region<?,?> r) {
     if (! isPartitionedRegion(r)) {
@@ -153,7 +153,7 @@ public final class PartitionRegionHelper {
    *
    * @param cache the cache which has the regions
    * @return set of details about all locally defined partitioned regions
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static Set<PartitionRegionInfo> getPartitionRegionInfo(
       final Cache cache) {
@@ -169,7 +169,7 @@ public final class PartitionRegionHelper {
    * 
    * @param region the region to get info about
    * @return details about the specified partitioned region
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static PartitionRegionInfo getPartitionRegionInfo(
       final Region<?,?> region) {
@@ -218,7 +218,7 @@ public final class PartitionRegionHelper {
    * @throws IllegalStateException
    *          if the provided region is something other than a
    *         {@linkplain DataPolicy#PARTITION partitioned Region}
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static void assignBucketsToPartitions(Region<?,?> region) {
     PartitionedRegion pr = isPartitionedCheck(region);
@@ -263,7 +263,7 @@ public final class PartitionRegionHelper {
    *         if the provided region is something other than a
    *        {@linkplain DataPolicy#PARTITION partitioned Region}
    * @return the primary member for the key, possibly null if a primary is not yet determined
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static <K,V> DistributedMember getPrimaryMemberForKey(final Region<K,V> r, final K key) {
     PartitionedRegion pr = isPartitionedCheck(r);
@@ -289,7 +289,7 @@ public final class PartitionRegionHelper {
    *        if the provided region is something other than a
    *        {@linkplain DataPolicy#PARTITION partitioned Region}
    * @return an unmodifiable set of members minus the primary
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static <K,V> Set<DistributedMember> getRedundantMembersForKey(final Region<K,V> r, final K key) {
     DistributedMember primary = getPrimaryMemberForKey(r, key);
@@ -312,7 +312,7 @@ public final class PartitionRegionHelper {
    *         if the provided region is something other than a
    *        {@linkplain DataPolicy#PARTITION partitioned Region}
    * @return an unmodifiable set of all members
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static <K,V> Set<DistributedMember> getAllMembersForKey(final Region<K,V> r, final K key) {
     return Collections.unmodifiableSet(getAllForKey(r, key));
@@ -335,7 +335,7 @@ public final class PartitionRegionHelper {
    * @param c the region function context
    * @throws IllegalStateException if the Region is not a {@linkplain DataPolicy#PARTITION partitioned Region}
    * @return an unmodifiable map of {@linkplain Region#getFullPath() region name} to {@link Region}
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static Map<String, Region<?, ?>> getLocalColocatedRegions(final RegionFunctionContext c) {
     final Region r = c.getDataSet();
@@ -364,7 +364,7 @@ public final class PartitionRegionHelper {
    *           if {@link RegionFunctionContext#getDataSet()} returns something
    *           other than a {@linkplain DataPolicy#PARTITION partitioned Region}
    * @return a Region for efficient reads
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static <K, V> Region<K, V> getLocalDataForContext(final RegionFunctionContext c) {
     final Region r = c.getDataSet();
@@ -384,7 +384,7 @@ public final class PartitionRegionHelper {
    *                 if the provided region is something other than a
    *                 {@linkplain DataPolicy#PARTITION partitioned Region}
    * @return a Region for efficient reads
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static <K,V> Region<K,V> getLocalData(final Region<K,V> r) {
     if (isPartitionedRegion(r)) {
@@ -415,7 +415,7 @@ public final class PartitionRegionHelper {
    *           if the provided region is something other than a
    *           {@linkplain DataPolicy#PARTITION partitioned Region}
    * @return a Region for efficient reads
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static <K,V> Region<K,V> getLocalPrimaryData(final Region<K,V> r) {
     if (isPartitionedRegion(r)) {
@@ -470,7 +470,7 @@ public final class PartitionRegionHelper {
    *           destination already hosts a copy of the bucket, or if the bucket
    *           does not exist.
    * 
-   * @since 7.1
+   * @since GemFire 7.1
    */
    public static <K> void moveBucketByKey(Region<K,?> region, DistributedMember source, DistributedMember destination, K key) {
      PartitionedRegion pr = isPartitionedCheck(region);
@@ -524,7 +524,7 @@ public final class PartitionRegionHelper {
    * @return A RebalanceResult object that contains information about what what
    *         data was actually moved.
    * 
-   * @since 7.1
+   * @since GemFire 7.1
    */
    public static RebalanceResults moveData(Region<?,?> region, DistributedMember source, DistributedMember destination, float percentage) {
      PartitionedRegion pr = isPartitionedCheck(region);

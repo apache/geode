@@ -16,9 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.Properties;
+import static org.junit.Assert.*;
 
-import junit.framework.Assert;
+import java.util.Properties;
 
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheLoaderException;
@@ -28,18 +28,17 @@ import com.gemstone.gemfire.cache.Declarable;
 /**
  * This class is CacheLoader for partition region
  */
-public class PartitionedRegionCacheLoaderForRootRegion implements CacheLoader,
-		Declarable {
+public class PartitionedRegionCacheLoaderForRootRegion implements CacheLoader, Declarable {
 
+  @Override
 	public Object load(LoaderHelper helper) throws CacheLoaderException {
 
 		/* checking the attributes set in xml file. */
 		PartitionedRegion pr = (PartitionedRegion) helper.getRegion();
 		if (pr.getAttributes().getPartitionAttributes().getRedundantCopies() != 1)
-			Assert
-					.fail("Redundancy of the partition region is not 1");
+			fail("Redundancy of the partition region is not 1");
 
-		Assert.assertEquals(
+		assertEquals(
                     pr.getAttributes().getPartitionAttributes().getLocalMaxMemory(), 200);
 
 		/*
@@ -47,15 +46,14 @@ public class PartitionedRegionCacheLoaderForRootRegion implements CacheLoader,
 		 * not
 		 */
 		return helper.getKey();
-
 	}
 
+  @Override
 	public void close() {
-
 	}
 
+  @Override
 	public void init(Properties props) {
-
 	}
 
 }

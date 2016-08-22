@@ -49,6 +49,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
@@ -116,11 +117,6 @@ import com.gemstone.gemfire.cache.client.internal.ServerRegionProxy;
 import com.gemstone.gemfire.cache.control.ResourceManager;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSBucketRegionQueue;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSIntegrationUtil;
-import com.gemstone.gemfire.cache.hdfs.internal.HoplogListenerForRegion;
-import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSRegionDirector;
-import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSRegionDirector.HdfsRegionManager;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.query.FunctionDomainException;
 import com.gemstone.gemfire.cache.query.Index;
@@ -136,7 +132,6 @@ import com.gemstone.gemfire.cache.query.TypeMismatchException;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
 import com.gemstone.gemfire.cache.query.internal.ExecutionContext;
-import com.gemstone.gemfire.cache.query.internal.IndexUpdater;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.cache.query.internal.index.IndexCreationData;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
@@ -149,16 +144,19 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ResourceEvent;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.ClassLoadUtil;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.InternalStatisticsDisabledException;
 import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.admin.ClientHealthMonitoringRegion;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import com.gemstone.gemfire.internal.cache.DiskInitFile.DiskRegionFlag;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo.FilterInfo;
@@ -206,13 +204,13 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 import com.gemstone.gemfire.internal.util.concurrent.FutureResult;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReadWriteLock;
-import com.gemstone.gemfire.i18n.StringId;
 
 /**
  * Implementation of a local scoped-region. Note that this class has a different
@@ -223,15 +221,16 @@ import com.gemstone.gemfire.i18n.StringId;
  *
  */
 @SuppressWarnings("deprecation")
-public class LocalRegion extends AbstractRegion 
+public class LocalRegion extends AbstractRegion
   implements LoaderHelperFactory, ResourceListener<MemoryEvent>,
              DiskExceptionHandler, DiskRecoveryStore
 {
   private static final Logger logger = LogService.getLogger();
-  
+  private static final Pattern NAME_PATTERN = Pattern.compile("[aA-zZ0-9-_.]+");
+
   /**
    * Internal interface used to simulate failures when performing entry operations
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public interface TestCallable {
     public void call(LocalRegion r, Operation op, RegionEntry re);
@@ -328,14 +327,13 @@ public class LocalRegion extends AbstractRegion
       Pattern.compile("^import .*", Pattern.CASE_INSENSITIVE
           | Pattern.UNICODE_CASE | Pattern.DOTALL) };
 
-
-  public static final String EXPIRY_MS_PROPERTY = "gemfire.EXPIRY_UNITS_MS";
+  public static final String EXPIRY_MS_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "EXPIRY_UNITS_MS";
   
   /**
    * Used by unit tests to set expiry to milliseconds instead of the default
    * seconds. Used in ExpiryTask.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   final boolean EXPIRY_UNITS_MS;
 
@@ -370,7 +368,7 @@ public class LocalRegion extends AbstractRegion
    * Used to hold off cache listener events until the afterRegionCreate is
    * called
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   private final StoppableCountDownLatch afterRegionCreateEventLatch;
 
@@ -464,10 +462,6 @@ public class LocalRegion extends AbstractRegion
   // Lock for updating PR MetaData on client side 
   public final Lock clientMetaDataLock = new ReentrantLock();
   
-  
-  protected HdfsRegionManager hdfsManager;
-  protected HoplogListenerForRegion hoplogListener;
-
   /**
    * There seem to be cases where a region can be created and yet the
    * distributed system is not yet in place...
@@ -544,29 +538,11 @@ public class LocalRegion extends AbstractRegion
     return initializingRegion.get();
   }
 
-  /**
-   * Return true if the keys of this region implement
-   * {@link KeyWithRegionContext} that require region specific context
-   * initialization after deserialization or recovery from disk.
-   * 
-   * Currently used by SQLFabric for the optimized
-   * <code>CompactCompositeRegionKey</code> that points to the raw row bytes and
-   * so requires a handle to table schema for interpretation of those bytes.
-   */
-  public boolean keyRequiresRegionContext() {
-    return this.keyRequiresRegionContext;
-  }
-
-  /**
-   * Set the {@link #keyRequiresRegionContext} flag to given value.
-   */
-  public final void setKeyRequiresRegionContext(boolean v) {
-    this.keyRequiresRegionContext = v;
-  }
-
   public CancelCriterion getCancelCriterion() {
     return this.stopper;
   }
+
+  protected Map<String,CacheServiceProfile> cacheServiceProfiles;
 
   ////////////////// Public Methods ///////////////////////////////////////////
 
@@ -616,11 +592,9 @@ public class LocalRegion extends AbstractRegion
     this.initializationLatchAfterGetInitialImage = new StoppableCountDownLatch(this.stopper, 1);
     this.afterRegionCreateEventLatch = new StoppableCountDownLatch(this.stopper, 1);
 
-    // set the user-attribute object upfront for SQLFabric
     if (internalRegionArgs.getUserAttribute() != null) {
       setUserAttribute(internalRegionArgs.getUserAttribute());
     }
-    setKeyRequiresRegionContext(internalRegionArgs.keyRequiresRegionContext());
     initializingRegion.set(this);
 
     if (internalRegionArgs.getCachePerfStatsHolder() != null) {
@@ -640,7 +614,6 @@ public class LocalRegion extends AbstractRegion
       }
     }
 
-    this.hdfsManager = initHDFSManager();
     this.dsi = findDiskStore(attrs, internalRegionArgs);
     this.diskRegion = createDiskRegion(internalRegionArgs);
     this.entries = createRegionMap(internalRegionArgs);
@@ -667,7 +640,10 @@ public class LocalRegion extends AbstractRegion
     this.isUsedForSerialGatewaySenderQueue = internalRegionArgs.isUsedForSerialGatewaySenderQueue();
     this.isUsedForParallelGatewaySenderQueue = internalRegionArgs.isUsedForParallelGatewaySenderQueue();
     this.serialGatewaySender = internalRegionArgs.getSerialGatewaySender();
-    
+    this.cacheServiceProfiles = internalRegionArgs.getCacheServiceProfiles() == null
+        ? null
+        : Collections.unmodifiableMap(internalRegionArgs.getCacheServiceProfiles());
+
     if (!isUsedForMetaRegion && !isUsedForPartitionedRegionAdmin
         && !isUsedForPartitionedRegionBucket
         && !isUsedForSerialGatewaySenderQueue
@@ -695,22 +671,8 @@ public class LocalRegion extends AbstractRegion
     
   }
 
-  private HdfsRegionManager initHDFSManager() {
-    HdfsRegionManager hdfsMgr = null;
-    if (this.getHDFSStoreName() != null) {
-      this.hoplogListener = new HoplogListenerForRegion();
-      HDFSRegionDirector.getInstance().setCache(cache);
-      hdfsMgr = HDFSRegionDirector.getInstance().manageRegion(this, 
-          this.getHDFSStoreName(), hoplogListener);
-    }
-    return hdfsMgr;
-  }
-
   private RegionMap createRegionMap(InternalRegionArguments internalRegionArgs) {
     RegionMap result = null;
-	if ((internalRegionArgs.isReadWriteHDFSRegion()) && this.diskRegion != null) {
-      this.diskRegion.setEntriesMapIncompatible(true);
-    }
     if (this.diskRegion != null) {
       result = this.diskRegion.useExistingRegionMap(this);
     }
@@ -800,10 +762,6 @@ public class LocalRegion extends AbstractRegion
     }
   }
 
-  public IndexUpdater getIndexUpdater() {
-    return this.entries.getIndexUpdater();
-  }
-
   boolean isCacheClosing()
   {
     return this.cache.isClosed();
@@ -845,7 +803,7 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected final ServerRegionProxy srp;
 
@@ -920,7 +878,7 @@ public class LocalRegion extends AbstractRegion
   /**
    * Returns the member id of my distributed system
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   @Override
   protected InternalDistributedMember getMyId()
@@ -962,7 +920,7 @@ public class LocalRegion extends AbstractRegion
           }
           throw new RegionDestroyedException(toString(), getFullPath());
         }
-        validateRegionName(subregionName);
+        validateRegionName(subregionName, internalRegionArgs);
 
         validateSubregionAttributes(regionAttributes);
         String regionPath = calcFullPath(subregionName, this);
@@ -976,29 +934,14 @@ public class LocalRegion extends AbstractRegion
           existing = (LocalRegion)this.subregions.get(subregionName);
 
           if (existing == null) {
-            // create the async queue for HDFS if required. 
-            HDFSIntegrationUtil.createAndAddAsyncQueue(regionPath,
-                regionAttributes, this.cache);
-            regionAttributes = cache.setEvictionAttributesForLargeRegion(
-                regionAttributes);
             if (regionAttributes.getScope().isDistributed()
                 && internalRegionArgs.isUsedForPartitionedRegionBucket()) {
               final PartitionedRegion pr = internalRegionArgs
                   .getPartitionedRegion();
-              internalRegionArgs.setIndexUpdater(pr.getIndexUpdater());
               internalRegionArgs.setUserAttribute(pr.getUserAttribute());
-              internalRegionArgs.setKeyRequiresRegionContext(pr
-                  .keyRequiresRegionContext());
               if (pr.isShadowPR()) {
-                if (!pr.isShadowPRForHDFS()) {
-                    newRegion = new BucketRegionQueue(subregionName, regionAttributes,
-                      this, this.cache, internalRegionArgs);
-                }
-                else {
-                   newRegion = new HDFSBucketRegionQueue(subregionName, regionAttributes,
-                      this, this.cache, internalRegionArgs);
-                }
-                
+                newRegion = new BucketRegionQueue(subregionName, regionAttributes,
+                  this, this.cache, internalRegionArgs);
               } else {
                 newRegion = new BucketRegion(subregionName, regionAttributes,
                     this, this.cache, internalRegionArgs);  
@@ -1119,19 +1062,20 @@ public class LocalRegion extends AbstractRegion
   public final void create(Object key, Object value, Object aCallbackArgument)
       throws TimeoutException, EntryExistsException, CacheWriterException {
     long startPut = CachePerfStats.getStatTime();
-    EntryEventImpl event = newCreateEntryEvent(key, value, aCallbackArgument);
-    validatedCreate(event, startPut);
-    // TODO OFFHEAP: validatedCreate calls freeOffHeapResources
+    @Released EntryEventImpl event = newCreateEntryEvent(key, value, aCallbackArgument);
+    try {
+      validatedCreate(event, startPut);
+    } finally {
+      event.release();
+    }
   }
 
   public final void validatedCreate(EntryEventImpl event, long startPut)
       throws TimeoutException, EntryExistsException, CacheWriterException {
 
-    try {
       if (event.getEventId() == null && generateEventID()) {
         event.setNewEventId(cache.getDistributedSystem());
       }
-      assert event.isFetchFromHDFS() : "validatedPut() should have been called";
       // Fix for 42448 - Only make create with null a local invalidate for
       // normal regions. Otherwise, it will become a distributed invalidate.
       if (getDataPolicy() == DataPolicy.NORMAL) {
@@ -1151,15 +1095,9 @@ public class LocalRegion extends AbstractRegion
           getCachePerfStats().endPut(startPut, false);
         }
       }
-    } finally {
-
-      event.release();
-
-    }
   }
 
-  // split into a separate newCreateEntryEvent since SQLFabric may need to
-  // manipulate event before doing the put (e.g. posDup flag)
+  @Retained
   public final EntryEventImpl newCreateEntryEvent(Object key, Object value,
       Object aCallbackArgument) {
 
@@ -1185,15 +1123,17 @@ public class LocalRegion extends AbstractRegion
   @Override
   public boolean generateEventID()
   {     
-    return !(isUsedForPartitionedRegionAdmin()
-        || isUsedForPartitionedRegionBucket() );
+    return !isUsedForPartitionedRegionAdmin();
   }
 
   public final Object destroy(Object key, Object aCallbackArgument)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
-    EntryEventImpl event = newDestroyEntryEvent(key, aCallbackArgument);
-    return validatedDestroy(key, event);
-    // TODO OFFHEAP: validatedDestroy calls freeOffHeapResources
+    @Released EntryEventImpl event = newDestroyEntryEvent(key, aCallbackArgument);
+    try {
+      return validatedDestroy(key, event);
+    } finally {
+      event.release();
+    }
   }
 
   /**
@@ -1203,7 +1143,6 @@ public class LocalRegion extends AbstractRegion
   public Object validatedDestroy(Object key, EntryEventImpl event)
       throws TimeoutException, EntryNotFoundException, CacheWriterException
  {
-    try {
       if (event.getEventId() == null && generateEventID()) {
         event.setNewEventId(cache.getDistributedSystem());
       }
@@ -1214,13 +1153,9 @@ public class LocalRegion extends AbstractRegion
       } else {
         return handleNotAvailable(event.getOldValue());
       }
-    } finally {
-      event.release();
-    }
   }
 
-  // split into a separate newDestroyEntryEvent since SQLFabric may need to
-  // manipulate event before doing the put (e.g. posDup flag)
+  @Retained
   public final EntryEventImpl newDestroyEntryEvent(Object key,
       Object aCallbackArgument) {
     validateKey(key);
@@ -1262,18 +1197,20 @@ public class LocalRegion extends AbstractRegion
    * @param retainResult if true then the result may be a retained off-heap reference
    * @return the value for the given key
    */
-  public final Object getDeserializedValue(RegionEntry re, final KeyInfo keyInfo, final boolean updateStats, boolean disableCopyOnRead, 
-  boolean preferCD, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS, boolean retainResult) {
+  public final Object getDeserializedValue(RegionEntry re,
+                                           final KeyInfo keyInfo,
+                                           final boolean updateStats,
+                                           boolean disableCopyOnRead,
+                                           boolean preferCD,
+                                           EntryEventImpl clientEvent,
+                                           boolean returnTombstones,
+                                           boolean retainResult) {
     if (this.diskRegion != null) {
       this.diskRegion.setClearCountReference();
     }
     try {
       if (re == null) {
-        if (allowReadFromHDFS) {
-          re = this.entries.getEntry(keyInfo.getKey());
-        } else {
-          re = this.entries.getOperationalEntryInVM(keyInfo.getKey());
-        }
+        re = this.entries.getEntry(keyInfo.getKey());
       }
       //skip updating the stats if the value is null
       // TODO - We need to clean up the callers of the this class so that we can
@@ -1334,6 +1271,7 @@ public class LocalRegion extends AbstractRegion
   @Retained
   protected final Object getDeserialized(RegionEntry re, boolean updateStats, boolean disableCopyOnRead, boolean preferCD, boolean retainResult) {
     assert !retainResult || preferCD;
+    boolean disabledLRUCallback = this.entries.disableLruUpdateCallback();
     try {
       @Retained Object v = null;
       try {
@@ -1376,6 +1314,11 @@ public class LocalRegion extends AbstractRegion
       IllegalArgumentException iae = new IllegalArgumentException(LocalizedStrings.DONT_RELEASE.toLocalizedString("Error while deserializing value for key="+re.getKey()));
       iae.initCause(i);
       throw iae;
+    } finally {
+      if(disabledLRUCallback) {
+        this.entries.enableLruUpdateCallback();
+        this.entries.lruUpdateCallback();
+      }
     }
   }
   
@@ -1383,7 +1326,7 @@ public class LocalRegion extends AbstractRegion
   public Object get(Object key, Object aCallbackArgument,
       boolean generateCallbacks, EntryEventImpl clientEvent) throws TimeoutException, CacheLoaderException
   {
-    Object result = get(key, aCallbackArgument, generateCallbacks, false, false, null, clientEvent, false, true/*allowReadFromHDFS*/);
+    Object result = get(key, aCallbackArgument, generateCallbacks, false, false, null, clientEvent, false);
     if (Token.isInvalid(result)) {
       result = null;
     }
@@ -1393,11 +1336,16 @@ public class LocalRegion extends AbstractRegion
   /*
    * @see BucketRegion#getSerialized(KeyInfo, boolean, boolean)
    */
-  public Object get(Object key, Object aCallbackArgument,
-	      boolean generateCallbacks, boolean disableCopyOnRead, boolean preferCD,
-	      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) throws TimeoutException, CacheLoaderException {
+  public Object get(Object key,
+                    Object aCallbackArgument,
+                    boolean generateCallbacks,
+                    boolean disableCopyOnRead,
+                    boolean preferCD,
+                    ClientProxyMembershipID requestingClient,
+                    EntryEventImpl clientEvent,
+                    boolean returnTombstones) throws TimeoutException, CacheLoaderException {
 	  return get(key, aCallbackArgument,
-		      generateCallbacks, disableCopyOnRead, preferCD,requestingClient, clientEvent, returnTombstones, false, allowReadFromHDFS, false);
+		      generateCallbacks, disableCopyOnRead, preferCD,requestingClient, clientEvent, returnTombstones, false, false);
   }
   
   /**
@@ -1419,17 +1367,17 @@ public class LocalRegion extends AbstractRegion
   public Object getRetained(Object key, Object aCallbackArgument,
       boolean generateCallbacks, boolean disableCopyOnRead,
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean opScopeIsLocal) throws TimeoutException, CacheLoaderException {
-    // TODO OFFHEAP: the last parameter "retainResult" should be true for getRetained. Need to look into what it is being set to false.
-    return get(key, aCallbackArgument, generateCallbacks, disableCopyOnRead, true, requestingClient, clientEvent, returnTombstones, opScopeIsLocal, true, false);
+    return get(key, aCallbackArgument, generateCallbacks, disableCopyOnRead, true, requestingClient, clientEvent, returnTombstones, opScopeIsLocal,
+      false /* see GEODE-1291*/);
   }
   /**
    * @param opScopeIsLocal if true then just check local storage for a value; if false then try to find the value if it is not local
    * @param retainResult if true then the result may be a retained off-heap reference.
    */
   public Object get(Object key, Object aCallbackArgument,
-      boolean generateCallbacks, boolean disableCopyOnRead, boolean preferCD,
-      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, 
-	  boolean opScopeIsLocal, boolean allowReadFromHDFS, boolean retainResult) throws TimeoutException, CacheLoaderException
+                    boolean generateCallbacks, boolean disableCopyOnRead, boolean preferCD,
+                    ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones,
+                    boolean opScopeIsLocal, boolean retainResult) throws TimeoutException, CacheLoaderException
   {
     assert !retainResult || preferCD;
     validateKey(key);
@@ -1442,7 +1390,8 @@ public class LocalRegion extends AbstractRegion
     boolean isMiss = true;
     try {
       KeyInfo keyInfo = getKeyInfo(key, aCallbackArgument);
-      Object value = getDataView().getDeserializedValue(keyInfo, this, true, disableCopyOnRead, preferCD, clientEvent, returnTombstones, allowReadFromHDFS, retainResult);
+      Object value = getDataView().getDeserializedValue(keyInfo, this, true, disableCopyOnRead, preferCD, clientEvent, returnTombstones,
+        retainResult);
       final boolean isCreate = value == null;
       isMiss = value == null || Token.isInvalid(value)
           || (!returnTombstones && value == Token.TOMBSTONE);
@@ -1455,14 +1404,13 @@ public class LocalRegion extends AbstractRegion
         // if scope is local and there is no loader, then
         // don't go further to try and get value
         if (!opScopeIsLocal
-            && ((getScope().isDistributed() && !isHDFSRegion())
+            && ((getScope().isDistributed())
                 || hasServerProxy()
                 || basicGetLoader() != null)) { 
           // serialize search/load threads if not in txn
-          // TODO OFFHEAP OPTIMIZE: findObject can be enhanced to use the retainResult flag
           value = getDataView().findObject(keyInfo,
               this, isCreate, generateCallbacks, value, disableCopyOnRead,
-              preferCD, requestingClient, clientEvent, returnTombstones, false/*allowReadFromHDFS*/);
+              preferCD, requestingClient, clientEvent, returnTombstones);
           if (!returnTombstones && value == Token.TOMBSTONE) {
             value = null;
           }
@@ -1488,7 +1436,7 @@ public class LocalRegion extends AbstractRegion
    */
   final public void recordMiss(final RegionEntry re, Object key) {
     final RegionEntry e;
-    if (re == null && !isTX() && !isHDFSRegion()) {
+    if (re == null && !isTX()) {
       e = basicGetEntry(key);
     } else {
       e = re;
@@ -1497,60 +1445,30 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * @return true if this region has been configured for HDFS persistence
-   */
-  public boolean isHDFSRegion() {
-    return false;
-  }
-
-  /**
-   * @return true if this region is configured to read and write data from HDFS
-   */
-  public boolean isHDFSReadWriteRegion() {
-    return false;
-  }
-
-  /**
-   * @return true if this region is configured to only write to HDFS
-   */
-  protected boolean isHDFSWriteOnly() {
-    return false;
-  }
-
-  /**
-   * FOR TESTING ONLY
-   */
-  public HoplogListenerForRegion getHoplogListener() {
-    return hoplogListener;
-  }
-  
-  /**
-   * FOR TESTING ONLY
-   */
-  public HdfsRegionManager getHdfsRegionManager() {
-    return hdfsManager;
-  }
-  
-  /**
    * optimized to only allow one thread to do a search/load, other threads wait
    * on a future
-   *
-   * @param keyInfo
+   *  @param keyInfo
    * @param p_isCreate
    *                true if call found no entry; false if updating an existing
    *                entry
    * @param generateCallbacks
    * @param p_localValue
-   *                the value retrieved from the region for this object.
+*                the value retrieved from the region for this object.
    * @param disableCopyOnRead if true then do not make a copy
    * @param preferCD true if the preferred result form is CachedDeserializable
    * @param clientEvent the client event, if any
    * @param returnTombstones whether to return tombstones
    */
   @Retained
-  Object nonTxnFindObject(KeyInfo keyInfo, boolean p_isCreate,
-      boolean generateCallbacks, Object p_localValue, boolean disableCopyOnRead, boolean preferCD,
-      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) 
+  Object nonTxnFindObject(KeyInfo keyInfo,
+                          boolean p_isCreate,
+                          boolean generateCallbacks,
+                          Object p_localValue,
+                          boolean disableCopyOnRead,
+                          boolean preferCD,
+                          ClientProxyMembershipID requestingClient,
+                          EntryEventImpl clientEvent,
+                          boolean returnTombstones)
       throws TimeoutException, CacheLoaderException
   {
     final Object key = keyInfo.getKey();
@@ -1609,7 +1527,8 @@ public class LocalRegion extends AbstractRegion
     try {
       boolean partitioned = this.getDataPolicy().withPartitioning();
       if (!partitioned) {
-        localValue = getDeserializedValue(null, keyInfo, isCreate, disableCopyOnRead, preferCD, clientEvent, false, false/*allowReadFromHDFS*/, false);
+        localValue = getDeserializedValue(null, keyInfo, isCreate, disableCopyOnRead, preferCD, clientEvent, false,
+          false);
 
         // stats have now been updated
         if (localValue != null && !Token.isInvalid(localValue)) {
@@ -1618,7 +1537,7 @@ public class LocalRegion extends AbstractRegion
         }
         isCreate = localValue == null;
         result = findObjectInSystem(keyInfo, isCreate, null, generateCallbacks,
-            localValue, disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones, false/*allowReadFromHDFS*/);
+            localValue, disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
 
       } else {
         
@@ -1626,7 +1545,7 @@ public class LocalRegion extends AbstractRegion
         // For PRs we don't want to deserialize the value and we can't use findObjectInSystem because
         // it can invoke code that is transactional.
         result = getSharedDataView().findObject(keyInfo, this, true/*isCreate*/, generateCallbacks,
-            localValue, disableCopyOnRead, preferCD, null, null, false, allowReadFromHDFS);
+            localValue, disableCopyOnRead, preferCD, null, null, false);
         // TODO why are we not passing the client event or returnTombstones in the above invokation?
       }
 
@@ -1655,7 +1574,7 @@ public class LocalRegion extends AbstractRegion
   /**
    * Returns true if get should give a copy; false if a reference.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   protected boolean isCopyOnRead()
   {
@@ -1670,7 +1589,7 @@ public class LocalRegion extends AbstractRegion
   /**
    * Makes a copy, if copy-on-get is enabled, of the specified object.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   protected Object conditionalCopy(Object o)
   {
@@ -1731,31 +1650,23 @@ public class LocalRegion extends AbstractRegion
   public Object put(Object key, Object value, Object aCallbackArgument)
       throws TimeoutException, CacheWriterException {
     long startPut = CachePerfStats.getStatTime();
-    EntryEventImpl event = newUpdateEntryEvent(key, value, aCallbackArgument);
-     //Since Sqlfire directly calls validatedPut, the freeing is done in
-    // validatedPut
-     return validatedPut(event, startPut);
-     // TODO OFFHEAP: validatedPut calls freeOffHeapResources
-    
+    @Released EntryEventImpl event = newUpdateEntryEvent(key, value, aCallbackArgument);
+    try {
+      return validatedPut(event, startPut);
+    } finally {
+      event.release();
+    }
   }
 
   public final Object validatedPut(EntryEventImpl event, long startPut)
       throws TimeoutException, CacheWriterException {
 
-    try {
       if (event.getEventId() == null && generateEventID()) {
         event.setNewEventId(cache.getDistributedSystem());
       }
       Object oldValue = null;
-      // Sqlf changes begin
-      // see #40294.
-
-      // Rahul: this has to be an update.
-      // so executing it as an update.
-      boolean forceUpdateForDelta = event.hasDelta();
-      // Sqlf Changes end.
       if (basicPut(event, false, // ifNew
-          forceUpdateForDelta, // ifOld
+          false, // ifOld
           null, // expectedOldValue
           false // requireOldValue
       )) {
@@ -1769,13 +1680,9 @@ public class LocalRegion extends AbstractRegion
         }
       }
       return handleNotAvailable(oldValue);
-    } finally {
-      event.release();
-    }
   }
 
-  // split into a separate newUpdateEntryEvent since SQLFabric may need to
-  // manipulate event before doing the put (e.g. posDup flag)
+  @Retained
   public final EntryEventImpl newUpdateEntryEvent(Object key, Object value,
       Object aCallbackArgument) {
 
@@ -1792,7 +1699,7 @@ public class LocalRegion extends AbstractRegion
     // was modified to call the other EntryEventImpl constructor so that
     // an id will be generated by default. Null was passed in anyway.
     //   generate EventID
-    final EntryEventImpl event = EntryEventImpl.create(
+    @Retained final EntryEventImpl event = EntryEventImpl.create(
         this, Operation.UPDATE, key,
         value, aCallbackArgument, false, getMyId());
     boolean eventReturned = false;
@@ -1803,17 +1710,6 @@ public class LocalRegion extends AbstractRegion
     } finally {
       if (!eventReturned) event.release();
     }
-  }
-  /**
-   * Creates an EntryEventImpl that is optimized to not fetch data from HDFS.
-   * This is meant to be used by PUT dml from GemFireXD.
-   */
-  public final EntryEventImpl newPutEntryEvent(Object key, Object value,
-      Object aCallbackArgument) {
-    EntryEventImpl ev = newUpdateEntryEvent(key, value, aCallbackArgument);
-    ev.setFetchFromHDFS(false);
-    ev.setPutDML(true);
-    return ev;
   }
   private void extractDeltaIntoEvent(Object value, EntryEventImpl event) {
     // 1. Check for DS-level delta property.
@@ -1943,23 +1839,11 @@ public class LocalRegion extends AbstractRegion
     }
   }
 
-  protected boolean includeHDFSResults() {
-    return isUsedForPartitionedRegionBucket() 
-        && isHDFSReadWriteRegion() 
-        && getPartitionedRegion().includeHDFSResults();
-  }
-  
-
   /** a fast estimate of total number of entries locally in the region */
   public long getEstimatedLocalSize() {
     RegionMap rm;
     if (!this.isDestroyed) {
       long size;
-      if (isHDFSReadWriteRegion() && this.initialized) {
-        // this size is not used by HDFS region iterators
-        // fixes bug 49239
-        return 0;
-      }
       // if region has not been initialized yet, then get the estimate from
       // disk region's recovery map if available
       if (!this.initialized && this.diskRegion != null
@@ -2076,15 +1960,13 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * Flavor of keys that will not do repeatable read
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public Set testHookKeys()
   {
     checkReadiness();
     checkForNoAccess();
-    return new EntriesSet(this, false, IteratorType.KEYS,
-        false /* dontRememberReads */, false /* skipTxCheckInIteration */,
-        false /* allowTombstones */);
+    return new EntriesSet(this, false, IteratorType.KEYS, false /* allowTombstones */);
   }
 
   public Set keys()
@@ -2271,9 +2153,6 @@ public class LocalRegion extends AbstractRegion
       if (this.imageState.isClient() && !this.concurrencyChecksEnabled) {
         return result - this.imageState.getDestroyedEntriesCount();
       }
-	if (includeHDFSResults()) {
-      return result;
-    }
       return result - this.tombstoneCount.get();
     }
   }
@@ -2284,7 +2163,7 @@ public class LocalRegion extends AbstractRegion
    *
    * @return <code>null</code> if disk regions are not being used
    *
-   * @since 3.2
+   * @since GemFire 3.2
    */
   public DiskRegion getDiskRegion()
   {
@@ -2308,7 +2187,7 @@ public class LocalRegion extends AbstractRegion
    *
    * Initially called by EvictorThread.run
    *
-   * @since 3.5.1
+   * @since GemFire 3.5.1
    */
   public void checkLRU()
   {
@@ -2392,7 +2271,7 @@ public class LocalRegion extends AbstractRegion
   protected void validatedInvalidate(Object key, Object aCallbackArgument)
       throws TimeoutException, EntryNotFoundException
   {
-    EntryEventImpl event = EntryEventImpl.create(
+    @Released EntryEventImpl event = EntryEventImpl.create(
         this, Operation.INVALIDATE,
         key, null, aCallbackArgument, false, getMyId());
     try {
@@ -2411,7 +2290,7 @@ public class LocalRegion extends AbstractRegion
     validateKey(key);
     checkReadiness();
     checkForNoAccess();
-    EntryEventImpl event = EntryEventImpl.create(
+    @Released EntryEventImpl event = EntryEventImpl.create(
         this,
         Operation.LOCAL_DESTROY, key, null, aCallbackArgument, false, getMyId());
     if (generateEventID()) {
@@ -2482,7 +2361,7 @@ public class LocalRegion extends AbstractRegion
     checkReadiness();
     checkForNoAccess();
 
-    EntryEventImpl event = EntryEventImpl.create(
+    @Released EntryEventImpl event = EntryEventImpl.create(
         this,
         Operation.LOCAL_INVALIDATE, key, null/* newValue */, callbackArgument,
         false, getMyId());
@@ -2684,8 +2563,9 @@ public class LocalRegion extends AbstractRegion
             indexes.add(qs.createIndex(icd.getIndexName(), icd.getIndexType(), icd.getIndexExpression(), fromClause, icd.getIndexImportString(), !isOverflowToDisk));
           }
 
-        } catch (Exception ex) {
-          logger.error("Failed to create index {} on region {} with exception: {}", icd.getIndexName(), this.getFullPath(), ex);
+        }
+        catch (Exception ex) {
+          logger.info("Failed to create index {} on region {} with exception: {}", icd.getIndexName(), this.getFullPath(), ex);
 
           // Check if the region index creation is from cache.xml, in that case throw exception.
           // Other case is when bucket regions are created dynamically, in that case ignore the exception.
@@ -2761,7 +2641,7 @@ public class LocalRegion extends AbstractRegion
   /**
    * Called after we have delivered our REGION_CREATE event.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   private void releaseAfterRegionCreateEventLatch()
   {
@@ -2772,7 +2652,7 @@ public class LocalRegion extends AbstractRegion
    * Used to cause cache listener events to wait until the after region create
    * event is delivered.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   private void waitForRegionCreateEvent()
   {
@@ -3009,18 +2889,25 @@ public class LocalRegion extends AbstractRegion
    * @param clientEvent the client's event, if any.  If not null, we set the version tag
    * @param returnTombstones TODO
    * @return the deserialized value
-   * @see DistributedRegion#findObjectInSystem(KeyInfo, boolean, TXStateInterface, boolean, Object, boolean, boolean, ClientProxyMembershipID, EntryEventImpl, boolean, boolean )
+   * @see LocalRegion#findObjectInSystem(KeyInfo, boolean, TXStateInterface, boolean, Object, boolean, boolean, ClientProxyMembershipID, EntryEventImpl, boolean)
    */
-  protected Object findObjectInSystem(KeyInfo keyInfo, boolean isCreate,
-      TXStateInterface tx, boolean generateCallbacks, Object localValue, boolean disableCopyOnRead, boolean preferCD, ClientProxyMembershipID requestingClient,
-      EntryEventImpl clientEvent, boolean returnTombstones,  boolean allowReadFromHDFS)
+  protected Object findObjectInSystem(KeyInfo keyInfo,
+                                      boolean isCreate,
+                                      TXStateInterface tx,
+                                      boolean generateCallbacks,
+                                      Object localValue,
+                                      boolean disableCopyOnRead,
+                                      boolean preferCD,
+                                      ClientProxyMembershipID requestingClient,
+                                      EntryEventImpl clientEvent,
+                                      boolean returnTombstones)
       throws CacheLoaderException, TimeoutException
   {
     final Object key = keyInfo.getKey();
     final Object aCallbackArgument = keyInfo.getCallbackArg();
     Object value = null;
     boolean fromServer = false;
-    EntryEventImpl holder = null;
+    VersionTagHolder holder = null;
     
     /*
      * First lets try the server
@@ -3028,13 +2915,9 @@ public class LocalRegion extends AbstractRegion
     {
       ServerRegionProxy mySRP = getServerProxy();
       if (mySRP != null) {
-        holder = EntryEventImpl.createVersionTagHolder();
-        try {
-          value = mySRP.get(key, aCallbackArgument, holder);
-          fromServer = value != null;
-        } finally {
-          holder.release();
-        }
+        holder = new VersionTagHolder();
+        value = mySRP.get(key, aCallbackArgument, holder);
+        fromServer = value != null;
       }
     }
     
@@ -3085,7 +2968,7 @@ public class LocalRegion extends AbstractRegion
         op = Operation.LOCAL_LOAD_UPDATE;
       }
 
-      EntryEventImpl event
+      @Released EntryEventImpl event
         = EntryEventImpl.create(this, op, key, value, aCallbackArgument,
                              false, getMyId(), generateCallbacks);
       try {
@@ -3218,7 +3101,7 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected void serverRegionDestroy(RegionEventImpl regionEvent) {
     if (regionEvent.getOperation().isDistributed()) {
@@ -3232,7 +3115,7 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected void serverRegionClear(RegionEventImpl regionEvent) {
     if (regionEvent.getOperation().isDistributed()) {
@@ -3245,7 +3128,7 @@ public class LocalRegion extends AbstractRegion
     }
   }
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected void serverRegionInvalidate(RegionEventImpl regionEvent) {
     if (regionEvent.getOperation().isDistributed()) {
@@ -3257,7 +3140,7 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   void serverInvalidate(EntryEventImpl event) {
     if (event.getOperation().isDistributed() && !event.isOriginRemote()) {
@@ -3269,7 +3152,7 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected void serverPut(EntryEventImpl event,
       boolean requireOldValue, Object expectedOldValue) {
@@ -3285,7 +3168,6 @@ public class LocalRegion extends AbstractRegion
         Object key = event.getKey();
         Object value = event.getRawNewValue();
         // serverPut is called by cacheWriteBeforePut so the new value will not yet be off-heap
-        // TODO OFFHEAP: verify that the above assertion is true
         Object callbackArg = event.getRawCallbackArgument();
         boolean isCreate = event.isCreate(); 
         Object result = mySRP.put(key, value, event.getDeltaBytes(), event,
@@ -3319,7 +3201,7 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * Destroy an entry on the server given its event.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected void serverDestroy(EntryEventImpl event, Object expectedOldValue) {
     if (event.getOperation().isDistributed()) {
@@ -3456,9 +3338,9 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * @since 5.0.2
+   * @since GemFire 5.0.2
    */
-  private final boolean DO_EXPENSIVE_VALIDATIONS = Boolean.getBoolean("gemfire.DO_EXPENSIVE_VALIDATIONS");
+  private final boolean DO_EXPENSIVE_VALIDATIONS = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DO_EXPENSIVE_VALIDATIONS");
 
   /**
    * the number of tombstone entries in the RegionMap
@@ -3509,24 +3391,25 @@ public class LocalRegion extends AbstractRegion
     //Fix for 45204 - don't include the tombstones in
     //any of our entry count stats.
     this.cachePerfStats.incEntryCount(-delta);
-    if(getDiskRegion() != null) {
-      getDiskRegion().incNumEntriesInVM(-delta);
-    }
-    DiskEntry.Helper.incrementBucketStats(this, -delta/*InVM*/, 0/*OnDisk*/, 0);
   }
   
   public int getTombstoneCount() {
     return this.tombstoneCount.get();
   }
-  
   public void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion) {
+    scheduleTombstone(entry, destroyedVersion, false);
+  }
+  
+  public void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion, boolean reschedule) {
     if (destroyedVersion == null) {
       throw new NullPointerException("destroyed version tag cannot be null");
     }
 //    Object sync = TombstoneService.DEBUG_TOMBSTONE_COUNT? TombstoneService.debugSync : new Object();
 //    lastUnscheduled.set(null);
 //    synchronized(sync) {
+    if (!reschedule) {
       incTombstoneCount(1);
+    }
 //      if (entry instanceof AbstractRegionEntry) {
 //        AbstractRegionEntry are = (AbstractRegionEntry)entry;
 //        if (are.isTombstoneScheduled()) {
@@ -3536,7 +3419,7 @@ public class LocalRegion extends AbstractRegion
 //        are.setTombstoneScheduled(true);
 //      }
       if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT)) {
-        logger.trace(LogMarker.TOMBSTONE_COUNT, "scheduling tombstone for {} version={} count is {} entryMap size is {}",
+        logger.trace(LogMarker.TOMBSTONE_COUNT, "{} tombstone for {} version={} count is {} entryMap size is {}", reschedule ? "rescheduling" : "scheduling",
             entry.getKey(), entry.getVersionStamp().asVersionTag(), this.tombstoneCount.get(), this.entries.size()/*, new Exception("stack trace")*/);
         // this can be useful for debugging tombstone count problems if there aren't a lot of concurrent threads
 //        if (TombstoneService.DEBUG_TOMBSTONE_COUNT && this.entries instanceof AbstractRegionMap) {
@@ -3552,12 +3435,7 @@ public class LocalRegion extends AbstractRegion
 //  ThreadLocal<Exception> lastUnscheduledPlace = new ThreadLocal<Exception>();
   
   public void rescheduleTombstone(RegionEntry entry, VersionTag version) {
-    Object sync = TombstoneService.DEBUG_TOMBSTONE_COUNT? TombstoneService.debugSync : new Object();
-    synchronized(sync) {
-      unscheduleTombstone(entry, false); // count is off by one, so don't allow validation to take place
-      scheduleTombstone(entry, version);
-    }
-
+    scheduleTombstone(entry, version, true);
   }
   
   public void unscheduleTombstone(RegionEntry entry) {
@@ -3570,7 +3448,6 @@ public class LocalRegion extends AbstractRegion
       logger.trace(LogMarker.TOMBSTONE, "unscheduling tombstone for {} count is {} entryMap size is {}",
           entry.getKey(), this.tombstoneCount.get(), this.entries.size()/*, new Exception("stack trace")*/);
     }
-    getRegionMap().unscheduleTombstone(entry);
     if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT) && validate) {
       if (this.entries instanceof AbstractRegionMap) {
         ((AbstractRegionMap) this.entries).verifyTombstoneCount(this.tombstoneCount);
@@ -3592,7 +3469,7 @@ public class LocalRegion extends AbstractRegion
       return;
     }
     if (!this.versionVector.containsTombstoneGCVersions(regionGCVersions)) {
-      keys = this.cache.getTombstoneService().gcTombstones(this, regionGCVersions);
+      keys = this.cache.getTombstoneService().gcTombstones(this, regionGCVersions, needsTombstoneGCKeysForClients(eventID, clientRouting));
       if (keys == null) {
         // deltaGII prevented tombstone GC
         return;
@@ -3610,6 +3487,9 @@ public class LocalRegion extends AbstractRegion
   }
   
 
+  protected boolean needsTombstoneGCKeysForClients(EventID eventID, FilterInfo clientRouting) {
+    return false;
+  }
   /** pass tombstone garbage-collection info to clients 
    * @param eventID the ID of the event (see bug #50683)
    * @param routing routing info (routing is computed if this is null)
@@ -3687,7 +3567,7 @@ public class LocalRegion extends AbstractRegion
    *
    * @see RegionMap#getEntry
    *
-   * @since 3.2
+   * @since GemFire 3.2
    */
   public Object getValueInVM(Object key) throws EntryNotFoundException
   {
@@ -3701,7 +3581,7 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * @param rememberRead true if read should be remembered in a transaction
-   * @since 5.5
+   * @since GemFire 5.5
    */
   private Object basicGetValueInVM(Object key, boolean rememberRead)
     throws EntryNotFoundException
@@ -3735,7 +3615,7 @@ public class LocalRegion extends AbstractRegion
      * @return an unmodifiable set of keys that have been read or written
      * by the transaction on this thread.
      * @throws IllegalStateException if not tx in progress
-     * @since 5.5
+     * @since GemFire 5.5
      */
     public Set testHookTXKeys() {
       if (!isTX()) throw new IllegalStateException(LocalizedStrings.LocalRegion_TX_NOT_IN_PROGRESS.toLocalizedString());
@@ -3755,8 +3635,6 @@ public class LocalRegion extends AbstractRegion
    * Returns the value of the entry with the given key as it is stored on disk.
    * While the value may be read from disk, it is <b>not </b> stored into the
    * entry in the VM. This method is intended for testing purposes only.
-   * DO NOT use in product code else it will break SQLFabric that has cases
-   * where routing object is not part of only the key.
    *
    * @throws EntryNotFoundException
    *           No entry with <code>key</code> exists
@@ -3765,7 +3643,7 @@ public class LocalRegion extends AbstractRegion
    *
    * @see RegionEntry#getValueOnDisk
    *
-   * @since 3.2
+   * @since GemFire 3.2
    */
   public Object getValueOnDisk(Object key) throws EntryNotFoundException
   {
@@ -3795,15 +3673,14 @@ public class LocalRegion extends AbstractRegion
   /**
    * Get the serialized bytes from disk. This method only looks for the value on
    * the disk, ignoring heap data. This method is intended for testing purposes
-   * only. DO NOT use in product code else it will break SQLFabric that has
-   * cases where routing object is not part of only the key.
+   * only. 
    * 
    * @param key the object whose hashCode is used to find the value
    * @return either a byte array, a CacheDeserializable with the serialized value,
    * or null if the entry exists but no value data exists.
    * @throws IllegalStateException when the region is not persistent
    * @throws EntryNotFoundException if there is no entry for the given key
-   * @since gemfire5.7_hotfix
+   * @since GemFire 5.7
    */
   public Object getSerializedValueOnDisk(Object key) throws EntryNotFoundException
   {
@@ -3836,7 +3713,7 @@ public class LocalRegion extends AbstractRegion
    *
    * @see RegionEntry#getValueOnDisk
    *
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public Object getValueOnDiskOrBuffer(Object key)
   throws EntryNotFoundException {
@@ -3851,9 +3728,6 @@ public class LocalRegion extends AbstractRegion
   /**
    * Does a get that attempts to not fault values in from disk or make the entry
    * the most recent in the LRU.
-   * 
-   * Originally implemented in WAN gateway code and moved here in the sqlfire
-   * "cheetah" branch.
    * @param adamant fault in and affect LRU as a last resort
    * @param allowTombstone also return Token.TOMBSTONE if the entry is deleted
    * @param serializedFormOkay if the serialized form can be returned
@@ -4010,7 +3884,7 @@ public class LocalRegion extends AbstractRegion
   }
 
   public void finishRegisterInterest() {
-    if (Boolean.getBoolean("gemfire.testing.slow-interest-recovery")) {
+    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "testing.slow-interest-recovery")) {
       if(logger.isDebugEnabled()) {
         logger.debug("slowing interest recovery...");
       }
@@ -4434,7 +4308,7 @@ public class LocalRegion extends AbstractRegion
     }
     checkReadiness();
     validateKey(key);
-    EntryEventImpl event = EntryEventImpl.create(this, Operation.LOCAL_DESTROY,
+    @Released EntryEventImpl event = EntryEventImpl.create(this, Operation.LOCAL_DESTROY,
         key, false, getMyId(), false /* generateCallbacks */, true);
     try {
       basicDestroy(event,
@@ -4793,7 +4667,7 @@ public class LocalRegion extends AbstractRegion
    * <p>
    * Acquires and releases the DestroyLock.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   void reinitialize(InputStream inputStream, RegionEventImpl event)
       throws TimeoutException, IOException, ClassNotFoundException
@@ -5245,9 +5119,6 @@ public class LocalRegion extends AbstractRegion
   
   /**
    * Get the best iterator for the region entries.
-   * 
-   * TODO there has been some work on this on the sqlfire branch that should
-   * be picked up here.
    */
   public Iterator<RegionEntry> getBestIterator(boolean includeValues) {
     if(this instanceof DistributedRegion) {
@@ -5393,9 +5264,6 @@ public class LocalRegion extends AbstractRegion
     // Notify bridge clients (if this is a BridgeServer)
     event.setEventType(eventType);
     notifyBridgeClients(event);
-  if (this.hdfsStoreName != null) {
-    notifyGatewaySender(eventType, event);
-    }
     if(callDispatchListenerEvent){
       dispatchListenerEvent(eventType, event);
     }
@@ -5574,13 +5442,7 @@ public class LocalRegion extends AbstractRegion
         callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
       }
     }
-    //Asif: Modified the call to this constructor by passing the new value obtained from remote site
-    //instead of null .
-    //The need for this arose, because creation of EntryEvent, makes call to PartitionResolver,
-    //to get Hash. If the partitioning column is different from primary key, 
-    //the resolver for Sqlfabric is not able to obtain the hash object used for creation of KeyInfo  
-     
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.CREATE, key,
+    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.CREATE, key,
        value, callbackArg,  false /* origin remote */, client.getDistributedMember(),
         true /* generateCallbacks */,
         eventId);
@@ -5599,9 +5461,6 @@ public class LocalRegion extends AbstractRegion
     }
 
     // Set the new value to the input byte[] if it isn't null
-    /// For SqlFabric, if the new value happens to be an serialized object, then 
-    //it needs to be converted into VMCachedDeserializable , or serializable delta 
-    // as the case may be
     if (value != null) {
       // If the byte[] represents an object, then store it serialized
       // in a CachedDeserializable; otherwise store it directly as a byte[]
@@ -5641,7 +5500,7 @@ public class LocalRegion extends AbstractRegion
 
   public boolean basicBridgePut(Object key, Object value, byte[] deltaBytes,
       boolean isObject, Object p_callbackArg, ClientProxyMembershipID memberId,
-      boolean fromClient, EntryEventImpl clientEvent, boolean isSqlFabricSystem)
+      boolean fromClient, EntryEventImpl clientEvent)
       throws TimeoutException, CacheWriterException {
     EventID eventID = clientEvent.getEventId();
     Object callbackArg = p_callbackArg;
@@ -5654,7 +5513,7 @@ public class LocalRegion extends AbstractRegion
       }
     }
    
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.UPDATE, key,
+    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.UPDATE, key,
         null /* new value */, callbackArg,
         false /* origin remote */, memberId.getDistributedMember(),
         true /* generateCallbacks */,
@@ -5673,14 +5532,7 @@ public class LocalRegion extends AbstractRegion
     // serialized in a CachedDeserializable; otherwise store it directly
     // as a byte[].
     if (isObject && value instanceof byte[]) {
-      //Asif: If the system is SqlFabric, then the value byte[] corresponds to
-      //Delta , so we need to deserialize it & appropriately set the EntryEventImpl's.delta
-      //field to this value
-      if (isSqlFabricSystem) {
-        event.setNewValue(EntryEventImpl.deserialize((byte[])value));  
-      } else  {
-        event.setSerializedNewValue((byte[])value);
-      }
+      event.setSerializedNewValue((byte[])value);
     }
     else {
       event.setNewValue(value);
@@ -5688,9 +5540,7 @@ public class LocalRegion extends AbstractRegion
 
     boolean ifNew = false; // can overwrite an existing key
     
-    //Asif: If the system is SqlFabric, then update will always have value of type
-    //SerializableDelta (i.e Delta) which requires that the old value should be present    
-    boolean ifOld = isSqlFabricSystem ; //false; // can create a new key
+    boolean ifOld = false; // can create a new key
     long lastModified = 0L; // use now
     boolean overwriteDestroyed = false; // not okay to overwrite the DESTROYED token
     boolean success = false;
@@ -5801,7 +5651,7 @@ public class LocalRegion extends AbstractRegion
       concurrencyConfigurationCheck(versionTag);
 
       // Create an event and put the entry
-      EntryEventImpl event =
+      @Released EntryEventImpl event =
         EntryEventImpl.create(this,
                            Operation.INVALIDATE,
                            key, null /* newValue */,
@@ -5856,7 +5706,7 @@ public class LocalRegion extends AbstractRegion
       concurrencyConfigurationCheck(versionTag);
 
       // Create an event and destroy the entry
-      EntryEventImpl event =
+      @Released EntryEventImpl event =
         EntryEventImpl.create(this,
                            Operation.DESTROY,
                            key, null /* newValue */,
@@ -5938,7 +5788,7 @@ public class LocalRegion extends AbstractRegion
     }
 
     // Create an event and put the entry
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.DESTROY, key,
+    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.DESTROY, key,
         null /* new value */, callbackArg,
         false /* origin remote */, memberId.getDistributedMember(),
         true /* generateCallbacks */,
@@ -5978,7 +5828,7 @@ public class LocalRegion extends AbstractRegion
     }
 
     // Create an event and put the entry
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.INVALIDATE, key,
+    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.INVALIDATE, key,
         null /* new value */, callbackArg,
         false /* origin remote */, memberId.getDistributedMember(),
         true /* generateCallbacks */,
@@ -6004,7 +5854,7 @@ public class LocalRegion extends AbstractRegion
       ClientProxyMembershipID memberId, boolean fromClient, EntryEventImpl clientEvent) {
  
     // Create an event and update version stamp of the entry
-    EntryEventImpl event = EntryEventImpl.create(this, Operation.UPDATE_VERSION_STAMP, key,
+    @Released EntryEventImpl event = EntryEventImpl.create(this, Operation.UPDATE_VERSION_STAMP, key,
         null /* new value */, null /*callbackArg*/,
         false /* origin remote */, memberId.getDistributedMember(),
         false /* generateCallbacks */,
@@ -6252,12 +6102,6 @@ public class LocalRegion extends AbstractRegion
     long lastModifiedTime = event.getEventTime(lastModified);
     updateStatsForPut(entry, lastModifiedTime, lruRecentUse);
     if (!isProxy()) {
-      //if (this.isUsedForPartitionedRegionBucket) {
-      //  if (this.sqlfIndexManager != null) {
-      //    this.sqlfIndexManager.onEvent(this, event, entry);
-      //  }
-      //}
-
       if (!clearConflict && this.indexManager != null) {
         try {
           if (!entry.isInvalid()) {
@@ -6368,8 +6212,7 @@ public class LocalRegion extends AbstractRegion
   protected void notifyTimestampsToGateways(EntryEventImpl event) {
     
     // Create updateTimeStampEvent from event.
-    EntryEventImpl updateTimeStampEvent = EntryEventImpl.createVersionTagHolder(event.getVersionTag());
-    try {
+    VersionTagHolder updateTimeStampEvent = new VersionTagHolder(event.getVersionTag());
     updateTimeStampEvent.setOperation(Operation.UPDATE_VERSION_STAMP);
     updateTimeStampEvent.setKeyInfo(event.getKeyInfo());
     updateTimeStampEvent.setGenerateCallbacks(false);
@@ -6393,9 +6236,6 @@ public class LocalRegion extends AbstractRegion
     } else {
       updateTimeStampEvent.setRegion(event.getRegion());
       notifyGatewaySender(EnumListenerEvent.TIMESTAMP_UPDATE, updateTimeStampEvent);
-    }
-    } finally {
-      updateTimeStampEvent.release();
     }
   }
 
@@ -6532,7 +6372,6 @@ public class LocalRegion extends AbstractRegion
          }
        }
        isDup = this.eventTracker.hasSeenEvent(event);
-       // don't clobber existing posDup flag e.g. set from SQLFabric client
        if (isDup) {
          event.setPossibleDuplicate(true);
          if (this.concurrencyChecksEnabled && event.getVersionTag() == null) {
@@ -6625,7 +6464,7 @@ public class LocalRegion extends AbstractRegion
    * @param r - a Runnable to wrap the processing of the bulk op
    * @param eventID - the base event ID of the bulk op
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void syncBulkOp(Runnable r, EventID eventID) {
     if (this.eventTracker != null && !isTX()) {
@@ -6724,10 +6563,10 @@ public class LocalRegion extends AbstractRegion
   protected void notifyGatewaySender(EnumListenerEvent operation,
       EntryEventImpl event) {
     
-    if (event.isConcurrencyConflict()) { // usually concurrent cache modification problem
+    if (isPdxTypesRegion() || event.isConcurrencyConflict() /* usually concurrent cache modification problem */) { 
       return;
     }
-    
+
     // Return if the inhibit all notifications flag is set
     if (event.inhibitAllNotifications()){
       if(logger.isDebugEnabled()) {
@@ -6736,34 +6575,31 @@ public class LocalRegion extends AbstractRegion
       return;
     }
     
-    if (!event.getOperation().isLocal()) {
-      Set<String> allGatewaySenderIds = null;
-      checkSameSenderIdsAvailableOnAllNodes();
-      if (event.getOperation() == Operation.UPDATE_VERSION_STAMP) {
-        allGatewaySenderIds = getGatewaySenderIds();
-      } else {
-        allGatewaySenderIds = getAllGatewaySenderIds();
-      }
-      
-      List<Integer> allRemoteDSIds = getRemoteDsIds(allGatewaySenderIds);
+    
+    Set<String> allGatewaySenderIds = null;
+    checkSameSenderIdsAvailableOnAllNodes();
+    if (event.getOperation() == Operation.UPDATE_VERSION_STAMP) {
+      allGatewaySenderIds = getGatewaySenderIds();
+    } else {
+      allGatewaySenderIds = getAllGatewaySenderIds();
+    }
 
-      if (allRemoteDSIds != null) {
-        for (GatewaySender sender : getCache().getAllGatewaySenders()) {
-          if (!isPdxTypesRegion()) {
-            if (allGatewaySenderIds.contains(sender.getId())) {
-              //TODO: This is a BUG. Why return and not continue?
-              if((!this.getDataPolicy().withStorage()) && sender.isParallel()){
-                return;
-              }
-              if(logger.isDebugEnabled()) {
-                logger.debug("Notifying the GatewaySender : {}", sender.getId());
-              }
-              ((AbstractGatewaySender)sender).distribute(operation, event,
-                  allRemoteDSIds);
-            }
+    List<Integer> allRemoteDSIds = getRemoteDsIds(allGatewaySenderIds);
+    if (allRemoteDSIds != null) {
+      for (GatewaySender sender : getCache().getAllGatewaySenders()) {
+        if (allGatewaySenderIds.contains(sender.getId())) {
+          //TODO: This is a BUG. Why return and not continue?
+          if((!this.getDataPolicy().withStorage()) && sender.isParallel()){
+            return;
           }
+          if(logger.isDebugEnabled()) {
+            logger.debug("Notifying the GatewaySender : {}", sender.getId());
+          }
+          ((AbstractGatewaySender)sender).distribute(operation, event,
+              allRemoteDSIds);
         }
       }
+
       
 //      if (shouldNotifyGatewaySender()) {
 //        // Get All WAN site DSID's to be sent to each WAN site so that they
@@ -6965,7 +6801,7 @@ public class LocalRegion extends AbstractRegion
   /**
    * Called after this region has been completely created
    *
-   * @since 5.0
+   * @since GemFire 5.0
    *
    * @see DistributedRegion#postDestroyRegion(boolean, RegionEventImpl)
    */
@@ -7122,7 +6958,7 @@ public class LocalRegion extends AbstractRegion
   /**
    * Do the expensive work of discovering an existing JTA transaction
    * Only needs to be called at Region.Entry entry points e.g. Region.put, Region.invalidate, etc.
-   * @since tx
+   * @since GemFire tx
    */
   final public void discoverJTA() {
     if (!isSecret() && !isUsedForPartitionedRegionAdmin()
@@ -7133,7 +6969,7 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * @return true if a transaction is in process
-   * @since tx 
+   * @since GemFire tx
    */
   public final boolean isTX() {
     return getTXState() != null;
@@ -7276,30 +7112,17 @@ public class LocalRegion extends AbstractRegion
    * @param key - the key that this event is related to 
    * @return an event for EVICT_DESTROY
    */
+  @Retained
   protected EntryEventImpl generateEvictDestroyEvent(final Object key) {
-    EntryEventImpl event = EntryEventImpl.create(
+    @Retained EntryEventImpl event = EntryEventImpl.create(
         this, Operation.EVICT_DESTROY, key, null/* newValue */,
         null, false, getMyId());
     // Fix for bug#36963
     if (generateEventID()) {
       event.setNewEventId(cache.getDistributedSystem());
     }
-    event.setFetchFromHDFS(false);
     return event;
   }
-    protected EntryEventImpl generateCustomEvictDestroyEvent(final Object key) {
-    EntryEventImpl event =  EntryEventImpl.create(
-        this, Operation.CUSTOM_EVICT_DESTROY, key, null/* newValue */,
-        null, false, getMyId());
-    
-    // Fix for bug#36963
-    if (generateEventID()) {
-      event.setNewEventId(cache.getDistributedSystem());
-    }
-    event.setFetchFromHDFS(false);
-    return event;
-  }
-  
   /**
    * @return true if the evict destroy was done; false if it was not needed
    */
@@ -7307,7 +7130,7 @@ public class LocalRegion extends AbstractRegion
   {
     
     checkReadiness();
-    final EntryEventImpl event = 
+    @Released final EntryEventImpl event = 
           generateEvictDestroyEvent(entry.getKey());
     try {
       return mapDestroy(event,
@@ -7339,7 +7162,7 @@ public class LocalRegion extends AbstractRegion
    * @param entry the Region entry being destroyed
    * @param event
    *          the event describing the destroy operation
-   * @since 5.1
+   * @since GemFire 5.1
    */
   protected void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event)
   {
@@ -7676,7 +7499,7 @@ public class LocalRegion extends AbstractRegion
           }
         }
         
-        if (!GemFireCacheImpl.ASYNC_EVENT_LISTENERS) {
+        if (this.cache.getEventThreadPool() == null) {
           dispatchEvent(this, event, op);
         }
         else {
@@ -7686,7 +7509,7 @@ public class LocalRegion extends AbstractRegion
           }
           catch (RejectedExecutionException rex) {
             ed.release();
-            logger.warn(LocalizedMessage.create(LocalizedStrings.LocalRegion_0_EVENT_NOT_DISPATCHED_DUE_TO_REJECTED_EXECUTION), rex);
+            dispatchEvent(this, event, op);
           }
         }
       }
@@ -7787,10 +7610,7 @@ public class LocalRegion extends AbstractRegion
    */
   void cleanupFailedInitialization()
   {
-    // mark as destroyed
-    // TODO OFFHEAP MERGE: to fix 49905 asif commented out isDestroyed being set.
-    // But in xd it was set after closeEntries was called.
-    // Here it is set before and it fixed 49555.
+    // mark as destroyed fixes 49555.
     this.isDestroyed = true;
     // after isDestroyed is set to true call removeResourceListener to fix bug 49555
     this.cache.getResourceManager(false).removeResourceListener(this);
@@ -7975,7 +7795,7 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * Release the client connection pool if we have one
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void detachPool() {
     ServerRegionProxy mySRP = getServerProxy();
@@ -8055,37 +7875,45 @@ public class LocalRegion extends AbstractRegion
       }
     }
   }
-  void cleanUpOnIncompleteOp(EntryEventImpl event,   RegionEntry re, 
-      boolean eventRecorded, boolean updateStats, boolean isReplace) {
-    //TODO:Asif: This is incorrect implementation for replicated region in case of
-    //sql fabric, as sqlf index would already be  updated, if eventRecorded 
-    //flag is true.So if entry is being removed , 
-    //then the sqlfindex also needs to be corrected
-    IndexUpdater iu = this.getIndexUpdater(); // sqlf system
-    if(!eventRecorded || iu ==null || isReplace) {
-    //Ok to remove entry whether sqlfabric or gfe as index has not been modified yet by the operation
-      this.entries.removeEntry(event.getKey(), re, updateStats) ;      
-    }else {
-      // a sqlf system, with event recorded as true. we need to update index.
-      //Use the current event to indicate destroy.should be ok
-      Operation oldOp = event.getOperation();
-      event.setOperation(Operation.DESTROY);
-      this.entries.removeEntry(event.getKey(), re, updateStats, event, this, iu);
-      event.setOperation(oldOp);
-    } 
-    
+  void cleanUpOnIncompleteOp(EntryEventImpl event, RegionEntry re) {
+    //Ok to remove entry as index has not been modified yet by the operation
+    this.entries.removeEntry(event.getKey(), re, false) ;      
   }
 
-  static void validateRegionName(String name)
+  static void validateRegionName(String name, InternalRegionArguments internalRegionArgs)
   {
     if (name == null) {
       throw new IllegalArgumentException(LocalizedStrings.LocalRegion_NAME_CANNOT_BE_NULL.toLocalizedString());
     }
-    if (name.length() == 0) {
+    if (name.isEmpty()) {
       throw new IllegalArgumentException(LocalizedStrings.LocalRegion_NAME_CANNOT_BE_EMPTY.toLocalizedString());
     }
-    if (name.indexOf(SEPARATOR) >= 0) {
+    if (name.contains(SEPARATOR)) {
       throw new IllegalArgumentException(LocalizedStrings.LocalRegion_NAME_CANNOT_CONTAIN_THE_SEPARATOR_0.toLocalizedString(SEPARATOR));
+    }
+
+    // Validate the name of the region only if it isn't an internal region
+    if (internalRegionArgs.isInternalRegion()){
+      return;
+    }
+    if (internalRegionArgs.isUsedForMetaRegion()) {
+      return;
+    }
+    if (internalRegionArgs.isUsedForPartitionedRegionAdmin()) {
+      return;
+    }
+    if (internalRegionArgs.isUsedForPartitionedRegionBucket()) {
+      return;
+    }
+
+    if (name.startsWith("__")) {
+      throw new IllegalArgumentException("Region names may not begin with a double-underscore: " + name);
+    }
+
+    // Ensure the region only contains valid characters
+    Matcher matcher = NAME_PATTERN.matcher(name);
+    if (!matcher.matches()) {
+      throw new IllegalArgumentException("Region names may only be alphanumeric and may contain hyphens or underscores: " + name);
     }
   }
 
@@ -8128,7 +7956,7 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * For each region entry in this region call the callback
-   * @since prPersistSprint2
+   * @since GemFire prPersistSprint2
    */
   public void foreachRegionEntry(RegionEntryCallback callback) {
     Iterator it = this.entries.regionEntriesInVM().iterator();
@@ -8139,7 +7967,7 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * Used by {@link #foreachRegionEntry}.
-   * @since prPersistSprint2
+   * @since GemFire prPersistSprint2
    */
   public interface RegionEntryCallback {
     public void handleRegionEntry(RegionEntry re);
@@ -8207,7 +8035,7 @@ public class LocalRegion extends AbstractRegion
     for (Iterator itr = keySet().iterator(); itr.hasNext();) {
       try {
         //EventID will not be generated by this constructor
-        EntryEventImpl event = EntryEventImpl.create(
+        @Released EntryEventImpl event = EntryEventImpl.create(
             this, op, itr.next() /*key*/,
             null/* newValue */, null/* callbackArg */, rgnEvent.isOriginRemote(),
             rgnEvent.getDistributedMember());
@@ -8311,7 +8139,7 @@ public class LocalRegion extends AbstractRegion
    *
    * @return <code>null</code> is a disk region is not desired
    *
-   * @since 3.2
+   * @since GemFire 3.2
    */
   protected DiskRegion createDiskRegion(InternalRegionArguments internalRegionArgs)
       throws DiskAccessException {
@@ -8347,7 +8175,7 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * Returns the object sizer on this region or null if it has no sizer.
-   * @since 6.1.2.9
+   * @since GemFire 6.1.2.9
    */
   public ObjectSizer getObjectSizer() {
     ObjectSizer result = null;
@@ -9267,6 +9095,10 @@ public class LocalRegion extends AbstractRegion
 
   class EventDispatcher implements Runnable
   {
+    /**
+     * released by the release method
+     */
+    @Retained
     InternalCacheEvent event;
 
     EnumListenerEvent op;
@@ -9601,7 +9433,7 @@ public class LocalRegion extends AbstractRegion
     // /////////////////////////////////////////
 
     /**
-     * @since 5.0
+     * @since GemFire 5.0
      */
     public Object setValue(Object arg0)
     {
@@ -9633,7 +9465,7 @@ public class LocalRegion extends AbstractRegion
   /**
    * Methods for java.util.Map compliance
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
 
   /**
@@ -9951,8 +9783,6 @@ public class LocalRegion extends AbstractRegion
       }
     }
     
-    clearHDFSData();
-    
     if (!isProxy()) {
       // Now we need to recreate all the indexes.
       //If the indexManager is null we don't have to worry
@@ -9989,11 +9819,6 @@ public class LocalRegion extends AbstractRegion
     if (hasListener) {
       dispatchListenerEvent(EnumListenerEvent.AFTER_REGION_CLEAR, regionEvent);
     }
-  }
-
-  /**Clear HDFS data, if present */
-  protected void clearHDFSData() {
-    //do nothing, clear is implemented for subclasses like BucketRegion.
   }
 
   @Override
@@ -10091,7 +9916,7 @@ public class LocalRegion extends AbstractRegion
           // correct events will be delivered to any callbacks we have.
           long startPut = CachePerfStats.getStatTime();
           validateKey(key);
-          EntryEventImpl event = EntryEventImpl.create(
+          @Released EntryEventImpl event = EntryEventImpl.create(
               this, Operation.LOCAL_LOAD_CREATE, key, value,
               callback, false, getMyId(), true);
           try {
@@ -10186,7 +10011,7 @@ public class LocalRegion extends AbstractRegion
       callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
     }
   
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.PUTALL_CREATE, null,
+    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.PUTALL_CREATE, null,
         null /* new value */, callbackArg,
         false /* origin remote */, memberId.getDistributedMember(),
         !skipCallbacks /* generateCallbacks */,
@@ -10222,7 +10047,7 @@ public class LocalRegion extends AbstractRegion
       callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
     }
   
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.REMOVEALL_DESTROY, null,
+    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.REMOVEALL_DESTROY, null,
         null /* new value */, callbackArg,
         false /* origin remote */, memberId.getDistributedMember(),
         true /* generateCallbacks */,
@@ -10246,7 +10071,7 @@ public class LocalRegion extends AbstractRegion
     long startPut = CachePerfStats.getStatTime();
 
     // generateCallbacks == false
-    EntryEventImpl event = EntryEventImpl.create(this, Operation.PUTALL_CREATE,
+    @Released EntryEventImpl event = EntryEventImpl.create(this, Operation.PUTALL_CREATE,
         null, null, null, true, getMyId(), !skipCallbacks);
     try {
     DistributedPutAllOperation putAllOp = new DistributedPutAllOperation(event, map.size(), false);
@@ -10394,7 +10219,7 @@ public class LocalRegion extends AbstractRegion
       Runnable r = new Runnable() {
         public void run() {
           int offset = 0;
-          EntryEventImpl tagHolder = EntryEventImpl.createVersionTagHolder();
+          VersionTagHolder tagHolder = new VersionTagHolder();
           while (iterator.hasNext()) {
             stopper.checkCancelInProgress(null);
             Map.Entry mapEntry = (Map.Entry)iterator.next();
@@ -10445,11 +10270,7 @@ public class LocalRegion extends AbstractRegion
               }
               
               if (!overwritten) {
-                try {
-                  basicEntryPutAll(key, value, dpao, offset, tagHolder);
-                } finally {
-                  tagHolder.release();
-                }
+                basicEntryPutAll(key, value, dpao, offset, tagHolder);
               }
               // now we must check again since the cache may have closed during
               // distribution (causing this process to not receive and queue the
@@ -10613,7 +10434,7 @@ public class LocalRegion extends AbstractRegion
       Runnable r = new Runnable() {
         public void run() {
           int offset = 0;
-          EntryEventImpl tagHolder = EntryEventImpl.createVersionTagHolder();
+          VersionTagHolder tagHolder = new VersionTagHolder();
           while (iterator.hasNext()) {
             stopper.checkCancelInProgress(null);
             Object key;
@@ -10749,8 +10570,6 @@ public class LocalRegion extends AbstractRegion
   }
 
 
-  // split into a separate newPutAllOperation since SQLFabric may need to
-  // manipulate event before doing the put (e.g. posDup flag)
   public final DistributedPutAllOperation newPutAllOperation(Map<?, ?> map, Object callbackArg) {
     if (map == null) {
       throw new NullPointerException(LocalizedStrings
@@ -10766,6 +10585,7 @@ public class LocalRegion extends AbstractRegion
     // Create a dummy event for the PutAll operation.  Always create a
     // PutAll operation, even if there is no distribution, so that individual
     // events can be tracked and handed off to callbacks in postPutAll
+    // No need for release since disallowOffHeapValues called.
     final EntryEventImpl event = EntryEventImpl.create(this,
         Operation.PUTALL_CREATE, null, null, callbackArg, true, getMyId());
 
@@ -10773,13 +10593,6 @@ public class LocalRegion extends AbstractRegion
     DistributedPutAllOperation dpao = new DistributedPutAllOperation(event, map.size(), false);
     return dpao;
   }
-    public final DistributedPutAllOperation newPutAllForPUTDmlOperation(Map<?, ?> map, Object callbackArg) {
-    DistributedPutAllOperation dpao = newPutAllOperation(map, callbackArg);
-    dpao.getEvent().setFetchFromHDFS(false);
-    dpao.getEvent().setPutDML(true);
-    return dpao;
-  }
-
   
   public final DistributedRemoveAllOperation newRemoveAllOperation(Collection<?> keys, Object callbackArg) {
     if (keys == null) {
@@ -10795,6 +10608,7 @@ public class LocalRegion extends AbstractRegion
     // Create a dummy event for the removeAll operation.  Always create a
     // removeAll operation, even if there is no distribution, so that individual
     // events can be tracked and handed off to callbacks in postRemoveAll
+    // No need for release since disallowOffHeapValues called.
     final EntryEventImpl event = EntryEventImpl.create(this, Operation.REMOVEALL_DESTROY, null,
         null/* newValue */, callbackArg, false, getMyId());
     event.disallowOffHeapValues();
@@ -10826,13 +10640,10 @@ public class LocalRegion extends AbstractRegion
     validateArguments(key, value, null);
     // event is marked as a PUTALL_CREATE but if the entry exists it
     // will be changed to a PUTALL_UPDATE later on.
-    EntryEventImpl event = EntryEventImpl.createPutAllEvent(
+    @Released EntryEventImpl event = EntryEventImpl.createPutAllEvent(
         putallOp, this, Operation.PUTALL_CREATE, key, value);
 
     try {
-	event.setFetchFromHDFS(putallOp.getEvent().isFetchFromHDFS());
-    event.setPutDML(putallOp.getEvent().isPutDML());
-    
     if (tagHolder != null) {
       event.setVersionTag(tagHolder.getVersionTag());
       event.setFromServer(tagHolder.isFromServer());
@@ -10864,7 +10675,7 @@ public class LocalRegion extends AbstractRegion
     assert op != null;
     checkReadiness();
     validateKey(key);
-    EntryEventImpl event = EntryEventImpl.createRemoveAllEvent(op, this, key);
+    @Released EntryEventImpl event = EntryEventImpl.createRemoveAllEvent(op, this, key);
     try {
     if (tagHolder != null) {
       event.setVersionTag(tagHolder.getVersionTag());
@@ -10918,7 +10729,7 @@ public class LocalRegion extends AbstractRegion
       successfulKeys.add(key);
     }
     for (Iterator it=putallOp.eventIterator(); it.hasNext(); ) {
-      EntryEventImpl event = (EntryEventImpl)it.next();
+      @Unretained EntryEventImpl event = (EntryEventImpl)it.next();
       if (successfulKeys.contains(event.getKey())) {
         EnumListenerEvent op = event.getOperation().isCreate() ? EnumListenerEvent.AFTER_CREATE
             : EnumListenerEvent.AFTER_UPDATE; 
@@ -10941,7 +10752,7 @@ public class LocalRegion extends AbstractRegion
       successfulKeys.add(key);
     }
     for (Iterator it=op.eventIterator(); it.hasNext(); ) {
-      EntryEventImpl event = (EntryEventImpl)it.next();
+      @Unretained EntryEventImpl event = (EntryEventImpl)it.next();
       if (successfulKeys.contains(event.getKey())) {
         invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, event, !event.callbacksInvoked() && !event.isPossibleDuplicate(),
             false /* We must notify gateways inside RegionEntry lock, NOT here, to preserve the order of events sent by gateways for same key*/);
@@ -10980,7 +10791,7 @@ public class LocalRegion extends AbstractRegion
    * @param topSerial the remote serialNumber for the top region (maybe root)
    * @param subregionSerialNumbers map of remote subregions to serialNumbers
    * @param regionDestroyed true if the region was destroyed on the remote host (as opposed to closed)
-   * @since 5.0
+   * @since GemFire 5.0
    */
   final void handleRemoteLocalRegionDestroyOrClose(
       InternalDistributedMember sender,
@@ -11008,7 +10819,7 @@ public class LocalRegion extends AbstractRegion
    * @param topSerial the remote serialNumber for the top region (maybe root)
    * @param subregionSerialNumbers remote map of subregions to serialNumbers
    * @param regionDestroyed 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   private final void basicHandleRemoteLocalRegionDestroyOrClose(
       InternalDistributedMember sender,
@@ -11050,7 +10861,7 @@ public class LocalRegion extends AbstractRegion
    * Remove the specified sender from this regions advisor.
    * @param regionDestroyed 
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   protected void removeSenderFromAdvisor(InternalDistributedMember sender, int serial, boolean regionDestroyed)
   {
@@ -11081,7 +10892,7 @@ public class LocalRegion extends AbstractRegion
 
  /**
    * forces the diskRegion to switch the oplog
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public void forceRolling() throws DiskAccessException {
     if(this.diskRegion!=null){
@@ -11109,7 +10920,7 @@ public class LocalRegion extends AbstractRegion
    * get rolled else null if no oplogs were available at the time of signal or region
    * is not having disk persistence. Pls note that the actual number of oplogs 
    * rolled may be more than what is indicated
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   @Override
   public boolean forceCompaction()
@@ -11212,6 +11023,10 @@ public class LocalRegion extends AbstractRegion
            || isUsedForPartitionedRegionBucket();
   }
 
+  public CacheServiceProfile getCacheServiceProfile(String id) {
+    return this.cacheServiceProfiles.get(id);
+  }
+
   public LoaderHelper createLoaderHelper(Object key, Object callbackArgument,
       boolean netSearchAllowed, boolean netLoadAllowed,
       SearchLoadAndWriteProcessor searcher)
@@ -11229,8 +11044,7 @@ public class LocalRegion extends AbstractRegion
       final CacheProfile prof = (CacheProfile)profile;
 
       // if region in cache is not yet initialized, exclude
-      if (prof.regionInitialized // fix for bug 41102
-          && !prof.memberUnInitialized) {
+      if (prof.regionInitialized) { // fix for bug 41102
         // cut the visit short if we find a CacheLoader
         return !prof.hasCacheLoader;
       }
@@ -11247,8 +11061,8 @@ public class LocalRegion extends AbstractRegion
       assert profile instanceof CacheProfile;
       final CacheProfile prof = (CacheProfile)profile;
 
-      // if region in cache is in recovery, or member not initialized exclude
-      if (!prof.inRecovery && !prof.memberUnInitialized) {
+      // if region in cache is in recovery
+      if (!prof.inRecovery) {
         // cut the visit short if we find a CacheWriter
         return !prof.hasCacheWriter;
       }
@@ -11329,7 +11143,7 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * Called by ccn when a client goes away
-   * @since 5.7
+   * @since GemFire 5.7
    */
   void cleanupForClient(CacheClientNotifier ccn,
                         ClientProxyMembershipID client) {
@@ -11481,7 +11295,7 @@ public class LocalRegion extends AbstractRegion
    * @param function
    * @param args
    * @param filter
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public ResultCollector executeFunction(final DistributedRegionFunctionExecutor execution, final Function function, final Object args,
       final ResultCollector rc,final Set filter, final ServerToClientFunctionResultSender sender) {   
@@ -11596,7 +11410,7 @@ public class LocalRegion extends AbstractRegion
    * @param localMemoryIsCritical true if the local memory is in a critical state
    * @param critialMembers set of members whose memory is in a critical state
    * @see ResourceManager#setCriticalHeapPercentage(float) and ResourceManager#setCriticalOffHeapPercentage(float)
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public void initialCriticalMembers(boolean localMemoryIsCritical,
       Set<InternalDistributedMember> critialMembers) {
@@ -11607,8 +11421,7 @@ public class LocalRegion extends AbstractRegion
   }
   
   public void destroyRecoveredEntry(Object key) {
-    EntryEventImpl event = EntryEventImpl.create(
-        this,
+    @Released EntryEventImpl event = EntryEventImpl.create(this,
         Operation.LOCAL_DESTROY, key, null, null, false, getMyId(), false);
     try {
     event.inhibitCacheListenerNotification(true);
@@ -11700,15 +11513,6 @@ public class LocalRegion extends AbstractRegion
   {
     distributeUpdatedProfileOnSenderCreation();
   }
-  
-  /**
-   * @since SqlFabric
-   *
-   */
-  void distributeUpdatedProfileOnHubCreation()
-  {
-    // No op
-  }  
   
   void distributeUpdatedProfileOnSenderCreation()
   {
@@ -11871,7 +11675,7 @@ public class LocalRegion extends AbstractRegion
     
     /**
      * @return the timestamp that marks the start of the operation
-     * @since 3.5
+     * @since GemFire 3.5
      */
     @Override
     public long startCacheListenerCall() {
@@ -11881,7 +11685,7 @@ public class LocalRegion extends AbstractRegion
     }
     /**
      * @param start the timestamp taken when the operation started 
-     * @since 3.5
+     * @since GemFire 3.5
      */
     @Override
     public void endCacheListenerCall(long start) {
@@ -12247,9 +12051,7 @@ public class LocalRegion extends AbstractRegion
   
   /** test hook - dump the backing map for this region */
   public void dumpBackingMap() {
-    Object sync = TombstoneService.DEBUG_TOMBSTONE_COUNT? TombstoneService.debugSync : new Object();
     synchronized(this.entries) {
-      synchronized(sync) {
         if (this.entries instanceof AbstractRegionMap) {
           ((AbstractRegionMap)(this.entries)).verifyTombstoneCount(this.tombstoneCount);
         }
@@ -12257,7 +12059,6 @@ public class LocalRegion extends AbstractRegion
         if (this.entries instanceof AbstractRegionMap) {
           ((AbstractRegionMap)this.entries).dumpMap();
         }
-      }
     }
   }
   
@@ -12337,7 +12138,7 @@ public class LocalRegion extends AbstractRegion
      // was modified to call the other EntryEventImpl constructor so that
      // an id will be generated by default. Null was passed in anyway.
      //   generate EventID
-     EntryEventImpl event = EntryEventImpl.create(
+     @Released EntryEventImpl event = EntryEventImpl.create(
          this, Operation.PUT_IF_ABSENT, key,
          value, callbackArgument, false, getMyId());
      final Object oldValue = null;
@@ -12398,7 +12199,7 @@ public class LocalRegion extends AbstractRegion
     if (value == null) {
       value = Token.INVALID;
     }
-    EntryEventImpl event = EntryEventImpl.create(this,
+    @Released EntryEventImpl event = EntryEventImpl.create(this,
                                               Operation.REMOVE,
                                               key,
                                               null, // newValue
@@ -12455,7 +12256,7 @@ public class LocalRegion extends AbstractRegion
     validateArguments(key, newValue, callbackArg);
     checkReadiness();
     checkForLimitedOrNoAccess();
-    EntryEventImpl event = EntryEventImpl.create(this,
+    @Released EntryEventImpl event = EntryEventImpl.create(this,
                                               Operation.REPLACE,
                                               key,
                                               newValue,
@@ -12523,7 +12324,7 @@ public class LocalRegion extends AbstractRegion
     validateArguments(key, value, callbackArg);
     checkReadiness();
     checkForLimitedOrNoAccess();
-    EntryEventImpl event = EntryEventImpl.create(this,
+    @Released EntryEventImpl event = EntryEventImpl.create(this,
                                               Operation.REPLACE,
                                               key,
                                               value,
@@ -12571,7 +12372,7 @@ public class LocalRegion extends AbstractRegion
         callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
       }
     }
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.PUT_IF_ABSENT, key,
+    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.PUT_IF_ABSENT, key,
         null /* new value */, callbackArg,
         false /* origin remote */, client.getDistributedMember(),
         true /* generateCallbacks */,
@@ -12648,7 +12449,7 @@ public class LocalRegion extends AbstractRegion
         callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
       }
     }
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.REPLACE, key,
+    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.REPLACE, key,
         null /* new value */, callbackArg,
         false /* origin remote */, client.getDistributedMember(),
         true /* generateCallbacks */,
@@ -12705,7 +12506,7 @@ public class LocalRegion extends AbstractRegion
         callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
       }
     }
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.REPLACE, key,
+    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.REPLACE, key,
         null /* new value */, callbackArg,
         false /* origin remote */, client.getDistributedMember(),
         true /* generateCallbacks */,
@@ -12771,7 +12572,7 @@ public class LocalRegion extends AbstractRegion
     }
 
     // Create an event and put the entry
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.REMOVE, key,
+    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.REMOVE, key,
         null /* new value */, callbackArg,
         false /* origin remote */, memberId.getDistributedMember(),
         true /* generateCallbacks */,
@@ -12933,22 +12734,6 @@ public class LocalRegion extends AbstractRegion
   
   public Integer getCountNotFoundInLocal() {
     return countNotFoundInLocal.get();
-  }
-  /// End of Variables and methods for test Hook for HDFS ///////
-  public void forceHDFSCompaction(boolean isMajor, Integer maxWaitTime) {
-    throw new UnsupportedOperationException(
-        LocalizedStrings.HOPLOG_DOES_NOT_USE_HDFSSTORE
-            .toLocalizedString(getName()));
-  }
-
-  public void flushHDFSQueue(int maxWaitTime) {
-    throw new UnsupportedOperationException(
-        LocalizedStrings.HOPLOG_DOES_NOT_USE_HDFSSTORE
-            .toLocalizedString(getName()));
-  }
-  
-  public long lastMajorHDFSCompaction() {
-    throw new UnsupportedOperationException();
   }
 
   public static void simulateClearForTests(boolean flag) {

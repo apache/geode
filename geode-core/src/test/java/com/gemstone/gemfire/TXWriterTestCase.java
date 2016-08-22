@@ -16,30 +16,18 @@
  */
 package com.gemstone.gemfire;
 
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.AttributesMutator;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.TransactionEvent;
-import com.gemstone.gemfire.cache.TransactionListener;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
  * Extracted from TXWriterJUnitTest to share with TXWriterOOMEJUnitTest.
@@ -59,7 +47,7 @@ public class TXWriterTestCase {
 
   protected void createCache() throws CacheException {
     Properties p = new Properties();
-    p.setProperty("mcast-port", "0"); // loner
+    p.setProperty(MCAST_PORT, "0"); // loner
     this.cache = (GemFireCacheImpl)CacheFactory.create(DistributedSystem.connect(p));
     AttributesFactory<?, ?> af = new AttributesFactory<String, String>();
     af.setScope(Scope.DISTRIBUTED_NO_ACK);

@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,6 +26,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -37,16 +43,13 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.ClientMetadataService;
 import com.gemstone.gemfire.cache.client.internal.ClientPartitionAdvisor;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.partitioned.fixed.QuarterPartitionResolver;
 import com.gemstone.gemfire.internal.cache.partitioned.fixed.SingleHopQuarterPartitionResolver;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
@@ -55,10 +58,12 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-public class FixedPRSinglehopDUnitTest extends CacheTestCase {
-
-  private static final long serialVersionUID = 1L;
+@Category(DistributedTest.class)
+public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
 
   private static final String PR_NAME = "fixed_single_hop_pr";
 
@@ -92,10 +97,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   
   private static final Date q4dateDec1 = new Date(2010, 11, 1);
   
-  public FixedPRSinglehopDUnitTest(String name) {
-    super(name);
-  }
-  
+  @Test
   public void testNoClientConnected() {
     final Host host = Host.getHost(0);
     VM accessorServer = host.getVM(0);
@@ -152,6 +154,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   // 2 AccessorServers, 2 Peers
   // 1 Client connected to 2 AccessorServers. Hence metadata should not be
   // fetched.
+  @Test
   public void testClientConnectedToAccessors() {
     final Host host = Host.getHost(0);
     VM accessorServer1 = host.getVM(0);
@@ -194,6 +197,8 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   // Put data, get data and make the metadata stable.
   // Now verify that metadata has all 8 buckets info.
   // Now update and ensure the fetch service is never called.
+  @Category(FlakyTest.class) // GEODE-1176: random ports, time sensitive, waitForCriterion
+  @Test
   public void test_MetadataContents() {
     
     final Host host = Host.getHost(0);
@@ -259,6 +264,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
    * the metadata are fetched and then later up one more partition and do some operations on them. It should
    * fetch new fpa. 
    */
+  @Test
   public void test_FPAmetadataFetch() {
     
     final Host host = Host.getHost(0);
@@ -339,8 +345,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   public static int createServer(boolean isAccessor,
       List<FixedPartitionAttributes> fpaList) {
 
-    CacheTestCase test = new FixedPRSinglehopDUnitTest(
-        "FixedPRSinglehopDUnitTest");
+    FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     cache = test.getCache();
     CacheServer server = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
@@ -379,11 +384,10 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   public static int createServerWithLocator(String locator, boolean isAccessor,
       List<FixedPartitionAttributes> fpaList, boolean simpleFPR) {
 
-    CacheTestCase test = new FixedPRSinglehopDUnitTest(
-    "FixedPRSinglehopDUnitTest");
+    FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     Properties props = new Properties();
     props = new Properties();
-    props.setProperty("locators", locator);
+    props.setProperty(LOCATORS, locator);
     DistributedSystem ds = test.getSystem(props);
     cache = new CacheFactory(props).create(ds);
     
@@ -426,7 +430,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
     File logFile = new File("locator-" + locatorPort + ".log");
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
     try {
       locator = Locator.startLocatorAndDS(locatorPort, logFile, null, props);
     }
@@ -441,8 +445,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   }
   
   public static int totalNumBucketsCreated () {
-    CacheTestCase test = new FixedPRSinglehopDUnitTest(
-    "FixedPRSinglehopDUnitTest");
+    FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     PartitionedRegion pr = (PartitionedRegion)cache.getRegion(PR_NAME);
     assertNotNull(pr);
     return pr.getLocalPrimaryBucketsListTestOnly().size();
@@ -450,8 +453,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   
   public static void createPeer(boolean isAccessor,
       List<FixedPartitionAttributes> fpaList) {
-    CacheTestCase test = new FixedPRSinglehopDUnitTest(
-        "FixedPRSinglehopDUnitTest");
+    FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     cache = test.getCache();
 
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -477,10 +479,9 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   public static void createClient(int port0) {
     Properties props = new Properties();
     props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    CacheTestCase test = new FixedPRSinglehopDUnitTest(
-        "FixedPRSinglehopDUnitTest");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
@@ -503,10 +504,9 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   public static void createClient(int port0, int port1) {
     Properties props = new Properties();
     props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    CacheTestCase test = new FixedPRSinglehopDUnitTest(
-        "FixedPRSinglehopDUnitTest");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
@@ -529,10 +529,9 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   public static void createClientWithLocator(String host, int port0) {
     Properties props = new Properties();
     props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    CacheTestCase test = new FixedPRSinglehopDUnitTest(
-        "FixedPRSinglehopDUnitTest");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
@@ -554,10 +553,9 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   public static void createClient(int port0, int port1, int port2, int port3) {
     Properties props = new Properties();
     props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    CacheTestCase test = new FixedPRSinglehopDUnitTest(
-        "FixedPRSinglehopDUnitTest");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
@@ -630,6 +628,22 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
     region.put(q2dateJun1, "update99");
     region.put(q3dateSep1, "update1010");
     region.put(q4dateDec1, "update1111");
+    
+    region.put(q1dateJan1, "update000");
+    region.put(q1dateFeb1, "update444");
+    region.put(q1dateMar1, "update888");
+    region.put(q2dateApr1, "update111");
+    region.put(q2dateMay1, "update555");
+    region.put(q2dateJun1, "update999");
+    region.put(q1dateJan1, "update0000");
+    region.put(q3dateJuly1, "update222");
+    region.put(q3dateAug1, "update666");
+    region.put(q3dateSep1, "update101010");
+    region.put(q1dateJan1, "update00000");
+    region.put(q4dateOct1, "update333");              
+    region.put(q4dateNov1, "update777");          
+    region.put(q4dateDec1, "update111111");
+    region.put(q1dateJan1, "update000000");
     
   }
 

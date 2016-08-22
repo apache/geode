@@ -23,7 +23,7 @@ import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
 
 /**
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 public interface IndexStore {
 

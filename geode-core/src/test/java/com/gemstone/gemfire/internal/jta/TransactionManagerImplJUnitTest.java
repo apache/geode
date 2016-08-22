@@ -16,31 +16,19 @@
  */
 package com.gemstone.gemfire.internal.jta;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.*;
+import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
-
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.UserTransaction;
+import javax.transaction.*;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+import java.util.Properties;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * Test TransactionManagerImpl methods not tested by UserTransactionImplTest
@@ -57,7 +45,7 @@ public class TransactionManagerImplJUnitTest {
   @BeforeClass
   public static void beforeClass() throws Exception{
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
+    props.setProperty(MCAST_PORT, "0");
     ds = DistributedSystem.connect(props);
     tm = TransactionManagerImpl.getTransactionManager();
   }

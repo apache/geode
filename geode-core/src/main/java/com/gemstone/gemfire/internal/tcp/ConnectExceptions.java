@@ -29,7 +29,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  *
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class ConnectExceptions extends GemFireCheckedException {
 private static final long serialVersionUID = -4173688946448867706L;

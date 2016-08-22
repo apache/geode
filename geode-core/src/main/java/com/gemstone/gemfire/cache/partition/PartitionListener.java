@@ -78,7 +78,7 @@ import com.gemstone.gemfire.cache.Region;
  * 
  *      Note : Please contact support@gemstone.com before using these APIs
  * 
- * @since 6.5
+ * @since GemFire 6.5
  * 
  */
 public interface PartitionListener {
@@ -88,7 +88,7 @@ public interface PartitionListener {
    * 
    * @param bucketId
    *          id of the bucket which became primary
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void afterPrimary(int bucketId);
 
@@ -97,7 +97,7 @@ public interface PartitionListener {
    * 
    * @param region
    *          handle of the region which is created
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void afterRegionCreate(Region<?, ?> region);
 
@@ -110,7 +110,7 @@ public interface PartitionListener {
    *          id of the bucket removed
    * @param keys
    *          keys in the bucket removed
-   * @since 6.6.1
+   * @since GemFire 6.6.1
    */
   public void afterBucketRemoved(int bucketId, Iterable<?> keys);
 
@@ -125,7 +125,7 @@ public interface PartitionListener {
    *          id of the bucket created
    * @param keys
    *          keys in the bucket created
-   * @since 6.6.1
+   * @since GemFire 6.6.1
    */
   public void afterBucketCreated(int bucketId, Iterable<?> keys);
 }

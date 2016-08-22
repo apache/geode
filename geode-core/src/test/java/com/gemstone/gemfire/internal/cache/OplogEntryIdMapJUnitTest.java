@@ -16,8 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.cache.Oplog.OplogEntryIdMap;
@@ -25,16 +26,11 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Tests DiskStoreImpl.OplogEntryIdMap
- * 
- *  
  */
 @Category(UnitTest.class)
-public class OplogEntryIdMapJUnitTest extends TestCase
-{
-  public OplogEntryIdMapJUnitTest(String arg0) {
-    super(arg0);
-  }
+public class OplogEntryIdMapJUnitTest {
 
+  @Test
   public void testBasics() {
     OplogEntryIdMap m = new OplogEntryIdMap();
     for (long i=1; i <= 777777; i++) {

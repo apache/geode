@@ -16,7 +16,19 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.IOException;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
@@ -25,20 +37,18 @@ import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 import com.gemstone.gemfire.internal.cache.ColocationHelper;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallableIF;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 
-public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
-    WANTestBase {
+@Category(DistributedTest.class)
+public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
   
-  public ParallelWANPersistenceEnabledGatewaySenderDUnitTest(String name) {
-    super(name);
+  public ParallelWANPersistenceEnabledGatewaySenderDUnitTest() {
+    super();
   }
 
   @Override
@@ -47,6 +57,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
     IgnoredException.addIgnoredException("failed accepting client connection");
   }
   
+  @Test
   public void testPartitionedRegionWithGatewaySenderPersistenceEnabled() throws IOException {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -82,12 +93,13 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
    * Enable persistence for region as well as GatewaySender and see if remote
    * site receives all the events.
    */
+  @Test
   public void testPersistentPartitionedRegionWithGatewaySenderPersistenceEnabled() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -128,12 +140,13 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
   /**
    * Enable persistence for the GatewaySender but not the region
    */
+  @Test
   public void testPartitionedRegionWithPersistentGatewaySender() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
     
     LogWriterUtils.getLogWriter().info("Created remote receivers");
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -190,6 +203,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
    * Dispatcher should not start dispatching events recovered from persistent sender.
    * Check if the remote site receives all the events.
    */
+  @Test
   public void testPRWithGatewaySenderPersistenceEnabled_Restart() {
     //create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -198,7 +212,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     //create cache in local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -321,6 +335,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
    * Dispatcher should not start dispatching events recovered from persistent sender.
    * Check if the remote site receives all the events.
    */
+  @Test
   public void testPersistentPRWithGatewaySenderPersistenceEnabled_Restart() {
     //create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -329,7 +344,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     //create cache in local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -448,6 +463,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
    * Dispatcher should not start dispatching events recovered from persistent sender.
    * Check if the remote site receives all the events.
    */
+  @Test
   public void testPersistentPRWithGatewaySenderPersistenceEnabled_Restart2() {
     //create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -560,7 +576,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
       getTestMethodName(), null, 1, 100, isOffHeap() ));
     vm3.invoke(() -> WANTestBase.createPersistentPartitionedRegion(
       getTestMethodName(), null, 1, 100, isOffHeap() ));
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     vm4.invoke(pauseSenderRunnable());
     vm5.invoke(pauseSenderRunnable());
@@ -592,6 +608,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
    * --> At the same time, do some more puts on the local region.  
    * Check if the remote site receives all the events.
    */
+  @Test
   public void testPersistentPRWithGatewaySenderPersistenceEnabled_Restart_Scenario2() {
     //create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -600,7 +617,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -727,6 +744,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
    * Close the local site and rebuild the region and sender from disk store. 
    * Check if the remote site receives all the events.
    */
+  @Test
   public void testPersistentPRWithPersistentGatewaySender_Restart_Bug44275() {
     //create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -735,7 +753,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     //create cache in local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -855,6 +873,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
    * Close the local site and rebuild the region and sender from disk store. 
    * Check if the remote site receives all the events.
    */
+  @Test
   public void testPersistentPRWithPersistentGatewaySender_Restart_DoOps() {
     //create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -863,7 +882,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -980,6 +999,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
     getTestMethodName(), 10000 ));
   }
   
+  @Test
   public void testPersistentPR_Restart() {
     // create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -1065,7 +1085,9 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
    * NOTE: This use case is not supported yet. 
    * For ParallelGatewaySender to start, it must be associated with a partitioned region. 
    */
-  public void NotSupported_testPersistentPartitionedRegionWithGatewaySenderPersistenceEnabled_Restart2() {
+  @Ignore("NotSupported")
+  @Test
+  public void testPersistentPartitionedRegionWithGatewaySenderPersistenceEnabled_Restart2() {
     //create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     //create locator on remote site
@@ -1073,7 +1095,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     //create cache in local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -1173,7 +1195,9 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
    * NOTE: This use case is not supported for now. For persistent parallel gateway sender,
    * the PR to which it is attached should also be persistent.
    */
-  public void NotSupported_testNonPersistentPartitionedRegionWithGatewaySenderPersistenceEnabled_Restart() {
+  @Ignore("NotSupported")
+  @Test
+  public void testNonPersistentPartitionedRegionWithGatewaySenderPersistenceEnabled_Restart() {
     //create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     //create locator on remote site
@@ -1181,7 +1205,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     //create cache in local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -1285,7 +1309,9 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
    * At present, customer is using this configuration and which is not recommended 
    * since it can lead to event loss of GatewaySender events.
    */
-  public void Bug50247_testPersistentPartitionedRegionWithGatewaySender_Restart() {
+  @Ignore("Bug50247")
+  @Test
+  public void testPersistentPartitionedRegionWithGatewaySender_Restart() {
     //create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     //create locator on remote site
@@ -1293,7 +1319,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     //create cache in local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -1423,6 +1449,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
    * hence Parallel sender PR is not required to be persistent.
    * This test is added for defect # 45747. 
    */
+  @Test
   public void testParallelPropagationWithSenderPerisistenceEnabledForAccessor() {
     //create locator on local site
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -1431,7 +1458,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
 
     //create receiver on remote site
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     //create cache in local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -1476,6 +1503,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
    * sender files and not recoverying the sender when we have a persistent PR.
    * @throws Throwable 
    */
+  @Test
   public void testRemoveGatewayFromPersistentRegionOnRestart() throws Throwable {
     
 
@@ -1484,7 +1512,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends
       Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
       createCacheInVMs(nyPort, vm2, vm3);
-      createReceiverInVMs(nyPort, vm2, vm3);
+      createReceiverInVMs(vm2, vm3);
 
       createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 

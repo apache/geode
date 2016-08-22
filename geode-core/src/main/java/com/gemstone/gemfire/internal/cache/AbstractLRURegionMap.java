@@ -50,7 +50,7 @@ import com.gemstone.gemfire.internal.size.ReflectionSingleObjectSizer;
 /**
  * Abstract implementation of {@link RegionMap} that adds LRU behaviour.
  *
- * @since 3.5.1
+ * @since GemFire 3.5.1
  *
  *
  */
@@ -171,12 +171,16 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
    * @param cd the CachedDeserializable whose form has changed
    * @param v the new form of the CachedDeserializable's value.
    * @return true if finishExpandValue needs to be called
-   * @since 6.1.2.9
+   * @since GemFire 6.1.2.9
    */
   public boolean beginChangeValueForm(LRUEntry le, CachedDeserializable cd, Object v) {
     // make sure this cached deserializable is still in the entry
     // @todo what if a clear is done and this entry is no longer in the region?
     {
+      if (_getCCHelper().getEvictionAlgorithm().isLRUEntry()) {
+        // no need to worry about the value changing form with entry LRU.
+        return false;
+      }
       Object curVal = le._getValue(); // OFFHEAP: _getValue ok
       if (curVal != cd) {
         if (cd instanceof StoredObject) {
@@ -193,17 +197,14 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
     int delta = le.updateEntrySize(_getCCHelper(), new CDValueWrapper(v));
     if (delta != 0) {
       result = true;
-      boolean needToDisableCallbacks = !getCallbackDisabled();
-      if (needToDisableCallbacks) {
-        setCallbackDisabled(true);
-      }
+      boolean disabledLURCallbacks = disableLruUpdateCallback();
       // by making sure that callbacks are disabled when we call
       // setDelta; it ensures that the setDelta will just inc the delta
       // value and not call lruUpdateCallback which we call in
       // finishChangeValueForm
       setDelta(delta);
-      if (needToDisableCallbacks) {
-        setCallbackDisabled(false);
+      if (disabledLURCallbacks) {
+        enableLruUpdateCallback();
       }
     }
     // fix for bug 42090
@@ -216,7 +217,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   }
 
   /**
-   * @since 6.1.2.9
+   * @since GemFire 6.1.2.9
    */
   public void finishChangeValueForm() {
     lruUpdateCallback();
@@ -625,7 +626,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   /**
    * Update counter related to limit in list
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   // TODO this method acts as LRUupdateCallbacks
   // do we need to put it here are insert one level up

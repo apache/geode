@@ -53,6 +53,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 /**
  * This is the base command which read the parts for the
@@ -60,7 +61,7 @@ import com.gemstone.gemfire.internal.security.AuthorizeRequest;
  * If the hasResult byte is 1, then this command send back the result after the
  * execution to the client else do not send the reply back to the client
  * 
- * @since 5.8Beta
+ * @since GemFire 5.8Beta
  */
 public class ExecuteFunction extends BaseCommand {
 
@@ -110,7 +111,7 @@ public class ExecuteFunction extends BaseCommand {
       sendError(hasResult, msg, message, servConn);
       return;
     }
-    else {
+
       // Execute function on the cache
       try {
         Function functionObject = null;
@@ -128,6 +129,9 @@ public class ExecuteFunction extends BaseCommand {
         else {
           functionObject = (Function)function;
         }
+
+        GeodeSecurityUtil.authorizeDataWrite();
+
         FunctionStats stats = FunctionStats.getFunctionStats(functionObject.getId(), null);
         
         // check if the caller is authorized to do this operation on server
@@ -217,7 +221,6 @@ public class ExecuteFunction extends BaseCommand {
         final String message = e.getMessage();
         sendException(hasResult, msg, message, servConn,e);
       }
-    }
   }
 
   private void sendException(byte hasResult, Message msg, String message,

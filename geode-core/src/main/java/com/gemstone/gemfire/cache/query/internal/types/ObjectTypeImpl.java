@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.Version;
 
 /**
  * Implementation of ObjectType
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class ObjectTypeImpl implements ObjectType, DataSerializableFixedID {
   private static final long serialVersionUID = 3327357282163564784L;

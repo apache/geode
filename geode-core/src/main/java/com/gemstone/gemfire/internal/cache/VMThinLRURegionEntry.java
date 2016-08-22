@@ -23,7 +23,7 @@ package com.gemstone.gemfire.internal.cache;
  * Thin -> no extra statistics
  * LRU -> entries maintain LRU information
  *
- * @since 3.5.1
+ * @since GemFire 3.5.1
  *
  *
  */

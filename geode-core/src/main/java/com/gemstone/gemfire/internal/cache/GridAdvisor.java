@@ -249,7 +249,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
     private String host;
 
     /**
-     * SQLFabric uses a negative port value when creating a fake profile meant
+     * a negative port value is used when creating a fake profile meant
      * to only gather information about all available locators.
      */
     private int port;
@@ -297,7 +297,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
      * Tell local controllers about the received profile. Also if exchange
      * profiles then add each local controller to reply.
      * 
-     * @since 5.7
+     * @since GemFire 5.7
      */
     protected final void tellLocalControllers(boolean removeProfile,
         boolean exchangeProfiles, final List<Profile> replyProfiles) {
@@ -308,7 +308,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
         if(advisee != null && advisee.getProfile().equals(this)) {
           continue;
         }
-        // negative value for port used by SQLFabric to indicate fake profile
+        // negative value for port indicates fake profile
         // meant to only gather remote profiles during profile exchange
         if (this.port > 0) {
           handleDistributionAdvisee(advisee, removeProfile, exchangeProfiles,
@@ -318,18 +318,13 @@ public abstract class GridAdvisor extends DistributionAdvisor {
           replyProfiles.add(advisee.getProfile());
         }
       }
-      final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-      if (cache != null && !cache.isClosed()) {
-        handleDistributionAdvisee(cache.getSqlfAdvisee(), removeProfile, false,
-            replyProfiles);
-      }
     }
 
     /**
      * Tell local bridge servers about the received profile. Also if exchange
      * profiles then add each local bridge server to reply.
      * 
-     * @since 5.7
+     * @since GemFire 5.7
      */
     protected final void tellLocalBridgeServers(boolean removeProfile,
         boolean exchangeProfiles, final List<Profile> replyProfiles) {
@@ -342,7 +337,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
             if(bsi.getProfile().equals(this)) {
               continue;
             }
-            // negative value for port used by SQLFabric to indicate fake
+            // negative value for port indicates fake
             // profile meant to only gather remote profiles during profile
             // exchange
             if (this.port > 0) {

@@ -21,8 +21,6 @@ import java.util.concurrent.Callable;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,7 +41,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @see org.springframework.web.bind.annotation.RequestMethod
  * @see org.springframework.web.bind.annotation.RequestParam
  * @see org.springframework.web.bind.annotation.ResponseBody
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Controller("miscellaneousController")
 @RequestMapping(AbstractCommandsController.REST_API_VERSION)
@@ -87,11 +85,7 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
       command.addOption(CliStrings.EXPORT_LOGS__ENDTIME, endTime);
     }
 
-    return new Callable<ResponseEntity<String>>() {
-      @Override public ResponseEntity<String> call() throws Exception {
-        return new ResponseEntity<String>(processCommand(command.toString()), HttpStatus.OK);
-      }
-    };
+    return getProcessCommandCallable(command.toString());
   }
 
   // TODO determine whether Async functionality is required
@@ -214,9 +208,11 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
 
   @RequestMapping(method = RequestMethod.POST, value = "/shutdown")
   @ResponseBody
-  public String shutdown(@RequestParam(value = CliStrings.SHUTDOWN__TIMEOUT, defaultValue = "-1") final Integer timeout) {
+  public String shutdown(@RequestParam(value = CliStrings.SHUTDOWN__TIMEOUT, defaultValue = "-1") final Integer timeout,
+                         @RequestParam(value = CliStrings.INCLUDE_LOCATORS, defaultValue = "false") final boolean includeLocators) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.SHUTDOWN);
     command.addOption(CliStrings.SHUTDOWN__TIMEOUT, String.valueOf(timeout));
+    command.addOption(CliStrings.INCLUDE_LOCATORS, String.valueOf(includeLocators));
     return processCommand(command.toString());
   }
 

@@ -16,29 +16,21 @@
  */
 package com.gemstone.gemfire.internal;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import junit.framework.TestCase;
-
-import com.gemstone.gemfire.internal.UniqueIdGenerator;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Tests UniqueIdGenerator.
- * @since 5.0.2 (cbb5x_PerfScale)
+ * @since GemFire 5.0.2 (cbb5x_PerfScale)
  */
 @Category(UnitTest.class)
-public class UniqueIdGeneratorJUnitTest extends TestCase {
+public class UniqueIdGeneratorJUnitTest {
   
-  public UniqueIdGeneratorJUnitTest() {
-  }
-  
-  public void setup() {
-  }
-  
-  public void tearDown() {
-  }
-  
+  @Test
   public void testBasics() throws Exception {
     UniqueIdGenerator uig = new UniqueIdGenerator(1);
     assertEquals(0, uig.obtain());

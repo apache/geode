@@ -16,33 +16,23 @@
  */
 package com.gemstone.gemfire.memcached;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
+import net.spy.memcached.MemcachedClient;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import net.spy.memcached.MemcachedClient;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-import junit.framework.TestCase;
-
-/**
- * 
- */
 @Category(IntegrationTest.class)
 public class IntegrationJUnitTest {
 
@@ -50,8 +40,8 @@ public class IntegrationJUnitTest {
   public void testGemFireProperty() throws Exception {
     Properties props = new Properties();
     final int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    props.setProperty("memcached-port", port+"");
-    props.setProperty("mcast-port", "0");
+    props.setProperty(MEMCACHED_PORT, port + "");
+    props.setProperty(MCAST_PORT, "0");
     CacheFactory cf = new CacheFactory(props);
     Cache cache = cf.create();
     
@@ -72,9 +62,9 @@ public class IntegrationJUnitTest {
   public void testMemcachedBindAddress() throws Exception {
     Properties props = new Properties();
     final int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    props.setProperty("memcached-port", port+"");
-    props.setProperty("memcached-bind-address", "127.0.0.1");
-    props.put(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.setProperty(MEMCACHED_PORT, port + "");
+    props.setProperty(MEMCACHED_BIND_ADDRESS, "127.0.0.1");
+    props.put(MCAST_PORT, "0");
     CacheFactory cf = new CacheFactory(props);
     Cache cache = cf.create();
 

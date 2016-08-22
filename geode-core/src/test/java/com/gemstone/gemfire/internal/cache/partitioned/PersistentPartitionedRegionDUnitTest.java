@@ -16,9 +16,13 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.jayway.awaitility.Awaitility.*;
+import static java.util.concurrent.TimeUnit.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static com.jayway.awaitility.Awaitility.await;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
@@ -32,6 +36,8 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -77,37 +83,40 @@ import com.gemstone.gemfire.internal.cache.partitioned.ManageBucketMessage.Manag
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.RMIException;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests the basic use cases for PR persistence.
- *
  */
+@Category(DistributedTest.class)
 public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedRegionTestBase {
+
   private static final int NUM_BUCKETS = 15;
   //This must be bigger than the dunit ack-wait-threshold for the revoke
   //tests. The command line is setting the ack-wait-threshold to be 
   //60 seconds.
   private static final int MAX_WAIT = 65 * 1000;
   
-  public PersistentPartitionedRegionDUnitTest(String name) {
-    super(name);
+  public PersistentPartitionedRegionDUnitTest() {
+    super();
   }
   
   /**
    * A simple test case that we are actually
    * persisting with a PR.
    */
+  @Test
   public void testSinglePR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -142,6 +151,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * Test total-buckets-num getting bigger, which cause exception.
    * but changed to smaller should be ok.
    */
+  @Test
   public void testChangedToalBucketNumberSinglePR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -176,6 +186,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
   /**
    * Test for bug 44184
    */
+  @Test
   public void testSinglePRWithCustomExpiry() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(1);
@@ -223,6 +234,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * 0
    * @throws Throwable 
    */
+  @Test
   public void testTotalRecoverRedundancy0() throws Throwable {
     totalRecoverTest(0);
   }
@@ -233,6 +245,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * 1
    * @throws Throwable 
    */
+  @Test
   public void testTotalRecoverRedundancy1() throws Throwable {
     totalRecoverTest(1);
   }
@@ -244,7 +257,8 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * async writer thread.
    */
   @Ignore("Bug 50376")
-  public void DISABLED_testBadSerializationInAsyncThread() throws Throwable {
+  @Test
+  public void testBadSerializationInAsyncThread() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -388,6 +402,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     checkData(vm0, 0, numBuckets, null);
   }
   
+  @Test
   public void testRevokeAfterStartup() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -441,7 +456,9 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     }
     ex.remove();
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-974: async actions, time sensitive, 65 second timeouts
+  @Test
   public void testRevokeBeforeStartup() throws Throwable {
     IgnoredException.addIgnoredException("RevokeFailedException");
     Host host = Host.getHost(0);
@@ -525,6 +542,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * Test that we wait for missing data to come back
    * if the redundancy was 0.
    */
+  @Test
   public void testMissingMemberRedundancy0() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -714,6 +732,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
   /**Test to make sure that we recreate
   * a bucket if a member is destroyed
   */
+  @Test
   public void testDestroyedMemberRedundancy0() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -754,7 +773,8 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
   /**Test to make sure that we recreate
    * a bucket if a member is destroyed
    */
-   public void testDestroyedMemberRedundancy1() {
+  @Test
+  public void testDestroyedMemberRedundancy1() {
      Host host = Host.getHost(0);
      VM vm0 = host.getVM(0);
      VM vm1 = host.getVM(1);
@@ -788,7 +808,8 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    /**Test to make sure that we recreate
     * a bucket if a member is revoked
     */
-    public void testRevokedMemberRedundancy0() {
+  @Test
+  public void testRevokedMemberRedundancy0() {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
@@ -860,7 +881,8 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
      * a bucket if a member is revoked
      * @throws Throwable 
      */
-    public void testRevokedMemberRedundancy1() throws Throwable {
+  @Test
+  public void testRevokedMemberRedundancy1() throws Throwable {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
@@ -936,7 +958,8 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
      * is set to 0.
      * @throws Throwable 
      */
-    public void testRevokedMemberRedundancy1ImmediateRecovery() throws Throwable {
+  @Test
+  public void testRevokedMemberRedundancy1ImmediateRecovery() throws Throwable {
       disconnectAllFromDS(); // I see this test failing because it finds the ds disconnected. Trying this as a fix.
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
@@ -1010,7 +1033,8 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
      *   we replace buckets where are offline on A by creating them on C
      *   We then shutdown C and restart A, which recovers those buckets
      */
-    public void testBug41340() throws Throwable {
+  @Test
+  public void testBug41340() throws Throwable {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
@@ -1070,10 +1094,13 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     
     
   
-  /** Test the with redundancy
+  /**
+   * Test the with redundancy
    * 1, we restore the same buckets when the
    * missing member comes back online.
    */
+  @Category(FlakyTest.class) // GEODE-1047: thread unsafe test hook, CountDownLatch, async behavior
+  @Test
   public void testMissingMemberRedundancy1() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -1123,6 +1150,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * member ID as offline, preventing redundancy
    * recovery in the future.
    */
+  @Test
   public void testBug41341() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -1200,7 +1228,9 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * if we restored redundancy while 
    * that bucket was offline.
    */
-  public void z_testThrowAwayUneededBucket() {
+  @Ignore
+  @Test
+  public void testThrowAwayUneededBucket() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -1247,6 +1277,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     checkData(vm0, 0, NUM_BUCKETS, "a");
   }
   
+  @Test
   public void testMoveBucket() throws Throwable {
     int redundancy = 0;
     Host host = Host.getHost(0);
@@ -1297,6 +1328,8 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     checkData(vm0, 226, 227, "a");
   }
   
+  @Category(FlakyTest.class) // GEODE-1582: race in async region creation causing GII when not expected
+  @Test
   public void testCleanStop() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -1340,6 +1373,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
   
   
   
+  @Test
   public void testRegisterInterestNoDataStores() {
     //Closing the client may log a warning on the server
     IgnoredException.addIgnoredException("Connection reset");
@@ -1380,8 +1414,8 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
       
       public void run () {
         Properties props = new Properties();
-        props.setProperty("mcast-port", "0");
-        props.setProperty("locators", "");
+        props.setProperty(MCAST_PORT, "0");
+        props.setProperty(LOCATORS, "");
         getSystem(props );
         try {
           Cache cache = getCache();
@@ -1414,6 +1448,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * sure that we don't get a suspect string
    * with an exception during cache closure.
    */
+  @Test
   public void testOverflowCacheClose() {
     Cache cache = getCache();
     RegionFactory rf = new RegionFactory();
@@ -1432,6 +1467,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
   /**
    * Test for bug 41336
    */
+  @Test
   public void testCrashDuringBucketCreation() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -1447,7 +1483,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
               DistributionMessage msg) {
             if(msg instanceof ManageBucketReplyMessage) {
               Cache cache = getCache();
-              DistributedTestCase.disconnectFromDS();
+              disconnectFromDS();
               
               await().atMost(30, SECONDS).until(() -> {return (cache == null || cache.isClosed());});
               LogWriterUtils.getLogWriter().info("Cache is confirmed closed");
@@ -1493,6 +1529,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     assertEquals(Collections.emptySet(), getBucketList(vm0));
   }
   
+  @Test
   public void testNestedPRRegions() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -1550,6 +1587,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     checkData(vm2, numBuckets, 113, "d", "parent2/"+PR_REGION_NAME);
   }
   
+  @Test
   public void testCloseDuringRegionOperation() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -1627,8 +1665,10 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * 4. Member B destroys the bucket and throws a partition offline exception, because it wasn't able to complete initialization.
    * 5. Member A recovers, and gets stuck waiting for member B.
    * @throws Throwable 
-  */
-  public void testBug42226() throws Throwable {
+   */
+  @Category(FlakyTest.class) // GEODE-1208: time sensitive, multiple non-thread-safe test hooks, async actions
+  @Test
+  public void testBug42226() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -1710,6 +1750,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * 
    * @throws Throwable
    */
+  @Test
   public void testAllowRegionUseBeforeRedundancyRecovery() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -1826,6 +1867,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * crashes before the GII is complete, we need
    * to make sure that later we can recover redundancy.
    */
+  @Test
   public void testCrashDuringBucketGII() {
     IgnoredException.addIgnoredException("PartitionOfflineException");
     Host host = Host.getHost(0);
@@ -1880,6 +1922,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * discovers that the GII target is no longer hosting the bucket.
    * @throws InterruptedException 
    */
+  @Test
   public void testCrashDuringBucketGII2() throws InterruptedException {
     IgnoredException.addIgnoredException("PartitionOfflineException");
     Host host = Host.getHost(0);
@@ -1943,6 +1986,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     assertEquals(Collections.singleton(0), getBucketList(vm1));
   }
   
+  @Test
   public void testCleanupAfterConflict() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -2005,6 +2049,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * Test to make sure that primaries are rebalanced after recovering from
    * disk.
    */
+  @Test
   public void testPrimaryBalanceAfterRecovery() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -2061,6 +2106,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     assertThat(vm0Primaries.size()).isBetween(9, 11);
   }
 
+  @Test
   public void testConcurrencyChecksEnabled() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -2104,6 +2150,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     vm3.invoke(verifyConcurrenyChecks);
   }
 
+  @Test
   public void testNonPersistentProxy() {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);
@@ -2141,6 +2188,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     vm3.invoke(verifyConcurrencyChecks);
   }
   
+  @Test
   public void testReplicateAfterPersistent() {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);

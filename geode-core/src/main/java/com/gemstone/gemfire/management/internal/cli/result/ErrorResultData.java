@@ -23,7 +23,7 @@ import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
 /**
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class ErrorResultData extends InfoResultData {
   private static final String ERROR_CODE = "errorCode";
@@ -37,8 +37,12 @@ public class ErrorResultData extends InfoResultData {
     super(gfJsonObject);
   }
   
-  public int getErrorCode(int errorCode) {
-    return (Integer) contentObject.get(ERROR_CODE);
+  public int getErrorCode() {
+    Integer code = (Integer) contentObject.get(ERROR_CODE);
+    if(code==null){
+      return ResultBuilder.ERRORCODE_DEFAULT;
+    }
+    return code;
   }
   
   /**
@@ -57,7 +61,7 @@ public class ErrorResultData extends InfoResultData {
     
     return this;
   }
-  
+
   /**
    * 
    * @param headerText

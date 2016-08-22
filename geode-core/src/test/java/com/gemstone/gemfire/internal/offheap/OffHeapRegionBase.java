@@ -16,19 +16,6 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
-import org.junit.Test;
-
 import com.gemstone.gemfire.OutOfOffHeapMemoryException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.EntryEvent;
@@ -37,11 +24,8 @@ import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.compression.SnappyCompressor;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.OffHeapRegionEntry;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
@@ -49,6 +33,16 @@ import com.gemstone.gemfire.pdx.PdxReader;
 import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxWriter;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import org.junit.Test;
+
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * Basic test of regions that use off heap storage.
@@ -68,9 +62,9 @@ public abstract class OffHeapRegionBase {
   private GemFireCacheImpl createCache(boolean isPersistent) {
     configureOffHeapStorage();
     Properties props = new Properties();
-    props.setProperty("locators", "");
-    props.setProperty("mcast-port", "0");
-    props.setProperty("off-heap-memory-size", getOffHeapMemorySize());
+    props.setProperty(LOCATORS, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(ConfigurationProperties.OFF_HEAP_MEMORY_SIZE, getOffHeapMemorySize());
     GemFireCacheImpl result = (GemFireCacheImpl) new CacheFactory(props).setPdxPersistent(isPersistent).create();
     unconfigureOffHeapStorage();
     return result;

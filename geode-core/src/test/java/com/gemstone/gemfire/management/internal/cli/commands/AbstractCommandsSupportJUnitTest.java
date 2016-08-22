@@ -23,6 +23,14 @@ import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Set;
 
+import org.jmock.Expectations;
+import org.jmock.Mockery;
+import org.jmock.lib.legacy.ClassImposteriser;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
@@ -35,14 +43,6 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.util.MemberNotFoundException;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 /**
  * The AbstractCommandsSupportJUnitTest class is a test suite of test cases testing the contract and functionality
  * of the AbstractCommandsSupport class for implementing GemFire shell (Gfsh) commands.
@@ -53,7 +53,7 @@ import org.junit.experimental.categories.Category;
  * @see org.jmock.lib.legacy.ClassImposteriser
  * @see org.junit.Assert
  * @see org.junit.Test
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(UnitTest.class)
 public class AbstractCommandsSupportJUnitTest {
@@ -72,11 +72,11 @@ public class AbstractCommandsSupportJUnitTest {
     mockContext = null;
   }
 
-  protected AbstractCommandsSupport createAbstractCommandsSupport(final Cache cache) {
+  private AbstractCommandsSupport createAbstractCommandsSupport(final Cache cache) {
     return new TestCommands(cache);
   }
 
-  protected DistributedMember createMockMember(final String memberId, final String memberName) {
+  private DistributedMember createMockMember(final String memberId, final String memberName) {
     final DistributedMember mockMember = mockContext.mock(DistributedMember.class, "DistributedMember " + memberId);
 
     mockContext.checking(new Expectations() {{
@@ -385,7 +385,7 @@ public class AbstractCommandsSupportJUnitTest {
     assertEquals(writer.toString(), AbstractCommandsSupport.toString(t, true));
   }
 
-  protected static class TestCommands extends AbstractCommandsSupport {
+  private static class TestCommands extends AbstractCommandsSupport {
 
     private final Cache cache;
 

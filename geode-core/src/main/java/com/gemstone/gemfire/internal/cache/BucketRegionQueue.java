@@ -53,6 +53,7 @@ import com.gemstone.gemfire.internal.concurrent.Atomics;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 
 /**
  * 
@@ -268,10 +269,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         requireOldValue, lastModified, overwriteDestroyed);
 
     if (success) {
-      Object ov = event.getRawOldValue();
-      if (ov instanceof GatewaySenderEventImpl) {
-        ((GatewaySenderEventImpl) ov).release();
-      }
+      GatewaySenderEventImpl.release(event.getRawOldValue());
 
       if (getPartitionedRegion().getColocatedWith() == null) {
         return success;
@@ -369,10 +367,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
     super.basicDestroy(event, cacheWrite, expectedOldValue);
 
-    Object rov = event.getRawOldValue();
-    if (rov instanceof GatewaySenderEventImpl) {
-      ((GatewaySenderEventImpl) rov).release();
-    }
+    GatewaySenderEventImpl.release(event.getRawOldValue());
     // Primary buckets should already remove the key while peeking
     if (!this.getBucketAdvisor().isPrimary()) {
       if (logger.isDebugEnabled()) {
@@ -440,7 +435,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
   }
 
-  protected void addToEventQueue(Object key, boolean didPut, EntryEventImpl event, int sizeOfHDFSEvent) {
+  protected void addToEventQueue(Object key, boolean didPut, EntryEventImpl event) {
     if (didPut) {
       if (this.initialized) {
         this.eventSeqNumQueue.add(key);
@@ -478,7 +473,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   public Object take() throws InterruptedException, ForceReattemptException {
     throw new UnsupportedOperationException();
     // Currently has no callers.
-    // To support this callers need to call freeOffHeapResources on the returned GatewaySenderEventImpl.
+    // To support this callers need to call release on the returned GatewaySenderEventImpl.
 //     Object key = this.eventSeqNumQueue.remove();
 //     Object object = null;
 //     if (key != null) {
@@ -491,7 +486,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 //        */
 //       destroyKey(key);
 //     }
-//     return object; // TODO OFFHEAP: see what callers do with the returned GatewaySenderEventImpl. We need to inc its refcount before we do the destroyKey.
+//     return object;
   }
   
   /**
@@ -504,10 +499,10 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     if (logger.isDebugEnabled()) {
       logger.debug(" destroying primary key {}", key);
     }
-	EntryEventImpl event = getPartitionedRegion().newDestroyEntryEvent(key,
+	@Released EntryEventImpl event = getPartitionedRegion().newDestroyEntryEvent(key,
 	  null);
-	event.setEventId(new EventID(cache.getSystem()));
 	try {
+	  event.setEventId(new EventID(cache.getSystem()));
 	  event.setRegion(this);
 	  basicDestroy(event, true, null);
 	  checkReadiness();
@@ -531,8 +526,6 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
             + key, rde);
       }
     } finally {
-	  //merge42180: are we considering offheap in cedar. Comment freeOffHeapReference intentionally
-	  //event.freeOffHeapReferences();
       event.release();
     }
     

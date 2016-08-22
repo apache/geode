@@ -16,7 +16,13 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
@@ -24,26 +30,21 @@ import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the functionality of a cache {@link Region region}
  * that has a scope of {@link Scope#DISTRIBUTED_ACK distributed ACK}.
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
+@Category(DistributedTest.class)
 public class DistributedAckRegionDUnitTest extends MultiVMRegionTestCase {
-
-
-  
-  public DistributedAckRegionDUnitTest(String name) {
-    super(name);
-  }
 
   /**
    * Returns region attributes for a <code>GLOBAL</code> region
@@ -59,12 +60,10 @@ public class DistributedAckRegionDUnitTest extends MultiVMRegionTestCase {
 
   public Properties getDistributedSystemProperties() {
     Properties p = new Properties();
-    p.put(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-    p.put(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+    p.put(STATISTIC_SAMPLING_ENABLED, "true");
+    p.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     return p;
   }
-
-  //////////////////////  Test Methods  //////////////////////
 
   /**
    * Tests the compatibility of creating certain kinds of subregions
@@ -72,6 +71,7 @@ public class DistributedAckRegionDUnitTest extends MultiVMRegionTestCase {
    *
    * @see Region#createSubregion
    */
+  @Test
   public void testIncompatibleSubregions()
     throws CacheException, InterruptedException {
 
@@ -132,7 +132,4 @@ public class DistributedAckRegionDUnitTest extends MultiVMRegionTestCase {
         }
       });
   } 
-  
-
-  
 }

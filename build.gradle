@@ -29,6 +29,10 @@ buildscript {
 
 apply plugin: 'wrapper'
 
+wrapper {
+  gradleVersion = minimumGradleVersion
+}
+
 // Load all properties in dependency-version.properties as project properties, so all projects can read them
 Properties dependencyVersions = new Properties()
 dependencyVersions.load(new FileInputStream("${project.projectDir}/gradle/dependency-versions.properties"))

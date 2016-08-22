@@ -16,10 +16,17 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheEvent;
@@ -32,7 +39,6 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionEvent;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.SubscriptionAttributes;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.CachePerfStats;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.test.dunit.Host;
@@ -40,28 +46,24 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Test to make sure message queuing works.
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
+@Category(DistributedTest.class)
 public class QueueMsgDUnitTest extends ReliabilityTestCase {
-
-  public QueueMsgDUnitTest(String name) {
-    super(name);
-  }
 
   /**
    * Make sure that cache operations are queued when a required role is missing
    */
-  public void disabled_testQueueWhenRoleMissing() throws Exception {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testQueueWhenRoleMissing() throws Exception {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-//     factory.setMembershipAttributes(
-//       new MembershipAttributes(new String[]{"missing"},
-//                                 LossAction.FULL_ACCESS_WITH_QUEUING,
-//                                 ResumptionAction.NONE));
     DistributedRegion r = (DistributedRegion)createRootRegion(factory.create());
     final CachePerfStats stats = r.getCachePerfStats();
     int queuedOps = stats.getReliableQueuedOps();
@@ -93,7 +95,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
     vm.invoke(new SerializableRunnable() {
         public void run() {
           Properties config = new Properties();
-          config.setProperty(DistributionConfig.ROLES_NAME, "missing");
+          config.setProperty(ROLES, "missing");
           getSystem(config);
         }
       });
@@ -135,7 +137,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
         public void run2() throws CacheException {
           Region r = getRootRegion();
           assertEquals(null, r.getEntry("createKey"));
-          //assertEquals("putValue", r.getEntry("createKey").getValue());
+          //assertIndexDetailsEquals("putValue", r.getEntry("createKey").getValue());
           {
             int evIdx = 0;
             TestCacheListener cl = (TestCacheListener)r.getAttributes().getCacheListener();
@@ -220,20 +222,18 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
   /**
    * Make sure a queued region does not allow non-queued subscribers
    */
-  public void disabled_testIllegalConfigQueueExists() throws Exception {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testIllegalConfigQueueExists() throws Exception {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-//     factory.setMembershipAttributes(
-//       new MembershipAttributes(new String[]{"pubFirst"},
-//                                 LossAction.FULL_ACCESS_WITH_QUEUING,
-//                                 ResumptionAction.NONE));
     createRootRegion(factory.create());
 
     VM vm = Host.getHost(0).getVM(0);
     vm.invoke(new SerializableRunnable() {
         public void run() {
           Properties config = new Properties();
-          config.setProperty(DistributionConfig.ROLES_NAME, "pubFirst");
+          config.setProperty(ROLES, "pubFirst");
           getSystem(config);
         }
       });
@@ -260,18 +260,21 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
         }
       });
   }
+
   /**
    * Make sure a subscriber that does not allow queued messages causes a
    * queued publisher to fail creation
    */
-  public void disable_testIllegalConfigSubscriberExists() throws Exception {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testIllegalConfigSubscriberExists() throws Exception {
     final String expectedExceptions = "does not allow queued messages";
 
     VM vm = Host.getHost(0).getVM(0);
     vm.invoke(new SerializableRunnable() {
         public void run() {
           Properties config = new Properties();
-          config.setProperty(DistributionConfig.ROLES_NAME, "subFirst");
+          config.setProperty(ROLES, "subFirst");
           getSystem(config);
         }
       });
@@ -290,11 +293,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
 
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-//     factory.setMembershipAttributes(
-//       new MembershipAttributes(new String[]{"subFirst"},
-//                                 LossAction.FULL_ACCESS_WITH_QUEUING,
-//                                 ResumptionAction.NONE));
-    getCache().getLogger().info("<ExpectedException action=add>" + 
+    getCache().getLogger().info("<ExpectedException action=add>" +
                                 expectedExceptions + "</ExpectedException>");
     try {
       createRootRegion(factory.create());
@@ -304,8 +303,5 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
       getCache().getLogger().info("<ExpectedException action=remove>" + 
                                   expectedExceptions + "</ExpectedException>");
     }
-  }
-  public void testEmpty() {
-    // just to dunit happy
   }
 }

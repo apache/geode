@@ -29,7 +29,7 @@ import com.gemstone.gemfire.cache.Operation;
  * event. 
  * The CqEvent is not an extension of CacheEvent. 
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public interface CqEvent {
   
@@ -85,7 +85,7 @@ public interface CqEvent {
    * If there is no delta, returns null. New value may still be available.
    * 
    * @return byte[] delta value.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public byte[] getDeltaValue();
 }

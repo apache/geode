@@ -16,28 +16,6 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
-import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.Vector;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -53,13 +31,19 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 
+import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.*;
+
 /**
  * A <code>LonerDistributionManager</code> is a dm that never communicates
  * with anyone else.
  *
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public class LonerDistributionManager implements DM {
   private final InternalDistributedSystem system;
@@ -911,7 +895,7 @@ public class LonerDistributionManager implements DM {
 
   /* (non-Javadoc)
    * @see com.gemstone.gemfire.distributed.internal.DM#getMembersOnThisHost()
-   * @since gemfire59poc
+   * @since GemFire 5.9
    */
   public Set<InternalDistributedMember> getMembersInThisZone() {
     return this.allIds;

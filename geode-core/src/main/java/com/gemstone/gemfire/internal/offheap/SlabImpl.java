@@ -19,14 +19,23 @@ package com.gemstone.gemfire.internal.offheap;
 /**
  * Implements the Slab interface using AddressableMemoryManager.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 public class SlabImpl implements Slab {
   private final long address;
   private final int size;
   
   public SlabImpl(int size) {
-    this(AddressableMemoryManager.allocate(size), size);
+    this(size, false);
+  }
+
+  /**
+   * This constructor is used by unit test to add padding
+   * to prevent intermittent combining of fragments during
+   * defragmentation.
+   */
+  public SlabImpl(int size, boolean withPadding) {
+    this(AddressableMemoryManager.allocate(size + (withPadding ? 4 : 0)), size);
   }
 
   public SlabImpl(long addr, int size) {

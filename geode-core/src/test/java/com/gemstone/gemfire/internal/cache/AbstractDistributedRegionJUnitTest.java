@@ -16,10 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
@@ -34,9 +33,8 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.test.fake.Fakes;
 
-import junit.framework.TestCase;
+public abstract class AbstractDistributedRegionJUnitTest {
 
-public abstract class AbstractDistributedRegionJUnitTest extends TestCase {
   protected static final Logger logger = LogService.getLogger();
   
   private RegionAttributes createRegionAttributes(

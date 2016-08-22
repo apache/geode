@@ -19,7 +19,7 @@ package com.gemstone.gemfire.internal.offheap;
 /**
  * Defines callback for notification when off-heap memory usage changes.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 public interface MemoryUsageListener {
   public void updateMemoryUsed(long bytesUsed);

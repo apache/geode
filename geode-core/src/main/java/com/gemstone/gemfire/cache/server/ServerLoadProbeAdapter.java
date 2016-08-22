@@ -22,7 +22,7 @@ package com.gemstone.gemfire.cache.server;
  * empty implementations for open and close. Applications can subclass this
  * class and only override the methods for the events of interest.
  * 
- * @since 5.7
+ * @since GemFire 5.7
  * 
  */
 public abstract class ServerLoadProbeAdapter implements ServerLoadProbe {

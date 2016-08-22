@@ -16,10 +16,9 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
-import java.io.PrintStream;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.i18n.StringId;
+
+import java.io.PrintStream;
 
 /**
  * A log writer for security related logs. This will prefix all messages with
@@ -31,7 +30,7 @@ import com.gemstone.gemfire.i18n.StringId;
  * This class extends the {@link ManagerLogWriter} to add the security prefix
  * feature mentioned above.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public final class SecurityManagerLogWriter extends ManagerLogWriter {
 

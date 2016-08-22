@@ -34,7 +34,7 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
  * The primary implementor of this interface is LocalRegion.
  *
  *
- * @since prPersistSprint3
+ * @since GemFire prPersistSprint3
  */
 public interface DiskRecoveryStore {
   public DiskRegionView getDiskRegionView();

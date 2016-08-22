@@ -16,14 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.functional;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.internal.StructImpl;
@@ -33,12 +34,9 @@ import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class JavaSerializationJUnitTest extends TestCase {
-  
-  public JavaSerializationJUnitTest(String testName) {
-    super(testName);
-  }
-  
+public class JavaSerializationJUnitTest {
+
+  @Test
   public void testStructImplSerialization() throws Exception {
     String[] fieldNames = {"col1", "col2"};
     ObjectType[] fieldTypes = {new ObjectTypeImpl(Integer.class), new ObjectTypeImpl(String.class)};
@@ -47,7 +45,8 @@ public class JavaSerializationJUnitTest extends TestCase {
     StructImpl si = new StructImpl(type, values);
     verifyJavaSerialization(si);   
   }
-  
+
+  @Test
   public void testUndefinedSerialization() throws Exception {
     verifyJavaSerialization(QueryService.UNDEFINED);   
   }

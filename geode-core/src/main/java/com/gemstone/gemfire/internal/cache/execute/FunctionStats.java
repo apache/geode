@@ -16,11 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.StatisticsTypeFactory;
+import com.gemstone.gemfire.*;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
@@ -518,7 +515,7 @@ public class FunctionStats {
   
   public static FunctionStats getFunctionStats(String functionID,
       InternalDistributedSystem ds) {
-    boolean statsDisabled = Boolean.getBoolean("gemfire.statsDisabled");
+    boolean statsDisabled = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "statsDisabled");
     if (statsDisabled) {
       if(disabledStats == null){
         disabledStats = new FunctionStats();

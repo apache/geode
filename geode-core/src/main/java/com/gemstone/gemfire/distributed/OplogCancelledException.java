@@ -19,9 +19,9 @@ package com.gemstone.gemfire.distributed;
 import com.gemstone.gemfire.CancelException;
 
 /**
- * Thrown when a GemFire gateway has been terminated.
+ * Thrown when a GemFire operation log has been terminated.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 
 public class OplogCancelledException extends CancelException {

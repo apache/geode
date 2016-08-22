@@ -31,10 +31,10 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * 
- * Provides internal methods for sqlFabric product
+ * Provides internal methods for tests
  * 
  * 
- * @since 6.1
+ * @since GemFire 6.1
  * 
  */
 public class InternalFunctionService {
@@ -93,7 +93,7 @@ public class InternalFunctionService {
   /**
    * @param region
    * @return true if the method is called on a region has a {@link Pool}.
-   * @since 6.0
+   * @since GemFire 6.0
    */
   private static boolean isClientRegion(Region region) {
     LocalRegion localRegion = (LocalRegion)region;
@@ -120,7 +120,7 @@ public class InternalFunctionService {
    *          <code>groups</code></a>) on which to execute the function.
    *          Function will be executed on all servers of each group
    * @return Execution
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static Execution onServers(RegionService regionService, String... groups) {
     return funcServiceManager.onServers(regionService, groups);
@@ -144,7 +144,7 @@ public class InternalFunctionService {
    *          <code>groups</code></a>) on which to execute the function.
    *          Function will be executed on one server of each group
    * @return Execution
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static Execution onServer(RegionService regionService, String... groups) {
     return funcServiceManager.onServer(regionService, groups);
@@ -167,7 +167,7 @@ public class InternalFunctionService {
    *          <code>groups</code></a>) on which to execute the function.
    *          Function will be executed on all servers of each group
    * @return Execution
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static Execution onServers(Pool pool, String... groups) {
     return funcServiceManager.onServers(pool, groups);
@@ -190,7 +190,7 @@ public class InternalFunctionService {
    *          <code>groups</code></a>) on which to execute the function.
    *          Function will be executed on one server of each group
    * @return Execution
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static Execution onServer(Pool pool, String... groups) {
     return funcServiceManager.onServer(pool, groups);

@@ -16,19 +16,12 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.cache.GatewayConfigurationException;
 import com.gemstone.gemfire.cache.client.ServerRefusedConnectionException;
 import com.gemstone.gemfire.cache.client.internal.ServerBlackList.FailureTracker;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
@@ -41,11 +34,16 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.security.GemFireSecurityException;
+import org.apache.logging.log4j.Logger;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Creates connections, using a connection source to determine
  * which server to connect to.
- * @since 5.7
+ * @since GemFire 5.7
  * 
  */
 public class ConnectionFactoryImpl implements ConnectionFactory {
@@ -71,7 +69,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   
   /**
    * Test hook for client version support
-   * @since 5.7
+   * @since GemFire 5.7
    */
   
   public static boolean testFailedConnectionToServer = false;

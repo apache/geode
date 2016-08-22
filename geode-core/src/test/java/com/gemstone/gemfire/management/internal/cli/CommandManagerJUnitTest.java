@@ -16,16 +16,26 @@
  */
 package com.gemstone.gemfire.management.internal.cli;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import com.gemstone.gemfire.management.cli.CliMetaData;
+import com.gemstone.gemfire.management.cli.ConverterHint;
+import com.gemstone.gemfire.management.cli.Result;
+import com.gemstone.gemfire.management.internal.cli.annotation.CliArgument;
+import com.gemstone.gemfire.management.internal.cli.parser.Argument;
+import com.gemstone.gemfire.management.internal.cli.parser.AvailabilityTarget;
+import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
+import com.gemstone.gemfire.management.internal.cli.parser.Option;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.junit.After;
 import org.junit.Test;
@@ -38,22 +48,12 @@ import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.cli.ConverterHint;
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.cli.annotation.CliArgument;
-import com.gemstone.gemfire.management.internal.cli.parser.Argument;
-import com.gemstone.gemfire.management.internal.cli.parser.AvailabilityTarget;
-import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
-import com.gemstone.gemfire.management.internal.cli.parser.Option;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
 /**
  * CommandManagerTest - Includes tests to check the CommandManager functions
- * 
  */
 @Category(UnitTest.class)
 public class CommandManagerJUnitTest {
+
   private static final String COMMAND1_NAME = "command1";
   private static final String COMMAND1_NAME_ALIAS = "command1_alias";
   private static final String COMMAND2_NAME = "c2";
@@ -65,7 +65,7 @@ public class CommandManagerJUnitTest {
   private static final String ARGUMENT1_CONTEXT = "context for argument 1";
   private static final Completion[] ARGUMENT1_COMPLETIONS = {
       new Completion("arg1"), new Completion("arg1alt") };
-  private static final String ARGUEMNT2_NAME = "argument2";
+  private static final String ARGUMENT2_NAME = "argument2";
   private static final String ARGUMENT2_CONTEXT = "context for argument 2";
   private static final String ARGUMENT2_HELP = "help for argument2";
   private static final String ARGUMENT2_UNSPECIFIED_DEFAULT_VALUE = "{unspecified default value for argument2}";
@@ -96,7 +96,9 @@ public class CommandManagerJUnitTest {
     CommandManager.clearInstance();
   }
   
-  // tests loadCommands()
+  /**
+   * tests loadCommands()
+   */
   @Test
   public void testCommandManagerLoadCommands() throws Exception {
     CommandManager commandManager = CommandManager.getInstance(true);
@@ -104,14 +106,18 @@ public class CommandManagerJUnitTest {
     assertNotSame(0, commandManager.getCommands().size());
   }
 
-  // tests commandManagerInstance method
+  /**
+   * tests commandManagerInstance method
+   */
   @Test
   public void testCommandManagerInstance() throws Exception {
     CommandManager commandManager = CommandManager.getInstance(true);
     assertNotNull(commandManager);
   }
 
-  // tests createOption method for creating option
+  /**
+   * tests createOption method for creating option
+   */
   @Test
   public void testCommandManagerCreateOption() throws Exception {
     CommandManager commandManager = CommandManager.getInstance(true);
@@ -152,7 +158,9 @@ public class CommandManagerJUnitTest {
     }
   }
 
-  // tests createArgument method for creating argument
+  /**
+   * tests createArgument method for creating argument
+   */
   @Test
   public void testCommandManagerCreateArgument() throws Exception {
     CommandManager commandManager = CommandManager.getInstance(true);
@@ -165,7 +173,7 @@ public class CommandManagerJUnitTest {
     Class<?>[] parameterTypes = method.getParameterTypes();
     List<String> argumentList = new ArrayList<String>();
     argumentList.add(ARGUMENT1_NAME);
-    argumentList.add(ARGUEMNT2_NAME);
+    argumentList.add(ARGUMENT2_NAME);
 
     int parameterNo = 0;
     for (int i = 0; i < annotations.length; i++) {
@@ -186,7 +194,9 @@ public class CommandManagerJUnitTest {
     }
   }
 
-  // tests availabilityIndicator for a method
+  /**
+   * tests availabilityIndicator for a method
+   */
   @Test
   public void testCommandManagerAvailabilityIndicator() throws Exception {
     CommandManager commandManager = CommandManager.getInstance(true);
@@ -211,7 +221,7 @@ public class CommandManagerJUnitTest {
   
   /**
    * Tests {@link CommandManager#loadPluginCommands()}.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testCommandManagerLoadPluginCommands() throws Exception {
@@ -223,15 +233,18 @@ public class CommandManagerJUnitTest {
     assertTrue("Should not find unlisted plugin.", !commandManager.getCommands().containsKey("mock plugin command unlisted"));
   }
 
+  /**
+   * class that represents dummy commands
+   */
+  public static class Commands implements CommandMarker {
 
-  // class that represents dummy commands
-  static public class Commands implements CommandMarker {
     @CliCommand(value = { COMMAND1_NAME, COMMAND1_NAME_ALIAS }, help = COMMAND1_HELP)
     @CliMetaData(shellOnly = true, relatedTopic = { "relatedTopicOfCommand1" })
+    @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public static String command1(
         @CliArgument(name = ARGUMENT1_NAME, argumentContext = ARGUMENT1_CONTEXT, help = ARGUMENT1_HELP, mandatory = true)
         String argument1,
-        @CliArgument(name = ARGUEMNT2_NAME, argumentContext = ARGUMENT2_CONTEXT, help = ARGUMENT2_HELP, mandatory = false, unspecifiedDefaultValue = ARGUMENT2_UNSPECIFIED_DEFAULT_VALUE, systemProvided = false)
+        @CliArgument(name = ARGUMENT2_NAME, argumentContext = ARGUMENT2_CONTEXT, help = ARGUMENT2_HELP, mandatory = false, unspecifiedDefaultValue = ARGUMENT2_UNSPECIFIED_DEFAULT_VALUE, systemProvided = false)
         String argument2,
         @CliOption(key = { OPTION1_NAME, OPTION1_SYNONYM }, help = OPTION1_HELP, mandatory = true, optionContext = OPTION1_CONTEXT, specifiedDefaultValue = OPTION1_SPECIFIED_DEFAULT_VALUE)
         String option1,
@@ -243,11 +256,13 @@ public class CommandManagerJUnitTest {
     }
 
     @CliCommand(value = { COMMAND2_NAME })
+    @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public static String command2() {
       return null;
     }
 
     @CliCommand(value = { "testParamConcat" })
+    @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public static Result testParamConcat(
         @CliOption(key = { "string" })
         String string,
@@ -264,6 +279,7 @@ public class CommandManagerJUnitTest {
     }
 
     @CliCommand(value = { "testMultiWordArg" })
+    @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public static Result testMultiWordArg(@CliArgument(name = "arg1")
     String arg1, @CliArgument(name = "arg2")
     String arg2) {
@@ -273,13 +289,15 @@ public class CommandManagerJUnitTest {
     @CliAvailabilityIndicator({ COMMAND1_NAME })
     public boolean isAvailable() {
       return true; // always available on server
-
     }
-
   }
 
-  static class SimpleConverter implements Converter<String> {
+  /**
+   * Used by testCommandManagerLoadPluginCommands
+   */
+  private static class SimpleConverter implements Converter<String> {
 
+    @Override
     public boolean supports(Class<?> type, String optionContext) {
       if (type.isAssignableFrom(String.class)) {
         return true;
@@ -287,11 +305,13 @@ public class CommandManagerJUnitTest {
       return false;
     }
 
+    @Override
     public String convertFromText(String value, Class<?> targetType,
         String optionContext) {
       return value;
     }
 
+    @Override
     public boolean getAllPossibleValues(List<Completion> completions,
         Class<?> targetType, String existingData, String context,
         MethodTarget target) {
@@ -314,6 +334,7 @@ public class CommandManagerJUnitTest {
 
   public static class MockPluginCommand implements CommandMarker {
     @CliCommand(value = "mock plugin command")
+    @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public Result mockPluginCommand() {
       return null;
     }
@@ -321,6 +342,7 @@ public class CommandManagerJUnitTest {
 
   public static class MockPluginCommandUnlisted implements CommandMarker {
     @CliCommand(value = "mock plugin command unlisted")
+    @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public Result mockPluginCommandUnlisted() {
       return null;
     }

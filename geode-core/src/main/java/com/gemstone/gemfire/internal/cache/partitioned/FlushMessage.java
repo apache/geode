@@ -44,7 +44,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * as the reply.  This was to leverage the fact that the message is a 
  * {@link com.gemstone.gemfire.distributed.internal.SerialDistributionMessage}.</p>
  * 
- * @since 5.1
+ * @since GemFire 5.1
  */
 public final class FlushMessage extends SerialDistributionMessage implements MessageWithReply
 { 

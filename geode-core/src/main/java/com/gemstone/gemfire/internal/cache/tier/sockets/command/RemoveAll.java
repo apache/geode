@@ -16,14 +16,13 @@
  */
 /**
  * Author: dschneider
- * @since 8.1
+ * @since GemFire 8.1
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collection;
 
 import com.gemstone.gemfire.cache.DynamicRegionFactory;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
@@ -50,6 +49,7 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
 
 public class RemoveAll extends BaseCommand {
@@ -127,6 +127,8 @@ public class RemoveAll extends BaseCommand {
         servConn.setAsTrue(RESPONDED);
         return;
       }
+
+      GeodeSecurityUtil.authorizeRegionWrite(regionName);
       
       // part 1: eventID
       eventPart = msg.getPart(1);
@@ -210,7 +212,6 @@ public class RemoveAll extends BaseCommand {
         servConn.setRequestSpecificTimeout(timeout);
       }
 
-      
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {
         // TODO SW: This is to handle DynamicRegionFactory create

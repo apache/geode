@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletRequest;
  * details (like version details, build details, source details, etc) from
  * properties file
  * 
- * @since version 7.0.Beta
+ * @since GemFire version 7.0.Beta
  */
 
 @Component

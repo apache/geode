@@ -74,13 +74,14 @@ public class TinyStoredObject extends AbstractStoredObject {
   }
 
   public byte[] getDecompressedBytes(RegionEntryContext r) {
-    byte[] bytes = OffHeapRegionEntryHelper.decodeAddressToBytes(getAddress(), true, true);
     if (isCompressed()) {
+        byte[] bytes = OffHeapRegionEntryHelper.decodeAddressToRawBytes(getAddress());
         long time = r.getCachePerfStats().startDecompression();
         bytes = r.getCompressor().decompress(bytes);
         r.getCachePerfStats().endDecompression(time);
+        return bytes;
     }
-    return bytes;
+    return getRawBytes();
   }
 
   /**
@@ -88,12 +89,12 @@ public class TinyStoredObject extends AbstractStoredObject {
    * Otherwise return the serialize bytes in us in a byte array.
    */
   public byte[] getRawBytes() {
-    return OffHeapRegionEntryHelper.decodeAddressToBytes(getAddress(), true, false);
+    return OffHeapRegionEntryHelper.decodeUncompressedAddressToBytes(getAddress());
   }
   
   @Override
   public byte[] getSerializedValue() {
-    byte[] value = OffHeapRegionEntryHelper.decodeAddressToBytes(this.address, true, false);
+    byte[] value = getRawBytes();
     if (!isSerialized()) {
       value = EntryEventImpl.serialize(value);
     }
@@ -160,7 +161,6 @@ public class TinyStoredObject extends AbstractStoredObject {
 
   @Override
   public byte readDataByte(int offset) {
-    // TODO OFFHEAP: what if the data is compressed?
     return getRawBytes()[offset];
   }
 
@@ -181,7 +181,6 @@ public class TinyStoredObject extends AbstractStoredObject {
 
   @Override
   public void readDataBytes(int offset, byte[] bytes, int bytesOffset, int size) {
-    // TODO OFFHEAP: what if the data is compressed?
     byte[] src = getRawBytes();
     int dstIdx = bytesOffset;
     for (int i = offset; i < offset+size; i++) {
@@ -206,13 +205,11 @@ public class TinyStoredObject extends AbstractStoredObject {
 
   @Override
   public boolean checkDataEquals(StoredObject so) {
-    // TODO OFFHEAP: what if the data is compressed?
     return equals(so);
   }
 
   @Override
   public boolean checkDataEquals(byte[] serializedObj) {
-    // TODO OFFHEAP: what if the data is compressed?
     byte[] myBytes = getSerializedValue();
     return Arrays.equals(myBytes, serializedObj);
   }

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,12 +52,14 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * Version tag information which is relevant between multiple distributed
  * systems consistency check is basically dsid and timestamp.
  */
+@Category(DistributedTest.class)
 public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
 
-  public NewWANConcurrencyCheckForDestroyDUnitTest(String name) {
-    super(name);
+  public NewWANConcurrencyCheckForDestroyDUnitTest() {
+    super();
   }
 
+  @Test
   public void testVersionTagTimestampForDestroy() {
     
     
@@ -61,17 +72,17 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     // Site 1
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     createCacheInVMs(lnPort, vm1);
-    Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver( lnPort ));
+    Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver());
     
     //Site 2
     Integer nyPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
     createCacheInVMs(nyPort, vm3);
-    Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver());
 
     //Site 3
     Integer tkPort = (Integer)vm4.invoke(() -> WANTestBase.createFirstRemoteLocator( 3, lnPort ));
     createCacheInVMs(tkPort, vm5);
-    Integer tkRecPort = (Integer) vm5.invoke(() -> WANTestBase.createReceiver( tkPort ));
+    Integer tkRecPort = (Integer) vm5.invoke(() -> WANTestBase.createReceiver());
 
     LogWriterUtils.getLogWriter().info("Created locators and receivers in 3 distributed systems");
      
@@ -137,6 +148,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
    * version for RegionEntry with key "testKey". If timestamp on both site is
    * same that means events were transferred in correct sequence.
    */
+  @Test
   public void testPutAllEventSequenceOnSerialGatewaySenderWithRR() {
     
     // create two distributed systems with each having a cache containing
@@ -145,12 +157,12 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     // Site 1
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     vm1.invoke(() -> WANTestBase.createCache(lnPort));
-    Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver( lnPort ));
+    Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver());
     
     //Site 2
     Integer nyPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
     vm3.invoke(() -> WANTestBase.createCache(nyPort));
-    Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver());
 
     LogWriterUtils.getLogWriter().info("Created locators and receivers in 2 distributed systems");
      
@@ -242,7 +254,8 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
 /**
  * This is similar to above test but for PartitionedRegion.
  */
-public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
+  @Test
+  public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
     
     // create two distributed systems with each having a cache containing
     // a Replicated Region with one entry and concurrency checks enabled.
@@ -250,12 +263,12 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
     // Site 1
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     createCacheInVMs(lnPort, vm1);
-    Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver( lnPort ));
+    Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver());
     
     //Site 2
     Integer nyPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
     createCacheInVMs(nyPort, vm3);
-    Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver());
 
     LogWriterUtils.getLogWriter().info("Created locators and receivers in 2 distributed systems");
      
@@ -348,6 +361,7 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
    * Tests if conflict checks are happening based on DSID and timestamp even if
    * version tag is generated in local distributed system.
    */
+  @Test
   public void testConflicChecksBasedOnDsidAndTimeStamp() {
 
     
@@ -357,12 +371,12 @@ public void testPutAllEventSequenceOnSerialGatewaySenderWithPR() {
     // Site 1
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     createCacheInVMs(lnPort, vm1);
-    Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver( lnPort ));
+    Integer lnRecPort = (Integer) vm1.invoke(() -> WANTestBase.createReceiver());
 
     //Site 2
     Integer nyPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
     createCacheInVMs(nyPort, vm3);
-    Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    Integer nyRecPort = (Integer) vm3.invoke(() -> WANTestBase.createReceiver());
     
     LogWriterUtils.getLogWriter().info("Created locators and receivers in 2 distributed systems");
 

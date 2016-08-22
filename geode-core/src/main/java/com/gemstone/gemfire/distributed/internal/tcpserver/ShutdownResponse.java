@@ -26,7 +26,7 @@ import com.gemstone.gemfire.DataSerializable;
 /**
  * A response from the TCP server that it received
  * the shutdown request
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class ShutdownResponse implements DataSerializable {
   private static final long serialVersionUID = -7223807212380360314L;

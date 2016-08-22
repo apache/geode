@@ -23,7 +23,7 @@ import java.net.InetAddress;
 /**
  * Administrative interface for monitoring a GemFire system member.
  *
- * @since     3.5
+ * @since GemFire     3.5
  *
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
@@ -100,7 +100,7 @@ public interface SystemMember {
    *
    *@param statisticsTypeName String ame of the Statistics Type
    * @return array of runtime statistic resources owned by this member
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public StatisticResource[] getStat(String statisticsTypeName) throws com.gemstone.gemfire.admin.AdminException;
   
@@ -131,7 +131,7 @@ public interface SystemMember {
    * Returns the names of the membership roles filled by this member.
    *
    * @return array of string membership role names
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public String[] getRoles();
   
@@ -140,7 +140,7 @@ public interface SystemMember {
    * that represents this system member.
    *
    * @return DistributedMember instance representing this system member
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public DistributedMember getDistributedMember();
 }

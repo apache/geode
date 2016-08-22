@@ -21,7 +21,7 @@ package com.gemstone.gemfire.internal.concurrent;
  * Any additional result state needed to be passed to {@link MapCallback} which
  * returns values by reference.
  * 
- * @since Helios
+ * @since GemFire Helios
  */
 public interface MapResult {
 

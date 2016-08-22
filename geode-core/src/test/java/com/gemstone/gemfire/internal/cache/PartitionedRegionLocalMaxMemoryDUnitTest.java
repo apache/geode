@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.cache;
+
+import static org.junit.Assert.*;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -24,6 +25,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
@@ -37,15 +41,14 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This class is to test localMaxMemory property of partition region while
  * creation of bucket.
- * 
  */
-public class PartitionedRegionLocalMaxMemoryDUnitTest extends
-    PartitionedRegionDUnitTestCase
-{
+@Category(DistributedTest.class)
+public class PartitionedRegionLocalMaxMemoryDUnitTest extends PartitionedRegionDUnitTestCase {
 
   /** Prefix is used in name of Partition Region */
   private static String prPrefix = null;
@@ -59,10 +62,6 @@ public class PartitionedRegionLocalMaxMemoryDUnitTest extends
   /** to store references of 4 vms */
   VM vm[] = new VM[4];
 
-  public PartitionedRegionLocalMaxMemoryDUnitTest(String name) {
-    super(name);
-  }
-
   /**
    * This test performs following operations 
    * <br>1.Create Partition region with localMaxMemory 
@@ -73,6 +72,7 @@ public class PartitionedRegionLocalMaxMemoryDUnitTest extends
    * <br>4.Test should throw PartitionedRegionStorageException
    * when it tries to create new bucket</br>
    */
+  @Test
   public void testLocalMaxMemoryInPartitionedRegion()
   {
     Host host = Host.getHost(0);
@@ -107,6 +107,7 @@ public class PartitionedRegionLocalMaxMemoryDUnitTest extends
    * This test makes sure that we don't enforce the localMaxMemory setting
    * when eviction is enabled.
    */
+  @Test
   public void testLocalMaxMemoryInPartitionedRegionWithEviction()
   {
     Host host = Host.getHost(0);

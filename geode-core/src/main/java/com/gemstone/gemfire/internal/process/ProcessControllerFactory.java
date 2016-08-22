@@ -16,27 +16,22 @@
  */
 package com.gemstone.gemfire.internal.process;
 
-import java.io.BufferedReader;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.internal.util.StopWatch;
 
 /**
  * Manages which implementation of {@link ProcessController} will be used and
  * constructs the instance.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 public final class ProcessControllerFactory {
 
-  public static final String PROPERTY_DISABLE_ATTACH_API = "gemfire.test.ProcessControllerFactory.DisableAttachApi";
+  public static final String PROPERTY_DISABLE_ATTACH_API = DistributionConfig.GEMFIRE_PREFIX + "test.ProcessControllerFactory.DisableAttachApi";
   
   private final boolean disableAttachApi;
   

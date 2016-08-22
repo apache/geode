@@ -20,7 +20,7 @@ package com.gemstone.gemfire.internal.process;
  * Exception indicating that an attempt to control a {@link ControllableProcess}
  * has failed for some reason.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 public final class UnableToControlProcessException extends Exception {
   private static final long serialVersionUID = 7579463534993125290L;

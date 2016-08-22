@@ -33,7 +33,7 @@ package com.gemstone.gemfire.cache;
  * @see AttributesFactory#setCacheLoader
  * @see RegionAttributes#getCacheLoader
  * @see AttributesMutator#setCacheLoader
- * @since 2.0
+ * @since GemFire 2.0
  */
 public interface CacheLoader<K,V> extends CacheCallback {
   /**

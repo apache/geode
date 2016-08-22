@@ -36,7 +36,7 @@ public class PartitionedRegionBucketMgmtHelper
    * @param b Bucket to evaluate
    * @param moveSource 
    * @return true if it is allowed to be recovered
-   * @since gemfire59poc
+   * @since GemFire 5.9
    */
   public static boolean bucketIsAllowedOnThisHost(Bucket b, InternalDistributedMember moveSource) {
     if (b.getDistributionManager().enforceUniqueZone()) {

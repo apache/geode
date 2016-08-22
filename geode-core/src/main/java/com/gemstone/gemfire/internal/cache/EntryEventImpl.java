@@ -17,49 +17,21 @@
 
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.IOException;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.CopyHelper;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.DeltaSerializationException;
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.InvalidDeltaException;
-import com.gemstone.gemfire.SerializationException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.EntryOperation;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.SerializedCacheValue;
-import com.gemstone.gemfire.cache.TransactionId;
+import com.gemstone.gemfire.*;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.query.IndexMaintenanceException;
 import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.cache.query.internal.IndexUpdater;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
 import com.gemstone.gemfire.cache.query.internal.index.IndexProtocol;
 import com.gemstone.gemfire.cache.query.internal.index.IndexUtils;
 import com.gemstone.gemfire.cache.util.TimestampedEntryEvent;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.ByteArrayDataInput;
-import com.gemstone.gemfire.internal.DSFIDFactory;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.Sendable;
-import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo.FilterInfo;
-import com.gemstone.gemfire.internal.cache.delta.Delta;
 import com.gemstone.gemfire.internal.cache.lru.Sizeable;
 import com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.PutMessage;
@@ -73,21 +45,19 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
-import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
-import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
-import com.gemstone.gemfire.internal.offheap.Releasable;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.*;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
-
-import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
-import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
-
 import com.gemstone.gemfire.internal.util.ArrayUtils;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
 
 /**
  * Implementation of an entry event
@@ -120,7 +90,6 @@ public class EntryEventImpl
   private byte[] cachedSerializedNewValue = null;
   @Retained(ENTRY_EVENT_OLD_VALUE)
   private Object oldValue = null;
-  protected Delta delta = null;
  
   protected short eventFlags = 0x0000;
 
@@ -134,21 +103,21 @@ public class EntryEventImpl
   /**
    * This field will be null unless this event is used for a putAll operation.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   protected transient DistributedPutAllOperation putAllOp;
 
   /**
    * This field will be null unless this event is used for a removeAll operation.
    *
-   * @since 8.1
+   * @since GemFire 8.1
    */
   protected transient DistributedRemoveAllOperation removeAllOp;
 
   /**
    * The member that originated this event
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   protected DistributedMember distributedMember;
 
@@ -164,17 +133,10 @@ public class EntryEventImpl
   /**
    * The originating membershipId of this event.
    *
-   * @since 5.1
+   * @since GemFire 5.1
    */
   protected ClientProxyMembershipID context = null;
   
-  /**
-   * A custom context object that can be used for any other contextual
-   * information. Currently used by SQL Fabric to pass around evaluated rows
-   * from raw byte arrays and routing object.
-   */
-  private transient Object contextObj = null;
-
   /**
    * this holds the bytes representing the change in value effected by this
    * event.  It is used when the value implements the Delta interface.
@@ -193,16 +155,6 @@ public class EntryEventImpl
   /** version tag for concurrency checks */
   protected VersionTag versionTag;
 
-  /** boolean to indicate that this operation should be optimized by not fetching from HDFS*/
-  private transient boolean fetchFromHDFS = true;
-  
-  private transient boolean isPutDML = false;
-
-  /** boolean to indicate that the RegionEntry for this event was loaded from HDFS*/
-  private transient boolean loadedFromHDFS= false;
-  
-  private transient boolean isCustomEviction = false;
-  
   /** boolean to indicate that the RegionEntry for this event has been evicted*/
   private transient boolean isEvicted = false;
   
@@ -213,29 +165,6 @@ public class EntryEventImpl
   public EntryEventImpl() {
   }
   
-  /**
-   * create a new entry event that will be used for conveying version information
-   * and anything else of use while processing another event
-   * @return the empty event object
-   */
-  @Retained
-  public static EntryEventImpl createVersionTagHolder() {
-    return createVersionTagHolder(null);
-  }
-  
-  /**
-   * create a new entry event that will be used for conveying version information
-   * and anything else of use while processing another event
-   * @return the empty event object
-   */
-  @Retained
-  public static EntryEventImpl createVersionTagHolder(VersionTag tag) {
-    EntryEventImpl result = new EntryEventImpl();
-    result.setVersionTag(tag);
-    result.disallowOffHeapValues();
-    return result;
-  }
-
   /**
    * Reads the contents of this message from the given input.
    */
@@ -250,7 +179,7 @@ public class EntryEventImpl
     this.txId = (TXId)DataSerializer.readObject(in);
 
     if (in.readBoolean()) {     // isDelta
-      this.delta = (Delta)DataSerializer.readObject(in);
+      assert false : "isDelta should never be true";
     }
     else {
       // OFFHEAP Currently values are never deserialized to off heap memory. If that changes then this code needs to change.
@@ -306,10 +235,7 @@ public class EntryEventImpl
     this.op = op;
     this.keyInfo = this.region.getKeyInfo(key, newVal, callbackArgument);
 
-    if (newVal instanceof Delta) {
-      this.delta = (Delta)newVal;
-    }
-    else if (!Token.isInvalid(newVal)) {
+    if (!Token.isInvalid(newVal)) {
       basicSetNewValue(newVal);
     }
 
@@ -358,7 +284,6 @@ public class EntryEventImpl
     this.newValueBytes = other.newValueBytes;
     this.cachedSerializedNewValue = other.cachedSerializedNewValue;
     this.re = other.re;
-    this.delta = other.delta;
     if (setOldValue) {
       retainAndSetOldValue(other.basicGetOldValue());
       this.oldValueBytes = other.oldValueBytes;
@@ -388,18 +313,6 @@ public class EntryEventImpl
   @Retained
   public EntryEventImpl(Object key2) {
     this.keyInfo = new KeyInfo(key2, null, null);
-  }
-  
-  /**
-   * This constructor is used to create a bridge event in server-side
-   * command classes.  Events created with this are not intended to be
-   * used in cache operations.
-   * @param id the identity of the client's event
-   */
-  @Retained
-  public EntryEventImpl(EventID id) {
-    this.eventID = id;
-    this.offHeapOk = false;
   }
 
   /**
@@ -486,14 +399,14 @@ public class EntryEventImpl
    * Creates a PutAllEvent given the distributed operation, the region, and the
    * entry data.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   @Retained
   static EntryEventImpl createPutAllEvent(
       DistributedPutAllOperation putAllOp, LocalRegion region,
       Operation entryOp, Object entryKey, @Retained(ENTRY_EVENT_NEW_VALUE) Object entryNewValue)
   {
-    EntryEventImpl e;
+    @Retained EntryEventImpl e;
     if (putAllOp != null) {
       EntryEventImpl event = putAllOp.getBaseEvent();
       if (event.isBridgeEvent()) {
@@ -515,11 +428,12 @@ public class EntryEventImpl
     return e;
   }
   
+  @Retained
   protected static EntryEventImpl createRemoveAllEvent(
       DistributedRemoveAllOperation op, 
       LocalRegion region,
       Object entryKey) {
-    EntryEventImpl e;
+    @Retained EntryEventImpl e;
     final Operation entryOp = Operation.REMOVEALL_DESTROY;
     if (op != null) {
       EntryEventImpl event = op.getBaseEvent();
@@ -692,14 +606,6 @@ public class EntryEventImpl
     return this.op.isEviction();
   }
 
-  public final boolean isCustomEviction() {
-    return this.isCustomEviction;
-  }
-  
-  public final void setCustomEviction(boolean customEvict) {
-    this.isCustomEviction = customEvict;
-  }
-  
   public final void setEvicted() {
     this.isEvicted = true;
   }
@@ -833,7 +739,6 @@ public class EntryEventImpl
       }
       boolean doCopyOnRead = getRegion().isCopyOnRead();
       if (ov != null) {
-        // TODO OFFHEAP: returns off-heap PdxInstance
         if (ov instanceof CachedDeserializable) {
           CachedDeserializable cd = (CachedDeserializable)ov;
           if (doCopyOnRead) {
@@ -860,25 +765,19 @@ public class EntryEventImpl
 
   /**
    * Like getRawNewValue except that if the result is an off-heap reference then copy it to the heap.
-   * ALERT: If there is a Delta, returns that, not the (applied) new value.
-   * TODO OFFHEAP: to prevent the heap copy use getRawNewValue instead
+   * Note: to prevent the heap copy use getRawNewValue instead
    */
   public final Object getRawNewValueAsHeapObject() {
-    if (this.delta != null) {
-      return this.delta;
-    }
     return OffHeapHelper.getHeapForm(OffHeapHelper.copyIfNeeded(basicGetNewValue()));
   }
   
   /**
-   * If new value is a Delta return it.
-   * Else if new value is off-heap return the StoredObject form (unretained OFF_HEAP_REFERENCE). 
+   * If new value is off-heap return the StoredObject form (unretained OFF_HEAP_REFERENCE). 
    * Its refcount is not inced by this call and the returned object can only be safely used for the lifetime of the EntryEventImpl instance that returned the value.
    * Else return the raw form.
    */
   @Unretained(ENTRY_EVENT_NEW_VALUE)
   public final Object getRawNewValue() {
-    if (this.delta != null) return this.delta;
     return basicGetNewValue();
   }
 
@@ -887,39 +786,6 @@ public class EntryEventImpl
     return basicGetNewValue();
   }
   
-  /**
-   * Returns the delta that represents the new value; null if no delta.
-   * @return the delta that represents the new value; null if no delta.
-   */
-  public final Delta getDeltaNewValue() {
-    return this.delta;
-  }
-
-  /**
-   *  Applies the delta 
-   */
-  private Object applyDeltaWithCopyOnRead(boolean doCopyOnRead) {
-    //try {
-      if (applyDelta(true)) {
-        Object applied = basicGetNewValue();
-        // if applyDelta returns true then newValue should not be off-heap
-        assert !(applied instanceof StoredObject);
-        if (applied == this.oldValue && doCopyOnRead) {
-          applied = CopyHelper.copy(applied);
-        }
-        return applied;
-      }
-    //} catch (EntryNotFoundException ex) {
-      // only (broken) product code has the opportunity to call this before
-      // this.oldValue is set. If oldValue is not set yet, then
-      // we most likely haven't synchronized on the region entry yet.
-      // (If we have, then make sure oldValue is set before
-      // calling this method).
-      //throw new AssertionError("too early to call getNewValue");
-    //}
-    return null;
-  }
-
   @Released(ENTRY_EVENT_NEW_VALUE)
   protected void basicSetNewValue(@Retained(ENTRY_EVENT_NEW_VALUE) Object v) {
     if (v == this.newValue) return;
@@ -1082,31 +948,12 @@ public class EntryEventImpl
   public final Object getNewValue() {
     
     boolean doCopyOnRead = getRegion().isCopyOnRead();
-    try {
-      if (applyDelta(true)) {
-        @Unretained(ENTRY_EVENT_NEW_VALUE)
-        Object applied = basicGetNewValue();
-        if (applied == this.oldValue && doCopyOnRead) {
-          applied = CopyHelper.copy(applied);
-        }
-        return applied;
-      }
-    } catch (EntryNotFoundException ex) {
-      // only (broken) product code has the opportunity to call this before
-      // this.oldValue is set. If oldValue is not set yet, then
-      // we most likely haven't synchronized on the region entry yet.
-      // (If we have, then make sure oldValue is set before
-      // calling this method).
-      throw new AssertionError("too early to call getNewValue");
-    }
     Object nv = basicGetNewValue();
     if (nv != null) {
       if (nv == Token.NOT_AVAILABLE) {
         // I'm not sure this can even happen
         return AbstractRegion.handleNotAvailable(nv);
       }
-      // TODO OFFHEAP currently we copy offheap new value to the heap here. Check callers of this method to see if they can be optimized to use offheap values.
-      // TODO OFFHEAP: returns off-heap PdxInstance
       if (nv instanceof CachedDeserializable) {
         CachedDeserializable cd = (CachedDeserializable)nv;
         Object v = null;
@@ -1136,44 +983,9 @@ public class EntryEventImpl
     return StringUtils.forceToString(basicGetOldValue());
   }
   
-  protected boolean applyDelta(boolean throwOnNullOldValue)
-      throws EntryNotFoundException {
-    if (this.newValue != null || this.delta == null) {
-      return false;
-    }
-    if (this.oldValue == null) {
-      if (throwOnNullOldValue) {
-        // !!!:ezoerner:20080611 It would be nice if the client got this
-        // exception
-        throw new EntryNotFoundException(
-            "Cannot apply a delta without an existing value");
-      }
-      return false;
-    }
-    // swizzle BucketRegion in event for Delta.
-    // !!!:ezoerner:20090602 this is way ugly; this whole class severely
-    // needs refactoring
-    LocalRegion originalRegion = this.region;
-    try {
-      if (originalRegion instanceof BucketRegion) {
-        this.region = ((BucketRegion)this.region).getPartitionedRegion();
-      }
-      basicSetNewValue(this.delta.apply(this));
-    } finally {
-      this.region = originalRegion;
-    }
-    return true;
-  }
-
   /** Set a deserialized value */
   public final void setNewValue(@Retained(ENTRY_EVENT_NEW_VALUE) Object obj) {
-    if (obj instanceof Delta) {
-      this.delta = (Delta)obj;
-      basicSetNewValue(null);
-    }
-    else {
-      basicSetNewValue(obj);
-    }
+    basicSetNewValue(obj);
   }
 
   public TransactionId getTransactionId()
@@ -1245,7 +1057,7 @@ public class EntryEventImpl
    * Returns the value of the EntryEventImpl field.
    * This is for internal use only. Customers should always call
    * {@link #getCallbackArgument}
-   * @since 5.5 
+   * @since GemFire 5.5
    */
   public Object getRawCallbackArgument() {
     return this.keyInfo.getCallbackArg();
@@ -1281,7 +1093,6 @@ public class EntryEventImpl
     if (tmp instanceof CachedDeserializable) {
       CachedDeserializable cd = (CachedDeserializable) tmp;
       if (!cd.isSerialized()) {
-        // TODO OFFHEAP can we handle offheap byte[] better?
         return null;
       }
       byte[] bytes = this.newValueBytes;
@@ -1339,11 +1150,9 @@ public class EntryEventImpl
       if (getCachedSerializedNewValue() != null) {
         importer.importNewBytes(getCachedSerializedNewValue(), true);
         return;
-      } else {
-      if (this.newValueBytes != null && this.newValue instanceof CachedDeserializable) {
+      } else if (this.newValueBytes != null && this.newValue instanceof CachedDeserializable) {
         importer.importNewBytes(this.newValueBytes, true);
         return;
-      }
       }
     }
     @Unretained(ENTRY_EVENT_NEW_VALUE) 
@@ -1352,23 +1161,16 @@ public class EntryEventImpl
       @Unretained(ENTRY_EVENT_NEW_VALUE)
       final StoredObject so = (StoredObject) nv;
       final boolean isSerialized = so.isSerialized();
-      if (so.hasRefCount()) {
-        if (importer.isUnretainedNewReferenceOk()) {
-          importer.importNewObject(nv, isSerialized);
-        } else {
-          if (!isSerialized || prefersSerialized) {
-            byte[] bytes = so.getValueAsHeapByteArray();
-            importer.importNewBytes(bytes, isSerialized);
-            if (isSerialized) {
-              setCachedSerializedNewValue(bytes);
-            }
-          } else {
-            // TODO OFFHEAP: returns off-heap PdxInstance which is not ok since isUnretainedNewReferenceOk returned false
-            importer.importNewObject(so.getValueAsDeserializedHeapObject(), true);
-          }
+      if (importer.isUnretainedNewReferenceOk()) {
+        importer.importNewObject(nv, isSerialized);
+      } else if (!isSerialized || prefersSerialized) {
+        byte[] bytes = so.getValueAsHeapByteArray();
+        importer.importNewBytes(bytes, isSerialized);
+        if (isSerialized) {
+          setCachedSerializedNewValue(bytes);
         }
       } else {
-        importer.importNewObject(nv, isSerialized);
+        importer.importNewObject(so.getValueAsDeserializedHeapObject(), true);
       }
     } else if (nv instanceof byte[]) {
       importer.importNewBytes((byte[])nv, false);
@@ -1438,19 +1240,12 @@ public class EntryEventImpl
     if (ov instanceof StoredObject) {
       final StoredObject so = (StoredObject) ov;
       final boolean isSerialized = so.isSerialized();
-      if (so.hasRefCount()) {
-        if (importer.isUnretainedOldReferenceOk()) {
-          importer.importOldObject(ov, isSerialized);
-        } else {
-          if (!isSerialized || prefersSerialized) {
-            importer.importOldBytes(so.getValueAsHeapByteArray(), isSerialized);
-          } else {
-            // TODO OFFHEAP: returns off-heap PdxInstance which is not ok since isUnretainedNewReferenceOk returned false
-           importer.importOldObject(so.getValueAsDeserializedHeapObject(), true);
-          }
-        }
-      } else {
+      if (importer.isUnretainedOldReferenceOk()) {
         importer.importOldObject(ov, isSerialized);
+      } else if (!isSerialized || prefersSerialized) {
+        importer.importOldBytes(so.getValueAsHeapByteArray(), isSerialized);
+      } else {
+        importer.importOldObject(so.getValueAsDeserializedHeapObject(), true);
       }
     } else if (ov instanceof byte[]) {
       importer.importOldBytes((byte[])ov, false);
@@ -1463,39 +1258,16 @@ public class EntryEventImpl
         importer.importOldObject(cdV, true);
       }
     } else {
-      importer.importOldObject(ov, true);
+      importer.importOldObject(AbstractRegion.handleNotAvailable(ov), true);
     }
   }
 
-  /**
-   * If applyDelta is true then first attempt to apply a delta (if we have one) and return the value.
-   * Else if new value is a Delta return it.
-   * Else if new value is off-heap return the StoredObject form (unretained OFF_HEAP_REFERENCE). 
-   * Its refcount is not inced by this call and the returned object can only be safely used for the lifetime of the EntryEventImpl instance that returned the value.
-   * Else return the raw form.
-   */
-  @Unretained(ENTRY_EVENT_NEW_VALUE)
-  public final Object getRawNewValue(boolean applyDelta) {
-    if (applyDelta) {
-      boolean doCopyOnRead = getRegion().isCopyOnRead();
-      Object newValueWithDelta = applyDeltaWithCopyOnRead(doCopyOnRead);
-      if (newValueWithDelta != null) {
-        return newValueWithDelta;
-      }
-      // if applyDelta is true and we have already applied the delta then
-      // just return the applied value instead of the delta object.
-      @Unretained(ENTRY_EVENT_NEW_VALUE)
-      Object newValue = basicGetNewValue();
-      if (newValue != null) return newValue;
-    }
-    return getRawNewValue();
-  }
   /**
    * Just like getRawNewValue(true) except if the raw new value is off-heap deserialize it.
    */
   @Unretained(ENTRY_EVENT_NEW_VALUE)
   public final Object getNewValueAsOffHeapDeserializedOrRaw() {
-    Object result = getRawNewValue(true);
+    Object result = getRawNewValue();
     if (result instanceof StoredObject) {
       result = ((StoredObject) result).getDeserializedForReading();
     }
@@ -1532,7 +1304,6 @@ public class EntryEventImpl
   }
   
   public final Object getDeserializedValue() {
-    if (this.delta == null) {
       final Object val = basicGetNewValue();
       if (val instanceof CachedDeserializable) {
         return ((CachedDeserializable)val).getDeserializedForReading();
@@ -1540,16 +1311,11 @@ public class EntryEventImpl
       else {
         return val;
       }
-    }
-    else {
-      return this.delta;
-    }
   }
 
   public final byte[] getSerializedValue() {
     if (this.newValueBytes == null) {
       final Object val;
-      if (this.delta == null) {
         val = basicGetNewValue();
         if (val instanceof byte[]) {
           return (byte[])val;
@@ -1557,10 +1323,6 @@ public class EntryEventImpl
         else if (val instanceof CachedDeserializable) {
           return ((CachedDeserializable)val).getSerializedValue();
         }
-      }
-      else {
-        val = this.delta;
-      }
       try {
         return CacheServerHelper.serialize(val);
       } catch (IOException ioe) {
@@ -1574,7 +1336,7 @@ public class EntryEventImpl
 
   /**
    * Forces this entry's new value to be in serialized form.
-   * @since 5.0.2
+   * @since GemFire 5.0.2
    */
   public void makeSerializedNewValue() {
     makeSerializedNewValue(false);
@@ -1592,11 +1354,6 @@ public class EntryEventImpl
     if (isSynced) {
       this.setSerializationDeferred(false);
     }
-    else if (obj == null && this.delta != null) {
-      // defer serialization until setNewValueInRegion
-      this.setSerializationDeferred(true);
-      return;
-    }
     basicSetNewValue(getCachedDeserializable(obj, this));
   }
 
@@ -1611,12 +1368,11 @@ public class EntryEventImpl
                             || obj == Token.NOT_AVAILABLE
                             || Token.isInvalidOrRemoved(obj)
                             // don't serialize delta object already serialized
-                            || obj instanceof com.gemstone.gemfire.Delta
-                            || obj instanceof Delta) { // internal delta
+                            || obj instanceof com.gemstone.gemfire.Delta) { // internal delta
       return obj;
     }
     final CachedDeserializable cd;
-    // avoid unneeded serialization of byte[][] used by SQLFabric that
+    // avoid unneeded serialization of byte[][] that
     // will end up being deserialized in any case (serialization is cheap
     //   for byte[][] anyways)
     if (obj instanceof byte[][]) {
@@ -1651,18 +1407,7 @@ public class EntryEventImpl
   public final void setSerializedNewValue(byte[] serializedValue) {
     Object newVal = null;
     if (serializedValue != null) {
-      if (CachedDeserializableFactory.preferObject()) {
-        newVal = deserialize(serializedValue);
-      } else {
-        newVal = CachedDeserializableFactory.create(serializedValue);
-      }
-      if (newVal instanceof Delta) {
-        this.delta = (Delta)newVal;
-        newVal = null;
-        // We need the newValueBytes field and the newValue field to be in sync.
-        // In the case of non-null delta set both fields to null.
-        serializedValue = null;
-      }
+      newVal = CachedDeserializableFactory.create(serializedValue);
     }
     this.newValueBytes = serializedValue;
     basicSetNewValue(newVal);
@@ -1672,10 +1417,7 @@ public class EntryEventImpl
   public void setSerializedOldValue(byte[] serializedOldValue){
     this.oldValueBytes = serializedOldValue;
     final Object ov;
-    if (CachedDeserializableFactory.preferObject()) {
-      ov = deserialize(serializedOldValue);
-    }
-    else if (serializedOldValue != null) {
+    if (serializedOldValue != null) {
       ov = CachedDeserializableFactory.create(serializedOldValue);
     }
     else {
@@ -1688,7 +1430,7 @@ public class EntryEventImpl
    * If true (the default) then preserve old values in events.
    * If false then mark non-null values as being NOT_AVAILABLE.
    */
-  private static final boolean EVENT_OLD_VALUE = !Boolean.getBoolean("gemfire.disable-event-old-value");
+  private static final boolean EVENT_OLD_VALUE = !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disable-event-old-value");
 
   
   void putExistingEntry(final LocalRegion owner, RegionEntry entry) throws RegionClearedException {
@@ -1711,23 +1453,14 @@ public class EntryEventImpl
         if (requireOldValue ||
             EVENT_OLD_VALUE
             || this.region instanceof HARegion // fix for bug 37909
-            || GemFireCacheImpl.sqlfSystem()
             ) {
           @Retained Object ov;
           if (ReferenceCountHelper.trackReferenceCounts()) {
             ReferenceCountHelper.setReferenceCountOwner(new OldValueOwner());
-            if (GemFireCacheImpl.sqlfSystem()) {
-              ov = reentry.getValueOffHeapOrDiskWithoutFaultIn(this.region);
-            } else {
-              ov = reentry._getValueRetain(owner, true);
-            }
+            ov = reentry._getValueRetain(owner, true);
             ReferenceCountHelper.setReferenceCountOwner(null);
           } else {
-            if (GemFireCacheImpl.sqlfSystem()) {
-              ov = reentry.getValueOffHeapOrDiskWithoutFaultIn(this.region);
-            } else {
-              ov = reentry._getValueRetain(owner, true);
-            }
+            ov = reentry._getValueRetain(owner, true);
           }
           if (ov == null) ov = Token.NOT_AVAILABLE;
           // ov has already been retained so call basicSetOldValue instead of retainAndSetOldValue
@@ -1752,7 +1485,7 @@ public class EntryEventImpl
   /**
    * If we are currently a create op then turn us into an update
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   void makeUpdate()
   {
@@ -1762,7 +1495,7 @@ public class EntryEventImpl
   /**
    * If we are currently an update op then turn us into a create
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   void makeCreate()
   {
@@ -1797,12 +1530,6 @@ public class EntryEventImpl
     boolean wasTombstone = reentry.isTombstone();
     
     // put in newValue
-
-    if (applyDelta(this.op.isCreate())) {
-      if (this.isSerializationDeferred()) {
-        makeSerializedNewValue(true);
-      }
-    }
 
     // If event contains new value, then it may mean that the delta bytes should
     // not be applied. This is possible if the event originated locally.
@@ -1842,7 +1569,7 @@ public class EntryEventImpl
       basicSetNewValue(v);
     }
 
-    Object preparedV = reentry.prepareValueForCache(this.region, v, this, this.hasDelta());
+    Object preparedV = reentry.prepareValueForCache(this.region, v, this, false);
     if (preparedV != v) {
       v = preparedV;
       if (v instanceof StoredObject) {
@@ -1883,29 +1610,9 @@ public class EntryEventImpl
         }
       }
     }
-    final IndexUpdater indexUpdater = this.region.getIndexUpdater();
-    if (indexUpdater != null) {
-      final LocalRegion indexRegion;
-      if (owner != null) {
-        indexRegion = owner;
-      }
-      else {
-        indexRegion = this.region;
-      }
-      try {
-        indexUpdater.onEvent(indexRegion, this, reentry);
-        calledSetValue = true;
-        reentry.setValueWithTombstoneCheck(v, this); // already called prepareValueForCache
-        success = true;
-      } finally {
-        indexUpdater.postEvent(indexRegion, this, reentry, success);
-      }
-    }
-    else {
-      calledSetValue = true;
-      reentry.setValueWithTombstoneCheck(v, this); // already called prepareValueForCache
-      success = true;
-    }
+    calledSetValue = true;
+    reentry.setValueWithTombstoneCheck(v, this); // already called prepareValueForCache
+    success = true;
     } finally {
       if (!success && reentry instanceof OffHeapRegionEntry && v instanceof StoredObject) {
         OffHeapRegionEntryHelper.releaseEntry((OffHeapRegionEntry)reentry, (StoredObject)v);
@@ -2043,8 +1750,6 @@ public class EntryEventImpl
         // there must be a nearSidePendingValue
         processDeltaBytes(tx.getNearSidePendingValue());
         v = basicGetNewValue();
-      } else if (this.delta != null) {
-        v = this.delta;
       } else {
         v = isLocalInvalid() ? Token.LOCAL_INVALID : Token.INVALID;
       }
@@ -2053,7 +1758,7 @@ public class EntryEventImpl
     if (this.op != Operation.LOCAL_INVALIDATE
         && this.op != Operation.LOCAL_DESTROY) {
       // fix for bug 34387
-      tx.setPendingValue(OffHeapHelper.copyIfNeeded(v)); // TODO OFFHEAP optimize
+      tx.setPendingValue(OffHeapHelper.copyIfNeeded(v));
     }
     tx.setCallbackArgument(getCallbackArgument());
   }
@@ -2146,12 +1851,6 @@ public class EntryEventImpl
   /** Return true if new value available */
   public boolean hasNewValue() {
     Object tmp = this.newValue;
-    if (tmp == null && hasDelta()) {
-      // ???:ezoerner:20080611 what if applying the delta would produce
-      // null or (strangely) NOT_AVAILABLE.. do we need to apply it here to
-      // find out?
-      return true;
-    }
     return  tmp != null && tmp != Token.NOT_AVAILABLE;
   }
 
@@ -2160,16 +1859,6 @@ public class EntryEventImpl
   }
   public final boolean isOldValueAToken() {
     return this.oldValue instanceof Token;
-  }
-
-  /**
-   * This should only be used in case of internal delta and <B>not for Delta of
-   * Delta Propagation feature</B>.
-   * 
-   * @return boolean
-   */
-  public boolean hasDelta() {
-    return (this.delta != null);
   }
 
   public boolean isOldValueAvailable() {
@@ -2306,6 +1995,8 @@ public class EntryEventImpl
 
     buf.append("op=");
     buf.append(getOperation());
+    buf.append(";region=");
+    buf.append(getRegion().getFullPath());
     buf.append(";key=");
     buf.append(this.getKey());
     buf.append(";oldValue=");
@@ -2388,12 +2079,8 @@ public class EntryEventImpl
     DataSerializer.writeObject(this.txId, out);
 
     {
-      boolean isDelta = this.delta != null;
-      out.writeBoolean(isDelta);
-      if (isDelta) {
-        DataSerializer.writeObject(this.delta, out);
-      }
-      else {
+      out.writeBoolean(false);
+      {
         Object nv = basicGetNewValue();
         boolean newValueSerialized = nv instanceof CachedDeserializable;
         if (newValueSerialized) {
@@ -2494,7 +2181,6 @@ public class EntryEventImpl
     if (tmp instanceof CachedDeserializable) {
       CachedDeserializable cd = (CachedDeserializable) tmp;
       if (!cd.isSerialized()) {
-        // TODO OFFHEAP can we handle offheap byte[] better?
         return null;
       }
       return new SerializedCacheValueImpl(this, this.region, this.re, cd, this.oldValueBytes);
@@ -2514,7 +2200,6 @@ public class EntryEventImpl
   public int getNewValSizeForPR()
   {
     int newSize = 0;
-    applyDelta(false);
     Object v = basicGetNewValue();
     if (v != null) {
       try {
@@ -2644,7 +2329,7 @@ public class EntryEventImpl
   
   /**
    * Return true if this event came from a server by the client doing a get.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public boolean isFromServer() {
     return testEventFlag(EventFlags.FLAG_FROM_SERVER);
@@ -2654,7 +2339,7 @@ public class EntryEventImpl
    * comes from a server while the affected region entry is not locked.  Among
    * other things it causes version conflict checks to be performed to protect
    * against overwriting a newer version of the entry.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setFromServer(boolean v) {
     setEventFlag(EventFlags.FLAG_FROM_SERVER, v);
@@ -2754,14 +2439,6 @@ public class EntryEventImpl
   public EntryEventImpl setCreate(boolean isCreate) {
     setEventFlag(EventFlags.FLAG_ISCREATE, isCreate);
     return this;
-  }
-
-  public final void setContextObject(Object ctx) {
-    this.contextObj = ctx;
-  }
-
-  public final Object getContextObject() {
-    return this.contextObj;
   }
 
   /**
@@ -2883,16 +2560,13 @@ public class EntryEventImpl
       return getDeserializedValue(this.r, this.re);
     }
     public Object getDeserializedForReading() {
-      // TODO OFFHEAP: returns off-heap PdxInstance
       return OffHeapHelper.getHeapForm(getCd().getDeserializedForReading());
     }
     public Object getDeserializedWritableCopy(Region rgn, RegionEntry entry) {
-      // TODO OFFHEAP: returns off-heap PdxInstance
       return OffHeapHelper.getHeapForm(getCd().getDeserializedWritableCopy(rgn, entry));
     }
 
     public Object getDeserializedValue(Region rgn, RegionEntry reentry) {
-      // TODO OFFHEAP: returns off-heap PdxInstance
       return OffHeapHelper.getHeapForm(getCd().getDeserializedValue(rgn, reentry));
     }
     public Object getValue() {
@@ -2993,6 +2667,7 @@ public class EntryEventImpl
   }
   
   /** returns a copy of this event with the additional fields for WAN conflict resolution */
+  @Retained
   public TimestampedEntryEvent getTimestampedEvent(
       final int newDSID, final int oldDSID,
       final long newTimestamp, final long oldTimestamp) {
@@ -3029,16 +2704,6 @@ public class EntryEventImpl
     // Note that this method does not set the old/new values to null but
     // leaves them set to the off-heap value so that future calls to getOld/NewValue
     // will fail with an exception.
-//    LocalRegion lr = getLocalRegion();
-//    if (lr != null) {
-//      if (lr.isCacheClosing()) {
-//        // to fix races during closing and recreating cache (see bug 47883) don't bother
-//        // trying to decrement reference counts if we are closing the cache.
-//        // TODO OFFHEAP: this will cause problems once offheap lives longer than a cache.
-//        this.offHeapOk = false;
-//        return;
-//      }
-//    }
     Object ov = basicGetOldValue();
     Object nv = basicGetNewValue();
     this.offHeapOk = false;
@@ -3097,28 +2762,5 @@ public class EntryEventImpl
 
   public boolean isOldValueOffHeap() {
     return isOffHeapReference(this.oldValue);
-  }
-  public final boolean isFetchFromHDFS() {
-    return fetchFromHDFS;
-  }
-
-  public final void setFetchFromHDFS(boolean fetchFromHDFS) {
-    this.fetchFromHDFS = fetchFromHDFS;
-  }
-
-  public final boolean isPutDML() {
-    return this.isPutDML;
-  }
-
-  public final void setPutDML(boolean val) {
-    this.isPutDML = val;
-  }
-
-  public final boolean isLoadedFromHDFS() {
-    return loadedFromHDFS;
-  }
-
-  public final void setLoadedFromHDFS(boolean loadedFromHDFS) {
-    this.loadedFromHDFS = loadedFromHDFS;
   }
 }

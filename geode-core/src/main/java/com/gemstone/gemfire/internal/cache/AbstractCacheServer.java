@@ -16,13 +16,13 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.admin.ClientMembershipMessage;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
@@ -38,11 +38,11 @@ import java.util.Set;
  * Abstract class that contains common code that all true implementations
  * of {@link CacheServer} can use.
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
 public abstract class AbstractCacheServer implements CacheServer {
 
-  public static final String TEST_OVERRIDE_DEFAULT_PORT_PROPERTY = "gemfire.test.CacheServer.OVERRIDE_DEFAULT_PORT";
+  public static final String TEST_OVERRIDE_DEFAULT_PORT_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "test.CacheServer.OVERRIDE_DEFAULT_PORT";
 
   /** The cache that is served by this bridge server */
   protected final InternalCache cache;
@@ -87,7 +87,7 @@ public abstract class AbstractCacheServer implements CacheServer {
   protected int messageTimeToLive;
   /**
    * The groups this server belongs to. Use <code>getGroups</code> to read.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected String[] groups;
   
@@ -95,13 +95,13 @@ public abstract class AbstractCacheServer implements CacheServer {
 
   /**
    * The ip address or host name that this server is to listen on.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected String bindAddress;
   /**
    * The ip address or host name that will be given to clients so they can connect
    * to this server
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected String hostnameForClients;
   
@@ -117,13 +117,6 @@ public abstract class AbstractCacheServer implements CacheServer {
    * members as clients of this server leave/crash. 
    */
   protected final ClientMembershipListener listener;
-
-  /**
-   * The number of seconds to keep transaction states for disconnected clients.
-   * This allows the client to fail over to another server and still find
-   * the transaction state to complete the transaction.
-   */
-  private int transactionTimeToLive;
   
   //////////////////////  Constructors  //////////////////////
 
@@ -147,9 +140,7 @@ public abstract class AbstractCacheServer implements CacheServer {
     this.tcpNoDelay = CacheServer.DEFAULT_TCP_NO_DELAY;
     this.maximumTimeBetweenPings = CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS;
     this.maximumMessageCount = CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT;
-    this.messageTimeToLive = CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE;
-    // TODO this should be configurable in CacheServer
-    this.transactionTimeToLive = Integer.getInteger("gemfire.cacheServer.transactionTimeToLive", 180);
+    this.messageTimeToLive = CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE;    
     this.groups = CacheServer.DEFAULT_GROUPS;
     this.bindAddress = CacheServer.DEFAULT_BIND_ADDRESS;
     this.hostnameForClients = CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS;
@@ -305,14 +296,6 @@ public abstract class AbstractCacheServer implements CacheServer {
 
   public void setMaximumMessageCount(int maximumMessageCount) {
     this.maximumMessageCount = maximumMessageCount;
-  }
-  
-  public void setTransactionTimeToLive(int seconds) {
-    this.transactionTimeToLive = seconds;
-  }
-  
-  public int getTransactionTimeToLive() {
-    return this.transactionTimeToLive;
   }
   
   public int getMessageTimeToLive() {

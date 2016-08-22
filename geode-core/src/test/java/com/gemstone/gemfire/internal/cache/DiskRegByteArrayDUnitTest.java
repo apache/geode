@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.Properties;
@@ -44,7 +53,8 @@ import com.gemstone.gemfire.test.dunit.VM;
  * 
  */
 
-public class DiskRegByteArrayDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class DiskRegByteArrayDUnitTest extends JUnit4CacheTestCase {
   static Cache cache;
   static Properties props = new Properties();
   static Properties propsWork = new Properties();
@@ -53,27 +63,26 @@ public class DiskRegByteArrayDUnitTest extends CacheTestCase {
   static CacheTransactionManager cacheTxnMgr;
   protected static File[] dirs = null;
   final static byte[] value = new byte[1024];
-  
-   
-    public DiskRegByteArrayDUnitTest(String name) {
-        super(name);
-        File file1 = new File( name + "1");
-        file1.mkdir();
-        file1.deleteOnExit();
-        File file2 = new File( name + "2");
-        file2.mkdir();
-        file2.deleteOnExit();
-        File file3 = new File( name + "3");
-        file3.mkdir();
-        file3.deleteOnExit();
-        File file4 = new File( name + "4");
-        file4.mkdir();
-        file4.deleteOnExit();
-        dirs = new File[4];
-        dirs[0] = file1;
-        dirs[1] = file2;
-        dirs[2] = file3;
-        dirs[3] = file4;
+
+    public DiskRegByteArrayDUnitTest() {
+      super();
+      File file1 = new File( getTestMethodName() + "1");
+      file1.mkdir();
+      file1.deleteOnExit();
+      File file2 = new File( getTestMethodName() + "2");
+      file2.mkdir();
+      file2.deleteOnExit();
+      File file3 = new File( getTestMethodName() + "3");
+      file3.mkdir();
+      file3.deleteOnExit();
+      File file4 = new File( getTestMethodName() + "4");
+      file4.mkdir();
+      file4.deleteOnExit();
+      dirs = new File[4];
+      dirs[0] = file1;
+      dirs[1] = file2;
+      dirs[2] = file3;
+      dirs[3] = file4;
     }
 
     @Override
@@ -103,7 +112,7 @@ public class DiskRegByteArrayDUnitTest extends CacheTestCase {
     
     public static void createCacheForVM0(){
         try{
-            ds = (new DiskRegByteArrayDUnitTest("vm0_diskReg")).getSystem(props);
+            ds = (new DiskRegByteArrayDUnitTest()).getSystem(props);
             cache = CacheFactory.create(ds);
             AttributesFactory factory  = new AttributesFactory();
             factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -124,7 +133,7 @@ public class DiskRegByteArrayDUnitTest extends CacheTestCase {
     public static void createCacheForVM1(){
         try{
             
-            ds = (new DiskRegByteArrayDUnitTest("vm1_diskReg")).getSystem(props);
+            ds = (new DiskRegByteArrayDUnitTest()).getSystem(props);
             cache = CacheFactory.create(ds);
             AttributesFactory factory  = new AttributesFactory();
             factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -154,7 +163,8 @@ public class DiskRegByteArrayDUnitTest extends CacheTestCase {
     
     //test methods
  
-    public void testPutGetByteArray(){
+  @Test
+  public void testPutGetByteArray(){
         
         Host host = Host.getHost(0);
         VM vm0 = host.getVM(0);

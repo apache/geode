@@ -16,36 +16,31 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Properties;
-import java.util.UUID;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.VMThinRegionEntryOffHeapIntKey;
-import com.gemstone.gemfire.internal.cache.VMThinRegionEntryOffHeapLongKey;
-import com.gemstone.gemfire.internal.cache.VMThinRegionEntryOffHeapObjectKey;
-import com.gemstone.gemfire.internal.cache.VMThinRegionEntryOffHeapStringKey1;
-import com.gemstone.gemfire.internal.cache.VMThinRegionEntryOffHeapStringKey2;
-import com.gemstone.gemfire.internal.cache.VMThinRegionEntryOffHeapUUIDKey;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
+import java.util.UUID;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @Category(IntegrationTest.class)
 public class InlineKeyJUnitTest {
   private GemFireCacheImpl createCache() {
     Properties props = new Properties();
-    props.setProperty("locators", "");
-    props.setProperty("mcast-port", "0");
-    props.setProperty("off-heap-memory-size", "1m");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(ConfigurationProperties.OFF_HEAP_MEMORY_SIZE, "1m");
     GemFireCacheImpl result = (GemFireCacheImpl) new CacheFactory(props).create();
     return result;
   }

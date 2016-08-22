@@ -20,7 +20,7 @@ import java.io.*;
 import java.nio.*;
 
 /** An OutputStream that wraps to a ByteBuffer
- * @since 3.5
+ * @since GemFire 3.5
  */
 
 public class ByteBufferOutputStream extends OutputStream {

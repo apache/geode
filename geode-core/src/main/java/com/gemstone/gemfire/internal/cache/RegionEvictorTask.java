@@ -16,24 +16,24 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.Callable;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.cache.RegionDestroyedException;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.lru.HeapEvictor;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * 
  * Takes delta to be evicted and tries to evict the least no of LRU entry which
  * would make evictedBytes more than or equal to the delta
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * 
  */
 public class RegionEvictorTask implements Callable<Object> {
@@ -46,7 +46,7 @@ public class RegionEvictorTask implements Callable<Object> {
 
   static {
     EVICTION_BURST_PAUSE_TIME_MILLIS = Integer.getInteger(
-        "gemfire.evictionBurstPauseTimeMillis", 1000);
+        DistributionConfig.GEMFIRE_PREFIX + "evictionBurstPauseTimeMillis", 1000);
   }
 
   private static volatile long lastTaskCompletionTime = 0;

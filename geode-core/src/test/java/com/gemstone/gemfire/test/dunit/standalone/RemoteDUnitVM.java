@@ -20,12 +20,11 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.TimeUnit;
 
+import hydra.MethExecutor;
+import hydra.MethExecutorResult;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.internal.logging.LogService;
-
-import hydra.MethExecutor;
-import hydra.MethExecutorResult;
 
 /**
  *

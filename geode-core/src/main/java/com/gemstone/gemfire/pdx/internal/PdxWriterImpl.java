@@ -16,33 +16,27 @@
  */
 package com.gemstone.gemfire.pdx.internal;
 
-import java.io.DataOutput;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.Date;
-
 import com.gemstone.gemfire.InternalGemFireException;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.DSCODE;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
-import com.gemstone.gemfire.pdx.FieldType;
-import com.gemstone.gemfire.pdx.PdxFieldAlreadyExistsException;
-import com.gemstone.gemfire.pdx.PdxFieldDoesNotExistException;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.pdx.PdxSerializable;
-import com.gemstone.gemfire.pdx.PdxSerializationException;
-import com.gemstone.gemfire.pdx.PdxUnreadFields;
-import com.gemstone.gemfire.pdx.PdxWriter;
+import com.gemstone.gemfire.pdx.*;
 import com.gemstone.gemfire.pdx.internal.AutoSerializableManager.AutoClassInfo;
+
+import java.io.DataOutput;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Date;
 
 /**
  * A new instance of this class is created for each (nested) instance of
  * {@link PdxSerializable}. But it may share the underlying instance
  * of {@link HeapDataOutputStream} with other instances of this class.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  * @see InternalDataSerializer#basicWriteObject(Object, java.io.DataOutput, boolean)
  */
 public class PdxWriterImpl implements PdxWriter {
@@ -89,7 +83,7 @@ public class PdxWriterImpl implements PdxWriter {
    * This property should only be set when debugging new code since it will slow down
    * pdx serialization.
    */
-  private static final boolean sysPropDoExtraPdxValidation = Boolean.getBoolean("gemfire.validatePdxWriters");
+  private static final boolean sysPropDoExtraPdxValidation = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "validatePdxWriters");
   private boolean doExtraValidation = sysPropDoExtraPdxValidation;
 
   public PdxWriterImpl(TypeRegistry tr, Object pdx, PdxOutputStream out) {

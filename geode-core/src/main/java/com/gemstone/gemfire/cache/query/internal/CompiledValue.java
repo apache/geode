@@ -16,10 +16,13 @@
  */
 package com.gemstone.gemfire.cache.query.internal;
 
-import java.util.*;
 import com.gemstone.gemfire.cache.query.*;
 import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
-import com.gemstone.gemfire.cache.query.types.*;
+import com.gemstone.gemfire.cache.query.types.ObjectType;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Class Description
@@ -47,7 +50,7 @@ public interface CompiledValue {
   public final static int FIELD = -16;
   public final static int GROUP_BY_SELECT = -17;
   public static  final int INDEX_RESULT_THRESHOLD_DEFAULT = 100;
-  public static final String INDX_THRESHOLD_PROP_STR = "gemfire.Query.INDEX_THRESHOLD_SIZE";
+  public static final String INDX_THRESHOLD_PROP_STR = DistributionConfig.GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE";
   public static final String INDEX_INFO = "index_info";
   public static final int indexThresholdSize = Integer.getInteger(INDX_THRESHOLD_PROP_STR, INDEX_RESULT_THRESHOLD_DEFAULT).intValue();
   public static final String RESULT_TYPE = "result_type";

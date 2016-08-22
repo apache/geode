@@ -16,6 +16,12 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static org.junit.Assert.*;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -26,18 +32,17 @@ import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the functionality of a cache {@link Region region}
  * that has a scope of {@link Scope#DISTRIBUTED_ACK distributed ACK}.
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
+@Category(DistributedTest.class)
+@Ignore("TODO: test disabled because of GEODE-1568")
 public class PreloadedRegionTestCase extends MultiVMRegionTestCase {
-
-  public PreloadedRegionTestCase(String name) {
-    super(name);
-  }
 
   /**
    * Returns region attributes for a <code>GLOBAL</code> region
@@ -52,6 +57,7 @@ public class PreloadedRegionTestCase extends MultiVMRegionTestCase {
   /**
    * Tests that created entries are not propagated to other caches
    */
+  @Test
   public void testDistributedCreate() throws Exception {
     final String rgnName = getUniqueName();
 
@@ -80,7 +86,6 @@ public class PreloadedRegionTestCase extends MultiVMRegionTestCase {
         }
       }
     };
-
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

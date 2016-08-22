@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.cache.query.internal.aggregate;
 
+import static org.junit.Assert.*;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,14 +26,8 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
-/**
- * 
- *
- */
 @Category(UnitTest.class)
-public class AggregatorJUnitTest extends TestCase{
+public class AggregatorJUnitTest {
 
   @Test
   public void testCount() throws Exception {
@@ -125,9 +121,8 @@ public class AggregatorJUnitTest extends TestCase{
     avg.accumulate(null);
     avg.accumulate(null);
     float expected = (1 + 2+ 3 + 4 + 5 + 6 + 7 +7)/8.0f ;    
-    assertEquals(expected, ((Number)avg.terminate()).floatValue());
+    assertEquals(expected, ((Number)avg.terminate()).floatValue(), 0);
     
-   
     AvgBucketNode abn = new AvgBucketNode();
     abn.accumulate(new Integer(1));
     abn.accumulate(new Integer(2));
@@ -143,14 +138,13 @@ public class AggregatorJUnitTest extends TestCase{
     assertEquals(8, ((Integer)arr[0]).intValue());
     assertEquals(35, ((Number)arr[1]).intValue());
     
-    
     AvgPRQueryNode apqn = new AvgPRQueryNode();
     Object[] val1 = new Object[]{new Integer(7), new Double(43)};
     Object[] val2 = new Object[]{new Integer(5), new Double(273.86)};
     apqn.accumulate(val1);
     apqn.accumulate(val2);
     expected = (43+273.86f)/12.0f ;
-    assertEquals(expected, ((Number)apqn.terminate()).floatValue());    
+    assertEquals(expected, ((Number)apqn.terminate()).floatValue(), 0);
   }
   
   @Test
@@ -170,9 +164,8 @@ public class AggregatorJUnitTest extends TestCase{
     avg.accumulate(null);
     avg.accumulate(null);
     float expected = (1 + 2+ 3 + 4 + 5 + 6 + 7)/7.0f ;    
-    assertEquals(expected, ((Number)avg.terminate()).floatValue());
-    
-   
+    assertEquals(expected, ((Number)avg.terminate()).floatValue(), 0);
+
     AvgDistinctPRQueryNode adpqn = new AvgDistinctPRQueryNode();
     
     Set<Integer> set1 = new HashSet<Integer>();
@@ -191,7 +184,7 @@ public class AggregatorJUnitTest extends TestCase{
     adpqn.accumulate(set2);
    
     expected = (3+4+5+6+7+8)/6.0f ;
-    assertEquals(expected, ((Number)adpqn.terminate()).floatValue());    
+    assertEquals(expected, ((Number)adpqn.terminate()).floatValue(), 0);
   }
   
   @Test

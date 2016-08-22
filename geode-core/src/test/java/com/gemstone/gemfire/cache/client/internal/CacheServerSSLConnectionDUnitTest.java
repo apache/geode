@@ -16,10 +16,17 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -30,21 +37,19 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
  * Tests cacheserver ssl support added. See https://svn.gemstone.com/trac/gemfire/ticket/48995 for details
  */
-public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
-
-  private static final long serialVersionUID = 1L;
+@Category(DistributedTest.class)
+public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String TRUSTED_STORE = "trusted.keystore";
   private static final String CLIENT_KEY_STORE = "client.keystore";
@@ -52,7 +57,7 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
   private static final String SERVER_KEY_STORE = "cacheserver.keystore";
   private static final String SERVER_TRUST_STORE = "cacheserver.truststore";
 
-  private static CacheServerSSLConnectionDUnitTest instance = new CacheServerSSLConnectionDUnitTest("CacheServerSSLConnectionDUnit");
+  private static CacheServerSSLConnectionDUnitTest instance = new CacheServerSSLConnectionDUnitTest(); // TODO: memory leak
 
   private Cache cache;
   private CacheServer cacheServer;
@@ -65,14 +70,10 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     disconnectAllFromDS();
   }
 
-  public CacheServerSSLConnectionDUnitTest(String name) {
-    super(name);
-  }
-
   public Cache createCache(Properties props) throws Exception
   {
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     cache = new CacheFactory(props).create();
     if (cache == null) {
       throw new Exception("CacheFactory.create() returned null ");
@@ -80,12 +81,13 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     return cache;
   }
 
-  private void createServer() throws IOException{
-    cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+  private int createServer() throws IOException{
     cacheServer = cache.addCacheServer();
-    cacheServer.setPort(cacheServerPort);
+    cacheServer.setPort(0);
     cacheServer.start();
     hostName = cacheServer.getHostnameForClients();
+    cacheServerPort = cacheServer.getPort();
+    return cacheServerPort;
   }
 
   public int getCacheServerPort(){
@@ -100,7 +102,6 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     this.cacheServer.stop();
   }
 
-
   @SuppressWarnings("rawtypes")
   public void setUpServerVM(boolean cacheServerSslenabled) throws Exception {
     Properties gemFireProps = new Properties();
@@ -108,23 +109,18 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     String cacheServerSslprotocols = "any";
     String cacheServerSslciphers = "any";
     boolean cacheServerSslRequireAuth = true;
-    gemFireProps.put(DistributionConfig.SERVER_SSL_ENABLED_NAME,
-            String.valueOf(cacheServerSslenabled));
-    gemFireProps.put(DistributionConfig.SERVER_SSL_PROTOCOLS_NAME,
-            cacheServerSslprotocols);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_CIPHERS_NAME,
-            cacheServerSslciphers);
-    gemFireProps.put(
-            DistributionConfig.SERVER_SSL_REQUIRE_AUTHENTICATION_NAME,
-            String.valueOf(cacheServerSslRequireAuth));
+    gemFireProps.put(SERVER_SSL_ENABLED, String.valueOf(cacheServerSslenabled));
+    gemFireProps.put(SERVER_SSL_PROTOCOLS, cacheServerSslprotocols);
+    gemFireProps.put(SERVER_SSL_CIPHERS, cacheServerSslciphers);
+    gemFireProps.put(SERVER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(cacheServerSslRequireAuth));
 
     String keyStore = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_KEY_STORE);
     String trustStore = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_TRUST_STORE);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_TYPE_NAME, "jks");
-    gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_NAME, keyStore);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    gemFireProps.put(DistributionConfig.SERVER_SSL_TRUSTSTORE_NAME, trustStore);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_TRUSTSTORE_PASSWORD_NAME, "password");
+    gemFireProps.put(SERVER_SSL_KEYSTORE_TYPE, "jks");
+    gemFireProps.put(SERVER_SSL_KEYSTORE, keyStore);
+    gemFireProps.put(SERVER_SSL_KEYSTORE_PASSWORD, "password");
+    gemFireProps.put(SERVER_SSL_TRUSTSTORE, trustStore);
+    gemFireProps.put(SERVER_SSL_TRUSTSTORE_PASSWORD, "password");
 
     StringWriter sw = new StringWriter();
     PrintWriter writer = new PrintWriter(sw);
@@ -149,21 +145,16 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     String keyStorePath = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, keyStore);
     String trustStorePath = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, trustStore);
     //using new server-ssl-* properties
-    gemFireProps.put(DistributionConfig.SERVER_SSL_ENABLED_NAME,
-            String.valueOf(cacheServerSslenabled));
-    gemFireProps.put(DistributionConfig.SERVER_SSL_PROTOCOLS_NAME,
-            cacheServerSslprotocols);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_CIPHERS_NAME,
-            cacheServerSslciphers);
-    gemFireProps.put(
-            DistributionConfig.SERVER_SSL_REQUIRE_AUTHENTICATION_NAME,
-            String.valueOf(cacheServerSslRequireAuth));
+    gemFireProps.put(SERVER_SSL_ENABLED, String.valueOf(cacheServerSslenabled));
+    gemFireProps.put(SERVER_SSL_PROTOCOLS, cacheServerSslprotocols);
+    gemFireProps.put(SERVER_SSL_CIPHERS, cacheServerSslciphers);
+    gemFireProps.put(SERVER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(cacheServerSslRequireAuth));
 
-    gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_TYPE_NAME, "jks");
-    gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_NAME, keyStorePath);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    gemFireProps.put(DistributionConfig.SERVER_SSL_TRUSTSTORE_NAME, trustStorePath);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_TRUSTSTORE_PASSWORD_NAME, "password");
+    gemFireProps.put(SERVER_SSL_KEYSTORE_TYPE, "jks");
+    gemFireProps.put(SERVER_SSL_KEYSTORE, keyStorePath);
+    gemFireProps.put(SERVER_SSL_KEYSTORE_PASSWORD, "password");
+    gemFireProps.put(SERVER_SSL_TRUSTSTORE, trustStorePath);
+    gemFireProps.put(SERVER_SSL_TRUSTSTORE_PASSWORD, "password");
 
     StringWriter sw = new StringWriter();
     PrintWriter writer = new PrintWriter(sw);
@@ -197,8 +188,8 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     instance.setUpServerVM(cacheServerSslenabled);
   }
 
-  public static void createServerTask() throws Exception {
-    instance.createServer();
+  public static int createServerTask() throws Exception {
+    return instance.createServer();
   }
 
   public static void setUpClientVMTask(String host, int port,
@@ -241,6 +232,7 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     }
   }
 
+  @Test
   public void testCacheServerSSL() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);
@@ -251,19 +243,16 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     boolean cacheClientSslRequireAuth = true;
 
     serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled));
-    serverVM.invoke(() -> createServerTask());
+    int port = serverVM.invoke(() -> createServerTask());
 
-    Object array[] = (Object[])serverVM.invoke(() -> getCacheServerEndPointTask());
-    String hostName = (String)array[0];
-    int port = (Integer) array[1];
+    String hostName = host.getHostName();
 
     clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled, cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
     clientVM.invoke(() -> doClientRegionTestTask());
     serverVM.invoke(() -> doServerRegionTestTask());
-
   }
 
-
+  @Test
   public void testNonSSLClient() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);
@@ -306,6 +295,7 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     }
   }
 
+  @Test
   public void testSSLClientWithNoAuth() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);
@@ -342,6 +332,7 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     }
   }
 
+  @Test
   public void testSSLClientWithNonSSLServer() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);

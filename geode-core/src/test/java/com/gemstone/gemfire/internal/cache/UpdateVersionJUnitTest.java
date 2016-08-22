@@ -19,31 +19,27 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.internal.cache.LocalRegion.NonTXEntry;
 import com.gemstone.gemfire.internal.cache.Token.Tombstone;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * This test creates an entry and verifies if {@link UpdateOperation} applies
  * correctly on it after various other operations have been applied on it
  * (Including destroy when entry is a {@link Tombstone}).
  * 
- * @since 7.0.1
+ * @since GemFire 7.0.1
  *
  */
 @Category(IntegrationTest.class)
@@ -51,8 +47,8 @@ public class UpdateVersionJUnitTest {
 
   private static final String regionName = "versionedregion";
 
-  private EntryEventImpl createNewEvent(LocalRegion region, VersionTag tag, Object key) {
-    EntryEventImpl updateTimeStampEvent = EntryEventImpl.createVersionTagHolder(tag);
+  private VersionTagHolder createNewEvent(LocalRegion region, VersionTag tag, Object key) {
+    VersionTagHolder updateTimeStampEvent = new VersionTagHolder(tag);
     updateTimeStampEvent.setOperation(Operation.UPDATE_VERSION_STAMP);
     updateTimeStampEvent.setRegion(region);
     if (region instanceof PartitionedRegion) {
@@ -72,8 +68,8 @@ public class UpdateVersionJUnitTest {
   
   @Test
   public void testUpdateVersionAfterCreate() {
-    
-    Cache cache = new CacheFactory().set("mcast-port", "0").create();
+
+    Cache cache = new CacheFactory().set(MCAST_PORT, "0").create();
     Region region = cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
 
     try {
@@ -124,7 +120,7 @@ public class UpdateVersionJUnitTest {
 
   @Test
   public void testUpdateVersionAfterUpdate() {
-    Cache cache = new CacheFactory().set("mcast-port", "0").create();
+    Cache cache = new CacheFactory().set(MCAST_PORT, "0").create();
     Region region = cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
 
     try {
@@ -180,7 +176,7 @@ public class UpdateVersionJUnitTest {
   @Test
   public void testUpdateVersionAfterDestroy() {
 
-    Cache cache = new CacheFactory().set("mcast-port", "0").create();
+    Cache cache = new CacheFactory().set(MCAST_PORT, "0").create();
     Region region = cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
 
     try {
@@ -241,8 +237,8 @@ public class UpdateVersionJUnitTest {
   
   @Test
   public void testUpdateVersionAfterCreateOnPR() {
-    
-    Cache cache = new CacheFactory().set("mcast-port", "0").create();
+
+    Cache cache = new CacheFactory().set(MCAST_PORT, "0").create();
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(regionName);
 
     try {
@@ -293,7 +289,7 @@ public class UpdateVersionJUnitTest {
 
   @Test
   public void testUpdateVersionAfterUpdateOnPR() {
-    Cache cache = new CacheFactory().set("mcast-port", "0").create();
+    Cache cache = new CacheFactory().set(MCAST_PORT, "0").create();
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(regionName);
 
     try {
@@ -349,7 +345,7 @@ public class UpdateVersionJUnitTest {
   @Test
   public void testUpdateVersionAfterDestroyOnPR() {
 
-    Cache cache = new CacheFactory().set("mcast-port", "0").create();
+    Cache cache = new CacheFactory().set(MCAST_PORT, "0").create();
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(regionName);
 
     try {

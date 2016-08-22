@@ -27,7 +27,7 @@ import org.json.JSONException;
  * Wrapper over JSONArray.
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class GfJsonArray {
   private JSONArray jsonArray;

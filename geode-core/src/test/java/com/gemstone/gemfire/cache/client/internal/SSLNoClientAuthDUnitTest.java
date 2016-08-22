@@ -16,10 +16,17 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -30,20 +37,19 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.security.AuthenticationRequiredException;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
  * Test for GEODE-396
  */
-public class SSLNoClientAuthDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class SSLNoClientAuthDUnitTest extends JUnit4DistributedTestCase {
   
-  private static final long serialVersionUID = 1L;
   private Cache cache;
   private CacheServer cacheServer;
   private ClientCache clientCache;
@@ -52,21 +58,17 @@ public class SSLNoClientAuthDUnitTest extends DistributedTestCase {
   
   private static final String DEFAULT_STORE = "default.keystore";
   
-  private static SSLNoClientAuthDUnitTest instance = new SSLNoClientAuthDUnitTest("SSLNoClientAuthDUnitTest");
+  private static SSLNoClientAuthDUnitTest instance = new SSLNoClientAuthDUnitTest();
   
   @Override
   public final void preSetUp() throws Exception {
     disconnectAllFromDS();
   }
 
-  public SSLNoClientAuthDUnitTest(String name) {
-    super(name);
-  }  
-
   public Cache createCache(Properties props) throws Exception
   {
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     cache = new CacheFactory(props).create();
     if (cache == null) {
       throw new Exception("CacheFactory.create() returned null ");
@@ -102,23 +104,23 @@ public class SSLNoClientAuthDUnitTest extends DistributedTestCase {
     String cacheServerSslprotocols = "any";
     String cacheServerSslciphers = "any";
     boolean cacheServerSslRequireAuth = false;
-    gemFireProps.put(DistributionConfig.SERVER_SSL_ENABLED_NAME,
+    gemFireProps.put(SERVER_SSL_ENABLED,
         String.valueOf(cacheServerSslenabled));
-    gemFireProps.put(DistributionConfig.SERVER_SSL_PROTOCOLS_NAME,
+    gemFireProps.put(SERVER_SSL_PROTOCOLS,
         cacheServerSslprotocols);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_CIPHERS_NAME,
+    gemFireProps.put(SERVER_SSL_CIPHERS,
         cacheServerSslciphers);
     gemFireProps.put(
-        DistributionConfig.SERVER_SSL_REQUIRE_AUTHENTICATION_NAME,
+        SERVER_SSL_REQUIRE_AUTHENTICATION,
         String.valueOf(cacheServerSslRequireAuth));
 
     String keyStore = TestUtil.getResourcePath(SSLNoClientAuthDUnitTest.class, DEFAULT_STORE);
     String trustStore = TestUtil.getResourcePath(SSLNoClientAuthDUnitTest.class, DEFAULT_STORE);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_TYPE_NAME, "jks");
-    gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_NAME, keyStore);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    gemFireProps.put(DistributionConfig.SERVER_SSL_TRUSTSTORE_NAME, trustStore);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_TRUSTSTORE_PASSWORD_NAME, "password");
+    gemFireProps.put(SERVER_SSL_KEYSTORE_TYPE, "jks");
+    gemFireProps.put(SERVER_SSL_KEYSTORE, keyStore);
+    gemFireProps.put(SERVER_SSL_KEYSTORE_PASSWORD, "password");
+    gemFireProps.put(SERVER_SSL_TRUSTSTORE, trustStore);
+    gemFireProps.put(SERVER_SSL_TRUSTSTORE_PASSWORD, "password");
     
     StringWriter sw = new StringWriter();
     PrintWriter writer = new PrintWriter(sw);
@@ -143,21 +145,21 @@ public class SSLNoClientAuthDUnitTest extends DistributedTestCase {
     String keyStorePath = TestUtil.getResourcePath(SSLNoClientAuthDUnitTest.class, keyStore);
     String trustStorePath = TestUtil.getResourcePath(SSLNoClientAuthDUnitTest.class, trustStore);
     //using new server-ssl-* properties
-    gemFireProps.put(DistributionConfig.SERVER_SSL_ENABLED_NAME,
+    gemFireProps.put(SERVER_SSL_ENABLED,
         String.valueOf(cacheServerSslenabled));
-    gemFireProps.put(DistributionConfig.SERVER_SSL_PROTOCOLS_NAME,
+    gemFireProps.put(SERVER_SSL_PROTOCOLS,
         cacheServerSslprotocols);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_CIPHERS_NAME,
+    gemFireProps.put(SERVER_SSL_CIPHERS,
         cacheServerSslciphers);
     gemFireProps.put(
-        DistributionConfig.SERVER_SSL_REQUIRE_AUTHENTICATION_NAME,
+        SERVER_SSL_REQUIRE_AUTHENTICATION,
         String.valueOf(cacheServerSslRequireAuth));
 
-    gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_TYPE_NAME, "jks");
-    gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_NAME, keyStorePath);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    gemFireProps.put(DistributionConfig.SERVER_SSL_TRUSTSTORE_NAME, trustStorePath);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_TRUSTSTORE_PASSWORD_NAME, "password");
+    gemFireProps.put(SERVER_SSL_KEYSTORE_TYPE, "jks");
+    gemFireProps.put(SERVER_SSL_KEYSTORE, keyStorePath);
+    gemFireProps.put(SERVER_SSL_KEYSTORE_PASSWORD, "password");
+    gemFireProps.put(SERVER_SSL_TRUSTSTORE, trustStorePath);
+    gemFireProps.put(SERVER_SSL_TRUSTSTORE_PASSWORD, "password");
 
     StringWriter sw = new StringWriter();
     PrintWriter writer = new PrintWriter(sw);
@@ -231,6 +233,7 @@ public class SSLNoClientAuthDUnitTest extends DistributedTestCase {
   /**
    * Test for GEODE-396
    */
+  @Test
   public void testSSLServerWithNoAuth() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);

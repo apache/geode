@@ -36,7 +36,7 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
   private GatewaySender sender = null;
   
   private AsyncEventListener asyncEventListener = null;
-  
+    
   public static final String ASYNC_EVENT_QUEUE_PREFIX = "AsyncEventQueue_";
   
   public AsyncEventQueueImpl(GatewaySender sender, AsyncEventListener eventListener) {
@@ -201,5 +201,8 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
     // TODO Auto-generated method stub
     return false;
   }
-  
+
+   public boolean isForwardExpirationDestroy() {
+     return ((AbstractGatewaySender)this.sender).isForwardExpirationDestroy();
+   }
 }

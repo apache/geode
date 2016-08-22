@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
@@ -24,6 +27,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.AttributesMutator;
@@ -53,7 +59,6 @@ import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.util.RegionMembershipListenerAdapter;
 import com.gemstone.gemfire.distributed.Role;
 import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
@@ -71,27 +76,20 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests region reliability defined by MembershipAttributes.
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
-
-  public RegionReliabilityTestCase(String name) {
-    super(name);
-  }
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     DistributedCacheOperation.setBeforePutOutgoing(null);
   }
 
-  // -------------------------------------------------------------------------
-  // Configuration and setup methods
-  // -------------------------------------------------------------------------
-  
   /** Returns scope to execute tests under. */
   protected abstract Scope getRegionScope();
   
@@ -106,7 +104,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
       }
     }
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.ROLES_NAME, rolesValue.toString());
+    config.setProperty(ROLES, rolesValue.toString());
     return getSystem(config);
   }
 
@@ -451,6 +449,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of NO_ACCESS on region operations.
    */
+  @Test
   public void testNoAccess() throws Exception {
     final String name = this.getUniqueName();
     
@@ -466,7 +465,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // connect controller to system...
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.ROLES_NAME, "");
+    config.setProperty(ROLES, "");
     getSystem(config);
     
     getCache();
@@ -537,6 +536,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of NO_ACCESS on local entry expiration actions.
    */
+  @Test
   public void testNoAccessWithLocalEntryExpiration() throws Exception {
     final String name = this.getUniqueName();
     
@@ -552,7 +552,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // connect controller to system...
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.ROLES_NAME, "");
+    config.setProperty(ROLES, "");
     getSystem(config);
     
     getCache();
@@ -618,6 +618,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of NO_ACCESS on local region expiration actions.
    */
+  @Test
   public void testNoAccessWithLocalRegionExpiration() throws Exception {
     final String name = this.getUniqueName();
     
@@ -633,7 +634,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // connect controller to system...
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.ROLES_NAME, "");
+    config.setProperty(ROLES, "");
     getSystem(config);
     
     getCache();
@@ -676,6 +677,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of LIMITED_ACCESS on region operations.
    */
+  @Test
   public void testLimitedAccess() throws Exception {
     final String name = this.getUniqueName();
     
@@ -691,7 +693,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // connect controller to system...
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.ROLES_NAME, "");
+    config.setProperty(ROLES, "");
     getSystem(config);
     
     getCache();
@@ -759,6 +761,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of LIMITED_ACCESS on local entry expiration actions.
    */
+  @Test
   public void testLimitedAccessWithLocalEntryExpiration() throws Exception {
     final String name = this.getUniqueName();
     
@@ -774,7 +777,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // connect controller to system...
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.ROLES_NAME, "");
+    config.setProperty(ROLES, "");
     getSystem(config);
     
     getCache();
@@ -847,6 +850,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of LIMITED_ACCESS on local region expiration actions.
    */
+  @Test
   public void testLimitedAccessWithLocalRegionExpiration() throws Exception {
     final String name = this.getUniqueName();
     
@@ -862,7 +866,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // connect controller to system...
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.ROLES_NAME, "");
+    config.setProperty(ROLES, "");
     getSystem(config);
     
     getCache();
@@ -890,6 +894,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of FULL_ACCESS on region operations.
    */
+  @Test
   public void testFullAccess() throws Exception {
     final String name = this.getUniqueName();
     
@@ -905,7 +910,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // connect controller to system...
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.ROLES_NAME, "");
+    config.setProperty(ROLES, "");
     getSystem(config);
     
     getCache();
@@ -953,6 +958,8 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of FULL_ACCESS on local entry expiration actions.
    */
+  @Category(FlakyTest.class) // GEODE-447: time sensitive, expiration, waitForMemberTimeout is unimplemented
+  @Test
   public void testFullAccessWithLocalEntryExpiration() throws Exception {
     final String name = this.getUniqueName();
     
@@ -968,7 +975,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // connect controller to system...
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.ROLES_NAME, "");
+    config.setProperty(ROLES, "");
     getSystem(config);
     
     getCache();
@@ -1026,6 +1033,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of FULL_ACCESS on local region expiration actions.
    */
+  @Test
   public void testFullAccessWithLocalRegionExpiration() throws Exception {
     final String name = this.getUniqueName();
     
@@ -1040,7 +1048,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // connect controller to system...
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.ROLES_NAME, "");
+    config.setProperty(ROLES, "");
     getSystem(config);
     
     getCache();
@@ -1067,6 +1075,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   
   protected static Boolean[] detectedDeparture_testCommitDistributionException = 
     { Boolean.FALSE };
+  @Test
   public void testCommitDistributionException() throws Exception {
     if (getRegionScope().isGlobal()) return; // skip test under Global
     if (getRegionScope().isDistributedNoAck()) return; // skip test under DistributedNoAck
@@ -1082,7 +1091,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // connect controller to system...
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.ROLES_NAME, "");
+    config.setProperty(ROLES, "");
     getSystem(config);
     
     GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
@@ -1190,6 +1199,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   
   protected static Boolean[] detectedDeparture_testRegionDistributionException = 
     { Boolean.FALSE };
+  @Test
   public void testRegionDistributionException() throws Exception {
     if (getRegionScope().isDistributedNoAck()) return; // skip test under DistributedNoAck
     
@@ -1204,7 +1214,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // connect controller to system...
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.ROLES_NAME, "");
+    config.setProperty(ROLES, "");
     getSystem(config);
     
     getCache();
@@ -1357,6 +1367,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     }
   }
 
+  @Test
   public void testReinitialization() throws Exception {
     final String name = this.getUniqueName();
     final String roleA = name+"-A";
@@ -1369,7 +1380,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // connect controller to system...
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.ROLES_NAME, "");
+    config.setProperty(ROLES, "");
     getSystem(config);
     
     getCache();

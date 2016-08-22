@@ -34,7 +34,7 @@ import org.junit.rules.TestName;
  * Contains simple tests for the {@link CacheHealthEvaluator}
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 @SuppressWarnings("deprecation")
 @Category(IntegrationTest.class)

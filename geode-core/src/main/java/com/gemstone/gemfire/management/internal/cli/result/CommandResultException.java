@@ -21,7 +21,7 @@ import com.gemstone.gemfire.management.cli.Result;
 /**
  * Exception wrapper around a command result.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class CommandResultException extends Exception {
   private static final long serialVersionUID = 1L;

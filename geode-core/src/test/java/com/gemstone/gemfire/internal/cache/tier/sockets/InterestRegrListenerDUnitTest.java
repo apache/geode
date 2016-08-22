@@ -16,11 +16,17 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -38,18 +44,19 @@ import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Written to test fix for Bug #47132
- *
  */
-public class InterestRegrListenerDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
   
   private Cache cache;
   private DistributedSystem ds;
@@ -61,16 +68,9 @@ public class InterestRegrListenerDUnitTest extends DistributedTestCase {
   
   private static final String UNREGISTER_INTEREST = "UnregisterInterest";
   private static final String REGISTER_INTEREST = "RegisterInterest";
-  private static final int DURABLE_CLIENT_TIMEOUT=20;  
+  private static final int DURABLE_CLIENT_TIMEOUT_TEST=20;
   
-  private static InterestRegrListenerDUnitTest instance = new InterestRegrListenerDUnitTest("InterestRegrListenerDUnitTest");
-
-
-  public InterestRegrListenerDUnitTest(String name) {
-    super(name);    
-  }
-  
-  private static final long serialVersionUID = 1L;
+  private static InterestRegrListenerDUnitTest instance = new InterestRegrListenerDUnitTest();
 
   @Override
   public final void preSetUp() throws Exception {
@@ -95,8 +95,7 @@ public class InterestRegrListenerDUnitTest extends DistributedTestCase {
     hostName = InetAddress.getLocalHost().getHostAddress();
     listnerMap.clear();
   }
-  
-  
+
   public int getCacheServerPort(){
     return cacheServerPort;
   }
@@ -180,8 +179,8 @@ public class InterestRegrListenerDUnitTest extends DistributedTestCase {
   public void setUpClientVM(String host, int port, boolean isDurable, String vmID) {
     Properties gemFireProps = new Properties();
     if (isDurable) {
-      gemFireProps.put("durable-client-id", vmID);
-      gemFireProps.put("durable-client-timeout", ""+DURABLE_CLIENT_TIMEOUT);
+      gemFireProps.put(DURABLE_CLIENT_ID, vmID);
+      gemFireProps.put(DURABLE_CLIENT_TIMEOUT, "" + DURABLE_CLIENT_TIMEOUT_TEST);
     }
     ClientCacheFactory clientCacheFactory = new ClientCacheFactory(gemFireProps);
     clientCacheFactory.addPoolServer(host, port);
@@ -250,6 +249,7 @@ public class InterestRegrListenerDUnitTest extends DistributedTestCase {
     instance.doClientRegionRegisterInterest(isDurable);
   }
   
+  @Test
   public void testDurableClientExit_ClientExpressedInterest() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(0);
@@ -304,7 +304,7 @@ public class InterestRegrListenerDUnitTest extends DistributedTestCase {
     assertEquals(3, registerCount);
     assertEquals(0, unregisterCount);
     LogWriterUtils.getLogWriter().info("Sleeping till durable client queue are expired and unregister event is called on to listener");
-    Thread.sleep((DURABLE_CLIENT_TIMEOUT+5)*1000);    
+    Thread.sleep((DURABLE_CLIENT_TIMEOUT_TEST+5)*1000);
     listnerMap = (Map<String, Integer>) serverVM.invoke(() -> InterestRegrListenerDUnitTest.getListenerMapTask());
     LogWriterUtils.getLogWriter().info("Listener Map after sleeping " + listnerMap);
     registerCount = getMapValueForKey(listnerMap,REGISTER_INTEREST);
@@ -313,8 +313,8 @@ public class InterestRegrListenerDUnitTest extends DistributedTestCase {
     assertEquals(3, unregisterCount);
     serverVM.invoke(() -> InterestRegrListenerDUnitTest.closeCacheTask());    
   }
-  
-  
+
+  @Test
   public void testDurableClientExit_ServerExpressedInterest() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(0);
@@ -366,7 +366,7 @@ public class InterestRegrListenerDUnitTest extends DistributedTestCase {
     assertEquals(3, registerCount);
     assertEquals(0, unregisterCount);
     LogWriterUtils.getLogWriter().info("Sleeping till durable client queue are expired and unregister event is called on to listener");
-    Thread.sleep((DURABLE_CLIENT_TIMEOUT+5)*1000);    
+    Thread.sleep((DURABLE_CLIENT_TIMEOUT_TEST+5)*1000);
     listnerMap = (Map<String, Integer>) serverVM.invoke(() -> InterestRegrListenerDUnitTest.getListenerMapTask());
     LogWriterUtils.getLogWriter().info("Listener Map after sleeping " + listnerMap);
     registerCount = getMapValueForKey(listnerMap,REGISTER_INTEREST);
@@ -374,11 +374,9 @@ public class InterestRegrListenerDUnitTest extends DistributedTestCase {
     assertEquals(3, registerCount);
     assertEquals(3, unregisterCount);
     serverVM.invoke(() -> InterestRegrListenerDUnitTest.closeCacheTask());
-    
   }
-  
-  
-  
+
+  @Test
   public void testDurableClientExit_ServerExpressedInterest_NonDurableInterest() throws Exception {
     final Host host = Host.getHost(0);
     final VM serverVM = host.getVM(0);
@@ -452,10 +450,9 @@ public class InterestRegrListenerDUnitTest extends DistributedTestCase {
     Wait.waitForCriterion(wc, 20000, 500, true);
     
     LogWriterUtils.getLogWriter().info("Sleeping till durable client queue are expired and unregister event is called on to listener");
-    Thread.sleep((DURABLE_CLIENT_TIMEOUT+5)*1000);
+    Thread.sleep((DURABLE_CLIENT_TIMEOUT_TEST+5)*1000);
     serverVM.invoke(() -> InterestRegrListenerDUnitTest.closeCacheTask());
   }
-  
 
   private int getMapValueForKey(Map<String, Integer> map, String key) {
     if (map.containsKey(key))

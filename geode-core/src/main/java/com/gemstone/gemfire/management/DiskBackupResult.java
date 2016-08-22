@@ -22,7 +22,7 @@ import java.beans.ConstructorProperties;
  * Composite data type used to distribute the results of a disk backup
  * operation.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class DiskBackupResult {
 

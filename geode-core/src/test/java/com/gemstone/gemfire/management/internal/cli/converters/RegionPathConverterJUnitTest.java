@@ -39,11 +39,9 @@ public class RegionPathConverterJUnitTest {
 
   @Before
   public void setup() {
-    mockContext = new Mockery() {
-      {
-        setImposteriser(ClassImposteriser.INSTANCE);
-      }
-    };
+    mockContext = new Mockery() {{
+      setImposteriser(ClassImposteriser.INSTANCE);
+    }};
   }
 
   @After
@@ -51,16 +49,14 @@ public class RegionPathConverterJUnitTest {
     mockContext.assertIsSatisfied();
     mockContext = null;
   }
-  
-  protected RegionPathConverter createMockRegionPathConverter(final String[] allRegionPaths) {
+
+  private RegionPathConverter createMockRegionPathConverter(final String[] allRegionPaths) {
     
     final RegionPathConverter mockRegionPathConverter = mockContext.mock(RegionPathConverter.class, "RPC");
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockRegionPathConverter).getAllRegionPaths();
-        will(returnValue(new TreeSet<String>(Arrays.asList(allRegionPaths))));
-      }
-    });
+    mockContext.checking(new Expectations() {{
+      oneOf(mockRegionPathConverter).getAllRegionPaths();
+      will(returnValue(new TreeSet<String>(Arrays.asList(allRegionPaths))));
+    }});
 
     return mockRegionPathConverter;
   }
@@ -76,7 +72,6 @@ public class RegionPathConverterJUnitTest {
     Set<String> mocked = mockRegionPathConverter.getAllRegionPaths();
     
     assertEquals("mocked paths don't match expectedPaths.", mocked, expectedPaths);
-    
   }
 
 }

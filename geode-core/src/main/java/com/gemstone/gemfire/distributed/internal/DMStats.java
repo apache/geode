@@ -185,7 +185,7 @@ public interface DMStats {
   /**
    * increments
    * the number of unicast writes performed and the number of bytes written
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void incUcastWriteBytes(int bytesWritten);
   /**
@@ -237,63 +237,63 @@ public interface DMStats {
   /**
    * Increments the number of message replies that have timed out
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public void incReplyTimeouts();
 
   /**
    * Returns the number of message replies that have timed out
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public long getReplyTimeouts();
 
   /**
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public void incReceivers();
   /**
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public void decReceivers();
   /**
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public void incFailedAccept();
   /**
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public void incFailedConnect();
   /**
-   * @since 4.1.1
+   * @since GemFire 4.1.1
    */
   public void incReconnectAttempts();
   /**
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public void incLostLease();
   /**
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public void incSenders(boolean shared, boolean preserveOrder);
   /**
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public void decSenders(boolean shared, boolean preserveOrder);
   /**
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public int getSendersSU();
   /**
    * increment the number of unicast UDP retransmission requests received from
    * other processes
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void incUcastRetransmits();
   /**
    * increment the number of multicast UDP retransmissions sent to
    * other processes
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void incMcastRetransmits();
   /**
@@ -304,182 +304,182 @@ public interface DMStats {
   /**
    * increment the number of multicast UDP retransmission requests sent to
    * other processes
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void incMcastRetransmitRequests();
 
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public int getAsyncSocketWritesInProgress();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public int getAsyncSocketWrites();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public int getAsyncSocketWriteRetries();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public long getAsyncSocketWriteBytes();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public long getAsyncSocketWriteTime();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public int getAsyncQueues();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public void incAsyncQueues(int inc);
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public int getAsyncQueueFlushesInProgress();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public int getAsyncQueueFlushesCompleted();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public long getAsyncQueueFlushTime();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public long startAsyncQueueFlush();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public void endAsyncQueueFlush(long start);
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public int getAsyncQueueTimeouts();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public void incAsyncQueueTimeouts(int inc);
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public int getAsyncQueueSizeExceeded();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public void incAsyncQueueSizeExceeded(int inc);
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public int getAsyncDistributionTimeoutExceeded();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public void incAsyncDistributionTimeoutExceeded();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public long getAsyncQueueSize();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public void incAsyncQueueSize(long inc);
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public long getAsyncQueuedMsgs();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public void incAsyncQueuedMsgs();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public long getAsyncDequeuedMsgs();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public void incAsyncDequeuedMsgs();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public long getAsyncConflatedMsgs();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public void incAsyncConflatedMsgs();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public int getAsyncThreads();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public void incAsyncThreads(int inc);
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public int getAsyncThreadInProgress();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public int getAsyncThreadCompleted();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public long getAsyncThreadTime();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public long startAsyncThread();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public void endAsyncThread(long start);
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public long getAsyncQueueAddTime();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public void incAsyncQueueAddTime(long inc);
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public long getAsyncQueueRemoveTime();
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public void incAsyncQueueRemoveTime(long inc);
 
   /**
-   * @since 5.0.2.4 
+   * @since GemFire 5.0.2.4
    */
   public void incReceiverBufferSize(int inc, boolean direct);
   /**
-   * @since 5.0.2.4 
+   * @since GemFire 5.0.2.4
    */
   public void incSenderBufferSize(int inc, boolean direct);
   /**
-   * @since 5.0.2.4 
+   * @since GemFire 5.0.2.4
    */
   public long startSocketLock();
   /**
-   * @since 5.0.2.4 
+   * @since GemFire 5.0.2.4
    */
   public void endSocketLock(long start);
 
   /**
-   * @since 5.0.2.4 
+   * @since GemFire 5.0.2.4
    */
   public long startBufferAcquire();
   /**
-   * @since 5.0.2.4 
+   * @since GemFire 5.0.2.4
    */
   public void endBufferAcquire(long start);
 
@@ -496,13 +496,13 @@ public interface DMStats {
    * @param newMsg true if a new message being received was detected; false if
    *   this is just additional data for a message already detected.
    * @param bytes the number of bytes read, so far, for the message being received. 
-   * @since 5.0.2
+   * @since GemFire 5.0.2
    */
   public void incMessagesBeingReceived(boolean newMsg, int bytes);
   /**
    * Called when we finish processing a received message.
    * @param bytes the number of bytes read off the wire for the message we have finished with.
-   * @since 5.0.2
+   * @since GemFire 5.0.2
    */
   public void decMessagesBeingReceived(int bytes);
 

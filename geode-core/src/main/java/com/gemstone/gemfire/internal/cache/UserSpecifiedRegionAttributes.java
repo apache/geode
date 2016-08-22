@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.Assert;
  * {@link com.gemstone.gemfire.cache.AttributesFactory}.  Its initial usage was to validate
  * when a user set a value which should not be set (for PartitionedRegions).
  * 
- * @since 5.1
+ * @since GemFire 5.1
  *
  */
 public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttributes<K,V>
@@ -72,7 +72,7 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   /**
    * Whether this region has specified a disk store name
    *
-   * @since prPersistSprint2
+   * @since GemFire prPersistSprint2
    */
   private boolean hasDiskStoreName = false;
   private boolean hasDiskSynchronous = false;
@@ -80,20 +80,20 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   /**
    * Whether this region has publisher explicitly set
    *
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    */
   
   private boolean hasPublisher = false;
   /**
    * Whether this region has enable bridge conflation explicitly set
    *
-   * @since 4.2
+   * @since GemFire 4.2
    */
   private boolean hasEnableSubscriptionConflation = false;
   /**
    * Whether this region has enable async conflation explicitly set
    *
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    */
   private  boolean hasEnableAsyncConflation = false;
   
@@ -104,31 +104,27 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   /**
    * Whether this region has a client to server connection pool
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private  boolean hasPoolName = false;
   /**
    * Whether this region has a cloning enabled
    *
-   * @since 6.1
+   * @since GemFire 6.1
    */
   private boolean hasCloningEnabled = false;
-  
-  private boolean hasHDFSStoreName = false;
-  
-  private boolean hasHDFSWriteOnly = false;
   
 /**
    * Whether this region has entry value compression.
    * 
-   * @since 8.0
+   * @since GemFire 8.0
    */
   private boolean hasCompressor = false;
   
   /**
    * Whether this region has enable off-heap memory set.
    * 
-   * @since 9.0
+   * @since Geode 1.0
    */
   private boolean hasOffHeap = false;
   
@@ -445,13 +441,13 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   /**
    * If set to true then an exception will be thrown at creation
    * time if hasPoolName is not true.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public boolean requiresPoolName = false;
   /**
    * Holds index information. Hoisted up to this class in 7.0
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   private List indexes;
   
@@ -526,7 +522,7 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   {
     this.hasDiskSynchronous = val;
   }
-  private static final int HAS_COUNT = 43;
+  private static final int HAS_COUNT = 41;
   
   public void initHasFields(UserSpecifiedRegionAttributes<K,V> other)
   {
@@ -601,23 +597,5 @@ public abstract class UserSpecifiedRegionAttributes<K,V> implements RegionAttrib
   }
   public List getIndexes() {
     return this.indexes;
-  }
-
-  public boolean hasHDFSStoreName()
-  {
-    return this.hasHDFSStoreName;
-  }
-  public void setHasHDFSStoreName(boolean val)
-  {
-    this.hasHDFSStoreName = val;
-  }
-  
-  public void setHasHDFSWriteOnly(boolean val)
-  {
-    this.hasHDFSWriteOnly = val;
-  }
-  public boolean hasHDFSWriteOnly()
-  {
-    return this.hasHDFSWriteOnly;
   }
 }

@@ -32,7 +32,7 @@ import org.apache.logging.log4j.Logger;
  * has made to a region.
  *
  * 
- * @since 4.0
+ * @since GemFire 4.0
  * 
  * @see TXManagerImpl
  */
@@ -477,6 +477,7 @@ public class TXRegionState {
         Object eKey = me.getKey();
         TXEntryState txes = (TXEntryState)me.getValue();
         if (txes.isDirty() && txes.isOpAnyEvent(r)) {
+          // OFFHEAP: these events are released when TXEvent.release is called
           events.add(txes.getEvent(r, eKey, txs));
         }
       }
@@ -523,12 +524,7 @@ public class TXRegionState {
     return changes;
   }
   
-  public Map<Object,TXEntryState> getEntriesInTxForSqlFabric() {
-    return Collections.unmodifiableMap(this.entryMods);
-  }
-
   public TXState getTXState() {
-    // TODO Auto-generated method stub
     return txState;
   }
 

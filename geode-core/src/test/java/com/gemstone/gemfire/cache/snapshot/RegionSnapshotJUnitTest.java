@@ -16,22 +16,6 @@
  */
 package com.gemstone.gemfire.cache.snapshot;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.examples.snapshot.MyObject;
 import com.examples.snapshot.MyPdxSerializer;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -43,6 +27,18 @@ import com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)
 public class RegionSnapshotJUnitTest extends SnapshotTestCase {
@@ -246,10 +242,10 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
   public void testDSID() throws Exception {
     cache.close();
 
-    CacheFactory cf = new CacheFactory().set("mcast-port", "0")
-        .set("log-level", "error")
+    CacheFactory cf = new CacheFactory().set(MCAST_PORT, "0")
+        .set(LOG_LEVEL, "error")
         .setPdxSerializer(new MyPdxSerializer())
-        .set("distributed-system-id", "1");
+        .set(DISTRIBUTED_SYSTEM_ID, "1");
     cache = cf.create();
 
     RegionType rt = RegionType.REPLICATE;
@@ -266,10 +262,10 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
     cache.close();
 
     // change the DSID from 1 -> 100
-    CacheFactory cf2 = new CacheFactory().set("mcast-port", "0")
-        .set("log-level", "error")
+    CacheFactory cf2 = new CacheFactory().set(MCAST_PORT, "0")
+        .set(LOG_LEVEL, "error")
         .setPdxSerializer(new MyPdxSerializer())
-        .set("distributed-system-id", "100");
+        .set(DISTRIBUTED_SYSTEM_ID, "100");
     cache = cf2.create();
 
     final Map<Integer, Object> read = new HashMap<Integer, Object>();

@@ -22,7 +22,7 @@ package com.gemstone.gemfire.cache;
  * notifications.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public interface CacheCallback {
   /** Called when the region containing this callback is closed or destroyed, when

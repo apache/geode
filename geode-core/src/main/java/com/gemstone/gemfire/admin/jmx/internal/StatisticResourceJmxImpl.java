@@ -36,7 +36,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * Provides MBean support for the monitoring of a statistic resource.
  *
- * @since     3.5
+ * @since GemFire     3.5
  *
  */
 public class StatisticResourceJmxImpl 

@@ -21,42 +21,25 @@
  */
 package com.gemstone.gemfire.cache.query.functional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.data.City;
-import com.gemstone.gemfire.cache.query.data.Country;
-import com.gemstone.gemfire.cache.query.data.District;
-import com.gemstone.gemfire.cache.query.data.State;
-import com.gemstone.gemfire.cache.query.data.Village;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.query.*;
+import com.gemstone.gemfire.cache.query.data.*;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
 import com.gemstone.gemfire.cache.query.types.StructType;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 //TODO:TEST clean this up and add assertions
 /**
@@ -131,11 +114,8 @@ public class MultiRegionIndexUsageJUnitTest {
   @Before
   public void setUp() throws Exception {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
+    props.setProperty(MCAST_PORT, "0");
     ds = DistributedSystem.connect(props);
-    // if(!cache.isClosed()){
-    // CacheUtils.log("111111111111 CACHE IS ALREADY OPEN 11111111111111");
-    // }
     cache = CacheFactory.create(ds);
     /* create region containing Country objects */
     AttributesFactory factory = new AttributesFactory();
@@ -206,8 +186,8 @@ public class MultiRegionIndexUsageJUnitTest {
       }
 
       // while(itr.hasNext()){
-      // assertEquals("villageName1", itr.next().toString());
-      // assertEquals("cityName2", itr.next().toString());
+      // assertIndexDetailsEquals("villageName1", itr.next().toString());
+      // assertIndexDetailsEquals("cityName2", itr.next().toString());
       // }
 
       CacheUtils.log("5555555555555555555555555555");
@@ -223,8 +203,9 @@ public class MultiRegionIndexUsageJUnitTest {
 
   }// end of test
 
-  //@Test
-  public void _testChangedFormClauseOrder2() throws Exception {
+  @Ignore
+  @Test
+  public void testChangedFormClauseOrder2() throws Exception {
     CacheUtils
         .log("------------- testChangedFormClauseOrder2 start------------- ");
     SelectResults rs[][] = new SelectResults[1][2];
@@ -269,8 +250,8 @@ public class MultiRegionIndexUsageJUnitTest {
         }
       }
 
-      // assertEquals("villageName1", itr.next().toString());
-      // assertEquals("cityName3", itr.next().toString());
+      // assertIndexDetailsEquals("villageName1", itr.next().toString());
+      // assertIndexDetailsEquals("cityName3", itr.next().toString());
 
       areResultsMatching(rs, new String[] { sqlStr });
 
@@ -404,8 +385,8 @@ public class MultiRegionIndexUsageJUnitTest {
         }
       }
 
-      // assertEquals("districtName3", itr.next().toString());
-      // assertEquals("stateName2", itr.next().toString());
+      // assertIndexDetailsEquals("districtName3", itr.next().toString());
+      // assertIndexDetailsEquals("stateName2", itr.next().toString());
 
       areResultsMatching(rs, new String[] { sqlStr });
 
@@ -461,8 +442,8 @@ public class MultiRegionIndexUsageJUnitTest {
         }
       }
 
-      // assertEquals("cityName1", itr.next().toString());
-      // assertEquals("cityName2", itr.next().toString());
+      // assertIndexDetailsEquals("cityName1", itr.next().toString());
+      // assertIndexDetailsEquals("cityName2", itr.next().toString());
 
       areResultsMatching(rs, new String[] { sqlStr });
       CacheUtils.log("------------- testCutDown1 end------------- ");
@@ -516,8 +497,8 @@ public class MultiRegionIndexUsageJUnitTest {
         }
       }
 
-      // assertEquals("stateName2", itr.next().toString());
-      // assertEquals("cityName1", itr.next().toString());
+      // assertIndexDetailsEquals("stateName2", itr.next().toString());
+      // assertIndexDetailsEquals("cityName1", itr.next().toString());
 
       areResultsMatching(rs, new String[] { sqlStr });
       CacheUtils.log("------------- testSelectAsFromClause end------------- ");
@@ -571,9 +552,9 @@ public class MultiRegionIndexUsageJUnitTest {
         }
       }
 
-      // assertEquals("cityName3", itr.next().toString());
-      // assertEquals("cityName1", itr.next().toString());
-      // assertEquals("stateName1", itr.next().toString());
+      // assertIndexDetailsEquals("cityName3", itr.next().toString());
+      // assertIndexDetailsEquals("cityName1", itr.next().toString());
+      // assertIndexDetailsEquals("stateName1", itr.next().toString());
 
       areResultsMatching(rs, new String[] { sqlStr });
       CacheUtils.log("------------- testSelectAsWhereClause end------------- ");
@@ -622,8 +603,9 @@ public class MultiRegionIndexUsageJUnitTest {
 
   }// end of test
 
-  //@Test
-  public void _testFunctionUse2() throws Exception {
+  @Ignore
+  @Test
+  public void testFunctionUse2() throws Exception {
     CacheUtils.log("------------- testFunctionUse2 start------------- ");
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR019
@@ -665,8 +647,8 @@ public class MultiRegionIndexUsageJUnitTest {
         }
       }
 
-      // assertEquals("cityName", itr.next().toString());
-      // assertEquals("stateName", itr.next().toString());
+      // assertIndexDetailsEquals("cityName", itr.next().toString());
+      // assertIndexDetailsEquals("stateName", itr.next().toString());
 
       areResultsMatching(rs, new String[] { sqlStr });
       CacheUtils.log("------------- testFunctionUse2 end------------- ");
@@ -741,7 +723,7 @@ public class MultiRegionIndexUsageJUnitTest {
       QueryObserverHolder.setInstance(observer);
       rs[0][1] = (SelectResults) q.execute();
 
-      // assertEquals("districtName3", itr.next().toString());
+      // assertIndexDetailsEquals("districtName3", itr.next().toString());
 
       areResultsMatching(rs, new String[] { sqlStr });
       CacheUtils.log("------------- testFunctionUse4 end------------- ");

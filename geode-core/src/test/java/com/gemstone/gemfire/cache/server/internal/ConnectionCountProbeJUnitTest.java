@@ -16,35 +16,33 @@
  */
 package com.gemstone.gemfire.cache.server.internal;
 
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.*;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.server.ServerLoad;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-/**
- *
- */
 @Category(UnitTest.class)
-public class ConnectionCountProbeJUnitTest extends TestCase {
+public class ConnectionCountProbeJUnitTest {
   
+  @Test
   public void test() {
     ConnectionCountProbe probe = new ConnectionCountProbe();
     ServerMetricsImpl metrics = new ServerMetricsImpl(800);
     ServerLoad load = probe.getLoad(metrics);
-    Assert.assertEquals(0f, load.getConnectionLoad(), .0001f);
-    Assert.assertEquals(0f, load.getSubscriptionConnectionLoad(), .0001f);
-    Assert.assertEquals(1/800f, load.getLoadPerConnection(), .0001f);
-    Assert.assertEquals(1f, load.getLoadPerSubscriptionConnection(), .0001f);
+    assertEquals(0f, load.getConnectionLoad(), .0001f);
+    assertEquals(0f, load.getSubscriptionConnectionLoad(), .0001f);
+    assertEquals(1/800f, load.getLoadPerConnection(), .0001f);
+    assertEquals(1f, load.getLoadPerSubscriptionConnection(), .0001f);
 
     for(int i = 0; i < 100; i++) {
       metrics.incConnectionCount();
     }
     
     load = probe.getLoad(metrics);
-    Assert.assertEquals(0.125, load.getConnectionLoad(), .0001f);
+    assertEquals(0.125, load.getConnectionLoad(), .0001f);
   }
     
 }

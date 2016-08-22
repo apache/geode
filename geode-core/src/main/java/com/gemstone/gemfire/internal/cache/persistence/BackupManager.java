@@ -16,18 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache.persistence;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.cache.persistence.PersistentID;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -41,6 +29,13 @@ import com.gemstone.gemfire.internal.JarDeployer;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * This class manages the state an logic to backup a single
@@ -243,7 +238,7 @@ public class BackupManager implements MembershipListener {
     
     URL propertyURL = DistributedSystem.getPropertyFileURL();
     if(propertyURL != null) {
-      File propertyBackup = new File(configBackupDir, "gemfire.properties");
+      File propertyBackup = new File(configBackupDir, DistributionConfig.GEMFIRE_PREFIX + "properties");
       FileUtil.copy(propertyURL, propertyBackup);
     }
     

@@ -30,7 +30,7 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
 /**
  * A message that is sent in response to a {@link DurableClientInfoRequest}.
  * 
- * @since 5.6
+ * @since GemFire 5.6
  */
 public class DurableClientInfoResponse extends AdminResponse
 {

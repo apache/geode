@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,12 +47,14 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
 @SuppressWarnings({"serial", "rawtypes", "deprecation", "unchecked"})
-public class PartitionListenerDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
   
-  public PartitionListenerDUnitTest(String name) {
-    super(name);
+  public PartitionListenerDUnitTest() {
+    super();
   }
 
+  @Test
   public void testAfterBucketRemovedCreated() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

@@ -17,17 +17,11 @@
 
 package com.gemstone.gemfire.distributed.internal;
 
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
+import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * A ThreadPoolExecutor with stat support.
@@ -39,7 +33,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
   /** 
    * Create a new pool
    **/
-  public PooledExecutorWithDMStats(BlockingQueue<Runnable> q, int maxPoolSize, PoolStatHelper stats, ThreadFactory tf, int msTimeout, RejectedExecutionHandler reh) {
+  public PooledExecutorWithDMStats(SynchronousQueue<Runnable> q, int maxPoolSize, PoolStatHelper stats, ThreadFactory tf, int msTimeout, RejectedExecutionHandler reh) {
     super(getCorePoolSize(maxPoolSize), maxPoolSize,
           msTimeout, TimeUnit.MILLISECONDS,
           q, tf, reh);
@@ -61,9 +55,9 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
    */
   private Thread bufferConsumer;
   
-  private static BlockingQueue<Runnable> initQ(BlockingQueue<Runnable> q) {
+  private static SynchronousQueue<Runnable> initQ(BlockingQueue<Runnable> q) {
     if (q instanceof SynchronousQueue) {
-      return q;
+      return (SynchronousQueue<Runnable>) q;
     } else {
       return new SynchronousQueue/*NoSpin*/<Runnable>();
     }
@@ -95,7 +89,8 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
             try {
               for (;;) {
                 SystemFailure.checkFailure();
-                putQueue.put(takeQueue.take());
+                Runnable job = takeQueue.take();
+                putQueue.put(job);
               }
             }
             catch (InterruptedException ie) {
@@ -147,7 +142,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
    * from its thread pool. Default is (30000 * 60) ms (30 minutes).
    * It is not static so it can be set at runtime and pick up different values.
    */
-    this(q, poolSize, stats, tf, Integer.getInteger("gemfire.IDLE_THREAD_TIMEOUT", 30000*60).intValue());
+    this(q, poolSize, stats, tf, Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "IDLE_THREAD_TIMEOUT", 30000 * 60).intValue());
   }
 
   /**

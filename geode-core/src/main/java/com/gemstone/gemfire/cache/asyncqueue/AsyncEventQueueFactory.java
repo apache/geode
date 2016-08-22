@@ -45,7 +45,7 @@ import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
   AsyncEventQueue asyncQueue = factory.create(asyncQueueId, asyncEventListener);
 </PRE>
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface AsyncEventQueueFactory {
 
@@ -170,6 +170,15 @@ public interface AsyncEventQueueFactory {
   public AsyncEventQueueFactory setGatewayEventSubstitutionListener(
       GatewayEventSubstitutionFilter filter);
 
+  /**
+   * Forwards destroy operations from expiration action to AsyncEventQueue.
+   * By default the expiration destroy events are not added to AEQ, by
+   * setting this attribute to true adds destroy event to AEQ.
+   *
+   * @param forward
+   *        boolean to indicate whether to forward expiration destroy events.
+   */
+  public AsyncEventQueueFactory setForwardExpirationDestroy(boolean forward);
 
   /**
    * Creates the <code>AsyncEventQueue</code>. It accepts Id of AsyncEventQueue

@@ -19,16 +19,15 @@ package com.gemstone.gemfire.cache;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import static org.junit.runners.MethodSorters.*;
 import org.junit.FixMethodOrder;
+import org.junit.experimental.categories.Category;
 
 @FixMethodOrder(NAME_ASCENDING)
+@Category(DistributedTest.class)
 public class ConnectionPoolAutoDUnitTest extends ConnectionPoolDUnitTest {
-
-  public ConnectionPoolAutoDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   protected final void postSetUpConnectionPoolDUnitTest() throws Exception {

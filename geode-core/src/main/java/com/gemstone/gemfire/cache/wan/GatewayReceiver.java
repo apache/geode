@@ -16,10 +16,11 @@
  */
 package com.gemstone.gemfire.cache.wan;
 
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
 import java.io.IOException;
 import java.util.List;
-
-import com.gemstone.gemfire.cache.server.CacheServer;
 
 /**
  * A GatewayReceiver that receives the events from a <code>GatewaySender</code>.
@@ -67,7 +68,7 @@ public interface GatewayReceiver {
   /**
    * The default value (true) for manually starting a
    * <code>GatewayReceiver</code>.
-   * @since 8.1 
+   * @since GemFire 8.1
    */
   public static final boolean DEFAULT_MANUAL_START = false;
   
@@ -76,7 +77,7 @@ public interface GatewayReceiver {
    * re-applied or not is decided by this attribute.  
    */
   public static final boolean APPLY_RETRIES = Boolean
-      .getBoolean("gemfire.GatewayReceiver.ApplyRetries");
+      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "GatewayReceiver.ApplyRetries");
 
   /**
    * Starts this receiver.  Once the receiver is running, its

@@ -19,7 +19,7 @@ package com.gemstone.gemfire.internal.cache.tier;
 /**
  * Pre-defined message types supported by the system
  *
- * @since 2.0.2
+ * @since GemFire 2.0.2
  */
 public class MessageType {
   /** An invalid message, typically due to problems receiving a complete message */
@@ -47,118 +47,118 @@ public class MessageType {
 
   /** Put data into the cache
    *
-   * @since 3.5 */
+   * @since GemFire 3.5 */
   public static final int PUT = 7;
 
   /** The put request data was bad (null key or value, for example)
    *
-   * @since 3.5 */
+   * @since GemFire 3.5 */
   public static final int PUT_DATA_ERROR = 8;
 
   /** Destroy an entry from the cache
    *
-   * @since 3.5 */
+   * @since GemFire 3.5 */
   public static final int DESTROY = 9;
 
   /** The destroy request data was bad (null key, for example)
    *
-   * @since 3.5 */
+   * @since GemFire 3.5 */
   public static final int DESTROY_DATA_ERROR = 10;
 
   /** Destroy a region from the cache
    *
-   * @since 3.5 */
+   * @since GemFire 3.5 */
   public static final int DESTROY_REGION = 11;
 
   /** The destroy region request data was bad (null region name, for example)
    *
-   * @since 3.5 */
+   * @since GemFire 3.5 */
   public static final int DESTROY_REGION_DATA_ERROR = 12;
 
   /** A client wished to be notified of updates
    *
-   * @since 3.5 */
+   * @since GemFire 3.5 */
   public static final int CLIENT_NOTIFICATION = 13;
 
   /** Information about a client receiving updates has changed
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public static final int UPDATE_CLIENT_NOTIFICATION = 14;
 
   /** The receiver (which is an edge client in this case) should
    * locally invalidate a piece of data
    *
-   * @since 3.5 */
+   * @since GemFire 3.5 */
   public static final int LOCAL_INVALIDATE = 15;
 
   /** The receiver (which is an edge client in this case) should
    * locally destroy a piece of data
    *
-   * @since 3.5 */
+   * @since GemFire 3.5 */
   public static final int LOCAL_DESTROY = 16;
 
   /** The receiver (which is an edge client in this case) should
    * locally destroy a region
    *
-   * @since 3.5 */
+   * @since GemFire 3.5 */
   public static final int LOCAL_DESTROY_REGION = 17;
 
   /** A message to close the client connection
    *
-   * @since 3.5 */
+   * @since GemFire 3.5 */
   public static final int CLOSE_CONNECTION = 18;
 
   /** A message to process a batch of messages
    *
-   * @since 4.1.1 */
+   * @since GemFire 4.1.1 */
   public static final int PROCESS_BATCH = 19;
 
   /** A message to register interest in a specific key
    *
-   * @since 4.1.2 */
+   * @since GemFire 4.1.2 */
   public static final int REGISTER_INTEREST = 20;
 
   /** The register interest request data was bad (null region name, for example)
    *
-   * @since 4.1.2 */
+   * @since GemFire 4.1.2 */
   public static final int REGISTER_INTEREST_DATA_ERROR = 21;
 
   /** A message to unregister interest in a specific key
    *
-   * @since 4.1.2 */
+   * @since GemFire 4.1.2 */
   public static final int UNREGISTER_INTEREST = 22;
 
   /** The unregister interest request data was bad (null region name, for example)
    *
-   * @since 4.1.2 */
+   * @since GemFire 4.1.2 */
   public static final int UNREGISTER_INTEREST_DATA_ERROR = 23;
 
   /** A message to register interest in a specific list of keys
    *
-   * @since 4.1.2 */
+   * @since GemFire 4.1.2 */
   public static final int REGISTER_INTEREST_LIST = 24;
 
   /** A message to unregister interest in a specific list of keys
    *
-   * @since 4.1.2 */
+   * @since GemFire 4.1.2 */
   public static final int UNREGISTER_INTEREST_LIST = 25;
 
   /** An unknown message type. This is being used for responses.
    *
-   * @since 4.1.2 */
+   * @since GemFire 4.1.2 */
   public static final int UNKNOWN_MESSAGE_TYPE_ERROR = 26;
 
   /** The receiver (which is an edge client in this case) should
    * locally create a piece of data
    *
-   * @since 4.1.2 */
+   * @since GemFire 4.1.2 */
   public static final int LOCAL_CREATE = 27;
 
   /** The receiver (which is an edge client in this case) should
    * locally update a piece of data
    *
-   * @since 4.1.2 */
+   * @since GemFire 4.1.2 */
   public static final int LOCAL_UPDATE = 28;
 
   public static final int CREATE_REGION = 29;
@@ -166,17 +166,17 @@ public class MessageType {
 
   /**
    * A message to make primary server
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static final int MAKE_PRIMARY = 31;
 
   /** Response message type from primary server
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static final int RESPONSE_FROM_PRIMARY = 32;
 
   /** Response message type from secondary server
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static final int RESPONSE_FROM_SECONDARY = 33;
 
@@ -184,7 +184,7 @@ public class MessageType {
    * A query request message
    *
    * <p>author gregp
-   * @since 4.1.1
+   * @since GemFire 4.1.1
    */
   public static final int QUERY = 34;
 
@@ -222,7 +222,7 @@ public class MessageType {
   
   /** A message to register the Instantiators. 
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */ 
   public static final int REGISTER_INSTANTIATORS = 51; 
 
@@ -319,10 +319,10 @@ public class MessageType {
 
   public static final int GET_ALL_70 = 100;
 
-  /** gets the pdx type definitions @since 7.0 */
+  /** gets the pdx type definitions @since GemFire 7.0 */
   public static final int GET_PDX_TYPES = 101;
 
-  /** gets the pdx enum definitions @since 7.0 */
+  /** gets the pdx enum definitions @since GemFire 7.0 */
   public static final int GET_PDX_ENUMS = 102;
 
   public static final int TOMBSTONE_OPERATION = 103;

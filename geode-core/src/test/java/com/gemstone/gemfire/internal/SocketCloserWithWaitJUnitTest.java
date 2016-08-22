@@ -28,6 +28,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  */
 @Category(UnitTest.class)
 public class SocketCloserWithWaitJUnitTest extends SocketCloserJUnitTest {
+
   @Override
   protected SocketCloser createSocketCloser() {
     return new SocketCloser(

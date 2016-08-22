@@ -29,10 +29,7 @@ import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
 @Ignore("Tests have no assertions")
 public class LogWriterLoggerDisabledPerformanceTest extends LogWriterLoggerPerformanceTest {
 
-  public LogWriterLoggerDisabledPerformanceTest(String name) {
-    super(name);
-  }
-
+  @Override
   protected PerformanceLogger createPerformanceLogger() throws IOException {
     final Logger logger = createLogger();
     
@@ -48,25 +45,5 @@ public class LogWriterLoggerDisabledPerformanceTest extends LogWriterLoggerPerfo
     };
     
     return perfLogger;
-  }
-
-  @Override
-  public void testCountBasedLogging() throws Exception {
-    super.testCountBasedLogging();
-  }
-
-  @Override
-  public void testTimeBasedLogging() throws Exception {
-    super.testTimeBasedLogging();
-  }
-
-  @Override
-  public void testCountBasedIsEnabled() throws Exception {
-    super.testCountBasedIsEnabled();
-  }
-
-  @Override
-  public void testTimeBasedIsEnabled() throws Exception {
-    super.testTimeBasedIsEnabled();
   }
 }

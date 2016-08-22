@@ -22,7 +22,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import joptsimple.ArgumentAcceptingOptionSpec;
-import joptsimple.MultipleArgumentsForOptionException;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSpecBuilder;
@@ -40,13 +39,16 @@ import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
 import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.Preprocessor;
 import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.PreprocessorUtils;
 import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.TrimmedInput;
+import com.gemstone.gemfire.management.internal.cli.util.HyphenFormatter;
 
 /**
  * Implementation of {@link GfshOptionParser} which internally makes use of
  * {@link joptsimple.OptionParser}
+ *
+ * Newly constructed JoptOptionParser must be loaded with arguments and
+ * options before parsing command strings.
  * 
- * @since 7.0
- * 
+ * @since GemFire 7.0
  */
 public class JoptOptionParser implements GfshOptionParser {
 
@@ -59,6 +61,7 @@ public class JoptOptionParser implements GfshOptionParser {
    */
   public JoptOptionParser() {
     parser = new OptionParser(true);
+    parser.allowsUnrecognizedOptions();
   }
 
   public void setArguments(LinkedList<Argument> arguments) {
@@ -100,9 +103,10 @@ public class JoptOptionParser implements GfshOptionParser {
       argumentSpecs = optionBuilder.withOptionalArg();
     }
 
-    if (option.isRequired()) {
-      argumentSpecs.required();
-    }
+    // TODO: temporarily commented out as workaround for GEODE-1598
+    // if (option.isRequired()) {
+    //   argumentSpecs.required();
+    // }
     if (option.getValueSeparator() != null) {
       argumentSpecs.withValuesSeparatedBy(option.getValueSeparator());
     }
@@ -113,31 +117,29 @@ public class JoptOptionParser implements GfshOptionParser {
     optionSet.setUserInput(userInput!=null?userInput.trim():"");
     if (userInput != null) {
       TrimmedInput input = PreprocessorUtils.trim(userInput);
-      String[] preProcessedInput = preProcess(input.getString());
+      String[] preProcessedInput = preProcess(new HyphenFormatter().formatCommand(input.getString()));
       joptsimple.OptionSet joptOptionSet = null;
       CliCommandOptionException ce = null;
       // int factor = 0;
       try {
         joptOptionSet = parser.parse(preProcessedInput);
-      } catch (Exception e) {
-        if (e instanceof OptionException) {
-          ce = processException(e);
-          joptOptionSet = ((OptionException) e).getDetected();
-        }
+      } catch (OptionException e) {
+        ce = processException(e);
+        // TODO: joptOptionSet = e.getDetected(); // removed when geode-joptsimple was removed
       }
       if (joptOptionSet != null) {
 
         // Make sure there are no miscellaneous, unknown strings that cannot be identified as
         // either options or arguments.
         if (joptOptionSet.nonOptionArguments().size() > arguments.size()) {
-          String unknownString = joptOptionSet.nonOptionArguments().get(arguments.size());
+          String unknownString = (String)joptOptionSet.nonOptionArguments().get(arguments.size()); // added cast when geode-joptsimple was removed
           // If the first option is un-parseable then it will be returned as "<option>=<value>" since it's
           // been interpreted as an argument. However, all subsequent options will be returned as "<option>".
           // This hack splits off the string before the "=" sign if it's the first case.
           if (unknownString.matches("^-*\\w+=.*$")) {
             unknownString = unknownString.substring(0, unknownString.indexOf('='));
           }
-          ce = processException(OptionException.createUnrecognizedOptionException(unknownString, joptOptionSet));
+          // TODO: ce = processException(OptionException.createUnrecognizedOptionException(unknownString, joptOptionSet)); // removed when geode-joptsimple was removed
         }
         
         // First process the arguments
@@ -199,7 +201,7 @@ public class JoptOptionParser implements GfshOptionParser {
                   if (arguments.size() > 1 && !(option.getConverter() instanceof MultipleValueConverter) && option.getValueSeparator() == null) {
                     List<String> optionList = new ArrayList<String>(1);
                     optionList.add(string);
-                    ce = processException(new MultipleArgumentsForOptionException(optionList, joptOptionSet));
+                    // TODO: ce = processException(new MultipleArgumentsForOptionException(optionList, joptOptionSet)); // removed when geode-joptsimple was removed
                   } else if ((arguments.size() == 1 && !(option.getConverter() instanceof MultipleValueConverter)) || option.getValueSeparator() == null) {
                     optionSet.put(option, arguments.get(0).toString().trim());
                   } else {
@@ -244,19 +246,8 @@ public class JoptOptionParser implements GfshOptionParser {
     return optionSet;
   }
 
-  private CliCommandOptionException processException(Exception e) {
-    CliCommandOptionException ce = null;
-    if (e instanceof OptionException) {
-      ce = (CliCommandOptionException) ExceptionGenerator
-          .generate((OptionException) e);
-      if (ce != null) {
-        if (ce instanceof CliCommandOptionException) {
-          ((CliCommandOptionException) ce)
-              .setOption(getOption((OptionException) e));
-        }
-      }
-    }
-    return ce;
+  private CliCommandOptionException processException(final OptionException exception) {
+    return ExceptionGenerator.generate(getOption(exception), exception);
   }
 
   private Option getOption(OptionException oe) {

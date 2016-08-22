@@ -39,7 +39,7 @@ import org.junit.experimental.categories.Category;
  * @see com.gemstone.gemfire.management.internal.web.domain.Link
  * @see org.junit.Assert
  * @see org.junit.Test
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Category(UnitTest.class)
 public class LinkJUnitTest extends AbstractWebTestCase {

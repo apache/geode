@@ -51,7 +51,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Removes a batch of events from the remote secondary queues  
- * @since 8.0
+ * @since GemFire 8.0
  */
 
 public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
@@ -237,6 +237,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
           afterAckForSecondary_EventInTempQueue(qPR.getParallelGatewaySender(), eventForFilter);
           if (eventForFilter.getShadowKey().equals(key)) {
             itr.remove();
+            eventForFilter.release(); // GEODE-1282
             isDestroyed = true;
           }
         }

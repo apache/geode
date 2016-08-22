@@ -16,6 +16,14 @@
  */
 package com.gemstone.gemfire.internal.cache.control;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,6 +40,10 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheLoader;
@@ -43,7 +55,6 @@ import com.gemstone.gemfire.cache.DiskStoreFactory;
 import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.LoaderHelper;
 import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
@@ -59,15 +70,15 @@ import com.gemstone.gemfire.cache.partition.PartitionRebalanceInfo;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.partition.PartitionRegionInfo;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.BucketRegion;
 import com.gemstone.gemfire.internal.cache.ColocationHelper;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.InternalCache;
+import com.gemstone.gemfire.internal.cache.PRHARedundancyProvider;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
@@ -83,12 +94,12 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-/**
- *
- */
 @SuppressWarnings("synthetic-access")
-public class RebalanceOperationDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
   private static final long MAX_WAIT = 60;
   
@@ -97,24 +108,19 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       public void run() {
         InternalResourceManager.setResourceObserver(null);
-        System.clearProperty("gemfire.resource.manager.threads");
+        System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "resource.manager.threads");
       }
     });
     InternalResourceManager.setResourceObserver(null);
-    System.clearProperty("gemfire.resource.manager.threads");
+    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "resource.manager.threads");
   }
 
-  /**
-   * @param name
-   */
-  public RebalanceOperationDUnitTest(String name) {
-    super(name);
-  }
-  
+  @Test
   public void testRecoverRedundancySimulation() {
     recoverRedundancy(true);
   }
    
+  @Test
   public void testRecoverRedundancy() {
     recoverRedundancy(false);
   }
@@ -232,7 +238,9 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
   }
   
   /** Manual test.*/
-  public void z_testRedundancyLoop() {
+  @Ignore
+  @Test
+  public void testRedundancyLoop() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -309,7 +317,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
           Cache cache = getCache();
           ResourceManager manager = cache.getResourceManager();
           RebalanceResults results = doRebalance(false, manager);
-//          assertEquals(113, results.getTotalBucketCreatesCompleted());
+//          assertIndexDetailsEquals(113, results.getTotalBucketCreatesCompleted());
         }
       });
 
@@ -320,10 +328,12 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     }
   }
 
+  @Test
   public void testEnforceIP() {
     enforceIp(false);
   }
   
+  @Test
   public void testEnforceIPSimulation() {
     enforceIp(true);
   }
@@ -332,7 +342,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       public void run() {
         Properties props = new Properties();
-        props.setProperty(DistributionConfig.ENFORCE_UNIQUE_HOST_NAME, "true");
+        props.setProperty(ENFORCE_UNIQUE_HOST, "true");
         getSystem(props); 
       }
     });
@@ -407,14 +417,14 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         //We actually *will* transfer buckets, because that improves
         //the balance
         assertEquals(3, results.getTotalBucketTransfersCompleted());
-//        assertEquals(0, results.getTotalBucketTransferBytes());
+//        assertIndexDetailsEquals(0, results.getTotalBucketTransferBytes());
         Set<PartitionRebalanceInfo> detailSet = results.getPartitionRebalanceDetails();
         assertEquals(1, detailSet.size());
         PartitionRebalanceInfo details = detailSet.iterator().next();
         assertEquals(0, details.getBucketCreatesCompleted());
         assertEquals(0, details.getPrimaryTransfersCompleted());
         assertEquals(3, details.getBucketTransfersCompleted());
-//        assertEquals(0, details.getBucketTransferBytes());
+//        assertIndexDetailsEquals(0, details.getBucketTransferBytes());
         if(!simulate) {
           verifyStats(manager, results);
         }
@@ -435,10 +445,12 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     }
   }
   
+  @Test
   public void testEnforceZone() {
     enforceZone(false);
   }
   
+  @Test
   public void testEnforceZoneSimulation() {
     enforceZone(true);
   }
@@ -544,7 +556,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
           }
           assertEquals(2, info.getPrimaryCount());
         }
-//        assertEquals(0, details.getBucketTransferBytes());
+//        assertIndexDetailsEquals(0, details.getBucketTransferBytes());
         if(!simulate) {
           verifyStats(manager, results);
         }
@@ -639,6 +651,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     }
   }
   
+  @Test
   public void testEnforceZoneWithMultipleRegions() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -743,7 +756,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
             assertEquals(2, info.getPrimaryCount());
           }
         }
-        //        assertEquals(0, details.getBucketTransferBytes());
+        //        assertIndexDetailsEquals(0, details.getBucketTransferBytes());
         verifyStats(manager, results);
       }
     });
@@ -789,9 +802,9 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
   private DistributedMember setRedundancyZone(VM vm, final String zone) {
     return (DistributedMember) vm.invoke(new SerializableCallable("set redundancy zone") {
       public Object call() {
-        System.setProperty("gemfire.resource.manager.threads", "2");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "resource.manager.threads", "2");
         Properties props = new Properties();
-        props.setProperty(DistributionConfig.REDUNDANCY_ZONE_NAME, zone);
+        props.setProperty(REDUNDANCY_ZONE, zone);
         DistributedSystem system = getSystem(props);
         return system.getDistributedMember();
         
@@ -841,10 +854,12 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     return results;
   }
   
+  @Test
   public void testRecoverRedundancyBalancingSimulation() {
     recoverRedundancyBalancing(true);
   }
   
+  @Test
   public void testRecoverRedundancyBalancing() {
     recoverRedundancyBalancing(false);
   }
@@ -972,10 +987,150 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     return (DistributedMember) vm.invoke(createPrRegion);
   }
   
+  @Test
+  public void testRecoverRedundancyBalancingIfCreateBucketFails() {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    VM vm2 = host.getVM(2);
+    
+
+    final DistributedMember member1 = createPrRegion(vm0, "region1", 100, null);
+    
+    vm0.invoke(new SerializableRunnable("createSomeBuckets") {
+      
+      public void run() {
+        Cache cache = getCache();
+        Region region = cache.getRegion("region1");
+        for(int i = 0; i < 1; i++) {
+          region.put(Integer.valueOf(i), "A");
+        }
+      }
+    });
+    
+    
+    SerializableRunnable checkRedundancy= new SerializableRunnable("checkRedundancy") {
+
+      public void run() {
+        Cache cache = getCache();
+        Region region = cache.getRegion("region1");
+        PartitionRegionInfo details = PartitionRegionHelper.getPartitionRegionInfo(region);
+        assertEquals(1, details.getCreatedBucketCount());
+        assertEquals(0,details.getActualRedundantCopies());
+        assertEquals(1,details.getLowRedundancyBucketCount());
+      }
+    };
+    
+    vm0.invoke(checkRedundancy);
+        
+    //Now create the region in 2 more VMs
+    //Let localMaxMemory(VM1) > localMaxMemory(VM2)
+    //so that redundant bucket will always be attempted on VM1
+    final DistributedMember member2 = createPrRegion(vm1, "region1", 100, null);
+    final DistributedMember member3 = createPrRegion(vm2, "region1", 90, null);
+    
+    vm0.invoke(checkRedundancy);
+    
+    //Inject mock PRHARedundancyProvider to simulate createBucketFailures
+    vm0.invoke(new SerializableRunnable("injectCreateBucketFailureAndRebalance") {
+      
+      @Override
+      public void run() {
+        GemFireCacheImpl cache = spy(getGemfireCache());
+        //set the spied cache instance
+        GemFireCacheImpl origCache = GemFireCacheImpl.setInstanceForTests(cache);
+        
+        PartitionedRegion origRegion = (PartitionedRegion) cache.getRegion("region1");
+        PartitionedRegion spyRegion = spy(origRegion);
+        PRHARedundancyProvider redundancyProvider = spy(new PRHARedundancyProvider(spyRegion));   
+
+        //return the spied region when ever getPartitionedRegions() is invoked
+        Set<PartitionedRegion> parRegions = cache.getPartitionedRegions();
+        parRegions.remove(origRegion);
+        parRegions.add(spyRegion);
+
+        doReturn(parRegions).when(cache).getPartitionedRegions();
+        doReturn(redundancyProvider).when(spyRegion).getRedundancyProvider();
+        
+        //simulate create bucket fails on member2 and test if it creates on member3
+        doReturn(false).when(redundancyProvider).createBackupBucketOnMember(anyInt(), eq((InternalDistributedMember) member2), anyBoolean(), anyBoolean(), any(), anyBoolean());
+
+        //Now simulate a rebalance
+        //Create operationImpl and not factory as we need spied cache to be passed to operationImpl
+        RegionFilter filter = new FilterByPath(null, null);
+        RebalanceOperationImpl operation = new RebalanceOperationImpl(cache, false, filter);
+        operation.start();
+        RebalanceResults results = null;
+        try {
+          results = operation.getResults(MAX_WAIT, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+          Assert.fail("Interrupted waiting on rebalance", e);
+        } catch (TimeoutException e) {
+          Assert.fail("Timeout waiting on rebalance", e);
+        }
+        assertEquals(1, results.getTotalBucketCreatesCompleted());
+        assertEquals(0, results.getTotalPrimaryTransfersCompleted());
+        assertEquals(0, results.getTotalBucketTransferBytes());
+        assertEquals(0, results.getTotalBucketTransfersCompleted());
+        Set<PartitionRebalanceInfo> detailSet = results.getPartitionRebalanceDetails();
+        assertEquals(1, detailSet.size());
+        PartitionRebalanceInfo details = detailSet.iterator().next();
+        assertEquals(1, details.getBucketCreatesCompleted());
+        assertEquals(0, details.getPrimaryTransfersCompleted());
+        assertEquals(0, details.getBucketTransferBytes());
+        assertEquals(0, details.getBucketTransfersCompleted());
+        
+        Set<PartitionMemberInfo> afterDetails = details.getPartitionMemberDetailsAfter();
+        assertEquals(3, afterDetails.size());
+        for(PartitionMemberInfo memberDetails: afterDetails) {
+          if(memberDetails.getDistributedMember().equals(member1)) {
+            assertEquals(1, memberDetails.getBucketCount());
+            assertEquals(1, memberDetails.getPrimaryCount());
+          } else if(memberDetails.getDistributedMember().equals(member2)) {
+            assertEquals(0, memberDetails.getBucketCount());
+            assertEquals(0, memberDetails.getPrimaryCount());
+          } else if(memberDetails.getDistributedMember().equals(member3)) {
+            assertEquals(1, memberDetails.getBucketCount());
+            assertEquals(0, memberDetails.getPrimaryCount());
+          }
+        }
+        
+        ResourceManagerStats stats = cache.getResourceManager().getStats();
+        
+        assertEquals(0, stats.getRebalancesInProgress());
+        assertEquals(1, stats.getRebalancesCompleted());
+        assertEquals(0, stats.getRebalanceBucketCreatesInProgress());
+        assertEquals(results.getTotalBucketCreatesCompleted(), stats.getRebalanceBucketCreatesCompleted());
+        assertEquals(1, stats.getRebalanceBucketCreatesFailed());
+        
+        //set the original cache
+        GemFireCacheImpl.setInstanceForTests(origCache);
+      }
+    });
+    
+    SerializableRunnable checkRedundancyFixed = new SerializableRunnable("checkLowRedundancy") {
+
+      public void run() {
+        Cache cache = getCache();
+        Region region = cache.getRegion("region1");
+        PartitionRegionInfo details = PartitionRegionHelper.getPartitionRegionInfo(region);
+        assertEquals(1, details.getCreatedBucketCount());
+        assertEquals(1,details.getActualRedundantCopies());
+        assertEquals(0,details.getLowRedundancyBucketCount());
+      }
+    };
+
+    vm0.invoke(checkRedundancyFixed);
+    vm1.invoke(checkRedundancyFixed);
+    vm2.invoke(checkRedundancyFixed);
+  }
+  
+  @Test
   public void testRecoverRedundancyColocatedRegionsSimulation() {
     recoverRedundancyColocatedRegions(true);
   }
   
+  @Test
   public void testRecoverRedundancyColocatedRegions() {
     recoverRedundancyColocatedRegions(false);
   }
@@ -1098,21 +1253,23 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     }
   }
   
+  @Test
   public void testRecoverRedundancyParallelAsyncEventQueueSimulation() throws NoSuchFieldException, SecurityException {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
 
       @Override
       public void run () {
-        System.setProperty("gemfire.LOG_REBALANCE", "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "LOG_REBALANCE", "true");
       }
     });
     try {
       recoverRedundancyParallelAsyncEventQueue(true);
     } finally {
-      System.setProperty("gemfire.LOG_REBALANCE", "false");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "LOG_REBALANCE", "false");
     }
   }
   
+  @Test
   public void testRecoverRedundancyParallelAsyncEventQueue() {
     recoverRedundancyParallelAsyncEventQueue(false);
   }
@@ -1281,6 +1438,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     return member1;
   }
   
+  @Test
   public void testCancelOperation() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -1394,6 +1552,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
    * Test that the rebalancing operation picks up on 
    * a concurrent membership change
    */
+  @Test
   public void testMembershipChange() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -1492,10 +1651,12 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
   }
   
   
+  @Test
   public void testMoveBucketsNoRedundancySimulation() {
     moveBucketsNoRedundancy(true);
   }
   
+  @Test
   public void testMoveBucketsNoRedundancy() {
     moveBucketsNoRedundancy(false);
   }
@@ -1620,10 +1781,12 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     }
   }
   
+  @Test
   public void testFilterRegionsSimulation() {
     filterRegions(true);
   }
   
+  @Test
   public void testFilterRegions() {
     filterRegions(false);
   }
@@ -1695,7 +1858,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         ResourceManager manager = cache.getResourceManager();
         RebalanceResults results = doRebalance(simulate, manager, INCLUDED, EXCLUDED);
         Set<PartitionRebalanceInfo> detailSet = results.getPartitionRebalanceDetails();
-//        assertEquals(3, detailSet.size());
+//        assertIndexDetailsEquals(3, detailSet.size());
         Set<String> names = new HashSet<String>();
         for(PartitionRebalanceInfo details: detailSet) {
           assertEquals(0, details.getBucketCreatesCompleted());
@@ -1764,10 +1927,12 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     }
   }
   
+  @Test
   public void testMoveBucketsWithRedundancySimulation() {
     moveBucketsWithRedundancy(true);
   }
 
+  @Test
   public void testMoveBucketsWithRedundancy() {
     moveBucketsWithRedundancy(false);
   }
@@ -1825,7 +1990,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         assertEquals(0, results.getTotalBucketCreatesCompleted());
         //We don't know how many primaries will move, it depends on
         //if the move bucket code moves the primary or a redundant bucket
-        //assertEquals(0, results.getTotalPrimaryTransfersCompleted());
+        //assertIndexDetailsEquals(0, results.getTotalPrimaryTransfersCompleted());
         assertEquals(8, results.getTotalBucketTransfersCompleted());
         assertTrue(0 < results.getTotalBucketTransferBytes());
         Set<PartitionRebalanceInfo> detailSet = results.getPartitionRebalanceDetails();
@@ -1888,6 +2053,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
   /** A test that the stats when overflowing entries to disk
    * are correct and we still rebalance correctly
    */
+  @Test
   public void testMoveBucketsOverflowToDisk() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -1970,7 +2136,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         assertEquals(0, results.getTotalBucketCreatesCompleted());
         //We don't know how many primaries will move, it depends on
         //if the move bucket code moves the primary or a redundant bucket
-        //assertEquals(0, results.getTotalPrimaryTransfersCompleted());
+        //assertIndexDetailsEquals(0, results.getTotalPrimaryTransfersCompleted());
         assertEquals(8, results.getTotalBucketTransfersCompleted());
         assertTrue(0 < results.getTotalBucketTransferBytes());
         Set<PartitionRebalanceInfo> detailSet = results.getPartitionRebalanceDetails();
@@ -2017,7 +2183,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
           assertEquals(4, memberDetails.getPrimaryCount());
           afterSize += memberDetails.getSize();
         }
-        //assertEquals(totalSize.longValue(), afterSize);
+        //assertIndexDetailsEquals(totalSize.longValue(), afterSize);
       }
     };
 
@@ -2038,7 +2204,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         assertEquals(0, results.getTotalBucketCreatesCompleted());
         //We don't know how many primaries will move, it depends on
         //if the move bucket code moves the primary or a redundant bucket
-        //assertEquals(0, results.getTotalPrimaryTransfersCompleted());
+        //assertIndexDetailsEquals(0, results.getTotalPrimaryTransfersCompleted());
         assertEquals(6, results.getTotalBucketTransfersCompleted());
         assertTrue(0 < results.getTotalBucketTransferBytes());
         Set<PartitionRebalanceInfo> detailSet = results.getPartitionRebalanceDetails();
@@ -2059,7 +2225,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         assertEquals(4, afterDetails.size());
         for(PartitionMemberInfo memberDetails: afterDetails) {
           assertEquals(6, memberDetails.getBucketCount());
-//          assertEquals(3, memberDetails.getPrimaryCount());
+//          assertIndexDetailsEquals(3, memberDetails.getPrimaryCount());
           afterSize += memberDetails.getSize();
         }
         assertEquals(totalSize, afterSize);
@@ -2083,10 +2249,10 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
           long afterSize = 0;
           for(PartitionMemberInfo memberDetails: details.getPartitionMemberInfo()) {
             assertEquals(6, memberDetails.getBucketCount());
-            //            assertEquals(3, memberDetails.getPrimaryCount());
+            //            assertIndexDetailsEquals(3, memberDetails.getPrimaryCount());
             afterSize += memberDetails.getSize();
           }
-          //assertEquals(totalSize.longValue(), afterSize);
+          //assertIndexDetailsEquals(totalSize.longValue(), afterSize);
         }
       };
 
@@ -2098,6 +2264,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
   /**
    * Test to make sure we balance buckets between three hosts with redundancy
    */
+  @Test
   public void testMoveBucketsNestedPR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -2154,7 +2321,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         assertEquals(0, results.getTotalBucketCreatesCompleted());
         //We don't know how many primaries will move, it depends on
         //if the move bucket code moves the primary or a redundant bucket
-        //assertEquals(0, results.getTotalPrimaryTransfersCompleted());
+        //assertIndexDetailsEquals(0, results.getTotalPrimaryTransfersCompleted());
         assertEquals(8, results.getTotalBucketTransfersCompleted());
         assertTrue(0 < results.getTotalBucketTransferBytes());
         Set<PartitionRebalanceInfo> detailSet = results.getPartitionRebalanceDetails();
@@ -2210,10 +2377,12 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     vm2.invoke(checkBalance);
   }
   
+  @Test
   public void testMoveBucketsColocatedRegionsSimulation() {
     moveBucketsColocatedRegions(true);
   }
   
+  @Test
   public void testMoveBucketsColocatedRegions() {
     moveBucketsColocatedRegions(false);
   }
@@ -2343,6 +2512,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
    * Test to make sure that moving primaries waits for a put
    * @throws Exception
    */
+  @Test
   public void testWaitForPut() throws Exception {
     runTestWaitForOperation(new Operation() {
       public void execute(Region region, Integer key) {
@@ -2355,6 +2525,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
    * Test to make sure that moving primaries waits for a put
    * @throws Exception
    */
+  @Test
   public void testWaitForInvalidate() throws Exception {
     runTestWaitForOperation(new Operation() {
       public void execute(Region region, Integer key) {
@@ -2367,6 +2538,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
    * Test to make sure that moving primaries waits for a put
    * @throws Exception
    */
+  @Test
   public void testWaitForDestroy() throws Exception {
     runTestWaitForOperation(new Operation() {
       public void execute(Region region, Integer key) {
@@ -2379,6 +2551,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
    * Test to make sure that moving primaries waits for a put
    * @throws Exception
    */
+  @Test
   public void testWaitForCacheLoader() throws Exception {
     runTestWaitForOperation(new Operation() {
       public void execute(Region region, Integer key) {
@@ -2539,18 +2712,22 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     }
   }
   
+  @Test
   public void testRecoverRedundancyWithOfflinePersistenceSimulation() throws Throwable {
     recoverRedundancyWithOfflinePersistence(true, false);
   }
    
+  @Test
   public void testRecoverRedundancyWithOfflinePersistence() throws Throwable {
     recoverRedundancyWithOfflinePersistence(false, false);
   }
   
+  @Test
   public void testRecoverRedundancyWithOfflinePersistenceAccessorSimulation() throws Throwable {
     recoverRedundancyWithOfflinePersistence(true, true);
   }
    
+  @Test
   public void testRecoverRedundancyWithOfflinePersistenceAccessor() throws Throwable {
     recoverRedundancyWithOfflinePersistence(false, true);
   }
@@ -2808,14 +2985,17 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     assertEquals(vm2Buckets, getBucketList("region1", vm2));
   }
   
+  @Test
   public void testMoveBucketsWithUnrecoveredValues() {
     moveBucketsWithUnrecoveredValuesRedundancy(false);
   }
   
+  @Test
   public void testBalanceBucketsByCountSimulation() {
     balanceBucketsByCount(true);
   }
   
+  @Test
   public void testBalanceBucketsByCount() {
     balanceBucketsByCount(false);
   }

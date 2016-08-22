@@ -72,7 +72,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * 
  *
  */
-public final class LocalDataSet implements Region, QueryExecutor {
+public class LocalDataSet implements Region, QueryExecutor {
 
   private static final Logger logger = LogService.getLogger();
   
@@ -122,9 +122,15 @@ public final class LocalDataSet implements Region, QueryExecutor {
     return new LocalEntriesSet(IteratorType.KEYS);
   }
 
+  /**
+   * This instance method was added so that unit tests could mock it
+   */
+  int getHashKey(Operation op, Object key, Object value, Object callbackArg) {
+    return PartitionedRegionHelper.getHashKey(this.proxy, op, key, value, callbackArg);
+  }
+  
   private boolean isInDataSet(Object key, Object callbackArgument) {
-    int bucketId = PartitionedRegionHelper.getHashKey(this.proxy,
-        Operation.CONTAINS_KEY, key, callbackArgument, null);
+    int bucketId = getHashKey(Operation.CONTAINS_KEY, key, null, callbackArgument);
     Integer bucketIdInt = Integer.valueOf(bucketId);
     return buckets.contains(bucketIdInt);
   }
@@ -339,7 +345,7 @@ public final class LocalDataSet implements Region, QueryExecutor {
   }
 
   public boolean isEmpty() {
-    return this.proxy.isEmpty();
+    return size() == 0;
   }
 
   public Object getUserAttribute() {

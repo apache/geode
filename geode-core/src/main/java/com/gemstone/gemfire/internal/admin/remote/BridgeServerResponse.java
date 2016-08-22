@@ -31,7 +31,7 @@ import java.util.*;
  * BridgeServerResponse}.  It perform an operation on a bridge server
  * and returns the result to the sender.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public final class BridgeServerResponse extends AdminResponse {
 

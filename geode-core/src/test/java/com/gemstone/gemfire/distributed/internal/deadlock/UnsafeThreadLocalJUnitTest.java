@@ -16,45 +16,62 @@
  */
 package com.gemstone.gemfire.distributed.internal.deadlock;
 
+import static org.junit.Assert.*;
+
 import java.util.concurrent.CountDownLatch;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
-/**
- * 
- */
 @Category(UnitTest.class)
-public class UnsafeThreadLocalJUnitTest extends TestCase {
+public class UnsafeThreadLocalJUnitTest {
+
+  private static final long INTERVAL = 10;
+
+  private volatile boolean sleep;
+
+  @Before
+  public void setUp() throws Exception {
+    sleep = true;
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    sleep = false;
+  }
 
   /**
    * Test that we can get the value of a thread local from another thread.
-   * 
-   * @throws InterruptedException
    */
+  @Test
   public void test() throws InterruptedException {
-    final UnsafeThreadLocal<String> utl = new UnsafeThreadLocal<String>();
+    final UnsafeThreadLocal<String> unsafeThreadLocal = new UnsafeThreadLocal<String>();
     final CountDownLatch localSet = new CountDownLatch(1);
 
     Thread test = new Thread() {
       public void run() {
-        utl.set("hello");
+        unsafeThreadLocal.set("hello");
         localSet.countDown();
         try {
-          Thread.sleep(100 * 1000);
+          while (sleep) {
+            Thread.sleep(INTERVAL);
+          }
         } catch (InterruptedException e) {
-          e.printStackTrace();
+          throw new AssertionError(e);
         }
       }
     };
+
     test.setDaemon(true);
     test.start();
-    localSet.await();
-    assertEquals("hello", utl.get(test));
-    assertEquals(null, utl.get(Thread.currentThread()));
-  }
 
+    localSet.await();
+
+    assertEquals("hello", unsafeThreadLocal.get(test));
+    assertEquals(null, unsafeThreadLocal.get(Thread.currentThread()));
+  }
 }

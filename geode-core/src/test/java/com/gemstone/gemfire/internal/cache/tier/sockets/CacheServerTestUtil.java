@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
@@ -23,6 +26,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -49,18 +53,14 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl.PoolAttributes;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-/**
- *
- *
- */
-public class CacheServerTestUtil extends DistributedTestCase
-{
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+
+public class CacheServerTestUtil extends JUnit4DistributedTestCase {
+
   private static Cache cache = null;
   private static IgnoredException expected;
 
@@ -71,17 +71,11 @@ public class CacheServerTestUtil extends DistributedTestCase
   protected final static int TYPE_INVALIDATE = 2;
   protected final static int TYPE_DESTROY = 3;
 
-  public CacheServerTestUtil(String name) {
-    super(name);
-  }
-
-  public static void createCacheClient(Pool poolAttr, String regionName)
-      throws Exception {
+  public static void createCacheClient(Pool poolAttr, String regionName) throws Exception {
     createCacheClient(poolAttr, regionName, getClientProperties(), Boolean.FALSE);
   }
 
-  public static void createCacheClient(Pool poolAttr, String regionName,
-      Properties dsProperties) throws Exception {
+  public static void createCacheClient(Pool poolAttr, String regionName, Properties dsProperties) throws Exception {
     createCacheClient(poolAttr, regionName, dsProperties, Boolean.FALSE);
   }
 
@@ -89,8 +83,7 @@ public class CacheServerTestUtil extends DistributedTestCase
     createClientCache(poolAttr, regionName, getClientProperties());
   }
 
-  public static void createClientCache(Pool poolAttr, String regionName,
-    Properties dsProperties) throws Exception {
+  public static void createClientCache(Pool poolAttr, String regionName, Properties dsProperties) throws Exception {
     ClientCacheFactory ccf = new ClientCacheFactory(dsProperties);
     if (poolAttr != null) {
       ccf
@@ -119,70 +112,60 @@ public class CacheServerTestUtil extends DistributedTestCase
         ccf.addPoolServer(server.getHostName(), server.getPort());
       }
     }
-    new CacheServerTestUtil("temp").createClientCache(dsProperties, ccf);
+    new CacheServerTestUtil().createClientCache(dsProperties, ccf);
     ClientCache cc = (ClientCache)cache;
     cc.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);
     pool = (PoolImpl)((GemFireCacheImpl)cc).getDefaultPool();
   }
 
-  
-  
   public static void createPool(PoolAttributes poolAttr) throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     
-    DistributedSystem ds = new CacheServerTestUtil("tmp").getSystem(props);;
+    DistributedSystem ds = new CacheServerTestUtil().getSystem(props);;
     
-      PoolFactoryImpl pf = (PoolFactoryImpl)PoolManager.createFactory();
-      pf.init(poolAttr);
-      PoolImpl p = (PoolImpl)pf.create("CacheServerTestUtil");
-      AttributesFactory factory = new AttributesFactory();
-      factory.setScope(Scope.LOCAL);
-      factory.setPoolName(p.getName());
-    
-      RegionAttributes attrs = factory.create();
-      pool = p;
-    }
-  
-  
-  
-  
-  
-  
-  
-  public static void createCacheClient(Pool poolAttr, String regionName,
-    Properties dsProperties, Boolean addControlListener) throws Exception {
+    PoolFactoryImpl pf = (PoolFactoryImpl)PoolManager.createFactory();
+    pf.init(poolAttr);
+    PoolImpl p = (PoolImpl)pf.create("CacheServerTestUtil");
+    AttributesFactory factory = new AttributesFactory();
+    factory.setScope(Scope.LOCAL);
+    factory.setPoolName(p.getName());
+
+    RegionAttributes attrs = factory.create();
+    pool = p;
+  }
+
+  public static void createCacheClient(Pool poolAttr, String regionName, Properties dsProperties, Boolean addControlListener) throws Exception {
   	createCacheClient(poolAttr, regionName, dsProperties, addControlListener, null);
   }
   
-  public static void createCacheClient(Pool poolAttr, String regionName,
-      Properties dsProperties, Boolean addControlListener, Properties javaSystemProperties) throws Exception {  		
-      new CacheServerTestUtil("temp").createCache(dsProperties);
-      IgnoredException.addIgnoredException("java.net.ConnectException||java.net.SocketException");
-      
-      if (javaSystemProperties != null && javaSystemProperties.size() > 0) {
-      	Enumeration e = javaSystemProperties.propertyNames();
+  public static void createCacheClient(Pool poolAttr, String regionName, Properties dsProperties, Boolean addControlListener, Properties javaSystemProperties) throws Exception {
+    new CacheServerTestUtil().createCache(dsProperties);
+    IgnoredException.addIgnoredException("java.net.ConnectException||java.net.SocketException");
 
-        while (e.hasMoreElements()) {
-          String key = (String) e.nextElement();
-          System.setProperty(key, javaSystemProperties.getProperty(key));
-        }
-  	  }
-      
-      PoolFactoryImpl pf = (PoolFactoryImpl)PoolManager.createFactory();
-      pf.init(poolAttr);
-      PoolImpl p = (PoolImpl)pf.create("CacheServerTestUtil");
-      AttributesFactory factory = new AttributesFactory();
-      factory.setScope(Scope.LOCAL);
-      factory.setPoolName(p.getName());
-      if (addControlListener.booleanValue()) {
-        factory.addCacheListener(new ControlListener());
+    if (javaSystemProperties != null && javaSystemProperties.size() > 0) {
+      Enumeration e = javaSystemProperties.propertyNames();
+
+      while (e.hasMoreElements()) {
+        String key = (String) e.nextElement();
+        System.setProperty(key, javaSystemProperties.getProperty(key));
       }
-      RegionAttributes attrs = factory.create();
-      cache.createRegion(regionName, attrs);
-      pool = p;
     }
+
+    PoolFactoryImpl pf = (PoolFactoryImpl)PoolManager.createFactory();
+    pf.init(poolAttr);
+    PoolImpl p = (PoolImpl)pf.create("CacheServerTestUtil");
+    AttributesFactory factory = new AttributesFactory();
+    factory.setScope(Scope.LOCAL);
+    factory.setPoolName(p.getName());
+    if (addControlListener.booleanValue()) {
+      factory.addCacheListener(new ControlListener());
+    }
+    RegionAttributes attrs = factory.create();
+    cache.createRegion(regionName, attrs);
+    pool = p;
+  }
   
   public static void unsetJavaSystemProperties(Properties javaSystemProperties) {
   	if (javaSystemProperties != null && javaSystemProperties.size() > 0) {
@@ -195,10 +178,8 @@ public class CacheServerTestUtil extends DistributedTestCase
 	  }
   }
   
-  public static void createCacheClient(Pool poolAttr, String regionName1,
-      String regionName2) throws Exception
-  {
-    new CacheServerTestUtil("temp").createCache(getClientProperties());
+  public static void createCacheClient(Pool poolAttr, String regionName1, String regionName2) throws Exception {
+    new CacheServerTestUtil().createCache(getClientProperties());
     PoolFactoryImpl pf = (PoolFactoryImpl)PoolManager.createFactory();
     pf.init(poolAttr);
     PoolImpl p = (PoolImpl)pf.create("CacheServerTestUtil");
@@ -215,17 +196,17 @@ public class CacheServerTestUtil extends DistributedTestCase
     ClientCacheFactory ccf = new ClientCacheFactory();
     try {
       File cacheXmlFile = new File(url.toURI().getPath());
-      ccf.set("cache-xml-file", cacheXmlFile.toURI().getPath());
+      ccf.set(CACHE_XML_FILE, cacheXmlFile.toURI().getPath());
       
     }
     catch (URISyntaxException e) {
       throw new ExceptionInInitializerError(e);
     }
-    ccf.set("mcast-port", "0");
-    ccf.set(DistributionConfig.DURABLE_CLIENT_ID_NAME, durableClientId);
-    ccf.set(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, String.valueOf(timeout));
-    ccf.set("log-file", "abs_client_system.log");
-    ccf.set("log-level", LogWriterUtils.getDUnitLogLevel());
+    ccf.set(MCAST_PORT, "0");
+    ccf.set(DURABLE_CLIENT_ID, durableClientId);
+    ccf.set(DURABLE_CLIENT_TIMEOUT, String.valueOf(timeout));
+    ccf.set(LOG_FILE, "abs_client_system.log");
+    ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     cache = (Cache)ccf.create();
     expected = IgnoredException.addIgnoredException("java.net.ConnectionException||java.net.SocketException");
     pool = (PoolImpl)PoolManager.find(poolName);
@@ -236,15 +217,15 @@ public class CacheServerTestUtil extends DistributedTestCase
     ClientCacheFactory ccf = new ClientCacheFactory();
     try {
       File cacheXmlFile = new File(url.toURI().getPath());
-      ccf.set("cache-xml-file", cacheXmlFile.toURI().getPath());
+      ccf.set(CACHE_XML_FILE, cacheXmlFile.toURI().getPath());
       
     }
     catch (URISyntaxException e) {
       throw new ExceptionInInitializerError(e);
     }
-    ccf.set("mcast-port", "0");
-    ccf.set(DistributionConfig.DURABLE_CLIENT_ID_NAME, durableClientId);
-    ccf.set(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, String.valueOf(timeout));
+    ccf.set(MCAST_PORT, "0");
+    ccf.set(DURABLE_CLIENT_ID, durableClientId);
+    ccf.set(DURABLE_CLIENT_TIMEOUT, String.valueOf(timeout));
     cache = (Cache)ccf.create();
     expected = IgnoredException.addIgnoredException("java.net.ConnectionException||java.net.SocketException");
     pool = (PoolImpl)PoolManager.find(poolName);
@@ -255,11 +236,11 @@ public class CacheServerTestUtil extends DistributedTestCase
     CacheFactory ccf = new CacheFactory();
     try {
       File cacheXmlFile = new File(url.toURI().getPath());
-      ccf.set("cache-xml-file", cacheXmlFile.toURI().getPath());
-      ccf.set("mcast-port", "0");
-      ccf.set("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-      ccf.set("log-file", "abs_server_system.log");
-      ccf.set("log-level", LogWriterUtils.getDUnitLogLevel());
+      ccf.set(CACHE_XML_FILE, cacheXmlFile.toURI().getPath());
+      ccf.set(MCAST_PORT, "0");
+      ccf.set(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+      ccf.set(LOG_FILE, "abs_server_system.log");
+      ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     }
     catch (URISyntaxException e) {
       throw new ExceptionInInitializerError(e);
@@ -272,9 +253,9 @@ public class CacheServerTestUtil extends DistributedTestCase
     CacheFactory ccf = new CacheFactory();
     try {
       File cacheXmlFile = new File(url.toURI().getPath());
-      ccf.set("cache-xml-file", cacheXmlFile.toURI().getPath());
-      ccf.set("mcast-port", "0");
-      ccf.set("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
+      ccf.set(CACHE_XML_FILE, cacheXmlFile.toURI().getPath());
+      ccf.set(MCAST_PORT, "0");
+      ccf.set(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
     }
     catch (URISyntaxException e) {
       throw new ExceptionInInitializerError(e);
@@ -286,10 +267,8 @@ public class CacheServerTestUtil extends DistributedTestCase
   /**
    * Create client regions
    */
-  public static void createCacheClients(Pool poolAttr, String regionName1,
-      String regionName2, Properties dsProperties) throws Exception
-  {
-    new CacheServerTestUtil("temp").createCache(dsProperties);
+  public static void createCacheClients(Pool poolAttr, String regionName1, String regionName2, Properties dsProperties) throws Exception {
+    new CacheServerTestUtil().createCache(dsProperties);
 
     // Initialize region1
     PoolFactoryImpl pf = (PoolFactoryImpl)PoolManager.createFactory();
@@ -308,29 +287,25 @@ public class CacheServerTestUtil extends DistributedTestCase
     cache.createRegion(regionName2, factory2.create());
   }
 
-  private static Properties getClientProperties()
-  {
+  private static Properties getClientProperties() {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     return props;
   }
   
-  private static Properties getClientProperties(boolean durable)
-  {
+  private static Properties getClientProperties(boolean durable) {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     return props;
   }
 
-  public static Integer createCacheServer(String regionName,
-      Boolean notifyBySubscription) throws Exception
-  {
+  public static Integer createCacheServer(String regionName, Boolean notifyBySubscription) throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-    new CacheServerTestUtil("temp").createCache(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+    new CacheServerTestUtil().createCache(props);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableBridgeConflation(true);
@@ -345,14 +320,11 @@ public class CacheServerTestUtil extends DistributedTestCase
     return new Integer(server1.getPort());
   }
 
-  public static Integer[] createCacheServerReturnPorts(String regionName,
-      Boolean notifyBySubscription) throws Exception
-  {
+  public static Integer[] createCacheServerReturnPorts(String regionName, Boolean notifyBySubscription) throws Exception {
     Properties props = new Properties();
-//    int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-    new CacheServerTestUtil("temp").createCache(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+    new CacheServerTestUtil().createCache(props);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableBridgeConflation(true);
@@ -367,13 +339,11 @@ public class CacheServerTestUtil extends DistributedTestCase
     return new Integer[] {port, 0};
   }
 
-  public static void createCacheServer(String regionName,
-      Boolean notifyBySubscription, Integer serverPort)
-      throws Exception {
+  public static void createCacheServer(String regionName, Boolean notifyBySubscription, Integer serverPort) throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-    new CacheServerTestUtil("temp").createCache(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+    new CacheServerTestUtil().createCache(props);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableBridgeConflation(true);
@@ -386,10 +356,8 @@ public class CacheServerTestUtil extends DistributedTestCase
     server.start();
   }
 
-  public static Integer createCacheServer(String regionName1,
-      String regionName2, Boolean notifyBySubscription) throws Exception
-  {
-    new CacheServerTestUtil("temp").createCache(new Properties());
+  public static Integer createCacheServer(String regionName1, String regionName2, Boolean notifyBySubscription) throws Exception {
+    new CacheServerTestUtil().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableBridgeConflation(true);
@@ -409,8 +377,7 @@ public class CacheServerTestUtil extends DistributedTestCase
     return new Integer(server1.getPort());
   }
 
-  private void createCache(Properties props) throws Exception
-  {
+  private void createCache(Properties props) throws Exception {
     DistributedSystem ds = getSystem(props);
     assertNotNull(ds);
     ds.disconnect();
@@ -419,8 +386,7 @@ public class CacheServerTestUtil extends DistributedTestCase
     assertNotNull(cache);
   }
 
-  private void createClientCache(Properties props, ClientCacheFactory ccf) throws Exception
-  {
+  private void createClientCache(Properties props, ClientCacheFactory ccf) throws Exception {
     DistributedSystem ds = getSystem(props);
     assertNotNull(ds);
     ds.disconnect();
@@ -431,8 +397,7 @@ public class CacheServerTestUtil extends DistributedTestCase
     expected = IgnoredException.addIgnoredException("java.net.ConnectionException||java.net.SocketException");
   }
 
-  public static void closeCache()
-  {
+  public static void closeCache() {
     if (expected != null) {
       expected.remove();
       expected = null;
@@ -443,8 +408,7 @@ public class CacheServerTestUtil extends DistributedTestCase
     }
   }
 
-  public static void closeCache(boolean keepalive)
-  {
+  public static void closeCache(boolean keepalive) {
     if (expected != null) {
       expected.remove();
       expected = null;
@@ -459,18 +423,15 @@ public class CacheServerTestUtil extends DistributedTestCase
     cache = null;
   }
   
-  public static void setClientCrash(boolean crashOnClose)
-  {
+  public static void setClientCrash(boolean crashOnClose) {
     com.gemstone.gemfire.cache.client.internal.ConnectionImpl.setTEST_DURABLE_CLIENT_CRASH(crashOnClose);
   }
   
-  public static void disconnectClient()
-  {
+  public static void disconnectClient() {
     pool.endpointsNetDownForDUnitTest();
   }
   
-  public static void reconnectClient()
-  {
+  public static void reconnectClient() {
     if(pool != null) {
       pool.endpointsNetUpForDUnitTest();
     }
@@ -498,46 +459,40 @@ public class CacheServerTestUtil extends DistributedTestCase
     }
   }
 
-  public static Cache getCache()
-  {
+  public static Cache getCache() {
     return cache;
   }
 
-  public static PoolImpl getPool()
-  {
+  public static PoolImpl getPool() {
     return pool;
   }
 
   /**
    * Disables the shuffling of endpoints for a client
-   *
    */
-  public static void disableShufflingOfEndpoints()
-  {
+  public static void disableShufflingOfEndpoints() {
     // TODO DISABLE_RANDOM doesn't seem to be used anywhere
-    System.setProperty("gemfire.PoolImpl.DISABLE_RANDOM", "true");
-    System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "true");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.DISABLE_RANDOM", "true");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
   }
+
   /**
    * Enables the shuffling of endpoints for a client
-   * @since 5.7
+   * @since GemFire 5.7
    */
-  public static void enableShufflingOfEndpoints()
-  {
+  public static void enableShufflingOfEndpoints() {
     // TODO DISABLE_RANDOM doesn't seem to be used anywhere
-    System.setProperty("gemfire.PoolImpl.DISABLE_RANDOM", "false");
-    System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "false");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.DISABLE_RANDOM", "false");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "false");
   }
 
   /**
    * Resets the 'disableShufflingOfEndpoints' flag
-   * 
    */
-  public static void resetDisableShufflingOfEndpointsFlag()
-  {
-    System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "false");
+  public static void resetDisableShufflingOfEndpointsFlag() {
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "false");
   }
-  
+
   public static class EventWrapper {
     public final EntryEvent event;
     public final Object key;
@@ -551,13 +506,19 @@ public class CacheServerTestUtil extends DistributedTestCase
       this.arg = ee.getCallbackArgument();
       this.type = type;
     }
+    public boolean isCreate() {
+      return this.type == TYPE_CREATE;
+    }
     public String toString() {
       return "EventWrapper: event=" + event + ", type=" + type;
     }
   }
 
   public static class ControlListener extends CacheListenerAdapter implements Declarable {
-    public final LinkedList events = new LinkedList();
+    public final LinkedList<EventWrapper> events = new LinkedList();
+    public final LinkedList<EntryEvent> createEvents = new LinkedList();
+    public final LinkedList<EntryEvent> updateEvents = new LinkedList();
+    public final LinkedList<EntryEvent> destroyEvents = new LinkedList();
     public final Object CONTROL_LOCK = new Object();
 
     //added to test creation of cache from xml
@@ -566,10 +527,18 @@ public class CacheServerTestUtil extends DistributedTestCase
     }
 
     public boolean waitWhileNotEnoughEvents(long sleepMs, int eventCount) {
+      return waitWhileNotEnoughEvents(sleepMs, eventCount, -1);
+    }
+
+    public boolean waitWhileNotEnoughEvents(long sleepMs, int eventCount, int eventType) {
+      return waitWhileNotEnoughEvents(sleepMs, eventCount, getEvents(eventType));
+    }
+
+    public boolean waitWhileNotEnoughEvents(long sleepMs, int eventCount, List eventsToCheck) {
       long maxMillis = System.currentTimeMillis() + sleepMs;
       synchronized(this.CONTROL_LOCK) {
         try {
-          while (this.events.size() < eventCount) {
+          while (eventsToCheck.size() < eventCount) {
             long waitMillis = maxMillis - System.currentTimeMillis();
             if (waitMillis < 10) {
               break;
@@ -579,24 +548,47 @@ public class CacheServerTestUtil extends DistributedTestCase
         } catch (InterruptedException abort) {
           fail("interrupted");
         }
-        return !this.events.isEmpty();
+        return !eventsToCheck.isEmpty();
       } // synchronized
     }
 
+    public List getEvents(int eventType) {
+      List eventsToCheck = null;
+      switch (eventType) {
+      case TYPE_CREATE:
+        eventsToCheck = this.createEvents;
+        break;
+      case TYPE_UPDATE:
+        eventsToCheck = this.updateEvents;
+        break;
+      case TYPE_DESTROY:
+        eventsToCheck = this.destroyEvents;
+        break;
+      default:
+        eventsToCheck = this.events;
+      }
+      return eventsToCheck;
+    }
+
+    @Override
     public void afterCreate(EntryEvent e) {
       synchronized(this.CONTROL_LOCK) {
         this.events.add(new EventWrapper(e, TYPE_CREATE));
+        this.createEvents.add(e);
         this.CONTROL_LOCK.notifyAll();
       }
     }
 
+    @Override
     public void afterUpdate(EntryEvent e) {
       synchronized(this.CONTROL_LOCK) {
         this.events.add(new EventWrapper(e, TYPE_UPDATE));
+        this.updateEvents.add(e);
         this.CONTROL_LOCK.notifyAll();
       }
     }
 
+    @Override
     public void afterInvalidate(EntryEvent e) {
       synchronized(this.CONTROL_LOCK) {
         this.events.add(new EventWrapper(e, TYPE_INVALIDATE));
@@ -604,9 +596,11 @@ public class CacheServerTestUtil extends DistributedTestCase
       }
     }
 
+    @Override
     public void afterDestroy(EntryEvent e) {
       synchronized(this.CONTROL_LOCK) {
         this.events.add(new EventWrapper(e, TYPE_DESTROY));
+        this.destroyEvents.add(e);
         this.CONTROL_LOCK.notifyAll();
       }
     }

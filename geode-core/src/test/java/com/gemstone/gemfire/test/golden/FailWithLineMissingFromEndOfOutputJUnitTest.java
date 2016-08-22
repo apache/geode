@@ -27,7 +27,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Verifies that test output missing an expected line (at the end of
  * the golden file) will fail with that line as the failure message.
- * 
  */
 @Category(IntegrationTest.class)
 public class FailWithLineMissingFromEndOfOutputJUnitTest extends FailOutputTestCase {
@@ -63,7 +62,7 @@ public class FailWithLineMissingFromEndOfOutputJUnitTest extends FailOutputTestC
       assertOutputMatchesGoldenFile(process.getOutput(), goldenString);
       fail("assertOutputMatchesGoldenFile should have failed due to " + problem());
     } catch (AssertionError expected) {
-      assertTrue("AssertionFailedError message should contain \"" + problem() + "\"", 
+      assertTrue("AssertionError message should contain \"" + problem() + "\"",
           expected.getMessage().contains(problem()));
     }
   }

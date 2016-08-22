@@ -16,29 +16,30 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 import java.util.Properties;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests Distributed Ack Region with ConcurrencyChecksEnabled and OffHeap memory.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 @SuppressWarnings({ "deprecation", "serial" })
+@Category(DistributedTest.class)
 public class DistributedAckRegionCCEOffHeapDUnitTest extends DistributedAckRegionCCEDUnitTest {
 
-  public DistributedAckRegionCCEOffHeapDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
-  public final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownAssertions() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
 
       @Override
@@ -55,12 +56,12 @@ public class DistributedAckRegionCCEOffHeapDUnitTest extends DistributedAckRegio
   @Override
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "10m");
+    props.setProperty(OFF_HEAP_MEMORY_SIZE, "10m");
     return props;
   }
   
-  @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   protected RegionAttributes getRegionAttributes() {
     RegionAttributes attrs = super.getRegionAttributes();
     AttributesFactory factory = new AttributesFactory(attrs);
@@ -68,8 +69,8 @@ public class DistributedAckRegionCCEOffHeapDUnitTest extends DistributedAckRegio
     return factory.create();
   }
   
-  @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   protected RegionAttributes getRegionAttributes(String type) {
     RegionAttributes ra = super.getRegionAttributes(type);
     AttributesFactory factory = new AttributesFactory(ra);

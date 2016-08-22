@@ -46,6 +46,7 @@ import com.gemstone.gemfire.internal.cache.partitioned.RemoveAllPRMessage;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -274,15 +275,15 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
   
   public Object findObject(KeyInfo keyInfo, boolean isCreate,
-      boolean generateCallbacks, Object value, boolean peferCD,
-      ClientProxyMembershipID requestingClient,
-      EntryEventImpl clientEvent, boolean allowReadFromHDFS) {
+                           boolean generateCallbacks, Object value, boolean peferCD,
+                           ClientProxyMembershipID requestingClient,
+                           EntryEventImpl clientEvent) {
     Object retVal = null;
     final Object key = keyInfo.getKey();
     final Object callbackArgument = keyInfo.getCallbackArg();
     PartitionedRegion pr = (PartitionedRegion)region;
     try {
-      retVal = pr.getRemotely((InternalDistributedMember)state.getTarget(), keyInfo.getBucketId(), key, callbackArgument, peferCD, requestingClient, clientEvent, false, allowReadFromHDFS);
+      retVal = pr.getRemotely((InternalDistributedMember)state.getTarget(), keyInfo.getBucketId(), key, callbackArgument, peferCD, requestingClient, clientEvent, false);
     } catch (TransactionException e) {
       RuntimeException re = getTransactionException(keyInfo, e);
       re.initCause(e.getCause());
@@ -386,7 +387,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
         partialKeys.consolidate(pre.getResult());
       } catch (Exception ex) {
         // If failed at other exception
-        EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);
+        @Released EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);
         try {
           partialKeys.saveFailedKey(firstEvent.getKey(), ex);
         } finally {
@@ -444,8 +445,12 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
         partialKeys.consolidate(pre.getResult());
       } catch (Exception ex) {
         // If failed at other exception
-        EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);
+        @Released EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);
+        try {
           partialKeys.saveFailedKey(firstEvent.getKey(), ex);
+        } finally {
+          firstEvent.release();
+        }
       }
     }
     pr.prStats.endRemoveAll(startTime);
@@ -477,7 +482,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     // retry the put remotely until it finds the right node managing the bucket
     InternalDistributedMember currentTarget = pr.getOrCreateNodeForBucketWrite(bucketId.intValue(), null);
     if(!currentTarget.equals(this.state.getTarget())) {
-      EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);
+      @Released EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);
       try {
         throw new TransactionDataNotColocatedException(LocalizedStrings.PartitionedRegion_KEY_0_NOT_COLOCATED_WITH_TRANSACTION.toLocalizedString(firstEvent.getKey()));
       } finally {
@@ -507,8 +512,12 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     // retry the put remotely until it finds the right node managing the bucket
     InternalDistributedMember currentTarget = pr.getOrCreateNodeForBucketWrite(bucketId.intValue(), null);
     if(!currentTarget.equals(this.state.getTarget())) {
-      EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);
+      @Released EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);
+      try {
         throw new TransactionDataNotColocatedException(LocalizedStrings.PartitionedRegion_KEY_0_NOT_COLOCATED_WITH_TRANSACTION.toLocalizedString(firstEvent.getKey()));
+      } finally {
+        firstEvent.release();
+      }
     }
     try {
       return pr.tryToSendOneRemoveAllMessage(prMsg,currentTarget);

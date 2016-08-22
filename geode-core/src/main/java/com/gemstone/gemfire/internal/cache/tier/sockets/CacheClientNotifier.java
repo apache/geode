@@ -17,6 +17,8 @@
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 import java.io.BufferedOutputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
@@ -44,6 +46,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
 
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.DataSerializer;
@@ -65,7 +68,6 @@ import com.gemstone.gemfire.cache.query.CqException;
 import com.gemstone.gemfire.cache.query.Query;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
-import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
 import com.gemstone.gemfire.cache.query.internal.cq.ServerCQ;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -83,25 +85,22 @@ import com.gemstone.gemfire.internal.DummyStatisticsFactory;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalInstantiator;
 import com.gemstone.gemfire.internal.SocketCloser;
-import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedDataInputStream;
 import com.gemstone.gemfire.internal.VersionedDataOutputStream;
-import com.gemstone.gemfire.internal.cache.ClientServerObserver;
-import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
-import com.gemstone.gemfire.internal.cache.ClientRegionEventImpl;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.CacheClientStatus;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor;
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
+import com.gemstone.gemfire.internal.cache.ClientRegionEventImpl;
+import com.gemstone.gemfire.internal.cache.ClientServerObserver;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.Conflatable;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.FilterProfile;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl.SerializedCacheValueImpl;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo.FilterInfo;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InternalCacheEvent;
@@ -129,7 +128,7 @@ import com.gemstone.gemfire.security.AuthenticationRequiredException;
  * notifies them when updates occur.
  *
  *
- * @since 3.2
+ * @since GemFire 3.2
  */
 @SuppressWarnings({"synthetic-access", "deprecation"})
 public class CacheClientNotifier {
@@ -146,7 +145,6 @@ public class CacheClientNotifier {
    * @param acceptorStats        
    * @param maximumMessageCount
    * @param messageTimeToLive 
-   * @param transactionTimeToLive - ttl for txstates for disconnected clients
    * @param listener 
    * @param overflowAttributesList 
    * @return A <code>CacheClientNotifier</code> instance
@@ -154,13 +152,11 @@ public class CacheClientNotifier {
   public static synchronized CacheClientNotifier getInstance(Cache cache,
       CacheServerStats acceptorStats,
       int maximumMessageCount, int messageTimeToLive,
-      int transactionTimeToLive,
       ConnectionListener listener, List overflowAttributesList, boolean isGatewayReceiver)
   {
     if (ccnSingleton == null) {
       ccnSingleton = new CacheClientNotifier(cache, acceptorStats, maximumMessageCount, 
-          messageTimeToLive, transactionTimeToLive,
-          listener, overflowAttributesList, isGatewayReceiver);
+          messageTimeToLive, listener, overflowAttributesList, isGatewayReceiver);
     }
     
     if (!isGatewayReceiver && ccnSingleton.getHaContainer() == null) {
@@ -181,9 +177,6 @@ public class CacheClientNotifier {
   public static CacheClientNotifier getInstance(){
     return ccnSingleton;
   }
-
-  /** the amount of time in seconds to keep a disconnected client's txstates around */
-  private final int transactionTimeToLive;
   
   /**
    * Writes a given message to the output stream
@@ -314,8 +307,8 @@ public class CacheClientNotifier {
   {
     // Since no remote ports were specified in the message, wait for them.
     long startTime = this._statistics.startTime();
-    DataInputStream dis = new DataInputStream(SocketUtils.getInputStream(socket));//socket.getInputStream());
-    DataOutputStream dos = new DataOutputStream(SocketUtils.getOutputStream(socket));//socket.getOutputStream());
+    DataInputStream dis = new DataInputStream(socket.getInputStream());
+    DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 
     // Read the client version
     short clientVersionOrdinal = Version.readOrdinal(dis);
@@ -381,7 +374,7 @@ public class CacheClientNotifier {
       DistributedSystem system = this.getCache().getDistributedSystem();
       Properties sysProps = system.getProperties();
       String authenticator = sysProps
-          .getProperty(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME);
+          .getProperty(SECURITY_CLIENT_AUTHENTICATOR);
       //TODO;hitesh for conflation
       if (clientVersion.compareTo(Version.GFE_603) >= 0) {
         byte[] overrides = HandShake.extractOverrides(new byte[] { (byte) dis.read() });
@@ -402,37 +395,45 @@ public class CacheClientNotifier {
               new IllegalArgumentException("Invalid conflation byte"), clientVersion);
           return;
       }
-      
+
+      proxy = registerClient(socket, proxyID, proxy, isPrimary, clientConflation,
+        clientVersion, acceptorId, notifyBySubscription);
       
       //TODO:hitesh
-      Properties credentials = HandShake.readCredentials(dis, dos,
-          authenticator, system);
-      if (credentials != null) {
+      Properties credentials = HandShake.readCredentials(dis, dos, system);
+      if (credentials != null && proxy!=null) {
         if (securityLogWriter.fineEnabled()) {
           securityLogWriter.fine("CacheClientNotifier: verifying credentials for proxyID: " + proxyID);
         }
-        Principal principal = HandShake.verifyCredentials(authenticator,
+        Object subject = HandShake.verifyCredentials(authenticator,
             credentials, system.getSecurityProperties(), this.logWriter,
             this.securityLogWriter, member);
-        if (securityLogWriter.fineEnabled()) {
-          securityLogWriter.fine("CacheClientNotifier: successfully verified credentials for proxyID: " + proxyID + " having principal: " + principal.getName());
-        }
-        String postAuthzFactoryName = sysProps
-            .getProperty(DistributionConfig.SECURITY_CLIENT_ACCESSOR_PP_NAME);
-        if (postAuthzFactoryName != null && postAuthzFactoryName.length() > 0) {
-          if (principal == null) {
-            securityLogWriter.warning(LocalizedStrings.CacheClientNotifier_CACHECLIENTNOTIFIER_POST_PROCESS_AUTHORIZATION_CALLBACK_ENABLED_BUT_AUTHENTICATION_CALLBACK_0_RETURNED_WITH_NULL_CREDENTIALS_FOR_PROXYID_1, new Object[] {DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, proxyID});
+        if(subject instanceof Principal){
+          Principal principal = (Principal) subject;
+          if (securityLogWriter.fineEnabled()) {
+            securityLogWriter.fine("CacheClientNotifier: successfully verified credentials for proxyID: " + proxyID + " having principal: " + principal.getName());
           }
-          Method authzMethod = ClassLoadUtil
-              .methodFromName(postAuthzFactoryName);
-          authzCallback = (AccessControl)authzMethod.invoke(null,
-              (Object[])null);
-          authzCallback.init(principal, member, this.getCache());
+
+          String postAuthzFactoryName = sysProps
+              .getProperty(SECURITY_CLIENT_ACCESSOR_PP);
+          if (postAuthzFactoryName != null && postAuthzFactoryName.length() > 0) {
+            if (principal == null) {
+              securityLogWriter.warning(LocalizedStrings.CacheClientNotifier_CACHECLIENTNOTIFIER_POST_PROCESS_AUTHORIZATION_CALLBACK_ENABLED_BUT_AUTHENTICATION_CALLBACK_0_RETURNED_WITH_NULL_CREDENTIALS_FOR_PROXYID_1, new Object[] {
+                SECURITY_CLIENT_AUTHENTICATOR, proxyID
+              });
+            }
+            Method authzMethod = ClassLoadUtil.methodFromName(postAuthzFactoryName);
+            authzCallback = (AccessControl) authzMethod.invoke(null, (Object[]) null);
+            authzCallback.init(principal, member, this.getCache());
+          }
+          proxy.setPostAuthzCallback(authzCallback);
+        }
+        else if(subject instanceof Subject){
+          proxy.setSubject((Subject)subject);
         }
       }
     }
     catch (ClassNotFoundException e) {
-
       throw new IOException(LocalizedStrings.CacheClientNotifier_CLIENTPROXYMEMBERSHIPID_OBJECT_COULD_NOT_BE_CREATED_EXCEPTION_OCCURRED_WAS_0.toLocalizedString(e));
     }
     catch (AuthenticationRequiredException ex) {
@@ -445,24 +446,19 @@ public class CacheClientNotifier {
       writeException(dos, HandShake.REPLY_EXCEPTION_AUTHENTICATION_FAILED, ex, clientVersion);
       return;
     }
-    catch (Exception ex) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientNotifier_AN_EXCEPTION_WAS_THROWN_FOR_CLIENT_0_1, new Object[] {proxyID, ""}), ex);
-      writeException(dos, Acceptor.UNSUCCESSFUL_SERVER_TO_CLIENT, ex, clientVersion);
-      return;
-    }
-    try {
-      proxy = registerClient(socket, proxyID, proxy, isPrimary, clientConflation,
-		  clientVersion, acceptorId, notifyBySubscription);
-    }
     catch (CacheException e) {
       logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientNotifier_0_REGISTERCLIENT_EXCEPTION_ENCOUNTERED_IN_REGISTRATION_1, new Object[] {this, e}), e);
       IOException io = new IOException(LocalizedStrings.CacheClientNotifier_EXCEPTION_OCCURRED_WHILE_TRYING_TO_REGISTER_INTEREST_DUE_TO_0.toLocalizedString(e.getMessage()));
       io.initCause(e);
       throw io;
     }
-    if (authzCallback != null && proxy != null) {
-      proxy.setPostAuthzCallback(authzCallback);
+    catch (Exception ex) {
+      logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientNotifier_AN_EXCEPTION_WAS_THROWN_FOR_CLIENT_0_1, new Object[] {proxyID, ""}), ex);
+      writeException(dos, Acceptor.UNSUCCESSFUL_SERVER_TO_CLIENT, ex, clientVersion);
+      return;
     }
+
+
     this._statistics.endClientRegistration(startTime);
   }
 
@@ -574,24 +570,32 @@ public class CacheClientNotifier {
       }
     } else {
       CacheClientProxy staleClientProxy = this.getClientProxy(proxyId);
+      boolean toCreateNewProxy = true;
       if (staleClientProxy != null) {
-        // A proxy exists for this non-durable client. It must be closed.
-        if (logger.isDebugEnabled()) {
-          logger.debug("CacheClientNotifier: A proxy exists for this non-durable client. It must be closed.");
-        }
-        if (staleClientProxy.startRemoval()) {
-          staleClientProxy.waitRemoval();
-        }
-        else {
-          staleClientProxy.close(false, false); // do not check for queue, just close it
-          removeClientProxy(staleClientProxy); // remove old proxy from proxy set
+        if (staleClientProxy.isConnected() && staleClientProxy.getSocket().isConnected()) {
+          successful = false;
+          toCreateNewProxy = false;
+        } else {
+          // A proxy exists for this non-durable client. It must be closed.
+          if (logger.isDebugEnabled()) {
+            logger.debug("CacheClientNotifier: A proxy exists for this non-durable client. It must be closed.");
+          }
+          if (staleClientProxy.startRemoval()) {
+            staleClientProxy.waitRemoval();
+          }
+          else {
+            staleClientProxy.close(false, false); // do not check for queue, just close it
+            removeClientProxy(staleClientProxy); // remove old proxy from proxy set
+          }
         }
       } // non-null stale proxy
 
-      // Create the new proxy for this non-durable client
-      l_proxy = new CacheClientProxy(this, socket, proxyId,
-          isPrimary, clientConflation, clientVersion, acceptorId, notifyBySubscription);
-      successful = this.initializeProxy(l_proxy);
+      if (toCreateNewProxy) {
+        // Create the new proxy for this non-durable client
+        l_proxy = new CacheClientProxy(this, socket, proxyId,
+            isPrimary, clientConflation, clientVersion, acceptorId, notifyBySubscription);
+        successful = this.initializeProxy(l_proxy);
+      }
     }
 
     if (!successful){
@@ -607,7 +611,7 @@ public class CacheClientNotifier {
     // is attempted to be registered or authentication fails.
     try {
       DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(
-          SocketUtils.getOutputStream(socket)));//socket.getOutputStream()));
+          socket.getOutputStream()));
       // write the message type, message length and the error message (if any)
       writeMessage(dos, responseByte, unsuccessfulMsg, clientVersion, epType, qSize);
     }
@@ -743,7 +747,7 @@ public class CacheClientNotifier {
    *
    * @param membershipID
    *          Uniquely identifies the client pool
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setKeepAlive(ClientProxyMembershipID membershipID, boolean keepAlive)
   {
@@ -1384,7 +1388,7 @@ public class CacheClientNotifier {
    * @param regionsWithEmptyDataPolicy
    * @param regionName
    * @param regionDataPolicy (0==empty)
-   * @since 6.1
+   * @since GemFire 6.1
    */
   public void updateMapOfEmptyRegions(Map regionsWithEmptyDataPolicy,
       String regionName, int regionDataPolicy) {
@@ -1491,9 +1495,12 @@ public class CacheClientNotifier {
    * haContainer.
    * 
    * @param conflatable
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void checkAndRemoveFromClientMsgsRegion(Conflatable conflatable) {
+    if (haContainer == null) {
+      return;
+    }
     if (conflatable instanceof HAEventWrapper) {
       HAEventWrapper wrapper = (HAEventWrapper)conflatable;
       if (!wrapper.getIsRefFromHAContainer()) {
@@ -1792,7 +1799,7 @@ public class CacheClientNotifier {
    *                id for the durable-client
    * @return - true if a proxy is present for the given durable client
    * 
-   * @since 5.6
+   * @since GemFire 5.6
    */
   public boolean hasDurableClient(String durableId)
   {
@@ -1813,7 +1820,7 @@ public class CacheClientNotifier {
    *                id for the durable-client
    * @return - true if a primary proxy is present for the given durable client
    * 
-   * @since 5.6
+   * @since GemFire 5.6
    */
   public boolean hasPrimaryForDurableClient(String durableId)
   {
@@ -2012,7 +2019,7 @@ public class CacheClientNotifier {
    * @param listener
    *                The <code>InterestRegistrationListener</code> to register
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public void registerInterestRegistrationListener(
       InterestRegistrationListener listener) {
@@ -2027,7 +2034,7 @@ public class CacheClientNotifier {
    *                The <code>InterestRegistrationListener</code> to
    *                unregister
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public void unregisterInterestRegistrationListener(
       InterestRegistrationListener listener) {
@@ -2041,7 +2048,7 @@ public class CacheClientNotifier {
    * @return a read-only collection of <code>InterestRegistrationListener</code>s
    *         registered with this notifier
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public Set getInterestRegistrationListeners() {
     return this.readableInterestRegistrationListeners;
@@ -2049,7 +2056,7 @@ public class CacheClientNotifier {
 
   /**
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   protected boolean containsInterestRegistrationListeners() {
     return !this.writableInterestRegistrationListeners.isEmpty();
@@ -2057,7 +2064,7 @@ public class CacheClientNotifier {
 
   /**
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   protected void notifyInterestRegistrationListeners(
       InterestRegistrationEvent event) {
@@ -2133,15 +2140,13 @@ public class CacheClientNotifier {
    * @param acceptorStats
    * @param maximumMessageCount
    * @param messageTimeToLive
-   * @param transactionTimeToLive - ttl for txstates for disconnected clients
    * @param listener a listener which should receive notifications
    *          abouts queues being added or removed.
    * @param overflowAttributesList
    */
   private CacheClientNotifier(Cache cache, CacheServerStats acceptorStats, 
-      int maximumMessageCount, int messageTimeToLive, int transactionTimeToLive,
-      ConnectionListener listener,
-      List overflowAttributesList, boolean isGatewayReceiver) {
+      int maximumMessageCount, int messageTimeToLive, 
+      ConnectionListener listener, List overflowAttributesList, boolean isGatewayReceiver) {
     // Set the Cache
     this.setCache((GemFireCacheImpl)cache);
     this.acceptorStats = acceptorStats;
@@ -2157,7 +2162,6 @@ public class CacheClientNotifier {
 
     this.maximumMessageCount = maximumMessageCount;
     this.messageTimeToLive = messageTimeToLive;
-    this.transactionTimeToLive = transactionTimeToLive;
 
     // Initialize the statistics
     StatisticsFactory factory ;
@@ -2597,7 +2601,7 @@ public class CacheClientNotifier {
    * (in case of eviction policy "none"). In both the cases, it'll store
    * HAEventWrapper as its key and ClientUpdateMessage as its value.
    */
-  private HAContainerWrapper haContainer;
+  private volatile HAContainerWrapper haContainer;
 
   //   /**
   //    * The singleton <code>CacheClientNotifier</code> instance
@@ -2633,11 +2637,11 @@ public class CacheClientNotifier {
    * System property name for indicating how much frequently the "Queue full"
    * message should be logged.
    */
-  public static final String MAX_QUEUE_LOG_FREQUENCY = "gemfire.logFrequency.clientQueueReachedMaxLimit";
+  public static final String MAX_QUEUE_LOG_FREQUENCY = DistributionConfig.GEMFIRE_PREFIX + "logFrequency.clientQueueReachedMaxLimit";
 
   public static final long DEFAULT_LOG_FREQUENCY = 1000;
 
-  public static final String EVENT_ENQUEUE_WAIT_TIME_NAME = "gemfire.subscription.EVENT_ENQUEUE_WAIT_TIME";
+  public static final String EVENT_ENQUEUE_WAIT_TIME_NAME = DistributionConfig.GEMFIRE_PREFIX + "subscription.EVENT_ENQUEUE_WAIT_TIME";
 
   public static final int DEFAULT_EVENT_ENQUEUE_WAIT_TIME = 100;
 
@@ -2665,10 +2669,10 @@ public class CacheClientNotifier {
   private final SocketCloser socketCloser;
   
   private static final long CLIENT_PING_TASK_PERIOD =
-    Long.getLong("gemfire.serverToClientPingPeriod", 60000);
+      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "serverToClientPingPeriod", 60000);
 
   private static final long CLIENT_PING_TASK_COUNTER =
-    Long.getLong("gemfire.serverToClientPingCounter", 3);
+      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "serverToClientPingCounter", 3);
 
   public long getLogFrequency() {
     return this.logFrequency;
@@ -2741,14 +2745,6 @@ public class CacheClientNotifier {
         }
       }
     }
-  }
-
-
-  /**
-   * @return the time-to-live for abandoned transactions, in seconds
-   */
-  public int getTransactionTimeToLive() {
-    return this.transactionTimeToLive;
   }
 }
 

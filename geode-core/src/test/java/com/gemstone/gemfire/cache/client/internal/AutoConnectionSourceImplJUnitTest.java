@@ -16,31 +16,8 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.net.ConnectException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.cache.NoSubscriptionServersAvailableException;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.NoAvailableLocatorsException;
 import com.gemstone.gemfire.cache.client.SubscriptionNotEnabledException;
 import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionRequest;
@@ -48,7 +25,6 @@ import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionRespon
 import com.gemstone.gemfire.cache.client.internal.locator.LocatorListResponse;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.PoolStatHelper;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
@@ -59,6 +35,27 @@ import com.gemstone.gemfire.distributed.internal.tcpserver.TcpServer;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.PoolStats;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -79,8 +76,8 @@ public class AutoConnectionSourceImplJUnitTest {
   @Before
   public void setUp() throws Exception {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
 
     DistributedSystem ds = DistributedSystem.connect(props);
     cache = CacheFactory.create(ds);
@@ -94,8 +91,8 @@ public class AutoConnectionSourceImplJUnitTest {
     
     //very irritating, the SystemTimer requires having a distributed system
     Properties properties = new Properties();
-    properties.put(DistributionConfig.MCAST_PORT_NAME, "0");
-    properties.put(DistributionConfig.LOCATORS_NAME, "");
+    properties.put(MCAST_PORT, "0");
+    properties.put(LOCATORS, "");
     background = Executors.newSingleThreadScheduledExecutor(); 
     
     List/*<InetSocketAddress>*/ locators = new ArrayList();
@@ -144,27 +141,22 @@ public class AutoConnectionSourceImplJUnitTest {
   
   @Test
   public void testNoServers() throws Exception {
-    
     startFakeLocator();
     handler.nextConnectionResponse = new ClientConnectionResponse(null);
-    
     assertEquals(null, source.findServer(null));
   }
   
   @Test
   public void testDiscoverServers() throws Exception {
     startFakeLocator();
-    
     ServerLocation loc1 = new ServerLocation("localhost", 4423);
     handler.nextConnectionResponse = new ClientConnectionResponse(loc1);
-    
     assertEquals(loc1, source.findServer(null));
   }
   
   @Test
   public void testDiscoverLocators() throws Exception {
     startFakeLocator();
-    
     int secondPort = AvailablePortHelper.getRandomAvailableTCPPort();
     TcpServer server2 = new TcpServer(secondPort, InetAddress.getLocalHost(), null, null, handler, new FakeHelper(), Thread.currentThread().getThreadGroup(), "tcp server");
     server2.start();

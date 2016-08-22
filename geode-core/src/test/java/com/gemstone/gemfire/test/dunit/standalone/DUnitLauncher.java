@@ -16,31 +16,19 @@
  */
 package com.gemstone.gemfire.test.dunit.standalone;
 
-import hydra.Log;
+import batterytest.greplogs.ExpectedStrings;
+import batterytest.greplogs.LogConsumer;
+import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.test.dunit.DUnitEnv;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.VM;
 import hydra.MethExecutorResult;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.URISyntaxException;
-import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
-import java.rmi.AccessException;
-import java.rmi.AlreadyBoundException;
-import java.rmi.NotBoundException;
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-import java.util.List;
-import java.util.Properties;
-
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -49,18 +37,20 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.junit.Assert;
 
-import batterytest.greplogs.ExpectedStrings;
-import batterytest.greplogs.LogConsumer;
+import java.io.*;
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.URISyntaxException;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.rmi.*;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.List;
+import java.util.Properties;
 
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.dunit.DUnitEnv;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.VM;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * A class to build a fake test configuration and launch some DUnit VMS.
@@ -70,13 +60,13 @@ import com.gemstone.gemfire.test.dunit.VM;
  * 
  * Also, it's a good idea to set your working directory, because the test code
  * a lot of files that it leaves around.
- * 
- *
  */
 public class DUnitLauncher {
 
   /** change this to use a different log level in unit tests */
-  public static final String LOG_LEVEL = System.getProperty("logLevel", "info");
+  public static final String logLevel = System.getProperty("logLevel", "info");
+  
+  public static final String LOG4J = System.getProperty("log4j.configurationFile");
   
   static int locatorPort;
 
@@ -93,10 +83,10 @@ public class DUnitLauncher {
   public static final boolean LOCATOR_LOG_TO_DISK = Boolean.getBoolean("locatorLogToDisk");
 
   static final String MASTER_PARAM = "DUNIT_MASTER";
-  static final String RMI_PORT_PARAM = "gemfire.DUnitLauncher.RMI_PORT";
-  static final String VM_NUM_PARAM = "gemfire.DUnitLauncher.VM_NUM";
+  public static final String RMI_PORT_PARAM = DistributionConfig.GEMFIRE_PREFIX + "DUnitLauncher.RMI_PORT";
+  static final String VM_NUM_PARAM = DistributionConfig.GEMFIRE_PREFIX + "DUnitLauncher.VM_NUM";
 
-  private static final String LAUNCHED_PROPERTY = "gemfire.DUnitLauncher.LAUNCHED";
+  private static final String LAUNCHED_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "DUnitLauncher.LAUNCHED";
 
   private static Master master;
 
@@ -115,6 +105,7 @@ public class DUnitLauncher {
       return false;
     }
   }
+
   /**
    * Launch DUnit. If the unit test was launched through
    * the hydra framework, leave the test alone.
@@ -145,24 +136,22 @@ public class DUnitLauncher {
     return "localhost[" + locatorPort + "]";
   }
 
-  
-  private static void launch() throws URISyntaxException, AlreadyBoundException, IOException, InterruptedException, NotBoundException  {
-//  initialize the log writer that hydra uses
-    Log.createLogWriter( "dunit-master", LOG_LEVEL );
-
+  private static void launch() throws URISyntaxException, AlreadyBoundException, IOException, InterruptedException, NotBoundException {
     DUNIT_SUSPECT_FILE = new File(SUSPECT_FILENAME);
     DUNIT_SUSPECT_FILE.delete();
     DUNIT_SUSPECT_FILE.deleteOnExit();
     
-    locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
-     
     //create an RMI registry and add an object to share our tests config
     int namingPort = AvailablePortHelper.getRandomAvailableTCPPort();
     Registry registry = LocateRegistry.createRegistry(namingPort);
+    System.setProperty(RMI_PORT_PARAM, ""+namingPort);
 
     final ProcessManager processManager = new ProcessManager(namingPort, registry);
     master = new Master(registry, processManager);
     registry.bind(MASTER_PARAM, master);
+
+    // inhibit banners to make logs smaller
+    System.setProperty(InternalLocator.INHIBIT_DM_BANNER, "true");
 
     Runtime.getRuntime().addShutdownHook(new Thread() {
       public void run() {
@@ -193,36 +182,44 @@ public class DUnitLauncher {
         processManager.killVMs();
       }
     });
-    
+
+
     //Create a VM for the locator
     processManager.launchVM(LOCATOR_VM_NUM);
-    
+
+    //wait for the VM to start up
+    if(!processManager.waitForVMs(STARTUP_TIMEOUT)) {
+      throw new RuntimeException("VMs did not start up with 30 seconds");
+    }
+
+    locatorPort = startLocator(registry);
+
+    init(master);
+
+
     //Launch an initial set of VMs
     for(int i=0; i < NUM_VMS; i++) {
       processManager.launchVM(i);
     }
-    
+
     //wait for the VMS to start up
     if(!processManager.waitForVMs(STARTUP_TIMEOUT)) {
       throw new RuntimeException("VMs did not start up with 30 seconds");
     }
-    
+
     //populate the Host class with our stubs. The tests use this host class
     DUnitHost host = new DUnitHost(InetAddress.getLocalHost().getCanonicalHostName(), processManager);
     host.init(registry, NUM_VMS);
 
-    init(master);
-    
-    startLocator(registry);
   }
   
   public static Properties getDistributedSystemProperties() {
     Properties p = new Properties();
-    p.setProperty("locators", getLocatorString());
-    p.setProperty("mcast-port", "0");
-    p.setProperty("enable-cluster-configuration", "false");
-    p.setProperty("use-cluster-configuration", "false");
-    p.setProperty("log-level", LOG_LEVEL);
+    p.setProperty(LOCATORS, getLocatorString());
+    p.setProperty(MCAST_PORT, "0");
+    p.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    p.setProperty(USE_CLUSTER_CONFIGURATION, "false");
+    p.setProperty(LOG_LEVEL, logLevel);
     return p;
   }
 
@@ -250,7 +247,7 @@ public class DUnitLauncher {
     loggerConfig.addAppender(fileAppender, Level.INFO, null);
   }
   
-  private static void startLocator(Registry registry) throws IOException, NotBoundException {
+  private static int startLocator(Registry registry) throws IOException, NotBoundException {
     RemoteDUnitVMIF remote = (RemoteDUnitVMIF) registry.lookup("vm" + LOCATOR_VM_NUM);
     final File locatorLogFile =
         LOCATOR_LOG_TO_DISK ? new File("locator-" + locatorPort + ".log") : new File(""); 
@@ -259,24 +256,27 @@ public class DUnitLauncher {
         Properties p = getDistributedSystemProperties();
         // I never want this locator to end up starting a jmx manager
         // since it is part of the unit test framework
-        p.setProperty("jmx-manager", "false");
+        p.setProperty(JMX_MANAGER, "false");
         //Disable the shared configuration on this locator.
         //Shared configuration tests create their own locator
-        p.setProperty("enable-cluster-configuration", "false");
+        p.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
         //Tell the locator it's the first in the system for
         //faster boot-up
         System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
         // disable auto-reconnect - tests fly by so fast that it will never be
         // able to do so successfully anyway
-        p.setProperty(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+        p.setProperty(DISABLE_AUTO_RECONNECT, "true");
         
         try {
-          Locator.startLocatorAndDS(locatorPort, locatorLogFile, p);
+          Locator.startLocatorAndDS(0, locatorLogFile, p);
+          InternalLocator internalLocator = (InternalLocator) Locator.getLocator();
+          locatorPort = internalLocator.getPort();
+          internalLocator.resetInternalLocatorFileNamesWithCorrectPortNumber(locatorPort);
         } finally {
           System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
         }
-        
-        return null;
+
+        return locatorPort;
       }
     }, "call");
     if(result.getException() != null) {
@@ -284,6 +284,7 @@ public class DUnitLauncher {
       ex.printStackTrace();
       throw ex;
     }
+    return (Integer) result.getResult();
   }
 
   public static void init(MasterRemote master) {
@@ -295,7 +296,7 @@ public class DUnitLauncher {
     addSuspectFileAppender(workspaceDir);
     
     //Free off heap memory when disconnecting from the distributed system
-    System.setProperty("gemfire.free-off-heap-memory", "true");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "free-off-heap-memory", "true");
     
     //indicate that this CM is controlled by the eclipse dunit.
     System.setProperty(LAUNCHED_PROPERTY, "true");

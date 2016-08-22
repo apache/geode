@@ -34,7 +34,7 @@ import java.util.*;
  * is calcualted.
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public class GemFireHealthImpl
   implements GemFireHealth, JoinLeaveListener, HealthListener {

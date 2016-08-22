@@ -16,32 +16,32 @@
  */
 package com.gemstone.gemfire.internal;
 
+import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.logging.log4j.Logger;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.util.Properties;
 
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-
 /**
  * This class is used to work with a managed VM that hosts a {@link
  * com.gemstone.gemfire.distributed.Locator}.
  *
- * @since 2.0
+ * @since GemFire 2.0
  */
 public class DistributionLocator  {
   
   private static final Logger logger = LogService.getLogger();
-  
-  public static final String TEST_OVERRIDE_DEFAULT_PORT_PROPERTY = "gemfire.test.DistributionLocator.OVERRIDE_DEFAULT_PORT";
+
+  public static final String TEST_OVERRIDE_DEFAULT_PORT_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "test.DistributionLocator.OVERRIDE_DEFAULT_PORT";
 
   /** Default file name for locator log: <code>"locator.log"</code> */
   public static final String DEFAULT_LOG_FILE = "locator.log";

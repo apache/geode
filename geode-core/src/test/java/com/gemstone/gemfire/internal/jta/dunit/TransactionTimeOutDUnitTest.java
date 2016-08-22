@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.internal.jta.dunit;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -25,14 +28,14 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
-
 import javax.naming.Context;
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 import javax.transaction.UserTransaction;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -43,25 +46,23 @@ import com.gemstone.gemfire.internal.jta.CacheUtils;
 import com.gemstone.gemfire.internal.jta.UserTransactionImpl;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
-*This test tests TransactionTimeOut functionality
-*/
-public class TransactionTimeOutDUnitTest extends DistributedTestCase {
+ * This test tests TransactionTimeOut functionality
+ */
+@Category(DistributedTest.class)
+public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
 
   static DistributedSystem ds;
   static Cache cache = null;
   private static String tblName;
-
-  public TransactionTimeOutDUnitTest(String name) {
-    super(name);
-  }
 
   public static void init() throws Exception {
     Properties props = new Properties();
@@ -75,17 +76,10 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
     wr.flush();
     wr.close();
 
-    props.setProperty("cache-xml-file", path);
-//    props.setProperty("mcast-port", "10321");
-    try {
-//      ds = DistributedSystem.connect(props);
-        ds = (new TransactionTimeOutDUnitTest("temp")).getSystem(props);
-      if (cache == null || cache.isClosed()) cache = CacheFactory.create(ds);
-    }
-    catch (Exception e) {
-      e.printStackTrace(System.err);
-      throw new Exception("" + e);
-    }
+    props.setProperty(CACHE_XML_FILE, path);
+
+    ds = (new TransactionTimeOutDUnitTest()).getSystem(props);
+    if (cache == null || cache.isClosed()) cache = CacheFactory.create(ds);
   }
 
   public static Cache getCache() {
@@ -99,8 +93,7 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
       }
     }
     catch (Exception e) {
-      fail("Exception in cache creation due to "+e);
-	  e.printStackTrace();
+      fail("Exception in cache creation due to ", e);
     }
   }
 
@@ -113,8 +106,7 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
 		   ds.disconnect();
     }
     catch (Exception e) {
-	fail("Exception in closing cache and disconnecting ds due to "+e);
-      e.printStackTrace();
+	    fail("Exception in closing cache and disconnecting ds due to ", e);
     }
   }
 
@@ -140,57 +132,65 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
     
     ThreadUtils.join(async1, 30 * 1000);
     ThreadUtils.join(async2, 30 * 1000);
-    if(async1.exceptionOccurred()){
+    if (async1.exceptionOccurred()){
       Assert.fail("async1 failed", async1.getException());
     }
-    if(async2.exceptionOccurred()){
+    if (async2.exceptionOccurred()){
       Assert.fail("async2 failed", async2.getException());
     }
   }
 
-  public static void test1() {
+  @Test
+  public void test1() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     vm0.invoke(() -> TransactionTimeOutDUnitTest.runTest3());
   }
 
-  public static void test2() {
+  @Test
+  public void test2() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     vm0.invoke(() -> TransactionTimeOutDUnitTest.runTest4());
   }
 
-  public static void test3() {
+  @Test
+  public void test3() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     vm0.invoke(() -> TransactionTimeOutDUnitTest.runTest5());
   }
 
-  public static void test4() {
+  @Test
+  public void test4() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     vm0.invoke(() -> TransactionTimeOutDUnitTest.runTest6());
   }
 
-  public static void test5() {
+  @Test
+  public void test5() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     vm0.invoke(() -> TransactionTimeOutDUnitTest.runTest7());
   }
 
-  public static void test6() {
+  @Test
+  public void test6() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     vm0.invoke(() -> TransactionTimeOutDUnitTest.runTest8());
   }
 
-  public static void test7() {
+  @Test
+  public void test7() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     vm0.invoke(() -> TransactionTimeOutDUnitTest.runTest9());
   }
 
-  public static void test8() {
+  @Test
+  public void test8() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     vm0.invoke(() -> TransactionTimeOutDUnitTest.runTest10());
@@ -213,12 +213,9 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
       }
       if (!exceptionOccured)
           fail("Exception did not occur although was supposed to occur");
-      return;
     }
     catch (Exception e) {
-      LogWriterUtils.getLogWriter().fine("Exception caught " + e);
-      fail("failed in naming lookup: " + e);
-      return;
+      fail("failed in naming lookup: ", e);
     }
   }
 
@@ -238,13 +235,10 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
         exceptionOccured = true;
       }
       if (!exceptionOccured)
-          fail("Exception did not occur although was supposed to occur");
-      return;
+        fail("Exception did not occur although was supposed to occur");
     }
     catch (Exception e) {
-      LogWriterUtils.getLogWriter().fine("Exception caught " + e);
-      fail("failed in naming lookup: " + e);
-      return;
+      fail("failed in naming lookup: ", e);
     }
   }
 
@@ -260,7 +254,7 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
       utx.commit();
     }
     catch (Exception e) {
-      fail("Exception in TestSetTransactionTimeOut due to " + e);
+      fail("Exception in TestSetTransactionTimeOut due to ", e);
     }
   }
 
@@ -285,7 +279,7 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
       }
     }
     catch (Exception e) {
-      fail("Exception in testExceptionOnCommitAfterTimeOut() due to " + e);
+      fail("Exception in testExceptionOnCommitAfterTimeOut() due to ", e);
     }
   }
 
@@ -313,7 +307,7 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
       }
     }
     catch (Exception e) {
-      fail("Exception in testExceptionOnCommitAfterTimeOut() due to " + e);
+      fail("Exception in testExceptionOnCommitAfterTimeOut() due to ", e);
     }
   }
 
@@ -337,7 +331,7 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
       }
     }
     catch (Exception e) {
-      fail("Exception in testExceptionOnCommitAfterTimeOut() due to " + e);
+      fail("Exception in testExceptionOnCommitAfterTimeOut() due to ", e);
     }
   }
 
@@ -354,12 +348,11 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
         utx.commit();
       }
       catch (Exception e) {
-        fail("Transaction failed to commit although TimeOut was not exceeded due to "
-            + e);
+        fail("Transaction failed to commit although TimeOut was not exceeded due to ", e);
       }
     }
     catch (Exception e) {
-      fail("Exception in testExceptionOnCommitAfterTimeOut() due to " + e);
+      fail("Exception in testExceptionOnCommitAfterTimeOut() due to ", e);
     }
   }
 
@@ -393,8 +386,7 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
       conn.close();
     }
     catch (Exception e) {
-      fail("Exception occured in test Commit due to " + e);
-      e.printStackTrace();
+      fail("Exception occured in test Commit due to ", e);
     }
   }
 
@@ -436,8 +428,7 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
       }
     }
     catch (Exception e) {
-      fail("Exception occured in test Commit due to " + e);
-      e.printStackTrace();
+      fail("Exception occured in test Commit due to ", e);
     }
   }
 
@@ -479,10 +470,10 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
       }
     }
     catch (Exception e) {
-      e.printStackTrace();
-      fail("Exception occured in test Commit due to " + e);
+      fail("Exception occured in test Commit due to ", e);
     }
   }
+
   private static String readFile(String filename) throws IOException {
     BufferedReader br = new BufferedReader(new FileReader(filename));
     String nextLine = "";

@@ -16,44 +16,33 @@
  */
 package com.gemstone.gemfire.memcached;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.concurrent.Future;
-import java.util.logging.Logger;
-import java.util.logging.StreamHandler;
 
+import net.spy.memcached.MemcachedClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import net.spy.memcached.MemcachedClient;
-import junit.framework.TestCase;
 
 @Category(IntegrationTest.class)
 public class DomainObjectsAsValuesJUnitTest {
 
-  private static final Logger logger = Logger.getLogger(DomainObjectsAsValuesJUnitTest.class.getCanonicalName());
-  
   private int PORT;
   
   private GemFireMemcachedServer server;
   
   @Before
   public void setUp() throws Exception {
-    System.setProperty("gemfire.mcast-port", "0");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
     PORT = AvailablePortHelper.getRandomAvailableTCPPort();
     this.server = new GemFireMemcachedServer(PORT);
     server.start();
@@ -62,10 +51,10 @@ public class DomainObjectsAsValuesJUnitTest {
   @After
   public void tearDown() throws Exception {
     this.server.shutdown();
-    System.getProperties().remove("gemfire.mcast-port");
+    System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT);
   }
 
-  public static class Customer implements java.io.Serializable {
+  private static class Customer implements java.io.Serializable {
     private static final long serialVersionUID = 4238572216598708877L;
     private String name;
     private String address;

@@ -16,14 +16,13 @@
  */
 package com.gemstone.gemfire.internal.cache.control;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.util.Properties;
 import java.util.Set;
-
 import javax.management.ListenerNotFoundException;
 import javax.management.NotificationEmitter;
 
@@ -32,8 +31,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import util.TestException;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -51,20 +48,19 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-/**
- *
- */
 @Category(IntegrationTest.class)
 public class MemoryMonitorJUnitTest {
   private static Logger logger = LogService.getLogger();
   
   public static final int SYSTEM_LISTENERS = 1;
+
   DistributedSystem ds;
   GemFireCacheImpl cache;
+
   @Before
   public void setUp() throws Exception {
     Properties p = new Properties();
-    p.setProperty("mcast-port", "0");
+    p.setProperty(MCAST_PORT, "0");
     this.ds = DistributedSystem.connect(p);
     this.cache = (GemFireCacheImpl)CacheFactory.create(this.ds);
     HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
@@ -103,7 +99,6 @@ public class MemoryMonitorJUnitTest {
    * 2. listeners are invoked
    * 3. duplicate safe and critical events are not delivered
    * 4. stats are updated
-   * @throws Exception
    */
   @Test
   public void testInvokeListeners() throws Exception{
@@ -362,7 +357,7 @@ public class MemoryMonitorJUnitTest {
       caughtException = true;
     }
     if(expectLowMemEx && !caughtException){
-      throw new TestException("An expected exception was not thrown");
+      throw new AssertionError("An expected exception was not thrown");
     }
     //make region healthy
     heapMonitor.updateStateAndSendEvent(91);
@@ -370,7 +365,7 @@ public class MemoryMonitorJUnitTest {
     try{
       region.put("key-1", "value-2");      
     } catch(LowMemoryException low){      
-      throw new TestException("Unexpected exception:",low);
+      throw new AssertionError("Unexpected exception:",low);
     }
     if (useTransaction) {
       cache.getCacheTransactionManager().commit();

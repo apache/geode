@@ -24,10 +24,6 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import com.gemstone.gemfire.internal.cache.CacheConfig;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
@@ -41,16 +37,24 @@ import com.gemstone.gemfire.management.internal.cli.result.InfoResultData;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer;
 import com.gemstone.gemfire.pdx.internal.EnumInfo;
 import com.gemstone.gemfire.pdx.internal.PdxType;
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
+
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
 
 public class PDXCommands extends AbstractCommandsSupport{
 
 
   @CliCommand (value = CliStrings.CONFIGURE_PDX, help = CliStrings.CONFIGURE_PDX__HELP)
-  @CliMetaData (relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
-  public Result configurePDX( 
+  @CliMetaData (relatedTopic = CliStrings.TOPIC_GEODE_REGION, writesToSharedConfiguration = true)
+  @ResourceOperation( resource= Resource.DATA, operation = Operation.MANAGE)
+  public Result configurePDX(
       @CliOption (key = CliStrings.CONFIGURE_PDX__READ__SERIALIZED,
       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
       help = CliStrings.CONFIGURE_PDX__READ__SERIALIZED__HELP) 
@@ -170,8 +174,9 @@ public class PDXCommands extends AbstractCommandsSupport{
   }
 
   @CliCommand (value = CliStrings.PDX_RENAME, help = CliStrings.PDX_RENAME__HELP)
-  @CliMetaData(shellOnly=true, relatedTopic={CliStrings.TOPIC_GEMFIRE_DISKSTORE})
-  public Result pdxRename( 
+  @CliMetaData(shellOnly=true, relatedTopic={CliStrings.TOPIC_GEODE_DISKSTORE})
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  public Result pdxRename(
       @CliOption (key = CliStrings.PDX_RENAME_OLD,
       mandatory=true,
       help = CliStrings.PDX_RENAME_OLD__HELP) 
@@ -222,63 +227,7 @@ public class PDXCommands extends AbstractCommandsSupport{
     }
     
   }
-  
-  // The pdx delete-field command has been disabled until it has native client support.
-//  @CliCommand (value = CliStrings.PDX_DELETE_FIELD, help = CliStrings.PDX_DELETE_FIELD__HELP)
-//  @CliMetaData(shellOnly=true, relatedTopic={CliStrings.TOPIC_GEMFIRE_DISKSTORE})
-//  public Result pdxDeleteField( 
-//      @CliOption (key = CliStrings.PDX_CLASS,
-//      mandatory=true,
-//      help = CliStrings.PDX_CLASS__HELP) 
-//      String className,
-//
-//      @CliOption (key = CliStrings.PDX_FIELD,
-//      mandatory=true,
-//      help = CliStrings.PDX_FIELD__HELP) 
-//      String fieldName,
-//      
-//      @CliOption (key = CliStrings.PDX_DISKSTORE,
-//      mandatory=true,
-//      help = CliStrings.PDX_DISKSTORE__HELP)
-//      String diskStore, 
-//
-//      @CliOption (key = CliStrings.PDX_DISKDIR,
-//      mandatory=true,
-//      help = CliStrings.PDX_DISKDIR__HELP)
-//      @CliMetaData (valueSeparator = ",")
-//      String[] diskDirs){
-//    
-//    try {
-//      final File[] dirs = new File[diskDirs.length];
-//      for (int i = 0; i < diskDirs.length; i++) {
-//        dirs[i] = new File((diskDirs[i]));
-//      }
-//      
-//      Collection<PdxType> results = DiskStoreImpl.pdxDeleteField(diskStore, dirs, className, fieldName);
-//      
-//      if(results.isEmpty()) {
-//        return ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.PDX_DELETE__EMPTY));
-//      }
-//      
-//      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//      PrintStream printStream = new PrintStream(outputStream);
-//      for(PdxType p : results) {
-//        p.toStream(printStream, false);
-//      }
-//      String resultString = CliStrings.format(CliStrings.PDX_DELETE_FIELD__SUCCESS, outputStream.toString());
-//      return ResultBuilder.createInfoResult(resultString);
-//
-//    } catch (Exception e) {
-//      return ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.PDX_DELETE_FIELD__ERROR, e.getMessage()));
-//    }
-//
-//  }
-//  
-//  @CliAvailabilityIndicator({CliStrings.PDX_DELETE_FIELD})
-//  public boolean pdxDeleteFieldCommandsAvailable() {
-//    return true;
-//  }
-  
+
   @CliAvailabilityIndicator({CliStrings.PDX_RENAME})
   public boolean pdxRenameCommandsAvailable() {
     return true;

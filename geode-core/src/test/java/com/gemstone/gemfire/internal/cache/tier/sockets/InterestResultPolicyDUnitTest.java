@@ -16,9 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -29,26 +35,27 @@ import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.ServerConnectivityException;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.cache.client.*;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * DUnit Test for use-cases of various {@link InterestResultPolicy} types.
- *
- *
  */
-public class InterestResultPolicyDUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
+
   /** test VM */
   VM vm0, vm1 = null;
 
@@ -58,21 +65,11 @@ public class InterestResultPolicyDUnitTest extends DistributedTestCase
   /** the cache instance for the test */
   private static Cache cache = null;
   
-  private int PORT   ; 
+  private int PORT;
 
-  private static final String REGION_NAME = "InterestResultPolicyDUnitTest_region" ;
+  private static final String REGION_NAME = InterestResultPolicyDUnitTest.class.getSimpleName() + "_region" ;
 
   private IgnoredException expectedEx;
-
-  /**
-   * Creates a test instance with the given name
-   *
-   * @param name -
-   *          name of test instance
-   */
-  public InterestResultPolicyDUnitTest(String name) {
-    super(name);
-  }
 
   /**
    * Creates the server cache and populates it with some entries
@@ -117,6 +114,7 @@ public class InterestResultPolicyDUnitTest extends DistributedTestCase
    * 3)At the end of registerInterest call, verify that no entries are created
    * in the client cache<br>
    */
+  @Test
   public void testPolicyNone()
   {
     LogWriter logger = getSystem().getLogWriter();
@@ -140,6 +138,7 @@ public class InterestResultPolicyDUnitTest extends DistributedTestCase
    * 3)At the end of registerInterest call, verify that entries are created in
    * the client cache with value null<br>
    */
+  @Test
   public void testPolicyKeys()
   {
     LogWriter logger = getSystem().getLogWriter();
@@ -163,6 +162,7 @@ public class InterestResultPolicyDUnitTest extends DistributedTestCase
    * 3)At the end of registerInterest call, verify that all entries are created
    * in the client cache with values<br>
    */
+  @Test
   public void testPolicyKeysValues()
   {
     LogWriter logger = getSystem().getLogWriter();
@@ -188,6 +188,7 @@ public class InterestResultPolicyDUnitTest extends DistributedTestCase
    * in the keylist which are not on the server should not be created on the
    * client as a result of registerInterest call)<br>
    */
+  @Test
   public void testBug35358()
   {
     Host host = Host.getHost(0);
@@ -248,8 +249,7 @@ public class InterestResultPolicyDUnitTest extends DistributedTestCase
    */
   public static Integer createServerCache() throws Exception
   {
-    InterestResultPolicyDUnitTest test = new InterestResultPolicyDUnitTest(
-        "temp");
+    InterestResultPolicyDUnitTest test = new InterestResultPolicyDUnitTest();
     cache = test.createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -288,11 +288,10 @@ public class InterestResultPolicyDUnitTest extends DistributedTestCase
   public static void createClientCache(String host, Integer port) throws Exception
   {
     int PORT = port.intValue() ;
-    InterestResultPolicyDUnitTest test = new InterestResultPolicyDUnitTest(
-        "temp");
+    InterestResultPolicyDUnitTest test = new InterestResultPolicyDUnitTest();
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     cache = test.createCache(props);
     Pool p = PoolManager.createFactory()
       .addServer(host, port.intValue())

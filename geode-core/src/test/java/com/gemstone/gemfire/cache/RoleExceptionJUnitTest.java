@@ -16,35 +16,27 @@
  */
 package com.gemstone.gemfire.cache;
 
+import static org.junit.Assert.*;
+
 import java.io.*;
 import java.util.*;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-/** Tests the subclasses of RoleException to make sure they are Serializable */
+/**
+ * Tests the subclasses of RoleException to make sure they are Serializable
+ */
 @Category(UnitTest.class)
-public class RoleExceptionJUnitTest extends TestCase {
+public class RoleExceptionJUnitTest {
   
-  public RoleExceptionJUnitTest(String name) {
-    super(name);
-  }
-
-  protected void setUp() throws Exception {
-    super.setUp();
-  }
-
-  protected void tearDown() throws Exception {
-    super.tearDown();
-  }
-
   /**
    * Assert that RegionAccessException is serializable.
    */
+  @Test
   public void testRegionAccessExceptionIsSerializable() throws Exception {
     RegionAccessException out = createRegionAccessException();
     ByteArrayOutputStream baos = new ByteArrayOutputStream(100);
@@ -65,6 +57,7 @@ public class RoleExceptionJUnitTest extends TestCase {
   /**
    * Assert that RegionDistributionException is serializable.
    */
+  @Test
   public void testRegionDistributionExceptionIsSerializable() throws Exception {
     RegionDistributionException out = createRegionDistributionException();
     ByteArrayOutputStream baos = new ByteArrayOutputStream(100);
@@ -85,6 +78,7 @@ public class RoleExceptionJUnitTest extends TestCase {
   /**
    * Assert that CommitDistributionException is serializable.
    */
+  @Test
   public void testCommitDistributionExceptionIsSerializable() throws Exception {
     String s = "MyString";
     Set outExceptions = new HashSet();

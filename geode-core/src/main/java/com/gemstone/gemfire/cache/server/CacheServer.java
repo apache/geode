@@ -37,7 +37,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * @see com.gemstone.gemfire.cache.Cache#addCacheServer
  * @see com.gemstone.gemfire.cache.Cache#getCacheServers
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
 public interface CacheServer {
   /** The default port on which a <Code>CacheServer</code> is
@@ -48,7 +48,7 @@ public interface CacheServer {
    * The default number of sockets accepted by a CacheServer. 
    * When the maximum is reached the cache server will stop accepting new connections.
    * Current value: 800
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final int DEFAULT_MAX_CONNECTIONS = 800;
   // Value derived from common file descriptor limits for Unix sytems (1024)... 
@@ -63,7 +63,7 @@ public interface CacheServer {
    * and to be dedicated to detecting client requests on that connection. A selector
    * is not used in this default mode.
    * Current value: 0
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final int DEFAULT_MAX_THREADS = 0;
 
@@ -101,7 +101,7 @@ public interface CacheServer {
   /**
    * The default list of server groups a cache server belongs to.
    * The current default is an empty list.
-   * @since 5.7
+   * @since GemFire 5.7
    * @deprecated as of 7.0 use the groups gemfire property
    */
   public static final String[] DEFAULT_GROUPS = new String[0];
@@ -109,7 +109,7 @@ public interface CacheServer {
   /**
    * The default load balancing probe. The default load balancing
    * probe reports the connections counts of this cache server. 
-   * @since 5.7
+   * @since GemFire 5.7
    *  
    */
   public static final ServerLoadProbe DEFAULT_LOAD_PROBE = new ConnectionCountProbe();
@@ -117,7 +117,7 @@ public interface CacheServer {
   /**
    * The default frequency at which to poll the load probe for the load
    * on this cache server. Defaults to 5000 (5 seconds).
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final long DEFAULT_LOAD_POLL_INTERVAL = 5000;
 
@@ -125,7 +125,7 @@ public interface CacheServer {
    * The default ip address or host name that the cache server's socket will
    * listen on for client connections.
    * The current default is an empty string.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final String DEFAULT_BIND_ADDRESS = "";
 
@@ -133,7 +133,7 @@ public interface CacheServer {
    * The default ip address or host name that will be given to clients
    * as the host this cache server is listening on.
    * The current default is an empty string.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final String DEFAULT_HOSTNAME_FOR_CLIENTS = "";
   
@@ -161,7 +161,7 @@ public interface CacheServer {
    * will listen on.
    * @return the ip address or host name that this cache server is to listen on
    * @see #DEFAULT_BIND_ADDRESS
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public String getBindAddress();
   /**
@@ -180,7 +180,7 @@ public interface CacheServer {
    * <p> A <code>null</code> value will be treated the same as the default <code>""</code>.
    * @param address the ip address or host name that this cache server is to listen on
    * @see #DEFAULT_BIND_ADDRESS
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setBindAddress(String address);
   /**
@@ -189,7 +189,7 @@ public interface CacheServer {
    * @return the ip address or host name to give to clients so they can connect
    *         to this cache server
    * @see #DEFAULT_HOSTNAME_FOR_CLIENTS
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public String getHostnameForClients();
   /**
@@ -205,7 +205,7 @@ public interface CacheServer {
    * @param name the ip address or host name that will be given to clients
    *   so they can connect to this cache server
    * @see #DEFAULT_HOSTNAME_FOR_CLIENTS
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setHostnameForClients(String name);
   /**
@@ -224,7 +224,7 @@ public interface CacheServer {
    * pushed to the client. The client does not need to request the new value
    * from the cache server.
    *
-   * @since 4.2
+   * @since GemFire 4.2
    * @deprecated as of 6.0.1. This method is no longer in use, by default 
    * notifyBySubscription attribute is set to true.
    */
@@ -235,7 +235,7 @@ public interface CacheServer {
    * Answers whether or not this cache server should notify clients based on
    * key subscription.
    *
-   * @since 4.2
+   * @since GemFire 4.2
    * @deprecated as of 6.0.1. This method is no more in use, by default 
    * notifyBySubscription attribute is set to true.
    */
@@ -248,7 +248,7 @@ public interface CacheServer {
    *
    * @param socketBufferSize The size in bytes of the socket buffer
    *
-   * @since 4.2.1
+   * @since GemFire 4.2.1
    */
   public void setSocketBufferSize(int socketBufferSize);
 
@@ -258,7 +258,7 @@ public interface CacheServer {
    * @return the configured buffer size of the socket connection for this
    * <code>CacheServer</code>
    *
-   * @since 4.2.1
+   * @since GemFire 4.2.1
    */
   public int getSocketBufferSize();
 
@@ -270,7 +270,7 @@ public interface CacheServer {
    * @param maximumTimeBetweenPings The maximum amount of time between client
    * pings
    *
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    */
   public void setMaximumTimeBetweenPings(int maximumTimeBetweenPings);
 
@@ -280,7 +280,7 @@ public interface CacheServer {
    * of this <code>CacheServer</code>'s clients. The default is 60000 ms.
    * @return the maximum amount of time between client pings.
    *
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    */
   public int getMaximumTimeBetweenPings();
 
@@ -324,7 +324,7 @@ public interface CacheServer {
    * client requests.
    * The default of <code>0</code> causes the cache server to dedicate a thread for
    * every client connection.
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public int getMaxThreads();
 
@@ -335,7 +335,7 @@ public interface CacheServer {
    * every client connection.
    * 
    * @see #DEFAULT_MAX_THREADS
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public void setMaxThreads(int maxThreads);
 
@@ -373,7 +373,7 @@ public interface CacheServer {
    * @param groups possibly empty array of <code>String</code> where each string
    * is a server groups that this cache server will be a member of.
    * @see #DEFAULT_GROUPS
-   * @since 5.7
+   * @since GemFire 5.7
    * @deprecated as of 7.0 use the groups gemfire property
    */
   public void setGroups(String[] groups);
@@ -382,7 +382,7 @@ public interface CacheServer {
    * @return a possibly empty array of <code>String</code>s where
    * each string is a server group. Modifying this array will not change the
    * server groups that this cache server belongs to.
-   * @since 5.7
+   * @since GemFire 5.7
    * @deprecated as of 7.0 use the groups gemfire property
    */
   public String[] getGroups();
@@ -392,7 +392,7 @@ public interface CacheServer {
    * {@link ServerLoadProbe} for details on the load probe.
    * @return the load probe used by this cache
    * server.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public ServerLoadProbe getLoadProbe();
 
@@ -402,7 +402,7 @@ public interface CacheServer {
    * a load probe.
    * @param loadProbe the load probe to use for
    * this cache server.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setLoadProbe(ServerLoadProbe loadProbe);
 
@@ -445,7 +445,7 @@ public interface CacheServer {
    * {@link ClientSubscriptionConfig} for details on the client subscription configuration.
    * 
    * @return ClientSubscriptionConfig
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public ClientSubscriptionConfig getClientSubscriptionConfig();
   
@@ -454,7 +454,7 @@ public interface CacheServer {
    * <code>DistributedMember</code>
    * @return the <code>ClientSession</code> associated with the
    * <code>DistributedMember</code>
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public ClientSession getClientSession(DistributedMember member);
   
@@ -463,14 +463,14 @@ public interface CacheServer {
    * durable client id
    * @return the <code>ClientSession</code> associated with the
    * durable
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public ClientSession getClientSession(String durableClientId);
   
   /**
    * Returns a set of all <code>ClientSession</code>s
    * @return a set of all <code>ClientSession</code>s
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public Set<ClientSession> getAllClientSessions();
 
@@ -481,7 +481,7 @@ public interface CacheServer {
    * @param listener 
    *          The <code>InterestRegistrationListener</code> to register 
    * 
-   * @since 6.0
+   * @since GemFire 6.0
    */ 
   public void registerInterestRegistrationListener( 
       InterestRegistrationListener listener); 
@@ -493,7 +493,7 @@ public interface CacheServer {
    * @param listener 
    *          The <code>InterestRegistrationListener</code> to unregister 
    * 
-   * @since 6.0
+   * @since GemFire 6.0
    */ 
   public void unregisterInterestRegistrationListener( 
       InterestRegistrationListener listener); 
@@ -505,7 +505,7 @@ public interface CacheServer {
    * @return a read-only set of <code>InterestRegistrationListener</code>s 
    *         registered with this notifier 
    * 
-   * @since 6.0
+   * @since GemFire 6.0
    */ 
   public Set<InterestRegistrationListener> getInterestRegistrationListeners(); 
   

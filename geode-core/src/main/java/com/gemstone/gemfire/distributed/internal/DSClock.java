@@ -16,11 +16,6 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
-import java.util.Date;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.SystemTimer.SystemTimerTask;
@@ -29,6 +24,10 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.DateFormatter;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Date;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * DSClock tracks the system time.  The most useful method is 
@@ -38,7 +37,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * 
  */
 
-public class DSClock {
+public class DSClock implements CacheTime {
 
   private static final Logger logger = LogService.getLogger();
   
@@ -77,10 +76,7 @@ public class DSClock {
     this.isLoner = lonerDS;
   }
   
-  /**
-   * Returns the system millisecond clock time with adjustments from the distributed system
-   * @return the current time
-   */
+  @Override
   public long cacheTimeMillis() {
     long result;
     final long offset = getCacheTimeOffset();
@@ -102,7 +98,7 @@ public class DSClock {
 
   /**
    * @return Offset for system time, calculated by distributed system coordinator.
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public long getCacheTimeOffset() {
     return this.cacheTimeDelta;
@@ -112,10 +108,10 @@ public class DSClock {
    * Sets the deviation of this process's local time from the rest of the GemFire
    * distributed system.
    *
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public void setCacheTimeOffset(DistributedMember coord, long offset, boolean isJoin) {
-    if (Boolean.getBoolean("gemfire.disable-distributed-clock")) {
+    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disable-distributed-clock")) {
       return;
     }
     if (isLoner) {

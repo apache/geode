@@ -16,9 +16,10 @@
  */
 package com.gemstone.gemfire.test.dunit;
 
-import java.net.UnknownHostException;
-
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.SocketCreator;
+
+import java.net.UnknownHostException;
 
 /**
  * <code>NetworkUtils</code> provides static utility methods to perform
@@ -63,7 +64,7 @@ public class NetworkUtils {
    * @return the host name
    */
   public static String getServerHostName(final Host host) {
-    String serverBindAddress = System.getProperty("gemfire.server-bind-address");
+    String serverBindAddress = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "server-bind-address");
     return serverBindAddress != null ? serverBindAddress : host.getHostName();
   }
 }

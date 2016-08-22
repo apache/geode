@@ -29,10 +29,12 @@ import com.gemstone.gemfire.internal.Version;
 
 /**
  * Holds one entry matching search query and its metadata
+ *
+ * @param <K> the type of the key
  */
-public class EntryScore implements DataSerializableFixedID {
+public class EntryScore<K> implements DataSerializableFixedID {
   // Key of the entry matching search query
-  private Object key;
+  private K key;
 
   // The score of this document for the query.
   private float score;
@@ -40,12 +42,12 @@ public class EntryScore implements DataSerializableFixedID {
   public EntryScore() {
   }
 
-  public EntryScore(Object key, float score) {
+  public EntryScore(K key, float score) {
     this.key = key;
     this.score = score;
   }
   
-  public Object getKey() {
+  public K getKey() {
     return key;
   }
 

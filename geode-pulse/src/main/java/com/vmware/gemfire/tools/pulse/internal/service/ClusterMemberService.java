@@ -43,7 +43,7 @@ import java.util.List;
  * 
  * This class contains implementations of getting Cluster Member's details
  * 
- * @since version 7.5
+ * @since GemFire version 7.5
  */
 @Component
 // @Service("ClusterMember")

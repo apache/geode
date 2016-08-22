@@ -43,6 +43,7 @@ import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
+import com.gemstone.gemfire.cache.query.internal.cq.ServerCQ;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DirectReplyProcessor;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -59,12 +60,14 @@ import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.CopyOnWriteHashSet;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation.PutAllMessage;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl.OldValueImporter;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo.FilterInfo;
 import com.gemstone.gemfire.internal.cache.UpdateOperation.UpdateMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage;
 import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
+import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.versions.DiskVersionTag;
 import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
@@ -74,6 +77,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 
@@ -95,51 +99,32 @@ public abstract class DistributedCacheOperation {
    * Deserialization policy: do not deserialize (for byte array, null or cases
    * where the value should stay serialized)
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte DESERIALIZATION_POLICY_NONE = (byte)0;
 
   /**
-   * Deserialization policy: deserialize eagerly (for Deltas)
-   * 
-   * @since 5.7
-   */
-  public static final byte DESERIALIZATION_POLICY_EAGER = (byte)1;
-
-  /**
    * Deserialization policy: deserialize lazily (for all other objects)
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte DESERIALIZATION_POLICY_LAZY = (byte)2;
   
   /**
-   * @param deserializationPolicy must be one of the following: DESERIALIZATION_POLICY_NONE, DESERIALIZATION_POLICY_EAGER, DESERIALIZATION_POLICY_LAZY.
+   * @param deserializationPolicy must be one of the following: DESERIALIZATION_POLICY_NONE, DESERIALIZATION_POLICY_LAZY.
    */
   public static void writeValue(final byte deserializationPolicy, final Object vObj, final byte[] vBytes, final DataOutput out) throws IOException {
     if (vObj != null) {
-      if (deserializationPolicy == DESERIALIZATION_POLICY_EAGER) {
-        // for DESERIALIZATION_POLICY_EAGER avoid extra byte array serialization
-        DataSerializer.writeObject(vObj, out);
-      } else if (deserializationPolicy == DESERIALIZATION_POLICY_NONE) {
+      if (deserializationPolicy == DESERIALIZATION_POLICY_NONE) {
         // We only have NONE with a vObj when vObj is off-heap and not serialized.
         StoredObject so = (StoredObject) vObj;
         assert !so.isSerialized();
         so.sendAsByteArray(out);
       } else { // LAZY
-        // TODO OFFHEAP MERGE: cache the oldValue that is serialized here
-        // into the event
         DataSerializer.writeObjectAsByteArray(vObj, out);
       }
     } else {
-      if (deserializationPolicy == DESERIALIZATION_POLICY_EAGER) {
-        // object is already in serialized form in the byte array.
-        // So just write the bytes to the stream.
-        // fromData will call readObject which will deserialize to object form.
-        out.write(vBytes);
-      } else {
-        DataSerializer.writeByteArray(vBytes, out);
-      }
+      DataSerializer.writeByteArray(vBytes, out);
     }    
   }
   // static values for oldValueIsObject
@@ -152,7 +137,6 @@ public abstract class DistributedCacheOperation {
    */
   public static byte valueIsToDeserializationPolicy(boolean oldValueIsSerialized) {
     if (!oldValueIsSerialized) return DESERIALIZATION_POLICY_NONE;
-    if (CachedDeserializableFactory.preferObject()) return DESERIALIZATION_POLICY_EAGER;
     return DESERIALIZATION_POLICY_LAZY;
   }
 
@@ -181,8 +165,6 @@ public abstract class DistributedCacheOperation {
     switch (policy) {
     case DESERIALIZATION_POLICY_NONE:
       return "NONE";
-    case DESERIALIZATION_POLICY_EAGER:
-      return "EAGER";
     case DESERIALIZATION_POLICY_LAZY:
       return "LAZY";
     default:
@@ -200,7 +182,7 @@ public abstract class DistributedCacheOperation {
    * false if not. Currently the only case it doesn't need to be is a
    * DestroyRegionOperation doing a "local" destroy.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   boolean isOperationReliable() {
     Operation op = this.event.getOperation();
@@ -528,7 +510,7 @@ public abstract class DistributedCacheOperation {
 
         // distribute to members needing the old value now
         if (needsOldValueInCacheOp.size() > 0) {
-          msg.appendOldValueToMessage((EntryEventImpl)this.event); // TODO OFFHEAP optimize
+          msg.appendOldValueToMessage((EntryEventImpl)this.event);
           msg.resetRecipients();
           msg.setRecipients(needsOldValueInCacheOp);
           Set newFailures = mgr.putOutgoing(msg);
@@ -653,6 +635,10 @@ public abstract class DistributedCacheOperation {
         }
       }
 
+      if (region.isUsedForPartitionedRegionBucket() && filterRouting != null) {
+        removeDestroyTokensFromCqResultKeys(filterRouting);
+      }
+
     } catch (CancelException e) {
       if (logger.isDebugEnabled()) {
         logger.debug("distribution of message aborted by shutdown: {}", this);
@@ -671,6 +657,51 @@ public abstract class DistributedCacheOperation {
       }
     }
   }
+
+
+  /**
+   * Cleanup destroyed events in CQ result cache for remote CQs.
+   * While maintaining the CQ results key caching. the destroy event
+   * keys are marked as destroyed instead of removing them, this is
+   * to take care, arrival of duplicate events. The key marked as
+   * destroyed are  removed after the event is placed in clients 
+   * HAQueue or distributed to the peers.
+   *
+   * This is similar to CacheClientNotifier.removeDestroyTokensFromCqResultKeys()
+   * where the destroyed events for local CQs are handled.
+   */
+  private void removeDestroyTokensFromCqResultKeys(FilterRoutingInfo filterRouting) {
+    for (InternalDistributedMember m : filterRouting.getMembers()) {
+      FilterInfo filterInfo = filterRouting.getFilterInfo(m);
+      if (filterInfo.getCQs() == null) {
+        continue;
+      }
+
+      CacheProfile cf = (CacheProfile) ((BucketRegion)getRegion()).getPartitionedRegion()
+          .getCacheDistributionAdvisor().getProfile(m);
+
+      if (cf == null || cf.filterProfile == null || cf.filterProfile.isLocalProfile() 
+          || cf.filterProfile.getCqMap().isEmpty()) {
+        continue;
+      }
+
+
+      for (Object value : cf.filterProfile.getCqMap().values()) {
+        ServerCQ cq = (ServerCQ)value;
+
+        for (Map.Entry<Long, Integer> e: filterInfo.getCQs().entrySet()) {
+          Long cqID = e.getKey();
+          // For the CQs satisfying the event with destroy CQEvent, remove
+          // the entry form CQ cache.
+          if (cq.getFilterID() == cqID && (e.getValue().equals(Integer.valueOf(
+              MessageType.LOCAL_DESTROY)))) {
+            cq.removeFromCqResultKeys(((EntryEventImpl)event).getKey(), true);
+          }
+        }
+      }
+    }
+  }
+
 
   /**
    * Get the adjunct receivers for a partitioned region operation
@@ -864,10 +895,6 @@ public abstract class DistributedCacheOperation {
 
     private final static int INHIBIT_NOTIFICATIONS_MASK = 0x400;
 
-	protected final static short FETCH_FROM_HDFS = 0x200;
-    
-    protected final static short IS_PUT_DML = 0x100;
-
     public boolean needsRouting;
 
     protected String regionPath;
@@ -960,7 +987,7 @@ public abstract class DistributedCacheOperation {
      * Add the cache event's old value to this message.  We must propagate
      * the old value when the receiver is doing GII and has listeners (CQs)
      * that require the old value.
-     * @since 5.5
+     * @since GemFire 5.5
      * @param event the entry event that contains the old value
      */
     public void appendOldValueToMessage(EntryEventImpl event) {
@@ -982,7 +1009,7 @@ public abstract class DistributedCacheOperation {
      * Insert this message's oldValue into the given event.  This fixes
      * bug 38382 by propagating old values with Entry level
      * CacheOperationMessages during initial image transfer
-     * @since 5.5
+     * @since GemFire 5.5
      */
     public void setOldValueInEvent(EntryEventImpl event) {
       CqService cqService = event.getRegion().getCache().getCqService();
@@ -1003,7 +1030,7 @@ public abstract class DistributedCacheOperation {
      * Sets a flag in the message indicating that this message contains delta
      * bytes.
      * 
-     * @since 6.1
+     * @since GemFire 6.1
      */
     protected void setHasDelta(boolean flag) {
       this.hasDelta = flag;
@@ -1018,7 +1045,7 @@ public abstract class DistributedCacheOperation {
     }
 
     /**
-     * @since 4.2.3
+     * @since GemFire 4.2.3
      */
     protected transient boolean regionAllowsConflation;
 
@@ -1104,7 +1131,6 @@ public abstract class DistributedCacheOperation {
     protected void basicProcess(DistributionManager dm, LocalRegion lclRgn) {
       Throwable thr = null;
       boolean sendReply = true;
-      InternalCacheEvent event = null;
 
       if (logger.isTraceEnabled()) {
         logger.trace("DistributedCacheOperation.basicProcess: {}", this);
@@ -1140,7 +1166,7 @@ public abstract class DistributedCacheOperation {
           return;
         }
 
-        event = createEvent(rgn);
+        @Released InternalCacheEvent event = createEvent(rgn);
         try {
         boolean isEntry = event.getOperation().isEntry();
 
@@ -1368,10 +1394,6 @@ public abstract class DistributedCacheOperation {
       }
       if ((extBits & INHIBIT_NOTIFICATIONS_MASK) != 0) {
         this.inhibitAllNotifications = true;
-	  if (this instanceof PutAllMessage) {
-        ((PutAllMessage) this).setFetchFromHDFS((extBits & FETCH_FROM_HDFS) != 0);
-        ((PutAllMessage) this).setPutDML((extBits & IS_PUT_DML) != 0);
-      }
       }
     }
 

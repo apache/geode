@@ -18,7 +18,6 @@
  */
 package com.gemstone.gemfire.security;
 
-import static com.gemstone.gemfire.internal.AvailablePort.*;
 import static com.gemstone.gemfire.security.SecurityTestUtils.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
@@ -30,20 +29,23 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.DeltaTestImpl;
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionLocalMaxMemoryDUnitTest;
 import com.gemstone.gemfire.security.generator.AuthzCredentialGenerator;
 import com.gemstone.gemfire.security.generator.CredentialGenerator;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 /**
- * @since 6.1
+ * @since GemFire 6.1
  */
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
   private static final int PAUSE = 5 * 1000; // TODO: replace with Awaitility
@@ -84,8 +86,9 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
     Properties serverProps = buildProperties(authenticator, accessor, true, extraAuthProps, extraAuthzProps);
 
     // Get ports for the servers
-    int port1 = getRandomAvailablePort(SOCKET);
-    int port2 = getRandomAvailablePort(SOCKET);
+    int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int port1 = randomAvailableTCPPorts[0];
+    int port2 = randomAvailableTCPPorts[1];
 
     // Perform all the ops on the clients
     List opBlock = new ArrayList();
@@ -197,11 +200,14 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
 
       // Perform the operation from selected client
       if (useThisVM) {
-        doOp(new Byte(opCode.toOrdinal()), currentOp.getIndices(), new Integer(opFlags), new Integer(expectedResult));
-      } else {
-        byte ordinal = opCode.toOrdinal();
+        doOp(opCode, currentOp.getIndices(), new Integer(
+            opFlags), new Integer(expectedResult));
+      }
+      else {
         int[] indices = currentOp.getIndices();
-        clientVM.invoke(() -> doOp(new Byte(ordinal), indices, new Integer(opFlags), new Integer(expectedResult) ));
+        clientVM.invoke(() -> DeltaClientPostAuthorizationDUnitTest.doOp(opCode,
+                indices, new Integer(opFlags),
+                new Integer(expectedResult) ));
       }
     }
   }
@@ -252,7 +258,7 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
     deltas[7].resetDeltaStatus();
     deltas[7].setStr("delta string");
   }
-  
+
   private OperationWithAction[] allOps() {
     return new OperationWithAction[] {
         // Test CREATE and verify with a GET
@@ -261,18 +267,18 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
         new OperationWithAction(OperationCode.PUT),
         new OperationWithAction(OperationCode.GET, 2, OpFlags.USE_OLDCONN | OpFlags.LOCAL_OP, 4),
         new OperationWithAction(OperationCode.GET, 3, OpFlags.USE_OLDCONN | OpFlags.LOCAL_OP | OpFlags.CHECK_FAIL, 4),
-        
+
         // OPBLOCK_END indicates end of an operation block that needs to be executed on each server when doing failover
         OperationWithAction.OPBLOCK_END,
-        
+
         // Test UPDATE and verify with a GET
         new OperationWithAction(OperationCode.REGISTER_INTEREST, OperationCode.GET, 2, OpFlags.USE_REGEX | OpFlags.REGISTER_POLICY_NONE, 8),
         new OperationWithAction(OperationCode.REGISTER_INTEREST, OperationCode.GET, 3, OpFlags.USE_REGEX | OpFlags.REGISTER_POLICY_NONE | OpFlags.USE_NOTAUTHZ, 8),
         new OperationWithAction(OperationCode.PUT, 1, OpFlags.USE_OLDCONN | OpFlags.USE_NEWVAL, 4),
         new OperationWithAction(OperationCode.GET, 2, OpFlags.USE_OLDCONN | OpFlags.LOCAL_OP | OpFlags.USE_NEWVAL, 4),
         new OperationWithAction(OperationCode.GET, 3, OpFlags.USE_OLDCONN | OpFlags.LOCAL_OP | OpFlags.USE_NEWVAL | OpFlags.CHECK_FAIL, 4),
-        
-        OperationWithAction.OPBLOCK_END 
+
+        OperationWithAction.OPBLOCK_END
     };
   }
 }

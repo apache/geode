@@ -23,7 +23,7 @@ import com.gemstone.gemfire.cache.Region;
  * An exception indicating that client subscriptions are not enabled on this client, but
  * the client is trying to perform an operation that requires a client subscription,
  *  such as {@link Region#registerInterest(Object)}.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class SubscriptionNotEnabledException extends ServerConnectivityException {
   private static final long serialVersionUID = -8212446737778234890L;

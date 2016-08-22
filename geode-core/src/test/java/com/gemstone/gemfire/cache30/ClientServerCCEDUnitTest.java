@@ -16,16 +16,19 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Collection;
-import java.util.HashMap;
 
-import junit.framework.AssertionFailedError;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -39,8 +42,6 @@ import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
-import com.gemstone.gemfire.internal.cache.TombstoneService;
 import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
@@ -53,13 +54,16 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * concurrency-control tests for client/server
  * 
  *
  */
-public class ClientServerCCEDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
   public static LocalRegion TestRegion;
   
   public void setup() {
@@ -73,18 +77,21 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
     HARegionQueue.setMessageSyncInterval(HARegionQueue.DEFAULT_MESSAGE_SYNC_INTERVAL);
   }
 
-  public ClientServerCCEDUnitTest(String name) {
-    super(name);
+  public ClientServerCCEDUnitTest() {
+    super();
   }
 
+  @Test
   public void testClientServerRRTombstoneGC() {
     clientServerTombstoneGCTest(getUniqueName(), true);
   }
   
+  @Test
   public void testClientServerPRTombstoneGC() {
     clientServerTombstoneGCTest(getUniqueName(), false);
   }
   
+  @Test
   public void testPutAllInNonCCEClient() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -131,10 +138,12 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
    * registerInterest() to protect the client cache from stray putAll
    * events sitting in backup queues on the server 
    */
+  @Test
   public void testClientRIGetsTombstonesRR() throws Exception {
     clientRIGetsTombstoneTest(getUniqueName(),true);
   }
   
+  @Test
   public void testClientRIGetsTombstonesPR() throws Exception {
     clientRIGetsTombstoneTest(getUniqueName(),false);
   }
@@ -187,10 +196,12 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
     ensureAllTombstonesPresent(vm2);
   }
   
+  @Test
   public void testClientRIGetsInvalidEntriesRR() throws Exception {
     clientRIGetsInvalidEntriesTest(getUniqueName(),true);
   }
   
+  @Test
   public void testClientRIGetsInvalidEntriesPR() throws Exception {
     clientRIGetsInvalidEntriesTest(getUniqueName(),false);
   }
@@ -356,10 +367,12 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
 
   //  private void closeCache(VM vm) {
 
+  @Test
   public void testClientServerRRQueueCleanup() {  // see bug #50879 if this fails
     clientServerTombstoneMessageTest(true);
   }
   
+  @Test
   public void testClientServerPRQueueCleanup() {  // see bug #50879 if this fails
     clientServerTombstoneMessageTest(false);
   }
@@ -550,7 +563,7 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
         if (TestRegion.getTombstoneCount() == 0) {
           LogWriterUtils.getLogWriter().warning("region has no tombstones");
 //          TestRegion.dumpBackingMap();
-          throw new AssertionFailedError("expected to find tombstones but region is empty");
+          throw new AssertionError("expected to find tombstones but region is empty");
         }
         return null;
       }
@@ -591,7 +604,7 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
         ClientCacheFactory cf = new ClientCacheFactory();
         cf.addPoolServer(NetworkUtils.getServerHostName(vm.getHost()), port);
         cf.setPoolSubscriptionEnabled(true);
-        cf.set("log-level", LogWriterUtils.getDUnitLogLevel());
+        cf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache cache = getClientCache(cf);
         ClientRegionFactory crf = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
         crf.setConcurrencyChecksEnabled(ccEnabled);
@@ -615,9 +628,9 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
         cf.setPoolSubscriptionEnabled(true);
         cf.setPoolSubscriptionRedundancy(1);
         // bug #50683 - secondary durable queue retains all GC messages
-        cf.set("durable-client-id", ""+vm.getPid());
-        cf.set("durable-client-timeout", "" + 200);
-        cf.set("log-level", LogWriterUtils.getDUnitLogLevel());
+        cf.set(DURABLE_CLIENT_ID, "" + vm.getPid());
+        cf.set(DURABLE_CLIENT_TIMEOUT, "" + 200);
+        cf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache cache = getClientCache(cf);
         ClientRegionFactory crf = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
         crf.setConcurrencyChecksEnabled(ccEnabled);

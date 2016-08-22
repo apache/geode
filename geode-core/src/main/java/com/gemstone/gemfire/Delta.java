@@ -29,7 +29,7 @@ import java.io.IOException;
  * object. The difference in object state is contained in the {@link DataOutput}
  * and {@link DataInput} parameters.
  * 
- * @since 6.1
+ * @since GemFire 6.1
  * 
  */
 public interface Delta {

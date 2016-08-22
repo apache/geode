@@ -17,29 +17,6 @@
 
 package com.gemstone.gemfire.distributed;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.BindException;
-import java.net.InetAddress;
-import java.net.URL;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.unsafe.RegisterSignalHandlerSupport;
@@ -56,6 +33,21 @@ import com.gemstone.gemfire.internal.process.ProcessUtils;
 import com.gemstone.gemfire.internal.util.SunAPINotFoundException;
 import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
 
+import java.io.*;
+import java.net.BindException;
+import java.net.InetAddress;
+import java.net.URL;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 /**
  * The AbstractLauncher class is a base class for implementing various launchers to construct and run different GemFire
  * processes, like Cache Servers, Locators, Managers, HTTP servers and so on.
@@ -63,7 +55,7 @@ import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
  * @see java.lang.Comparable
  * @see java.lang.Runnable
  * @see com.gemstone.gemfire.lang.Identifiable
- * @since 7.0
+ * @since GemFire 7.0
  */
 public abstract class AbstractLauncher<T extends Comparable<T>> implements Runnable {
 
@@ -81,7 +73,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   );
 
   public static final String DEFAULT_WORKING_DIRECTORY = SystemUtils.CURRENT_DIRECTORY;
-  public static final String SIGNAL_HANDLER_REGISTRATION_SYSTEM_PROPERTY = "gemfire.launcher.registerSignalHandlers";
+  public static final String SIGNAL_HANDLER_REGISTRATION_SYSTEM_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "launcher.registerSignalHandlers";
 
   protected static final String OPTION_PREFIX = "-";
 
@@ -287,7 +279,6 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * @see java.util.Properties
    */
   protected Properties getDistributedSystemProperties(final Properties defaults) {
-    //Properties distributedSystemProperties = new Properties(defaults);
     final Properties distributedSystemProperties = new Properties();
 
     if (defaults != null) {
@@ -295,11 +286,8 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     }
 
     if (!StringUtils.isBlank(getMemberName())) {
-      distributedSystemProperties.setProperty(DistributionConfig.NAME_NAME, getMemberName());
+      distributedSystemProperties.setProperty(NAME, getMemberName());
     }
-
-    // Set any other GemFire Distributed System/Distribution Config directory-based properties as necessary
-    //distributedSystemProperties.setProperty(DistributionConfig.LICENSE_WORKING_DIR, getWorkingDirectory());
 
     return distributedSystemProperties;
   }

@@ -20,7 +20,7 @@ package com.gemstone.gemfire.cache.query;
  * Provides statistical information about a query performed on a
  * GemFire <code>Region</code>.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public interface QueryStatistics {
 

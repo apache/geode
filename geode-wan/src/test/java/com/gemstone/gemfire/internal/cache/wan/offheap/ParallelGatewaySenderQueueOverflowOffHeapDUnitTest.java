@@ -16,14 +16,24 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.offheap;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQueueOverflowDUnitTest;
 
 @SuppressWarnings("serial")
+@Category(DistributedTest.class)
 public class ParallelGatewaySenderQueueOverflowOffHeapDUnitTest extends
     ParallelGatewaySenderQueueOverflowDUnitTest {
 
-  public ParallelGatewaySenderQueueOverflowOffHeapDUnitTest(String name) {
-    super(name);
+  public ParallelGatewaySenderQueueOverflowOffHeapDUnitTest() {
+    super();
   }
 
   @Override

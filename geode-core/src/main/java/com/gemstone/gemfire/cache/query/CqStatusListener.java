@@ -24,7 +24,7 @@ package com.gemstone.gemfire.cache.query;
  *  the cq is disconnected
  * 
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 
 public interface CqStatusListener extends CqListener {

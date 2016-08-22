@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 
 import java.util.HashSet;
 import java.util.Set;
@@ -54,7 +63,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * 
  *
  */
-public class PRBucketSynchronizationDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class PRBucketSynchronizationDUnitTest extends JUnit4CacheTestCase {
   static enum TestType {
     IN_MEMORY,
     OVERFLOW,
@@ -63,18 +73,21 @@ public class PRBucketSynchronizationDUnitTest extends CacheTestCase {
   
   public static LocalRegion TestRegion;
 
-  public PRBucketSynchronizationDUnitTest(String name) {
-    super(name);
+  public PRBucketSynchronizationDUnitTest() {
+    super();
   }
 
+  @Test
   public void testThatBucketSyncOnPrimaryLoss() {
     doBucketsSyncOnPrimaryLoss(TestType.IN_MEMORY);
   }
   
+  @Test
   public void testThatBucketsSyncOnPrimaryLossWithPersistence() {
     doBucketsSyncOnPrimaryLoss(TestType.PERSISTENT);
   }
   
+  @Test
   public void testThatBucketsSyncOnPrimaryLossWithOverflow() {
     doBucketsSyncOnPrimaryLoss(TestType.OVERFLOW);
   }

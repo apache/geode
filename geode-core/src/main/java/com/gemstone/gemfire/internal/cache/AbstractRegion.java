@@ -17,70 +17,13 @@
 
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.AttributesMutator;
-import com.gemstone.gemfire.cache.CacheCallback;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.CacheStatistics;
-import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.CustomEvictionAttributes;
-import com.gemstone.gemfire.cache.CustomExpiry;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskWriteAttributes;
-import com.gemstone.gemfire.cache.EntryExistsException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.EvictionAttributesMutator;
-import com.gemstone.gemfire.cache.EvictionCriteria;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.MembershipAttributes;
-import com.gemstone.gemfire.cache.MirrorType;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAccessException;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.RegionMembershipListener;
-import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.cache.RoleException;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.StatisticsDisabledException;
-import com.gemstone.gemfire.cache.SubscriptionAttributes;
-import com.gemstone.gemfire.cache.TimeoutException;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.query.FunctionDomainException;
-import com.gemstone.gemfire.cache.query.NameResolutionException;
-import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.TypeMismatchException;
+import com.gemstone.gemfire.cache.query.*;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
 import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
@@ -88,6 +31,7 @@ import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.cache.extension.Extensible;
@@ -100,7 +44,15 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.util.ArrayUtils;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
-import com.google.common.util.concurrent.Service.State;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Takes care of RegionAttributes, AttributesMutator, and some no-brainer method
@@ -206,11 +158,11 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
 
   /**
    * True if this region uses off-heap memory; otherwise false (default)
-   * @since 9.0
+   * @since Geode 1.0
    */
   protected boolean offHeap;
 
-  protected boolean cloningEnable = false;
+  private boolean cloningEnable = false;
 
   protected DiskWriteAttributes diskWriteAttributes;
 
@@ -236,8 +188,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
 
   protected EvictionAttributesImpl evictionAttributes = new EvictionAttributesImpl();
 
-  protected CustomEvictionAttributes customEvictionAttributes;
-
   /** The membership attributes defining required roles functionality */
   protected MembershipAttributes membershipAttributes;
 
@@ -251,8 +201,8 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
 
   private final AtomicLong lastModifiedTime;
 
-  private static final boolean trackHits = !Boolean.getBoolean("gemfire.ignoreHits");
-  private static final boolean trackMisses = !Boolean.getBoolean("gemfire.ignoreMisses");
+  private static final boolean trackHits = !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ignoreHits");
+  private static final boolean trackMisses = !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ignoreMisses");
 
   private final AtomicLong hitCount = new AtomicLong();
 
@@ -260,15 +210,11 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   
   protected String poolName;
   
-  protected String hdfsStoreName;
-  
-  protected boolean hdfsWriteOnly;
-  
   protected Compressor compressor;
   
   /**
    * @see #getExtensionPoint()
-   * @since 8.1
+   * @since GemFire 8.1
    */
   protected ExtensionPoint<Region<?,?>> extensionPoint = new SimpleExtensionPoint<Region<?,?>>(this, this);
   
@@ -288,7 +234,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   /**
    * Unit test constructor. DO NOT USE!
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    * @deprecated For unit testing only. Use
    *             {@link #AbstractRegion(GemFireCacheImpl, RegionAttributes, String, InternalRegionArguments)}
    *             .
@@ -330,13 +276,13 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return destroy(key, null);
   }
 
-  public final Object get(Object name) throws CacheLoaderException,
+  public Object get(Object name) throws CacheLoaderException,
       TimeoutException
   {
     return get(name, null, true, null);
   }
 
-  public final Object put(Object name, Object value) throws TimeoutException,
+  public Object put(Object name, Object value) throws TimeoutException,
       CacheWriterException
   {
     return put(name, value, null);
@@ -487,7 +433,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   /**
    * Return a cache loader if this region has one.
    * Note if region's loader is used to implement bridge then null is returned.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public CacheLoader basicGetLoader() {
     CacheLoader result = this.cacheLoader;
@@ -496,7 +442,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   /**
    * Return a cache writer if this region has one.
    * Note if region's writer is used to implement bridge then null is returned.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public CacheWriter basicGetWriter() {
     CacheWriter result = this.cacheWriter;
@@ -896,16 +842,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   public SubscriptionAttributes getSubscriptionAttributes()
   {
     return this.subscriptionAttributes;
-  }
-  
-  @Override
-  public final String getHDFSStoreName() {
-    return this.hdfsStoreName;
-  }
-  
-  @Override
-  public final boolean getHDFSWriteOnly() {
-    return this.hdfsWriteOnly;
   }
   
   /**
@@ -1621,7 +1557,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   /**
    * Returns true if this region has no storage
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   protected final boolean isProxy()
   {
@@ -1632,7 +1568,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
    * Returns true if this region has no storage and is only interested in what
    * it contains (which is nothing)
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   protected final boolean isCacheContentProxy()
   {
@@ -1644,7 +1580,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   /**
    * Returns true if region subscribes to all events or is a replicate.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   final boolean isAllEvents()
   {
@@ -1728,7 +1664,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
       this.setEvictionController(this.evictionAttributes
           .createEvictionController(this, attrs.getOffHeap()));
     }
-    this.customEvictionAttributes = attrs.getCustomEvictionAttributes();
     storeCacheListenersField(attrs.getCacheListeners());
     assignCacheLoader(attrs.getCacheLoader());
     assignCacheWriter(attrs.getCacheWriter());
@@ -1786,8 +1721,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
             + "when multiuser-authentication is true.");
       }
     }
-    this.hdfsStoreName = attrs.getHDFSStoreName();
-    this.hdfsWriteOnly = attrs.getHDFSWriteOnly();
 
     this.diskStoreName = attrs.getDiskStoreName();
     this.isDiskSynchronous = attrs.isDiskSynchronous();
@@ -1813,7 +1746,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   /**
    * Returns the pool this region is using or null if it does not have one
    * or the pool does not exist.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private PoolImpl getPool() {
     PoolImpl result = null;
@@ -1853,52 +1786,12 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return this.evictionAttributes;
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public CustomEvictionAttributes getCustomEvictionAttributes() {
-    return this.customEvictionAttributes;
-  }
-
   public EvictionAttributesMutator getEvictionAttributesMutator()
   {
     return this.evictionAttributes;
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public CustomEvictionAttributes setCustomEvictionAttributes(long newStart,
-      long newInterval) {
-    checkReadiness();
 
-    if (this.customEvictionAttributes == null) {
-      throw new IllegalArgumentException(
-          LocalizedStrings.AbstractRegion_NO_CUSTOM_EVICTION_SET
-              .toLocalizedString(getFullPath()));
-    }
-
-    if (newStart == 0) {
-      newStart = this.customEvictionAttributes.getEvictorStartTime();
-    }
-    this.customEvictionAttributes = new CustomEvictionAttributesImpl(
-        this.customEvictionAttributes.getCriteria(), newStart, newInterval,
-        newStart == 0 && newInterval == 0);
-
-//    if (this.evService == null) {
-//      initilializeCustomEvictor();
-//    } else {// we are changing the earlier one which is already started.
-//      EvictorService service = getEvictorTask();
-//      service.changeEvictionInterval(newInterval);
-//      if (newStart != 0)
-//        service.changeStartTime(newStart);
-//    }
-
-    return this.customEvictionAttributes;
-  }
-  
   public void setEvictionController(LRUAlgorithm evictionController)
   {
     this.evictionController = evictionController;
@@ -1943,7 +1836,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
    * @throws RoleException
    *           if a required role was not sent the message and the LossAction is
    *           either NO_ACCESS or LIMITED_ACCESS.
-   * @since 5.0
+   * @since GemFire 5.0
    *
    */
   protected void handleReliableDistribution(ReliableDistributionData data,
@@ -1984,7 +1877,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return getSystem().getDistributionManager();
   }
 
-  public final InternalDistributedSystem getSystem() {
+  public InternalDistributedSystem getSystem() {
     return getCache().getDistributedSystem();
   }
   
@@ -2036,8 +1929,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   }
   
   /**
-  * @since 8.1
-  * property used to find region operations that reach out to HDFS multiple times
+  * @since GemFire 8.1
   */
   @Override
   public ExtensionPoint<Region<?, ?>> getExtensionPoint() {
@@ -2046,88 +1938,5 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
 
   public boolean getOffHeap() {
     return this.offHeap;
-  }
-  /**
-   * property used to find region operations that reach out to HDFS multiple times
-   */
-  private static final boolean DEBUG_HDFS_CALLS = Boolean.getBoolean("DebugHDFSCalls");
-
-  /**
-   * throws exception if region operation goes out to HDFS multiple times
-   */
-  private static final boolean THROW_ON_MULTIPLE_HDFS_CALLS = Boolean.getBoolean("throwOnMultipleHDFSCalls");
-
-  private ThreadLocal<CallLog> logHDFSCalls = DEBUG_HDFS_CALLS ? new ThreadLocal<CallLog>() : null;
-
-  public void hdfsCalled(Object key) {
-    if (!DEBUG_HDFS_CALLS) {
-      return;
-    }
-    logHDFSCalls.get().addStack(new Throwable());
-    logHDFSCalls.get().setKey(key);
-  }
-  public final void operationStart() {
-    if (!DEBUG_HDFS_CALLS) {
-      return;
-    }
-    if (logHDFSCalls.get() == null) {
-      logHDFSCalls.set(new CallLog());
-      //InternalDistributedSystem.getLoggerI18n().warning(LocalizedStrings.DEBUG, "SWAP:operationStart", new Throwable());
-    } else {
-      logHDFSCalls.get().incNestedCall();
-      //InternalDistributedSystem.getLoggerI18n().warning(LocalizedStrings.DEBUG, "SWAP:incNestedCall:", new Throwable());
-    }
-  }
-  public final void operationCompleted() {
-    if (!DEBUG_HDFS_CALLS) {
-      return;
-    }
-    //InternalDistributedSystem.getLoggerI18n().warning(LocalizedStrings.DEBUG, "SWAP:operationCompleted", new Throwable());
-    if (logHDFSCalls.get() != null && logHDFSCalls.get().decNestedCall() < 0) {
-      logHDFSCalls.get().assertCalls();
-      logHDFSCalls.set(null);
-    }
-  }
-
-  public static class CallLog {
-    private List<Throwable> stackTraces = new ArrayList<Throwable>();
-    private Object key;
-    private int nestedCall = 0;
-    public void incNestedCall() {
-      nestedCall++;
-    }
-    public int decNestedCall() {
-      return --nestedCall;
-    }
-    public void addStack(Throwable stack) {
-      this.stackTraces.add(stack);
-    }
-    public void setKey(Object key) {
-      this.key = key;
-    }
-    public void assertCalls() {
-      if (stackTraces.size() > 1) {
-        Throwable firstTrace = new Throwable();
-        Throwable lastTrace = firstTrace;
-        for (Throwable t : this.stackTraces) {
-          lastTrace.initCause(t);
-          lastTrace = t;
-        }
-        if (THROW_ON_MULTIPLE_HDFS_CALLS) {
-          throw new RuntimeException("SWAP:For key:"+key+" HDFS get called more than once: ", firstTrace);
-        } else {
-          InternalDistributedSystem.getLoggerI18n().warning(LocalizedStrings.DEBUG, "SWAP:For key:"+key+" HDFS get called more than once: ", firstTrace);
-        }
-      }
-    }
-  }
-
-  public EvictionCriteria getEvictionCriteria() {
-    EvictionCriteria criteria = null;
-    if (this.customEvictionAttributes != null
-        && !this.customEvictionAttributes.isEvictIncoming()) {
-      criteria = this.customEvictionAttributes.getCriteria();
-    }
-    return criteria;
   }
 }

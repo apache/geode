@@ -24,7 +24,7 @@ import com.gemstone.gemfire.internal.util.IOUtils;
 
 /**
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 // According to 8.0 discussions, gfsh should have as less confing as possible
 // hence Persisting GfshConfig is not done
@@ -58,6 +58,17 @@ public class GfshConfig {
 
   public GfshConfig() {
     this(HISTORY_FILE.getAbsolutePath(), DEFAULT_PROMPT, MAX_HISTORY_SIZE, null, null, null, null, null);
+  }
+
+  public boolean deleteHistoryFile(){
+    if(historyFileName==null)
+      return true;
+
+    File file = new File(historyFileName);
+    if(!file.exists())
+      return true;
+
+    return file.delete();
   }
 
   public GfshConfig(String historyFileName, String defaultPrompt,

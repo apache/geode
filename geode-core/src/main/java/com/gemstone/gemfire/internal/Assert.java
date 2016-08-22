@@ -17,8 +17,9 @@
 
 package com.gemstone.gemfire.internal;
 
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.InternalGemFireError;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * Support for correctness assertions.
@@ -58,7 +59,7 @@ public class Assert {
     }
   }
 
-  private static boolean debug = Boolean.getBoolean("gemfire.haltOnAssertFailure");
+  private static boolean debug = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "haltOnAssertFailure");
 
   public static boolean waitForDebuggerOnError() { return debug; }
 

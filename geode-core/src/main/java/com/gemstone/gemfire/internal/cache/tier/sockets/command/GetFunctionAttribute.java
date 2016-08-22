@@ -26,6 +26,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 public class GetFunctionAttribute extends BaseCommand {
 
@@ -50,24 +51,24 @@ public class GetFunctionAttribute extends BaseCommand {
       sendError(msg, message, servConn);
       return;
     }
-    else {
-      Function function = FunctionService.getFunction(functionId);
-      if (function == null) {
-        String message = null;
-        message = LocalizedStrings.GetFunctionAttribute_THE_FUNCTION_IS_NOT_REGISTERED_FOR_FUNCTION_ID_0
-            .toLocalizedString(functionId);
-        logger.warn("{}: {}", servConn.getName(), message);
-        sendError(msg, message, servConn);
-        return;
-      }
-      else {
-        byte[] functionAttributes = new byte[3];
-        functionAttributes[0] = (byte)(function.hasResult() ? 1 : 0);
-        functionAttributes[1] = (byte)(function.isHA() ? 1 : 0);
-        functionAttributes[2] = (byte)(function.optimizeForWrite() ? 1 : 0);
-        writeResponseWithFunctionAttribute(functionAttributes, msg, servConn);
-      }
+
+    Function function = FunctionService.getFunction(functionId);
+    if (function == null) {
+      String message = null;
+      message = LocalizedStrings.GetFunctionAttribute_THE_FUNCTION_IS_NOT_REGISTERED_FOR_FUNCTION_ID_0
+          .toLocalizedString(functionId);
+      logger.warn("{}: {}", servConn.getName(), message);
+      sendError(msg, message, servConn);
+      return;
     }
+
+    GeodeSecurityUtil.authorizeClusterRead();
+
+    byte[] functionAttributes = new byte[3];
+    functionAttributes[0] = (byte)(function.hasResult() ? 1 : 0);
+    functionAttributes[1] = (byte)(function.isHA() ? 1 : 0);
+    functionAttributes[2] = (byte)(function.optimizeForWrite() ? 1 : 0);
+    writeResponseWithFunctionAttribute(functionAttributes, msg, servConn);
   }
 
   private void sendError(Message msg, String message, ServerConnection servConn)

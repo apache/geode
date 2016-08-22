@@ -16,24 +16,28 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Properties;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
-
-import junit.framework.*;
-
 import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.CacheTransactionManager;
+import com.gemstone.gemfire.cache.DiskStore;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.util.test.TestUtil;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
  * This test is for testing Disk attributes set via xml.
@@ -41,19 +45,18 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * A cache and region are created using an xml. The regions are then verified to make sure
  * that all the attributes have been correctly set
  * 
- * @since 5.1
+ * @since GemFire 5.1
  */
 @Category(IntegrationTest.class)
-public class DiskRegCacheXmlJUnitTest
-{
-  Cache cache = null;
+public class DiskRegCacheXmlJUnitTest {
 
-  DistributedSystem ds = null;
+  private Cache cache = null;
 
-  protected static File[] dirs = null;
+  private DistributedSystem ds = null;
 
-  public void mkDirAndConnectDs()
-  {
+  private static File[] dirs = null;
+
+  private void mkDirAndConnectDs() {
     File file1 = new File("d1");
     file1.mkdir();
     file1.deleteOnExit();
@@ -69,24 +72,17 @@ public class DiskRegCacheXmlJUnitTest
     dirs[2] = file3;
     // Connect to the GemFire distributed system
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.NAME_NAME, "test");
+    props.setProperty(NAME, "test");
     String path = TestUtil.getResourcePath(getClass(), "DiskRegCacheXmlJUnitTest.xml");
-    props.setProperty("mcast-port", "0");
-    props.setProperty("cache-xml-file", path);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(CACHE_XML_FILE, path);
     ds = DistributedSystem.connect(props);
-    try {
-      // Create the cache which causes the cache-xml-file to be parsed
-      cache = CacheFactory.create(ds);
-    }
-    catch (Exception ex) {
-      ds.getLogWriter().error("Exception occured",ex);
-      fail("failed to create cache due to "+ex);
-    }
+    // Create the cache which causes the cache-xml-file to be parsed
+    cache = CacheFactory.create(ds);
   }
 
   @Test
-  public void testDiskRegCacheXml()
-  {
+  public void testDiskRegCacheXml() throws Exception {
     mkDirAndConnectDs();
     // Get the region1 which is a subregion of /root
     Region region1 = cache.getRegion("/root1/PersistSynchRollingOplog1");
@@ -219,30 +215,21 @@ public class DiskRegCacheXmlJUnitTest
     deleteFiles();
   }
 
-  private static void deleteFiles()
-  {
+  private static void deleteFiles() {
     for (int i = 0; i < dirs.length; i++) {
       File[] files = dirs[i].listFiles();
       for (int j = 0; j < files.length; j++) {
         files[j].delete();
       }
     }
-
   }
-  
-  
-  @After
-  public void tearDown() throws Exception
-  {
 
-    /*if (cache != null && !cache.isClosed()) {
-      cache.close();
-    }*/
+  @After
+  public void tearDown() throws Exception {
     try {
       if (cache != null && !cache.isClosed()) {
         for (Iterator itr = cache.rootRegions().iterator(); itr.hasNext();) {
           Region root = (Region)itr.next();
-//          String name = root.getName();
 					if(root.isDestroyed() || root instanceof HARegion) {
             continue;
         	}
@@ -260,21 +247,10 @@ public class DiskRegCacheXmlJUnitTest
       }
     }
     finally {
-      try {
-        closeCache();
-      }
-      catch (VirtualMachineError e) {
-        SystemFailure.initiateFailure(e);
-        throw e;
-      }
-      catch (Throwable t) {
-        ds.getLogWriter().error("Error in closing the cache ", t);
-        
-      }
+      closeCache();
     }
   }
-  
-  
+
   /** Close the cache */
   private  synchronized final void closeCache() {
     if (cache != null) {
@@ -295,4 +271,3 @@ public class DiskRegCacheXmlJUnitTest
     }
   }
 }// end of DiskRegCacheXmlJUnitTest
-

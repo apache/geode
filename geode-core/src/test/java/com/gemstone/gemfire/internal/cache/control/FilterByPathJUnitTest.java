@@ -16,30 +16,31 @@
  */
 package com.gemstone.gemfire.internal.cache.control;
 
+import static org.junit.Assert.*;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashSet;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
-/**
- *
- */
 @Category(UnitTest.class)
-public class FilterByPathJUnitTest extends TestCase {
+public class FilterByPathJUnitTest {
+
+  @Test
   public void testDefault() {
     FilterByPath filter = new FilterByPath(null, null);
     assertTrue(filter.include(createRegion("a")));
     assertTrue(filter.include(createRegion("b")));
     assertTrue(filter.include(createRegion("c")));
   }
-  
+
+  @Test
   public void testInclude() {
     HashSet<String> included = new HashSet<String>();
     included.add("a");
@@ -50,6 +51,7 @@ public class FilterByPathJUnitTest extends TestCase {
     assertFalse(filter.include(createRegion("c")));
   }
 
+  @Test
   public void testExclude() {
     HashSet<String> excluded = new HashSet<String>();
     excluded.add("a");
@@ -59,7 +61,8 @@ public class FilterByPathJUnitTest extends TestCase {
     assertFalse(filter.include(createRegion("b")));
     assertTrue(filter.include(createRegion("c")));
   }
-  
+
+  @Test
   public void testBoth() {
     HashSet<String> included = new HashSet<String>();
     included.add("a");
@@ -79,17 +82,18 @@ public class FilterByPathJUnitTest extends TestCase {
     return (Region<?,?>) Proxy.newProxyInstance(contextClassLoader, new Class[] {Region.class}, handler);
   }
 
-  public static class RegionHandler implements InvocationHandler {
+  private static class RegionHandler implements InvocationHandler {
 
     private String name;
     
     public RegionHandler(String name) {
       this.name = "/"+name;
     }
+
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args)
         throws Throwable {
       return name;
     }
-    
   }
 }

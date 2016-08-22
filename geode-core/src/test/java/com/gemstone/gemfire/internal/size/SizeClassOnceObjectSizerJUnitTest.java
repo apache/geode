@@ -16,20 +16,19 @@
  */
 package com.gemstone.gemfire.internal.size;
 
-import org.junit.experimental.categories.Category;
-
-import junit.framework.TestCase;
 import static com.gemstone.gemfire.internal.size.SizeTestUtil.*;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-/**
- *
- */
 @Category(UnitTest.class)
-public class SizeClassOnceObjectSizerJUnitTest extends TestCase{
-  
+public class SizeClassOnceObjectSizerJUnitTest {
+
+  @Test
   public void test() {
     byte[] b1 = new byte[5];
     byte[] b2 = new byte[15];

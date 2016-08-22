@@ -40,7 +40,7 @@ import com.gemstone.gemfire.internal.cache.tier.MessageType;
  * entries are gathered up after the RI response is completed and removed from
  * the system
  * 
- * @since 5.1
+ * @since GemFire 5.1
  * 
  */
 public class ServerResponseMatrix

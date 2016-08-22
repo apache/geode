@@ -16,15 +16,9 @@
  */
 package com.gemstone.gemfire.management.internal.beans;
 
-
+import com.gemstone.gemfire.management.GatewaySenderMXBean;
 import javax.management.NotificationBroadcasterSupport;
 
-import com.gemstone.gemfire.management.GatewaySenderMXBean;
-
-/**
- * 
- * 
- */
 public class GatewaySenderMBean extends NotificationBroadcasterSupport
     implements GatewaySenderMXBean {
 

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
 import static org.junit.Assert.*;
@@ -31,9 +30,8 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link AbstractXmlParser}.
- * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 @Category(UnitTest.class)
 public class AbstractXmlParserJUnitTest {
@@ -52,6 +50,7 @@ public class AbstractXmlParserJUnitTest {
   /**
    * Test method for {@link AbstractXmlParser#setDocumentLocator(Locator)}.
    */
+  @Test
   public void testSetDocumentLocator() {
     final MockXmlParser mockXmlParser = new MockXmlParser();
     final Locator mockLocator = new Locator() {

@@ -16,13 +16,17 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.Properties;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
 import com.gemstone.gemfire.internal.cache.lru.HeapEvictor;
 import com.gemstone.gemfire.test.dunit.Assert;
@@ -32,17 +36,16 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Performs eviction dunit tests for off-heap memory.
  */
+@Category(DistributedTest.class)
 public class OffHeapEvictionDUnitTest extends EvictionDUnitTest {
-  public OffHeapEvictionDUnitTest(String name) {
-    super(name);
-  }  
-  
+
   @Override
-  public final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownAssertions() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
 
       @Override
@@ -58,12 +61,13 @@ public class OffHeapEvictionDUnitTest extends EvictionDUnitTest {
 
   @Override
   public Properties getDistributedSystemProperties() {
-    Properties properties = super.getDistributedSystemProperties();    
-    properties.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "200m");    
+    Properties properties = super.getDistributedSystemProperties();
+    properties.setProperty(OFF_HEAP_MEMORY_SIZE, "200m");
     
     return properties;
   }
 
+  @Override
   public void createCache() {
     try {
       Properties props = new Properties();
@@ -85,6 +89,7 @@ public class OffHeapEvictionDUnitTest extends EvictionDUnitTest {
     }
   }
 
+  @Override
   public void raiseFakeNotification(VM vm, final String prName,
       final int noOfExpectedEvictions) {
     vm.invoke(new CacheSerializableRunnable("fakeNotification") {
@@ -122,12 +127,14 @@ public class OffHeapEvictionDUnitTest extends EvictionDUnitTest {
   @Override
   public boolean getOffHeapEnabled() {
     return true;
-  }    
+  }
 
+  @Override
   public HeapEvictor getEvictor() {
     return ((GemFireCacheImpl)cache).getOffHeapEvictor();
-  }  
+  }
 
+  @Override
   public ResourceType getResourceType() {
     return ResourceType.OFFHEAP_MEMORY;
   }

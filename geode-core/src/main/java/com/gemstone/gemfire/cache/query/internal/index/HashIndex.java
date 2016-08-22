@@ -871,7 +871,6 @@ public class HashIndex extends AbstractIndex {
     return ((LocalRegion) getRegion()).new NonTXEntry(entry);
   }
   
-  // TODO OFFHEAP: may return PdxInstance
   private Object getTargetObjectForUpdate(RegionEntry entry) {
     if (this.indexOnValues) {
       Object o = entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());

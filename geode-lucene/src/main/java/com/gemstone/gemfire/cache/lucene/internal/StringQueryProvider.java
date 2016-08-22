@@ -24,13 +24,15 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
-import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
+import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 import org.apache.lucene.search.Query;
 
 import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.GemFireCheckedException;
+import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
+import com.gemstone.gemfire.cache.lucene.LuceneQueryException;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
 import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
@@ -38,10 +40,11 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
- * Constructs a Lucene Query object by parsing a search string. The class uses {@link MultiFieldQueryParser}. It sets
+ * Constructs a Lucene Query object by parsing a search string. The class uses {@link StandardQueryParser}. It sets
  * searchable fields in a {@link LuceneIndex} as default fields.
  */
 public class StringQueryProvider implements LuceneQueryProvider, DataSerializableFixedID {
+
   private static final long serialVersionUID = 1L;
 
   private static final Logger logger = LogService.getLogger();
@@ -52,26 +55,31 @@ public class StringQueryProvider implements LuceneQueryProvider, DataSerializabl
   // the following members hold derived objects and need not be serialized
   private transient Query luceneQuery;
 
+  private String defaultField;
+
   public StringQueryProvider() {
-    this(null);
+    this(null, null);
   }
 
-  public StringQueryProvider(String query) {
+  public StringQueryProvider(String query, String defaultField) {
     this.query = query;
+    this.defaultField = defaultField;
   }
 
   @Override
-  public synchronized Query getQuery(LuceneIndex index) throws QueryException {
+  public synchronized Query getQuery(LuceneIndex index) throws LuceneQueryException {
     if (luceneQuery == null) {
       String[] fields = index.getFieldNames();
-
-      //TODO  get the analyzer from the index
-      MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, new StandardAnalyzer());
+      LuceneIndexImpl indexImpl = (LuceneIndexImpl) index;
+      StandardQueryParser parser = new StandardQueryParser(indexImpl.getAnalyzer());
       try {
-        luceneQuery = parser.parse(query);
-      } catch (ParseException e) {
-        logger.debug("Malformed lucene query: " + query, e);
-        throw new QueryException(e);
+        luceneQuery = parser.parse(query, defaultField);
+        if (logger.isDebugEnabled()) {
+          logger.debug("User query " + query + " is parsed to be: " + luceneQuery);
+        }
+      } catch (QueryNodeException e) {
+        logger.debug("Query node exception:" + query, e);
+        throw new LuceneQueryException("Malformed lucene query: " + query, e);
       }
     }
     return luceneQuery;
@@ -97,10 +105,12 @@ public class StringQueryProvider implements LuceneQueryProvider, DataSerializabl
   @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(query, out);
+    DataSerializer.writeString(defaultField, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     query = DataSerializer.readString(in);
+    defaultField = DataSerializer.readString(in);
   }
 }

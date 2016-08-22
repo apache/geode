@@ -29,6 +29,7 @@ import com.gemstone.gemfire.distributed.internal.ResourceEvent;
 import com.gemstone.gemfire.distributed.internal.ResourceEventsListener;
 import com.gemstone.gemfire.distributed.internal.locks.DLockService;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
+import com.gemstone.gemfire.internal.cache.CacheService;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.management.ManagementException;
 import com.gemstone.gemfire.management.internal.AlertDetails;
@@ -205,7 +206,11 @@ public class ManagementListener implements ResourceEventsListener{
       case LOCATOR_START:
         Locator loc = (Locator) resource;
         adapter.handleLocatorStart(loc);
-        break; 
+        break;
+      case CACHE_SERVICE_CREATE:
+        CacheService service = (CacheService) resource;
+        adapter.handleCacheServiceCreation(service);
+        break;
       default:
       break;
       }

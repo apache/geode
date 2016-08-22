@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheStatistics;
@@ -34,12 +43,13 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * Region} and a {@link com.gemstone.gemfire.cache.Region.Entry}.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
-public class CacheStatisticsDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
 
-  public CacheStatisticsDUnitTest(String name) {
-    super(name);
+  public CacheStatisticsDUnitTest() {
+    super();
   }
 
   ////////  Helper Methods
@@ -48,7 +58,7 @@ public class CacheStatisticsDUnitTest extends CacheTestCase {
    * Asserts that two <code>long</code>s are equal concerning a
    * delta.
    */
-//   public static void assertEquals(long expected, long actual,
+//   public static void assertIndexDetailsEquals(long expected, long actual,
 //                                   long delta) {
 //     long difference = Math.abs(expected - actual);
 //     assertTrue("Expected: " + expected
@@ -71,6 +81,7 @@ public class CacheStatisticsDUnitTest extends CacheTestCase {
    * {@link CacheStatistics#getMissCount miss count} are updated
    * properly for a local region and its entries.
    */
+  @Test
   public void testHitMissCount() throws CacheException {
     String name = this.getUniqueName();
     Object key = "KEY"; // value exists
@@ -182,6 +193,7 @@ public class CacheStatisticsDUnitTest extends CacheTestCase {
    * and its entries.  It also validates that the last modification
    * and last access times are propagated to parent regions.
    */
+  @Test
   public void testTimeStats() throws CacheException, InterruptedException
   {
     final long ESTAT_RES = 100; // the resolution, in ms, of entry stats
@@ -325,6 +337,7 @@ public class CacheStatisticsDUnitTest extends CacheTestCase {
    * time}.  It also validates that distributed operations do not
    * affect the hit and miss counts in remote caches.
    */
+  @Test
   public void testDistributedStats() {
     final String name = this.getUniqueName();
     final Object key = "KEY";
@@ -472,7 +485,7 @@ public class CacheStatisticsDUnitTest extends CacheTestCase {
           // lastAccessed var contains stat from an Entry, which may be
           // up to 100 ms off from stat in Region because Entry has
           // less precision
-          //assertEquals(lastAccessed, stats.getLastAccessedTime(), 100);
+          //assertIndexDetailsEquals(lastAccessed, stats.getLastAccessedTime(), 100);
           assertEquals(0, stats.getHitCount());
           assertEquals(0, stats.getMissCount());
         }
@@ -483,6 +496,7 @@ public class CacheStatisticsDUnitTest extends CacheTestCase {
    * Tests that an attempt to get statistics when they are disabled
    * results in a {@link StatisticsDisabledException}.
    */
+  @Test
   public void testDisabledStatistics() throws CacheException {
     String name = this.getUniqueName();
     Object key = "KEY";

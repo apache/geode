@@ -16,52 +16,31 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.List;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 import java.util.Properties;
 
-import org.jgroups.protocols.UDP;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger;
-import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /** A test of 46438 - missing response to an update attributes message */
-public class ConnectDisconnectDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class ConnectDisconnectDUnitTest extends JUnit4CacheTestCase {
   
-  static {
-//    System.setProperty("DistributionManager.VERBOSE", "true");
-  }
-
-
   private IgnoredException ex;
 
-  public ConnectDisconnectDUnitTest(String name) {
-    super(name);
-  }
-  
-  
-  // see bugs #50785 and #46438 
+  // see bugs #50785 and #46438
+  @Test
   public void testManyConnectsAndDisconnects() throws Throwable {
 //    invokeInEveryVM(new SerializableRunnable() {
 //
@@ -86,7 +65,7 @@ public class ConnectDisconnectDUnitTest extends CacheTestCase {
   
   static int LOCATOR_PORT;
   static String LOCATORS_STRING;
-  
+
   static int[] locatorPorts;
   
   public void setLocatorPorts(int[] ports) {
@@ -172,11 +151,11 @@ public class ConnectDisconnectDUnitTest extends CacheTestCase {
   @Override
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
-    props.setProperty("log-level", "info");
-    props.setProperty("conserve-sockets", "false");
+    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(CONSERVE_SOCKETS, "false");
     if (LOCATOR_PORT > 0) {
-      props.setProperty("start-locator", "localhost["+LOCATOR_PORT+"]");
-      props.setProperty("locators", LOCATORS_STRING);
+      props.setProperty(START_LOCATOR, "localhost[" + LOCATOR_PORT + "]");
+      props.setProperty(LOCATORS, LOCATORS_STRING);
     }
     return props;
   }

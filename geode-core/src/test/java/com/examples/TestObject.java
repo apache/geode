@@ -23,7 +23,7 @@ package com.examples;
  * that must be in a non-<code>com.gemstone</code> package.
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public class TestObject {
 

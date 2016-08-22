@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -35,16 +44,18 @@ import com.gemstone.gemfire.test.dunit.VM;
  * we fault out and in a delta object.
  *
  */
-public class Bug42055DUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class Bug42055DUnitTest extends JUnit4CacheTestCase {
   
 
   /**
    * @param name
    */
-  public Bug42055DUnitTest(String name) {
-    super(name);
+  public Bug42055DUnitTest() {
+    super();
   }
 
+  @Test
   public void testPROverflow() throws Exception {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

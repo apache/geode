@@ -255,7 +255,7 @@ public abstract class ArrayUtils {
         }
         else {
           first = false;
-          // for SQLFire show the first byte[] for byte[][] storage
+          // show the first byte[] for byte[][] storage
           objectStringWithBytes(o, sb);
         }
       }

@@ -22,7 +22,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Defines the operations for controlling a running process.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 public interface ProcessController {
 

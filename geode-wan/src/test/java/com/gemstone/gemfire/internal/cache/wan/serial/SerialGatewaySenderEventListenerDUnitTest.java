@@ -16,10 +16,22 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.serial;
 
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
@@ -30,23 +42,24 @@ import com.gemstone.gemfire.internal.cache.wan.MyGatewaySenderEventListener2;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-/**
- *
- */
+@Category(DistributedTest.class)
 public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public SerialGatewaySenderEventListenerDUnitTest(String name) {
-    super(name);
+  public SerialGatewaySenderEventListenerDUnitTest() {
+    super();
   }
 
   /**
    * Test validates whether the listener attached receives all the events.
    * this test hangs after the Darrel's checkin 36685. Need to work with Darrel.Commenting it out so that test suit will not hang 
    */
-  public void __testGatewaySenderEventListenerInvocationWithoutLocator() {
+  @Ignore
+  @Test
+  public void testGatewaySenderEventListenerInvocationWithoutLocator() {
     int mPort = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     vm4.invoke(() -> WANTestBase.createCacheWithoutLocator(mPort ));
     vm5.invoke(() -> WANTestBase.createCacheWithoutLocator(mPort ));
@@ -93,13 +106,14 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
   /**
    * Test validates whether the listener attached receives all the events.
    */
+  @Test
   public void testGatewaySenderEventListenerInvocation() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -150,12 +164,14 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
    * Test validates whether the listener attached receives all the events. 
    * When there are 2 listeners attcahed to the GatewaySender.
    */
+  @Category(FlakyTest.class) // GEODE-1066: random ports, waitForCriterion, time sensitive
+  @Test
   public void testGatewaySender2EventListenerInvocation() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -193,7 +209,8 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
         getTestMethodName() + "_RR", 0 ));
     vm3.invoke(() -> WANTestBase.validateRegionSize(
         getTestMethodName() + "_RR", 0 ));
-    
+
+    // TODO: move validateReceivedEventsMapSizeListener2 to a shared util class
     vm4.invoke(() -> SerialGatewaySenderEventListenerDUnitTest.validateReceivedEventsMapSizeListener2("ln", keyValues ));
   }
   
@@ -201,12 +218,13 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
    * Test vaildates whether the PoolImpl is created. Ideally when a listener is attached
    * pool should not be created.
    */
+  @Test
   public void testGatewaySenderEventListenerPoolImpl() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4);
 
@@ -218,7 +236,9 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
   
   // Test start/stop/resume on listener invocation
   //this test hangs after the Darrel's checkin 36685. Need to work with Darrel.Commenting it out so that test suit will not hang
-  public void __testGatewaySenderEventListener_GatewayOperations() {
+  @Ignore
+  @Test
+  public void testGatewaySenderEventListener_GatewayOperations() {
 
     int mPort = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     vm4.invoke(() -> WANTestBase.createCacheWithoutLocator(mPort ));

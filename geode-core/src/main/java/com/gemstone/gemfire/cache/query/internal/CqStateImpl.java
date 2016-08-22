@@ -22,7 +22,7 @@ import com.gemstone.gemfire.cache.query.CqState;
 /**
  * Offers methods to get CQ state.
  *
- * @since 5.5
+ * @since GemFire 5.5
  */
 
 public class CqStateImpl implements CqState {

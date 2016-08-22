@@ -31,7 +31,7 @@ import com.gemstone.gemfire.internal.process.ControlFileWatchdog.ControlRequestH
  * Creates the PID file and ControlFileWatchdogs to monitor working directory
  * for creation of stop or status request files.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 public final class ControllableProcess {
   private static final Logger logger = LogService.getLogger();
@@ -64,12 +64,18 @@ public final class ControllableProcess {
         if (statusFile.exists()) {
           statusFile.delete();
         }
-        boolean created = statusFile.createNewFile();
+        final File statusFileTmp = new File(workingDir, processType.getStatusFileName() + ".tmp");
+        if (statusFileTmp.exists()) {
+          statusFileTmp.delete();
+        }
+        boolean created = statusFileTmp.createNewFile();
         assert created;
-        final FileWriter writer = new FileWriter(statusFile);
+        final FileWriter writer = new FileWriter(statusFileTmp);
         writer.write(state.toJson());
         writer.flush();
         writer.close();
+        boolean renamed = statusFileTmp.renameTo(statusFile);
+        assert renamed;
       }
     };
     

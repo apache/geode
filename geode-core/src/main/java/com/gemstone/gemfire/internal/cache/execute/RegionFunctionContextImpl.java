@@ -26,9 +26,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultSender;
-import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.LocalDataSet;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
 
 /**
  * Context available to data dependent functions. When function is executed
@@ -37,7 +35,7 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
  * and filter passed to the function execution
  * 
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * 
  * @see FunctionContextImpl
  */
@@ -67,17 +65,6 @@ public class RegionFunctionContextImpl extends FunctionContextImpl implements
     this.localBucketSet = localBucketSet;
     this.isPossibleDuplicate = isPossibleDuplicate;
     setFunctionContexts();
-    // set the region context for keys if required
-    if (routingObjects != null) {
-      final LocalRegion r = (LocalRegion)this.dataSet;
-      if (r.keyRequiresRegionContext()) {
-        for (Object key : routingObjects) {
-          if (key instanceof KeyWithRegionContext) {
-            ((KeyWithRegionContext)key).setRegionContext(r);
-          }
-        }
-      }
-    }
   }
 
   private void setFunctionContexts() {

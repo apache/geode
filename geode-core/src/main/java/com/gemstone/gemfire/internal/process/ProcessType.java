@@ -16,17 +16,19 @@
  */
 package com.gemstone.gemfire.internal.process;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
 /**
  * Enumeration of GemFire {@link ControllableProcess} types and the file names
  * associated with controlling its lifecycle.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 public enum ProcessType {
   LOCATOR ("LOCATOR", "vf.gf.locator"),
   SERVER ("SERVER", "vf.gf.server");
 
-  public static final String TEST_PREFIX_PROPERTY = "gemfire.test.ProcessType.TEST_PREFIX";
+  public static final String TEST_PREFIX_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "test.ProcessType.TEST_PREFIX";
 
   private static final String SUFFIX_PID = "pid";
   private static final String SUFFIX_STOP_REQUEST = "stop.cmd";

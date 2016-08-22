@@ -25,7 +25,7 @@ package com.gemstone.gemfire.cache;
  * 
  * @see Region#createSubregion
  * @see Cache#createRegion
- * @since 2.0
+ * @since GemFire 2.0
  */
 public class RegionExistsException extends CacheException {
 private static final long serialVersionUID = -5643670216230359426L;

@@ -23,7 +23,7 @@ import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
 /**
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface CliJsonSerializable extends CliJsonSerializableIds {
   String FIELDS_TO_SKIP                = "fieldNameToDisplayName, JSId, outputFormat, fieldsToSkipOnUI";

@@ -25,7 +25,7 @@ import com.gemstone.gemfire.admin.*;
  * GemFireHealthConfigImpl} class hierarchy.
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public class DistributedSystemHealthConfigImpl
   implements DistributedSystemHealthConfig {

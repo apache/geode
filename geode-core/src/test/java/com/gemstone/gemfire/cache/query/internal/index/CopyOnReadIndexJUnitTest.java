@@ -16,24 +16,20 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.HashMap;
-
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.query.*;
+import com.gemstone.gemfire.cache.query.data.Portfolio;
+import com.gemstone.gemfire.cache.query.data.Position;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.QueryTestUtils;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.Struct;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.cache.query.data.Position;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.util.HashMap;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
 
 /**
  * 
@@ -73,7 +69,7 @@ public class CopyOnReadIndexJUnitTest {
   public void setUp() throws java.lang.Exception {
     utils = new QueryTestUtils();
     java.util.Properties p = new java.util.Properties();
-    p.put("mcast-port", "0");
+    p.put(MCAST_PORT, "0");
     utils.createCache(p);
     utils.getCache().setCopyOnRead(true);
     Portfolio.resetInstanceCount();

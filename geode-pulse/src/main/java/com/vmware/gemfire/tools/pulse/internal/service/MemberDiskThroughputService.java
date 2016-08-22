@@ -37,7 +37,7 @@ import javax.servlet.http.HttpServletRequest;
  * This class contains implementations for getting Memeber's current Disk
  * Throughput trends over the time.
  * 
- * @since version 7.5
+ * @since GemFire version 7.5
  */
 @Component
 @Service("MemberDiskThroughput")

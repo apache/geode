@@ -16,36 +16,12 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.net.ConnectException;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.nio.BufferUnderflowException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.CopyException;
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.SerializationException;
+import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.cache.CacheRuntimeException;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.SynchronizationCommitConflictException;
 import com.gemstone.gemfire.cache.TransactionException;
-import com.gemstone.gemfire.cache.client.NoAvailableServersException;
-import com.gemstone.gemfire.cache.client.ServerConnectivityException;
-import com.gemstone.gemfire.cache.client.ServerOperationException;
-import com.gemstone.gemfire.cache.client.ServerRefusedConnectionException;
-import com.gemstone.gemfire.cache.client.SubscriptionNotEnabledException;
+import com.gemstone.gemfire.cache.client.*;
 import com.gemstone.gemfire.cache.client.internal.ExecuteFunctionOp.ExecuteFunctionOpImpl;
 import com.gemstone.gemfire.cache.client.internal.ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl;
 import com.gemstone.gemfire.cache.client.internal.QueueManager.QueueConnections;
@@ -53,6 +29,7 @@ import com.gemstone.gemfire.cache.client.internal.pooling.ConnectionDestroyedExc
 import com.gemstone.gemfire.cache.client.internal.pooling.ConnectionManager;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
 import com.gemstone.gemfire.internal.cache.PutAllPartialResultException;
@@ -66,18 +43,28 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
+import org.apache.logging.log4j.Logger;
+
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.net.ConnectException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.nio.BufferUnderflowException;
+import java.util.*;
 
 /**
  * Called from the client and execute client to server
  * requests against servers. Handles retrying to different servers,
  * and marking servers dead if we get exception from them.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class OpExecutorImpl implements ExecutablePool {
   private static final Logger logger = LogService.getLogger();
-  
-  private static final boolean TRY_SERVERS_ONCE = Boolean.getBoolean("gemfire.PoolImpl.TRY_SERVERS_ONCE");
-  private static final int TX_RETRY_ATTEMPT = Integer.getInteger("gemfire.txRetryAttempt", 500);
+
+  private static final boolean TRY_SERVERS_ONCE = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.TRY_SERVERS_ONCE");
+  private static final int TX_RETRY_ATTEMPT = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "txRetryAttempt", 500);
   
   private final ConnectionManager connectionManager;
   private final int retryAttempts;

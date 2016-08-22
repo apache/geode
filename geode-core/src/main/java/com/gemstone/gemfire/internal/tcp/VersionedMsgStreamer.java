@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.VersionedDataStream;
  * An extension of {@link MsgStreamer} that implements
  * {@link VersionedDataStream}.
  * 
- * @since 7.1
+ * @since GemFire 7.1
  */
 final class VersionedMsgStreamer extends MsgStreamer implements
     VersionedDataStream {

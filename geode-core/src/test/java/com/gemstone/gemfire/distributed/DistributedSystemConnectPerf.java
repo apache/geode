@@ -16,9 +16,10 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import java.io.*;
-import java.util.*;
+import java.io.PrintStream;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * This program is used to measure the amount of time it takes to
@@ -97,9 +98,9 @@ public class DistributedSystemConnectPerf {
     System.setProperty("DistributionManager.VERBOSE", "true");
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
-    props.setProperty(DistributionConfig.LOCATORS_NAME,
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOCATORS,
                       "localhost[" + port + "]");
 
     long totalConnect = 0;

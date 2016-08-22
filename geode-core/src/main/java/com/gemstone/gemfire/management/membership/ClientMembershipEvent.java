@@ -22,7 +22,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * An event delivered to a {@link ClientMembershipListener} when this process
  * detects connection changes to ClientServers or clients.
  *
- * @since 8.0
+ * @since GemFire 8.0
  */
 public interface ClientMembershipEvent {
 

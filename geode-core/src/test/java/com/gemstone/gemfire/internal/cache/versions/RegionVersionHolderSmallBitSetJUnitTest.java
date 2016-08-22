@@ -27,20 +27,13 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class RegionVersionHolderSmallBitSetJUnitTest extends RegionVersionHolderJUnitTest {
   
-  
   @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-    originalBitSetWidth = RegionVersionHolder.BIT_SET_WIDTH;
+  protected final void postSetUp() throws Exception {
     RegionVersionHolder.BIT_SET_WIDTH = 4;
+    postSetUpRegionVersionHolderSmallBitSetJUnitTest();
   }
-  
-  protected void tearDown() throws Exception {
-    super.tearDown();
-    RegionVersionHolder.BIT_SET_WIDTH = originalBitSetWidth;
+
+  protected void postSetUpRegionVersionHolderSmallBitSetJUnitTest() throws Exception {
   }
-  
-  
-  
 
 }

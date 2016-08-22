@@ -35,7 +35,7 @@ import com.gemstone.gemfire.management.internal.cli.remote.MemberCommandService;
  * GemFire Manager nodes.
  *
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 public abstract class CommandService {
   protected static final Map<String, String> EMPTY_ENV = Collections.emptyMap();

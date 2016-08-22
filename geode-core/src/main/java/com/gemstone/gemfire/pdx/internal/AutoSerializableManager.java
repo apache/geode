@@ -16,6 +16,17 @@
  */
 package com.gemstone.gemfire.pdx.internal;
 
+import com.gemstone.gemfire.CancelException;
+import com.gemstone.gemfire.cache.RegionService;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.CopyOnWriteHashSet;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteWeakHashMap;
+import com.gemstone.gemfire.pdx.*;
+import com.gemstone.gemfire.pdx.internal.unsafe.UnsafeWrapper;
+import org.apache.logging.log4j.Logger;
+
 import java.io.Externalizable;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -23,35 +34,10 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.regex.Pattern;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.internal.CopyOnWriteHashSet;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteWeakHashMap;
-import com.gemstone.gemfire.pdx.FieldType;
-import com.gemstone.gemfire.pdx.NonPortableClassException;
-import com.gemstone.gemfire.pdx.PdxReader;
-import com.gemstone.gemfire.pdx.PdxSerializationException;
-import com.gemstone.gemfire.pdx.PdxWriter;
-import com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer;
-import com.gemstone.gemfire.pdx.internal.unsafe.UnsafeWrapper;
 
 /**
  * The core of auto serialization which is used in both aspect and
@@ -62,7 +48,7 @@ import com.gemstone.gemfire.pdx.internal.unsafe.UnsafeWrapper;
  * will have its own instance of this class. We allow instances of this class to be found
  * so that tests can access internal apis that are not exposed on the public ReflectionBasedAutoSerializer.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 
 public class AutoSerializableManager {
@@ -95,7 +81,7 @@ public class AutoSerializableManager {
    * testing as well as possibly debugging future customer issues.
    */
   private static final String NO_HARDCODED_EXCLUDES_PARAM =
-      "gemfire.auto.serialization.no.hardcoded.excludes";
+      DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes";
 
   private boolean noHardcodedExcludes =
       Boolean.getBoolean(NO_HARDCODED_EXCLUDES_PARAM);
@@ -595,16 +581,16 @@ public class AutoSerializableManager {
   static {
     UnsafeWrapper tmp = null;
     // only use Unsafe if SAFE was not explicitly requested
-    if (!Boolean.getBoolean("gemfire.AutoSerializer.SAFE")) {
+    if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "AutoSerializer.SAFE")) {
       try {
         tmp = new UnsafeWrapper();
         // only throw an exception if UNSAFE was explicitly requested
       } catch (RuntimeException ex) {
-        if (Boolean.getBoolean("gemfire.AutoSerializer.UNSAFE")) {
+        if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "AutoSerializer.UNSAFE")) {
           throw ex;
         }
       } catch (Error ex) {
-        if (Boolean.getBoolean("gemfire.AutoSerializer.UNSAFE")) {
+        if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "AutoSerializer.UNSAFE")) {
           throw ex;
         }
       }
@@ -1905,8 +1891,8 @@ public class AutoSerializableManager {
       autoClassInfo.setSerializedType(w.getAutoPdxType());
     }
   }
-  
-  private static final boolean USE_CONSTRUCTOR = !Boolean.getBoolean("gemfire.autopdx.ignoreConstructor");
+
+  private static final boolean USE_CONSTRUCTOR = !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "autopdx.ignoreConstructor");
   
   /**
    * Using the given PdxReader, recreate the given object.

@@ -153,7 +153,7 @@ public class PdxListHelper {
       logger.trace("addListField");
     }
     PdxListHelper tmp = new PdxListHelper(this, "no-name");
-    list.add(tmp);
+    list.add(tmp.getList());
     return tmp;
   }
   

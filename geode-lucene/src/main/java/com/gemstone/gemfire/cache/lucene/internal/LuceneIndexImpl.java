@@ -19,34 +19,56 @@
 
 package com.gemstone.gemfire.cache.lucene.internal;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
+import com.gemstone.gemfire.InternalGemFireError;
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
+import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
 import com.gemstone.gemfire.cache.lucene.internal.xml.LuceneIndexCreation;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   protected static final Logger logger = LogService.getLogger();
   
-//  protected HashSet<String> searchableFieldNames = new HashSet<String>();
-  String[] searchableFieldNames;
+  protected final String indexName;
+  protected final String regionPath;
+  protected final Cache cache;
+  protected final LuceneIndexStats indexStats;
+  protected final FileSystemStats fileSystemStats;
+
+  protected boolean hasInitialized = false;
+  protected Map<String, Analyzer> fieldAnalyzers;
+  protected String[] searchableFieldNames;
   protected RepositoryManager repositoryManager;
   protected Analyzer analyzer;
-  
-  Region<String, File> fileRegion;
-  Region<ChunkKey, byte[]> chunkRegion;
-  
-  protected String indexName;
-  protected String regionPath;
-  protected boolean hasInitialized = false;
+  protected Region<String, File> fileRegion;
+  protected Region<ChunkKey, byte[]> chunkRegion;
+
+
+  protected LuceneIndexImpl(String indexName, String regionPath, Cache cache) {
+    this.indexName = indexName;
+    this.regionPath = regionPath;
+    this.cache = cache;
+    final String statsName = indexName + "-" + regionPath;
+    this.indexStats = new LuceneIndexStats(cache.getDistributedSystem(), statsName);
+    this.fileSystemStats = new FileSystemStats(cache.getDistributedSystem(), statsName);
+  }
 
   @Override
   public String getName() {
@@ -61,17 +83,40 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   protected void setSearchableFields(String[] fields) {
     searchableFieldNames = fields;
   }
-  
+
+  @Override
+  public boolean waitUntilFlushed(int maxWaitInMillisecond) {
+    String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
+    AsyncEventQueue queue = (AsyncEventQueue)cache.getAsyncEventQueue(aeqId);
+    boolean flushed = false;
+    if (queue != null) {
+      long start = System.nanoTime();
+      while (System.nanoTime() - start < TimeUnit.MILLISECONDS.toNanos(maxWaitInMillisecond)) {
+        if (0 == queue.size()) {
+          flushed = true;
+          break;
+        } else {
+          try {
+            Thread.sleep(200);
+          } catch (InterruptedException e) {
+          }
+        }
+      }
+    } else { 
+      throw new IllegalArgumentException("The AEQ does not exist for the index "+indexName+" region "+regionPath);
+    }
+
+    return flushed;
+  }
+
   @Override
   public String[] getFieldNames() {
     return searchableFieldNames;
   }
 
   @Override
-  public Map<String, Analyzer> getFieldAnalyzerMap() {
-    // TODO Auto-generated method stub
-    // Will do that later: Gester
-    return null;
+  public Map<String, Analyzer> getFieldAnalyzers() {
+    return this.fieldAnalyzers;
   }
 
   public RepositoryManager getRepositoryManager() {
@@ -90,6 +135,18 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     return this.analyzer;
   }
 
+  public void setFieldAnalyzers(Map<String, Analyzer> fieldAnalyzers) {
+    this.fieldAnalyzers = fieldAnalyzers == null ? null : Collections.unmodifiableMap(fieldAnalyzers);
+  }
+
+  public LuceneIndexStats getIndexStats() {
+    return indexStats;
+  }
+
+  public FileSystemStats getFileSystemStats() {
+    return fileSystemStats;
+  }
+
   protected abstract void initialize();
   
   /**
@@ -101,7 +158,22 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     creation.setName(this.getName());
     creation.addFieldNames(this.getFieldNames());
     creation.setRegion(dataRegion);
-    creation.setFieldFieldAnalyzerMap(this.getFieldAnalyzerMap());
+    creation.setFieldAnalyzers(this.getFieldAnalyzers());
     dataRegion.getExtensionPoint().addExtension(creation);
+  }
+
+  protected <K, V> Region<K, V> createRegion(final String regionName, final RegionAttributes<K, V> attributes) {
+    // Create InternalRegionArguments to set isUsedForMetaRegion true to suppress xml generation (among other things)
+    InternalRegionArguments ira = new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
+        .setSnapshotInputStream(null).setImageTarget(null).setIsUsedForMetaRegion(true);
+
+    // Create the region
+    try {
+      return ((GemFireCacheImpl)this.cache).createVMRegion(regionName, attributes, ira);
+    } catch (Exception e) {
+      InternalGemFireError ige = new InternalGemFireError(LocalizedStrings.GemFireCache_UNEXPECTED_EXCEPTION.toLocalizedString());
+      ige.initCause(e);
+      throw ige;
+    }
   }
 }

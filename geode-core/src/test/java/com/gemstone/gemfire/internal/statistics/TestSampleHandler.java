@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class TestSampleHandler implements SampleHandler {
 
@@ -73,7 +73,7 @@ public class TestSampleHandler implements SampleHandler {
   }
   
   /**
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static class Info {
     private final String name;
@@ -100,7 +100,7 @@ public class TestSampleHandler implements SampleHandler {
   }
   
   /**
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static class ResourceInstanceInfo extends Info {
     private final ResourceInstance resource;
@@ -121,7 +121,7 @@ public class TestSampleHandler implements SampleHandler {
   }
   
   /**
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static class ResourceTypeInfo extends Info {
     private final ResourceType type;
@@ -142,7 +142,7 @@ public class TestSampleHandler implements SampleHandler {
   }
   
   /**
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static class SampledInfo extends Info {
     private final long timeStamp;

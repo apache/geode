@@ -165,7 +165,6 @@ public class AbortableTaskServiceJUnitTest {
    * Proxy handler which invokes methodName asynchronously AND delays the 
    * invocation to the underlying methodName until after CountDownLatch is 
    * opened.
-   * 
    */
   private class DelayedExecutorHandler implements InvocationHandler {
     private final Executor executor;

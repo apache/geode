@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -512,7 +513,9 @@ public class LimitClauseJUnitTest {
    * 
    * Tests StructBag behaviour
    */
-  public void xtestLimitQueryForStructBagWithRangeIndex() {
+  @Ignore
+  @Test
+  public void testLimitQueryForStructBagWithRangeIndex() {
     try {
       Query query;
       SelectResults result;
@@ -1289,14 +1292,14 @@ public class LimitClauseJUnitTest {
       assertTrue(idIndex instanceof CompactRangeIndex);
       SelectResults resultsWithIndex = (SelectResults) query.execute();
 
-      assertEquals(resultsNoIndex.size(), resultsWithIndex.size());
-      assertEquals(limit, resultsWithIndex.size());
+      assertIndexDetailsEquals(resultsNoIndex.size(), resultsWithIndex.size());
+      assertIndexDetailsEquals(limit, resultsWithIndex.size());
       
       int expectedId = 6;
       Iterator iterator = resultsNoIndex.iterator();
       while (iterator.hasNext()) {
         Portfolio p = (Portfolio) iterator.next();
-        assertEquals(expectedId++, p.ID);
+        assertIndexDetailsEquals(expectedId++, p.ID);
       }
       
       //check order by results
@@ -1304,7 +1307,7 @@ public class LimitClauseJUnitTest {
       iterator = resultsWithIndex.iterator();
       while (iterator.hasNext()) {
         Portfolio p = (Portfolio) iterator.next();
-        assertEquals(expectedId++, p.ID);
+        assertIndexDetailsEquals(expectedId++, p.ID);
       }      
   }
  */ 

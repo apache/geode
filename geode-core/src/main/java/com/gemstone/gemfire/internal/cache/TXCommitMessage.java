@@ -75,11 +75,12 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 
 /** TXCommitMessage is the message that contains all the information
  * that needs to be distributed, on commit, to other cache members.
  *
- * @since 4.0
+ * @since GemFire 4.0
  * 
  */
 public class TXCommitMessage extends PooledDistributionMessage implements MembershipListener, MessageWithReply
@@ -182,7 +183,7 @@ public class TXCommitMessage extends PooledDistributionMessage implements Member
   
   /**
    * Create and return an eventId given its offset.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected EventID getEventId(int eventOffset) {
     return new EventID(this.farsideBaseMembershipId,
@@ -1283,7 +1284,7 @@ public class TXCommitMessage extends PooledDistributionMessage implements Member
 
     /**
      * Returns the eventId to use for the give farside entry op.
-     * @since 5.7
+     * @since GemFire 5.7
      */
     private EventID getEventId(FarSideEntryOp entryOp) {
       return this.msg.getEventId(entryOp.eventOffset);
@@ -1307,6 +1308,7 @@ public class TXCommitMessage extends PooledDistributionMessage implements Member
         /*
          * This happens when we don't have the bucket and are getting adjunct notification
          */
+        // No need to release because it is added to pendingCallbacks and they will be released later
         EntryEventImpl eei = AbstractRegionMap.createCBEvent(this.r, entryOp.op, entryOp.key, entryOp.value, this.msg.txIdent, txEvent, getEventId(entryOp), entryOp.callbackArg,entryOp.filterRoutingInfo,this.msg.bridgeContext, null, entryOp.versionTag, entryOp.tailKey);
         if(entryOp.filterRoutingInfo!=null) {
           eei.setLocalFilterInfo(entryOp.filterRoutingInfo.getFilterInfo(this.r.getCache().getMyId()));
@@ -1407,7 +1409,7 @@ public class TXCommitMessage extends PooledDistributionMessage implements Member
         /*
          * This happens when we don't have the bucket and are getting adjunct notification
          */
-        EntryEventImpl eei = AbstractRegionMap.createCBEvent(this.r, entryOp.op, entryOp.key, entryOp.value, this.msg.txIdent, txEvent, getEventId(entryOp), entryOp.callbackArg,entryOp.filterRoutingInfo,this.msg.bridgeContext, null, entryOp.versionTag, entryOp.tailKey);
+        @Released EntryEventImpl eei = AbstractRegionMap.createCBEvent(this.r, entryOp.op, entryOp.key, entryOp.value, this.msg.txIdent, txEvent, getEventId(entryOp), entryOp.callbackArg,entryOp.filterRoutingInfo,this.msg.bridgeContext, null, entryOp.versionTag, entryOp.tailKey);
         try {
         if(entryOp.filterRoutingInfo!=null) {
           eei.setLocalFilterInfo(entryOp.filterRoutingInfo.getFilterInfo(this.r.getCache().getMyId()));
@@ -1438,7 +1440,7 @@ public class TXCommitMessage extends PooledDistributionMessage implements Member
     }
     /**
      * Returns the number of operations this region commit will do
-     * @since 5.0
+     * @since GemFire 5.0
      */
     int getOperationCount() {
       int result = 0;
@@ -1510,7 +1512,7 @@ public class TXCommitMessage extends PooledDistributionMessage implements Member
     
     /**
      * Returns a list of QueuedOperation instances for reliable distribution
-     * @since 5.0
+     * @since GemFire 5.0
      */
     List getOperations() {
       QueuedOperation[] ops = new QueuedOperation[getOperationCount()];
@@ -1590,7 +1592,7 @@ public class TXCommitMessage extends PooledDistributionMessage implements Member
     }
     /**
      * Holds data that describes a tx entry op on the far side.
-     * @since 5.0
+     * @since GemFire 5.0
      */
     public class FarSideEntryOp implements Comparable {
       public Operation op;
@@ -2226,7 +2228,7 @@ public class TXCommitMessage extends PooledDistributionMessage implements Member
   /**
    * Reply processor which collects all CommitReplyExceptions and emits
    * a detailed failure exception if problems occur
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private class CommitReplyProcessor extends ReliableReplyProcessor21 {
     private HashMap msgMap;
@@ -2291,7 +2293,7 @@ public class TXCommitMessage extends PooledDistributionMessage implements Member
 
   /**
    * An Exception that collects many remote CommitExceptions
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static class CommitExceptionCollectingException extends ReplyException {
 private static final long serialVersionUID = 589384721273797822L;

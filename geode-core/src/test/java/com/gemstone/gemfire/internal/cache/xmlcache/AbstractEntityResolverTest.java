@@ -14,23 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
-import com.gemstone.gemfire.internal.ClassPathLoader;
+import static org.junit.Assert.*;
+
+import java.util.ServiceLoader;
+
 import org.junit.Test;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
 
-import java.io.IOException;
-import java.util.ServiceLoader;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import com.gemstone.gemfire.internal.ClassPathLoader;
 
 /**
  * Unit test for {@link PivotalEntityResolver} and
@@ -38,15 +34,15 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class AbstractEntityResolverTest {
 
-  public abstract EntityResolver getEntityResolver();
+  protected abstract EntityResolver getEntityResolver();
 
-  public abstract String getSystemId();
+  protected abstract String getSystemId();
 
   /**
    * Assert that {@link PivotalEntityResolver} extends
    * {@link DefaultEntityResolver2}.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testInstanceOfDefaultEntityResolver2() {
@@ -58,7 +54,7 @@ public abstract class AbstractEntityResolverTest {
    * Verifies that the META-INF/services file is correctly found and the the
    * implementation class is loadable.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testDiscovery() {
@@ -77,12 +73,10 @@ public abstract class AbstractEntityResolverTest {
    * Resolve the cache.xml XSD using the {@link PivotalEntityResolver}. Verifies
    * that the META-INF/schemas files are correctly found.
    * 
-   * @throws SAXException
-   * @throws IOException
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
-  public void testResolveEntity() throws SAXException, IOException {
+  public void testResolveEntity() throws Exception {
     final InputSource inputSource = getEntityResolver().resolveEntity(null, getSystemId());
     assertNotNull(inputSource);
     assertEquals(getSystemId(), inputSource.getSystemId());
@@ -93,12 +87,10 @@ public abstract class AbstractEntityResolverTest {
    * <code>null</code> <code>systemId</code>. Asserts that returns to
    * <code>null<code>.
    * 
-   * @throws SAXException
-   * @throws IOException
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
-  public void testResolveEntityNullSystemId() throws SAXException, IOException {
+  public void testResolveEntityNullSystemId() throws SAXException, Exception {
     final String systemId = null;
     final InputSource inputSource = getEntityResolver().resolveEntity(null, systemId);
     assertNull(inputSource);
@@ -109,12 +101,10 @@ public abstract class AbstractEntityResolverTest {
    * <code>"--not-a-valid-system-id--"</code> <code>systemId</code>, which is
    * not in the Pivotal namespace.. Asserts that returns to <code>null<code>.
    * 
-   * @throws SAXException
-   * @throws IOException
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
-  public void testResolveEntityUnkownSystemId() throws SAXException, IOException {
+  public void testResolveEntityUnkownSystemId() throws Exception {
     final String systemId = "--not-a-valid-system-id--";
     final InputSource inputSource = getEntityResolver().resolveEntity(null, systemId);
     assertNull(inputSource);
@@ -126,12 +116,10 @@ public abstract class AbstractEntityResolverTest {
    * <code>systemId</code>, which should not be found. Asserts that returns to
    * <code>null<code>.
    * 
-   * @throws SAXException
-   * @throws IOException
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
-  public void testResolveEntityNotFoundSystemId() throws SAXException, IOException {
+  public void testResolveEntityNotFoundSystemId() throws Exception {
     final String systemId = "http://schema.pivotal.io/this/should/be/not/found.xsd";
     final InputSource inputSource = getEntityResolver().resolveEntity(null, systemId);
     assertNull(inputSource);

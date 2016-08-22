@@ -52,7 +52,7 @@ import com.gemstone.gemfire.cache.GemFireCache;
  * 
  * The querystring is using lucene's queryparser syntax, such as "field1:zhou* AND field2:gzhou@pivotal.io"
  *  
- * LuceneQueryResults results = query.search();
+ * PageableLuceneQueryResults results = query.search();
  * 
  * If pagination is not specified:
  * List list = results.getNextPage(); // return all results in one getNextPage() call
@@ -68,9 +68,20 @@ import com.gemstone.gemfire.cache.GemFireCache;
  */
 @Experimental
 public interface LuceneService {
-  
+
+  /**
+   * A special field name that indicates that the entire region value should
+   * be indexed. This will only work if the region value is a String or Number, in
+   * which case a lucene document will be created with a single field with this name.
+   */
+  String REGION_VALUE_FIELD = "__REGION_VALUE_FIELD";
+
   /**
    * Create a lucene index using default analyzer.
+   * @param fields The fields of the object to index. Only fields listed here will be stored
+   * in the index. Fields should map to PDX fieldNames if the object is serialized with PDX, or
+   * to java fields on the object otherwise. The special field name {{@link #REGION_VALUE_FIELD}}
+   * indicates that the entire value should be stored as a single field in the index.
    */
   public void createIndex(String indexName, String regionPath, String... fields);
   
@@ -79,11 +90,10 @@ public interface LuceneService {
    * 
    * @param indexName index name
    * @param regionPath region name
-   * @param analyzerPerField analyzer per field map
-   * @deprecated TODO This feature is not yet implemented
+   * @param analyzerPerField A map of fields to analyzers. See {{@link #createIndex(String, String, String...)}}
+   * for details on valid values for fields. Each field will be tokenized using the provided Analyzer.
    */
-  @Deprecated
-  public void createIndex(String indexName, String regionPath,  
+  public void createIndex(String indexName, String regionPath,
       Map<String, Analyzer> analyzerPerField);
 
   /**

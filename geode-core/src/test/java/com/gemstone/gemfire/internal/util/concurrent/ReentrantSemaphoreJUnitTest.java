@@ -16,45 +16,69 @@
  */
 package com.gemstone.gemfire.internal.util.concurrent;
 
+import static org.junit.Assert.*;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.Timeout;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
-/**
- *
- */
 @Category(UnitTest.class)
-public class ReentrantSemaphoreJUnitTest extends TestCase {
-  
-  public void test() throws Throwable {
+public class ReentrantSemaphoreJUnitTest {
+
+  private static final long OPERATION_TIMEOUT_MILLIS = 10 * 1000;
+
+  private CountDownLatch done;
+  private CountDownLatch acquired;
+
+  @Rule
+  public Timeout timeout = new Timeout(30, TimeUnit.SECONDS);
+
+  @Before
+  public void setUp() throws Exception {
+    done = new CountDownLatch(1);
+    acquired = new CountDownLatch(2);
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    acquired.countDown();
+    done.countDown();
+  }
+
+  @Test
+  public void testOneThread() throws Exception {
+    final ReentrantSemaphore semaphore = new ReentrantSemaphore(2);
+    semaphore.acquire();
+    semaphore.acquire();
+    assertEquals(1, semaphore.availablePermits());
+    semaphore.release();
+    semaphore.release();
+    assertEquals(2, semaphore.availablePermits());
+  }
+
+  @Test
+  public void testMultipleThreads() throws Exception {
     final ReentrantSemaphore sem = new ReentrantSemaphore(2);
-    
-    sem.acquire();
-    sem.acquire();
-    assertEquals(1, sem.availablePermits());
-    sem.release();
-    sem.release();
-    assertEquals(2, sem.availablePermits());
-    
-    final CountDownLatch testDone = new CountDownLatch(1);
-    final CountDownLatch semsAquired = new CountDownLatch(2);
-    
-    final AtomicReference<Throwable> failure = new AtomicReference<Throwable>();
-    
+
+    final AtomicReference<Throwable> failure = new AtomicReference<>();
+
     Thread t1 = new Thread() {
       public void run() {
-        try { 
+        try {
           sem.acquire();
           sem.acquire();
           sem.acquire();
-          semsAquired.countDown();
-          testDone.await();
+          acquired.countDown();
+          assertTrue(done.await(OPERATION_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS));
           sem.release();
           sem.release();
           sem.release();
@@ -71,8 +95,8 @@ public class ReentrantSemaphoreJUnitTest extends TestCase {
           sem.acquire();
           sem.acquire();
           sem.acquire();
-          semsAquired.countDown();
-          testDone.await();
+          acquired.countDown();
+          assertTrue(done.await(OPERATION_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS));
           sem.release();
           sem.release();
           sem.release();
@@ -86,7 +110,7 @@ public class ReentrantSemaphoreJUnitTest extends TestCase {
     Thread t3 = new Thread() {
       public void run() {
         try {
-          semsAquired.await();
+          assertTrue(acquired.await(OPERATION_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS));
           assertEquals(0, sem.availablePermits());
           assertFalse(sem.tryAcquire(1, TimeUnit.SECONDS));
         } catch(Exception e) {
@@ -96,13 +120,19 @@ public class ReentrantSemaphoreJUnitTest extends TestCase {
     };
     t3.start();
     
-    t3.join();
-    testDone.countDown();
-    t2.join();
-    t1.join();
-    
-    if(failure.get() != null) {
-      throw failure.get();
+    t3.join(OPERATION_TIMEOUT_MILLIS);
+    assertFalse(t3.isAlive());
+
+    done.countDown();
+
+    t2.join(OPERATION_TIMEOUT_MILLIS);
+    assertFalse(t3.isAlive());
+
+    t1.join(OPERATION_TIMEOUT_MILLIS);
+    assertFalse(t1.isAlive());
+
+    if (failure.get() != null) {
+      throw new AssertionError(failure.get());
     }
     
     assertEquals(2, sem.availablePermits());

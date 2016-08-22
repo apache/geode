@@ -16,27 +16,28 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.wancommand;
 
-import hydra.Log;
-
-import java.util.List;
-import java.util.Properties;
-
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import java.util.List;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.test.dunit.Wait.pause;
+
+@Category(DistributedTest.class)
 public class WanCommandGatewaySenderStopDUnitTest extends WANCommandTestBase {
 
   private static final long serialVersionUID = 1L;
-
-  public WanCommandGatewaySenderStopDUnitTest(String name) {
-    super(name);
-  }
 
   private CommandResult executeCommandWithIgnoredExceptions(String command) {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
@@ -45,24 +46,24 @@ public class WanCommandGatewaySenderStopDUnitTest extends WANCommandTestBase {
     return commandResult;
   }
 
-
+  @Test
   public void testStopGatewaySender_ErrorConditions() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm3.invoke(() -> WANCommandTestBase.createSender( "ln",
+    vm3.invoke(() -> createCache( punePort ));
+    vm3.invoke(() -> createSender( "ln",
         2, false, 100, 400, false, false, null, true ));
 
-    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> WANCommandTestBase.getMember());
+    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> getMember());
 
     String command = CliStrings.STOP_GATEWAYSENDER + " --"
         + CliStrings.STOP_GATEWAYSENDER__ID + "=ln --"
@@ -71,7 +72,7 @@ public class WanCommandGatewaySenderStopDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStopGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.ERROR, cmdResult.getStatus());
       assertTrue(strCmdResult.contains(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE));
@@ -80,46 +81,47 @@ public class WanCommandGatewaySenderStopDUnitTest extends WANCommandTestBase {
     }
   }
 
+  @Test
   public void testStopGatewaySender() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm3.invoke(() -> WANCommandTestBase.createSender( "ln",
+    vm3.invoke(() -> createCache( punePort ));
+    vm3.invoke(() -> createSender( "ln",
         2, false, 100, 400, false, false, null, true ));
-    vm4.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm4.invoke(() -> WANCommandTestBase.createSender( "ln",
+    vm4.invoke(() -> createCache( punePort ));
+    vm4.invoke(() -> createSender( "ln",
         2, false, 100, 400, false, false, null, true ));
-    vm5.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm5.invoke(() -> WANCommandTestBase.createSender( "ln",
+    vm5.invoke(() -> createCache( punePort ));
+    vm5.invoke(() -> createSender( "ln",
         2, false, 100, 400, false, false, null, true ));
 
-    vm3.invoke(() -> WANCommandTestBase.startSender( "ln" ));
-    vm4.invoke(() -> WANCommandTestBase.startSender( "ln" ));
-    vm5.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm3.invoke(() -> startSender( "ln" ));
+    vm4.invoke(() -> startSender( "ln" ));
+    vm5.invoke(() -> startSender( "ln" ));
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
         "ln", true, false ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm4.invoke(() -> verifySenderState(
         "ln", true, false ));
-    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm5.invoke(() -> verifySenderState(
         "ln", true, false ));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.STOP_GATEWAYSENDER + " --"
         + CliStrings.STOP_GATEWAYSENDER__ID + "=ln";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStopGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -133,11 +135,11 @@ public class WanCommandGatewaySenderStopDUnitTest extends WANCommandTestBase {
       fail("testStopGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
         "ln", false, false ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm4.invoke(() -> verifySenderState(
         "ln", false, false ));
-    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm5.invoke(() -> verifySenderState(
         "ln", false, false ));
   }
 
@@ -145,36 +147,37 @@ public class WanCommandGatewaySenderStopDUnitTest extends WANCommandTestBase {
    * test to validate that the start gateway sender starts the gateway sender on
    * a member
    */
+  @Test
   public void testStopGatewaySender_onMember() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm3.invoke(() -> WANCommandTestBase.createSender( "ln",
+    vm3.invoke(() -> createCache( punePort ));
+    vm3.invoke(() -> createSender( "ln",
         2, false, 100, 400, false, false, null, true ));
 
-    vm3.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm3.invoke(() -> startSender( "ln" ));
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
         "ln", true, false ));
 
-    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> WANCommandTestBase.getMember());
-    Wait.pause(10000);
+    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> getMember());
+    pause(10000);
     String command = CliStrings.STOP_GATEWAYSENDER + " --"
         + CliStrings.STOP_GATEWAYSENDER__ID + "=ln --"
         + CliStrings.STOP_GATEWAYSENDER__MEMBER + "=" + vm1Member.getId();
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStopGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       assertTrue(strCmdResult.contains("is stopped on member"));
@@ -182,7 +185,7 @@ public class WanCommandGatewaySenderStopDUnitTest extends WANCommandTestBase {
       fail("testStopGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
         "ln", false, false ));
   }
 
@@ -190,50 +193,51 @@ public class WanCommandGatewaySenderStopDUnitTest extends WANCommandTestBase {
    * test to validate that the start gateway sender starts the gateway sender on
    * a group of members
    */
+  @Test
   public void testStopGatewaySender_Group() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+    vm3.invoke(() -> createCacheWithGroups(
         punePort, "SenderGroup1" ));
-    vm3.invoke(() -> WANCommandTestBase.createSender( "ln",
+    vm3.invoke(() -> createSender( "ln",
         2, false, 100, 400, false, false, null, true ));
-    vm4.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+    vm4.invoke(() -> createCacheWithGroups(
         punePort, "SenderGroup1" ));
-    vm4.invoke(() -> WANCommandTestBase.createSender( "ln",
+    vm4.invoke(() -> createSender( "ln",
         2, false, 100, 400, false, false, null, true ));
-    vm5.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+    vm5.invoke(() -> createCacheWithGroups(
         punePort, "SenderGroup1" ));
-    vm5.invoke(() -> WANCommandTestBase.createSender( "ln",
+    vm5.invoke(() -> createSender( "ln",
         2, false, 100, 400, false, false, null, true ));
 
-    vm3.invoke(() -> WANCommandTestBase.startSender( "ln" ));
-    vm4.invoke(() -> WANCommandTestBase.startSender( "ln" ));
-    vm5.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm3.invoke(() -> startSender( "ln" ));
+    vm4.invoke(() -> startSender( "ln" ));
+    vm5.invoke(() -> startSender( "ln" ));
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
         "ln", true, false ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm4.invoke(() -> verifySenderState(
         "ln", true, false ));
-    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm5.invoke(() -> verifySenderState(
         "ln", true, false ));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.STOP_GATEWAYSENDER + " --"
         + CliStrings.STOP_GATEWAYSENDER__ID + "=ln --"
         + CliStrings.STOP_GATEWAYSENDER__GROUP + "=SenderGroup1";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter()
+      getLogWriter()
           .info(
               "testStopGatewaySender_Group stringResult : " + strCmdResult
                   + ">>>>");
@@ -249,77 +253,77 @@ public class WanCommandGatewaySenderStopDUnitTest extends WANCommandTestBase {
       fail("testStopGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
         "ln", false, false ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm4.invoke(() -> verifySenderState(
         "ln", false, false ));
-    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm5.invoke(() -> verifySenderState(
         "ln", false, false ));
   }
 
   /**
    * Test to validate the scenario gateway sender is started when one or more
    * sender members belongs to multiple groups
-   * 
    */
+  @Test
   public void testStopGatewaySender_MultipleGroup() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+    vm3.invoke(() -> createCacheWithGroups(
         punePort, "SenderGroup1" ));
-    vm3.invoke(() -> WANCommandTestBase.createSender( "ln",
+    vm3.invoke(() -> createSender( "ln",
         2, false, 100, 400, false, false, null, true ));
-    vm4.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+    vm4.invoke(() -> createCacheWithGroups(
         punePort, "SenderGroup1" ));
-    vm4.invoke(() -> WANCommandTestBase.createSender( "ln",
+    vm4.invoke(() -> createSender( "ln",
         2, false, 100, 400, false, false, null, true ));
-    vm5.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+    vm5.invoke(() -> createCacheWithGroups(
         punePort, "SenderGroup1, SenderGroup2" ));
-    vm5.invoke(() -> WANCommandTestBase.createSender( "ln",
+    vm5.invoke(() -> createSender( "ln",
         2, false, 100, 400, false, false, null, true ));
-    vm6.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+    vm6.invoke(() -> createCacheWithGroups(
         punePort, "SenderGroup2" ));
-    vm6.invoke(() -> WANCommandTestBase.createSender( "ln",
+    vm6.invoke(() -> createSender( "ln",
         2, false, 100, 400, false, false, null, true ));
-    vm7.invoke(() -> WANCommandTestBase.createCacheWithGroups(
+    vm7.invoke(() -> createCacheWithGroups(
         punePort, "SenderGroup3" ));
-    vm7.invoke(() -> WANCommandTestBase.createSender( "ln",
+    vm7.invoke(() -> createSender( "ln",
         2, false, 100, 400, false, false, null, true ));
 
-    vm3.invoke(() -> WANCommandTestBase.startSender( "ln" ));
-    vm4.invoke(() -> WANCommandTestBase.startSender( "ln" ));
-    vm5.invoke(() -> WANCommandTestBase.startSender( "ln" ));
-    vm6.invoke(() -> WANCommandTestBase.startSender( "ln" ));
-    vm7.invoke(() -> WANCommandTestBase.startSender( "ln" ));
+    vm3.invoke(() -> startSender( "ln" ));
+    vm4.invoke(() -> startSender( "ln" ));
+    vm5.invoke(() -> startSender( "ln" ));
+    vm6.invoke(() -> startSender( "ln" ));
+    vm7.invoke(() -> startSender( "ln" ));
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
         "ln", true, false ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm4.invoke(() -> verifySenderState(
         "ln", true, false ));
-    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm5.invoke(() -> verifySenderState(
         "ln", true, false ));
-    vm6.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm6.invoke(() -> verifySenderState(
         "ln", true, false ));
-    vm7.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm7.invoke(() -> verifySenderState(
         "ln", true, false ));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.STOP_GATEWAYSENDER + " --"
         + CliStrings.STOP_GATEWAYSENDER__ID + "=ln --"
         + CliStrings.STOP_GATEWAYSENDER__GROUP + "=SenderGroup1,SenderGroup2";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter()
+      getLogWriter()
           .info(
               "testStopGatewaySender_Group stringResult : " + strCmdResult
                   + ">>>>");
@@ -334,15 +338,15 @@ public class WanCommandGatewaySenderStopDUnitTest extends WANCommandTestBase {
       fail("testStopGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
         "ln", false, false ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm4.invoke(() -> verifySenderState(
         "ln", false, false ));
-    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm5.invoke(() -> verifySenderState(
         "ln", false, false ));
-    vm6.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm6.invoke(() -> verifySenderState(
         "ln", false, false ));
-    vm7.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm7.invoke(() -> verifySenderState(
         "ln", true, false ));
   }
 }

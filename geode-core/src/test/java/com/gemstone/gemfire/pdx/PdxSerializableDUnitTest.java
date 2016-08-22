@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.pdx;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.List;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -39,12 +48,14 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 
-public class PdxSerializableDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
 
-  public PdxSerializableDUnitTest(String name) {
-    super(name);
+  public PdxSerializableDUnitTest() {
+    super();
   }
   
+  @Test
   public void testSimplePut() {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);
@@ -93,6 +104,7 @@ public class PdxSerializableDUnitTest extends CacheTestCase {
     });
   }
   
+  @Test
   public void testTransactionCallbacksNotInvoked() {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);
@@ -135,6 +147,7 @@ public class PdxSerializableDUnitTest extends CacheTestCase {
     });
   }
   
+  @Test
   public void testPersistenceDefaultDiskStore() throws Throwable {
     
     SerializableCallable createRegion = new SerializableCallable() {
@@ -154,6 +167,7 @@ public class PdxSerializableDUnitTest extends CacheTestCase {
     persistenceTest(createRegion);
   }
   
+  @Test
   public void testPersistenceExplicitDiskStore() throws Throwable {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {

@@ -17,6 +17,20 @@
 
 package com.gemstone.gemfire.distributed.internal;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
+import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.Config;
 import com.gemstone.gemfire.internal.ConfigSource;
@@ -25,1161 +39,1205 @@ import com.gemstone.gemfire.internal.logging.LogConfig;
 import com.gemstone.gemfire.internal.tcp.Connection;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.util.*;
-
 /**
  * Provides accessor (and in some cases mutator) methods for the
  * various GemFire distribution configuration properties.  The
  * interface also provides constants for the names of properties and
  * their default values.
- *
- * <P>
- *
- * Decriptions of these properties can be found <a
- * href="../DistributedSystem.html#configuration">here</a>.
+ * <p>
+ * <p>
+ * <p>
+ * Descriptions of these properties can be found {@link ConfigurationProperties}.
  *
  * @see com.gemstone.gemfire.internal.Config
- *
- *
- * @since 2.1
+ * @since GemFire 2.1
  */
 public interface DistributionConfig extends Config, LogConfig {
 
   ////////////////////  Instance Methods  ////////////////////
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#name">"name"</a> property
+   * Returns the value of the {@link ConfigurationProperties#NAME} property
    * Gets the member's name.
    * A name is optional and by default empty.
    * If set it must be unique in the ds.
    * When set its used by tools to help identify the member.
    * <p> The default value is: {@link #DEFAULT_NAME}.
+   *
    * @return the system's name.
    */
-  @ConfigAttributeGetter(name=NAME_NAME)
-  public String getName();
+  @ConfigAttributeGetter(name = NAME)
+  String getName();
 
   /**
    * Sets the member's name.
    * <p> The name can not be changed while the system is running.
-   * @throws IllegalArgumentException if the specified value is not acceptable.
+   *
+   * @throws IllegalArgumentException                   if the specified value is not acceptable.
    * @throws com.gemstone.gemfire.UnmodifiableException if this attribute can not be modified.
-   * @throws com.gemstone.gemfire.GemFireIOException if the set failure is caused by an error
-   *   when writing to the system's configuration file.
+   * @throws com.gemstone.gemfire.GemFireIOException    if the set failure is caused by an error
+   *                                                    when writing to the system's configuration file.
    */
-  @ConfigAttributeSetter(name=NAME_NAME)
-  public void setName(String value);
+  @ConfigAttributeSetter(name = NAME)
+  void setName(String value);
 
-  /** The name of the "name" property */
-  @ConfigAttribute(type=String.class)
-  public static final String NAME_NAME = "name";
-
-
+  /**
+   * The "name" property, representing the system's name
+   */
+  @ConfigAttribute(type = String.class)
+  String NAME_NAME = NAME;
 
   /**
    * The default system name.
    * <p> Actual value of this constant is <code>""</code>.
    */
-  public static final String DEFAULT_NAME = "";
+  String DEFAULT_NAME = "";
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#mcast-port">"mcast-port"</a>
+   * Returns the value of the {@link ConfigurationProperties#MCAST_PORT}</a>
    * property
    */
-  @ConfigAttributeGetter(name=MCAST_PORT_NAME)
-  public int getMcastPort();
+  @ConfigAttributeGetter(name = MCAST_PORT_NAME)
+  int getMcastPort();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#mcast-port">"mcast-port"</a>
+   * Sets the value of the {@link ConfigurationProperties#MCAST_PORT}
    * property
    */
-  @ConfigAttributeSetter(name=MCAST_PORT_NAME)
-  public void setMcastPort(int value);
+  @ConfigAttributeSetter(name = MCAST_PORT_NAME)
+  void setMcastPort(int value);
 
-
-  /** The default value of the "mcastPort" property */
-  public static final int DEFAULT_MCAST_PORT = 0;
   /**
-   * The minimum mcastPort.
+   * The default value of the {@link ConfigurationProperties#MCAST_PORT} property
+   */
+  int DEFAULT_MCAST_PORT = 0;
+
+  /**
+   * The minimum {@link ConfigurationProperties#MCAST_PORT}.
    * <p> Actual value of this constant is <code>0</code>.
    */
-  public static final int MIN_MCAST_PORT = 0;
+  int MIN_MCAST_PORT = 0;
+
   /**
-   * The maximum mcastPort.
+   * The maximum {@link ConfigurationProperties#MCAST_PORT}.
    * <p> Actual value of this constant is <code>65535</code>.
    */
-  public static final int MAX_MCAST_PORT = 65535;
-
-  /** The name of the "mcastPort" property */
-  @ConfigAttribute(type=Integer.class, min=MIN_MCAST_PORT, max=MAX_MCAST_PORT)
-  public static final String MCAST_PORT_NAME = "mcast-port";
+  int MAX_MCAST_PORT = 65535;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#tcp-port">"tcp-port"</a>
+   * The name of the {@link ConfigurationProperties#MCAST_PORT} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_MCAST_PORT, max = MAX_MCAST_PORT)
+  String MCAST_PORT_NAME = MCAST_PORT;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#TCP_PORT}
    * property
    */
-  @ConfigAttributeGetter(name=TCP_PORT_NAME)
-  public int getTcpPort();
+  @ConfigAttributeGetter(name = TCP_PORT)
+  int getTcpPort();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#tcp-port">"tcp-port"</a>
+   * Sets the value of the {@link ConfigurationProperties#TCP_PORT}
    * property
    */
-  @ConfigAttributeSetter(name=TCP_PORT_NAME)
-  public void setTcpPort(int value);
+  @ConfigAttributeSetter(name = TCP_PORT)
+  void setTcpPort(int value);
 
-  /** The default value of the "tcpPort" property */
-  public static final int DEFAULT_TCP_PORT = 0;
   /**
-   * The minimum tcpPort.
+   * The default value of the {@link ConfigurationProperties#TCP_PORT} property
+   */
+  int DEFAULT_TCP_PORT = 0;
+
+  /**
+   * The minimum {@link ConfigurationProperties#TCP_PORT}.
    * <p> Actual value of this constant is <code>0</code>.
    */
-  public static final int MIN_TCP_PORT = 0;
+  int MIN_TCP_PORT = 0;
+
   /**
-   * The maximum tcpPort.
+   * The maximum {@link ConfigurationProperties#TCP_PORT}.
    * <p> Actual value of this constant is <code>65535</code>.
    */
-  public static final int MAX_TCP_PORT = 65535;
-  /** The name of the "tcpPort" property */
-  @ConfigAttribute(type=Integer.class, min=MIN_TCP_PORT, max=MAX_TCP_PORT)
-  public static final String TCP_PORT_NAME = "tcp-port";
+  int MAX_TCP_PORT = 65535;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#mcast-address">"mcast-address"</a>
-   * property
+   * The name of the {@link ConfigurationProperties#TCP_PORT} property
    */
-  @ConfigAttributeGetter(name=MCAST_ADDRESS_NAME)
-  public InetAddress getMcastAddress();
+  @ConfigAttribute(type = Integer.class, min = MIN_TCP_PORT, max = MAX_TCP_PORT)
+  String TCP_PORT_NAME = TCP_PORT;
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#mcast-address">"mcast-address"</a>
+   * Returns the value of the {@link ConfigurationProperties#MCAST_ADDRESS}
    * property
    */
-  @ConfigAttributeSetter(name=MCAST_ADDRESS_NAME)
-  public void setMcastAddress(InetAddress value);
+  @ConfigAttributeGetter(name = MCAST_ADDRESS)
+  InetAddress getMcastAddress();
 
+  /**
+   * Sets the value of the {@link ConfigurationProperties#MCAST_ADDRESS}
+   * property
+   */
+  @ConfigAttributeSetter(name = MCAST_ADDRESS)
+  void setMcastAddress(InetAddress value);
 
-  /** The name of the "mcastAddress" property */
-  @ConfigAttribute(type=InetAddress.class)
-  public static final String MCAST_ADDRESS_NAME = "mcast-address";
+  /**
+   * The name of the {@link ConfigurationProperties#MCAST_ADDRESS} property
+   */
+  @ConfigAttribute(type = InetAddress.class)
+  String MCAST_ADDRESS_NAME = MCAST_ADDRESS;
 
-  /** The default value of the "mcastAddress" property.
+  /**
+   * The default value of the {@link ConfigurationProperties#MCAST_ADDRESS} property.
    * Current value is <code>239.192.81.1</code>
    */
-  public static final InetAddress DEFAULT_MCAST_ADDRESS = AbstractDistributionConfig._getDefaultMcastAddress();
+  InetAddress DEFAULT_MCAST_ADDRESS = AbstractDistributionConfig._getDefaultMcastAddress();
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#mcast-ttl">"mcast-ttl"</a>
+   * Returns the value of the {@link ConfigurationProperties#MCAST_TTL}
    * property
    */
-  @ConfigAttributeGetter(name=MCAST_TTL_NAME)
-  public int getMcastTtl();
-  /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#mcast-ttl">"mcast-ttl"</a>
-   * property
-   */
-  @ConfigAttributeSetter(name=MCAST_TTL_NAME)
-  public void setMcastTtl(int value);
+  @ConfigAttributeGetter(name = MCAST_TTL)
+  int getMcastTtl();
 
-  /** The default value of the "mcastTtl" property */
-  public static final int DEFAULT_MCAST_TTL = 32;
   /**
-   * The minimum mcastTtl.
+   * Sets the value of the {@link ConfigurationProperties#MCAST_TTL}
+   * property
+   */
+  @ConfigAttributeSetter(name = MCAST_TTL)
+  void setMcastTtl(int value);
+
+  /**
+   * The default value of the {@link ConfigurationProperties#MCAST_TTL} property
+   */
+  int DEFAULT_MCAST_TTL = 32;
+
+  /**
+   * The minimum {@link ConfigurationProperties#MCAST_TTL}.
    * <p> Actual value of this constant is <code>0</code>.
    */
-  public static final int MIN_MCAST_TTL = 0;
+  int MIN_MCAST_TTL = 0;
+
   /**
-   * The maximum mcastTtl.
+   * The maximum {@link ConfigurationProperties#MCAST_TTL}.
    * <p> Actual value of this constant is <code>255</code>.
    */
-  public static final int MAX_MCAST_TTL = 255;
-
-  /** The name of the "mcastTtl" property */
-  @ConfigAttribute(type=Integer.class, min=MIN_MCAST_TTL, max=MAX_MCAST_TTL)
-  public static final String MCAST_TTL_NAME = "mcast-ttl";
+  int MAX_MCAST_TTL = 255;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#bind-address">"bind-address"</a>
-   * property
+   * The name of the {@link ConfigurationProperties#MCAST_TTL} property
    */
-  @ConfigAttributeGetter(name=BIND_ADDRESS_NAME)
-  public String getBindAddress();
+  @ConfigAttribute(type = Integer.class, min = MIN_MCAST_TTL, max = MAX_MCAST_TTL)
+  String MCAST_TTL_NAME = MCAST_TTL;
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#bind-address">"bind-address"</a>
+   * Returns the value of the {@link ConfigurationProperties#BIND_ADDRESS}
    * property
    */
-  @ConfigAttributeSetter(name=BIND_ADDRESS_NAME)
-  public void setBindAddress(String value);
+  @ConfigAttributeGetter(name = BIND_ADDRESS)
+  String getBindAddress();
 
-  /** The name of the "bindAddress" property */
-  @ConfigAttribute(type=String.class)
-  public static final String BIND_ADDRESS_NAME = "bind-address";
+  /**
+   * Sets the value of the {@link ConfigurationProperties#BIND_ADDRESS}
+   * property
+   */
+  @ConfigAttributeSetter(name = BIND_ADDRESS)
+  void setBindAddress(String value);
 
-  /** The default value of the "bindAddress" property.
+  /**
+   * The name of the {@link ConfigurationProperties#BIND_ADDRESS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String BIND_ADDRESS_NAME = BIND_ADDRESS;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#BIND_ADDRESS} property.
    * Current value is an empty string <code>""</code>
    */
-  public static final String DEFAULT_BIND_ADDRESS = "";
+  String DEFAULT_BIND_ADDRESS = "";
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#server-bind-address">"server-bind-address"</a>
+   * Returns the value of the {@link ConfigurationProperties#SERVER_BIND_ADDRESS}
    * property
    */
-  @ConfigAttributeGetter(name=SERVER_BIND_ADDRESS_NAME)
-  public String getServerBindAddress();
+  @ConfigAttributeGetter(name = SERVER_BIND_ADDRESS)
+  String getServerBindAddress();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#server-bind-address">"server-bind-address"</a>
+   * Sets the value of the {@link ConfigurationProperties#SERVER_BIND_ADDRESS}
    * property
    */
-  @ConfigAttributeSetter(name=SERVER_BIND_ADDRESS_NAME)
-  public void setServerBindAddress(String value);
+  @ConfigAttributeSetter(name = SERVER_BIND_ADDRESS)
+  void setServerBindAddress(String value);
 
-  /** The name of the "serverBindAddress" property */
-  @ConfigAttribute(type=String.class)
-  public static final String SERVER_BIND_ADDRESS_NAME = "server-bind-address";
+  /**
+   * The name of the {@link ConfigurationProperties#SERVER_BIND_ADDRESS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SERVER_BIND_ADDRESS_NAME = SERVER_BIND_ADDRESS;
 
-  /** The default value of the "serverBindAddress" property.
+  /**
+   * The default value of the {@link ConfigurationProperties#SERVER_BIND_ADDRESS} property.
    * Current value is an empty string <code>""</code>
    */
-  public static final String DEFAULT_SERVER_BIND_ADDRESS = "";
+  String DEFAULT_SERVER_BIND_ADDRESS = "";
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#locators">"locators"</a> property
+   * Returns the value of the {@link ConfigurationProperties#LOCATORS} property
    */
-  @ConfigAttributeGetter(name=LOCATORS_NAME)
-  public String getLocators();
+  @ConfigAttributeGetter(name = LOCATORS)
+  String getLocators();
+
   /**
    * Sets the system's locator list.
    * A locator list is optional and by default empty.
    * Its used to by the system to locator other system nodes
    * and to publish itself so it can be located by others.
+   *
    * @param value must be of the form <code>hostName[portNum]</code>.
-   *  Multiple elements are allowed and must be seperated by a comma.
-   * @throws IllegalArgumentException if the specified value is not acceptable.
+   *              Multiple elements are allowed and must be seperated by a comma.
+   * @throws IllegalArgumentException                   if the specified value is not acceptable.
    * @throws com.gemstone.gemfire.UnmodifiableException if this attribute can not be modified.
-   * @throws com.gemstone.gemfire.GemFireIOException if the set failure is caused by an error
-   *   when writing to the system's configuration file.
+   * @throws com.gemstone.gemfire.GemFireIOException    if the set failure is caused by an error
+   *                                                    when writing to the system's configuration file.
    */
-  @ConfigAttributeSetter(name=LOCATORS_NAME)
-  public void setLocators(String value);
+  @ConfigAttributeSetter(name = LOCATORS)
+  void setLocators(String value);
 
-  /** The name of the "locators" property */
-  @ConfigAttribute(type=String.class)
-  public static final String LOCATORS_NAME = "locators";
+  /**
+   * The name of the {@link ConfigurationProperties#LOCATORS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String LOCATORS_NAME = LOCATORS;
 
-  /** The default value of the "locators" property */
-  public static final String DEFAULT_LOCATORS = "";
+  /**
+   * The default value of the {@link ConfigurationProperties#LOCATORS} property
+   */
+  String DEFAULT_LOCATORS = "";
 
   /**
    * Locator wait time - how long to wait for a locator to start before giving up &
    * throwing a GemFireConfigException
    */
-  @ConfigAttribute(type=Integer.class)
-  public static final String LOCATOR_WAIT_TIME_NAME = "locator-wait-time";
-  public static final int DEFAULT_LOCATOR_WAIT_TIME = 0;
-  @ConfigAttributeGetter(name=LOCATOR_WAIT_TIME_NAME)
-  public int getLocatorWaitTime();
-  @ConfigAttributeSetter(name=LOCATOR_WAIT_TIME_NAME)
-  public void setLocatorWaitTime(int seconds);
-  
-  
+  @ConfigAttribute(type = Integer.class)
+  String LOCATOR_WAIT_TIME_NAME = LOCATOR_WAIT_TIME;
+
+  int DEFAULT_LOCATOR_WAIT_TIME = 0;
+
+  @ConfigAttributeGetter(name = LOCATOR_WAIT_TIME)
+  int getLocatorWaitTime();
+
+  @ConfigAttributeSetter(name = LOCATOR_WAIT_TIME)
+  void setLocatorWaitTime(int seconds);
+
   /**
-   * returns the value of the <a href="../DistribytedSystem.html#start-locator">"start-locator"
-   * </a> property
+   * returns the value of the {@link ConfigurationProperties#START_LOCATOR} property
    */
-  @ConfigAttributeGetter(name=START_LOCATOR_NAME)
-  public String getStartLocator();
+  @ConfigAttributeGetter(name = START_LOCATOR)
+  String getStartLocator();
+
   /**
-   * Sets the start-locator property.  This is a string in the form
+   * Sets the {@link ConfigurationProperties#START_LOCATOR} property.
+   * This is a string in the form
    * bindAddress[port] and, if set, tells the distributed system to start
    * a locator prior to connecting
+   *
    * @param value must be of the form <code>hostName[portNum]</code>
    */
-  @ConfigAttributeSetter(name=START_LOCATOR_NAME)
-  public void setStartLocator(String value);
+  @ConfigAttributeSetter(name = START_LOCATOR)
+  void setStartLocator(String value);
 
   /**
-   * The name of the "start-locator" property
+   * The name of the {@link ConfigurationProperties#START_LOCATOR} property
    */
-  @ConfigAttribute(type=String.class)
-  public static final String START_LOCATOR_NAME = "start-locator";
+  @ConfigAttribute(type = String.class)
+  String START_LOCATOR_NAME = START_LOCATOR;
   /**
-   * The default value of the "start-locator" property
+   * The default value of the {@link ConfigurationProperties#START_LOCATOR} property
    */
-  public static final String DEFAULT_START_LOCATOR = "";
-  
+  String DEFAULT_START_LOCATOR = "";
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#deploy-working-dir">"deploy-working-dir"</a> property
+   * Returns the value of the {@link ConfigurationProperties#DEPLOY_WORKING_DIR} property
    */
-  @ConfigAttributeGetter(name=DEPLOY_WORKING_DIR)
-  public File getDeployWorkingDir();
-  
+  @ConfigAttributeGetter(name = DEPLOY_WORKING_DIR)
+  File getDeployWorkingDir();
+
   /**
    * Sets the system's deploy working directory.
-   * @throws IllegalArgumentException if the specified value is not acceptable.
+   *
+   * @throws IllegalArgumentException                   if the specified value is not acceptable.
    * @throws com.gemstone.gemfire.UnmodifiableException if this attribute can not be modified.
-   * @throws com.gemstone.gemfire.GemFireIOException if the set failure is caused by an error
-   *   when writing to the system's configuration file.
+   * @throws com.gemstone.gemfire.GemFireIOException    if the set failure is caused by an error
+   *                                                    when writing to the system's configuration file.
    */
-  @ConfigAttributeSetter(name=DEPLOY_WORKING_DIR)
-  public void setDeployWorkingDir(File value);
-  
-  /**
-   * The name of the "deploy-working-dir" property.
-   */
-  @ConfigAttribute(type=File.class)
-  public static final String DEPLOY_WORKING_DIR = "deploy-working-dir";
-  
-  /**
-   * Default will be the current working directory as determined by 
-   * <code>System.getProperty("user.dir")</code>.
-   */
-  public static final File DEFAULT_DEPLOY_WORKING_DIR = new File(".");
-  
-  /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#user-command-packages">"user-command-packages"</a> property
-   */
-  @ConfigAttributeGetter(name=USER_COMMAND_PACKAGES)
-  public String getUserCommandPackages();
-  
-  /**
-   * Sets the system's user command path.
-   * @throws IllegalArgumentException if the specified value is not acceptable.
-   * @throws com.gemstone.gemfire.UnmodifiableException if this attribute can not be modified.
-   * @throws com.gemstone.gemfire.GemFireIOException if the set failure is caused by an error
-   *   when writing to the system's configuration file.
-   */
-  @ConfigAttributeSetter(name=USER_COMMAND_PACKAGES)
-  public void setUserCommandPackages(String value);
-  
-  /**
-   * The name of the "user-command-packages" property.
-   */
-  @ConfigAttribute(type=String.class)
-  public static final String USER_COMMAND_PACKAGES = "user-command-packages";
-  
-  /**
-   * The default value of the "user-command-packages" property
-   */
-  public static final String DEFAULT_USER_COMMAND_PACKAGES = "";
+  @ConfigAttributeSetter(name = DEPLOY_WORKING_DIR)
+  void setDeployWorkingDir(File value);
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#log-file">"log-file"</a> property
+   * The name of the {@link ConfigurationProperties#DEPLOY_WORKING_DIR} property.
+   */
+  @ConfigAttribute(type = File.class)
+  String DEPLOY_WORKING_DIR_NAME = DEPLOY_WORKING_DIR;
+
+  /**
+   * Default will be the current working directory as determined by
+   * <code>System.getProperty("user.dir")</code>.
+   */
+  File DEFAULT_DEPLOY_WORKING_DIR = new File(".");
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#USER_COMMAND_PACKAGES} property
+   */
+  @ConfigAttributeGetter(name = USER_COMMAND_PACKAGES)
+  String getUserCommandPackages();
+
+  /**
+   * Sets the system's user command path.
+   *
+   * @throws IllegalArgumentException                   if the specified value is not acceptable.
+   * @throws com.gemstone.gemfire.UnmodifiableException if this attribute can not be modified.
+   * @throws com.gemstone.gemfire.GemFireIOException    if the set failure is caused by an error
+   *                                                    when writing to the system's configuration file.
+   */
+  @ConfigAttributeSetter(name = USER_COMMAND_PACKAGES)
+  void setUserCommandPackages(String value);
+
+  /**
+   * The name of the {@link ConfigurationProperties#USER_COMMAND_PACKAGES} property.
+   */
+  @ConfigAttribute(type = String.class)
+  String USER_COMMAND_PACKAGES_NAME = USER_COMMAND_PACKAGES;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#USER_COMMAND_PACKAGES} property
+   */
+  String DEFAULT_USER_COMMAND_PACKAGES = "";
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#LOG_FILE} property
    *
    * @return <code>null</code> if logging information goes to standard
-   *         out
+   * out
    */
-  @ConfigAttributeGetter(name=LOG_FILE_NAME)
-  public File getLogFile();
+  @ConfigAttributeGetter(name = LOG_FILE)
+  File getLogFile();
+
   /**
    * Sets the system's log file.
    * <p> Non-absolute log files are relative to the system directory.
    * <p> The system log file can not be changed while the system is running.
-   * @throws IllegalArgumentException if the specified value is not acceptable.
+   *
+   * @throws IllegalArgumentException                   if the specified value is not acceptable.
    * @throws com.gemstone.gemfire.UnmodifiableException if this attribute can not be modified.
-   * @throws com.gemstone.gemfire.GemFireIOException if the set failure is caused by an error
-   *   when writing to the system's configuration file.
+   * @throws com.gemstone.gemfire.GemFireIOException    if the set failure is caused by an error
+   *                                                    when writing to the system's configuration file.
    */
-  @ConfigAttributeSetter(name=LOG_FILE_NAME)
-  public void setLogFile(File value);
 
-  /** The name of the "logFile" property */
-  @ConfigAttribute(type=File.class)
-  public static final String LOG_FILE_NAME = "log-file";
+  @ConfigAttributeSetter(name = LOG_FILE)
+  void setLogFile(File value);
 
   /**
-   * The default log file.
+   * The name of the {@link ConfigurationProperties#LOG_FILE} property
+   */
+  @ConfigAttribute(type = File.class)
+  String LOG_FILE_NAME = LOG_FILE;
+
+  /**
+   * The default {@link ConfigurationProperties#LOG_FILE}.
    * <p> Actual value of this constant is <code>""</code> which directs
    * log message to standard output.
    */
-  public static final File DEFAULT_LOG_FILE = new File("");
+  File DEFAULT_LOG_FILE = new File("");
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#log-level">"log-level"</a> property
+   * Returns the value of the {@link ConfigurationProperties#LOG_LEVEL} property
    *
    * @see com.gemstone.gemfire.internal.logging.LogWriterImpl
    */
-  @ConfigAttributeGetter(name=LOG_LEVEL_NAME)
-  public int getLogLevel();
+  @ConfigAttributeGetter(name = LOG_LEVEL)
+  int getLogLevel();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#log-level">"log-level"</a> property
+   * Sets the value of the {@link ConfigurationProperties#LOG_LEVEL} property
    *
    * @see com.gemstone.gemfire.internal.logging.LogWriterImpl
    */
-  @ConfigAttributeSetter(name=LOG_LEVEL_NAME)
-  public void setLogLevel(int value);
+  @ConfigAttributeSetter(name = LOG_LEVEL)
+  void setLogLevel(int value);
 
   /**
-   * The default log level.
+   * The default {@link ConfigurationProperties#LOG_LEVEL}.
    * <p> Actual value of this constant is {@link InternalLogWriter#CONFIG_LEVEL}.
    */
-  public static final int DEFAULT_LOG_LEVEL = InternalLogWriter.CONFIG_LEVEL;
+  int DEFAULT_LOG_LEVEL = InternalLogWriter.CONFIG_LEVEL;
   /**
-   * The minimum log level.
+   * The minimum {@link ConfigurationProperties#LOG_LEVEL}.
    * <p> Actual value of this constant is {@link InternalLogWriter#ALL_LEVEL}.
    */
-  public static final int MIN_LOG_LEVEL = InternalLogWriter.ALL_LEVEL;
+  int MIN_LOG_LEVEL = InternalLogWriter.ALL_LEVEL;
   /**
-   * The maximum log level.
+   * The maximum {@link ConfigurationProperties#LOG_LEVEL}.
    * <p> Actual value of this constant is {@link InternalLogWriter#NONE_LEVEL}.
    */
-  public static final int MAX_LOG_LEVEL = InternalLogWriter.NONE_LEVEL;
+  int MAX_LOG_LEVEL = InternalLogWriter.NONE_LEVEL;
 
-  /** The name of the "logLevel" property */
+  /**
+   * The name of the {@link ConfigurationProperties#LOG_LEVEL} property
+   */
   // type is String because the config file contains "config", "debug", "fine" etc, not a code, but the setter/getter accepts int
-  @ConfigAttribute(type=String.class)
-  public static final String LOG_LEVEL_NAME = "log-level";
+  @ConfigAttribute(type = String.class)
+  String LOG_LEVEL_NAME = LOG_LEVEL;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#statistic-sampling-enabled">"statistic-sampling-enabled"</a>
+   * Returns the value of the {@link ConfigurationProperties#STATISTIC_SAMPLING_ENABLED}
    * property
    */
-  @ConfigAttributeGetter(name=STATISTIC_SAMPLING_ENABLED_NAME)
-  public boolean getStatisticSamplingEnabled();
+  @ConfigAttributeGetter(name = STATISTIC_SAMPLING_ENABLED)
+  boolean getStatisticSamplingEnabled();
+
   /**
-   * Sets StatisticSamplingEnabled
+   * Sets {@link ConfigurationProperties#STATISTIC_SAMPLING_ENABLED}
    */
-  @ConfigAttributeSetter(name=STATISTIC_SAMPLING_ENABLED_NAME)
-  public void setStatisticSamplingEnabled(boolean newValue);
-
-  /** The name of the "statisticSamplingEnabled" property */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String STATISTIC_SAMPLING_ENABLED_NAME =
-    "statistic-sampling-enabled";
-
-  /** The default value of the "statisticSamplingEnabled" property */
-  public static final boolean DEFAULT_STATISTIC_SAMPLING_ENABLED = true;
+  @ConfigAttributeSetter(name = STATISTIC_SAMPLING_ENABLED)
+  void setStatisticSamplingEnabled(boolean newValue);
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#statistic-sample-rate">"statistic-sample-rate"</a>
+   * The name of the {@link ConfigurationProperties#STATISTIC_SAMPLING_ENABLED} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String STATISTIC_SAMPLING_ENABLED_NAME = STATISTIC_SAMPLING_ENABLED;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#STATISTIC_SAMPLING_ENABLED} property
+   */
+  boolean DEFAULT_STATISTIC_SAMPLING_ENABLED = true;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#STATISTIC_SAMPLE_RATE}
    * property
    */
-  @ConfigAttributeGetter(name=STATISTIC_SAMPLE_RATE_NAME)
-  public int getStatisticSampleRate();
-  /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#statistic-sample-rate">"statistic-sample-rate"</a>
-   * property
-   */
-  @ConfigAttributeSetter(name=STATISTIC_SAMPLE_RATE_NAME)
-  public void setStatisticSampleRate(int value);
+  @ConfigAttributeGetter(name = STATISTIC_SAMPLE_RATE)
+  int getStatisticSampleRate();
 
   /**
-   * The default statistic sample rate.
+   * Sets the value of the {@link ConfigurationProperties#STATISTIC_SAMPLE_RATE}
+   * property
+   */
+  @ConfigAttributeSetter(name = STATISTIC_SAMPLE_RATE)
+  void setStatisticSampleRate(int value);
+
+  /**
+   * The default {@link ConfigurationProperties#STATISTIC_SAMPLE_RATE}.
    * <p> Actual value of this constant is <code>1000</code> milliseconds.
    */
-  public static final int DEFAULT_STATISTIC_SAMPLE_RATE = 1000;
+  int DEFAULT_STATISTIC_SAMPLE_RATE = 1000;
   /**
-   * The minimum statistic sample rate.
+   * The minimum {@link ConfigurationProperties#STATISTIC_SAMPLE_RATE}.
    * <p> Actual value of this constant is <code>100</code> milliseconds.
    */
-  public static final int MIN_STATISTIC_SAMPLE_RATE = 100;
+  int MIN_STATISTIC_SAMPLE_RATE = 100;
   /**
-   * The maximum statistic sample rate.
+   * The maximum {@link ConfigurationProperties#STATISTIC_SAMPLE_RATE}.
    * <p> Actual value of this constant is <code>60000</code> milliseconds.
    */
-  public static final int MAX_STATISTIC_SAMPLE_RATE = 60000;
-
-  /** The name of the "statisticSampleRate" property */
-  @ConfigAttribute(type=Integer.class, min=MIN_STATISTIC_SAMPLE_RATE, max=MAX_STATISTIC_SAMPLE_RATE)
-  public static final String STATISTIC_SAMPLE_RATE_NAME =
-    "statistic-sample-rate";
+  int MAX_STATISTIC_SAMPLE_RATE = 60000;
 
   /**
-   * Returns the value of the <a href="../DistributedSystem.html#statistic-archive-file">"statistic-archive-file"</a> property.
+   * The name of the {@link ConfigurationProperties#STATISTIC_SAMPLE_RATE} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_STATISTIC_SAMPLE_RATE, max = MAX_STATISTIC_SAMPLE_RATE)
+  String STATISTIC_SAMPLE_RATE_NAME = STATISTIC_SAMPLE_RATE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#STATISTIC_ARCHIVE_FILE} property.
    *
    * @return <code>null</code> if no file was specified
    */
-  @ConfigAttributeGetter(name=STATISTIC_ARCHIVE_FILE_NAME)
-  public File getStatisticArchiveFile();
+  @ConfigAttributeGetter(name = STATISTIC_ARCHIVE_FILE)
+  File getStatisticArchiveFile();
+
   /**
-   * Sets the value of the <a href="../DistributedSystem.html#statistic-archive-file">"statistic-archive-file"</a> property.
+   * Sets the value of the {@link ConfigurationProperties#STATISTIC_ARCHIVE_FILE} property.
    */
-  @ConfigAttributeSetter(name=STATISTIC_ARCHIVE_FILE_NAME)
-  public void setStatisticArchiveFile(File value);
-
-  /** The name of the "statisticArchiveFile" property */
-  @ConfigAttribute(type=File.class)
-  public static final String STATISTIC_ARCHIVE_FILE_NAME =
-    "statistic-archive-file";
+  @ConfigAttributeSetter(name = STATISTIC_ARCHIVE_FILE)
+  void setStatisticArchiveFile(File value);
 
   /**
-   * The default statistic archive file.
+   * The name of the {@link ConfigurationProperties#STATISTIC_ARCHIVE_FILE} property
+   */
+  @ConfigAttribute(type = File.class)
+  String STATISTIC_ARCHIVE_FILE_NAME = STATISTIC_ARCHIVE_FILE;
+
+  /**
+   * The default {@link ConfigurationProperties#STATISTIC_ARCHIVE_FILE}.
    * <p> Actual value of this constant is <code>""</code> which
    * causes no archive file to be created.
    */
-  public static final File DEFAULT_STATISTIC_ARCHIVE_FILE = new File(""); // fix for bug 29786
-
+  File DEFAULT_STATISTIC_ARCHIVE_FILE = new File(""); // fix for bug 29786
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#cache-xml-file">"cache-xml-file"</a>
+   * Returns the value of the {@link ConfigurationProperties#CACHE_XML_FILE}
    * property
    */
-  @ConfigAttributeGetter(name=CACHE_XML_FILE_NAME)
-  public File getCacheXmlFile();
+  @ConfigAttributeGetter(name = CACHE_XML_FILE)
+  File getCacheXmlFile();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#cache-xml-file">"cache-xml-file"</a>
+   * Sets the value of the {@link ConfigurationProperties#CACHE_XML_FILE}
    * property
    */
-  @ConfigAttributeSetter(name=CACHE_XML_FILE_NAME)
-  public void setCacheXmlFile(File value);
-
-  /** The name of the "cacheXmlFile" property */
-  @ConfigAttribute(type=File.class)
-  public static final String CACHE_XML_FILE_NAME = "cache-xml-file";
-
-  /** The default value of the "cacheXmlFile" property */
-  public static final File DEFAULT_CACHE_XML_FILE = new File("cache.xml");
+  @ConfigAttributeSetter(name = CACHE_XML_FILE)
+  void setCacheXmlFile(File value);
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#ack-wait-threshold">"ack-wait-threshold"</a>
+   * The name of the {@link ConfigurationProperties#CACHE_XML_FILE} property
+   */
+  @ConfigAttribute(type = File.class)
+  String CACHE_XML_FILE_NAME = CACHE_XML_FILE;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#CACHE_XML_FILE} property
+   */
+  File DEFAULT_CACHE_XML_FILE = new File("cache.xml");
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#ACK_WAIT_THRESHOLD}
    * property
    */
-  @ConfigAttributeGetter(name=ACK_WAIT_THRESHOLD_NAME)
-  public int getAckWaitThreshold();
+  @ConfigAttributeGetter(name = ACK_WAIT_THRESHOLD)
+  int getAckWaitThreshold();
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#ack-wait-threshold">"ack-wait-threshold"</a>
+   * Sets the value of the {@link ConfigurationProperties#ACK_WAIT_THRESHOLD}
    * property
-     * Setting this value too low will cause spurious alerts.
-     */
-  @ConfigAttributeSetter(name=ACK_WAIT_THRESHOLD_NAME)
-  public void setAckWaitThreshold(int newThreshold);
+   * Setting this value too low will cause spurious alerts.
+   */
+  @ConfigAttributeSetter(name = ACK_WAIT_THRESHOLD)
+  void setAckWaitThreshold(int newThreshold);
 
   /**
-   * The default AckWaitThreshold.
+   * The default {@link ConfigurationProperties#ACK_WAIT_THRESHOLD}.
    * <p> Actual value of this constant is <code>15</code> seconds.
    */
-  public static final int DEFAULT_ACK_WAIT_THRESHOLD = 15;
+  int DEFAULT_ACK_WAIT_THRESHOLD = 15;
   /**
-   * The minimum AckWaitThreshold.
+   * The minimum {@link ConfigurationProperties#ACK_WAIT_THRESHOLD}.
    * <p> Actual value of this constant is <code>1</code> second.
    */
-  public static final int MIN_ACK_WAIT_THRESHOLD = 1;
+  int MIN_ACK_WAIT_THRESHOLD = 1;
   /**
-   * The maximum AckWaitThreshold.
+   * The maximum {@link ConfigurationProperties#ACK_WAIT_THRESHOLD}.
    * <p> Actual value of this constant is <code>MAX_INT</code> seconds.
    */
-  public static final int MAX_ACK_WAIT_THRESHOLD = Integer.MAX_VALUE;
-  /** The name of the "ackWaitThreshold" property */
-  @ConfigAttribute(type=Integer.class, min=MIN_ACK_WAIT_THRESHOLD)
-  public static final String ACK_WAIT_THRESHOLD_NAME = "ack-wait-threshold";
-
+  int MAX_ACK_WAIT_THRESHOLD = Integer.MAX_VALUE;
+  /**
+   * The name of the {@link ConfigurationProperties#ACK_WAIT_THRESHOLD} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_ACK_WAIT_THRESHOLD)
+  String ACK_WAIT_THRESHOLD_NAME = ACK_WAIT_THRESHOLD;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#ack-severe-alert-threshold">"ack-severe-alert-threshold"</a>
+   * Returns the value of the {@link ConfigurationProperties#ACK_SEVERE_ALERT_THRESHOLD}
    * property
    */
-  @ConfigAttributeGetter(name=ACK_SEVERE_ALERT_THRESHOLD_NAME)
-  public int getAckSevereAlertThreshold();
+  @ConfigAttributeGetter(name = ACK_SEVERE_ALERT_THRESHOLD)
+  int getAckSevereAlertThreshold();
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#ack-severe-alert-threshold">"ack-severe-alert-threshold"</a>
+   * Sets the value of the {@link ConfigurationProperties#ACK_SEVERE_ALERT_THRESHOLD}
    * property
-     * Setting this value too low will cause spurious forced disconnects.
-     */
-  @ConfigAttributeSetter(name=ACK_SEVERE_ALERT_THRESHOLD_NAME)
-  public void setAckSevereAlertThreshold(int newThreshold);
+   * Setting this value too low will cause spurious forced disconnects.
+   */
+  @ConfigAttributeSetter(name = ACK_SEVERE_ALERT_THRESHOLD)
+  void setAckSevereAlertThreshold(int newThreshold);
 
   /**
-   * The default ackSevereAlertThreshold.
+   * The default {@link ConfigurationProperties#ACK_SEVERE_ALERT_THRESHOLD}.
    * <p> Actual value of this constant is <code>0</code> seconds, which
    * turns off shunning.
    */
-  public static final int DEFAULT_ACK_SEVERE_ALERT_THRESHOLD = 0;
+  int DEFAULT_ACK_SEVERE_ALERT_THRESHOLD = 0;
   /**
-   * The minimum ackSevereAlertThreshold.
+   * The minimum {@link ConfigurationProperties#ACK_SEVERE_ALERT_THRESHOLD}.
    * <p> Actual value of this constant is <code>0</code> second,
    * which turns off shunning.
    */
-  public static final int MIN_ACK_SEVERE_ALERT_THRESHOLD = 0;
+  int MIN_ACK_SEVERE_ALERT_THRESHOLD = 0;
   /**
-   * The maximum ackSevereAlertThreshold.
+   * The maximum {@link ConfigurationProperties#ACK_SEVERE_ALERT_THRESHOLD}.
    * <p> Actual value of this constant is <code>MAX_INT</code> seconds.
    */
-  public static final int MAX_ACK_SEVERE_ALERT_THRESHOLD = Integer.MAX_VALUE;
-  /** The name of the "ackSevereAlertThreshold" property */
-  @ConfigAttribute(type=Integer.class, min=MIN_ACK_SEVERE_ALERT_THRESHOLD)
-  public static final String ACK_SEVERE_ALERT_THRESHOLD_NAME = "ack-severe-alert-threshold";
+  int MAX_ACK_SEVERE_ALERT_THRESHOLD = Integer.MAX_VALUE;
+  /**
+   * The name of the {@link ConfigurationProperties#ACK_SEVERE_ALERT_THRESHOLD} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_ACK_SEVERE_ALERT_THRESHOLD)
+  String ACK_SEVERE_ALERT_THRESHOLD_NAME = ACK_SEVERE_ALERT_THRESHOLD;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#archive-file-size-limit">"archive-file-size-limit"</a>
+   * Returns the value of the {@link ConfigurationProperties#ARCHIVE_FILE_SIZE_LIMIT}
    * property
    */
-  @ConfigAttributeGetter(name=ARCHIVE_FILE_SIZE_LIMIT_NAME)
-  public int getArchiveFileSizeLimit();
-  /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#archive-file-size-limit">"archive-file-size-limit"</a>
-   * property
-   */
-  @ConfigAttributeSetter(name=ARCHIVE_FILE_SIZE_LIMIT_NAME)
-  public void setArchiveFileSizeLimit(int value);
+  @ConfigAttributeGetter(name = ARCHIVE_FILE_SIZE_LIMIT)
+  int getArchiveFileSizeLimit();
 
   /**
-   * The default statistic archive file size limit.
+   * Sets the value of the {@link ConfigurationProperties#ARCHIVE_FILE_SIZE_LIMIT}
+   * property
+   */
+  @ConfigAttributeSetter(name = ARCHIVE_FILE_SIZE_LIMIT)
+  void setArchiveFileSizeLimit(int value);
+
+  /**
+   * The default {@link ConfigurationProperties#ARCHIVE_FILE_SIZE_LIMIT}.
    * <p> Actual value of this constant is <code>0</code> megabytes.
    */
-  public static final int DEFAULT_ARCHIVE_FILE_SIZE_LIMIT = 0;
+  int DEFAULT_ARCHIVE_FILE_SIZE_LIMIT = 0;
   /**
-   * The minimum statistic archive file size limit.
+   * The minimum {@link ConfigurationProperties#ARCHIVE_FILE_SIZE_LIMIT}.
    * <p> Actual value of this constant is <code>0</code> megabytes.
    */
-  public static final int MIN_ARCHIVE_FILE_SIZE_LIMIT = 0;
+  int MIN_ARCHIVE_FILE_SIZE_LIMIT = 0;
   /**
-   * The maximum statistic archive file size limit.
+   * The maximum {@link ConfigurationProperties#ARCHIVE_FILE_SIZE_LIMIT}.
    * <p> Actual value of this constant is <code>1000000</code> megabytes.
    */
-  public static final int MAX_ARCHIVE_FILE_SIZE_LIMIT = 1000000;
-
-  /** The name of the "ArchiveFileSizeLimit" property */
-  @ConfigAttribute(type=Integer.class, min=MIN_ARCHIVE_FILE_SIZE_LIMIT, max=MAX_ARCHIVE_FILE_SIZE_LIMIT)
-  public static final String ARCHIVE_FILE_SIZE_LIMIT_NAME =
-    "archive-file-size-limit";
-  /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#archive-disk-space-limit">"archive-disk-space-limit"</a>
-   * property
-   */
-  @ConfigAttributeGetter(name=ARCHIVE_DISK_SPACE_LIMIT_NAME)
-  public int getArchiveDiskSpaceLimit();
-  /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#archive-disk-space-limit">"archive-disk-space-limit"</a>
-   * property
-   */
-  @ConfigAttributeSetter(name=ARCHIVE_DISK_SPACE_LIMIT_NAME)
-  public void setArchiveDiskSpaceLimit(int value);
+  int MAX_ARCHIVE_FILE_SIZE_LIMIT = 1000000;
 
   /**
-   * The default archive disk space limit.
+   * The name of the {@link ConfigurationProperties#ARCHIVE_FILE_SIZE_LIMIT} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_ARCHIVE_FILE_SIZE_LIMIT, max = MAX_ARCHIVE_FILE_SIZE_LIMIT)
+  String ARCHIVE_FILE_SIZE_LIMIT_NAME = ARCHIVE_FILE_SIZE_LIMIT;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#ARCHIVE_DISK_SPACE_LIMIT}
+   * property
+   */
+  @ConfigAttributeGetter(name = ARCHIVE_DISK_SPACE_LIMIT)
+  int getArchiveDiskSpaceLimit();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#ARCHIVE_DISK_SPACE_LIMIT}
+   * property
+   */
+  @ConfigAttributeSetter(name = ARCHIVE_DISK_SPACE_LIMIT)
+  void setArchiveDiskSpaceLimit(int value);
+
+  /**
+   * The default {@link ConfigurationProperties#ARCHIVE_DISK_SPACE_LIMIT}.
    * <p> Actual value of this constant is <code>0</code> megabytes.
    */
-  public static final int DEFAULT_ARCHIVE_DISK_SPACE_LIMIT = 0;
+  int DEFAULT_ARCHIVE_DISK_SPACE_LIMIT = 0;
   /**
-   * The minimum archive disk space limit.
+   * The minimum {@link ConfigurationProperties#ARCHIVE_DISK_SPACE_LIMIT}.
    * <p> Actual value of this constant is <code>0</code> megabytes.
    */
-  public static final int MIN_ARCHIVE_DISK_SPACE_LIMIT = 0;
+  int MIN_ARCHIVE_DISK_SPACE_LIMIT = 0;
   /**
-   * The maximum archive disk space limit.
+   * The maximum {@link ConfigurationProperties#ARCHIVE_DISK_SPACE_LIMIT}.
    * <p> Actual value of this constant is <code>1000000</code> megabytes.
    */
-  public static final int MAX_ARCHIVE_DISK_SPACE_LIMIT = 1000000;
-
-  /** The name of the "ArchiveDiskSpaceLimit" property */
-  @ConfigAttribute(type=Integer.class, min=MIN_ARCHIVE_DISK_SPACE_LIMIT, max=MAX_ARCHIVE_DISK_SPACE_LIMIT)
-  public static final String ARCHIVE_DISK_SPACE_LIMIT_NAME =
-    "archive-disk-space-limit";
-  /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#log-file-size-limit">"log-file-size-limit"</a>
-   * property
-   */
-  @ConfigAttributeGetter(name=LOG_FILE_SIZE_LIMIT_NAME)
-  public int getLogFileSizeLimit();
-  /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#log-file-size-limit">"log-file-size-limit"</a>
-   * property
-   */
-  @ConfigAttributeSetter(name=LOG_FILE_SIZE_LIMIT_NAME)
-  public void setLogFileSizeLimit(int value);
+  int MAX_ARCHIVE_DISK_SPACE_LIMIT = 1000000;
 
   /**
-   * The default log file size limit.
+   * The name of the {@link ConfigurationProperties#ARCHIVE_DISK_SPACE_LIMIT} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_ARCHIVE_DISK_SPACE_LIMIT, max = MAX_ARCHIVE_DISK_SPACE_LIMIT)
+  String ARCHIVE_DISK_SPACE_LIMIT_NAME = ARCHIVE_DISK_SPACE_LIMIT;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#LOG_FILE_SIZE_LIMIT}
+   * property
+   */
+  @ConfigAttributeGetter(name = LOG_FILE_SIZE_LIMIT)
+  int getLogFileSizeLimit();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#LOG_FILE_SIZE_LIMIT}
+   * property
+   */
+  @ConfigAttributeSetter(name = LOG_FILE_SIZE_LIMIT)
+  void setLogFileSizeLimit(int value);
+
+  /**
+   * The default {@link ConfigurationProperties#LOG_FILE_SIZE_LIMIT}.
    * <p> Actual value of this constant is <code>0</code> megabytes.
    */
-  public static final int DEFAULT_LOG_FILE_SIZE_LIMIT = 0;
+  int DEFAULT_LOG_FILE_SIZE_LIMIT = 0;
   /**
-   * The minimum log file size limit.
+   * The minimum {@link ConfigurationProperties#LOG_FILE_SIZE_LIMIT}.
    * <p> Actual value of this constant is <code>0</code> megabytes.
    */
-  public static final int MIN_LOG_FILE_SIZE_LIMIT = 0;
+  int MIN_LOG_FILE_SIZE_LIMIT = 0;
   /**
-   * The maximum log file size limit.
+   * The maximum {@link ConfigurationProperties#LOG_FILE_SIZE_LIMIT}.
    * <p> Actual value of this constant is <code>1000000</code> megabytes.
    */
-  public static final int MAX_LOG_FILE_SIZE_LIMIT = 1000000;
-
-  /** The name of the "LogFileSizeLimit" property */
-  @ConfigAttribute(type=Integer.class, min=MIN_LOG_FILE_SIZE_LIMIT, max=MAX_LOG_FILE_SIZE_LIMIT)
-  public static final String LOG_FILE_SIZE_LIMIT_NAME =
-    "log-file-size-limit";
+  int MAX_LOG_FILE_SIZE_LIMIT = 1000000;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#log-disk-space-limit">"log-disk-space-limit"</a>
+   * The name of the {@link ConfigurationProperties#LOG_FILE_SIZE_LIMIT} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_LOG_FILE_SIZE_LIMIT, max = MAX_LOG_FILE_SIZE_LIMIT)
+  String LOG_FILE_SIZE_LIMIT_NAME = LOG_FILE_SIZE_LIMIT;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#LOG_DISK_SPACE_LIMIT}
    * property
    */
-  @ConfigAttributeGetter(name=LOG_DISK_SPACE_LIMIT_NAME)
-  public int getLogDiskSpaceLimit();
-  /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#log-disk-space-limit">"log-disk-space-limit"</a>
-   * property
-   */
-  @ConfigAttributeSetter(name=LOG_DISK_SPACE_LIMIT_NAME)
-  public void setLogDiskSpaceLimit(int value);
+  @ConfigAttributeGetter(name = LOG_DISK_SPACE_LIMIT)
+  int getLogDiskSpaceLimit();
 
   /**
-   * The default log disk space limit.
+   * Sets the value of the {@link ConfigurationProperties#LOG_DISK_SPACE_LIMIT}
+   * property
+   */
+  @ConfigAttributeSetter(name = LOG_DISK_SPACE_LIMIT)
+  void setLogDiskSpaceLimit(int value);
+
+  /**
+   * The default {@link ConfigurationProperties#LOG_DISK_SPACE_LIMIT}.
    * <p> Actual value of this constant is <code>0</code> megabytes.
    */
-  public static final int DEFAULT_LOG_DISK_SPACE_LIMIT = 0;
+  int DEFAULT_LOG_DISK_SPACE_LIMIT = 0;
   /**
-   * The minimum log disk space limit.
+   * The minimum {@link ConfigurationProperties#LOG_DISK_SPACE_LIMIT}.
    * <p> Actual value of this constant is <code>0</code> megabytes.
    */
-  public static final int MIN_LOG_DISK_SPACE_LIMIT = 0;
+  int MIN_LOG_DISK_SPACE_LIMIT = 0;
   /**
-   * The maximum log disk space limit.
+   * The maximum {@link ConfigurationProperties#LOG_DISK_SPACE_LIMIT}.
    * <p> Actual value of this constant is <code>1000000</code> megabytes.
    */
-  public static final int MAX_LOG_DISK_SPACE_LIMIT = 1000000;
-
-  /** The name of the "LogDiskSpaceLimit" property */
-  @ConfigAttribute(type=Integer.class, min=MIN_LOG_DISK_SPACE_LIMIT, max=MAX_LOG_DISK_SPACE_LIMIT)
-  public static final String LOG_DISK_SPACE_LIMIT_NAME =
-    "log-disk-space-limit";
+  int MAX_LOG_DISK_SPACE_LIMIT = 1000000;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#ssl-enabled">"ssl-enabled"</a>
+   * The name of the {@link ConfigurationProperties#LOG_DISK_SPACE_LIMIT} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_LOG_DISK_SPACE_LIMIT, max = MAX_LOG_DISK_SPACE_LIMIT)
+  String LOG_DISK_SPACE_LIMIT_NAME = LOG_DISK_SPACE_LIMIT;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SSL_ENABLED}
    * property.
+   *
    * @deprecated as of 8.0 use {@link #getClusterSSLEnabled} instead.
    */
-  @ConfigAttributeGetter(name=SSL_ENABLED_NAME)
-  public boolean getSSLEnabled();
+  @ConfigAttributeGetter(name = SSL_ENABLED)
+  boolean getSSLEnabled();
 
   /**
-   * The default ssl-enabled state.
+   * The default {@link ConfigurationProperties#SSL_ENABLED} state.
    * <p> Actual value of this constant is <code>false</code>.
+   *
    * @deprecated as of 8.0 use {@link #DEFAULT_CLUSTER_SSL_ENABLED} instead.
    */
-  public static final boolean DEFAULT_SSL_ENABLED = false;
-  
-  /** The name of the "SSLEnabled" property 
+  boolean DEFAULT_SSL_ENABLED = false;
+
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_ENABLED} property
+   *
    * @deprecated as of 8.0 use {@link #CLUSTER_SSL_ENABLED_NAME} instead.
    */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String SSL_ENABLED_NAME =
-    "ssl-enabled";
+  @ConfigAttribute(type = Boolean.class)
+  String SSL_ENABLED_NAME = SSL_ENABLED;
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#ssl-enabled">"ssl-enabled"</a>
+   * Sets the value of the {@link ConfigurationProperties#SSL_ENABLED}
    * property.
+   *
    * @deprecated as of 8.0 use {@link #setClusterSSLEnabled} instead.
    */
-  @ConfigAttributeSetter(name=SSL_ENABLED_NAME)
-  public void setSSLEnabled( boolean enabled );
+  @ConfigAttributeSetter(name = SSL_ENABLED)
+  void setSSLEnabled(boolean enabled);
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#ssl-protocols">"ssl-protocols"</a>
+   * Returns the value of the {@link ConfigurationProperties#SSL_PROTOCOLS}
    * property.
+   *
    * @deprecated as of 8.0 use {@link #getClusterSSLProtocols} instead.
    */
-  @ConfigAttributeGetter(name=SSL_PROTOCOLS_NAME)
-   public String getSSLProtocols( );
+  @ConfigAttributeGetter(name = SSL_PROTOCOLS)
+  String getSSLProtocols();
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#ssl-protocols">"ssl-protocols"</a>
+   * Sets the value of the {@link ConfigurationProperties#SSL_PROTOCOLS}
    * property.
+   *
    * @deprecated as of 8.0 use {@link #setClusterSSLProtocols} instead.
    */
-  @ConfigAttributeSetter(name=SSL_PROTOCOLS_NAME)
-   public void setSSLProtocols( String protocols );
+  @ConfigAttributeSetter(name = SSL_PROTOCOLS)
+  void setSSLProtocols(String protocols);
 
   /**
-   * The default ssl-protocols value.
+   * The default {@link ConfigurationProperties#SSL_PROTOCOLS} value.
    * <p> Actual value of this constant is <code>any</code>.
+   *
    * @deprecated as of 8.0 use {@link #DEFAULT_CLUSTER_SSL_PROTOCOLS} instead.
    */
-  public static final String DEFAULT_SSL_PROTOCOLS = "any";
-  /** The name of the "SSLProtocols" property 
+  String DEFAULT_SSL_PROTOCOLS = "any";
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_PROTOCOLS} property
+   *
    * @deprecated as of 8.0 use {@link #CLUSTER_SSL_PROTOCOLS_NAME} instead.
    */
-  @ConfigAttribute(type=String.class)
-  public static final String SSL_PROTOCOLS_NAME =
-    "ssl-protocols";
+  @ConfigAttribute(type = String.class)
+  String SSL_PROTOCOLS_NAME = SSL_PROTOCOLS;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#ssl-ciphers">"ssl-ciphers"</a>
+   * Returns the value of the {@link ConfigurationProperties#SSL_CIPHERS}
    * property.
+   *
    * @deprecated as of 8.0 use {@link #getClusterSSLCiphers} instead.
    */
-  @ConfigAttributeGetter(name=SSL_CIPHERS_NAME)
-   public String getSSLCiphers( );
+  @ConfigAttributeGetter(name = SSL_CIPHERS)
+  String getSSLCiphers();
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#ssl-ciphers">"ssl-ciphers"</a>
+   * Sets the value of the {@link ConfigurationProperties#SSL_CIPHERS}
    * property.
+   *
    * @deprecated as of 8.0 use {@link #setClusterSSLCiphers} instead.
    */
-  @ConfigAttributeSetter(name=SSL_CIPHERS_NAME)
-   public void setSSLCiphers( String ciphers );
+  @ConfigAttributeSetter(name = SSL_CIPHERS)
+  void setSSLCiphers(String ciphers);
 
-   /**
-   * The default ssl-ciphers value.
+  /**
+   * The default {@link ConfigurationProperties#SSL_CIPHERS} value.
    * <p> Actual value of this constant is <code>any</code>.
+   *
    * @deprecated as of 8.0 use {@link #DEFAULT_CLUSTER_SSL_CIPHERS} instead.
    */
-  public static final String DEFAULT_SSL_CIPHERS = "any";
-  /** The name of the "SSLCiphers" property 
+  String DEFAULT_SSL_CIPHERS = "any";
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_CIPHERS} property
+   *
    * @deprecated as of 8.0 use {@link #CLUSTER_SSL_CIPHERS_NAME} instead.
    */
-  @ConfigAttribute(type=String.class)
-  public static final String SSL_CIPHERS_NAME =
-    "ssl-ciphers";
+  @ConfigAttribute(type = String.class)
+  String SSL_CIPHERS_NAME = SSL_CIPHERS;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#ssl-require-authentication">"ssl-require-authentication"</a>
+   * Returns the value of the {@link ConfigurationProperties#SSL_REQUIRE_AUTHENTICATION}
    * property.
+   *
    * @deprecated as of 8.0 use {@link #getClusterSSLRequireAuthentication} instead.
    */
-  @ConfigAttributeGetter(name=SSL_REQUIRE_AUTHENTICATION_NAME)
-   public boolean getSSLRequireAuthentication( );
+  @ConfigAttributeGetter(name = SSL_REQUIRE_AUTHENTICATION)
+  boolean getSSLRequireAuthentication();
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#ssl-require-authentication">"ssl-require-authentication"</a>
+   * Sets the value of the {@link ConfigurationProperties#SSL_REQUIRE_AUTHENTICATION}
    * property.
+   *
    * @deprecated as of 8.0 use {@link #setClusterSSLRequireAuthentication} instead.
    */
-  @ConfigAttributeSetter(name=SSL_REQUIRE_AUTHENTICATION_NAME)
-   public void setSSLRequireAuthentication( boolean enabled );
+  @ConfigAttributeSetter(name = SSL_REQUIRE_AUTHENTICATION)
+  void setSSLRequireAuthentication(boolean enabled);
 
-   /**
-   * The default ssl-require-authentication value.
+  /**
+   * The default {@link ConfigurationProperties#SSL_REQUIRE_AUTHENTICATION} value.
    * <p> Actual value of this constant is <code>true</code>.
+   *
    * @deprecated as of 8.0 use {@link #DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION} instead.
    */
-  public static final boolean DEFAULT_SSL_REQUIRE_AUTHENTICATION = true;
-  /** The name of the "SSLRequireAuthentication" property 
+  boolean DEFAULT_SSL_REQUIRE_AUTHENTICATION = true;
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_REQUIRE_AUTHENTICATION} property
+   *
    * @deprecated as of 8.0 use {@link #CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME} instead.
    */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String SSL_REQUIRE_AUTHENTICATION_NAME =
-    "ssl-require-authentication";
+  @ConfigAttribute(type = Boolean.class)
+  String SSL_REQUIRE_AUTHENTICATION_NAME = SSL_REQUIRE_AUTHENTICATION;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-enabled">"cluster-ssl-enabled"</a>
+   * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_ENABLED}
    * property.
    */
-  @ConfigAttributeGetter(name=CLUSTER_SSL_ENABLED_NAME)
-  public boolean getClusterSSLEnabled();
+  @ConfigAttributeGetter(name = CLUSTER_SSL_ENABLED)
+  boolean getClusterSSLEnabled();
 
   /**
-   * The default cluster-ssl-enabled state.
+   * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_ENABLED}
+   * property.
+   */
+  @ConfigAttributeSetter(name = CLUSTER_SSL_ENABLED)
+  void setClusterSSLEnabled(boolean enabled);
+
+  /**
+   * The default {@link ConfigurationProperties#CLUSTER_SSL_ENABLED} state.
    * <p> Actual value of this constant is <code>false</code>.
    */
-  public static final boolean DEFAULT_CLUSTER_SSL_ENABLED = false;
-  /** The name of the "ClusterSSLEnabled" property */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String CLUSTER_SSL_ENABLED_NAME =
-    "cluster-ssl-enabled";
+  boolean DEFAULT_CLUSTER_SSL_ENABLED = false;
+  /**
+   * The name of the {@link ConfigurationProperties#CLUSTER_SSL_ENABLED} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String CLUSTER_SSL_ENABLED_NAME = CLUSTER_SSL_ENABLED;
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-enabled">"cluster-ssl-enabled"</a>
+   * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    * property.
    */
-  @ConfigAttributeSetter(name=CLUSTER_SSL_ENABLED_NAME)
-  public void setClusterSSLEnabled( boolean enabled );
+  @ConfigAttributeGetter(name = CLUSTER_SSL_PROTOCOLS)
+  String getClusterSSLProtocols();
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-protocols">"cluster-ssl-protocols"</a>
+   * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    * property.
    */
-  @ConfigAttributeGetter(name=CLUSTER_SSL_PROTOCOLS_NAME)
-   public String getClusterSSLProtocols( );
+  @ConfigAttributeSetter(name = CLUSTER_SSL_PROTOCOLS)
+  void setClusterSSLProtocols(String protocols);
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-protocols">"cluster-ssl-protocols"</a>
-   * property.
-   */
-  @ConfigAttributeSetter(name=CLUSTER_SSL_PROTOCOLS_NAME)
-   public void setClusterSSLProtocols( String protocols );
-
-  /**
-   * The default cluster-ssl-protocols value.
+   * The default {@link ConfigurationProperties#CLUSTER_SSL_PROTOCOLS} value.
    * <p> Actual value of this constant is <code>any</code>.
    */
-  public static final String DEFAULT_CLUSTER_SSL_PROTOCOLS = "any";
-  /** The name of the "ClusterSSLProtocols" property */
-  @ConfigAttribute(type=String.class)
-  public static final String CLUSTER_SSL_PROTOCOLS_NAME =
-    "cluster-ssl-protocols";
+  String DEFAULT_CLUSTER_SSL_PROTOCOLS = "any";
+  /**
+   * The name of the {@link ConfigurationProperties#CLUSTER_SSL_PROTOCOLS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String CLUSTER_SSL_PROTOCOLS_NAME = CLUSTER_SSL_PROTOCOLS;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-ciphers">"cluster-ssl-ciphers"</a>
+   * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_CIPHERS}
    * property.
    */
-  @ConfigAttributeGetter(name=CLUSTER_SSL_CIPHERS_NAME)
-   public String getClusterSSLCiphers( );
+  @ConfigAttributeGetter(name = CLUSTER_SSL_CIPHERS)
+  String getClusterSSLCiphers();
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-ciphers">"cluster-ssl-ciphers"</a>
+   * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_CIPHERS}
    * property.
    */
-  @ConfigAttributeSetter(name=CLUSTER_SSL_CIPHERS_NAME)
-   public void setClusterSSLCiphers( String ciphers );
+  @ConfigAttributeSetter(name = CLUSTER_SSL_CIPHERS)
+  void setClusterSSLCiphers(String ciphers);
 
-   /**
-   * The default cluster-ssl-ciphers value.
+  /**
+   * The default {@link ConfigurationProperties#CLUSTER_SSL_CIPHERS} value.
    * <p> Actual value of this constant is <code>any</code>.
    */
-  public static final String DEFAULT_CLUSTER_SSL_CIPHERS = "any";
-  /** The name of the "ClusterSSLCiphers" property */
-  @ConfigAttribute(type=String.class)
-  public static final String CLUSTER_SSL_CIPHERS_NAME =
-    "cluster-ssl-ciphers";
+  String DEFAULT_CLUSTER_SSL_CIPHERS = "any";
+  /**
+   * The name of the {@link ConfigurationProperties#CLUSTER_SSL_CIPHERS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String CLUSTER_SSL_CIPHERS_NAME = CLUSTER_SSL_CIPHERS;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-require-authentication">"cluster-ssl-require-authentication"</a>
+   * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    * property.
    */
-  @ConfigAttributeGetter(name=CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME)
-   public boolean getClusterSSLRequireAuthentication( );
+  @ConfigAttributeGetter(name = CLUSTER_SSL_REQUIRE_AUTHENTICATION)
+  boolean getClusterSSLRequireAuthentication();
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-require-authentication">"cluster-ssl-require-authentication"</a>
+   * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    * property.
    */
-  @ConfigAttributeSetter(name=CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME)
-   public void setClusterSSLRequireAuthentication( boolean enabled );
+  @ConfigAttributeSetter(name = CLUSTER_SSL_REQUIRE_AUTHENTICATION)
+  void setClusterSSLRequireAuthentication(boolean enabled);
 
-   /**
-   * The default cluster-ssl-require-authentication value.
+  /**
+   * The default {@link ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION} value.
    * <p> Actual value of this constant is <code>true</code>.
    */
-  public static final boolean DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION = true;
-  /** The name of the "ClusterSSLRequireAuthentication" property */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME =
-    "cluster-ssl-require-authentication";
+  boolean DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION = true;
+  /**
+   * The name of the {@link ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME = CLUSTER_SSL_REQUIRE_AUTHENTICATION;
 
-  
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-keystore">"cluster-ssl-keystore"</a>
+   * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
    * property.
    */
-  @ConfigAttributeGetter(name=CLUSTER_SSL_KEYSTORE_NAME)
-  public String getClusterSSLKeyStore( );
-  
+  @ConfigAttributeGetter(name = CLUSTER_SSL_KEYSTORE)
+  String getClusterSSLKeyStore();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-keystore">"cluster-ssl-keystore"</a>
+   * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
    * property.
    */
-  @ConfigAttributeSetter(name=CLUSTER_SSL_KEYSTORE_NAME)
-  public void setClusterSSLKeyStore( String keyStore);
-  
+  @ConfigAttributeSetter(name = CLUSTER_SSL_KEYSTORE)
+  void setClusterSSLKeyStore(String keyStore);
+
   /**
-   * The default cluster-ssl-keystore value.
+   * The default {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE} value.
    * <p> Actual value of this constant is "".
    */
-  public static final String DEFAULT_CLUSTER_SSL_KEYSTORE = "";
-  
-  /** The name of the "ClusterSSLKeyStore" property */
-  @ConfigAttribute(type=String.class)
-  public static final String CLUSTER_SSL_KEYSTORE_NAME = "cluster-ssl-keystore";
-  
+  String DEFAULT_CLUSTER_SSL_KEYSTORE = "";
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-keystore-type">"cluster-ssl-keystore-type"</a>
+   * The name of the {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String CLUSTER_SSL_KEYSTORE_NAME = CLUSTER_SSL_KEYSTORE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
    * property.
    */
-  @ConfigAttributeGetter(name=CLUSTER_SSL_KEYSTORE_TYPE_NAME)
-  public String getClusterSSLKeyStoreType( );
-  
+  @ConfigAttributeGetter(name = CLUSTER_SSL_KEYSTORE_TYPE)
+  String getClusterSSLKeyStoreType();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-keystore-type">"cluster-ssl-keystore-type"</a>
+   * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
    * property.
    */
-  @ConfigAttributeSetter(name=CLUSTER_SSL_KEYSTORE_TYPE_NAME)
-  public void setClusterSSLKeyStoreType( String keyStoreType);
-  
+  @ConfigAttributeSetter(name = CLUSTER_SSL_KEYSTORE_TYPE)
+  void setClusterSSLKeyStoreType(String keyStoreType);
+
   /**
-   * The default cluster-ssl-keystore-type value.
+   * The default {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE} value.
    * <p> Actual value of this constant is "".
    */
-  public static final String DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE = "";
-  
-  /** The name of the "ClusterSSLKeyStoreType" property */
-  @ConfigAttribute(type=String.class)
-  public static final String CLUSTER_SSL_KEYSTORE_TYPE_NAME = "cluster-ssl-keystore-type";
-  
+  String DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE = "";
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-keystore-password">"cluster-ssl-keystore-password"</a>
+   * The name of the {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String CLUSTER_SSL_KEYSTORE_TYPE_NAME = CLUSTER_SSL_KEYSTORE_TYPE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
    * property.
    */
-  @ConfigAttributeGetter(name=CLUSTER_SSL_KEYSTORE_PASSWORD_NAME)
-  public String getClusterSSLKeyStorePassword( );
-  
+  @ConfigAttributeGetter(name = CLUSTER_SSL_KEYSTORE_PASSWORD)
+  String getClusterSSLKeyStorePassword();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-keystore-password">"cluster-ssl-keystore-password"</a>
+   * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
    * property.
    */
-  @ConfigAttributeSetter(name=CLUSTER_SSL_KEYSTORE_PASSWORD_NAME)
-  public void setClusterSSLKeyStorePassword( String keyStorePassword);
-  
+  @ConfigAttributeSetter(name = CLUSTER_SSL_KEYSTORE_PASSWORD)
+  void setClusterSSLKeyStorePassword(String keyStorePassword);
+
   /**
-   * The default cluster-ssl-keystore-password value.
+   * The default {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD} value.
    * <p> Actual value of this constant is "".
    */
-  public static final String DEFAULT_CLUSTER_SSL_KEYSTORE_PASSWORD = "";
-  
-  /** The name of the "ClusterSSLKeyStorePassword" property */
-  @ConfigAttribute(type=String.class)
-  public static final String CLUSTER_SSL_KEYSTORE_PASSWORD_NAME = "cluster-ssl-keystore-password";
-  
+  String DEFAULT_CLUSTER_SSL_KEYSTORE_PASSWORD = "";
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-truststore">"cluster-ssl-truststore"</a>
+   * The name of the {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD} property
+   */
+  @ConfigAttribute(type = String.class)
+  String CLUSTER_SSL_KEYSTORE_PASSWORD_NAME = CLUSTER_SSL_KEYSTORE_PASSWORD;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
    * property.
    */
-  @ConfigAttributeGetter(name=CLUSTER_SSL_TRUSTSTORE_NAME)
-  public String getClusterSSLTrustStore( );
-  
+  @ConfigAttributeGetter(name = CLUSTER_SSL_TRUSTSTORE)
+  String getClusterSSLTrustStore();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-truststore">"cluster-ssl-truststore"</a>
+   * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
    * property.
    */
-  @ConfigAttributeSetter(name=CLUSTER_SSL_TRUSTSTORE_NAME)
-  public void setClusterSSLTrustStore( String trustStore);
-  
+  @ConfigAttributeSetter(name = CLUSTER_SSL_TRUSTSTORE)
+  void setClusterSSLTrustStore(String trustStore);
+
   /**
-   * The default cluster-ssl-truststore value.
+   * The default {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE} value.
    * <p> Actual value of this constant is "".
    */
-  public static final String DEFAULT_CLUSTER_SSL_TRUSTSTORE = "";
-  
-  /** The name of the "ClusterSSLTrustStore" property */
-  @ConfigAttribute(type=String.class)
-  public static final String CLUSTER_SSL_TRUSTSTORE_NAME = "cluster-ssl-truststore";
-  
+  String DEFAULT_CLUSTER_SSL_TRUSTSTORE = "";
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-truststore-password">"cluster-ssl-truststore-password"</a>
+   * The name of the {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String CLUSTER_SSL_TRUSTSTORE_NAME = CLUSTER_SSL_TRUSTSTORE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    * property.
    */
-  @ConfigAttributeGetter(name=CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME)
-  public String getClusterSSLTrustStorePassword( );
-  
+  @ConfigAttributeGetter(name = CLUSTER_SSL_TRUSTSTORE_PASSWORD)
+  String getClusterSSLTrustStorePassword();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-truststore-password">"cluster-ssl-truststore-password"</a>
+   * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    * property.
    */
-  @ConfigAttributeSetter(name=CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME)
-  public void setClusterSSLTrustStorePassword( String trusStorePassword);
+  @ConfigAttributeSetter(name = CLUSTER_SSL_TRUSTSTORE_PASSWORD)
+  void setClusterSSLTrustStorePassword(String trusStorePassword);
+
   /**
-   * The default cluster-ssl-truststore-password value.
+   * The default {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD} value.
    * <p> Actual value of this constant is "".
    */
-  public static final String DEFAULT_CLUSTER_SSL_TRUSTSTORE_PASSWORD = "";
-  
-  /** The name of the "ClusterSSLKeyStorePassword" property */
-  @ConfigAttribute(type=String.class)
-  public static final String CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME = "cluster-ssl-truststore-password";
-  
-  
-  /** The name of an internal property that specifies a {@link
+  String DEFAULT_CLUSTER_SSL_TRUSTSTORE_PASSWORD = "";
+
+  /**
+   * The name of the {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD} property
+   */
+  @ConfigAttribute(type = String.class)
+  String CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME = CLUSTER_SSL_TRUSTSTORE_PASSWORD;
+
+  /**
+   * The name of an internal property that specifies a {@link
    * com.gemstone.gemfire.i18n.LogWriterI18n} instance to log to.
-   *  Set this property with put(), not with setProperty()
+   * Set this property with put(), not with setProperty()
    *
-   * @since 4.0 */
-  public static final String LOG_WRITER_NAME = "log-writer";
+   * @since GemFire 4.0
+   */
+  String LOG_WRITER_NAME = "log-writer";
 
-  /** The name of an internal property that specifies a 
-   *  a DistributionConfigImpl that the locator is passing
-   *  in to a ds connect.
-   *  Set this property with put(), not with setProperty()
+  /**
+   * The name of an internal property that specifies a
+   * a DistributionConfigImpl that the locator is passing
+   * in to a ds connect.
+   * Set this property with put(), not with setProperty()
    *
-   * @since 7.0 */
-  public static final String DS_CONFIG_NAME = "ds-config";
-  
+   * @since GemFire 7.0
+   */
+  String DS_CONFIG_NAME = "ds-config";
+
   /**
    * The name of an internal property that specifies whether
    * the distributed system is reconnecting after a forced-
    * disconnect.
-   * @since 8.1
+   *
+   * @since GemFire 8.1
    */
-  public static final String DS_RECONNECTING_NAME = "ds-reconnecting";
-  
+  String DS_RECONNECTING_NAME = "ds-reconnecting";
+
   /**
    * The name of an internal property that specifies the
    * quorum checker for the system that was forcibly disconnected.
    * This should be used if the DS_RECONNECTING_NAME property
    * is used.
    */
-  public static final String DS_QUORUM_CHECKER_NAME = "ds-quorum-checker";
-  
+  String DS_QUORUM_CHECKER_NAME = "ds-quorum-checker";
+
   /**
    * The name of an internal property that specifies a {@link
    * com.gemstone.gemfire.LogWriter} instance to log security messages to. Set
    * this property with put(), not with setProperty()
    *
-   * @since 5.5
+   * @since GemFire 5.5
    */
-  public static final String SECURITY_LOG_WRITER_NAME = "security-log-writer";
+  String SECURITY_LOG_WRITER_NAME = "security-log-writer";
 
-  /** The name of an internal property that specifies a
+  /**
+   * The name of an internal property that specifies a
    * FileOutputStream associated with the internal property
    * LOG_WRITER_NAME.  If this property is set, the
    * FileOutputStream will be closed when the distributed
    * system disconnects.  Set this property with put(), not
    * with setProperty()
-   * @since 5.0
+   *
+   * @since GemFire 5.0
    */
-  public static final String LOG_OUTPUTSTREAM_NAME = "log-output-stream";
+  String LOG_OUTPUTSTREAM_NAME = "log-output-stream";
 
   /**
    * The name of an internal property that specifies a FileOutputStream
@@ -1187,820 +1245,924 @@ public interface DistributionConfig extends Config, LogConfig {
    * property is set, the FileOutputStream will be closed when the distributed
    * system disconnects. Set this property with put(), not with setProperty()
    *
-   * @since 5.5
+   * @since GemFire 5.5
    */
-  public static final String SECURITY_LOG_OUTPUTSTREAM_NAME = "security-log-output-stream";
+  String SECURITY_LOG_OUTPUTSTREAM_NAME = "security-log-output-stream";
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#socket-lease-time">"socket-lease-time"</a>
+   * Returns the value of the {@link ConfigurationProperties#SOCKET_LEASE_TIME}
    * property
    */
-  @ConfigAttributeGetter(name=SOCKET_LEASE_TIME_NAME)
-  public int getSocketLeaseTime();
+  @ConfigAttributeGetter(name = SOCKET_LEASE_TIME)
+  int getSocketLeaseTime();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#socket-lease-time">"socket-lease-time"</a>
+   * Sets the value of the {@link ConfigurationProperties#SOCKET_LEASE_TIME}
    * property
    */
-  @ConfigAttributeSetter(name=SOCKET_LEASE_TIME_NAME)
-  public void setSocketLeaseTime(int value);
+  @ConfigAttributeSetter(name = SOCKET_LEASE_TIME)
+  void setSocketLeaseTime(int value);
 
-
-
-  /** The default value of the "socketLeaseTime" property */
-  public static final int DEFAULT_SOCKET_LEASE_TIME = 60000;
   /**
-   * The minimum socketLeaseTime.
+   * The default value of the {@link ConfigurationProperties#SOCKET_LEASE_TIME} property
+   */
+  int DEFAULT_SOCKET_LEASE_TIME = 60000;
+  /**
+   * The minimum {@link ConfigurationProperties#SOCKET_LEASE_TIME}.
    * <p> Actual value of this constant is <code>0</code>.
    */
-  public static final int MIN_SOCKET_LEASE_TIME = 0;
+  int MIN_SOCKET_LEASE_TIME = 0;
   /**
-   * The maximum socketLeaseTime.
+   * The maximum {@link ConfigurationProperties#SOCKET_LEASE_TIME}.
    * <p> Actual value of this constant is <code>600000</code>.
    */
-  public static final int MAX_SOCKET_LEASE_TIME = 600000;
-
-  /** The name of the "socketLeaseTime" property */
-  @ConfigAttribute(type=Integer.class, min=MIN_SOCKET_LEASE_TIME, max=MAX_SOCKET_LEASE_TIME)
-  public static final String SOCKET_LEASE_TIME_NAME = "socket-lease-time";
+  int MAX_SOCKET_LEASE_TIME = 600000;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#socket-buffer-size">"socket-buffer-size"</a>
+   * The name of the {@link ConfigurationProperties#SOCKET_LEASE_TIME} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_SOCKET_LEASE_TIME, max = MAX_SOCKET_LEASE_TIME)
+  String SOCKET_LEASE_TIME_NAME = SOCKET_LEASE_TIME;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SOCKET_BUFFER_SIZE}
    * property
    */
-  @ConfigAttributeGetter(name=SOCKET_BUFFER_SIZE_NAME)
-  public int getSocketBufferSize();
+  @ConfigAttributeGetter(name = SOCKET_BUFFER_SIZE)
+  int getSocketBufferSize();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#socket-buffer-size">"socket-buffer-size"</a>
+   * Sets the value of the {@link ConfigurationProperties#SOCKET_BUFFER_SIZE}
    * property
    */
-  @ConfigAttributeSetter(name=SOCKET_BUFFER_SIZE_NAME)
-  public void setSocketBufferSize(int value);
+  @ConfigAttributeSetter(name = SOCKET_BUFFER_SIZE)
+  void setSocketBufferSize(int value);
 
-
-  /** The default value of the "socketBufferSize" property */
-  public static final int DEFAULT_SOCKET_BUFFER_SIZE = 32768;
   /**
-   * The minimum socketBufferSize.
+   * The default value of the {@link ConfigurationProperties#SOCKET_BUFFER_SIZE} property
+   */
+  int DEFAULT_SOCKET_BUFFER_SIZE = 32768;
+  /**
+   * The minimum {@link ConfigurationProperties#SOCKET_BUFFER_SIZE}.
    * <p> Actual value of this constant is <code>1024</code>.
    */
-  public static final int MIN_SOCKET_BUFFER_SIZE = 1024;
+  int MIN_SOCKET_BUFFER_SIZE = 1024;
   /**
-   * The maximum socketBufferSize.
+   * The maximum {@link ConfigurationProperties#SOCKET_BUFFER_SIZE}.
    * <p> Actual value of this constant is <code>20000000</code>.
    */
-  public static final int MAX_SOCKET_BUFFER_SIZE = Connection.MAX_MSG_SIZE;
+  int MAX_SOCKET_BUFFER_SIZE = Connection.MAX_MSG_SIZE;
 
-  public static final boolean VALIDATE = Boolean.getBoolean("gemfire.validateMessageSize");
-  public static final int VALIDATE_CEILING = Integer.getInteger("gemfire.validateMessageSizeCeiling",  8 * 1024 * 1024).intValue();
+  boolean VALIDATE = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "validateMessageSize");
+  int VALIDATE_CEILING = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "validateMessageSizeCeiling", 8 * 1024 * 1024).intValue();
 
-  /** The name of the "socketBufferSize" property */
-  @ConfigAttribute(type=Integer.class, min=MIN_SOCKET_BUFFER_SIZE, max=MAX_SOCKET_BUFFER_SIZE)
-  public static final String SOCKET_BUFFER_SIZE_NAME = "socket-buffer-size";
-
+  /**
+   * The name of the {@link ConfigurationProperties#SOCKET_BUFFER_SIZE} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_SOCKET_BUFFER_SIZE, max = MAX_SOCKET_BUFFER_SIZE)
+  String SOCKET_BUFFER_SIZE_NAME = SOCKET_BUFFER_SIZE;
 
   /**
    * Get the value of the
-   * <a href="../DistributedSystem.html#mcast-send-buffer-size">"mcast-send-buffer-size"</a>
+   * {@link ConfigurationProperties#MCAST_SEND_BUFFER_SIZE}
    * property
    */
-  @ConfigAttributeGetter(name=MCAST_SEND_BUFFER_SIZE_NAME)
-  public int getMcastSendBufferSize();
+  @ConfigAttributeGetter(name = MCAST_SEND_BUFFER_SIZE)
+  int getMcastSendBufferSize();
 
   /**
    * Set the value of the
-   * <a href="../DistributedSystem.html#mcast-send-buffer-size">"mcast-send-buffer-size"</a>
+   * {@link ConfigurationProperties#MCAST_SEND_BUFFER_SIZE}
    * property
    */
-  @ConfigAttributeSetter(name=MCAST_SEND_BUFFER_SIZE_NAME)
-  public void setMcastSendBufferSize(int value);
-
+  @ConfigAttributeSetter(name = MCAST_SEND_BUFFER_SIZE)
+  void setMcastSendBufferSize(int value);
 
   /**
-   * The default value of the corresponding property
+   * The default value for  {@link ConfigurationProperties#MCAST_SEND_BUFFER_SIZE} property
    */
-  public static final int DEFAULT_MCAST_SEND_BUFFER_SIZE = 65535;
-
+  int DEFAULT_MCAST_SEND_BUFFER_SIZE = 65535;
 
   /**
-   * The minimum size of the buffer, in bytes.
+   * The minimum size of the  {@link ConfigurationProperties#MCAST_SEND_BUFFER_SIZE}, in bytes.
    * <p> Actual value of this constant is <code>2048</code>.
    */
-  public static final int MIN_MCAST_SEND_BUFFER_SIZE = 2048;
+  int MIN_MCAST_SEND_BUFFER_SIZE = 2048;
 
   /**
-   * The name of the corresponding property
+   * The name of the {@link ConfigurationProperties#MCAST_SEND_BUFFER_SIZE} property
    */
-  @ConfigAttribute(type=Integer.class, min=MIN_MCAST_SEND_BUFFER_SIZE)
-  public static final String MCAST_SEND_BUFFER_SIZE_NAME = "mcast-send-buffer-size";
+  @ConfigAttribute(type = Integer.class, min = MIN_MCAST_SEND_BUFFER_SIZE)
+  String MCAST_SEND_BUFFER_SIZE_NAME = MCAST_SEND_BUFFER_SIZE;
 
   /**
    * Get the value of the
-   * <a href="../DistributedSystem.html#mcast-recv-buffer-size">"mcast-recv-buffer-size"</a>
+   * {@link ConfigurationProperties#MCAST_RECV_BUFFER_SIZE}
    * property
    */
-  @ConfigAttributeGetter(name=MCAST_RECV_BUFFER_SIZE_NAME)
-  public int getMcastRecvBufferSize();
+  @ConfigAttributeGetter(name = MCAST_RECV_BUFFER_SIZE)
+  int getMcastRecvBufferSize();
 
   /**
    * Set the value of the
-   * <a href="../DistributedSystem.html#mcast-recv-buffer-size">"mcast-recv-buffer-size"</a>
+   * {@link ConfigurationProperties#MCAST_RECV_BUFFER_SIZE}
    * property
    */
-  @ConfigAttributeSetter(name=MCAST_RECV_BUFFER_SIZE_NAME)
-  public void setMcastRecvBufferSize(int value);
-
+  @ConfigAttributeSetter(name = MCAST_RECV_BUFFER_SIZE)
+  void setMcastRecvBufferSize(int value);
 
   /**
-   * The default value of the corresponding property
+   * The default value of the {@link ConfigurationProperties#MCAST_RECV_BUFFER_SIZE} property
    */
-  public static final int DEFAULT_MCAST_RECV_BUFFER_SIZE = 1048576;
+  int DEFAULT_MCAST_RECV_BUFFER_SIZE = 1048576;
 
   /**
-   * The minimum size of the buffer, in bytes.
+   * The minimum size of the {@link ConfigurationProperties#MCAST_RECV_BUFFER_SIZE}, in bytes.
    * <p> Actual value of this constant is <code>2048</code>.
    */
-  public static final int MIN_MCAST_RECV_BUFFER_SIZE = 2048;
+  int MIN_MCAST_RECV_BUFFER_SIZE = 2048;
 
   /**
-   * The name of the corresponding property
+   * The name of the {@link ConfigurationProperties#MCAST_RECV_BUFFER_SIZE} property
    */
-  @ConfigAttribute(type=Integer.class, min=MIN_MCAST_RECV_BUFFER_SIZE)
-  public static final String MCAST_RECV_BUFFER_SIZE_NAME = "mcast-recv-buffer-size";
-
+  @ConfigAttribute(type = Integer.class, min = MIN_MCAST_RECV_BUFFER_SIZE)
+  String MCAST_RECV_BUFFER_SIZE_NAME = MCAST_RECV_BUFFER_SIZE;
 
   /**
    * Get the value of the
-   * <a href="../DistributedSystem.html#mcast-flow-control">"mcast-flow-control"</a>
+   * {@link ConfigurationProperties#MCAST_FLOW_CONTROL}
    * property.
    */
-  @ConfigAttributeGetter(name=MCAST_FLOW_CONTROL_NAME)
-  public FlowControlParams getMcastFlowControl();
+  @ConfigAttributeGetter(name = MCAST_FLOW_CONTROL)
+  FlowControlParams getMcastFlowControl();
 
   /**
    * Set the value of the
-   * <a href="../DistributedSystem.html#mcast-flow-control">"mcast-flow-control"</a>
+   * {@link ConfigurationProperties#MCAST_FLOW_CONTROL}
    * property
    */
-  @ConfigAttributeSetter(name=MCAST_FLOW_CONTROL_NAME)
-  public void setMcastFlowControl(FlowControlParams values);
+  @ConfigAttributeSetter(name = MCAST_FLOW_CONTROL)
+  void setMcastFlowControl(FlowControlParams values);
 
   /**
-   * The name of the corresponding property
+   * The name of the {@link ConfigurationProperties#MCAST_FLOW_CONTROL} property
    */
-  @ConfigAttribute(type=FlowControlParams.class)
-  public static final String MCAST_FLOW_CONTROL_NAME = "mcast-flow-control";
+  @ConfigAttribute(type = FlowControlParams.class)
+  String MCAST_FLOW_CONTROL_NAME = MCAST_FLOW_CONTROL;
 
   /**
-   * The default value of the corresponding property
+   * The default value of the {@link ConfigurationProperties#MCAST_FLOW_CONTROL} property
    */
-  public static final FlowControlParams DEFAULT_MCAST_FLOW_CONTROL
-    = new FlowControlParams(1048576, (float)0.25, 5000);
+  FlowControlParams DEFAULT_MCAST_FLOW_CONTROL
+      = new FlowControlParams(1048576, (float) 0.25, 5000);
 
   /**
-   * The minimum byteAllowance for the mcast-flow-control setting of
+   * The minimum byteAllowance for the{@link ConfigurationProperties#MCAST_FLOW_CONTROL} setting of
    * <code>100000</code>.
    */
-  public static final int MIN_FC_BYTE_ALLOWANCE = 10000;
+  int MIN_FC_BYTE_ALLOWANCE = 10000;
 
   /**
-   * The minimum rechargeThreshold for the mcast-flow-control setting of
+   * The minimum rechargeThreshold for the {@link ConfigurationProperties#MCAST_FLOW_CONTROL} setting of
    * <code>0.1</code>
    */
-  public static final float MIN_FC_RECHARGE_THRESHOLD = (float)0.1;
+  float MIN_FC_RECHARGE_THRESHOLD = (float) 0.1;
 
   /**
-   * The maximum rechargeThreshold for the mcast-flow-control setting of
+   * The maximum rechargeThreshold for the {@link ConfigurationProperties#MCAST_FLOW_CONTROL} setting of
    * <code>0.5</code>
    */
-  public static final float MAX_FC_RECHARGE_THRESHOLD = (float)0.5;
+  float MAX_FC_RECHARGE_THRESHOLD = (float) 0.5;
 
   /**
-   * The minimum rechargeBlockMs for the mcast-flow-control setting of
+   * The minimum rechargeBlockMs for the {@link ConfigurationProperties#MCAST_FLOW_CONTROL} setting of
    * <code>500</code>
    */
-  public static final int MIN_FC_RECHARGE_BLOCK_MS = 500;
+  int MIN_FC_RECHARGE_BLOCK_MS = 500;
 
   /**
-   * The maximum rechargeBlockMs for the mcast-flow-control setting of
+   * The maximum rechargeBlockMs for the {@link ConfigurationProperties#MCAST_FLOW_CONTROL} setting of
    * <code>60000</code>
    */
-  public static final int MAX_FC_RECHARGE_BLOCK_MS = 60000;
+  int MAX_FC_RECHARGE_BLOCK_MS = 60000;
 
   /**
    * Get the value of the
-   * <a href="../DistributedSystem.html#udp-fragment-size">"udp-fragment-size"</a>
+   * {@link ConfigurationProperties#UDP_FRAGMENT_SIZE}
    * property.
    */
-  @ConfigAttributeGetter(name=UDP_FRAGMENT_SIZE_NAME)
-  public int getUdpFragmentSize();
+  @ConfigAttributeGetter(name = UDP_FRAGMENT_SIZE)
+  int getUdpFragmentSize();
 
   /**
    * Set the value of the
-   * <a href="../DistributedSystem.html#udp-fragment-size">"udp-fragment-size"</a>
+   * {@link ConfigurationProperties#UDP_FRAGMENT_SIZE}
    * property
    */
-  @ConfigAttributeSetter(name=UDP_FRAGMENT_SIZE_NAME)
-  public void setUdpFragmentSize(int value);
+  @ConfigAttributeSetter(name = UDP_FRAGMENT_SIZE)
+  void setUdpFragmentSize(int value);
 
   /**
-   * The default value of the corresponding property
+   * The default value of the {@link ConfigurationProperties#UDP_FRAGMENT_SIZE} property
    */
-  public static final int DEFAULT_UDP_FRAGMENT_SIZE = 60000;
-
-  /** The minimum allowed udp-fragment-size setting of 1000
-  */
-  public static final int MIN_UDP_FRAGMENT_SIZE = 1000;
-
-  /** The maximum allowed udp-fragment-size setting of 60000
-  */
-  public static final int MAX_UDP_FRAGMENT_SIZE = 60000;
+  int DEFAULT_UDP_FRAGMENT_SIZE = 60000;
 
   /**
-   * The name of the corresponding property
+   * The minimum allowed {@link ConfigurationProperties#UDP_FRAGMENT_SIZE} setting of 1000
    */
-  @ConfigAttribute(type=Integer.class, min=MIN_UDP_FRAGMENT_SIZE, max=MAX_UDP_FRAGMENT_SIZE)
-  public static final String UDP_FRAGMENT_SIZE_NAME = "udp-fragment-size";
+  int MIN_UDP_FRAGMENT_SIZE = 1000;
 
+  /**
+   * The maximum allowed {@link ConfigurationProperties#UDP_FRAGMENT_SIZE} setting of 60000
+   */
+  int MAX_UDP_FRAGMENT_SIZE = 60000;
 
-
+  /**
+   * The name of the {@link ConfigurationProperties#UDP_FRAGMENT_SIZE} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_UDP_FRAGMENT_SIZE, max = MAX_UDP_FRAGMENT_SIZE)
+  String UDP_FRAGMENT_SIZE_NAME = UDP_FRAGMENT_SIZE;
 
   /**
    * Get the value of the
-   * <a href="../DistributedSystem.html#udp-send-buffer-size">"udp-send-buffer-size"</a>
+   * {@link ConfigurationProperties#UDP_SEND_BUFFER_SIZE}
    * property
    */
-  @ConfigAttributeGetter(name=UDP_SEND_BUFFER_SIZE_NAME)
-  public int getUdpSendBufferSize();
+  @ConfigAttributeGetter(name = UDP_SEND_BUFFER_SIZE)
+  int getUdpSendBufferSize();
 
   /**
    * Set the value of the
-   * <a href="../DistributedSystem.html#udp-send-buffer-size">"udp-send-buffer-size"</a>
+   * {@link ConfigurationProperties#UDP_SEND_BUFFER_SIZE}
    * property
    */
-  @ConfigAttributeSetter(name=UDP_SEND_BUFFER_SIZE_NAME)
-  public void setUdpSendBufferSize(int value);
+  @ConfigAttributeSetter(name = UDP_SEND_BUFFER_SIZE)
+  void setUdpSendBufferSize(int value);
 
   /**
-   * The default value of the corresponding property
+   * The default value of the {@link ConfigurationProperties#UDP_SEND_BUFFER_SIZE} property
    */
-  public static final int DEFAULT_UDP_SEND_BUFFER_SIZE = 65535;
+  int DEFAULT_UDP_SEND_BUFFER_SIZE = 65535;
 
   /**
-   * The minimum size of the buffer, in bytes.
+   * The minimum size of the {@link ConfigurationProperties#UDP_SEND_BUFFER_SIZE}, in bytes.
    * <p> Actual value of this constant is <code>2048</code>.
    */
-  public static final int MIN_UDP_SEND_BUFFER_SIZE = 2048;
+  int MIN_UDP_SEND_BUFFER_SIZE = 2048;
 
   /**
-   * The name of the corresponding property
+   * The name of the {@link ConfigurationProperties#UDP_SEND_BUFFER_SIZE} property
    */
-  @ConfigAttribute(type=Integer.class, min=MIN_UDP_SEND_BUFFER_SIZE)
-  public static final String UDP_SEND_BUFFER_SIZE_NAME = "udp-send-buffer-size";
+  @ConfigAttribute(type = Integer.class, min = MIN_UDP_SEND_BUFFER_SIZE)
+  String UDP_SEND_BUFFER_SIZE_NAME = UDP_SEND_BUFFER_SIZE;
 
   /**
    * Get the value of the
-   * <a href="../DistributedSystem.html#udp-recv-buffer-size">"udp-recv-buffer-size"</a>
+   * {@link ConfigurationProperties#UDP_RECV_BUFFER_SIZE}
    * property
    */
-  @ConfigAttributeGetter(name=UDP_RECV_BUFFER_SIZE_NAME)
-  public int getUdpRecvBufferSize();
+  @ConfigAttributeGetter(name = UDP_RECV_BUFFER_SIZE)
+  int getUdpRecvBufferSize();
 
   /**
    * Set the value of the
-   * <a href="../DistributedSystem.html#udp-recv-buffer-size">"udp-recv-buffer-size"</a>
+   * {@link ConfigurationProperties#UDP_RECV_BUFFER_SIZE}
    * property
    */
-  @ConfigAttributeSetter(name=UDP_RECV_BUFFER_SIZE_NAME)
-  public void setUdpRecvBufferSize(int value);
+  @ConfigAttributeSetter(name = UDP_RECV_BUFFER_SIZE)
+  void setUdpRecvBufferSize(int value);
 
   /**
-   * The default value of the unicast receive buffer size property
+   * The default value of the {@link ConfigurationProperties#UDP_RECV_BUFFER_SIZE} property
    */
-  public static final int DEFAULT_UDP_RECV_BUFFER_SIZE = 1048576;
+  int DEFAULT_UDP_RECV_BUFFER_SIZE = 1048576;
 
   /**
-   * The default size of the unicast receive buffer property if tcp/ip sockets are
+   * The default size of the {@link ConfigurationProperties#UDP_RECV_BUFFER_SIZE}
+   * if tcp/ip sockets are
    * enabled and multicast is disabled
    */
-  public static final int DEFAULT_UDP_RECV_BUFFER_SIZE_REDUCED = 65535;
+  int DEFAULT_UDP_RECV_BUFFER_SIZE_REDUCED = 65535;
 
   /**
-   * The minimum size of the buffer, in bytes.
+   * The minimum size of the {@link ConfigurationProperties#UDP_RECV_BUFFER_SIZE}, in bytes.
    * <p> Actual value of this constant is <code>2048</code>.
    */
-  public static final int MIN_UDP_RECV_BUFFER_SIZE = 2048;
-
+  int MIN_UDP_RECV_BUFFER_SIZE = 2048;
 
   /**
-   * The name of the corresponding property
+   * The name of the {@link ConfigurationProperties#UDP_RECV_BUFFER_SIZE} property
    */
-  @ConfigAttribute(type=Integer.class, min=MIN_UDP_RECV_BUFFER_SIZE)
-  public static final String UDP_RECV_BUFFER_SIZE_NAME = "udp-recv-buffer-size";
+  @ConfigAttribute(type = Integer.class, min = MIN_UDP_RECV_BUFFER_SIZE)
+  String UDP_RECV_BUFFER_SIZE_NAME = UDP_RECV_BUFFER_SIZE;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#disable-tcp">"disable-tcp"</a>
+   * Returns the value of the {@link ConfigurationProperties#DISABLE_TCP}
    * property
    */
-  @ConfigAttributeGetter(name=DISABLE_TCP_NAME)
-  public boolean getDisableTcp();
+  @ConfigAttributeGetter(name = DISABLE_TCP)
+  boolean getDisableTcp();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#disable-tcp">"disable-tcp"</a>
+   * Sets the value of the {@link ConfigurationProperties#DISABLE_TCP}
    * property.
    */
-  @ConfigAttributeSetter(name=DISABLE_TCP_NAME)
-  public void setDisableTcp(boolean newValue);
+  @ConfigAttributeSetter(name = DISABLE_TCP)
+  void setDisableTcp(boolean newValue);
 
-  /** The name of the corresponding property */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String DISABLE_TCP_NAME = "disable-tcp";
+  /**
+   * The name of the {@link ConfigurationProperties#DISABLE_TCP} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String DISABLE_TCP_NAME = DISABLE_TCP;
 
-  /** The default value of the corresponding property */
-  public static final boolean DEFAULT_DISABLE_TCP = false;
-
+  /**
+   * The default value of the {@link ConfigurationProperties#DISABLE_TCP} property
+   */
+  boolean DEFAULT_DISABLE_TCP = false;
 
   /**
    * Turns on timing statistics for the distributed system
    */
-  @ConfigAttributeSetter(name=ENABLE_TIME_STATISTICS_NAME)
-  public void setEnableTimeStatistics(boolean newValue);
+  @ConfigAttributeSetter(name = ENABLE_TIME_STATISTICS)
+  void setEnableTimeStatistics(boolean newValue);
 
   /**
-   * Returns the value of <a
-   * href="../DistributedSystem.html#enable-time-statistics">enable-time-statistics</a>
+   * Returns the value of {@link ConfigurationProperties#ENABLE_TIME_STATISTICS}
    * property
    */
-  @ConfigAttributeGetter(name=ENABLE_TIME_STATISTICS_NAME)
-  public boolean getEnableTimeStatistics();
-
-  /** the name of the corresponding property */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String ENABLE_TIME_STATISTICS_NAME = "enable-time-statistics";
-
-  /** The default value of the corresponding property */
-  public static final boolean DEFAULT_ENABLE_TIME_STATISTICS = false;
-
+  @ConfigAttributeGetter(name = ENABLE_TIME_STATISTICS)
+  boolean getEnableTimeStatistics();
 
   /**
-   * Sets the value for 
-   <a href="../DistributedSystem.html#use-cluster-configuration">use-shared-configuration</a>
+   * the name of the {@link ConfigurationProperties#ENABLE_TIME_STATISTICS} property
    */
-  @ConfigAttributeSetter(name=USE_CLUSTER_CONFIGURATION_NAME)
-  public void setUseSharedConfiguration(boolean newValue);
+  @ConfigAttribute(type = Boolean.class)
+  String ENABLE_TIME_STATISTICS_NAME = ENABLE_TIME_STATISTICS;
 
   /**
-   * Returns the value of <a
-   * href="../DistributedSystem.html#use-cluster-configuration">use-cluster-configuration</a>
+   * The default value of the {@link ConfigurationProperties#ENABLE_TIME_STATISTICS} property
+   */
+  boolean DEFAULT_ENABLE_TIME_STATISTICS = false;
+
+  /**
+   * Sets the value for
+   * {@link ConfigurationProperties#USE_CLUSTER_CONFIGURATION}
+   */
+  @ConfigAttributeSetter(name = USE_CLUSTER_CONFIGURATION)
+  void setUseSharedConfiguration(boolean newValue);
+
+  /**
+   * Returns the value of {@link ConfigurationProperties#USE_CLUSTER_CONFIGURATION}
    * property
    */
-  @ConfigAttributeGetter(name=USE_CLUSTER_CONFIGURATION_NAME)
-  public boolean getUseSharedConfiguration();
+  @ConfigAttributeGetter(name = USE_CLUSTER_CONFIGURATION)
+  boolean getUseSharedConfiguration();
 
-  /** the name of the corresponding property */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String USE_CLUSTER_CONFIGURATION_NAME = "use-cluster-configuration";
-
-  /** The default value of the corresponding property */
-  public static final boolean DEFAULT_USE_CLUSTER_CONFIGURATION = true;
-  
   /**
-   * Sets the value for 
-   <a href="../DistributedSystem.html#enable-cluster-configuration">enable-cluster-configuration</a>
+   * the name of the {@link ConfigurationProperties#USE_CLUSTER_CONFIGURATION} property
    */
-  @ConfigAttributeSetter(name=ENABLE_CLUSTER_CONFIGURATION_NAME)
-  public void setEnableClusterConfiguration(boolean newValue);
+  @ConfigAttribute(type = Boolean.class)
+  String USE_CLUSTER_CONFIGURATION_NAME = USE_CLUSTER_CONFIGURATION;
 
   /**
-   * Returns the value of <a
-   * href="../DistributedSystem.html#enable-cluster-configuration">enable-cluster-configuration</a>
+   * The default value of the {@link ConfigurationProperties#USE_CLUSTER_CONFIGURATION} property
+   */
+  boolean DEFAULT_USE_CLUSTER_CONFIGURATION = true;
+
+  /**
+   * Sets the value for
+   * {@link ConfigurationProperties#ENABLE_CLUSTER_CONFIGURATION}
+   */
+  @ConfigAttributeSetter(name = ENABLE_CLUSTER_CONFIGURATION)
+  void setEnableClusterConfiguration(boolean newValue);
+
+  /**
+   * Returns the value of {@link ConfigurationProperties#ENABLE_CLUSTER_CONFIGURATION}
    * property
    */
-  @ConfigAttributeGetter(name=ENABLE_CLUSTER_CONFIGURATION_NAME)
-  public boolean getEnableClusterConfiguration();
+  @ConfigAttributeGetter(name = ENABLE_CLUSTER_CONFIGURATION)
+  boolean getEnableClusterConfiguration();
 
-  /** the name of the corresponding property */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String ENABLE_CLUSTER_CONFIGURATION_NAME = "enable-cluster-configuration";
-  /** The default value of the corresponding property */
-  public static final boolean DEFAULT_ENABLE_CLUSTER_CONFIGURATION = true;
-
-  @ConfigAttribute(type=Boolean.class)
-  public static final String LOAD_CLUSTER_CONFIG_FROM_DIR_NAME = "load-cluster-configuration-from-dir";
-  public static final boolean DEFAULT_LOAD_CLUSTER_CONFIG_FROM_DIR = false;
-  
   /**
-   * Returns the value of 
-   * <a href="../DistributedSystem.html#cluster-configuration-dir">cluster-configuration-dir</a>
+   * the name of the {@link ConfigurationProperties#ENABLE_CLUSTER_CONFIGURATION} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String ENABLE_CLUSTER_CONFIGURATION_NAME = ENABLE_CLUSTER_CONFIGURATION;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#ENABLE_CLUSTER_CONFIGURATION} property
+   */
+  boolean DEFAULT_ENABLE_CLUSTER_CONFIGURATION = true;
+
+  @ConfigAttribute(type = Boolean.class)
+  String LOAD_CLUSTER_CONFIG_FROM_DIR_NAME = LOAD_CLUSTER_CONFIGURATION_FROM_DIR;
+  boolean DEFAULT_LOAD_CLUSTER_CONFIG_FROM_DIR = false;
+
+  /**
+   * Returns the value of
+   * {@link ConfigurationProperties#LOAD_CLUSTER_CONFIGURATION_FROM_DIR}
    * property
    */
-  @ConfigAttributeGetter(name=LOAD_CLUSTER_CONFIG_FROM_DIR_NAME)
-  public boolean getLoadClusterConfigFromDir();
-  
+  @ConfigAttributeGetter(name = LOAD_CLUSTER_CONFIGURATION_FROM_DIR)
+  boolean getLoadClusterConfigFromDir();
+
   /**
-   * Sets the value of 
-   * <a href="../DistributedSystem.html#cluster-configuration-dir">cluster-configuration-dir</a>
+   * Sets the value of
+   * {@link ConfigurationProperties#LOAD_CLUSTER_CONFIGURATION_FROM_DIR}
    * property
    */
-  @ConfigAttributeSetter(name=LOAD_CLUSTER_CONFIG_FROM_DIR_NAME)
-  public void setLoadClusterConfigFromDir(boolean newValue);
+  @ConfigAttributeSetter(name = LOAD_CLUSTER_CONFIGURATION_FROM_DIR)
+  void setLoadClusterConfigFromDir(boolean newValue);
 
-  @ConfigAttribute(type=String.class)
-  public static final String CLUSTER_CONFIGURATION_DIR = "cluster-configuration-dir";
-  public static final String DEFAULT_CLUSTER_CONFIGURATION_DIR = System.getProperty("user.dir");
+  @ConfigAttribute(type = String.class)
+  String CLUSTER_CONFIGURATION_DIR_NAME = CLUSTER_CONFIGURATION_DIR;
+  String DEFAULT_CLUSTER_CONFIGURATION_DIR = System.getProperty("user.dir");
 
-  @ConfigAttributeGetter(name=CLUSTER_CONFIGURATION_DIR)
-  public String getClusterConfigDir();
-  @ConfigAttributeSetter(name=CLUSTER_CONFIGURATION_DIR)
-  public void setClusterConfigDir(final String clusterConfigDir);
-  
-  /** Turns on network partition detection */
-  @ConfigAttributeSetter(name=ENABLE_NETWORK_PARTITION_DETECTION_NAME)
-  public void setEnableNetworkPartitionDetection(boolean newValue);
+  @ConfigAttributeGetter(name = CLUSTER_CONFIGURATION_DIR)
+  String getClusterConfigDir();
+
+  @ConfigAttributeSetter(name = CLUSTER_CONFIGURATION_DIR)
+  void setClusterConfigDir(String clusterConfigDir);
+
   /**
-   * Returns the value of the enable-network-partition-detection property
+   * Turns on network partition detection
    */
-  @ConfigAttributeGetter(name=ENABLE_NETWORK_PARTITION_DETECTION_NAME)
-  public boolean getEnableNetworkPartitionDetection();
-  /** the name of the corresponding property */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String ENABLE_NETWORK_PARTITION_DETECTION_NAME =
-    "enable-network-partition-detection";
-  public static final boolean DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION = false;
+  @ConfigAttributeSetter(name = ENABLE_NETWORK_PARTITION_DETECTION)
+  void setEnableNetworkPartitionDetection(boolean newValue);
+
+  /**
+   * Returns the value of the
+   * {@link ConfigurationProperties#ENABLE_NETWORK_PARTITION_DETECTION} property
+   */
+  @ConfigAttributeGetter(name = ENABLE_NETWORK_PARTITION_DETECTION)
+  boolean getEnableNetworkPartitionDetection();
+
+  /**
+   * the name of the {@link ConfigurationProperties#ENABLE_NETWORK_PARTITION_DETECTION} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String ENABLE_NETWORK_PARTITION_DETECTION_NAME = ENABLE_NETWORK_PARTITION_DETECTION;
+  boolean DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION = false;
 
   /**
    * Get the value of the
-   * <a href="../DistributedSystem.html#member-timeout">"member-timeout"</a>
+   * {@link ConfigurationProperties#MEMBER_TIMEOUT}
    * property
    */
-  @ConfigAttributeGetter(name=MEMBER_TIMEOUT_NAME)
-  public int getMemberTimeout();
+  @ConfigAttributeGetter(name = MEMBER_TIMEOUT)
+  int getMemberTimeout();
 
   /**
    * Set the value of the
-   * <a href="../DistributedSystem.html#member-timeout">"member-timeout"</a>
+   * {@link ConfigurationProperties#MEMBER_TIMEOUT}
    * property
    */
-  @ConfigAttributeSetter(name=MEMBER_TIMEOUT_NAME)
-  public void setMemberTimeout(int value);
+  @ConfigAttributeSetter(name = MEMBER_TIMEOUT)
+  void setMemberTimeout(int value);
 
   /**
-   * The default value of the corresponding property
+   * The default value of the {@link ConfigurationProperties#MEMBER_TIMEOUT} property
    */
-  public static final int DEFAULT_MEMBER_TIMEOUT = 5000;
+  int DEFAULT_MEMBER_TIMEOUT = 5000;
 
-  /** The minimum member-timeout setting of 1000 milliseconds */
-  public static final int MIN_MEMBER_TIMEOUT = 10;
-
-  /**The maximum member-timeout setting of 600000 millieseconds */
-  public static final int MAX_MEMBER_TIMEOUT = 600000;
   /**
-   * The name of the corresponding property
+   * The minimum {@link ConfigurationProperties#MEMBER_TIMEOUT} setting of 1000 milliseconds
    */
-  @ConfigAttribute(type=Integer.class, min=MIN_MEMBER_TIMEOUT, max=MAX_MEMBER_TIMEOUT)
-  public static final String MEMBER_TIMEOUT_NAME = "member-timeout";
+  int MIN_MEMBER_TIMEOUT = 10;
 
-  @ConfigAttribute(type=int[].class)
-  public static final String MEMBERSHIP_PORT_RANGE_NAME = "membership-port-range";
-  
-  public static final int[] DEFAULT_MEMBERSHIP_PORT_RANGE = new int[]{1024,65535};
-
-  @ConfigAttributeGetter(name=MEMBERSHIP_PORT_RANGE_NAME)
-  public int[] getMembershipPortRange();
-
-  @ConfigAttributeSetter(name=MEMBERSHIP_PORT_RANGE_NAME)
-  public void setMembershipPortRange(int[] range);
-  
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#conserve-sockets">"conserve-sockets"</a>
+   * The maximum {@link ConfigurationProperties#MEMBER_TIMEOUT} setting of 600000 millieseconds
+   */
+  int MAX_MEMBER_TIMEOUT = 600000;
+  /**
+   * The name of the {@link ConfigurationProperties#MEMBER_TIMEOUT} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_MEMBER_TIMEOUT, max = MAX_MEMBER_TIMEOUT)
+  String MEMBER_TIMEOUT_NAME = MEMBER_TIMEOUT;
+
+  @ConfigAttribute(type = int[].class)
+  String MEMBERSHIP_PORT_RANGE_NAME = MEMBERSHIP_PORT_RANGE;
+
+  int[] DEFAULT_MEMBERSHIP_PORT_RANGE = new int[] { 1024, 65535 };
+
+  @ConfigAttributeGetter(name = MEMBERSHIP_PORT_RANGE)
+  int[] getMembershipPortRange();
+
+  @ConfigAttributeSetter(name = MEMBERSHIP_PORT_RANGE)
+  void setMembershipPortRange(int[] range);
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#CONSERVE_SOCKETS}
    * property
    */
-  @ConfigAttributeGetter(name=CONSERVE_SOCKETS_NAME)
-  public boolean getConserveSockets();
+  @ConfigAttributeGetter(name = CONSERVE_SOCKETS)
+  boolean getConserveSockets();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#conserve-sockets">"conserve-sockets"</a>
+   * Sets the value of the {@link ConfigurationProperties#CONSERVE_SOCKETS}
    * property.
    */
-  @ConfigAttributeSetter(name=CONSERVE_SOCKETS_NAME)
-  public void setConserveSockets(boolean newValue);
-
-  /** The name of the "conserveSockets" property */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String CONSERVE_SOCKETS_NAME = "conserve-sockets";
-
-  /** The default value of the "conserveSockets" property */
-  public static final boolean DEFAULT_CONSERVE_SOCKETS = true;
+  @ConfigAttributeSetter(name = CONSERVE_SOCKETS)
+  void setConserveSockets(boolean newValue);
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#roles">"roles"</a>
+   * The name of the {@link ConfigurationProperties#CONSERVE_SOCKETS} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String CONSERVE_SOCKETS_NAME = CONSERVE_SOCKETS;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#CONSERVE_SOCKETS} property
+   */
+  boolean DEFAULT_CONSERVE_SOCKETS = true;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#ROLES}
    * property
    */
-  @ConfigAttributeGetter(name=ROLES_NAME)
-  public String getRoles();
+  @ConfigAttributeGetter(name = ROLES)
+  String getRoles();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#roles">"roles"</a>
+   * Sets the value of the {@link ConfigurationProperties#ROLES}
    * property.
    */
-  @ConfigAttributeSetter(name=ROLES_NAME)
-  public void setRoles(String roles);
-  /** The name of the "roles" property */
-  @ConfigAttribute(type=String.class)
-  public static final String ROLES_NAME = "roles";
-  /** The default value of the "roles" property */
-  public static final String DEFAULT_ROLES = "";
-
+  @ConfigAttributeSetter(name = ROLES)
+  void setRoles(String roles);
 
   /**
-   * The name of the "max wait time for reconnect" property */
-  @ConfigAttribute(type=Integer.class)
-  public static final String MAX_WAIT_TIME_FOR_RECONNECT_NAME = "max-wait-time-reconnect";
-
-  /**
-   * Default value for MAX_WAIT_TIME_FOR_RECONNECT, 60,000 milliseconds.
+   * The name of the {@link ConfigurationProperties#ROLES} property
    */
-  public static final int DEFAULT_MAX_WAIT_TIME_FOR_RECONNECT = 60000;
+  @ConfigAttribute(type = String.class)
+  String ROLES_NAME = ROLES;
 
   /**
-   * Sets the max wait timeout, in milliseconds, for reconnect.
-   * */
-  @ConfigAttributeSetter(name=MAX_WAIT_TIME_FOR_RECONNECT_NAME)
-  public void setMaxWaitTimeForReconnect( int timeOut);
-
-  /**
-   * Returns the max wait timeout, in milliseconds, for reconnect.
-   * */
-  @ConfigAttributeGetter(name=MAX_WAIT_TIME_FOR_RECONNECT_NAME)
-  public int getMaxWaitTimeForReconnect();
-
-  /**
-   * The name of the "max number of tries for reconnect" property.
-   * */
-  @ConfigAttribute(type=Integer.class)
-  public static final String MAX_NUM_RECONNECT_TRIES = "max-num-reconnect-tries";
-
-  /**
-   * Default value for MAX_NUM_RECONNECT_TRIES.
+   * The default value of the {@link ConfigurationProperties#ROLES} property
    */
-  public static final int DEFAULT_MAX_NUM_RECONNECT_TRIES = 3;
+  String DEFAULT_ROLES = "";
 
   /**
-   * Sets the max number of tries for reconnect.
-   * */
-  @ConfigAttributeSetter(name=MAX_NUM_RECONNECT_TRIES)
-  public void setMaxNumReconnectTries(int tries);
+   * The name of the {@link ConfigurationProperties#MAX_WAIT_TIME_RECONNECT} property
+   */
+  @ConfigAttribute(type = Integer.class)
+  String MAX_WAIT_TIME_FOR_RECONNECT_NAME = MAX_WAIT_TIME_RECONNECT;
 
   /**
-   * Returns the value for max number of tries for reconnect.
-   * */
-  @ConfigAttributeGetter(name=MAX_NUM_RECONNECT_TRIES)
-  public int getMaxNumReconnectTries();
+   * Default value for {@link ConfigurationProperties#MAX_WAIT_TIME_RECONNECT}, 60,000 milliseconds.
+   */
+  int DEFAULT_MAX_WAIT_TIME_FOR_RECONNECT = 60000;
+
+  /**
+   * Sets the {@link ConfigurationProperties#MAX_WAIT_TIME_RECONNECT}, in milliseconds, for reconnect.
+   */
+  @ConfigAttributeSetter(name = MAX_WAIT_TIME_RECONNECT)
+  void setMaxWaitTimeForReconnect(int timeOut);
+
+  /**
+   * Returns the {@link ConfigurationProperties#MAX_WAIT_TIME_RECONNECT}, in milliseconds, for reconnect.
+   */
+  @ConfigAttributeGetter(name = MAX_WAIT_TIME_RECONNECT)
+  int getMaxWaitTimeForReconnect();
+
+  /**
+   * The name of the {@link ConfigurationProperties#MAX_NUM_RECONNECT_TRIES} property.
+   */
+  @ConfigAttribute(type = Integer.class)
+  String MAX_NUM_RECONNECT_TRIES_NAME = MAX_NUM_RECONNECT_TRIES;
+
+  /**
+   * Default value for {@link ConfigurationProperties#MAX_NUM_RECONNECT_TRIES}.
+   */
+  int DEFAULT_MAX_NUM_RECONNECT_TRIES = 3;
+
+  /**
+   * Sets the {@link ConfigurationProperties#MAX_NUM_RECONNECT_TRIES}.
+   */
+  @ConfigAttributeSetter(name = MAX_NUM_RECONNECT_TRIES)
+  void setMaxNumReconnectTries(int tries);
+
+  /**
+   * Returns the value for {@link ConfigurationProperties#MAX_NUM_RECONNECT_TRIES}.
+   */
+  @ConfigAttributeGetter(name = MAX_NUM_RECONNECT_TRIES)
+  int getMaxNumReconnectTries();
 
   // ------------------- Asynchronous Messaging Properties -------------------
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#async-distribution-timeout">
-   * "async-distribution-timeout"</a> property.
+   * Returns the value of the {@link ConfigurationProperties#ASYNC_DISTRIBUTION_TIMEOUT} property.
    */
-  @ConfigAttributeGetter(name=ASYNC_DISTRIBUTION_TIMEOUT_NAME)
-  public int getAsyncDistributionTimeout();
+  @ConfigAttributeGetter(name = ASYNC_DISTRIBUTION_TIMEOUT)
+  int getAsyncDistributionTimeout();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#async-distribution-timeout">
-   * "async-distribution-timeout"</a> property.
+   * Sets the value of the {@link ConfigurationProperties#ASYNC_DISTRIBUTION_TIMEOUT}  property.
    */
-  @ConfigAttributeSetter(name=ASYNC_DISTRIBUTION_TIMEOUT_NAME)
-  public void setAsyncDistributionTimeout(int newValue);
+  @ConfigAttributeSetter(name = ASYNC_DISTRIBUTION_TIMEOUT)
+  void setAsyncDistributionTimeout(int newValue);
 
-  /** The default value of "asyncDistributionTimeout" is <code>0</code>. */
-  public static final int DEFAULT_ASYNC_DISTRIBUTION_TIMEOUT = 0;
-  /** The minimum value of "asyncDistributionTimeout" is <code>0</code>. */
-  public static final int MIN_ASYNC_DISTRIBUTION_TIMEOUT = 0;
-  /** The maximum value of "asyncDistributionTimeout" is <code>60000</code>. */
-  public static final int MAX_ASYNC_DISTRIBUTION_TIMEOUT = 60000;
-
-  /** The name of the "asyncDistributionTimeout" property */
-  @ConfigAttribute(type=Integer.class, min=MIN_ASYNC_DISTRIBUTION_TIMEOUT, max=MAX_ASYNC_DISTRIBUTION_TIMEOUT)
-  public static final String ASYNC_DISTRIBUTION_TIMEOUT_NAME = "async-distribution-timeout";
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#async-queue-timeout">
-   * "async-queue-timeout"</a> property.
+   * The default value of {@link ConfigurationProperties#ASYNC_DISTRIBUTION_TIMEOUT}  is <code>0</code>.
    */
-  @ConfigAttributeGetter(name=ASYNC_QUEUE_TIMEOUT_NAME)
-  public int getAsyncQueueTimeout();
+  int DEFAULT_ASYNC_DISTRIBUTION_TIMEOUT = 0;
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#async-queue-timeout">
-   * "async-queue-timeout"</a> property.
+   * The minimum value of {@link ConfigurationProperties#ASYNC_DISTRIBUTION_TIMEOUT}  is <code>0</code>.
    */
-  @ConfigAttributeSetter(name=ASYNC_QUEUE_TIMEOUT_NAME)
-  public void setAsyncQueueTimeout(int newValue);
-
-  /** The default value of "asyncQueueTimeout" is <code>60000</code>. */
-  public static final int DEFAULT_ASYNC_QUEUE_TIMEOUT = 60000;
-  /** The minimum value of "asyncQueueTimeout" is <code>0</code>. */
-  public static final int MIN_ASYNC_QUEUE_TIMEOUT = 0;
-  /** The maximum value of "asyncQueueTimeout" is <code>86400000</code>. */
-  public static final int MAX_ASYNC_QUEUE_TIMEOUT = 86400000;
-  /** The name of the "asyncQueueTimeout" property */
-  @ConfigAttribute(type=Integer.class, min=MIN_ASYNC_QUEUE_TIMEOUT, max=MAX_ASYNC_QUEUE_TIMEOUT)
-  public static final String ASYNC_QUEUE_TIMEOUT_NAME = "async-queue-timeout";
+  int MIN_ASYNC_DISTRIBUTION_TIMEOUT = 0;
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#async-max-queue-size">
-   * "async-max-queue-size"</a> property.
+   * The maximum value of {@link ConfigurationProperties#ASYNC_DISTRIBUTION_TIMEOUT}  is <code>60000</code>.
    */
-  @ConfigAttributeGetter(name=ASYNC_MAX_QUEUE_SIZE_NAME)
-  public int getAsyncMaxQueueSize();
+  int MAX_ASYNC_DISTRIBUTION_TIMEOUT = 60000;
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#async-max-queue-size">
-   * "async-max-queue-size"</a> property.
+   * The name of the {@link ConfigurationProperties#ASYNC_DISTRIBUTION_TIMEOUT}  property
    */
-  @ConfigAttributeSetter(name=ASYNC_MAX_QUEUE_SIZE_NAME)
-  public void setAsyncMaxQueueSize(int newValue);
+  @ConfigAttribute(type = Integer.class, min = MIN_ASYNC_DISTRIBUTION_TIMEOUT, max = MAX_ASYNC_DISTRIBUTION_TIMEOUT)
+  String ASYNC_DISTRIBUTION_TIMEOUT_NAME = ASYNC_DISTRIBUTION_TIMEOUT;
 
-  /** The default value of "asyncMaxQueueSize" is <code>8</code>. */
-  public static final int DEFAULT_ASYNC_MAX_QUEUE_SIZE = 8;
-  /** The minimum value of "asyncMaxQueueSize" is <code>0</code>. */
-  public static final int MIN_ASYNC_MAX_QUEUE_SIZE = 0;
-  /** The maximum value of "asyncMaxQueueSize" is <code>1024</code>. */
-  public static final int MAX_ASYNC_MAX_QUEUE_SIZE = 1024;
-
-  /** The name of the "asyncMaxQueueSize" property */
-  @ConfigAttribute(type=Integer.class, min=MIN_ASYNC_MAX_QUEUE_SIZE, max=MAX_ASYNC_MAX_QUEUE_SIZE)
-  public static final String ASYNC_MAX_QUEUE_SIZE_NAME = "async-max-queue-size";
-  /** @since 5.7 */
-  @ConfigAttribute(type=String.class)
-  public static final String CLIENT_CONFLATION_PROP_NAME = "conflate-events";
-  /** @since 5.7 */
-  public static final String CLIENT_CONFLATION_PROP_VALUE_DEFAULT = "server";
-  /** @since 5.7 */
-  public static final String CLIENT_CONFLATION_PROP_VALUE_ON = "true";
-  /** @since 5.7 */
-  public static final String CLIENT_CONFLATION_PROP_VALUE_OFF = "false";
-  
-     
-  /** @since 9.0 */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String DISTRIBUTED_TRANSACTIONS_NAME = "distributed-transactions";
-  public static final boolean DEFAULT_DISTRIBUTED_TRANSACTIONS = false;
-
-  @ConfigAttributeGetter(name=DISTRIBUTED_TRANSACTIONS_NAME)
-  public boolean getDistributedTransactions();
-
-  @ConfigAttributeSetter(name=DISTRIBUTED_TRANSACTIONS_NAME)
-  public void setDistributedTransactions(boolean value);
-  
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#conflate-events">"conflate-events"</a>
+   * Returns the value of the {@link ConfigurationProperties#ASYNC_QUEUE_TIMEOUT}  property.
+   */
+  @ConfigAttributeGetter(name = ASYNC_QUEUE_TIMEOUT)
+  int getAsyncQueueTimeout();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#ASYNC_QUEUE_TIMEOUT} property.
+   */
+  @ConfigAttributeSetter(name = ASYNC_QUEUE_TIMEOUT)
+  void setAsyncQueueTimeout(int newValue);
+
+  /**
+   * The default value of {@link ConfigurationProperties#ASYNC_QUEUE_TIMEOUT} is <code>60000</code>.
+   */
+  int DEFAULT_ASYNC_QUEUE_TIMEOUT = 60000;
+  /**
+   * The minimum value of {@link ConfigurationProperties#ASYNC_QUEUE_TIMEOUT} is <code>0</code>.
+   */
+  int MIN_ASYNC_QUEUE_TIMEOUT = 0;
+  /**
+   * The maximum value of {@link ConfigurationProperties#ASYNC_QUEUE_TIMEOUT} is <code>86400000</code>.
+   */
+  int MAX_ASYNC_QUEUE_TIMEOUT = 86400000;
+  /**
+   * The name of the {@link ConfigurationProperties#ASYNC_QUEUE_TIMEOUT} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_ASYNC_QUEUE_TIMEOUT, max = MAX_ASYNC_QUEUE_TIMEOUT)
+  String ASYNC_QUEUE_TIMEOUT_NAME = ASYNC_QUEUE_TIMEOUT;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} property.
+   */
+  @ConfigAttributeGetter(name = ASYNC_MAX_QUEUE_SIZE)
+  int getAsyncMaxQueueSize();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} property.
+   */
+  @ConfigAttributeSetter(name = ASYNC_MAX_QUEUE_SIZE)
+  void setAsyncMaxQueueSize(int newValue);
+
+  /**
+   * The default value of {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} is <code>8</code>.
+   */
+  int DEFAULT_ASYNC_MAX_QUEUE_SIZE = 8;
+  /**
+   * The minimum value of {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} is <code>0</code>.
+   */
+  int MIN_ASYNC_MAX_QUEUE_SIZE = 0;
+  /**
+   * The maximum value of {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} is <code>1024</code>.
+   */
+  int MAX_ASYNC_MAX_QUEUE_SIZE = 1024;
+
+  /**
+   * The name of the {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_ASYNC_MAX_QUEUE_SIZE, max = MAX_ASYNC_MAX_QUEUE_SIZE)
+  String ASYNC_MAX_QUEUE_SIZE_NAME = ASYNC_MAX_QUEUE_SIZE;
+  /**
+   * @since GemFire 5.7
+   */
+  @ConfigAttribute(type = String.class)
+  String CLIENT_CONFLATION_PROP_NAME = CONFLATE_EVENTS;
+  /**
+   * @since GemFire 5.7
+   */
+  String CLIENT_CONFLATION_PROP_VALUE_DEFAULT = "server";
+  /**
+   * @since GemFire 5.7
+   */
+  String CLIENT_CONFLATION_PROP_VALUE_ON = "true";
+  /**
+   * @since GemFire 5.7
+   */
+  String CLIENT_CONFLATION_PROP_VALUE_OFF = "false";
+
+  /**
+   * @since Geode 1.0
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String DISTRIBUTED_TRANSACTIONS_NAME = DISTRIBUTED_TRANSACTIONS;
+  boolean DEFAULT_DISTRIBUTED_TRANSACTIONS = false;
+
+  @ConfigAttributeGetter(name = DISTRIBUTED_TRANSACTIONS)
+  boolean getDistributedTransactions();
+
+  @ConfigAttributeSetter(name = DISTRIBUTED_TRANSACTIONS)
+  void setDistributedTransactions(boolean value);
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#CONFLATE_EVENTS}
    * property.
-   * @since 5.7
+   *
+   * @since GemFire 5.7
    */
-  @ConfigAttributeGetter(name=CLIENT_CONFLATION_PROP_NAME)
-  public String getClientConflation();
+  @ConfigAttributeGetter(name = CONFLATE_EVENTS)
+  String getClientConflation();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#conflate-events">"conflate-events"</a>
+   * Sets the value of the {@link ConfigurationProperties#CONFLATE_EVENTS}
    * property.
-   * @since 5.7
+   *
+   * @since GemFire 5.7
    */
-  @ConfigAttributeSetter(name=CLIENT_CONFLATION_PROP_NAME)
-  public void setClientConflation(String clientConflation);
+  @ConfigAttributeSetter(name = CONFLATE_EVENTS)
+  void setClientConflation(String clientConflation);
   // -------------------------------------------------------------------------
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#durable-client-id">"durable-client-id"</a>
+   * Returns the value of the {@link ConfigurationProperties#DURABLE_CLIENT_ID}
    * property.
    */
-  @ConfigAttributeGetter(name=DURABLE_CLIENT_ID_NAME)
-  public String getDurableClientId();
+  @ConfigAttributeGetter(name = DURABLE_CLIENT_ID)
+  String getDurableClientId();
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#durable-client-id">"durable-client-id"</a>
+   * Sets the value of the {@link ConfigurationProperties#DURABLE_CLIENT_ID}
    * property.
    */
-  @ConfigAttributeSetter(name=DURABLE_CLIENT_ID_NAME)
-  public void setDurableClientId(String durableClientId);
-
-  /** The name of the "durableClientId" property */
-  @ConfigAttribute(type=String.class)
-  public static final String DURABLE_CLIENT_ID_NAME = "durable-client-id";
+  @ConfigAttributeSetter(name = DURABLE_CLIENT_ID)
+  void setDurableClientId(String durableClientId);
 
   /**
-   * The default durable client id.
+   * The name of the {@link ConfigurationProperties#DURABLE_CLIENT_ID} property
+   */
+  @ConfigAttribute(type = String.class)
+  String DURABLE_CLIENT_ID_NAME = DURABLE_CLIENT_ID;
+
+  /**
+   * The default {@link ConfigurationProperties#DURABLE_CLIENT_ID}.
    * <p> Actual value of this constant is <code>""</code>.
    */
-  public static final String DEFAULT_DURABLE_CLIENT_ID = "";
+  String DEFAULT_DURABLE_CLIENT_ID = "";
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#durable-client-timeout">"durable-client-timeout"</a>
+   * Returns the value of the {@link ConfigurationProperties#DURABLE_CLIENT_TIMEOUT}
    * property.
    */
-  @ConfigAttributeGetter(name=DURABLE_CLIENT_TIMEOUT_NAME)
-  public int getDurableClientTimeout();
+  @ConfigAttributeGetter(name = DURABLE_CLIENT_TIMEOUT)
+  int getDurableClientTimeout();
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#durable-client-timeout">"durable-client-timeout"</a>
+   * Sets the value of the {@link ConfigurationProperties#DURABLE_CLIENT_TIMEOUT}
    * property.
    */
-  @ConfigAttributeSetter(name=DURABLE_CLIENT_TIMEOUT_NAME)
-  public void setDurableClientTimeout(int durableClientTimeout);
-
-  /** The name of the "durableClientTimeout" property */
-  @ConfigAttribute(type=Integer.class)
-  public static final String DURABLE_CLIENT_TIMEOUT_NAME = "durable-client-timeout";
+  @ConfigAttributeSetter(name = DURABLE_CLIENT_TIMEOUT)
+  void setDurableClientTimeout(int durableClientTimeout);
 
   /**
-   * The default durable client timeout in seconds.
+   * The name of the {@link ConfigurationProperties#DURABLE_CLIENT_TIMEOUT} property
+   */
+  @ConfigAttribute(type = Integer.class)
+  String DURABLE_CLIENT_TIMEOUT_NAME = DURABLE_CLIENT_TIMEOUT;
+
+  /**
+   * The default {@link ConfigurationProperties#DURABLE_CLIENT_TIMEOUT} in seconds.
    * <p> Actual value of this constant is <code>"300"</code>.
    */
-  public static final int DEFAULT_DURABLE_CLIENT_TIMEOUT = 300;
+  int DEFAULT_DURABLE_CLIENT_TIMEOUT = 300;
 
   /**
-   * Returns user module name for client authentication initializer in <a
-   * href="../DistributedSystem.html#security-client-auth-init">"security-client-auth-init"</a>
+   * Returns user module name for client authentication initializer in
+   * {@link ConfigurationProperties#SECURITY_CLIENT_AUTH_INIT}
    */
-  @ConfigAttributeGetter(name=SECURITY_CLIENT_AUTH_INIT_NAME)
-  public String getSecurityClientAuthInit();
+  @ConfigAttributeGetter(name = SECURITY_CLIENT_AUTH_INIT)
+  String getSecurityClientAuthInit();
 
   /**
-   * Sets the user module name in <a
-   * href="../DistributedSystem.html#security-client-auth-init">"security-client-auth-init"</a>
+   * Sets the user module name in {@link ConfigurationProperties#SECURITY_CLIENT_AUTH_INIT}
    * property.
    */
-  @ConfigAttributeSetter(name=SECURITY_CLIENT_AUTH_INIT_NAME)
-  public void setSecurityClientAuthInit(String attValue);
-
-  /** The name of user defined method name for "security-client-auth-init" property*/
-  @ConfigAttribute(type=String.class)
-  public static final String SECURITY_CLIENT_AUTH_INIT_NAME = "security-client-auth-init";
+  @ConfigAttributeSetter(name = SECURITY_CLIENT_AUTH_INIT)
+  void setSecurityClientAuthInit(String attValue);
 
   /**
-   * The default client authentication initializer method name.
+   * The name of user defined method name for {@link ConfigurationProperties#SECURITY_CLIENT_AUTH_INIT} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SECURITY_CLIENT_AUTH_INIT_NAME = SECURITY_CLIENT_AUTH_INIT;
+
+  /**
+   * The default {@link ConfigurationProperties#SECURITY_CLIENT_AUTH_INIT} method name.
    * <p> Actual value of this is in format <code>"jar file:module name"</code>.
    */
-  public static final String DEFAULT_SECURITY_CLIENT_AUTH_INIT = "";
+  String DEFAULT_SECURITY_CLIENT_AUTH_INIT = "";
 
   /**
-   * Returns user module name authenticating client credentials in <a
-   * href="../DistributedSystem.html#security-client-authenticator">"security-client-authenticator"</a>
+   * Returns user module name authenticating client credentials in {@link ConfigurationProperties#SECURITY_CLIENT_AUTHENTICATOR}
    */
-  @ConfigAttributeGetter(name=SECURITY_CLIENT_AUTHENTICATOR_NAME)
-  public String getSecurityClientAuthenticator();
+  @ConfigAttributeGetter(name = SECURITY_CLIENT_AUTHENTICATOR)
+  String getSecurityClientAuthenticator();
 
   /**
-   * Sets the user defined method name in <a
-   * href="../DistributedSystem.html#security-client-authenticator">"security-client-authenticator"</a>
+   * Sets the user defined method name in {@link ConfigurationProperties#SECURITY_CLIENT_AUTHENTICATOR}
    * property.
    */
-  @ConfigAttributeSetter(name=SECURITY_CLIENT_AUTHENTICATOR_NAME)
-  public void setSecurityClientAuthenticator(String attValue);
-
-  /** The name of factory method for "security-client-authenticator" property */
-  @ConfigAttribute(type=String.class)
-  public static final String SECURITY_CLIENT_AUTHENTICATOR_NAME = "security-client-authenticator";
+  @ConfigAttributeSetter(name = SECURITY_CLIENT_AUTHENTICATOR)
+  void setSecurityClientAuthenticator(String attValue);
 
   /**
-   * The default client authentication method name.
+   * The name of factory method for {@link ConfigurationProperties#SECURITY_CLIENT_AUTHENTICATOR} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SECURITY_CLIENT_AUTHENTICATOR_NAME = SECURITY_CLIENT_AUTHENTICATOR;
+
+  /**
+   * The default {@link ConfigurationProperties#SECURITY_CLIENT_AUTHENTICATOR} method name.
    * <p> Actual value of this is fully qualified <code>"method name"</code>.
    */
-  public static final String DEFAULT_SECURITY_CLIENT_AUTHENTICATOR = "";
+  String DEFAULT_SECURITY_CLIENT_AUTHENTICATOR = "";
 
   /**
-   * Returns name of algorithm to use for Diffie-Hellman key exchange <a
-   * href="../DistributedSystem.html#security-client-dhalgo">"security-client-dhalgo"</a>
+   * Returns user defined class name authenticating client credentials in {@link ConfigurationProperties#SECURITY_MANAGER}
    */
-  @ConfigAttributeGetter(name=SECURITY_CLIENT_DHALGO_NAME)
-  public String getSecurityClientDHAlgo();
+  @ConfigAttributeGetter(name = SECURITY_MANAGER)
+  String getSecurityManager();
 
   /**
-   * Set the name of algorithm to use for Diffie-Hellman key exchange <a
-   * href="../DistributedSystem.html#security-client-dhalgo">"security-client-dhalgo"</a>
+   * Sets the user defined class name in {@link ConfigurationProperties#SECURITY_MANAGER}
    * property.
    */
-  @ConfigAttributeSetter(name=SECURITY_CLIENT_DHALGO_NAME)
-  public void setSecurityClientDHAlgo(String attValue);
+  @ConfigAttributeSetter(name = SECURITY_MANAGER)
+  void setSecurityManager(String attValue);
 
   /**
-   * The name of the Diffie-Hellman symmetric algorithm "security-client-dhalgo"
+   * The name of class for {@link ConfigurationProperties#SECURITY_MANAGER} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SECURITY_MANAGER_NAME = SECURITY_MANAGER;
+
+  /**
+   * The default {@link ConfigurationProperties#SECURITY_MANAGER} class name.
+   * <p> Actual value of this is fully qualified <code>"class name"</code>.
+   */
+  String DEFAULT_SECURITY_MANAGER = "";
+
+  /**
+   * Returns user defined post processor name in {@link ConfigurationProperties#SECURITY_POST_PROCESSOR}
+   */
+  @ConfigAttributeGetter(name = SECURITY_POST_PROCESSOR)
+  String getPostProcessor();
+
+  /**
+   * Sets the user defined class name in {@link ConfigurationProperties#SECURITY_POST_PROCESSOR}
    * property.
    */
-  @ConfigAttribute(type=String.class)
-  public static final String SECURITY_CLIENT_DHALGO_NAME = "security-client-dhalgo";
+  @ConfigAttributeSetter(name = SECURITY_POST_PROCESSOR)
+  void setPostProcessor(String attValue);
+
+  /**
+   * The name of class for {@link ConfigurationProperties#SECURITY_POST_PROCESSOR} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SECURITY_POST_PROCESSOR_NAME = SECURITY_POST_PROCESSOR;
+
+  /**
+   * The default {@link ConfigurationProperties#SECURITY_POST_PROCESSOR} class name.
+   * <p> Actual value of this is fully qualified <code>"class name"</code>.
+   */
+  String DEFAULT_SECURITY_POST_PROCESSOR = "";
+
+  /**
+   * Returns name of algorithm to use for Diffie-Hellman key exchange {@link ConfigurationProperties#SECURITY_CLIENT_DHALGO}
+   */
+  @ConfigAttributeGetter(name = SECURITY_CLIENT_DHALGO)
+  String getSecurityClientDHAlgo();
+
+  /**
+   * Set the name of algorithm to use for Diffie-Hellman key exchange {@link ConfigurationProperties#SECURITY_CLIENT_DHALGO}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SECURITY_CLIENT_DHALGO)
+  void setSecurityClientDHAlgo(String attValue);
+
+  /**
+   * The name of the Diffie-Hellman symmetric algorithm {@link ConfigurationProperties#SECURITY_CLIENT_DHALGO}
+   * property.
+   */
+  @ConfigAttribute(type = String.class)
+  String SECURITY_CLIENT_DHALGO_NAME = SECURITY_CLIENT_DHALGO;
 
   /**
    * The default Diffie-Hellman symmetric algorithm name.
@@ -2008,1747 +2170,1828 @@ public interface DistributionConfig extends Config, LogConfig {
    * Actual value of this is one of the available symmetric algorithm names in
    * JDK like "DES", "DESede", "AES", "Blowfish".
    */
-  public static final String DEFAULT_SECURITY_CLIENT_DHALGO = "";
+  String DEFAULT_SECURITY_CLIENT_DHALGO = "";
 
   /**
-   * Returns user defined method name for peer authentication initializer in <a
-   * href="../DistributedSystem.html#security-peer-auth-init">"security-peer-auth-init"</a>
+   * Returns user defined method name for peer authentication initializer in {@link ConfigurationProperties#SECURITY_PEER_AUTH_INIT}
    */
-  @ConfigAttributeGetter(name=SECURITY_PEER_AUTH_INIT_NAME)
-  public String getSecurityPeerAuthInit();
+  @ConfigAttributeGetter(name = SECURITY_PEER_AUTH_INIT)
+  String getSecurityPeerAuthInit();
 
   /**
-   * Sets the user module name in <a
-   * href="../DistributedSystem.html#security-peer-auth-init">"security-peer-auth-init"</a>
+   * Sets the user module name in {@link ConfigurationProperties#SECURITY_PEER_AUTH_INIT}
    * property.
    */
-  @ConfigAttributeSetter(name=SECURITY_PEER_AUTH_INIT_NAME)
-  public void setSecurityPeerAuthInit(String attValue);
-
-  /** The name of user module for "security-peer-auth-init" property*/
-  @ConfigAttribute(type=String.class)
-  public static final String SECURITY_PEER_AUTH_INIT_NAME = "security-peer-auth-init";
+  @ConfigAttributeSetter(name = SECURITY_PEER_AUTH_INIT)
+  void setSecurityPeerAuthInit(String attValue);
 
   /**
-   * The default client authenticaiton method name.
+   * The name of user module for {@link ConfigurationProperties#SECURITY_PEER_AUTH_INIT} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SECURITY_PEER_AUTH_INIT_NAME = SECURITY_PEER_AUTH_INIT;
+
+  /**
+   * The default {@link ConfigurationProperties#SECURITY_PEER_AUTH_INIT} method name.
    * <p> Actual value of this is fully qualified <code>"method name"</code>.
    */
-  public static final String DEFAULT_SECURITY_PEER_AUTH_INIT = "";
+  String DEFAULT_SECURITY_PEER_AUTH_INIT = "";
 
   /**
-   * Returns user defined method name authenticating peer's credentials in <a
-   * href="../DistributedSystem.html#security-peer-authenticator">"security-peer-authenticator"</a>
+   * Returns user defined method name authenticating peer's credentials in {@link ConfigurationProperties#SECURITY_PEER_AUTHENTICATOR}
    */
-  @ConfigAttributeGetter(name=SECURITY_PEER_AUTHENTICATOR_NAME)
-  public String getSecurityPeerAuthenticator();
+  @ConfigAttributeGetter(name = SECURITY_PEER_AUTHENTICATOR)
+  String getSecurityPeerAuthenticator();
 
   /**
-   * Sets the user module name in <a
-   * href="../DistributedSystem.html#security-peer-authenticator">"security-peer-authenticator"</a>
+   * Sets the user module name in {@link ConfigurationProperties#SECURITY_PEER_AUTHENTICATOR}
    * property.
    */
-  @ConfigAttributeSetter(name=SECURITY_PEER_AUTHENTICATOR_NAME)
-  public void setSecurityPeerAuthenticator(String attValue);
-
-  /** The name of user defined method for "security-peer-authenticator" property*/
-  @ConfigAttribute(type=String.class)
-  public static final String SECURITY_PEER_AUTHENTICATOR_NAME = "security-peer-authenticator";
+  @ConfigAttributeSetter(name = SECURITY_PEER_AUTHENTICATOR)
+  void setSecurityPeerAuthenticator(String attValue);
 
   /**
-   * The default client authenticaiton method.
+   * The name of user defined method for {@link ConfigurationProperties#SECURITY_PEER_AUTHENTICATOR} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SECURITY_PEER_AUTHENTICATOR_NAME = SECURITY_PEER_AUTHENTICATOR;
+
+  /**
+   * The default {@link ConfigurationProperties#SECURITY_PEER_AUTHENTICATOR} method.
    * <p> Actual value of this is fully qualified <code>"method name"</code>.
    */
-  public static final String DEFAULT_SECURITY_PEER_AUTHENTICATOR = "";
+  String DEFAULT_SECURITY_PEER_AUTHENTICATOR = "";
 
   /**
-   * Returns user module name authorizing client credentials in <a
-   * href="../DistributedSystem.html#security-client-accessor">"security-client-accessor"</a>
+   * Returns user module name authorizing client credentials in {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR}
    */
-  @ConfigAttributeGetter(name=SECURITY_CLIENT_ACCESSOR_NAME)
-  public String getSecurityClientAccessor();
+  @ConfigAttributeGetter(name = SECURITY_CLIENT_ACCESSOR)
+  String getSecurityClientAccessor();
 
   /**
-   * Sets the user defined method name in <a
-   * href="../DistributedSystem.html#security-client-accessor">"security-client-accessor"</a>
+   * Sets the user defined method name in {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR}
    * property.
    */
-  @ConfigAttributeSetter(name=SECURITY_CLIENT_ACCESSOR_NAME)
-  public void setSecurityClientAccessor(String attValue);
-
-  /** The name of the factory method for "security-client-accessor" property */
-  @ConfigAttribute(type=String.class)
-  public static final String SECURITY_CLIENT_ACCESSOR_NAME = "security-client-accessor";
+  @ConfigAttributeSetter(name = SECURITY_CLIENT_ACCESSOR)
+  void setSecurityClientAccessor(String attValue);
 
   /**
-   * The default client authorization module factory method name.
+   * The name of the factory method for {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SECURITY_CLIENT_ACCESSOR_NAME = SECURITY_CLIENT_ACCESSOR;
+
+  /**
+   * The default {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR} method name.
    * <p> Actual value of this is fully qualified <code>"method name"</code>.
    */
-  public static final String DEFAULT_SECURITY_CLIENT_ACCESSOR = "";
+  String DEFAULT_SECURITY_CLIENT_ACCESSOR = "";
 
   /**
-   * Returns user module name authorizing client credentials in <a
-   * href="../DistributedSystem.html#security-client-accessor-pp">"security-client-accessor-pp"</a>
+   * Returns user module name authorizing client credentials in {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR_PP}
    */
-  @ConfigAttributeGetter(name=SECURITY_CLIENT_ACCESSOR_PP_NAME)
-  public String getSecurityClientAccessorPP();
+  @ConfigAttributeGetter(name = SECURITY_CLIENT_ACCESSOR_PP)
+  String getSecurityClientAccessorPP();
 
   /**
-   * Sets the user defined method name in <a
-   * href="../DistributedSystem.html#security-client-accessor-pp">"security-client-accessor-pp"</a>
+   * Sets the user defined method name in {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR_PP}
    * property.
    */
-  @ConfigAttributeSetter(name=SECURITY_CLIENT_ACCESSOR_PP_NAME)
-  public void setSecurityClientAccessorPP(String attValue);
-
-  /** The name of the factory method for "security-client-accessor-pp" property */
-  @ConfigAttribute(type=String.class)
-  public static final String SECURITY_CLIENT_ACCESSOR_PP_NAME = "security-client-accessor-pp";
+  @ConfigAttributeSetter(name = SECURITY_CLIENT_ACCESSOR_PP)
+  void setSecurityClientAccessorPP(String attValue);
 
   /**
-   * The default client post-operation authorization module factory method name.
+   * The name of the factory method for {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR_PP} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SECURITY_CLIENT_ACCESSOR_PP_NAME = SECURITY_CLIENT_ACCESSOR_PP;
+
+  /**
+   * The default client post-operation {@link ConfigurationProperties#SECURITY_CLIENT_ACCESSOR_PP} method name.
    * <p> Actual value of this is fully qualified <code>"method name"</code>.
    */
-  public static final String DEFAULT_SECURITY_CLIENT_ACCESSOR_PP = "";
+  String DEFAULT_SECURITY_CLIENT_ACCESSOR_PP = "";
 
   /**
-   * Get the current log-level for security logging.
+   * Get the current log-level for {@link ConfigurationProperties#SECURITY_LOG_LEVEL}.
    *
    * @return the current security log-level
    */
-  @ConfigAttributeGetter(name=SECURITY_LOG_LEVEL_NAME)
-  public int getSecurityLogLevel();
+  @ConfigAttributeGetter(name = SECURITY_LOG_LEVEL)
+  int getSecurityLogLevel();
 
   /**
-   * Set the log-level for security logging.
+   * Set the log-level for {@link ConfigurationProperties#SECURITY_LOG_LEVEL}.
    *
-   * @param level
-   *                the new security log-level
+   * @param level the new security log-level
    */
-  @ConfigAttributeSetter(name=SECURITY_LOG_LEVEL_NAME)
-  public void setSecurityLogLevel(int level);
+  @ConfigAttributeSetter(name = SECURITY_LOG_LEVEL)
+  void setSecurityLogLevel(int level);
 
   /**
-   * The name of "security-log-level" property that sets the log-level for
+   * The name of {@link ConfigurationProperties#SECURITY_LOG_LEVEL} property that sets the log-level for
    * security logger obtained using
    * {@link DistributedSystem#getSecurityLogWriter()}
    */
   // type is String because the config file "config", "debug", "fine" etc, but the setter getter accepts int
-  @ConfigAttribute(type=String.class)
-  public static final String SECURITY_LOG_LEVEL_NAME = "security-log-level";
+  @ConfigAttribute(type = String.class)
+  String SECURITY_LOG_LEVEL_NAME = SECURITY_LOG_LEVEL;
 
   /**
-   * Returns the value of the "security-log-file" property
+   * Returns the value of the {@link ConfigurationProperties#SECURITY_LOG_FILE} property
    *
    * @return <code>null</code> if logging information goes to standard out
    */
-  @ConfigAttributeGetter(name=SECURITY_LOG_FILE_NAME)
-  public File getSecurityLogFile();
+  @ConfigAttributeGetter(name = SECURITY_LOG_FILE)
+  File getSecurityLogFile();
 
   /**
-   * Sets the system's security log file containing security related messages.
+   * Sets the system's {@link ConfigurationProperties#SECURITY_LOG_FILE} containing security related messages.
    * <p>
    * Non-absolute log files are relative to the system directory.
    * <p>
    * The security log file can not be changed while the system is running.
    *
-   * @throws IllegalArgumentException
-   *                 if the specified value is not acceptable.
-   * @throws com.gemstone.gemfire.UnmodifiableException
-   *                 if this attribute can not be modified.
-   * @throws com.gemstone.gemfire.GemFireIOException
-   *                 if the set failure is caused by an error when writing to
-   *                 the system's configuration file.
+   * @throws IllegalArgumentException                   if the specified value is not acceptable.
+   * @throws com.gemstone.gemfire.UnmodifiableException if this attribute can not be modified.
+   * @throws com.gemstone.gemfire.GemFireIOException    if the set failure is caused by an error when writing to
+   *                                                    the system's configuration file.
    */
-  @ConfigAttributeSetter(name=SECURITY_LOG_FILE_NAME)
-  public void setSecurityLogFile(File value);
+  @ConfigAttributeSetter(name = SECURITY_LOG_FILE)
+  void setSecurityLogFile(File value);
 
   /**
-   * The name of the "security-log-file" property. This property is the path of
+   * The name of the {@link ConfigurationProperties#SECURITY_LOG_FILE} property. This property is the path of
    * the file where security related messages are logged.
    */
-  @ConfigAttribute(type=File.class)
-  public static final String SECURITY_LOG_FILE_NAME = "security-log-file";
+  @ConfigAttribute(type = File.class)
+  String SECURITY_LOG_FILE_NAME = SECURITY_LOG_FILE;
 
   /**
-   * The default security log file.
+   * The default {@link ConfigurationProperties#SECURITY_LOG_FILE}.
    * <p> *
    * <p>
    * Actual value of this constant is <code>""</code> which directs security
    * log messages to the same place as the system log file.
    */
-  public static final File DEFAULT_SECURITY_LOG_FILE = new File("");
+  File DEFAULT_SECURITY_LOG_FILE = new File("");
 
   /**
    * Get timeout for peer membership check when security is enabled.
    *
    * @return Timeout in milliseconds.
    */
-  @ConfigAttributeGetter(name=SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME)
-  public int getSecurityPeerMembershipTimeout();
+  @ConfigAttributeGetter(name = SECURITY_PEER_VERIFY_MEMBER_TIMEOUT)
+  int getSecurityPeerMembershipTimeout();
 
   /**
    * Set timeout for peer membership check when security is enabled. The timeout must be less
    * than peer handshake timeout.
+   *
    * @param attValue
    */
-  @ConfigAttributeSetter(name=SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME)
-  public void setSecurityPeerMembershipTimeout(int attValue);
-
+  @ConfigAttributeSetter(name = SECURITY_PEER_VERIFY_MEMBER_TIMEOUT)
+  void setSecurityPeerMembershipTimeout(int attValue);
 
   /**
    * The default peer membership check timeout is 1 second.
    */
-  public static final int DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT = 1000;
+  int DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT = 1000;
 
   /**
    * Max membership timeout must be less than max peer handshake timeout. Currently this is set to
    * default handshake timeout of 60 seconds.
    */
-  public static final int MAX_SECURITY_PEER_VERIFYMEMBER_TIMEOUT = 60000;
+  int MAX_SECURITY_PEER_VERIFYMEMBER_TIMEOUT = 60000;
 
-  /** The name of the peer membership check timeout property */
-  @ConfigAttribute(type=Integer.class, min=0, max=MAX_SECURITY_PEER_VERIFYMEMBER_TIMEOUT)
-  public static final String SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME = "security-peer-verifymember-timeout";
   /**
-   * Returns all properties starting with <a
-   * href="../DistributedSystem.html#security-">"security-"</a>.
+   * The name of the peer membership check timeout property
    */
-  public Properties getSecurityProps();
+  @ConfigAttribute(type = Integer.class, min = 0, max = MAX_SECURITY_PEER_VERIFYMEMBER_TIMEOUT)
+  String SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME = SECURITY_PEER_VERIFY_MEMBER_TIMEOUT;
 
   /**
-   * Returns the value of security property <a
-   * href="../DistributedSystem.html#security-">"security-"</a>
+   * Returns all properties starting with {@link ConfigurationProperties#SECURITY_PREFIX}
+   */
+  Properties getSecurityProps();
+
+  /**
+   * Returns the value of security property {@link ConfigurationProperties#SECURITY_PREFIX}
    * for an exact attribute name match.
    */
-  public String getSecurity(String attName);
+  String getSecurity(String attName);
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#security-">"security-*"</a>
+   * Sets the value of the {@link ConfigurationProperties#SECURITY_PREFIX}
    * property.
    */
-  public void setSecurity(String attName, String attValue);
+  void setSecurity(String attName, String attValue);
 
-  /** For the "security-" prefixed properties */
-  public static final String SECURITY_PREFIX_NAME = "security-";
+  String SECURITY_PREFIX_NAME = SECURITY_PREFIX;
 
-  /** The prefix used for Gemfire properties set through java system properties */
-  public static final String GEMFIRE_PREFIX = "gemfire.";
-
-  /** For the "custom-" prefixed properties */
-  public static final String USERDEFINED_PREFIX_NAME = "custom-";
-
-  /** For ssl keystore and trust store properties */
-  public static final String SSL_SYSTEM_PROPS_NAME = "javax.net.ssl";
-  
-  public static final String KEY_STORE_TYPE_NAME = ".keyStoreType";
-  public static final String KEY_STORE_NAME = ".keyStore";
-  public static final String KEY_STORE_PASSWORD_NAME = ".keyStorePassword";
-  public static final String TRUST_STORE_NAME = ".trustStore";
-  public static final String TRUST_STORE_PASSWORD_NAME = ".trustStorePassword";
-
-
-  /** Suffix for ssl keystore and trust store properties for JMX*/
-  public static final String JMX_SSL_PROPS_SUFFIX = "-jmx";
-
-  /** For security properties starting with sysprop in gfsecurity.properties file */
-  public static final String SYS_PROP_NAME = "sysprop-";
-   /**
-    * The property decides whether to remove unresponsive client from the server.
-    */
-   @ConfigAttribute(type=Boolean.class)
-   public static final String REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME = "remove-unresponsive-client";
-
-   /**
-    * The default value of remove unresponsive client is false.
-    */
-   public static final boolean DEFAULT_REMOVE_UNRESPONSIVE_CLIENT = false;
-   /**
-    * Returns the value of the <a
-    * href="../DistributedSystem.html#remove-unresponsive-client">"remove-unresponsive-client"</a>
-    * property.
-    * @since 6.0
-    */
-   @ConfigAttributeGetter(name=REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME)
-   public boolean getRemoveUnresponsiveClient();
-   /**
-    * Sets the value of the <a
-    * href="../DistributedSystem.html#remove-unresponsive-client">"remove-unresponsive-client"</a>
-    * property.
-    * @since 6.0
-    */
-   @ConfigAttributeSetter(name=REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME)
-   public void setRemoveUnresponsiveClient(boolean value);
-
-   /** @since 6.3 */
-   @ConfigAttribute(type=Boolean.class)
-   public static final String DELTA_PROPAGATION_PROP_NAME = "delta-propagation";
-
-   public static final boolean DEFAULT_DELTA_PROPAGATION = true;
-   /**
-    * Returns the value of the <a
-    * href="../DistributedSystem.html#delta-propagation">"delta-propagation"</a>
-    * property.
-    * @since 6.3
-    */
-   @ConfigAttributeGetter(name=DELTA_PROPAGATION_PROP_NAME)
-   public boolean getDeltaPropagation();
-
-   /**
-    * Sets the value of the <a
-    * href="../DistributedSystem.html#delta-propagation">"delta-propagation"</a>
-    * property.
-    * @since 6.3
-    */
-   @ConfigAttributeSetter(name=DELTA_PROPAGATION_PROP_NAME)
-   public void setDeltaPropagation(boolean value);
-
-  public static final int MIN_DISTRIBUTED_SYSTEM_ID = -1;
-  public static final int MAX_DISTRIBUTED_SYSTEM_ID = 255;
-   /**
-    * @since 6.6
-    */
-   @ConfigAttribute(type=Integer.class)
-   public static final String DISTRIBUTED_SYSTEM_ID_NAME = "distributed-system-id";
-   public static final int DEFAULT_DISTRIBUTED_SYSTEM_ID = -1;
-
-  @ConfigAttribute(type=String.class)
-   public static final String REDUNDANCY_ZONE_NAME = "redundancy-zone";
-   public static final String DEFAULT_REDUNDANCY_ZONE = "";
-   
-   /**
-    * @since 6.6
-    */
-   @ConfigAttributeSetter(name=DISTRIBUTED_SYSTEM_ID_NAME)
-   public void setDistributedSystemId(int distributedSystemId);
-
-  @ConfigAttributeSetter(name=REDUNDANCY_ZONE_NAME)
-   public void setRedundancyZone(String redundancyZone);
-   
-   /**
-    * @since 6.6
-    */
-   @ConfigAttributeGetter(name=DISTRIBUTED_SYSTEM_ID_NAME)
-   public int getDistributedSystemId();
-
-  @ConfigAttributeGetter(name=REDUNDANCY_ZONE_NAME)
-   public String getRedundancyZone();
-   
-   /**
-    * @since 6.6.2
-    */
-   public void setSSLProperty(String attName, String attValue);
-   
-   /**
-    * @since 6.6.2
-    */
-   public Properties getSSLProperties();
-   
-   public Properties getClusterSSLProperties();
-
-   /**
-    * @since 8.0
-    */
-   public Properties getJmxSSLProperties();
-   /**
-    * @since 6.6
-    */
-   @ConfigAttribute(type=Boolean.class)
-   public static final String ENFORCE_UNIQUE_HOST_NAME = "enforce-unique-host";
-   /** Using the system property to set the default here to retain backwards compatibility
-    * with customers that are already using this system property.
-    */
-   public static boolean DEFAULT_ENFORCE_UNIQUE_HOST = Boolean.getBoolean("gemfire.EnforceUniqueHostStorageAllocation");
-
-  @ConfigAttributeSetter(name=ENFORCE_UNIQUE_HOST_NAME)
-   public void setEnforceUniqueHost(boolean enforceUniqueHost);
-
-  @ConfigAttributeGetter(name=ENFORCE_UNIQUE_HOST_NAME)
-   public boolean getEnforceUniqueHost();
-
-   public Properties getUserDefinedProps();
-
-
-   /**
-    * Returns the value of the <a
-    * href="../DistributedSystem.html#name">"groups"</a> property
-    * <p> The default value is: {@link #DEFAULT_GROUPS}.
-    * @return the value of the property
-    * @since 7.0
-    */
-   @ConfigAttributeGetter(name=GROUPS_NAME)
-   public String getGroups();
-   /**
-    * Sets the groups gemfire property.
-    * <p> The groups can not be changed while the system is running.
-    * @throws IllegalArgumentException if the specified value is not acceptable.
-    * @throws com.gemstone.gemfire.UnmodifiableException if this attribute can not be modified.
-    * @throws com.gemstone.gemfire.GemFireIOException if the set failure is caused by an error
-    *   when writing to the system's configuration file.
-    * @since 7.0
-    */
-   @ConfigAttributeSetter(name=GROUPS_NAME)
-   public void setGroups(String value);
-
-   /** The name of the "groups" property 
-    * @since 7.0
-    */
-   @ConfigAttribute(type=String.class)
-   public static final String GROUPS_NAME = "groups";
-   /**
-    * The default groups.
-    * <p> Actual value of this constant is <code>""</code>.
-    * @since 7.0
-    */
-   public static final String DEFAULT_GROUPS = "";
-
-   /** Any cleanup required before closing the distributed system */
-  public void close();
-
-  @ConfigAttributeSetter(name=REMOTE_LOCATORS_NAME)
-  public void setRemoteLocators(String locators);
-  @ConfigAttributeGetter(name=REMOTE_LOCATORS_NAME)
-  public String getRemoteLocators();
-  /** The name of the "remote-locators" property */
-  @ConfigAttribute(type=String.class)
-  public static final String REMOTE_LOCATORS_NAME = "remote-locators";
-  /** The default value of the "remote-locators" property */
-  public static final String DEFAULT_REMOTE_LOCATORS = "";
-
-  @ConfigAttributeGetter(name=JMX_MANAGER_NAME)
-  public boolean getJmxManager();
-  @ConfigAttributeSetter(name=JMX_MANAGER_NAME)
-  public void setJmxManager(boolean value);
-
-  @ConfigAttribute(type=Boolean.class)
-  public static String JMX_MANAGER_NAME = "jmx-manager";
-  public static boolean DEFAULT_JMX_MANAGER = false;
-
-  @ConfigAttributeGetter(name=JMX_MANAGER_START_NAME)
-  public boolean getJmxManagerStart();
-  @ConfigAttributeSetter(name=JMX_MANAGER_START_NAME)
-  public void setJmxManagerStart(boolean value);
-
-  @ConfigAttribute(type=Boolean.class)
-  public static String JMX_MANAGER_START_NAME = "jmx-manager-start";
-  public static boolean DEFAULT_JMX_MANAGER_START = false;
-
-  @ConfigAttributeGetter(name=JMX_MANAGER_PORT_NAME)
-  public int getJmxManagerPort();
-  @ConfigAttributeSetter(name=JMX_MANAGER_PORT_NAME)
-  public void setJmxManagerPort(int value);
-
-  @ConfigAttribute(type=Integer.class, min=0, max=65535)
-  public static String JMX_MANAGER_PORT_NAME = "jmx-manager-port";
-  public static int DEFAULT_JMX_MANAGER_PORT = 1099;
-  
-  /** @deprecated as of 8.0 use {@link #getJmxManagerSSLEnabled} instead.*/
-  @ConfigAttributeGetter(name=JMX_MANAGER_SSL_NAME)
-  public boolean getJmxManagerSSL();
-  /** @deprecated as of 8.0 use {@link #setJmxManagerSSLEnabled} instead.*/
-  @ConfigAttributeSetter(name=JMX_MANAGER_SSL_NAME)
-  public void setJmxManagerSSL(boolean value);
-
-  /** @deprecated as of 8.0 use {@link #JMX_MANAGER_SSL_ENABLED_NAME} instead.*/
-  @ConfigAttribute(type=Boolean.class)
-  public static String JMX_MANAGER_SSL_NAME = "jmx-manager-ssl";
-  /** @deprecated as of 8.0 use {@link #DEFAULT_JMX_MANAGER_SSL_ENABLED} instead.*/
-  public static boolean DEFAULT_JMX_MANAGER_SSL = false;
-  
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-ssl-enabled">"jmx-manager-ssl-enabled"</a>
+   * The prefix used for Gemfire properties set through java system properties
+   */
+  String GEMFIRE_PREFIX = "gemfire.";
+
+  /**
+   * For the "custom-" prefixed properties
+   */
+  String USERDEFINED_PREFIX_NAME = "custom-";
+
+  /**
+   * For ssl keystore and trust store properties
+   */
+  String SSL_SYSTEM_PROPS_NAME = "javax.net.ssl";
+
+  String KEY_STORE_TYPE_NAME = ".keyStoreType";
+  String KEY_STORE_NAME = ".keyStore";
+  String KEY_STORE_PASSWORD_NAME = ".keyStorePassword";
+  String TRUST_STORE_NAME = ".trustStore";
+  String TRUST_STORE_PASSWORD_NAME = ".trustStorePassword";
+
+  /**
+   * Suffix for ssl keystore and trust store properties for JMX
+   */
+  String JMX_SSL_PROPS_SUFFIX = "-jmx";
+
+  /**
+   * For security properties starting with sysprop in gfsecurity.properties file
+   */
+  String SYS_PROP_NAME = "sysprop-";
+  /**
+   * The property decides whether to remove unresponsive client from the server.
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME = REMOVE_UNRESPONSIVE_CLIENT;
+
+  /**
+   * The default value of remove unresponsive client is false.
+   */
+  boolean DEFAULT_REMOVE_UNRESPONSIVE_CLIENT = false;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#REMOVE_UNRESPONSIVE_CLIENT}
+   * property.
+   *
+   * @since GemFire 6.0
+   */
+  @ConfigAttributeGetter(name = REMOVE_UNRESPONSIVE_CLIENT)
+  boolean getRemoveUnresponsiveClient();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#REMOVE_UNRESPONSIVE_CLIENT}
+   * property.
+   *
+   * @since GemFire 6.0
+   */
+  @ConfigAttributeSetter(name = REMOVE_UNRESPONSIVE_CLIENT)
+  void setRemoveUnresponsiveClient(boolean value);
+
+  /**
+   * @since GemFire 6.3
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String DELTA_PROPAGATION_PROP_NAME = DELTA_PROPAGATION;
+
+  boolean DEFAULT_DELTA_PROPAGATION = true;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#DELTA_PROPAGATION}
+   * property.
+   *
+   * @since GemFire 6.3
+   */
+  @ConfigAttributeGetter(name = DELTA_PROPAGATION)
+  boolean getDeltaPropagation();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#DELTA_PROPAGATION}
+   * property.
+   *
+   * @since GemFire 6.3
+   */
+  @ConfigAttributeSetter(name = DELTA_PROPAGATION)
+  void setDeltaPropagation(boolean value);
+
+  int MIN_DISTRIBUTED_SYSTEM_ID = -1;
+  int MAX_DISTRIBUTED_SYSTEM_ID = 255;
+  /**
+   * @since GemFire 6.6
+   */
+  @ConfigAttribute(type = Integer.class)
+  String DISTRIBUTED_SYSTEM_ID_NAME = DISTRIBUTED_SYSTEM_ID;
+  int DEFAULT_DISTRIBUTED_SYSTEM_ID = -1;
+
+  /**
+   * @since GemFire 6.6
+   */
+  @ConfigAttributeSetter(name = DISTRIBUTED_SYSTEM_ID)
+  void setDistributedSystemId(int distributedSystemId);
+
+  /**
+   * @since GemFire 6.6
+   */
+  @ConfigAttributeGetter(name = DISTRIBUTED_SYSTEM_ID)
+  int getDistributedSystemId();
+
+  /**
+   * @since GemFire 6.6
+   */
+  @ConfigAttribute(type = String.class)
+  String REDUNDANCY_ZONE_NAME = REDUNDANCY_ZONE;
+  String DEFAULT_REDUNDANCY_ZONE = "";
+
+  /**
+   * @since GemFire 6.6
+   */
+  @ConfigAttributeSetter(name = REDUNDANCY_ZONE)
+  void setRedundancyZone(String redundancyZone);
+
+  /**
+   * @since GemFire 6.6
+   */
+  @ConfigAttributeGetter(name = REDUNDANCY_ZONE)
+  String getRedundancyZone();
+
+  /**
+   * @since GemFire 6.6.2
+   */
+  void setSSLProperty(String attName, String attValue);
+
+  /**
+   * @since GemFire 6.6.2
+   */
+  Properties getSSLProperties();
+
+  Properties getClusterSSLProperties();
+
+  /**
+   * @since GemFire 8.0
+   */
+  Properties getJmxSSLProperties();
+
+  /**
+   * @since GemFire 6.6
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String ENFORCE_UNIQUE_HOST_NAME = ENFORCE_UNIQUE_HOST;
+  /**
+   * Using the system property to set the default here to retain backwards compatibility
+   * with customers that are already using this system property.
+   */
+  boolean DEFAULT_ENFORCE_UNIQUE_HOST = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "EnforceUniqueHostStorageAllocation");
+
+  @ConfigAttributeSetter(name = ENFORCE_UNIQUE_HOST)
+  void setEnforceUniqueHost(boolean enforceUniqueHost);
+
+  @ConfigAttributeGetter(name = ENFORCE_UNIQUE_HOST)
+  boolean getEnforceUniqueHost();
+
+  Properties getUserDefinedProps();
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#GROUPS} property
+   * <p> The default value is: {@link #DEFAULT_GROUPS}.
+   *
+   * @return the value of the property
+   * @since GemFire 7.0
+   */
+  @ConfigAttributeGetter(name = GROUPS)
+  String getGroups();
+
+  /**
+   * Sets the {@link ConfigurationProperties#GROUPS} property.
+   * <p> The groups can not be changed while the system is running.
+   *
+   * @throws IllegalArgumentException                   if the specified value is not acceptable.
+   * @throws com.gemstone.gemfire.UnmodifiableException if this attribute can not be modified.
+   * @throws com.gemstone.gemfire.GemFireIOException    if the set failure is caused by an error
+   *                                                    when writing to the system's configuration file.
+   * @since GemFire 7.0
+   */
+  @ConfigAttributeSetter(name = GROUPS)
+  void setGroups(String value);
+
+  /**
+   * The name of the {@link ConfigurationProperties#GROUPS} property
+   *
+   * @since GemFire 7.0
+   */
+  @ConfigAttribute(type = String.class)
+  String GROUPS_NAME = GROUPS;
+  /**
+   * The default {@link ConfigurationProperties#GROUPS}.
+   * <p> Actual value of this constant is <code>""</code>.
+   *
+   * @since GemFire 7.0
+   */
+  String DEFAULT_GROUPS = "";
+
+  /**
+   * Any cleanup required before closing the distributed system
+   */
+  void close();
+
+  @ConfigAttributeSetter(name = REMOTE_LOCATORS)
+  void setRemoteLocators(String locators);
+
+  @ConfigAttributeGetter(name = REMOTE_LOCATORS)
+  String getRemoteLocators();
+
+  /**
+   * The name of the {@link ConfigurationProperties#REMOTE_LOCATORS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String REMOTE_LOCATORS_NAME = REMOTE_LOCATORS;
+  /**
+   * The default value of the {@link ConfigurationProperties#REMOTE_LOCATORS} property
+   */
+  String DEFAULT_REMOTE_LOCATORS = "";
+
+  @ConfigAttributeGetter(name = JMX_MANAGER)
+  boolean getJmxManager();
+
+  @ConfigAttributeSetter(name = JMX_MANAGER)
+  void setJmxManager(boolean value);
+
+  @ConfigAttribute(type = Boolean.class)
+  String JMX_MANAGER_NAME = JMX_MANAGER;
+  boolean DEFAULT_JMX_MANAGER = false;
+
+  @ConfigAttributeGetter(name = JMX_MANAGER_START)
+  boolean getJmxManagerStart();
+
+  @ConfigAttributeSetter(name = JMX_MANAGER_START)
+  void setJmxManagerStart(boolean value);
+
+  @ConfigAttribute(type = Boolean.class)
+  String JMX_MANAGER_START_NAME = JMX_MANAGER_START;
+  boolean DEFAULT_JMX_MANAGER_START = false;
+
+  @ConfigAttributeGetter(name = JMX_MANAGER_PORT)
+  int getJmxManagerPort();
+
+  @ConfigAttributeSetter(name = JMX_MANAGER_PORT)
+  void setJmxManagerPort(int value);
+
+  @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
+  String JMX_MANAGER_PORT_NAME = JMX_MANAGER_PORT;
+
+  int DEFAULT_JMX_MANAGER_PORT = 1099;
+
+  /**
+   * @deprecated as of 8.0 use {@link #getJmxManagerSSLEnabled} instead.
+   */
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL)
+  boolean getJmxManagerSSL();
+
+  /**
+   * @deprecated as of 8.0 use {@link #setJmxManagerSSLEnabled} instead.
+   */
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL)
+  void setJmxManagerSSL(boolean value);
+
+  /**
+   * @deprecated as of 8.0 use {@link #JMX_MANAGER_SSL_ENABLED_NAME} instead.
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String JMX_MANAGER_SSL_NAME = JMX_MANAGER_SSL;
+
+  /**
+   * @deprecated as of 8.0 use {@link #DEFAULT_JMX_MANAGER_SSL_ENABLED} instead.
+   */
+  boolean DEFAULT_JMX_MANAGER_SSL = false;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_ENABLED}
    * property.
    */
-  @ConfigAttributeGetter(name=JMX_MANAGER_SSL_ENABLED_NAME)
-  public boolean getJmxManagerSSLEnabled();
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_ENABLED)
+  boolean getJmxManagerSSLEnabled();
 
   /**
-   * The default jmx-manager-ssl-enabled state.
+   * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_ENABLED} state.
    * <p> Actual value of this constant is <code>false</code>.
    */
-  public static final boolean DEFAULT_JMX_MANAGER_SSL_ENABLED = false;
-
-  /** The name of the "CacheJmxManagerSSLEnabled" property */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String JMX_MANAGER_SSL_ENABLED_NAME =
-    "jmx-manager-ssl-enabled";
+  boolean DEFAULT_JMX_MANAGER_SSL_ENABLED = false;
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-ssl-enabled">"jmx-manager-ssl-enabled"</a>
+   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_ENABLED} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String JMX_MANAGER_SSL_ENABLED_NAME = JMX_MANAGER_SSL_ENABLED;
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_ENABLED}
    * property.
    */
-  @ConfigAttributeSetter(name=JMX_MANAGER_SSL_ENABLED_NAME)
-  public void setJmxManagerSSLEnabled( boolean enabled );
-
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_ENABLED)
+  void setJmxManagerSSLEnabled(boolean enabled);
 
   /**
-   * Returns the value of the <a 
-   * href="../DistributedSystem.html#off-heap-memory-size">"off-heap-memory-size"</a> 
+   * Returns the value of the {@link ConfigurationProperties#OFF_HEAP_MEMORY_SIZE}
    * property.
-   * @since 9.0
+   *
+   * @since Geode 1.0
    */
-  @ConfigAttributeGetter(name=OFF_HEAP_MEMORY_SIZE_NAME)
-  public String getOffHeapMemorySize();
+  @ConfigAttributeGetter(name = OFF_HEAP_MEMORY_SIZE)
+  String getOffHeapMemorySize();
+
   /**
-   * Sets the value of the <a 
-   * href="../DistributedSystem.html#off-heap-memory-size">"off-heap-memory-size"</a> 
+   * Sets the value of the {@link ConfigurationProperties#OFF_HEAP_MEMORY_SIZE}
    * property.
-   * @since 9.0
+   *
+   * @since Geode 1.0
    */
-  @ConfigAttributeSetter(name=OFF_HEAP_MEMORY_SIZE_NAME)
-  public void setOffHeapMemorySize(String value);
-  /** 
-   * The name of the "off-heap-memory-size" property 
-   * @since 9.0
-   */
-  @ConfigAttribute(type=String.class)
-  public static final String OFF_HEAP_MEMORY_SIZE_NAME = "off-heap-memory-size";
-  /** 
-   * The default <a 
-   * href="../DistributedSystem.html#off-heap-memory-size">"off-heap-memory-size"</a>
-   * value of <code>""</code>. 
-   * @since 9.0
-   */
-  public static final String DEFAULT_OFF_HEAP_MEMORY_SIZE = "";
-
+  @ConfigAttributeSetter(name = OFF_HEAP_MEMORY_SIZE)
+  void setOffHeapMemorySize(String value);
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-ssl-protocols">"jmx-manager-ssl-protocols"</a>
-   * property.
+   * The name of the {@link ConfigurationProperties#OFF_HEAP_MEMORY_SIZE} property
+   *
+   * @since Geode 1.0
    */
-  @ConfigAttributeGetter(name=JMX_MANAGER_SSL_PROTOCOLS_NAME)
-  public String getJmxManagerSSLProtocols( );
+  @ConfigAttribute(type = String.class)
+  String OFF_HEAP_MEMORY_SIZE_NAME = OFF_HEAP_MEMORY_SIZE;
+  /**
+   * The default {@link ConfigurationProperties#OFF_HEAP_MEMORY_SIZE}
+   * value of <code>""</code>.
+   *
+   * @since Geode 1.0
+   */
+  String DEFAULT_OFF_HEAP_MEMORY_SIZE = "";
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-ssl-protocols">"jmx-manager-ssl-protocols"</a>
+   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS}
    * property.
    */
-  @ConfigAttributeSetter(name=JMX_MANAGER_SSL_PROTOCOLS_NAME)
-   public void setJmxManagerSSLProtocols( String protocols );
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_PROTOCOLS)
+  String getJmxManagerSSLProtocols();
 
   /**
-   * The default jmx-manager-ssl-protocols value.
+   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS}
+   * property.
+   */
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_PROTOCOLS)
+  void setJmxManagerSSLProtocols(String protocols);
+
+  /**
+   * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS} value.
    * <p> Actual value of this constant is <code>any</code>.
    */
-  public static final String DEFAULT_JMX_MANAGER_SSL_PROTOCOLS = "any";
-  /** The name of the "CacheJmxManagerSSLProtocols" property */
-  @ConfigAttribute(type=String.class)
-  public static final String JMX_MANAGER_SSL_PROTOCOLS_NAME =
-    "jmx-manager-ssl-protocols";
+  String DEFAULT_JMX_MANAGER_SSL_PROTOCOLS = "any";
+  /**
+   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String JMX_MANAGER_SSL_PROTOCOLS_NAME = JMX_MANAGER_SSL_PROTOCOLS;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-ssl-ciphers">"jmx-manager-ssl-ciphers"</a>
+   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS}
    * property.
    */
-  @ConfigAttributeGetter(name=JMX_MANAGER_SSL_CIPHERS_NAME)
-   public String getJmxManagerSSLCiphers( );
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_CIPHERS)
+  String getJmxManagerSSLCiphers();
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-ssl-ciphers">"jmx-manager-ssl-ciphers"</a>
+   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS}
    * property.
    */
-  @ConfigAttributeSetter(name=JMX_MANAGER_SSL_CIPHERS_NAME)
-   public void setJmxManagerSSLCiphers( String ciphers );
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_CIPHERS)
+  void setJmxManagerSSLCiphers(String ciphers);
 
-   /**
-   * The default jmx-manager-ssl-ciphers value.
+  /**
+   * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS} value.
    * <p> Actual value of this constant is <code>any</code>.
    */
-  public static final String DEFAULT_JMX_MANAGER_SSL_CIPHERS = "any";
-  /** The name of the "CacheJmxManagerSSLCiphers" property */
-  @ConfigAttribute(type=String.class)
-  public static final String JMX_MANAGER_SSL_CIPHERS_NAME =
-    "jmx-manager-ssl-ciphers";
+  String DEFAULT_JMX_MANAGER_SSL_CIPHERS = "any";
+  /**
+   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String JMX_MANAGER_SSL_CIPHERS_NAME = JMX_MANAGER_SSL_CIPHERS;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-ssl-require-authentication">"jmx-manager-ssl-require-authentication"</a>
+   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION}
    * property.
    */
-  @ConfigAttributeGetter(name=JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION_NAME)
-   public boolean getJmxManagerSSLRequireAuthentication( );
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION)
+  boolean getJmxManagerSSLRequireAuthentication();
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-ssl-require-authentication">"jmx-manager-ssl-require-authentication"</a>
+   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION}
    * property.
    */
-  @ConfigAttributeSetter(name=JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION_NAME)
-   public void setJmxManagerSSLRequireAuthentication( boolean enabled );
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION)
+  void setJmxManagerSSLRequireAuthentication(boolean enabled);
 
-   /**
-   * The default jmx-manager-ssl-require-authentication value.
+  /**
+   * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION} value.
    * <p> Actual value of this constant is <code>true</code>.
    */
-  public static final boolean DEFAULT_JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION = true;
-  /** The name of the "CacheJmxManagerSSLRequireAuthentication" property */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION_NAME =
-    "jmx-manager-ssl-require-authentication";
+  boolean DEFAULT_JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION = true;
+  /**
+   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION_NAME = JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION;
 
-  
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-ssl-keystore">"jmx-manager-ssl-keystore"</a>
+   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE}
    * property.
    */
-  @ConfigAttributeGetter(name=JMX_MANAGER_SSL_KEYSTORE_NAME)
-  public String getJmxManagerSSLKeyStore( );
-  
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_KEYSTORE)
+  String getJmxManagerSSLKeyStore();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-ssl-keystore">"jmx-manager-ssl-keystore"</a>
+   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE}
    * property.
    */
-  @ConfigAttributeSetter(name=JMX_MANAGER_SSL_KEYSTORE_NAME)
-  public void setJmxManagerSSLKeyStore( String keyStore);
-  
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_KEYSTORE)
+  void setJmxManagerSSLKeyStore(String keyStore);
+
   /**
-   * The default jmx-manager-ssl-keystore value.
+   * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE} value.
    * <p> Actual value of this constant is "".
    */
-  public static final String DEFAULT_JMX_MANAGER_SSL_KEYSTORE = "";
-  
-  /** The name of the "CacheJmxManagerSSLKeyStore" property */
-  @ConfigAttribute(type=String.class)
-  public static final String JMX_MANAGER_SSL_KEYSTORE_NAME = "jmx-manager-ssl-keystore";
-  
+  String DEFAULT_JMX_MANAGER_SSL_KEYSTORE = "";
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-ssl-keystore-type">"jmx-manager-ssl-keystore-type"</a>
+   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String JMX_MANAGER_SSL_KEYSTORE_NAME = JMX_MANAGER_SSL_KEYSTORE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE}
    * property.
    */
-  @ConfigAttributeGetter(name=JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME)
-  public String getJmxManagerSSLKeyStoreType( );
-  
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_KEYSTORE_TYPE)
+  String getJmxManagerSSLKeyStoreType();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-ssl-keystore-type">"jmx-manager-ssl-keystore-type"</a>
+   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE}
    * property.
    */
-  @ConfigAttributeSetter(name=JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME)
-  public void setJmxManagerSSLKeyStoreType( String keyStoreType);
-  
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_KEYSTORE_TYPE)
+  void setJmxManagerSSLKeyStoreType(String keyStoreType);
+
   /**
-   * The default jmx-manager-ssl-keystore-type value.
+   * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE} value.
    * <p> Actual value of this constant is "".
    */
-  public static final String DEFAULT_JMX_MANAGER_SSL_KEYSTORE_TYPE = "";
-  
-  /** The name of the "CacheJmxManagerSSLKeyStoreType" property */
-  @ConfigAttribute(type=String.class)
-  public static final String JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME = "jmx-manager-ssl-keystore-type";
-  
+  String DEFAULT_JMX_MANAGER_SSL_KEYSTORE_TYPE = "";
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-ssl-keystore-password">"jmx-manager-ssl-keystore-password"</a>
+   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME = JMX_MANAGER_SSL_KEYSTORE_TYPE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD}
    * property.
    */
-  @ConfigAttributeGetter(name=JMX_MANAGER_SSL_KEYSTORE_PASSWORD_NAME)
-  public String getJmxManagerSSLKeyStorePassword( );
-  
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_KEYSTORE_PASSWORD)
+  String getJmxManagerSSLKeyStorePassword();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-ssl-keystore-password">"jmx-manager-ssl-keystore-password"</a>
+   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD}
    * property.
    */
-  @ConfigAttributeSetter(name=JMX_MANAGER_SSL_KEYSTORE_PASSWORD_NAME)
-  public void setJmxManagerSSLKeyStorePassword( String keyStorePassword);
-  
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_KEYSTORE_PASSWORD)
+  void setJmxManagerSSLKeyStorePassword(String keyStorePassword);
+
   /**
-   * The default jmx-manager-ssl-keystore-password value.
+   * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD} value.
    * <p> Actual value of this constant is "".
    */
-  public static final String DEFAULT_JMX_MANAGER_SSL_KEYSTORE_PASSWORD = "";
-  
-  /** The name of the "CacheJmxManagerSSLKeyStorePassword" property */
-  @ConfigAttribute(type=String.class)
-  public static final String JMX_MANAGER_SSL_KEYSTORE_PASSWORD_NAME = "jmx-manager-ssl-keystore-password";
-  
+  String DEFAULT_JMX_MANAGER_SSL_KEYSTORE_PASSWORD = "";
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-ssl-truststore">"jmx-manager-ssl-truststore"</a>
+   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD} property
+   */
+  @ConfigAttribute(type = String.class)
+  String JMX_MANAGER_SSL_KEYSTORE_PASSWORD_NAME = JMX_MANAGER_SSL_KEYSTORE_PASSWORD;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE}
    * property.
    */
-  @ConfigAttributeGetter(name=JMX_MANAGER_SSL_TRUSTSTORE_NAME)
-  public String getJmxManagerSSLTrustStore( );
-  
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_TRUSTSTORE)
+  String getJmxManagerSSLTrustStore();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-ssl-truststore">"jmx-manager-ssl-truststore"</a>
+   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE}
    * property.
    */
-  @ConfigAttributeSetter(name=JMX_MANAGER_SSL_TRUSTSTORE_NAME)
-  public void setJmxManagerSSLTrustStore( String trustStore);
-  
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_TRUSTSTORE)
+  void setJmxManagerSSLTrustStore(String trustStore);
+
   /**
-   * The default jmx-manager-ssl-truststore value.
+   * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE} value.
    * <p> Actual value of this constant is "".
    */
-  public static final String DEFAULT_JMX_MANAGER_SSL_TRUSTSTORE = "";
-  
-  /** The name of the "CacheJmxManagerSSLTrustStore" property */
-  @ConfigAttribute(type=String.class)
-  public static final String JMX_MANAGER_SSL_TRUSTSTORE_NAME = "jmx-manager-ssl-truststore";
-  
+  String DEFAULT_JMX_MANAGER_SSL_TRUSTSTORE = "";
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-ssl-truststore-password">"jmx-manager-ssl-truststore-password"</a>
+   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String JMX_MANAGER_SSL_TRUSTSTORE_NAME = JMX_MANAGER_SSL_TRUSTSTORE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD}
    * property.
    */
-  @ConfigAttributeGetter(name=JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD_NAME)
-  public String getJmxManagerSSLTrustStorePassword( );
-  
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD)
+  String getJmxManagerSSLTrustStorePassword();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-ssl-truststore-password">"jmx-manager-ssl-truststore-password"</a>
+   * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD}
    * property.
    */
-  @ConfigAttributeSetter(name=JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD_NAME)
-  public void setJmxManagerSSLTrustStorePassword( String trusStorePassword);
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD)
+  void setJmxManagerSSLTrustStorePassword(String trusStorePassword);
+
   /**
-   * The default jmx-manager-ssl-truststore-password value.
+   * The default {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD} value.
    * <p> Actual value of this constant is "".
    */
-  public static final String DEFAULT_JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD = "";
-  
-  /** The name of the "JmxManagerSSLKeyStorePassword" property */
-  @ConfigAttribute(type=String.class)
-  public static final String JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD_NAME = "jmx-manager-ssl-truststore-password";
+  String DEFAULT_JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD = "";
 
-
-  @ConfigAttributeGetter(name=JMX_MANAGER_BIND_ADDRESS_NAME)
-  public String getJmxManagerBindAddress();
-  @ConfigAttributeSetter(name=JMX_MANAGER_BIND_ADDRESS_NAME)
-  public void setJmxManagerBindAddress(String value);
-
-  @ConfigAttribute(type=String.class)
-  public static String JMX_MANAGER_BIND_ADDRESS_NAME = "jmx-manager-bind-address";
-  public static String DEFAULT_JMX_MANAGER_BIND_ADDRESS = "";
-
-  @ConfigAttributeGetter(name=JMX_MANAGER_HOSTNAME_FOR_CLIENTS_NAME)
-  public String getJmxManagerHostnameForClients();
-  @ConfigAttributeSetter(name=JMX_MANAGER_HOSTNAME_FOR_CLIENTS_NAME)
-  public void setJmxManagerHostnameForClients(String value);
-
-  @ConfigAttribute(type=String.class)
-  public static String JMX_MANAGER_HOSTNAME_FOR_CLIENTS_NAME = "jmx-manager-hostname-for-clients";
-  public static String DEFAULT_JMX_MANAGER_HOSTNAME_FOR_CLIENTS = "";
-
-  @ConfigAttributeGetter(name=JMX_MANAGER_PASSWORD_FILE_NAME)
-  public String getJmxManagerPasswordFile();
-  @ConfigAttributeSetter(name=JMX_MANAGER_PASSWORD_FILE_NAME)
-  public void setJmxManagerPasswordFile(String value);
-
-  @ConfigAttribute(type=String.class)
-  public static String JMX_MANAGER_PASSWORD_FILE_NAME = "jmx-manager-password-file";
-  public static String DEFAULT_JMX_MANAGER_PASSWORD_FILE = "";
-
-  @ConfigAttributeGetter(name=JMX_MANAGER_ACCESS_FILE_NAME)
-  public String getJmxManagerAccessFile();
-  @ConfigAttributeSetter(name=JMX_MANAGER_ACCESS_FILE_NAME)
-  public void setJmxManagerAccessFile(String value);
-
-  @ConfigAttribute(type=String.class)
-  public static String JMX_MANAGER_ACCESS_FILE_NAME = "jmx-manager-access-file";
-  public static String DEFAULT_JMX_MANAGER_ACCESS_FILE = "";
-  
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#jmx-manager-http-port">"jmx-manager-http-port"</a> property
+   * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD} property
+   */
+  @ConfigAttribute(type = String.class)
+  String JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD_NAME = JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD;
+
+  @ConfigAttributeGetter(name = JMX_MANAGER_BIND_ADDRESS)
+  String getJmxManagerBindAddress();
+
+  @ConfigAttributeSetter(name = JMX_MANAGER_BIND_ADDRESS)
+  void setJmxManagerBindAddress(String value);
+
+  @ConfigAttribute(type = String.class)
+  String JMX_MANAGER_BIND_ADDRESS_NAME = JMX_MANAGER_BIND_ADDRESS;
+  String DEFAULT_JMX_MANAGER_BIND_ADDRESS = "";
+
+  @ConfigAttributeGetter(name = JMX_MANAGER_HOSTNAME_FOR_CLIENTS)
+  String getJmxManagerHostnameForClients();
+
+  @ConfigAttributeSetter(name = JMX_MANAGER_HOSTNAME_FOR_CLIENTS)
+  void setJmxManagerHostnameForClients(String value);
+
+  @ConfigAttribute(type = String.class)
+  String JMX_MANAGER_HOSTNAME_FOR_CLIENTS_NAME = JMX_MANAGER_HOSTNAME_FOR_CLIENTS;
+  String DEFAULT_JMX_MANAGER_HOSTNAME_FOR_CLIENTS = "";
+
+  @ConfigAttributeGetter(name = JMX_MANAGER_PASSWORD_FILE)
+  String getJmxManagerPasswordFile();
+
+  @ConfigAttributeSetter(name = JMX_MANAGER_PASSWORD_FILE)
+  void setJmxManagerPasswordFile(String value);
+
+  @ConfigAttribute(type = String.class)
+  String JMX_MANAGER_PASSWORD_FILE_NAME = JMX_MANAGER_PASSWORD_FILE;
+  String DEFAULT_JMX_MANAGER_PASSWORD_FILE = "";
+
+  @ConfigAttributeGetter(name = JMX_MANAGER_ACCESS_FILE)
+  String getJmxManagerAccessFile();
+
+  @ConfigAttributeSetter(name = JMX_MANAGER_ACCESS_FILE)
+  void setJmxManagerAccessFile(String value);
+
+  @ConfigAttribute(type = String.class)
+  String JMX_MANAGER_ACCESS_FILE_NAME = JMX_MANAGER_ACCESS_FILE;
+  String DEFAULT_JMX_MANAGER_ACCESS_FILE = "";
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property
+   *
    * @deprecated as of 8.0 use {@link #getHttpServicePort()} instead.
    */
-  @ConfigAttributeGetter(name=JMX_MANAGER_HTTP_PORT_NAME)
-  public int getJmxManagerHttpPort();
-  
-  /**
-   * Set the jmx-manager-http-port for jmx-manager.
-   * @param value the port number for jmx-manager HTTP service
-   * @deprecated as of 8.0 use {@link #setHttpServicePort(int)} instead.               
-   */
-  @ConfigAttributeSetter(name=JMX_MANAGER_HTTP_PORT_NAME)
-  public void setJmxManagerHttpPort(int value);
+  @ConfigAttributeGetter(name = JMX_MANAGER_HTTP_PORT)
+  int getJmxManagerHttpPort();
 
   /**
-   * The name of the "jmx-manager-http-port" property.
-   * @deprecated as of 8.0 use {@link #HTTP_SERVICE_PORT_NAME} instead.
+   * Set the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} for jmx-manager.
+   *
+   * @param value the port number for jmx-manager HTTP service
+   * @deprecated as of 8.0 use {@link #setHttpServicePort(int)} instead.
    */
-  @ConfigAttribute(type=Integer.class, min=0, max=65535)
-  public static String JMX_MANAGER_HTTP_PORT_NAME = "jmx-manager-http-port";
-  
+  @ConfigAttributeSetter(name = JMX_MANAGER_HTTP_PORT)
+  void setJmxManagerHttpPort(int value);
+
   /**
-   * The default value of the "jmx-manager-http-port" property.
+   * The name of the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property.
+   *
+   * @deprecated as of 8.0 use {{@link #HTTP_SERVICE_PORT_NAME} instead.
+   */
+  @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
+  String JMX_MANAGER_HTTP_PORT_NAME = JMX_MANAGER_HTTP_PORT;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property.
    * Current value is a <code>7070</code>
+   *
    * @deprecated as of 8.0 use {@link #DEFAULT_HTTP_SERVICE_PORT} instead.
    */
-  public static int DEFAULT_JMX_MANAGER_HTTP_PORT = 7070;
+  int DEFAULT_JMX_MANAGER_HTTP_PORT = 7070;
 
-  @ConfigAttributeGetter(name=JMX_MANAGER_UPDATE_RATE_NAME)
-  public int getJmxManagerUpdateRate();
-  @ConfigAttributeSetter(name=JMX_MANAGER_UPDATE_RATE_NAME)
-  public void setJmxManagerUpdateRate(int value);
+  @ConfigAttributeGetter(name = JMX_MANAGER_UPDATE_RATE)
+  int getJmxManagerUpdateRate();
 
-  public static final int DEFAULT_JMX_MANAGER_UPDATE_RATE = 2000;
-  public static final int MIN_JMX_MANAGER_UPDATE_RATE = 1000;
-  public static final int MAX_JMX_MANAGER_UPDATE_RATE = 60000*5;
-  @ConfigAttribute(type=Integer.class, min=MIN_JMX_MANAGER_UPDATE_RATE, max=MAX_JMX_MANAGER_UPDATE_RATE)
-  public static final String JMX_MANAGER_UPDATE_RATE_NAME =
-    "jmx-manager-update-rate";
+  @ConfigAttributeSetter(name = JMX_MANAGER_UPDATE_RATE)
+  void setJmxManagerUpdateRate(int value);
+
+  int DEFAULT_JMX_MANAGER_UPDATE_RATE = 2000;
+  int MIN_JMX_MANAGER_UPDATE_RATE = 1000;
+  int MAX_JMX_MANAGER_UPDATE_RATE = 60000 * 5;
+  @ConfigAttribute(type = Integer.class, min = MIN_JMX_MANAGER_UPDATE_RATE, max = MAX_JMX_MANAGER_UPDATE_RATE)
+  String JMX_MANAGER_UPDATE_RATE_NAME = JMX_MANAGER_UPDATE_RATE;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#memcached-port">"memcached-port"</a> property
+   * Returns the value of the {@link ConfigurationProperties#MEMCACHED_PORT} property
+   *
    * @return the port on which GemFireMemcachedServer should be started
-   * @since 7.0
+   * @since GemFire 7.0
    */
-  @ConfigAttributeGetter(name=MEMCACHED_PORT_NAME)
-  public int getMemcachedPort();
-  @ConfigAttributeSetter(name=MEMCACHED_PORT_NAME)
-  public void setMemcachedPort(int value);
+  @ConfigAttributeGetter(name = MEMCACHED_PORT)
+  int getMemcachedPort();
 
-  @ConfigAttribute(type=Integer.class, min=0, max=65535)
-  public static String MEMCACHED_PORT_NAME = "memcached-port";
-  public static int DEFAULT_MEMCACHED_PORT = 0;
+  @ConfigAttributeSetter(name = MEMCACHED_PORT)
+  void setMemcachedPort(int value);
+
+  @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
+  String MEMCACHED_PORT_NAME = MEMCACHED_PORT;
+  int DEFAULT_MEMCACHED_PORT = 0;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#memcached-protocol">"memcached-protocol"</a> property
+   * Returns the value of the {@link ConfigurationProperties#MEMCACHED_PROTOCOL} property
+   *
    * @return the protocol for GemFireMemcachedServer
-   * @since 7.0
+   * @since GemFire 7.0
    */
-  @ConfigAttributeGetter(name=MEMCACHED_PROTOCOL_NAME)
-  public String getMemcachedProtocol();
-  @ConfigAttributeSetter(name=MEMCACHED_PROTOCOL_NAME)
-  public void setMemcachedProtocol(String protocol);
+  @ConfigAttributeGetter(name = MEMCACHED_PROTOCOL)
+  String getMemcachedProtocol();
 
-  @ConfigAttribute(type=String.class)
-  public static String MEMCACHED_PROTOCOL_NAME = "memcached-protocol";
-  public static String DEFAULT_MEMCACHED_PROTOCOL = GemFireMemcachedServer.Protocol.ASCII.name();
-  
+  @ConfigAttributeSetter(name = MEMCACHED_PROTOCOL)
+  void setMemcachedProtocol(String protocol);
+
+  @ConfigAttribute(type = String.class)
+  String MEMCACHED_PROTOCOL_NAME = MEMCACHED_PROTOCOL;
+  String DEFAULT_MEMCACHED_PROTOCOL = GemFireMemcachedServer.Protocol.ASCII.name();
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#memcached-bind-address">"memcached-bind-address"</a> property
+   * Returns the value of the {@link ConfigurationProperties#MEMCACHED_BIND_ADDRESS} property
+   *
    * @return the bind address for GemFireMemcachedServer
-   * @since 7.0
+   * @since GemFire 7.0
    */
-  @ConfigAttributeGetter(name=MEMCACHED_BIND_ADDRESS_NAME)
-  public String getMemcachedBindAddress();
-  @ConfigAttributeSetter(name=MEMCACHED_BIND_ADDRESS_NAME)
-  public void setMemcachedBindAddress(String bindAddress);
+  @ConfigAttributeGetter(name = MEMCACHED_BIND_ADDRESS)
+  String getMemcachedBindAddress();
 
-  @ConfigAttribute(type=String.class)
-  public static String MEMCACHED_BIND_ADDRESS_NAME = "memcached-bind-address";
-  public static String DEFAULT_MEMCACHED_BIND_ADDRESS = "";
-  
-  /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#redis-port">"redis-port"</a> property
-   * @return the port on which GemFireRedisServer should be started
-   * @since 8.0
-   */
-  @ConfigAttributeGetter(name=REDIS_PORT_NAME)
-  public int getRedisPort();
-  @ConfigAttributeSetter(name=REDIS_PORT_NAME)
-  public void setRedisPort(int value);
+  @ConfigAttributeSetter(name = MEMCACHED_BIND_ADDRESS)
+  void setMemcachedBindAddress(String bindAddress);
 
-  @ConfigAttribute(type=Integer.class, min=0, max=65535)
-  public static String REDIS_PORT_NAME = "redis-port";
-  public static int DEFAULT_REDIS_PORT = 0;
+  @ConfigAttribute(type = String.class)
+  String MEMCACHED_BIND_ADDRESS_NAME = MEMCACHED_BIND_ADDRESS;
+  String DEFAULT_MEMCACHED_BIND_ADDRESS = "";
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#redis-bind-address">"redis-bind-address"</a> property
-   * @return the bind address for GemFireRedisServer
-   * @since 8.0
+   * Returns the value of the {@link ConfigurationProperties#REDIS_PORT} property
+   *
+   * @return the port on which GeodeRedisServer should be started
+   * @since GemFire 8.0
    */
-  @ConfigAttributeGetter(name=REDIS_BIND_ADDRESS_NAME)
-  public String getRedisBindAddress();
-  @ConfigAttributeSetter(name=REDIS_BIND_ADDRESS_NAME)
-  public void setRedisBindAddress(String bindAddress);
+  @ConfigAttributeGetter(name = REDIS_PORT)
+  int getRedisPort();
 
-  @ConfigAttribute(type=String.class)
-  public static String REDIS_BIND_ADDRESS_NAME = "redis-bind-address";
-  public static String DEFAULT_REDIS_BIND_ADDRESS = "";
-  
+  @ConfigAttributeSetter(name = REDIS_PORT)
+  void setRedisPort(int value);
+
+  @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
+  String REDIS_PORT_NAME = REDIS_PORT;
+  int DEFAULT_REDIS_PORT = 0;
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#redis-password">"redis-password"</a> property
-   * @return the authentication password for GemFireRedisServer
-   * @since 8.0
+   * Returns the value of the {@link ConfigurationProperties#REDIS_BIND_ADDRESS} property
+   *
+   * @return the bind address for GeodeRedisServer
+   * @since GemFire 8.0
    */
-  @ConfigAttributeGetter(name=REDIS_PASSWORD_NAME)
-  public String getRedisPassword();
-  @ConfigAttributeSetter(name=REDIS_PASSWORD_NAME)
-  public void setRedisPassword(String password);
+  @ConfigAttributeGetter(name = REDIS_BIND_ADDRESS)
+  String getRedisBindAddress();
 
-  @ConfigAttribute(type=String.class)
-  public static String REDIS_PASSWORD_NAME = "redis-password";
-  public static String DEFAULT_REDIS_PASSWORD = "";
+  @ConfigAttributeSetter(name = REDIS_BIND_ADDRESS)
+  void setRedisBindAddress(String bindAddress);
 
+  @ConfigAttribute(type = String.class)
+  String REDIS_BIND_ADDRESS_NAME = REDIS_BIND_ADDRESS;
+  String DEFAULT_REDIS_BIND_ADDRESS = "";
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#REDIS_PASSWORD} property
+   *
+   * @return the authentication password for GeodeRedisServer
+   * @since GemFire 8.0
+   */
+  @ConfigAttributeGetter(name = REDIS_PASSWORD)
+  String getRedisPassword();
+
+  @ConfigAttributeSetter(name = REDIS_PASSWORD)
+  void setRedisPassword(String password);
+
+  @ConfigAttribute(type = String.class)
+  String REDIS_PASSWORD_NAME = REDIS_PASSWORD;
+  String DEFAULT_REDIS_PASSWORD = "";
 
   //Added for the HTTP service
-  
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#http-service-port">"http-service-port"</a> property
+   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_PORT} property
+   *
    * @return the HTTP service port
-   * @since 8.0
+   * @since GemFire 8.0
    */
-  @ConfigAttributeGetter(name=HTTP_SERVICE_PORT_NAME)
-  public int getHttpServicePort();
-  
+  @ConfigAttributeGetter(name = HTTP_SERVICE_PORT)
+  int getHttpServicePort();
+
   /**
-   * Set the http-service-port for HTTP service.
+   * Set the {@link ConfigurationProperties#HTTP_SERVICE_PORT} for HTTP service.
+   *
    * @param value the port number for HTTP service
-   * @since 8.0               
+   * @since GemFire 8.0
    */
-  @ConfigAttributeSetter(name=HTTP_SERVICE_PORT_NAME)
-  public void setHttpServicePort(int value);
-  
+  @ConfigAttributeSetter(name = HTTP_SERVICE_PORT)
+  void setHttpServicePort(int value);
+
   /**
-   * The name of the "http-service-port" property
-   * @since 8.0
+   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_PORT} property
+   *
+   * @since GemFire 8.0
    */
-  @ConfigAttribute(type=Integer.class, min=0, max=65535)
-  public static String HTTP_SERVICE_PORT_NAME = "http-service-port";
-  
+  @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
+  String HTTP_SERVICE_PORT_NAME = HTTP_SERVICE_PORT;
+
   /**
-   * The default value of the "http-service-port" property.
+   * The default value of the {@link ConfigurationProperties#HTTP_SERVICE_PORT} property.
    * Current value is a <code>7070</code>
-   * @since 8.0 
+   *
+   * @since GemFire 8.0
    */
-  public static int DEFAULT_HTTP_SERVICE_PORT = 7070;
-  
+  int DEFAULT_HTTP_SERVICE_PORT = 7070;
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#http-service-bind-address">"http-service-bind-address"</a> property
+   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} property
+   *
    * @return the bind-address for HTTP service
-   * @since 8.0
+   * @since GemFire 8.0
    */
-  @ConfigAttributeGetter(name=HTTP_SERVICE_BIND_ADDRESS_NAME)
-  public String getHttpServiceBindAddress();
-  
+  @ConfigAttributeGetter(name = HTTP_SERVICE_BIND_ADDRESS)
+  String getHttpServiceBindAddress();
+
   /**
-   * Set the http-service-bind-address for HTTP service.
+   * Set the {@link ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} for HTTP service.
+   *
    * @param value the bind-address for HTTP service
-   * @since 8.0               
+   * @since GemFire 8.0
    */
-  @ConfigAttributeSetter(name=HTTP_SERVICE_BIND_ADDRESS_NAME)
-  public void setHttpServiceBindAddress(String value);
-  
-  /** 
-   * The name of the "http-service-bind-address" property
-   * @since 8.0
-   */
-  @ConfigAttribute(type=String.class)
-  public static String HTTP_SERVICE_BIND_ADDRESS_NAME = "http-service-bind-address";
-  
+  @ConfigAttributeSetter(name = HTTP_SERVICE_BIND_ADDRESS)
+  void setHttpServiceBindAddress(String value);
+
   /**
-   * The default value of the "http-service-bind-address" property.
+   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} property
+   *
+   * @since GemFire 8.0
+   */
+  @ConfigAttribute(type = String.class)
+  String HTTP_SERVICE_BIND_ADDRESS_NAME = HTTP_SERVICE_BIND_ADDRESS;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} property.
    * Current value is an empty string <code>""</code>
-   * @since 8.0 
+   *
+   * @since GemFire 8.0
    */
-  public static String DEFAULT_HTTP_SERVICE_BIND_ADDRESS = "";
-  
-  
+  String DEFAULT_HTTP_SERVICE_BIND_ADDRESS = "";
+
   //Added for HTTP Service SSL
-  
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#http-service-ssl-enabled">"http-service-ssl-enabled"</a>
+   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED}
    * property.
    */
-  @ConfigAttributeGetter(name=HTTP_SERVICE_SSL_ENABLED_NAME)
-  public boolean getHttpServiceSSLEnabled();  
+  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_ENABLED)
+  boolean getHttpServiceSSLEnabled();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#http-service-ssl-enabled">"http-service-ssl-enabled"</a>
+   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED}
    * property.
    */
-  @ConfigAttributeSetter(name=HTTP_SERVICE_SSL_ENABLED_NAME)
-  public void setHttpServiceSSLEnabled(boolean httpServiceSSLEnabled);
+  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_ENABLED)
+  void setHttpServiceSSLEnabled(boolean httpServiceSSLEnabled);
+
   /**
-   * The default http-service-ssl-enabled state.
+   * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED} state.
    * <p> Actual value of this constant is <code>false</code>.
    */
-  public static final boolean DEFAULT_HTTP_SERVICE_SSL_ENABLED = false;
-  
-  /** The name of the "HttpServiceSSLEnabled" property */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String HTTP_SERVICE_SSL_ENABLED_NAME = "http-service-ssl-enabled";  
-  
-  
+  boolean DEFAULT_HTTP_SERVICE_SSL_ENABLED = false;
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#http-service-ssl-require-authentication">"http-service-ssl-require-authentication"</a>
+   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String HTTP_SERVICE_SSL_ENABLED_NAME = HTTP_SERVICE_SSL_ENABLED;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION}
    * property.
    */
-  @ConfigAttributeGetter(name=HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME)
-  public boolean getHttpServiceSSLRequireAuthentication();  
+  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION)
+  boolean getHttpServiceSSLRequireAuthentication();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#http-service-ssl-require-authentication">"http-service-ssl-require-authentication"</a>
+   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION}
    * property.
    */
-  @ConfigAttributeSetter(name=HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME)
-  public void setHttpServiceSSLRequireAuthentication(boolean httpServiceSSLRequireAuthentication);
+  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION)
+  void setHttpServiceSSLRequireAuthentication(boolean httpServiceSSLRequireAuthentication);
+
   /**
-  * The default http-service-ssl-require-authentication value.
-  * <p> Actual value of this constant is <code>true</code>.
-  */
-  public static final boolean DEFAULT_HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION = false;
-  
-  /** The name of the "HttpServiceSSLRequireAuthentication" property */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME = "http-service-ssl-require-authentication"; 
-  
-  
+   * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION} value.
+   * <p> Actual value of this constant is <code>true</code>.
+   */
+  boolean DEFAULT_HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION = false;
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#http-service-ssl-protocols">"http-service-ssl-protocols"</a>
+   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME = HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS}
    * property.
    */
-  @ConfigAttributeGetter(name=HTTP_SERVICE_SSL_PROTOCOLS_NAME)
-  public String getHttpServiceSSLProtocols();  
+  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_PROTOCOLS)
+  String getHttpServiceSSLProtocols();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#http-service-ssl-protocols">"http-service-ssl-protocols"</a>
+   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS}
    * property.
    */
-  @ConfigAttributeSetter(name=HTTP_SERVICE_SSL_PROTOCOLS_NAME)
-  public void setHttpServiceSSLProtocols(String protocols);
+  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_PROTOCOLS)
+  void setHttpServiceSSLProtocols(String protocols);
+
   /**
-   * The default http-service-ssl-protocols value.
+   * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS} value.
    * <p> Actual value of this constant is <code>any</code>.
    */
-  public static final String DEFAULT_HTTP_SERVICE_SSL_PROTOCOLS = "any";
-  
-  /** The name of the "HttpServiceSSLProtocols" property */
-  @ConfigAttribute(type=String.class)
-  public static final String HTTP_SERVICE_SSL_PROTOCOLS_NAME = "http-service-ssl-protocols"; 
-  
-  
+  String DEFAULT_HTTP_SERVICE_SSL_PROTOCOLS = "any";
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#http-service-ssl-ciphers">"http-service-ssl-ciphers"</a>
+   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String HTTP_SERVICE_SSL_PROTOCOLS_NAME = HTTP_SERVICE_SSL_PROTOCOLS;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS}
    * property.
    */
-  @ConfigAttributeGetter(name=HTTP_SERVICE_SSL_CIPHERS_NAME)
-  public String getHttpServiceSSLCiphers();  
+  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_CIPHERS)
+  String getHttpServiceSSLCiphers();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#http-service-ssl-ciphers">"http-service-ssl-ciphers"</a>
+   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS}
    * property.
    */
-  @ConfigAttributeSetter(name=HTTP_SERVICE_SSL_CIPHERS_NAME)
-  public void setHttpServiceSSLCiphers(String ciphers);
+  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_CIPHERS)
+  void setHttpServiceSSLCiphers(String ciphers);
+
   /**
-   * The default http-service-ssl-ciphers value.
+   * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS} value.
    * <p> Actual value of this constant is <code>any</code>.
    */
-  public static final String DEFAULT_HTTP_SERVICE_SSL_CIPHERS = "any";
-  
-  /** The name of the "HttpServiceSSLCiphers" property */
-  @ConfigAttribute(type=String.class)
-  public static final String HTTP_SERVICE_SSL_CIPHERS_NAME = "http-service-ssl-ciphers";
-  
-  
+  String DEFAULT_HTTP_SERVICE_SSL_CIPHERS = "any";
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#http-service-ssl-keystore">"http-service-ssl-keystore"</a>
+   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String HTTP_SERVICE_SSL_CIPHERS_NAME = HTTP_SERVICE_SSL_CIPHERS;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE}
    * property.
    */
-  @ConfigAttributeGetter(name=HTTP_SERVICE_SSL_KEYSTORE_NAME)
-  public String getHttpServiceSSLKeyStore( );  
+  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_KEYSTORE)
+  String getHttpServiceSSLKeyStore();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#http-service-ssl-keystore">"http-service-ssl-keystore"</a>
+   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE}
    * property.
    */
-  @ConfigAttributeSetter(name=HTTP_SERVICE_SSL_KEYSTORE_NAME)
-  public void setHttpServiceSSLKeyStore(String keyStore);
+  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE)
+  void setHttpServiceSSLKeyStore(String keyStore);
+
   /**
-   * The default http-service-ssl-keystore value.
+   * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE} value.
    * <p> Actual value of this constant is "".
    */
-  public static final String DEFAULT_HTTP_SERVICE_SSL_KEYSTORE = "";
-  
-  /** The name of the "HttpServiceSSLKeyStore" property */
-  @ConfigAttribute(type=String.class)
-  public static final String HTTP_SERVICE_SSL_KEYSTORE_NAME = "http-service-ssl-keystore";
-  
+  String DEFAULT_HTTP_SERVICE_SSL_KEYSTORE = "";
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#http-service-ssl-keystore-password">"http-service-ssl-keystore-password"</a>
+   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String HTTP_SERVICE_SSL_KEYSTORE_NAME = HTTP_SERVICE_SSL_KEYSTORE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD}
    * property.
    */
-  @ConfigAttributeGetter(name=HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME)
-  public String getHttpServiceSSLKeyStorePassword( );  
+  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_KEYSTORE_PASSWORD)
+  String getHttpServiceSSLKeyStorePassword();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#http-service-ssl-keystore-password">"http-service-ssl-keystore-password"</a>
+   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD}
    * property.
    */
-  @ConfigAttributeSetter(name=HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME)
-  public void setHttpServiceSSLKeyStorePassword(String keyStorePassword);
+  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE_PASSWORD)
+  void setHttpServiceSSLKeyStorePassword(String keyStorePassword);
+
   /**
-   * The default http-service-ssl-keystore-password value.
+   * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD} value.
    * <p> Actual value of this constant is "".
    */
-  public static final String DEFAULT_HTTP_SERVICE_SSL_KEYSTORE_PASSWORD = "";
-  
-  /** The name of the "HttpServiceSSLKeyStorePassword" property */
-  @ConfigAttribute(type=String.class)
-  public static final String HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME = "http-service-ssl-keystore-password";
-  
-  
+  String DEFAULT_HTTP_SERVICE_SSL_KEYSTORE_PASSWORD = "";
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#http-service-ssl-keystore-type">"http-service-ssl-keystore-type"</a>
+   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD} property
+   */
+  @ConfigAttribute(type = String.class)
+  String HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME = HTTP_SERVICE_SSL_KEYSTORE_PASSWORD;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE}
    * property.
    */
-  @ConfigAttributeGetter(name=HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME)
-  public String getHttpServiceSSLKeyStoreType( );  
+  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_KEYSTORE_TYPE)
+  String getHttpServiceSSLKeyStoreType();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#http-service-ssl-keystore-type">"http-service-ssl-keystore-type"</a>
+   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE}
    * property.
    */
-  @ConfigAttributeSetter(name=HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME)
-  public void setHttpServiceSSLKeyStoreType(String keyStoreType);
+  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE_TYPE)
+  void setHttpServiceSSLKeyStoreType(String keyStoreType);
+
   /**
-   * The default gateway-ssl-truststore-password value.
+   * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE} value.
    * <p> Actual value of this constant is "".
    */
-  public static final String DEFAULT_HTTP_SERVICE_SSL_KEYSTORE_TYPE = "";
-  
-  /** The name of the "HttpServiceKeyStoreType" property */
-  @ConfigAttribute(type=String.class)
-  public static final String HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME = "http-service-ssl-keystore-type";
-  
+  String DEFAULT_HTTP_SERVICE_SSL_KEYSTORE_TYPE = "";
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#http-service-ssl-truststore">"http-service-ssl-truststore"</a>
+   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME = HTTP_SERVICE_SSL_KEYSTORE_TYPE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE}
    * property.
    */
-  @ConfigAttributeGetter(name=HTTP_SERVICE_SSL_TRUSTSTORE_NAME)
-  public String getHttpServiceSSLTrustStore( );  
+  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_TRUSTSTORE)
+  String getHttpServiceSSLTrustStore();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#http-service-ssl-truststore">"http-service-ssl-truststore"</a>
+   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE}
    * property.
    */
-  @ConfigAttributeSetter(name=HTTP_SERVICE_SSL_TRUSTSTORE_NAME)
-  public void setHttpServiceSSLTrustStore(String trustStore);
+  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_TRUSTSTORE)
+  void setHttpServiceSSLTrustStore(String trustStore);
+
   /**
-   * The default http-service-ssl-truststore value.
+   * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE} value.
    * <p> Actual value of this constant is "".
    */
-  public static final String DEFAULT_HTTP_SERVICE_SSL_TRUSTSTORE = "";
-  
-  /** The name of the "HttpServiceTrustStore" property */
-  @ConfigAttribute(type=String.class)
-  public static final String HTTP_SERVICE_SSL_TRUSTSTORE_NAME = "http-service-ssl-truststore";
-  
-  
+  String DEFAULT_HTTP_SERVICE_SSL_TRUSTSTORE = "";
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#http-service-ssl-truststore-password">"http-service-ssl-truststore-password"</a>
+   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String HTTP_SERVICE_SSL_TRUSTSTORE_NAME = HTTP_SERVICE_SSL_TRUSTSTORE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD}
    * property.
    */
-  @ConfigAttributeGetter(name=HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME)
-  public String getHttpServiceSSLTrustStorePassword( );  
+  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD)
+  String getHttpServiceSSLTrustStorePassword();
+
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#http-service-ssl-truststore-password">"http-service-ssl-truststore-password"</a>
+   * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD}
    * property.
    */
-  @ConfigAttributeSetter(name=HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME)
-  public void setHttpServiceSSLTrustStorePassword(String trustStorePassword);
+  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD)
+  void setHttpServiceSSLTrustStorePassword(String trustStorePassword);
+
   /**
-   * The default http-service-ssl-truststore-password value.
+   * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD} value.
    * <p> Actual value of this constant is "".
    */
-  public static final String DEFAULT_HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD = "";
-  
-  /** The name of the "HttpServiceTrustStorePassword" property */
-  @ConfigAttribute(type=String.class)
-  public static final String HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME = "http-service-ssl-truststore-password";
-  
-  
-  public Properties getHttpServiceSSLProperties();
-  
+  String DEFAULT_HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD = "";
+
+  /**
+   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD} property
+   */
+  @ConfigAttribute(type = String.class)
+  String HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME = HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD;
+
+  Properties getHttpServiceSSLProperties();
+
   //Added for API REST
+
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#start-dev-rest-api">"start-dev-rest-api"</a> property
+   * Returns the value of the {@link ConfigurationProperties#START_DEV_REST_API} property
+   *
    * @return the value of the property
-   * @since 8.0
+   * @since GemFire 8.0
    */
-  @ConfigAttributeGetter(name=START_DEV_REST_API_NAME)
-  public boolean getStartDevRestApi();
-  
+  @ConfigAttributeGetter(name = START_DEV_REST_API)
+  boolean getStartDevRestApi();
+
   /**
-   * Set the start-dev-rest-api for HTTP service.
+   * Set the {@link ConfigurationProperties#START_DEV_REST_API} for HTTP service.
+   *
    * @param value for the property
-   * @since 8.0               
+   * @since GemFire 8.0
    */
-  @ConfigAttributeSetter(name=START_DEV_REST_API_NAME)
-  public void setStartDevRestApi(boolean value);
-  
-  /** 
-   * The name of the "start-dev-rest-api" property
-   * @since 8.0
-   */
-  @ConfigAttribute(type=Boolean.class)
-  public static String START_DEV_REST_API_NAME = "start-dev-rest-api";
-  
+  @ConfigAttributeSetter(name = START_DEV_REST_API)
+  void setStartDevRestApi(boolean value);
+
   /**
-   * The default value of the "start-dev-rest-api" property.
+   * The name of the {@link ConfigurationProperties#START_DEV_REST_API} property
+   *
+   * @since GemFire 8.0
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String START_DEV_REST_API_NAME = START_DEV_REST_API;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#START_DEV_REST_API} property.
    * Current value is <code>"false"</code>
-   * @since 8.0 
+   *
+   * @since GemFire 8.0
    */
-  public static boolean DEFAULT_START_DEV_REST_API = false;
-  
-  /**
-   * The name of the "default-auto-reconnect" property
-   * @since 8.0
-   */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String DISABLE_AUTO_RECONNECT_NAME = "disable-auto-reconnect";
-
-  /** The default value of the corresponding property */
-  public static final boolean DEFAULT_DISABLE_AUTO_RECONNECT = false;
-  
-  /**
-   * Gets the value of <a href="../DistributedSystem.html#disable-auto-reconnect">"disable-auto-reconnect"</a>
-   */
-  @ConfigAttributeGetter(name=DISABLE_AUTO_RECONNECT_NAME)
-  public boolean getDisableAutoReconnect();
+  boolean DEFAULT_START_DEV_REST_API = false;
 
   /**
-   * Sets the value of <a href="../DistributedSystem.html#disable-auto-reconnect">"disable-auto-reconnect"</a>
+   * The name of the {@link ConfigurationProperties#DISABLE_AUTO_RECONNECT} property
+   *
+   * @since GemFire 8.0
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String DISABLE_AUTO_RECONNECT_NAME = DISABLE_AUTO_RECONNECT;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#DISABLE_AUTO_RECONNECT} property
+   */
+  boolean DEFAULT_DISABLE_AUTO_RECONNECT = false;
+
+  /**
+   * Gets the value of {@link ConfigurationProperties#DISABLE_AUTO_RECONNECT}
+   */
+  @ConfigAttributeGetter(name = DISABLE_AUTO_RECONNECT)
+  boolean getDisableAutoReconnect();
+
+  /**
+   * Sets the value of {@link ConfigurationProperties#DISABLE_AUTO_RECONNECT}
+   *
    * @param value the new setting
    */
-  @ConfigAttributeSetter(name=DISABLE_AUTO_RECONNECT_NAME)
-  public void setDisableAutoReconnect(boolean value);
-  
-  
-  public Properties getServerSSLProperties();
-  
-  /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#server-ssl-enabled">"server-ssl-enabled"</a>
-   * property.
-   */
-  @ConfigAttributeGetter(name=SERVER_SSL_ENABLED_NAME)
-  public boolean getServerSSLEnabled();
+  @ConfigAttributeSetter(name = DISABLE_AUTO_RECONNECT)
+  void setDisableAutoReconnect(boolean value);
+
+  Properties getServerSSLProperties();
 
   /**
-   * The default server-ssl-enabled state.
+   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_ENABLED}
+   * property.
+   */
+  @ConfigAttributeGetter(name = SERVER_SSL_ENABLED)
+  boolean getServerSSLEnabled();
+
+  /**
+   * The default {@link ConfigurationProperties#SERVER_SSL_ENABLED} state.
    * <p> Actual value of this constant is <code>false</code>.
    */
-  public static final boolean DEFAULT_SERVER_SSL_ENABLED = false;
-  /** The name of the "ServerSSLEnabled" property */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String SERVER_SSL_ENABLED_NAME =
-    "server-ssl-enabled";
+  boolean DEFAULT_SERVER_SSL_ENABLED = false;
+  /**
+   * The name of the {@link ConfigurationProperties#SERVER_SSL_ENABLED} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String SERVER_SSL_ENABLED_NAME = SERVER_SSL_ENABLED;
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#server-ssl-enabled">"server-ssl-enabled"</a>
+   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_ENABLED}
    * property.
    */
-  @ConfigAttributeSetter(name=SERVER_SSL_ENABLED_NAME)
-  public void setServerSSLEnabled( boolean enabled );
+  @ConfigAttributeSetter(name = SERVER_SSL_ENABLED)
+  void setServerSSLEnabled(boolean enabled);
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#server-ssl-protocols">"server-ssl-protocols"</a>
+   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_PROTOCOLS}
    * property.
    */
-  @ConfigAttributeGetter(name=SERVER_SSL_PROTOCOLS_NAME)
-   public String getServerSSLProtocols( );
+  @ConfigAttributeGetter(name = SERVER_SSL_PROTOCOLS)
+  String getServerSSLProtocols();
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#server-ssl-protocols">"server-ssl-protocols"</a>
+   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_PROTOCOLS}
    * property.
    */
-  @ConfigAttributeSetter(name=SERVER_SSL_PROTOCOLS_NAME)
-   public void setServerSSLProtocols( String protocols );
+  @ConfigAttributeSetter(name = SERVER_SSL_PROTOCOLS)
+  void setServerSSLProtocols(String protocols);
 
   /**
-   * The default server-ssl-protocols value.
+   * The default {@link ConfigurationProperties#SERVER_SSL_PROTOCOLS} value.
    * <p> Actual value of this constant is <code>any</code>.
    */
-  public static final String DEFAULT_SERVER_SSL_PROTOCOLS = "any";
-  /** The name of the "ServerSSLProtocols" property */
-  @ConfigAttribute(type=String.class)
-  public static final String SERVER_SSL_PROTOCOLS_NAME =
-    "server-ssl-protocols";
+  String DEFAULT_SERVER_SSL_PROTOCOLS = "any";
+  /**
+   * The name of the {@link ConfigurationProperties#SERVER_SSL_PROTOCOLS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SERVER_SSL_PROTOCOLS_NAME = SERVER_SSL_PROTOCOLS;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#server-ssl-ciphers">"server-ssl-ciphers"</a>
+   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_CIPHERS}
    * property.
    */
-  @ConfigAttributeGetter(name=SERVER_SSL_CIPHERS_NAME)
-   public String getServerSSLCiphers( );
+  @ConfigAttributeGetter(name = SERVER_SSL_CIPHERS)
+  String getServerSSLCiphers();
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#server-ssl-ciphers">"server-ssl-ciphers"</a>
+   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_CIPHERS}
    * property.
    */
-  @ConfigAttributeSetter(name=SERVER_SSL_CIPHERS_NAME)
-   public void setServerSSLCiphers( String ciphers );
+  @ConfigAttributeSetter(name = SERVER_SSL_CIPHERS)
+  void setServerSSLCiphers(String ciphers);
 
-   /**
-   * The default server-ssl-ciphers value.
+  /**
+   * The default {@link ConfigurationProperties#SERVER_SSL_CIPHERS} value.
    * <p> Actual value of this constant is <code>any</code>.
    */
-  public static final String DEFAULT_SERVER_SSL_CIPHERS = "any";
-  /** The name of the "ServerSSLCiphers" property */
-  @ConfigAttribute(type=String.class)
-  public static final String SERVER_SSL_CIPHERS_NAME =
-    "server-ssl-ciphers";
+  String DEFAULT_SERVER_SSL_CIPHERS = "any";
+  /**
+   * The name of the {@link ConfigurationProperties#SERVER_SSL_CIPHERS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SERVER_SSL_CIPHERS_NAME = SERVER_SSL_CIPHERS;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#server-ssl-require-authentication">"server-ssl-require-authentication"</a>
+   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION}
    * property.
    */
-  @ConfigAttributeGetter(name=SERVER_SSL_REQUIRE_AUTHENTICATION_NAME)
-   public boolean getServerSSLRequireAuthentication( );
+  @ConfigAttributeGetter(name = SERVER_SSL_REQUIRE_AUTHENTICATION)
+  boolean getServerSSLRequireAuthentication();
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#server-ssl-require-authentication">"server-ssl-require-authentication"</a>
+   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION}
    * property.
    */
-  @ConfigAttributeSetter(name=SERVER_SSL_REQUIRE_AUTHENTICATION_NAME)
-   public void setServerSSLRequireAuthentication( boolean enabled );
+  @ConfigAttributeSetter(name = SERVER_SSL_REQUIRE_AUTHENTICATION)
+  void setServerSSLRequireAuthentication(boolean enabled);
 
-   /**
-   * The default server-ssl-require-authentication value.
+  /**
+   * The default {@link ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION} value.
    * <p> Actual value of this constant is <code>true</code>.
    */
-  public static final boolean DEFAULT_SERVER_SSL_REQUIRE_AUTHENTICATION = true;
-  /** The name of the "ServerSSLRequireAuthentication" property */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String SERVER_SSL_REQUIRE_AUTHENTICATION_NAME =
-    "server-ssl-require-authentication";
-
-  
+  boolean DEFAULT_SERVER_SSL_REQUIRE_AUTHENTICATION = true;
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#server-ssl-keystore">"server-ssl-keystore"</a>
-   * property.
+   * The name of the {@link ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION} property
    */
-  @ConfigAttributeGetter(name=SERVER_SSL_KEYSTORE_NAME)
-  public String getServerSSLKeyStore( );
-  
-  /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#server-ssl-keystore">"server-ssl-keystore"</a>
-   * property.
-   */
-  @ConfigAttributeSetter(name=SERVER_SSL_KEYSTORE_NAME)
-  public void setServerSSLKeyStore( String keyStore);
-  
-  /**
-   * The default server-ssl-keystore value.
-   * <p> Actual value of this constant is "".
-   */
-  public static final String DEFAULT_SERVER_SSL_KEYSTORE = "";
-  
-  /** The name of the "ServerSSLKeyStore" property */
-  @ConfigAttribute(type=String.class)
-  public static final String SERVER_SSL_KEYSTORE_NAME = "server-ssl-keystore";
-  
-  /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#server-ssl-keystore-type">"server-ssl-keystore-type"</a>
-   * property.
-   */
-  @ConfigAttributeGetter(name=SERVER_SSL_KEYSTORE_TYPE_NAME)
-  public String getServerSSLKeyStoreType( );
-  
-  /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#server-ssl-keystore-type">"server-ssl-keystore-type"</a>
-   * property.
-   */
-  @ConfigAttributeSetter(name=SERVER_SSL_KEYSTORE_TYPE_NAME)
-  public void setServerSSLKeyStoreType( String keyStoreType);
-  
-  /**
-   * The default server-ssl-keystore-type value.
-   * <p> Actual value of this constant is "".
-   */
-  public static final String DEFAULT_SERVER_SSL_KEYSTORE_TYPE = "";
-  
-  /** The name of the "ServerSSLKeyStoreType" property */
-  @ConfigAttribute(type=String.class)
-  public static final String SERVER_SSL_KEYSTORE_TYPE_NAME = "server-ssl-keystore-type";
-  
-  /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#server-ssl-keystore-password">"server-ssl-keystore-password"</a>
-   * property.
-   */
-  @ConfigAttributeGetter(name=SERVER_SSL_KEYSTORE_PASSWORD_NAME)
-  public String getServerSSLKeyStorePassword( );
-  
-  /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#server-ssl-keystore-password">"server-ssl-keystore-password"</a>
-   * property.
-   */
-  @ConfigAttributeSetter(name=SERVER_SSL_KEYSTORE_PASSWORD_NAME)
-  public void setServerSSLKeyStorePassword( String keyStorePassword);
-  
-  /**
-   * The default server-ssl-keystore-password value.
-   * <p> Actual value of this constant is "".
-   */
-  public static final String DEFAULT_SERVER_SSL_KEYSTORE_PASSWORD = "";
-  
-  /** The name of the "ServerSSLKeyStorePassword" property */
-  @ConfigAttribute(type=String.class)
-  public static final String SERVER_SSL_KEYSTORE_PASSWORD_NAME = "server-ssl-keystore-password";
-  
-  /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#server-ssl-truststore">"server-ssl-truststore"</a>
-   * property.
-   */
-  @ConfigAttributeGetter(name=SERVER_SSL_TRUSTSTORE_NAME)
-  public String getServerSSLTrustStore( );
-  
-  /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#server-ssl-truststore">"server-ssl-truststore"</a>
-   * property.
-   */
-  @ConfigAttributeSetter(name=SERVER_SSL_TRUSTSTORE_NAME)
-  public void setServerSSLTrustStore( String trustStore);
-  
-  /**
-   * The default server-ssl-truststore value.
-   * <p> Actual value of this constant is "".
-   */
-  public static final String DEFAULT_SERVER_SSL_TRUSTSTORE = "";
-  
-  /** The name of the "ServerSSLTrustStore" property */
-  @ConfigAttribute(type=String.class)
-  public static final String SERVER_SSL_TRUSTSTORE_NAME = "server-ssl-truststore";
-  
-  /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#server-ssl-truststore-password">"server-ssl-truststore-password"</a>
-   * property.
-   */
-  @ConfigAttributeGetter(name=SERVER_SSL_TRUSTSTORE_PASSWORD_NAME)
-  public String getServerSSLTrustStorePassword( );
-  
-  /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#server-ssl-truststore-password">"server-ssl-truststore-password"</a>
-   * property.
-   */
-  @ConfigAttributeSetter(name=SERVER_SSL_TRUSTSTORE_PASSWORD_NAME)
-  public void setServerSSLTrustStorePassword( String trusStorePassword);
-  /**
-   * The default server-ssl-truststore-password value.
-   * <p> Actual value of this constant is "".
-   */
-  public static final String DEFAULT_SERVER_SSL_TRUSTSTORE_PASSWORD = "";
-  
-  /** The name of the "ServerSSLKeyStorePassword" property */
-  @ConfigAttribute(type=String.class)
-  public static final String SERVER_SSL_TRUSTSTORE_PASSWORD_NAME = "server-ssl-truststore-password";
-  
-  /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#cluster-ssl-enabled">"cluster-ssl-enabled"</a>
-   * property.
-   */
-  @ConfigAttributeGetter(name=GATEWAY_SSL_ENABLED_NAME)
-  public boolean getGatewaySSLEnabled();
+  @ConfigAttribute(type = Boolean.class)
+  String SERVER_SSL_REQUIRE_AUTHENTICATION_NAME = SERVER_SSL_REQUIRE_AUTHENTICATION;
 
   /**
-   * The default gateway-ssl-enabled state.
+   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE}
+   * property.
+   */
+  @ConfigAttributeGetter(name = SERVER_SSL_KEYSTORE)
+  String getServerSSLKeyStore();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SERVER_SSL_KEYSTORE)
+  void setServerSSLKeyStore(String keyStore);
+
+  /**
+   * The default {@link ConfigurationProperties#SERVER_SSL_KEYSTORE} value.
+   * <p> Actual value of this constant is "".
+   */
+  String DEFAULT_SERVER_SSL_KEYSTORE = "";
+
+  /**
+   * The name of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SERVER_SSL_KEYSTORE_NAME = SERVER_SSL_KEYSTORE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE}
+   * property.
+   */
+  @ConfigAttributeGetter(name = SERVER_SSL_KEYSTORE_TYPE)
+  String getServerSSLKeyStoreType();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SERVER_SSL_KEYSTORE_TYPE)
+  void setServerSSLKeyStoreType(String keyStoreType);
+
+  /**
+   * The default {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE} value.
+   * <p> Actual value of this constant is "".
+   */
+  String DEFAULT_SERVER_SSL_KEYSTORE_TYPE = "";
+
+  /**
+   * The name of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SERVER_SSL_KEYSTORE_TYPE_NAME = SERVER_SSL_KEYSTORE_TYPE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD}
+   * property.
+   */
+  @ConfigAttributeGetter(name = SERVER_SSL_KEYSTORE_PASSWORD)
+  String getServerSSLKeyStorePassword();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SERVER_SSL_KEYSTORE_PASSWORD)
+  void setServerSSLKeyStorePassword(String keyStorePassword);
+
+  /**
+   * The default {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD} value.
+   * <p> Actual value of this constant is "".
+   */
+  String DEFAULT_SERVER_SSL_KEYSTORE_PASSWORD = "";
+
+  /**
+   * The name of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SERVER_SSL_KEYSTORE_PASSWORD_NAME = SERVER_SSL_KEYSTORE_PASSWORD;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE}
+   * property.
+   */
+  @ConfigAttributeGetter(name = SERVER_SSL_TRUSTSTORE)
+  String getServerSSLTrustStore();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SERVER_SSL_TRUSTSTORE)
+  void setServerSSLTrustStore(String trustStore);
+
+  /**
+   * The default {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE} value.
+   * <p> Actual value of this constant is "".
+   */
+  String DEFAULT_SERVER_SSL_TRUSTSTORE = "";
+
+  /**
+   * The name of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SERVER_SSL_TRUSTSTORE_NAME = SERVER_SSL_TRUSTSTORE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD}
+   * property.
+   */
+  @ConfigAttributeGetter(name = SERVER_SSL_TRUSTSTORE_PASSWORD)
+  String getServerSSLTrustStorePassword();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SERVER_SSL_TRUSTSTORE_PASSWORD)
+  void setServerSSLTrustStorePassword(String trusStorePassword);
+
+  /**
+   * The default {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD} value.
+   * <p> Actual value of this constant is "".
+   */
+  String DEFAULT_SERVER_SSL_TRUSTSTORE_PASSWORD = "";
+
+  /**
+   * The name of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SERVER_SSL_TRUSTSTORE_PASSWORD_NAME = SERVER_SSL_TRUSTSTORE_PASSWORD;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_ENABLED}
+   * property.
+   */
+  @ConfigAttributeGetter(name = GATEWAY_SSL_ENABLED)
+  boolean getGatewaySSLEnabled();
+
+  /**
+   * The default {@link ConfigurationProperties#GATEWAY_SSL_ENABLED} state.
    * <p> Actual value of this constant is <code>false</code>.
    */
-  public static final boolean DEFAULT_GATEWAY_SSL_ENABLED = false;
-  /** The name of the "GatewaySSLEnabled" property */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String GATEWAY_SSL_ENABLED_NAME =
-    "gateway-ssl-enabled";
+  boolean DEFAULT_GATEWAY_SSL_ENABLED = false;
+  /**
+   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_ENABLED} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String GATEWAY_SSL_ENABLED_NAME = GATEWAY_SSL_ENABLED;
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#gateway-ssl-enabled">"gateway-ssl-enabled"</a>
+   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_ENABLED}
    * property.
    */
-  @ConfigAttributeSetter(name=GATEWAY_SSL_ENABLED_NAME)
-  public void setGatewaySSLEnabled( boolean enabled );
+  @ConfigAttributeSetter(name = GATEWAY_SSL_ENABLED)
+  void setGatewaySSLEnabled(boolean enabled);
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#gateway-ssl-protocols">"gateway-ssl-protocols"</a>
+   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS}
    * property.
    */
-  @ConfigAttributeGetter(name=GATEWAY_SSL_PROTOCOLS_NAME)
-   public String getGatewaySSLProtocols( );
+  @ConfigAttributeGetter(name = GATEWAY_SSL_PROTOCOLS)
+  String getGatewaySSLProtocols();
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#gateway-ssl-protocols">"gateway-ssl-protocols"</a>
+   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS}
    * property.
    */
-  @ConfigAttributeSetter(name=GATEWAY_SSL_PROTOCOLS_NAME)
-   public void setGatewaySSLProtocols( String protocols );
+  @ConfigAttributeSetter(name = GATEWAY_SSL_PROTOCOLS)
+  void setGatewaySSLProtocols(String protocols);
 
   /**
-   * The default gateway-ssl-protocols value.
+   * The default {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} value.
    * <p> Actual value of this constant is <code>any</code>.
    */
-  public static final String DEFAULT_GATEWAY_SSL_PROTOCOLS = "any";
-  /** The name of the "GatewaySSLProtocols" property */
-  @ConfigAttribute(type=String.class)
-  public static final String GATEWAY_SSL_PROTOCOLS_NAME =
-    "gateway-ssl-protocols";
+  String DEFAULT_GATEWAY_SSL_PROTOCOLS = "any";
+  /**
+   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String GATEWAY_SSL_PROTOCOLS_NAME = GATEWAY_SSL_PROTOCOLS;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#gateway-ssl-ciphers">"gateway-ssl-ciphers"</a>
+   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS}
    * property.
    */
-  @ConfigAttributeGetter(name=GATEWAY_SSL_CIPHERS_NAME)
-   public String getGatewaySSLCiphers( );
+  @ConfigAttributeGetter(name = GATEWAY_SSL_CIPHERS)
+  String getGatewaySSLCiphers();
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#gateway-ssl-ciphers">"gateway-ssl-ciphers"</a>
+   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS}
    * property.
    */
-  @ConfigAttributeSetter(name=GATEWAY_SSL_CIPHERS_NAME)
-   public void setGatewaySSLCiphers( String ciphers );
+  @ConfigAttributeSetter(name = GATEWAY_SSL_CIPHERS)
+  void setGatewaySSLCiphers(String ciphers);
 
-   /**
-   * The default gateway-ssl-ciphers value.
+  /**
+   * The default {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS} value.
    * <p> Actual value of this constant is <code>any</code>.
    */
-  public static final String DEFAULT_GATEWAY_SSL_CIPHERS = "any";
-  /** The name of the "GatewaySSLCiphers" property */
-  @ConfigAttribute(type=String.class)
-  public static final String GATEWAY_SSL_CIPHERS_NAME =
-    "gateway-ssl-ciphers";
+  String DEFAULT_GATEWAY_SSL_CIPHERS = "any";
+  /**
+   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String GATEWAY_SSL_CIPHERS_NAME = GATEWAY_SSL_CIPHERS;
 
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#gateway-ssl-require-authentication">"gateway-ssl-require-authentication"</a>
+   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION}
    * property.
    */
-  @ConfigAttributeGetter(name=GATEWAY_SSL_REQUIRE_AUTHENTICATION_NAME)
-   public boolean getGatewaySSLRequireAuthentication( );
+  @ConfigAttributeGetter(name = GATEWAY_SSL_REQUIRE_AUTHENTICATION)
+  boolean getGatewaySSLRequireAuthentication();
 
   /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#gateway-ssl-require-authentication">"gateway-ssl-require-authentication"</a>
+   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION}
    * property.
    */
-  @ConfigAttributeSetter(name=GATEWAY_SSL_REQUIRE_AUTHENTICATION_NAME)
-   public void setGatewaySSLRequireAuthentication( boolean enabled );
+  @ConfigAttributeSetter(name = GATEWAY_SSL_REQUIRE_AUTHENTICATION)
+  void setGatewaySSLRequireAuthentication(boolean enabled);
 
-   /**
-   * The default gateway-ssl-require-authentication value.
+  /**
+   * The default {@link ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION} value.
    * <p> Actual value of this constant is <code>true</code>.
    */
-  public static final boolean DEFAULT_GATEWAY_SSL_REQUIRE_AUTHENTICATION = true;
-  /** The name of the "GatewaySSLRequireAuthentication" property */
-  @ConfigAttribute(type=Boolean.class)
-  public static final String GATEWAY_SSL_REQUIRE_AUTHENTICATION_NAME =
-    "gateway-ssl-require-authentication";
+  boolean DEFAULT_GATEWAY_SSL_REQUIRE_AUTHENTICATION = true;
+  /**
+   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String GATEWAY_SSL_REQUIRE_AUTHENTICATION_NAME = GATEWAY_SSL_REQUIRE_AUTHENTICATION;
 
-  
   /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#gateway-ssl-keystore">"gateway-ssl-keystore"</a>
+   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE}
    * property.
    */
-  @ConfigAttributeGetter(name=GATEWAY_SSL_KEYSTORE_NAME)
-  public String getGatewaySSLKeyStore( );
-  
-  /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#gateway-ssl-keystore">"gateway-ssl-keystore"</a>
-   * property.
-   */
-  @ConfigAttributeSetter(name=GATEWAY_SSL_KEYSTORE_NAME)
-  public void setGatewaySSLKeyStore( String keyStore);
-  
-  /**
-   * The default gateway-ssl-keystore value.
-   * <p> Actual value of this constant is "".
-   */
-  public static final String DEFAULT_GATEWAY_SSL_KEYSTORE = "";
-  
-  /** The name of the "GatewaySSLKeyStore" property */
-  @ConfigAttribute(type=String.class)
-  public static final String GATEWAY_SSL_KEYSTORE_NAME = "gateway-ssl-keystore";
-  
-  /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#gateway-ssl-keystore-type">"gateway-ssl-keystore-type"</a>
-   * property.
-   */
-  @ConfigAttributeGetter(name=GATEWAY_SSL_KEYSTORE_TYPE_NAME)
-  public String getGatewaySSLKeyStoreType( );
-  
-  /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#gateway-ssl-keystore-type">"gateway-ssl-keystore-type"</a>
-   * property.
-   */
-  @ConfigAttributeSetter(name=GATEWAY_SSL_KEYSTORE_TYPE_NAME)
-  public void setGatewaySSLKeyStoreType( String keyStoreType);
-  
-  /**
-   * The default gateway-ssl-keystore-type value.
-   * <p> Actual value of this constant is "".
-   */
-  public static final String DEFAULT_GATEWAY_SSL_KEYSTORE_TYPE = "";
-  
-  /** The name of the "GatewaySSLKeyStoreType" property */
-  @ConfigAttribute(type=String.class)
-  public static final String GATEWAY_SSL_KEYSTORE_TYPE_NAME = "gateway-ssl-keystore-type";
-  
-  /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#gateway-ssl-keystore-password">"gateway-ssl-keystore-password"</a>
-   * property.
-   */
-  @ConfigAttributeGetter(name=GATEWAY_SSL_KEYSTORE_PASSWORD_NAME)
-  public String getGatewaySSLKeyStorePassword( );
-  
-  /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#gateway-ssl-keystore-password">"gateway-ssl-keystore-password"</a>
-   * property.
-   */
-  @ConfigAttributeSetter(name=GATEWAY_SSL_KEYSTORE_PASSWORD_NAME)
-  public void setGatewaySSLKeyStorePassword( String keyStorePassword);
-  
-  /**
-   * The default gateway-ssl-keystore-password value.
-   * <p> Actual value of this constant is "".
-   */
-  public static final String DEFAULT_GATEWAY_SSL_KEYSTORE_PASSWORD = "";
-  
-  /** The name of the "GatewaySSLKeyStorePassword" property */
-  @ConfigAttribute(type=String.class)
-  public static final String GATEWAY_SSL_KEYSTORE_PASSWORD_NAME = "gateway-ssl-keystore-password";
-  
-  /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#gateway-ssl-truststore">"gateway-ssl-truststore"</a>
-   * property.
-   */
-  @ConfigAttributeGetter(name=GATEWAY_SSL_TRUSTSTORE_NAME)
-  public String getGatewaySSLTrustStore( );
-  
-  /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#gateway-ssl-truststore">"gateway-ssl-truststore"</a>
-   * property.
-   */
-  @ConfigAttributeSetter(name=GATEWAY_SSL_TRUSTSTORE_NAME)
-  public void setGatewaySSLTrustStore( String trustStore);
-  
-  /**
-   * The default gateway-ssl-truststore value.
-   * <p> Actual value of this constant is "".
-   */
-  public static final String DEFAULT_GATEWAY_SSL_TRUSTSTORE = "";
-  
-  /** The name of the "GatewaySSLTrustStore" property */
-  @ConfigAttribute(type=String.class)
-  public static final String GATEWAY_SSL_TRUSTSTORE_NAME = "gateway-ssl-truststore";
-  
-  /**
-   * Returns the value of the <a
-   * href="../DistributedSystem.html#gateway-ssl-truststore-password">"gateway-ssl-truststore-password"</a>
-   * property.
-   */
-  @ConfigAttributeGetter(name=GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME)
-  public String getGatewaySSLTrustStorePassword( );
-  
-  /**
-   * Sets the value of the <a
-   * href="../DistributedSystem.html#gateway-ssl-truststore-password">"gateway-ssl-truststore-password"</a>
-   * property.
-   */
-  @ConfigAttributeSetter(name=GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME)
-  public void setGatewaySSLTrustStorePassword( String trusStorePassword);
-  /**
-   * The default gateway-ssl-truststore-password value.
-   * <p> Actual value of this constant is "".
-   */
-  public static final String DEFAULT_GATEWAY_SSL_TRUSTSTORE_PASSWORD = "";
-  
-  /** The name of the "GatewaySSLKeyStorePassword" property */
-  @ConfigAttribute(type=String.class)
-  public static final String GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME = "gateway-ssl-truststore-password";
-  
-  
-  public Properties getGatewaySSLProperties();
+  @ConfigAttributeGetter(name = GATEWAY_SSL_KEYSTORE)
+  String getGatewaySSLKeyStore();
 
-  public ConfigSource getConfigSource(String attName);
-
- 
   /**
-   * The name of the "lock-memory" property.  Used to cause pages to be locked
+   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE}
+   * property.
+   */
+  @ConfigAttributeSetter(name = GATEWAY_SSL_KEYSTORE)
+  void setGatewaySSLKeyStore(String keyStore);
+
+  /**
+   * The default {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE} value.
+   * <p> Actual value of this constant is "".
+   */
+  String DEFAULT_GATEWAY_SSL_KEYSTORE = "";
+
+  /**
+   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String GATEWAY_SSL_KEYSTORE_NAME = GATEWAY_SSL_KEYSTORE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE}
+   * property.
+   */
+  @ConfigAttributeGetter(name = GATEWAY_SSL_KEYSTORE_TYPE)
+  String getGatewaySSLKeyStoreType();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE}
+   * property.
+   */
+  @ConfigAttributeSetter(name = GATEWAY_SSL_KEYSTORE_TYPE)
+  void setGatewaySSLKeyStoreType(String keyStoreType);
+
+  /**
+   * The default {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE} value.
+   * <p> Actual value of this constant is "".
+   */
+  String DEFAULT_GATEWAY_SSL_KEYSTORE_TYPE = "";
+
+  /**
+   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String GATEWAY_SSL_KEYSTORE_TYPE_NAME = GATEWAY_SSL_KEYSTORE_TYPE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD}
+   * property.
+   */
+  @ConfigAttributeGetter(name = GATEWAY_SSL_KEYSTORE_PASSWORD)
+  String getGatewaySSLKeyStorePassword();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD}
+   * property.
+   */
+  @ConfigAttributeSetter(name = GATEWAY_SSL_KEYSTORE_PASSWORD)
+  void setGatewaySSLKeyStorePassword(String keyStorePassword);
+
+  /**
+   * The default {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD} value.
+   * <p> Actual value of this constant is "".
+   */
+  String DEFAULT_GATEWAY_SSL_KEYSTORE_PASSWORD = "";
+
+  /**
+   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD} property
+   */
+  @ConfigAttribute(type = String.class)
+  String GATEWAY_SSL_KEYSTORE_PASSWORD_NAME = GATEWAY_SSL_KEYSTORE_PASSWORD;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE}
+   * property.
+   */
+  @ConfigAttributeGetter(name = GATEWAY_SSL_TRUSTSTORE)
+  String getGatewaySSLTrustStore();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE}
+   * property.
+   */
+  @ConfigAttributeSetter(name = GATEWAY_SSL_TRUSTSTORE)
+  void setGatewaySSLTrustStore(String trustStore);
+
+  /**
+   * The default {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} value.
+   * <p> Actual value of this constant is "".
+   */
+  String DEFAULT_GATEWAY_SSL_TRUSTSTORE = "";
+
+  /**
+   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String GATEWAY_SSL_TRUSTSTORE_NAME = GATEWAY_SSL_TRUSTSTORE;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD}
+   * property.
+   */
+  @ConfigAttributeGetter(name = GATEWAY_SSL_TRUSTSTORE_PASSWORD)
+  String getGatewaySSLTrustStorePassword();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD}
+   * property.
+   */
+  @ConfigAttributeSetter(name = GATEWAY_SSL_TRUSTSTORE_PASSWORD)
+  void setGatewaySSLTrustStorePassword(String trusStorePassword);
+
+  /**
+   * The default {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD} value.
+   * <p> Actual value of this constant is "".
+   */
+  String DEFAULT_GATEWAY_SSL_TRUSTSTORE_PASSWORD = "";
+
+  /**
+   * The name of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD} property
+   */
+  @ConfigAttribute(type = String.class)
+  String GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME = GATEWAY_SSL_TRUSTSTORE_PASSWORD;
+
+  Properties getGatewaySSLProperties();
+
+  ConfigSource getConfigSource(String attName);
+
+  /**
+   * The name of the {@link ConfigurationProperties#LOCK_MEMORY} property.  Used to cause
+   * pages to be locked
    * into memory, thereby preventing them from being swapped to disk.
-   * @since 9.0
+   *
+   * @since Geode 1.0
    */
-  @ConfigAttribute(type=Boolean.class)
-  public static String LOCK_MEMORY_NAME = "lock-memory";
-  public static final boolean DEFAULT_LOCK_MEMORY = false;
+  @ConfigAttribute(type = Boolean.class)
+  String LOCK_MEMORY_NAME = LOCK_MEMORY;
+  boolean DEFAULT_LOCK_MEMORY = false;
+
   /**
-   * Gets the value of <a href="../DistributedSystem.html#lock-memory">"lock-memory"</a>
-   * @since 9.0
+   * Gets the value of {@link ConfigurationProperties#LOCK_MEMORY}
+   *
+   * @since Geode 1.0
    */
-  @ConfigAttributeGetter(name=LOCK_MEMORY_NAME)
-  public boolean getLockMemory();
+  @ConfigAttributeGetter(name = LOCK_MEMORY)
+  boolean getLockMemory();
+
   /**
-   * Set the value of <a href="../DistributedSystem.html#lock-memory">"lock-memory"</a>
+   * Set the value of {@link ConfigurationProperties#LOCK_MEMORY}
+   *
    * @param value the new setting
-   * @since 9.0
+   * @since Geode 1.0
    */
-  @ConfigAttributeSetter(name=LOCK_MEMORY_NAME)
-  public void setLockMemory(boolean value);
+  @ConfigAttributeSetter(name = LOCK_MEMORY)
+  void setLockMemory(boolean value);
 
+  @ConfigAttribute(type = String.class)
+  String SECURITY_SHIRO_INIT_NAME = SECURITY_SHIRO_INIT;
 
+  @ConfigAttributeSetter(name = SECURITY_SHIRO_INIT)
+  void setShiroInit(String value);
+
+  @ConfigAttributeGetter(name = SECURITY_SHIRO_INIT)
+  String getShiroInit();
 
   //*************** Initializers to gather all the annotations in this class ************************
 
-  static final Map<String, ConfigAttribute> attributes = new HashMap<String, ConfigAttribute>();
-  static final Map<String, Method> setters = new HashMap<String, Method>();
-  static final Map<String, Method> getters = new HashMap<String, Method>();
-  static final String[] dcValidAttributeNames = init();
-  static String[] init(){
-    List<String> atts = new ArrayList<String>();
-    for(Field field:DistributionConfig.class.getDeclaredFields()) {
+  Map<String, ConfigAttribute> attributes = new HashMap<>();
+  Map<String, Method> setters = new HashMap<>();
+  Map<String, Method> getters = new HashMap<>();
+  String[] dcValidAttributeNames = init();
+
+  static String[] init() {
+    List<String> atts = new ArrayList<>();
+    for (Field field : DistributionConfig.class.getDeclaredFields()) {
       if (field.isAnnotationPresent(ConfigAttribute.class)) {
         try {
           atts.add((String) field.get(null));
@@ -3759,18 +4002,17 @@ public interface DistributionConfig extends Config, LogConfig {
       }
     }
 
-    for(Method method:DistributionConfig.class.getDeclaredMethods()){
-      if(method.isAnnotationPresent(ConfigAttributeGetter.class)){
+    for (Method method : DistributionConfig.class.getDeclaredMethods()) {
+      if (method.isAnnotationPresent(ConfigAttributeGetter.class)) {
         ConfigAttributeGetter getter = method.getAnnotation(ConfigAttributeGetter.class);
         getters.put(getter.name(), method);
-      }
-      else if(method.isAnnotationPresent(ConfigAttributeSetter.class)){
+      } else if (method.isAnnotationPresent(ConfigAttributeSetter.class)) {
         ConfigAttributeSetter setter = method.getAnnotation(ConfigAttributeSetter.class);
         setters.put(setter.name(), method);
       }
     }
     Collections.sort(atts);
-    return (String[])atts.toArray(new String[atts.size()]);
+    return atts.toArray(new String[atts.size()]);
   }
 
 }

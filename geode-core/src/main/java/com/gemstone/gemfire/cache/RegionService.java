@@ -45,7 +45,7 @@ import com.gemstone.gemfire.pdx.PdxInstanceFactory;
  * </ul>
  * <p>
  *
- * @since 6.5
+ * @since GemFire 6.5
  */
 public interface RegionService extends AutoCloseable {
   /**
@@ -96,7 +96,7 @@ public interface RegionService extends AutoCloseable {
    * @param className the fully qualified class name that the PdxInstance will become
    *   when it is fully deserialized.
    * @return the factory
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public PdxInstanceFactory createPdxInstanceFactory(String className);
   /**
@@ -106,7 +106,7 @@ public interface RegionService extends AutoCloseable {
    * @param enumOrdinal the ordinal value of the enum constant
    * @return a PdxInstance that represents the enum value
    * @throws IllegalArgumentException if className or enumName are <code>null</code>.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public PdxInstance createPdxEnum(String className, String enumName, int enumOrdinal);
 

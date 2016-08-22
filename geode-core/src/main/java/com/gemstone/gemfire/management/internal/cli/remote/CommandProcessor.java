@@ -17,12 +17,11 @@
 package com.gemstone.gemfire.management.internal.cli.remote;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Properties;
 
-import org.springframework.shell.core.Parser;
-import org.springframework.shell.event.ParseResult;
-
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.management.cli.CommandProcessingException;
 import com.gemstone.gemfire.management.cli.CommandStatement;
 import com.gemstone.gemfire.management.cli.Result;
@@ -31,11 +30,16 @@ import com.gemstone.gemfire.management.internal.cli.GfshParser;
 import com.gemstone.gemfire.management.internal.cli.LogWrapper;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.util.CommentSkipHelper;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import com.gemstone.gemfire.security.NotAuthorizedException;
+
+import org.springframework.shell.core.Parser;
+import org.springframework.shell.event.ParseResult;
 
 /**
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class CommandProcessor {
   protected RemoteExecutionStrategy executionStrategy;
@@ -86,13 +90,14 @@ public class CommandProcessor {
 
     CommentSkipHelper commentSkipper = new CommentSkipHelper();
     String commentLessLine = commentSkipper.skipComments(cmdStmt.getCommandString());
+
     if (commentLessLine != null && !commentLessLine.isEmpty()) {
       CommandExecutionContext.setShellEnv(cmdStmt.getEnv());
 
       final RemoteExecutionStrategy executionStrategy = getExecutionStrategy();
       try {
         ParseResult parseResult = ((CommandStatementImpl)cmdStmt).getParseResult();
-        
+
         if (parseResult == null) {
           parseResult = parseCommand(commentLessLine);
           if (parseResult == null) {//TODO-Abhishek: Handle this in GfshParser Implementation
@@ -101,6 +106,12 @@ public class CommandProcessor {
           }
           ((CommandStatementImpl)cmdStmt).setParseResult(parseResult);
         }
+
+        //do general authorization check here
+        Method method = parseResult.getMethod();
+        ResourceOperation resourceOperation = method.getAnnotation(ResourceOperation.class);
+        GeodeSecurityUtil.authorize(resourceOperation);
+
         result = executionStrategy.execute(parseResult);
         if (result instanceof Result) {
           commandResult = (Result) result;
@@ -116,7 +127,14 @@ public class CommandProcessor {
           logWrapper.info("Could not parse \""+cmdStmt.getCommandString()+"\".", e);
         }
         return ResultBuilder.createParsingErrorResult(e.getMessage());
-      } catch (RuntimeException e) {
+      } catch (NotAuthorizedException e) {
+        setLastExecutionStatus(1);
+        if (logWrapper.infoEnabled()) {
+          logWrapper.info("Could not execute \""+cmdStmt.getCommandString()+"\".", e);
+        }
+        // for NotAuthorizedException, will catch this later in the code
+        throw e;
+      }catch (RuntimeException e) {
         setLastExecutionStatus(1);
         if (logWrapper.infoEnabled()) {
           logWrapper.info("Could not execute \""+cmdStmt.getCommandString()+"\".", e);

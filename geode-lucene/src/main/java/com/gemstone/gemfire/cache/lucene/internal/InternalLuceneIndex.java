@@ -26,4 +26,9 @@ public interface InternalLuceneIndex extends LuceneIndex {
   
   public RepositoryManager getRepositoryManager();
 
+  /**
+   * Dump the files for this index to the given directory.
+   */
+  public void dumpFiles(String directory);
+
 }

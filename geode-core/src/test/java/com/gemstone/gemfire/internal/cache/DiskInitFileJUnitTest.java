@@ -16,43 +16,44 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.File;
+import static org.junit.Assert.*;
 
-import junit.framework.TestCase;
+import java.io.File;
+import java.util.Collections;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import java.util.Collections;
+import org.junit.rules.TemporaryFolder;
 
 import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.cache.persistence.DiskRegionView;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-@Category(UnitTest.class)
-public class DiskInitFileJUnitTest extends TestCase {
+@Category(IntegrationTest.class)
+public class DiskInitFileJUnitTest {
   
   private File testDirectory;
   private Mockery context = new Mockery() {{
     setImposteriser(ClassImposteriser.INSTANCE);
   }};
-  
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Before
   public void setUp() throws Exception {
-    testDirectory = new File("_DiskInitFileJUnitTest");
-    FileUtil.delete(testDirectory);
-    FileUtil.mkdirs(testDirectory);
+    testDirectory = temporaryFolder.newFolder("_" + getClass().getSimpleName());
   }
-  
-  public void tearDown() throws Exception {
-    FileUtil.delete(testDirectory);
-  }
-  
+
   /**
    * Test the behavior of canonical ids in the init file.
    */
+  @Test
   public void testCanonicalIds() {
     //create a mock statistics factory for creating directory holders
     final StatisticsFactory sf = context.mock(StatisticsFactory.class);

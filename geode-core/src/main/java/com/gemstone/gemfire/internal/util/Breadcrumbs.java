@@ -16,22 +16,22 @@
  */
 package com.gemstone.gemfire.internal.util;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.i18n.StringId;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
 
 /**
  * Breadcrumbs establishes traces in thread names that are useful in figuring
  * out what is going on in a distributed system given only stack traces.
  * 
- * @since 20 May 2014
+ * @since GemFire 20 May 2014
  *
  */
 public class Breadcrumbs {
 
-  private static ThreadLocal<EventID> EventIDs = new ThreadLocal<EventID>(); 
-  
-  public static boolean ENABLED = Boolean.getBoolean("gemfire.enable-breadcrumbs");
+  private static ThreadLocal<EventID> EventIDs = new ThreadLocal<EventID>();
+
+  public static boolean ENABLED = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "enable-breadcrumbs");
   
   
   /** delimiter for crumb numbers */

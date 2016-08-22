@@ -21,62 +21,23 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.AmbiguousNameException;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexExistsException;
-import com.gemstone.gemfire.cache.query.IndexInvalidException;
-import com.gemstone.gemfire.cache.query.IndexMaintenanceException;
-import com.gemstone.gemfire.cache.query.IndexNameConflictException;
-import com.gemstone.gemfire.cache.query.IndexStatistics;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.MultiIndexCreationException;
-import com.gemstone.gemfire.cache.query.NameResolutionException;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.cache.query.TypeMismatchException;
-import com.gemstone.gemfire.cache.query.internal.CompiledPath;
-import com.gemstone.gemfire.cache.query.internal.CompiledValue;
-import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
-import com.gemstone.gemfire.cache.query.internal.ExecutionContext;
-import com.gemstone.gemfire.cache.query.internal.MapIndexable;
-import com.gemstone.gemfire.cache.query.internal.NullToken;
-import com.gemstone.gemfire.cache.query.internal.QueryMonitor;
-import com.gemstone.gemfire.cache.query.internal.QueryObserver;
-import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
+import com.gemstone.gemfire.cache.query.*;
+import com.gemstone.gemfire.cache.query.internal.*;
 import com.gemstone.gemfire.cache.query.internal.index.AbstractIndex.InternalIndexStatistics;
 import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.BucketRegion;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
-import com.gemstone.gemfire.internal.cache.TXManagerImpl;
-import com.gemstone.gemfire.internal.cache.TXStateProxy;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  */
@@ -109,9 +70,9 @@ public class IndexManager  {
   private IndexUpdaterThread updater;
 
   // Threshold for Queue.
-  private final int INDEX_MAINTENANCE_BUFFER = Integer.getInteger("gemfire.AsynchIndexMaintenanceThreshold", -1).intValue();
+  private final int INDEX_MAINTENANCE_BUFFER = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceThreshold", -1).intValue();
 
-  public static boolean JOIN_OPTIMIZATION = !Boolean.getBoolean("gemfire.index.DisableJoinOptimization");
+  public static boolean JOIN_OPTIMIZATION = !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "index.DisableJoinOptimization");
   
   // Added for test purposes only.
   public static boolean INPLACE_OBJECT_MODIFICATION_FOR_TEST = false;    
@@ -129,14 +90,14 @@ public class IndexManager  {
    * In case of in-place modification the EntryEvent will not have the old-value, without this
    * the old-values are not removed from the index-maps thus resulting in inconsistent results.
    */
-  public static final boolean INPLACE_OBJECT_MODIFICATION =     
-    Boolean.valueOf(System.getProperty("gemfire.index.INPLACE_OBJECT_MODIFICATION", "false")).booleanValue(); 
+  public static final boolean INPLACE_OBJECT_MODIFICATION =
+      Boolean.valueOf(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "index.INPLACE_OBJECT_MODIFICATION", "false")).booleanValue();
 
   /**
    * System property to turn-off the compact-index support.
    */
-  public static final boolean RANGEINDEX_ONLY =     
-    Boolean.valueOf(System.getProperty("gemfire.index.RANGEINDEX_ONLY", "false")).booleanValue();
+  public static final boolean RANGEINDEX_ONLY =
+      Boolean.valueOf(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "index.RANGEINDEX_ONLY", "false")).booleanValue();
 
   /** For test purpose only */
   public static boolean TEST_RANGEINDEX_ONLY = false;
@@ -930,14 +891,6 @@ public class IndexManager  {
         // Fault in the value once before index update so that every index
         // update does not have
         // to read the value from disk every time.
-        // TODO OFFHEAP: this optimization (calling getValue to make sure it is faulted in to disk) has a performance problem.
-        // It also decompresses and deserializes the value and then throws that away. In the case of a heap region the deserialized
-        // value would be cached in a VMCachedDeserializable. But for compression and/or off-heap the decompression and/or deserialization
-        // this call does is lost and has to be done again. We could just add a method to RegionEntry that faults the value in without returning it.
-        // Even better (but more work): could we create a wrapper around RegionEntry that we create here to wrap "entry" and pass the wrapper to addIndexMapping?
-        // Any indexes that store a reference to the RegionEntry would need to ask the wrapper for the real one but any of them
-        // that want the value could get it from the wrapper. The first time the wrapper is asked for the value it could get it from
-        // the real RegionEntry it wraps and cache a reference to that value. I think that gives us the best of both worlds.
         entry.getValue((LocalRegion)this.region);
         Iterator<Index> indexSetIterator = indexSet.iterator();
         while(indexSetIterator.hasNext()) {
@@ -1467,7 +1420,7 @@ public class IndexManager  {
         while (!this.shutdownRequested) {
           // Termination checks
           SystemFailure.checkFailure();
-          if (stopper.cancelInProgress() != null) {
+          if (stopper.isCancelInProgress()) {
             break;
           }
           try {

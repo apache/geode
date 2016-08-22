@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
@@ -40,7 +49,8 @@ import com.gemstone.gemfire.internal.size.ReflectionSingleObjectSizer;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 
-public class EvictionObjectSizerDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class EvictionObjectSizerDUnitTest extends JUnit4CacheTestCase {
 
   protected static Cache cache = null;
 
@@ -54,13 +64,14 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
   
   // Removed CONCURRENT_OVERHEAD since it is included in the regionEntrySize.
 
-  public EvictionObjectSizerDUnitTest(String name) {
-    super(name);
+  public EvictionObjectSizerDUnitTest() {
+    super();
   }
 
   /**
    * Without object sizer
    */
+  @Test
   public void testWithoutObjectSizerForHeapLRU() {
     prepareScenario(EvictionAlgorithm.LRU_HEAP, null);
 
@@ -83,6 +94,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
    * With object sizer for standard objects.Key -Integer Value ByteArray
    * 
    */
+  @Test
   public void testObjectSizerForHeapLRU_StandardObjects() {
     prepareScenario(EvictionAlgorithm.LRU_HEAP, new TestObjectSizerImpl());
 
@@ -118,6 +130,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
    * With object sizer for customized value object implementing ObjectSizer .Key
    * -Integer Value TestNonSizerObject
    */
+  @Test
   public void testObjectSizerForHeapLRU_CustomizedNonSizerObject() {
     prepareScenario(EvictionAlgorithm.LRU_HEAP, new TestObjectSizerImpl());
 
@@ -154,6 +167,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
    * With object sizer for customized value object implementing ObjectSizer .Key
    * -Integer Value TestObjectSizerImpl
    */
+  @Test
   public void testObjectSizerForHeapLRU_CustomizedSizerObject() {
     prepareScenario(EvictionAlgorithm.LRU_HEAP, new TestObjectSizerImpl());
 
@@ -172,6 +186,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
   /**
    * With object sizer for customized key and value objects.
    */
+  @Test
   public void testObjectSizerForHeapLRU_CustomizedSizerObjects() {
     prepareScenario(EvictionAlgorithm.LRU_HEAP, new TestObjectSizerImpl());
 

@@ -30,12 +30,9 @@ import java.io.IOException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-/**
- *
- */
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class FileUtilJUnitTest {
   
   @Test

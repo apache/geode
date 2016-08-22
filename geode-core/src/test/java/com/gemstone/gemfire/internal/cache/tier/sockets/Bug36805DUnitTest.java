@@ -16,9 +16,14 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -32,19 +37,20 @@ import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * bug test for bug 36805
- * 
- * 
+ *
  * When server is running but region is not created on server. Client sends
  * register interest request, server checks for region, and if region is not
  * exist on server, it throws an exception to the client. Hence, client marks
@@ -52,10 +58,10 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * 
  * To avoid this, there should not be any check of region before registration.
  * And region registration should not fail due to non existent region.
- * 
  */
-public class Bug36805DUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class Bug36805DUnitTest extends JUnit4DistributedTestCase {
+
   private static Cache cache = null;
 
   private VM server1 = null;
@@ -73,8 +79,8 @@ public class Bug36805DUnitTest extends DistributedTestCase
   private static final String regionName = "Bug36805DUnitTest_Region";
 
   /** constructor */
-  public Bug36805DUnitTest(String name) {
-    super(name);
+  public Bug36805DUnitTest() {
+    super();
   }
 
   @Override
@@ -100,9 +106,9 @@ public class Bug36805DUnitTest extends DistributedTestCase
       throws Exception
   {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    new Bug36805DUnitTest("temp").createCache(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    new Bug36805DUnitTest().createCache(props);
     PoolImpl p = (PoolImpl)PoolManager.createFactory()
       .addServer(host, port1.intValue())
       .addServer(host, port2.intValue())
@@ -121,7 +127,7 @@ public class Bug36805DUnitTest extends DistributedTestCase
 
   public static Integer createServerCache() throws Exception
   {
-    new Bug36805DUnitTest("temp").createCache(new Properties());
+    new Bug36805DUnitTest().createCache(new Properties());
    // no region is created on server 
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     CacheServer server1 = cache.addCacheServer();
@@ -149,6 +155,7 @@ public class Bug36805DUnitTest extends DistributedTestCase
     }
   }
 
+  @Test
   public void testBug36805()
   {
     Integer port1 = ((Integer)server1.invoke(() -> Bug36805DUnitTest.createServerCache()));

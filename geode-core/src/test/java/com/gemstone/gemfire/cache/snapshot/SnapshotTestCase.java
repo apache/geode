@@ -16,20 +16,23 @@
  */
 package com.gemstone.gemfire.cache.snapshot;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-
-import org.junit.After;
-import org.junit.Before;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import com.examples.snapshot.MyObject;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.snapshot.RegionGenerator.SerializationType;
+import org.junit.After;
+import org.junit.Before;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 
 public class SnapshotTestCase {
   protected File store;
@@ -49,8 +52,8 @@ public class SnapshotTestCase {
     rgen = new RegionGenerator();
 
     CacheFactory cf = new CacheFactory()
-      .set("mcast-port", "0")
-      .set("log-level", "error");
+        .set(MCAST_PORT, "0")
+        .set(LOG_LEVEL, "error");
     cache = cf.create();
     
     ds = cache.createDiskStoreFactory()

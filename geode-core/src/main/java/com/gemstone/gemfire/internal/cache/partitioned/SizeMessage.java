@@ -51,7 +51,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * This message is used to determine the number of Entries in a Region, or its
  * size.
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 public final class SizeMessage extends PartitionMessage
   {
@@ -312,7 +312,7 @@ public final class SizeMessage extends PartitionMessage
    * A processor to capture the value returned by {@link 
    * com.gemstone.gemfire.internal.cache.partitioned.GetMessage.GetReplyMessage}
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static class SizeResponse extends ReplyProcessor21
    {

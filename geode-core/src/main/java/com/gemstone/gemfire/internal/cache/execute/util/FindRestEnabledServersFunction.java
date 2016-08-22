@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache.execute.util;
 
-
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.execute.FunctionAdapter;
@@ -29,7 +28,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 /**
 * The FindRestEnabledServersFunction class is a gemfire function that gives details about REST enabled gemfire servers.
 * <p/>
-* @since 8.1
+* @since GemFire 8.1
 */
 
 public class FindRestEnabledServersFunction extends FunctionAdapter implements InternalEntity  { 

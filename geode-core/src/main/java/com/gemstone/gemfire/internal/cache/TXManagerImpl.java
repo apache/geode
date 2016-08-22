@@ -17,21 +17,30 @@
 
 package com.gemstone.gemfire.internal.cache;
 
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.GemFireException;
+import com.gemstone.gemfire.InternalGemFireError;
+import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.TXManagerCancelledException;
+import com.gemstone.gemfire.distributed.internal.*;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.internal.SystemTimer.SystemTimerTask;
+import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
+import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap;
+import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
+import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.MapCallback;
+import org.apache.logging.log4j.Logger;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Queue;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
@@ -39,37 +48,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.locks.LockSupport;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.TransactionDataRebalancedException;
-import com.gemstone.gemfire.cache.TransactionId;
-import com.gemstone.gemfire.cache.TransactionInDoubtException;
-import com.gemstone.gemfire.cache.TransactionListener;
-import com.gemstone.gemfire.cache.TransactionWriter;
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
-import com.gemstone.gemfire.distributed.TXManagerCancelledException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.HighPriorityDistributionMessage;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.MembershipListener;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.SystemTimer.SystemTimerTask;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap;
-import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
-import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.MapCallback;
 
 /** <p>The internal implementation of the {@link CacheTransactionManager}
  * interface returned by {@link GemFireCacheImpl#getCacheTransactionManager}.
@@ -80,11 +58,11 @@ import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMa
  * transaction logging are handled here 
  * 
  *
- * @since 4.0
+ * @since GemFire 4.0
  * 
  * @see CacheTransactionManager
  */
-public final class TXManagerImpl implements CacheTransactionManager,
+public class TXManagerImpl implements CacheTransactionManager,
     MembershipListener {
 
   private static final Logger logger = LogService.getLogger();
@@ -113,14 +91,14 @@ public final class TXManagerImpl implements CacheTransactionManager,
   
   private final ArrayList<TransactionListener> txListeners = new ArrayList<TransactionListener>(8);
   public TransactionWriter writer = null;
-  private boolean closed = false;
+  private volatile boolean closed = false;
 
   private final Map<TXId, TXStateProxy> hostedTXStates;
 
   /**
    * the number of client initiated transactions to store for client failover
    */
-  public final static int FAILOVER_TX_MAP_SIZE = Integer.getInteger("gemfire.transactionFailoverMapSize", 1000);
+  public final static int FAILOVER_TX_MAP_SIZE = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "transactionFailoverMapSize", 1000);
   
   /**
    * used to store TXCommitMessages for client initiated transactions, so that when a client failsover,
@@ -142,7 +120,7 @@ public final class TXManagerImpl implements CacheTransactionManager,
   /**
    * A flag to allow persistent transactions. public for testing.
    */
-  public static boolean ALLOW_PERSISTENT_TRANSACTIONS = Boolean.getBoolean("gemfire.ALLOW_PERSISTENT_TRANSACTIONS");
+  public static boolean ALLOW_PERSISTENT_TRANSACTIONS = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ALLOW_PERSISTENT_TRANSACTIONS");
 
   /**
    * this keeps track of all the transactions that were initiated locally.
@@ -152,7 +130,7 @@ public final class TXManagerImpl implements CacheTransactionManager,
   /**
    * the time in minutes after which any suspended transaction are rolled back. default is 30 minutes
    */
-  private volatile long suspendedTXTimeout = Long.getLong("gemfire.suspendedTxTimeout", 30);
+  private volatile long suspendedTXTimeout = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "suspendedTxTimeout", 30);
   
   /**
    * Thread-specific flag to indicate whether the transactions managed by this
@@ -160,7 +138,13 @@ public final class TXManagerImpl implements CacheTransactionManager,
    */
   private final ThreadLocal<Boolean> isTXDistributed;
   
-
+  /**
+   * The number of seconds to keep transaction states for disconnected clients.
+   * This allows the client to fail over to another server and still find
+   * the transaction state to complete the transaction.
+   */
+  private int transactionTimeToLive;
+  
   /** Constructor that implements the {@link CacheTransactionManager}
    * interface. Only only one instance per {@link com.gemstone.gemfire.cache.Cache}
    *
@@ -178,6 +162,7 @@ public final class TXManagerImpl implements CacheTransactionManager,
     this.hostedTXStates = new HashMap<TXId, TXStateProxy>();
     this.txContext = new ThreadLocal<TXStateProxy>();
     this.isTXDistributed = new ThreadLocal<Boolean>();
+    this.transactionTimeToLive = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "cacheServer.transactionTimeToLive", 180);
     currentInstance = this;
   }
 
@@ -598,9 +583,21 @@ public final class TXManagerImpl implements CacheTransactionManager,
     if (isClosed()) {
       return;
     }
-    this.closed = true;
-    for (TXStateProxy proxy: this.hostedTXStates.values()) {
-      proxy.close();
+    TXStateProxy[] proxies = null;
+    synchronized (this.hostedTXStates) {
+      //After this, newly added TXStateProxy would not operate on the TXState.
+      this.closed = true;
+      
+      proxies = this.hostedTXStates.values().toArray(new TXStateProxy[this.hostedTXStates.size()]);      
+    }
+    
+    for (TXStateProxy proxy: proxies) {
+      proxy.getLock().lock();
+      try {
+        proxy.close();
+      } finally {
+        proxy.getLock().unlock();
+      }
     }
     for (TXStateProxy proxy: this.localTxMap.values()) {
       proxy.close();
@@ -669,7 +666,7 @@ public final class TXManagerImpl implements CacheTransactionManager,
     }
   }
 
-  private final boolean isClosed() {
+  public final boolean isClosed() {
     return this.closed;
   }
   private final void checkClosed() {
@@ -729,8 +726,26 @@ public final class TXManagerImpl implements CacheTransactionManager,
       return null;
     }
     TXId key = new TXId(msg.getMemberToMasqueradeAs(), msg.getTXUniqId());
-    TXStateProxy val;
-    val = this.hostedTXStates.get(key);
+    TXStateProxy val = getOrSetHostedTXState(key, msg);
+
+    if (val != null) {
+      boolean success = getLock(val, key);
+      while (!success) {
+        val = getOrSetHostedTXState(key, msg);
+        if (val != null) {
+          success = getLock(val, key);
+        } else {
+          break;
+        }
+      }
+    }
+
+    setTXState(val);
+    return val;
+  }
+
+  TXStateProxy getOrSetHostedTXState(TXId key, TransactionMessage msg) {
+    TXStateProxy val = this.hostedTXStates.get(key);
     if (val == null) {
       synchronized(this.hostedTXStates) {
         val = this.hostedTXStates.get(key);
@@ -746,14 +761,36 @@ public final class TXManagerImpl implements CacheTransactionManager,
         }
       }
     }
-    if (val != null) {
-      if (!val.getLock().isHeldByCurrentThread()) {
-        val.getLock().lock();
+    return val;
+  }
+
+  boolean getLock(TXStateProxy val, TXId key) {
+    if (!val.getLock().isHeldByCurrentThread()) {
+      val.getLock().lock();
+      synchronized (this.hostedTXStates) {
+        TXStateProxy curVal = this.hostedTXStates.get(key);
+        // Inflight op could be received later than TXFailover operation.
+        if (curVal == null) {
+          if (!isHostedTxRecentlyCompleted(key)) {
+            // Failover op removed the val
+            // It is possible that the same operation can be executed
+            // twice by two threads, but data is consistent.
+            this.hostedTXStates.put(key, val);
+          } else {
+            //Another thread should complete the transaction
+            logger.info("{} has already finished." , val.getTxId());
+          }
+        } else {
+          if (val != curVal) {
+            //Failover op replaced with a new TXStateProxyImpl
+            //Use the new one instead.
+            val.getLock().unlock();
+            return false;
+          }
+        }
       }
     }
-
-    setTXState(val);
-    return val;
+    return true;
   }
   
   /**
@@ -915,6 +952,7 @@ public final class TXManagerImpl implements CacheTransactionManager,
         }
       }
     }
+    expireClientTransactionsSentFromDepartedProxy(id);
   }
 
   public void memberJoined(InternalDistributedMember id) {
@@ -929,9 +967,9 @@ public final class TXManagerImpl implements CacheTransactionManager,
   
 
   /**
-   * retrieve the transaction states for the given client
+   * retrieve the transaction TXIds for the given client
    * @param id the client's membership ID
-   * @return a set of the currently open transaction states
+   * @return a set of the currently open TXIds
    */
   public Set<TXId> getTransactionsForClient(InternalDistributedMember id) {
     Set<TXId> result = new HashSet<TXId>();
@@ -939,6 +977,23 @@ public final class TXManagerImpl implements CacheTransactionManager,
       for (Map.Entry<TXId, TXStateProxy> entry: this.hostedTXStates.entrySet()) {
         if (entry.getKey().getMemberId().equals(id)) {
           result.add(entry.getKey());
+        }
+      }
+    }
+    return result;
+  }
+  
+  /**
+   * retrieve the transaction states for the given client
+   * @param id the client's membership ID
+   * @return a set of the currently open transaction states
+   */
+  public Set<TXStateProxy> getTransactionStatesForClient(InternalDistributedMember id) {
+    Set<TXStateProxy> result = new HashSet<TXStateProxy>();
+    synchronized (this.hostedTXStates) {
+      for (Map.Entry<TXId, TXStateProxy> entry: this.hostedTXStates.entrySet()) {
+        if (entry.getKey().getMemberId().equals(id)) {
+          result.add(entry.getValue());
         }
       }
     }
@@ -991,16 +1046,18 @@ public final class TXManagerImpl implements CacheTransactionManager,
   }
   
   public boolean isHostedTxRecentlyCompleted(TXId txId) {
-    // if someone is asking to see if we have the txId, they will come
-    // back and ask for the commit message, this could take a long time
-    // specially when called from TXFailoverCommand, so we move
-    // the txId to the front of the queue
-    TXCommitMessage msg = failoverMap.remove(txId);
-    if (msg != null) {
-      failoverMap.put(txId, msg);
-      return true;
+    synchronized(failoverMap) {
+      if (failoverMap.containsKey(txId)) {
+        // if someone is asking to see if we have the txId, they will come
+        // back and ask for the commit message, this could take a long time
+        // specially when called from TXFailoverCommand, so we move
+        // the txId back to the linked map by removing and putting it back.
+        TXCommitMessage msg = failoverMap.remove(txId);
+        failoverMap.put(txId, msg);
+        return true;
+      }
+      return false;
     }
-    return false;
   }
   
   
@@ -1474,6 +1531,112 @@ public final class TXManagerImpl implements CacheTransactionManager,
     synchronized (this.hostedTXStates) {
       return new ArrayList<TXId>(this.hostedTXStates.keySet());
     }
+  }
+  
+  public void setTransactionTimeToLiveForTest(int seconds) {
+    this.transactionTimeToLive = seconds;
+  }
+  
+  /**
+   * @return the time-to-live for abandoned transactions, in seconds
+   */
+  public int getTransactionTimeToLive() {
+    return this.transactionTimeToLive;
+  }
+  
+  public InternalDistributedMember getMemberId() {
+    return this.distributionMgrId;
+  }
+  
+  //expire the transaction states for the lost proxy server based on timeout setting.  
+  private void expireClientTransactionsSentFromDepartedProxy(InternalDistributedMember proxyServer) {
+    if (this.cache.isClosed()) {
+      return; 
+    }
+    long timeout = getTransactionTimeToLive() * 1000;
+    if (timeout <= 0) {
+      removeTransactionsSentFromDepartedProxy(proxyServer);
+    } else {
+      if (departedProxyServers != null) departedProxyServers.add(proxyServer);  
+      SystemTimerTask task = new SystemTimerTask() {
+        @Override
+        public void run2() {
+          removeTransactionsSentFromDepartedProxy(proxyServer);
+          if (departedProxyServers != null) departedProxyServers.remove(proxyServer);
+        }
+      };
+      try {
+        ((GemFireCacheImpl)this.cache).getCCPTimer().schedule(task, timeout);
+      } catch (IllegalStateException ise) {
+        if (!((GemFireCacheImpl)this.cache).isClosed()) {
+          throw ise;
+        }
+        //task not able to be scheduled due to cache is closing,
+        //do not set it in the test hook.
+        if (departedProxyServers != null) departedProxyServers.remove(proxyServer);
+      }
+    }
+  }
+  
+  private final Set<InternalDistributedMember> departedProxyServers = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "trackScheduledToBeRemovedTx") ?
+      new ConcurrentHashSet<InternalDistributedMember>() : null;
+
+  /**
+   * provide a test hook to track departed peers
+   */
+  public Set<InternalDistributedMember> getDepartedProxyServers() {
+    return departedProxyServers;
+  }
+  
+  /**
+   * Find all client originated transactions sent from the departed proxy server.
+   * Remove them from the hostedTXStates map after the set TransactionTimeToLive period.
+   * @param proxyServer the departed proxy server
+   */
+  public void removeTransactionsSentFromDepartedProxy(InternalDistributedMember proxyServer) {
+    final Set<TXId> txIds = getTransactionsSentFromDepartedProxy(proxyServer);
+    if (txIds.isEmpty()) {
+      return;
+    }
+    if (logger.isDebugEnabled()) {
+      logger.debug("expiring the following transactions: {}", txIds);
+    }
+    synchronized (this.hostedTXStates) {
+      Iterator<Map.Entry<TXId, TXStateProxy>> iterator = this.hostedTXStates.entrySet().iterator();
+      while (iterator.hasNext()) {
+        Map.Entry<TXId,TXStateProxy> entry = iterator.next();
+        if (txIds.contains(entry.getKey())) {
+          //The TXState was not updated by any other proxy server, 
+          //The client would fail over to another proxy server.
+          //Remove it after waiting for transactionTimeToLive period.
+          entry.getValue().close();
+          iterator.remove();
+        }
+      }
+    }
+  }
+  
+  /*
+   * retrieve the transaction states for the given client from a certain proxy server.
+   * if transactions failed over, the new proxy server information should be stored
+   * in the TXState
+   * @param id the proxy server
+   * @return a set of the currently open transaction states
+   */
+  private Set<TXId> getTransactionsSentFromDepartedProxy(InternalDistributedMember proxyServer) {
+    Set<TXId> result = new HashSet<TXId>();
+    synchronized (this.hostedTXStates) {
+      for (Map.Entry<TXId, TXStateProxy> entry: this.hostedTXStates.entrySet()) {
+        TXStateProxy tx = entry.getValue();
+        if (tx.isRealDealLocal() && tx.isOnBehalfOfClient()) {
+          TXState txstate = (TXState) ((TXStateProxyImpl)tx).realDeal;          
+          if (proxyServer.equals(txstate.getProxyServer())) {
+            result.add(entry.getKey());
+          }
+        }
+      }
+    }
+    return result;
   }
   
   public void setDistributed(boolean flag) {

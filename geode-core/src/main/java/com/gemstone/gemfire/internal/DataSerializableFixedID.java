@@ -58,7 +58,7 @@ import java.io.*;
  *
  * @see DataSerializer
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
 public interface DataSerializableFixedID extends SerializationVersions {
 
@@ -103,7 +103,6 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short JOIN_RESPONSE = -143;
   public static final short JOIN_REQUEST = -142;
 
-  public static final short HDFS_GATEWAY_EVENT_IMPL = -141;
   public static final short SNAPPY_COMPRESSED_CACHED_DESERIALIZABLE = -140;
   
   public static final short GATEWAY_EVENT_IMPL = -136;
@@ -137,8 +136,6 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte ADD_CACHESERVER_PROFILE_UPDATE = -118;  
   public static final byte SERVER_INTEREST_REGISTRATION_MESSAGE = -117;
   public static final byte FILTER_PROFILE_UPDATE = -116;
-  // [sumedh] below two IDs are no longer used in new TX model and will be
-  // removed at some point after SQLF upmerge
   public static final byte JTA_AFTER_COMPLETION_MESSAGE = -115;
   public static final byte JTA_BEFORE_COMPLETION_MESSAGE = -114;
   public static final byte INVALIDATE_PARTITIONED_REGION_MESSAGE = -113;
@@ -170,8 +167,6 @@ public interface DataSerializableFixedID extends SerializationVersions {
 
   public static final byte CREATE_REGION_MESSAGE = -89;
   public static final byte DESTROY_PARTITIONED_REGION_MESSAGE = -88;
-  // [sumedh] below two IDs are no longer used in new TX model and will be
-  // removed at some point after SQLF upmerge
   public static final byte COMMIT_PROCESS_QUERY_MESSAGE = -87;
   public static final byte COMMIT_PROCESS_QUERY_REPLY_MESSAGE = -86;
   public static final byte DESTROY_REGION_WITH_CONTEXT_MESSAGE = -85;
@@ -183,8 +178,6 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte STATE_STABILIZATION_MESSAGE = -79;
   public static final byte STATE_STABILIZED_MESSAGE = -78;
   public static final byte CLIENT_MARKER_MESSAGE_IMPL = -77;
-  // [sumedh] below three IDs are no longer used in new TX model and will be
-  // removed at some point after SQLF upmerge
   public static final byte TX_LOCK_UPDATE_PARTICIPANTS_MESSAGE = -76;
   public static final byte TX_ORIGINATOR_RECOVERY_MESSAGE = -75;
   public static final byte TX_ORIGINATOR_RECOVERY_REPLY_MESSAGE = -74;
@@ -194,8 +187,6 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte NON_GRANTOR_DESTROYED_REPLY_MESSAGE = -70;
   public static final byte TOMBSTONE_MESSAGE = -69;
   public static final byte IDS_REGISTRATION_MESSAGE = -68;
-  // [sumedh] below ID is no longer used in new TX model and will be
-  // removed at some point after SQLF upmerge
   public static final byte TX_LOCK_UPDATE_PARTICIPANTS_REPLY_MESSAGE = -67;
   public static final byte STREAMING_REPLY_MESSAGE = -66;
   public static final byte PREFER_BYTES_CACHED_DESERIALIZABLE = -65;
@@ -224,8 +215,6 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte GET_ALL_SERVERS_REQUEST = -43;
   public static final byte GET_ALL_SERVRES_RESPONSE = -42;
 
-  // [sumedh] below two IDs are no longer used in new TX model and will be
-  // removed at some point after SQLF upmerge
   public static final byte FIND_REMOTE_TX_REPLY = -41;
   public static final byte FIND_REMOTE_TX_MESSAGE = -40;
 
@@ -258,40 +247,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
   
   public static final byte CLIENT_INTEREST_MESSAGE = -21;
 
-  /**
-   * A header byte meaning that the next element in the stream is a
-   * type meant for SQL Fabric.
-   */
-  public static final byte SQLF_TYPE = -20;
-
-  /**
-   * A header byte meaning that the next element in the stream is a
-   * DVD object used for SQL Fabric.
-   */
-  public static final byte SQLF_DVD_OBJECT = -19;
-  
-  /**
-   * A header byte meaning that the next element in the stream is a
-   * GlobalRowLocation object used for SQL Fabric.
-   */
-  public static final byte SQLF_GLOBAL_ROWLOC = -18;
-  
-  /**
-   * A header byte meaning that the next element in the stream is a
-   * GemFireKey object used for SQL Fabric.
-   */
-  public static final byte SQLF_GEMFIRE_KEY = -17;
-  
-  /**
-   * A header byte meaning that the next element in the stream is a
-   * FormatibleBitSet object in SQLFabric.
-   */
-  public static final byte SQLF_FORMATIBLEBITSET = -16;
-
-  // IDs -15 .. -10 are not used in trunk yet but only in SQLFire, so marking
-  // as used so that GemFire does not use them until the SQLF upmerge else
-  // there will be big problems in backward compatibility after upmerge which
-  // is required for both >= SQLF 1.1 and >= GFE 7.1
+  // IDs -20 .. -16 are not used
 
   /**
    * A header byte meaning that the next element in the stream is a
@@ -542,8 +498,6 @@ public interface DataSerializableFixedID extends SerializationVersions {
   // TXId
   public static final byte TRANSACTION_ID = 109;
 
-  // [sumedh] below ID is no longer used in new TX model and will be
-  // removed at some point after SQLF upmerge
   public static final byte TX_COMMIT_MESSAGE = 110;
 
   public static final byte HA_PROFILE = 111;
@@ -566,8 +520,6 @@ public interface DataSerializableFixedID extends SerializationVersions {
 
   public static final byte PR_GET_MESSAGE = 120;
 
-  // [sumedh] below two IDs are no longer used in new TX model and will be
-  // removed at some point after SQLF upmerge
   // TXLockIdImpl
   public static final byte TRANSACTION_LOCK_ID = 121;
   // TXCommitMessage.CommitProcessForLockIdMessage
@@ -849,7 +801,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short LUCENE_ENTRY_SCORE = 2174;
   public static final short LUCENE_TOP_ENTRIES = 2175;
   public static final short LUCENE_TOP_ENTRIES_COLLECTOR = 2176;
-  
+
   // NOTE, codes > 65535 will take 4 bytes to serialize
   
   /**
@@ -877,9 +829,6 @@ public interface DataSerializableFixedID extends SerializationVersions {
    * class. e.g. if msg format changed in version 80, create toDataPre_GFE_8_0_0_0, add
    * Version.GFE_80 to the getSerializationVersions array and copy previous toData contents 
    * to this newly created toDataPre_GFE_X_X_X_X() method.
-   * <p>
-   * For GemFireXD use "GFXD" (or whatever we decide on as a product identifier
-   * in Version) instead of "GFE" in method names.
    * @throws IOException
    *           A problem occurs while writing to <code>out</code>
    */
@@ -895,10 +844,6 @@ public interface DataSerializableFixedID extends SerializationVersions {
    * class. e.g. if msg format changed in version 80, create fromDataPre_GFE_8_0_0_0, add
    * Version.GFE_80 to the getSerializationVersions array  and copy previous fromData 
    * contents to this newly created fromDataPre_GFE_X_X_X_X() method.
-   * <p>
-   * For GemFireXD use "GFXD" (or whatever we decide on as a product identifier
-   * in Version) instead of "GFE" in method names.
-   * 
    * @throws IOException
    *           A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException

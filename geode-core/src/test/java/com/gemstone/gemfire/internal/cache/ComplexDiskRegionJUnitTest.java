@@ -16,43 +16,31 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import org.junit.After;
-import org.junit.Before;
+import static org.junit.Assert.*;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
-
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.internal.cache.DirectoryHolder;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Unit testing for ComplexDiskRegion API's
- * 
- * 
- *  
  */
 @Category(IntegrationTest.class)
-public class ComplexDiskRegionJUnitTest extends DiskRegionTestingBase
-{
+public class ComplexDiskRegionJUnitTest extends DiskRegionTestingBase {
 
-  DiskRegionProperties diskProps = new DiskRegionProperties();
-
-  
+  private DiskRegionProperties diskProps = new DiskRegionProperties();
 
   @Override
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
+  protected final void postSetUp() throws Exception {
     diskProps.setDiskDirs(dirs);
     DiskStoreImpl.SET_IGNORE_PREALLOCATE = true;
   }
 
-  @After
-  public void tearDown() throws Exception {
-    super.tearDown();
+  @Override
+  protected final void postTearDown() throws Exception {
     DiskStoreImpl.SET_IGNORE_PREALLOCATE = false;
   }
 
@@ -63,8 +51,7 @@ public class ComplexDiskRegionJUnitTest extends DiskRegionTestingBase
    * The test will test that an oplog is correctly being added to be rolled
    */
   @Test
-  public void testAddToBeCompacted()
-  {
+  public void testAddToBeCompacted() {
     deleteFiles();
     diskProps.setRolling(false);
     diskProps.setAllowForceCompaction(true);
@@ -113,11 +100,9 @@ public class ComplexDiskRegionJUnitTest extends DiskRegionTestingBase
     oplog3.destroy();
     closeDown();
     deleteFiles();
-
   }
 
   /**
-   *  
    * Test method for
    * 'com.gemstone.gemfire.internal.cache.ComplexDiskRegion.removeFirstOplog(Oplog)'
    * 
@@ -125,8 +110,7 @@ public class ComplexDiskRegionJUnitTest extends DiskRegionTestingBase
    * the firs to be rolled).
    */
   @Test
-  public void testRemoveFirstOplog()
-  {
+  public void testRemoveFirstOplog() {
     deleteFiles();
     diskProps.setRolling(false);
     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);

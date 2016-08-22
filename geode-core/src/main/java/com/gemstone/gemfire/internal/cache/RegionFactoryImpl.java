@@ -26,7 +26,7 @@ import com.gemstone.gemfire.cache.client.ClientNotReadyException;
 /**
  * <code>RegionFactoryImpl</code> extends RegionFactory
  * adding {@link RegionShortcut} support.
- * @since 6.5
+ * @since GemFire 6.5
  */
 
 public class RegionFactoryImpl<K,V> extends RegionFactory<K,V>

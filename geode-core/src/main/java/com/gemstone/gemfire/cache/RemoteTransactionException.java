@@ -24,7 +24,7 @@ package com.gemstone.gemfire.cache;
  * is hosted on a member that is not
  * the initiator of the transaction.
  *
- * @since 6.5
+ * @since GemFire 6.5
  * @deprecated as of 6.6 exceptions from a remote node are no longer wrapped in this exception.  Instead of this, {@link TransactionDataNodeHasDepartedException} is thrown.
  */
 public class RemoteTransactionException extends TransactionException {

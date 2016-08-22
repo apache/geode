@@ -28,7 +28,7 @@ import com.gemstone.gemfire.DataSerializer;
  * A class which holds the load for a partitioned region
  * on a given VM.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public final class PRLoad implements DataSerializable {
 

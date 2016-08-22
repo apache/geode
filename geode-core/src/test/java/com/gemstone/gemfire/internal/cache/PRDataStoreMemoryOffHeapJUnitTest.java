@@ -16,19 +16,18 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.Properties;
-
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Tests PartitionedRegion DataStore currentAllocatedMemory operation.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 @Category(IntegrationTest.class)
 public class PRDataStoreMemoryOffHeapJUnitTest extends PRDataStoreMemoryJUnitTest {
@@ -36,7 +35,7 @@ public class PRDataStoreMemoryOffHeapJUnitTest extends PRDataStoreMemoryJUnitTes
   @Override
   protected Properties getDistributedSystemProperties() {
     Properties dsProps = super.getDistributedSystemProperties();
-    dsProps.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");
+    dsProps.setProperty(OFF_HEAP_MEMORY_SIZE, "1m");
     return dsProps;
   }
   

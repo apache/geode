@@ -83,7 +83,7 @@ import java.io.IOException;
  * <a href="{@docRoot}/../technotes/guides/collections/index.html">
  * Java Collections Framework</a>.
  *
- * @since 1.5
+ * @since GemFire 1.5
  * @param <V> the type of mapped values
  * 
  * Keys on this map are a primitive "int".
@@ -642,7 +642,7 @@ public class ObjIdConcurrentMap<V> /*extends AbstractMap<K, V>*/
      * @throws IllegalArgumentException if the initial capacity of
      * elements is negative or the load factor is nonpositive
      *
-     * @since 1.6
+     * @since GemFire 1.6
      */
     public ObjIdConcurrentMap(int initialCapacity, float loadFactor) {
         this(initialCapacity, loadFactor, DEFAULT_CONCURRENCY_LEVEL);

@@ -55,7 +55,7 @@ import java.util.Properties;
  *
  *
  * 
- * @since 2.0
+ * @since GemFire 2.0
  */
 public interface Declarable {
 

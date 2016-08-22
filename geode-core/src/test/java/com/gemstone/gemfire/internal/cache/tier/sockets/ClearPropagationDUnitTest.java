@@ -16,7 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import java.util.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -27,6 +35,11 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionEvent;
 import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.internal.Connection;
+import com.gemstone.gemfire.cache.client.internal.PoolImpl;
+import com.gemstone.gemfire.cache.client.internal.ServerRegionProxy;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
@@ -37,25 +50,19 @@ import com.gemstone.gemfire.internal.cache.CacheObserverAdapter;
 import com.gemstone.gemfire.internal.cache.CacheObserverHolder;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.cache.client.*;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.client.internal.ServerRegionProxy;
-import com.gemstone.gemfire.cache.client.internal.Connection;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This is the DUnit Test to verify clear and DestroyRegion operation in
  * Client-Server Configuration.
- *
- *
  */
-
-public class ClearPropagationDUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   VM server1 = null;
 
@@ -78,8 +85,8 @@ public class ClearPropagationDUnitTest extends DistributedTestCase
   protected static boolean gotDestroyed = false;
 
   /** constructor */
-  public ClearPropagationDUnitTest(String name) {
-    super(name);
+  public ClearPropagationDUnitTest() {
+    super();
   }
 
   @Override
@@ -128,6 +135,7 @@ public class ClearPropagationDUnitTest extends DistributedTestCase
    * the update
    *
    */
+  @Test
   public void testVerifyClearNotReceivedBySenderReceivedByOthers()
   {
 	  CacheSerializableRunnable resetFlags = new CacheSerializableRunnable(
@@ -179,6 +187,7 @@ public class ClearPropagationDUnitTest extends DistributedTestCase
    * the update
    *
    */
+  @Test
   public void testEventIdGeneratedInDestroyRegionOperation() throws Exception
   {
 	CacheSerializableRunnable resetFlags = new CacheSerializableRunnable(
@@ -351,9 +360,9 @@ public class ClearPropagationDUnitTest extends DistributedTestCase
     PORT1 = port1.intValue();
     PORT2 = port2.intValue();
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    new ClearPropagationDUnitTest("temp").createCache(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    new ClearPropagationDUnitTest().createCache(props);
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Pool p;
     try {
@@ -397,7 +406,7 @@ public class ClearPropagationDUnitTest extends DistributedTestCase
 
   public static Integer createServerCache() throws Exception
   {
-    new ClearPropagationDUnitTest("temp").createCache(new Properties());
+    new ClearPropagationDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);

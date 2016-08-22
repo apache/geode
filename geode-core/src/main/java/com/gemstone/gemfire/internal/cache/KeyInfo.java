@@ -40,9 +40,8 @@ public class KeyInfo {
   private Object callbackArg;
   private int bucketId;
 
-  // Rahul: The value field is add since Sqlf Partition resolver also relies on the value
-  // part to calculate the routing object if the table is not partitioned on 
-  // primary key.
+  // The value field is added since a Partition resolver could also rely on the value
+  // part to calculate the routing object
   @Retained(ENTRY_EVENT_NEW_VALUE)
   private final Object value;
 

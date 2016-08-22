@@ -16,29 +16,13 @@
  */
 package com.gemstone.gemfire.internal.cache.persistence;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.cache.DiskAccessException;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.persistence.ConflictingPersistentDataException;
 import com.gemstone.gemfire.cache.persistence.RevokedPersistentDataException;
 import com.gemstone.gemfire.distributed.DistributedLockService;
-import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
-import com.gemstone.gemfire.distributed.internal.MembershipListener;
-import com.gemstone.gemfire.distributed.internal.ProfileListener;
-import com.gemstone.gemfire.distributed.internal.ReplyException;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile;
@@ -51,6 +35,11 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.process.StartupStatus;
 import com.gemstone.gemfire.internal.util.TransformUtils;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -79,8 +68,8 @@ public class PersistenceAdvisorImpl implements PersistenceAdvisor {
   private volatile Set<PersistentMemberID> allMembersWaitingFor;
   private volatile Set<PersistentMemberID> offlineMembersWaitingFor;
   protected final Object lock;
-  
-  private static final int PERSISTENT_VIEW_RETRY = Integer.getInteger("gemfire.PERSISTENT_VIEW_RETRY", 5);
+
+  private static final int PERSISTENT_VIEW_RETRY = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "PERSISTENT_VIEW_RETRY", 5);
   
   public PersistenceAdvisorImpl(CacheDistributionAdvisor advisor, DistributedLockService dl, PersistentMemberView storage, String regionPath, DiskRegionStats diskStats, PersistentMemberManager memberManager) {
     this.advisor = advisor;

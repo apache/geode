@@ -25,7 +25,6 @@ import java.io.Serializable;
 import java.security.Principal;
 import javax.naming.NamingException;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.apache.commons.lang.SerializationUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,10 +32,13 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
 /**
  * Unit tests for {@link NotAuthorizedException}.
  */
-@Category(UnitTest.class)
+@Category({ UnitTest.class, SecurityTest.class })
 public class NotAuthorizedExceptionTest {
 
   private String message;
@@ -69,10 +71,10 @@ public class NotAuthorizedExceptionTest {
     this.nonSerializablePrincipal = mock(Principal.class);
     this.serializablePrincipal = new SerializablePrincipal(this.principalName);
 
-    assertPreConditions();
+    assertPreconditions();
   }
 
-  private void assertPreConditions() {
+  private void assertPreconditions() {
     catchException(this).clone(this.nonSerializableNamingException);
     assertThat((Throwable)caughtException()).isNotNull();
     assertThat((Throwable)caughtException().getCause()).isInstanceOf(NotSerializableException.class);

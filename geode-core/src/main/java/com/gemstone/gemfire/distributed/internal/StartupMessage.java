@@ -16,27 +16,23 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.Instantiator;
+import com.gemstone.gemfire.SystemConnectException;
+import com.gemstone.gemfire.internal.*;
+import com.gemstone.gemfire.internal.InternalDataSerializer.SerializerAttributesHolder;
+import com.gemstone.gemfire.internal.InternalInstantiator.InstantiatorAttributesHolder;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Properties;
 import java.util.Set;
-
-import com.gemstone.gemfire.internal.*;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.Instantiator;
-import com.gemstone.gemfire.SystemConnectException;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.InternalDataSerializer.SerializerAttributesHolder;
-import com.gemstone.gemfire.internal.InternalInstantiator.InstantiatorAttributesHolder;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * A message that is sent to all other distribution manager when
@@ -65,7 +61,7 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
    * will be regarded as an error by all who see it.
    * 
    * @return list of addresses for this host
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static Set getMyAddresses(DistributionManager dm) {
     try {
@@ -107,7 +103,7 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
   
   /**
    * Sets the mcastEnabled flag for this message
-   * @since 5.0
+   * @since GemFire 5.0
    */
   void setMcastEnabled(boolean flag) {
     isMcastEnabled = flag;
@@ -142,7 +138,7 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
   
   /**
    * Sets the tcpDisabled flag for this message
-   * @since 5.0
+   * @since GemFire 5.0
    */
   void setTcpDisabled(boolean flag) {
     isTcpDisabled = flag;
@@ -213,12 +209,12 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
       rejectionMessage =
           LocalizedStrings.StartupMessage_REJECTED_NEW_SYSTEM_NODE_0_BECAUSE_ISTCPDISABLED_1_DOES_NOT_MATCH_THE_DISTRIBUTED_SYSTEM_IT_IS_ATTEMPTING_TO_JOIN
           .toLocalizedString(new Object[] {getSender(), Boolean.valueOf(isTcpDisabled)});
-  }
-   else if (dm.getDistributedSystemId() != DistributionConfig.DEFAULT_DISTRIBUTED_SYSTEM_ID && distributedSystemId !=  DistributionConfig.DEFAULT_DISTRIBUTED_SYSTEM_ID 
+    } else if (dm.getDistributedSystemId() != DistributionConfig.DEFAULT_DISTRIBUTED_SYSTEM_ID
+        && distributedSystemId != DistributionConfig.DEFAULT_DISTRIBUTED_SYSTEM_ID
              && distributedSystemId != dm.getDistributedSystemId()) {
      
      String distributedSystemListener = System
-     .getProperty("gemfire.DistributedSystemListener");
+         .getProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener");
      //this check is specific for Jayesh's use case of WAN BootStraping
      if(distributedSystemListener != null){
        if(-distributedSystemId != dm.getDistributedSystemId()){

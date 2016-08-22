@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.cache.query.internal;
 
+import static org.junit.Assert.*;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,10 +30,7 @@ import java.util.NoSuchElementException;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.query.Struct;
@@ -40,22 +39,10 @@ import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-/**
- * 
- *
- */
 @Category(UnitTest.class)
-public class NWayMergeResultsJUnitTest extends TestCase {
+public class NWayMergeResultsJUnitTest {
 
-  public NWayMergeResultsJUnitTest(String testName) {
-    super(testName);
-  }
-
-  public static Test suite() {
-    TestSuite suite = new TestSuite(NWayMergeResultsJUnitTest.class);
-    return suite;
-  }
-
+  @Test
   public void testNonDistinct() throws Exception {
     final int numSortedLists = 40;
     Collection<List<Integer>> listOfSortedLists = new ArrayList<List<Integer>>();
@@ -100,6 +87,7 @@ public class NWayMergeResultsJUnitTest extends TestCase {
     assertEquals(combinedArray.length, mergedResults.size());
   }
 
+  @Test
   public void testDistinct() throws Exception {
     final int numSortedLists = 40;
     Collection<List<Integer>> listOfSortedLists = new ArrayList<List<Integer>>();
@@ -141,8 +129,8 @@ public class NWayMergeResultsJUnitTest extends TestCase {
     assertEquals(sortedSet.size(), mergedResults.size());
   }
 
+  @Test
   public void testLimitNoDistinct() throws Exception {
-
     final int numSortedLists = 40;
     final int limit = 53;
     Collection<List<Integer>> listOfSortedLists = new ArrayList<List<Integer>>();
@@ -193,6 +181,7 @@ public class NWayMergeResultsJUnitTest extends TestCase {
     assertEquals(limit, mergedResults.size());
   }
 
+  @Test
   public void testLimitDistinct() throws Exception {
     final int numSortedLists = 40;
     final int limit = 53;
@@ -241,6 +230,7 @@ public class NWayMergeResultsJUnitTest extends TestCase {
     assertEquals(limit, mergedResults.size());
   }
 
+  @Test
   public void testNonDistinctStruct() throws Exception {
     final int numSortedLists = 40;
     StructTypeImpl structType = new StructTypeImpl(new String[] { "a", "b" },
@@ -304,6 +294,7 @@ public class NWayMergeResultsJUnitTest extends TestCase {
     }
   }
 
+  @Test
   public void testDistinctStruct() throws Exception {
     final int numSortedLists = 40;
     StructTypeImpl structType = new StructTypeImpl(new String[] { "a", "b" },
@@ -363,8 +354,8 @@ public class NWayMergeResultsJUnitTest extends TestCase {
     }
   }
 
+  @Test
   public void testOccurenceNonDistinct() throws Exception {
-
     final int numSortedLists = 40;
     Collection<List<Integer>> listOfSortedLists = new ArrayList<List<Integer>>();
     for (int i = 0; i < numSortedLists; ++i) {
@@ -411,8 +402,8 @@ public class NWayMergeResultsJUnitTest extends TestCase {
     assertEquals(num75, mergedResults.occurrences(Integer.valueOf(75)));
   }
 
+  @Test
   public void testOccurenceDistinct() throws Exception {
-
     final int numSortedLists = 40;
     Collection<List<Integer>> listOfSortedLists = new ArrayList<List<Integer>>();
     for (int i = 0; i < numSortedLists; ++i) {
@@ -484,6 +475,7 @@ public class NWayMergeResultsJUnitTest extends TestCase {
         orderByAttribs, context, structType);
   }
 
+  @Test
   public void testCombination() throws Exception {
     List<String> results1 = new ArrayList<String>();
     results1.add("IBM");
@@ -542,9 +534,6 @@ public class NWayMergeResultsJUnitTest extends TestCase {
         sortedLists1, true, -1);
 
     assertEquals(12, netMergedResults.size());
-
   }
-  
-  
 
 }

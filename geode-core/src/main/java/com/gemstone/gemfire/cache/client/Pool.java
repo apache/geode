@@ -45,7 +45,7 @@ import com.gemstone.gemfire.cache.query.QueryService;
  * on the client regions that will use this pool by calling
  * {@link RegionFactory#setPoolName}.
  *
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 public interface Pool {
@@ -122,7 +122,7 @@ public interface Pool {
   /**
    * Returns true if single-hop optimisation is enabled on this pool.
    * @see PoolFactory#setPRSingleHopEnabled
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public boolean getPRSingleHopEnabled();
   /**
@@ -149,7 +149,7 @@ public interface Pool {
   /**
    * Returns true if multiuser mode is enabled on this pool.
    * @see PoolFactory#setMultiuserAuthentication(boolean)
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public boolean getMultiuserAuthentication();
 
@@ -243,7 +243,7 @@ public interface Pool {
    * @throws IllegalStateException
    *           If called by a non-durable client or if invoked any time after
    *           invocation of {@link ClientCache#readyForEvents()}.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public int getPendingEventCount();
 

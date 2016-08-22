@@ -38,7 +38,7 @@ import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
  * Function to create {@link MockCacheExtension} on a {@link Region}.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public class AlterMockCacheExtensionFunction extends FunctionAdapter {
 
@@ -81,7 +81,7 @@ public class AlterMockCacheExtensionFunction extends FunctionAdapter {
   /**
    * @param value
    * @return
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public static Object[] toArgs(final String value) {
     return new Object[] { value };

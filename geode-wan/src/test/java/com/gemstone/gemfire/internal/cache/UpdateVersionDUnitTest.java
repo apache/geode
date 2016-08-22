@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -24,6 +27,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -44,7 +50,6 @@ import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.LocalRegion.NonTXEntry;
@@ -53,32 +58,28 @@ import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.cache.wan.InternalGatewaySenderFactory;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
- * @since 7.0.1
+ * @since GemFire 7.0.1
  */
-public class UpdateVersionDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
 
   protected static final String regionName = "testRegion";
   protected static Cache cache;
   private static Set<IgnoredException>expectedExceptions = new HashSet<IgnoredException>();
 
-  
-  
-  public UpdateVersionDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public final void preTearDown() throws Exception {
     closeCache();
@@ -87,8 +88,8 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
      } });
   }
   
+  @Test
   public void testUpdateVersionAfterCreateWithSerialSender() {
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0); // server1 site1
     VM vm1 = host.getVM(1); // server2 site1
@@ -179,7 +180,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
           public boolean done() {
             Entry<?,?> entry = null;
             try {
-              entry = region.getDataStore().getEntryLocally(0, key, false, false, false);
+              entry = region.getDataStore().getEntryLocally(0, key, false, false);
             } catch (EntryNotFoundException e) {
               // expected
             } catch (ForceReattemptException e) {
@@ -225,8 +226,8 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
     assertEquals("Local and remote site have different timestamps", tag.getVersionTimeStamp(), remoteTag.getVersionTimeStamp());
   }
 
+  @Test
   public void testUpdateVersionAfterCreateWithSerialSenderOnDR() {
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0); // server1 site1
     VM vm1 = host.getVM(1); // server2 site1
@@ -350,8 +351,8 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
     assertEquals("Local and remote site have different timestamps", tag.getVersionTimeStamp(), remoteTag.getVersionTimeStamp());
   }
 
+  @Test
   public void testUpdateVersionAfterCreateWithParallelSender() {
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0); // server1 site1
     VM vm1 = host.getVM(1); // server2 site1
@@ -443,7 +444,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
           public boolean done() {
             Entry<?,?> entry = null;
             try {
-              entry = region.getDataStore().getEntryLocally(0, key, false, false, false);
+              entry = region.getDataStore().getEntryLocally(0, key, false, false);
             } catch (EntryNotFoundException e) {
               // expected
             } catch (ForceReattemptException e) {
@@ -489,8 +490,8 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
     assertEquals("Local and remote site have different timestamps", tag.getVersionTimeStamp(), remoteTag.getVersionTimeStamp());
   }
 
+  @Test
   public void testUpdateVersionAfterCreateWithConcurrentSerialSender() {
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0); // server1 site1
     VM vm1 = host.getVM(1); // server2 site1
@@ -582,7 +583,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
           public boolean done() {
             Entry<?,?> entry = null;
             try {
-              entry = region.getDataStore().getEntryLocally(0, key, false, false, false);
+              entry = region.getDataStore().getEntryLocally(0, key, false, false);
             } catch (EntryNotFoundException e) {
               // expected
             } catch (ForceReattemptException e) {
@@ -627,10 +628,9 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
 
     assertEquals("Local and remote site have different timestamps", tag.getVersionTimeStamp(), remoteTag.getVersionTimeStamp());
   }
-  
-  
-  private EntryEventImpl createNewEvent(LocalRegion region, VersionTag tag, Object key, Object value) {
-    EntryEventImpl updateEvent = EntryEventImpl.createVersionTagHolder(tag);
+
+  private VersionTagHolder createNewEvent(LocalRegion region, VersionTag tag, Object key, Object value) {
+    VersionTagHolder updateEvent = new VersionTagHolder(tag);
     updateEvent.setOperation(Operation.UPDATE);
     updateEvent.setRegion(region);
     if (region instanceof PartitionedRegion) {
@@ -650,13 +650,13 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
    */
 
   private static void createCache(Integer locPort) {
-    UpdateVersionDUnitTest test = new UpdateVersionDUnitTest(getTestMethodName());
+    UpdateVersionDUnitTest test = new UpdateVersionDUnitTest();
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort + "]");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
-    props.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + locPort + "]");
+    props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    props.setProperty(USE_CLUSTER_CONFIGURATION, "false");
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds); 
     IgnoredException ex = new IgnoredException("could not get remote locator information for remote site");
@@ -733,7 +733,6 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
     }
   }
 
-  
   public static void createPartitionedRegion(String regionName, String senderIds, Integer redundantCopies, Integer totalNumBuckets){
     AttributesFactory fact = new AttributesFactory();
     if(senderIds!= null){
@@ -758,8 +757,6 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
       StringTokenizer tokenizer = new StringTokenizer(senderIds, ",");
       while (tokenizer.hasMoreTokens()){
         String senderId = tokenizer.nextToken();
-//        GatewaySender sender = cache.getGatewaySender(senderId);
-//        assertNotNull(sender);
         fact.addGatewaySenderId(senderId);
       }
     }
@@ -789,16 +786,16 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
   }
 
   public static Integer createFirstRemoteLocator(int dsId, int remoteLocPort) {
-    UpdateVersionDUnitTest test = new UpdateVersionDUnitTest(getTestMethodName());
+    UpdateVersionDUnitTest test = new UpdateVersionDUnitTest();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
-    props.setProperty(DistributionConfig.START_LOCATOR_NAME, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
-    props.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + remoteLocPort + "]");
-    props.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, ""+dsId);
+    props.setProperty(LOCATORS, "localhost[" + port + "]");
+    props.setProperty(START_LOCATOR, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
+    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
+    props.setProperty(USE_CLUSTER_CONFIGURATION, "false");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     test.getSystem(props);
     return port;
   }
@@ -857,10 +854,10 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
   }
 
   public static int createReceiver(int locPort) {
-    UpdateVersionDUnitTest test = new UpdateVersionDUnitTest(getTestMethodName());
+    UpdateVersionDUnitTest test = new UpdateVersionDUnitTest();
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + locPort
         + "]");
 
     InternalDistributedSystem ds = test.getSystem(props);
@@ -891,18 +888,19 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
     sender.start();
   }
 
-  protected static class MyLocatorCallback extends
-      LocatorDiscoveryCallbackAdapter {
+  protected static class MyLocatorCallback extends LocatorDiscoveryCallbackAdapter {
 
     private final Set discoveredLocators = new HashSet();
 
     private final Set removedLocators = new HashSet();
 
+    @Override
     public synchronized void locatorsDiscovered(List locators) {
       discoveredLocators.addAll(locators);
       notifyAll();
     }
 
+    @Override
     public synchronized void locatorsRemoved(List locators) {
       removedLocators.addAll(locators);
       notifyAll();
@@ -949,15 +947,15 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
   }
 
   public static Integer createFirstLocatorWithDSId(int dsId) {
-    UpdateVersionDUnitTest test = new UpdateVersionDUnitTest(getTestMethodName());
+    UpdateVersionDUnitTest test = new UpdateVersionDUnitTest();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
-    props.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
-    props.setProperty(DistributionConfig.START_LOCATOR_NAME, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, ""+dsId);
+    props.setProperty(LOCATORS, "localhost[" + port + "]");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    props.setProperty(USE_CLUSTER_CONFIGURATION, "false");
+    props.setProperty(START_LOCATOR, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
     test.getSystem(props);
     return port;
   }

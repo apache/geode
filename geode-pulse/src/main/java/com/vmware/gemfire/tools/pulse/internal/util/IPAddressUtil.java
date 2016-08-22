@@ -32,7 +32,7 @@ import java.util.regex.PatternSyntaxException;
  * versions i.e. IPv4 or IPv6 address
  * 
  * 
- * @since version 7.0.1
+ * @since GemFire version 7.0.1
  */
 public class IPAddressUtil {
 

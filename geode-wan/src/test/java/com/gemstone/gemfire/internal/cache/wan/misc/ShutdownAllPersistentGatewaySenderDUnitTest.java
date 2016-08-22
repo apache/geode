@@ -16,7 +16,12 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
+import static org.junit.Assert.*;
+
 import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.admin.AdminDistributedSystemFactory;
 import com.gemstone.gemfire.admin.AdminException;
@@ -28,21 +33,23 @@ import com.gemstone.gemfire.internal.cache.CacheObserverHolder;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
+@Category(DistributedTest.class)
 public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
+
   private static final long MAX_WAIT = 70000;
 
   private static final int NUM_KEYS = 1000;
 
-  public ShutdownAllPersistentGatewaySenderDUnitTest(String name) {
-    super(name);
+  public ShutdownAllPersistentGatewaySenderDUnitTest() {
+    super();
   }
   
   @Override
@@ -52,6 +59,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
 
+  @Test
   public void testGatewaySender() throws Exception {
     IgnoredException.addIgnoredException("Cache is shutting down");
 
@@ -61,7 +69,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANTestBase.createCache( nyPort ));
     vm3.invoke(() -> WANTestBase.createCache( nyPort ));
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     vm2.invoke(() -> WANTestBase.createPersistentPartitionedRegion( getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
     vm3.invoke(() -> WANTestBase.createPersistentPartitionedRegion( getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
@@ -124,7 +132,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
             "vm1's region size before restart gatewayhub is " + region.size());
       }
     });
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     // wait for vm0 to finish its work
     vm4_future.join(MAX_WAIT);

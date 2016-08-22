@@ -25,7 +25,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
+
+import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * A lucene serializer that handles a single class and can
@@ -35,6 +38,8 @@ class ReflectionLuceneSerializer implements LuceneSerializer {
 
   private Field[] fields;
 
+  private static final Logger logger = LogService.getLogger();
+  
   public ReflectionLuceneSerializer(Class<? extends Object> clazz,
       String[] indexedFields) {
     Set<String> fieldSet = new HashSet<String>();
@@ -65,10 +70,16 @@ class ReflectionLuceneSerializer implements LuceneSerializer {
     for(Field field: fields) {
       try {
         Object fieldValue = field.get(value);
+        if (fieldValue == null) {
+          continue;
+        }
         SerializerUtil.addField(doc, field.getName(), fieldValue);
       } catch (IllegalArgumentException | IllegalAccessException e) {
         //TODO - what to do if we can't read a field?
       }
+    }
+    if (logger.isDebugEnabled()) {
+      logger.debug("ReflectionLuceneSerializer.toDocument:"+doc);
     }
   }
 }

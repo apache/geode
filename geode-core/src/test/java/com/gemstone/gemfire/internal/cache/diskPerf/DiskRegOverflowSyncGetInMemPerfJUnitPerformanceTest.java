@@ -16,16 +16,12 @@
  */
 package com.gemstone.gemfire.internal.cache.diskPerf;
 
-import java.util.*;
+import java.util.Arrays;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
-
-import com.gemstone.gemfire.*;
+import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.internal.cache.DiskRegionHelperFactory;
 import com.gemstone.gemfire.internal.cache.DiskRegionProperties;
 import com.gemstone.gemfire.internal.cache.DiskRegionTestingBase;
@@ -34,35 +30,36 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Disk region Perf test for Overflow only with Sync writes. 1) Performance of
  * get operation for entry in memory.
- *  
  */
 @Category(IntegrationTest.class)
-public class DiskRegOverflowSyncGetInMemPerfJUnitPerformanceTest extends DiskRegionTestingBase
-{
+public class DiskRegOverflowSyncGetInMemPerfJUnitPerformanceTest extends DiskRegionTestingBase {
 
-  LogWriter log = null;
+  private static int ENTRY_SIZE = 1024;
 
-  static int counter = 0;
+  private static int OP_COUNT = 10000;
 
-  DiskRegionProperties diskProps = new DiskRegionProperties();
+  private static int counter = 0;
 
-  @Before
-  public void setUp() throws Exception
-  {
+  private LogWriter log = null;
+
+  private DiskRegionProperties diskProps = new DiskRegionProperties();
+
+  @Override
+  protected final void preSetUp() throws Exception {
     diskProps.setDiskDirs(dirs);
-    super.setUp();
+  }
 
+  @Override
+  protected final void postSetUp() throws Exception {
     diskProps.setOverFlowCapacity(100000);
     region = DiskRegionHelperFactory
-        .getSyncOverFlowOnlyRegion(cache, diskProps);
-    
+      .getSyncOverFlowOnlyRegion(cache, diskProps);
+
     log = ds.getLogWriter();
   }
 
-  @After
-  public void tearDown() throws Exception
-  {
-    super.tearDown();
+  @Override
+  protected final void postTearDown() throws Exception {
     if (cache != null) {
       cache.close();
     }
@@ -71,15 +68,8 @@ public class DiskRegOverflowSyncGetInMemPerfJUnitPerformanceTest extends DiskReg
     }
   }
 
-  
-
-  private static int ENTRY_SIZE = 1024;
-
-  private static int OP_COUNT = 10000;
-
   @Test
-  public void testPopulatefor1Kbwrites()
-  {
+  public void testPopulatefor1Kbwrites() {
 //    RegionAttributes ra = region.getAttributes();
 //    final String key = "K";
     final byte[] value = new byte[ENTRY_SIZE];
@@ -122,8 +112,5 @@ public class DiskRegOverflowSyncGetInMemPerfJUnitPerformanceTest extends DiskReg
         + " bytes/sec=" + bytesPerSecGet;
     log.info(statsGet);
     System.out.println("Perf Stats of get which is in memory :" + statsGet);
-
   }
-
 }
-

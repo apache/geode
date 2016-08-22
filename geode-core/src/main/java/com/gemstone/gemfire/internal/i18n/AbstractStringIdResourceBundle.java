@@ -34,7 +34,7 @@ import java.util.Locale;
  * Baseclass for all {@link StringId} based ResourceBundles
  * @see java.util.ResourceBundle 
  *
- * @since 5.7 
+ * @since GemFire 5.7
  */
 public class AbstractStringIdResourceBundle {
   private Int2ObjectOpenHashMap data;

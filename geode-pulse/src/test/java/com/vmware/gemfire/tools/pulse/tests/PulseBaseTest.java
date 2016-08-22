@@ -16,15 +16,10 @@
  * limitations under the License.
  *
  */
-
 package com.vmware.gemfire.tools.pulse.tests;
 
-import junit.framework.Assert;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
+import static com.vmware.gemfire.tools.pulse.tests.PulseAbstractTest.*;
+import static org.junit.Assert.*;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,9 +28,17 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
-public class PulseBaseTest extends PulseTest {
-	WebElement element = null;
-	public static int maxWaitTime = 20;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+public class PulseBaseTest {
+
+  public static int maxWaitTime = 20;
+
+  WebElement element = null;
 
 	public WebElement findElementUsingId(String id) {
 		return driver.findElement(By.id(id));
@@ -165,12 +168,12 @@ public class PulseBaseTest extends PulseTest {
 			String memName = gridDataFromUI[i][1];
 			Member m = sgMap.get(sgName).get(memName);
 
-			Assert.assertEquals(sgName, gridDataFromUI[i][0]);
-			Assert.assertEquals(memName, gridDataFromUI[i][1]);
-			Assert.assertEquals(m.getMember(), gridDataFromUI[i][2]);
-			Assert.assertEquals(m.getHost(), gridDataFromUI[i][3]);
+			assertEquals(sgName, gridDataFromUI[i][0]);
+			assertEquals(memName, gridDataFromUI[i][1]);
+			assertEquals(m.getMember(), gridDataFromUI[i][2]);
+			assertEquals(m.getHost(), gridDataFromUI[i][3]);
 			String cupUsage = String.valueOf(m.getCpuUsage());
-			Assert.assertEquals(cupUsage, gridDataFromUI[i][5]);
+			assertEquals(cupUsage, gridDataFromUI[i][5]);
 		}
 
 	}
@@ -212,12 +215,12 @@ public class PulseBaseTest extends PulseTest {
 			String memName = gridDataFromUI[i][1];
 			Member m = rzMap.get(sgName).get(memName);
 
-			Assert.assertEquals(sgName, gridDataFromUI[i][0]);
-			Assert.assertEquals(memName, gridDataFromUI[i][1]);
-			Assert.assertEquals(m.getMember(), gridDataFromUI[i][2]);
-			Assert.assertEquals(m.getHost(), gridDataFromUI[i][3]);
+			assertEquals(sgName, gridDataFromUI[i][0]);
+			assertEquals(memName, gridDataFromUI[i][1]);
+			assertEquals(m.getMember(), gridDataFromUI[i][2]);
+			assertEquals(m.getHost(), gridDataFromUI[i][3]);
 			String cupUsage = String.valueOf(m.getCpuUsage());
-			Assert.assertEquals(cupUsage, gridDataFromUI[i][5]);
+			assertEquals(cupUsage, gridDataFromUI[i][5]);
 		}
 
 	}
@@ -248,11 +251,11 @@ public class PulseBaseTest extends PulseTest {
 			String memName = gridDataFromUI[i][0];
 			Member m = tpMap.get(memName);
 
-			Assert.assertEquals(m.getMember(), gridDataFromUI[i][0]);
-			Assert.assertEquals(m.getMember(), gridDataFromUI[i][1]);
-			Assert.assertEquals(m.getHost(), gridDataFromUI[i][2]);
+			assertEquals(m.getMember(), gridDataFromUI[i][0]);
+			assertEquals(m.getMember(), gridDataFromUI[i][1]);
+			assertEquals(m.getHost(), gridDataFromUI[i][2]);
 			String cupUsage = String.valueOf(m.getCpuUsage());
-			Assert.assertEquals(cupUsage, gridDataFromUI[i][5]);
+			assertEquals(cupUsage, gridDataFromUI[i][5]);
 		}
 	}
 
@@ -286,12 +289,12 @@ public class PulseBaseTest extends PulseTest {
 			String memName = gridDataFromUI[i][0];
 			Region r = dataMap.get(memName);
 
-			Assert.assertEquals(r.getName(), gridDataFromUI[i][0]);
-			Assert.assertEquals(r.getRegionType(), gridDataFromUI[i][1]);
+			assertEquals(r.getName(), gridDataFromUI[i][0]);
+			assertEquals(r.getRegionType(), gridDataFromUI[i][1]);
 
-			Assert.assertEquals(String.valueOf(r.getSystemRegionEntryCount()), gridDataFromUI[i][2]);
-			Assert.assertEquals(r.getFullPath(), gridDataFromUI[i][4]);
-			Assert.assertEquals(getPersistanceEnabled(r), gridDataFromUI[i][5]);
+			assertEquals(String.valueOf(r.getSystemRegionEntryCount()), gridDataFromUI[i][2]);
+			assertEquals(r.getFullPath(), gridDataFromUI[i][4]);
+			assertEquals(getPersistanceEnabled(r), gridDataFromUI[i][5]);
 		}
 	}
 
@@ -319,7 +322,7 @@ public class PulseBaseTest extends PulseTest {
 
 			String memName = gridDataFromUI[i][0];
 			Member m = tpMap.get(memName);
-			Assert.assertEquals(m.getMember(), gridDataFromUI[i][0]);
+			assertEquals(m.getMember(), gridDataFromUI[i][0]);
 		}
 
 	}
@@ -431,7 +434,7 @@ public class PulseBaseTest extends PulseTest {
 
 	public void verifyElementAttributeById(String id, String attribute, String value) {
 		String actualValue = findElementById(id).getAttribute(attribute);
-		Assert.assertTrue(actualValue.equals(value) || actualValue.contains(value));
+		assertTrue(actualValue.equals(value) || actualValue.contains(value));
 	}
 
 
@@ -488,7 +491,7 @@ public class PulseBaseTest extends PulseTest {
 			}else{
 				refMemberCPUUsage = PulseTestData.Topology.cpuUsagePaintStyleM3;
 			}
-			Assert.assertTrue(findElementById(entry.getValue()).getAttribute("style").contains(refMemberCPUUsage));
+			assertTrue(findElementById(entry.getValue()).getAttribute("style").contains(refMemberCPUUsage));
 	    }
 	}
 
@@ -509,7 +512,7 @@ public class PulseBaseTest extends PulseTest {
 			}else{
 				refMemberHeapUsage = PulseTestData.Topology.heapUsagePaintStyleM3;
 			}
-			Assert.assertTrue(findElementById(entry.getValue()).getAttribute("style").contains(refMemberHeapUsage));
+			assertTrue(findElementById(entry.getValue()).getAttribute("style").contains(refMemberHeapUsage));
 	    }
 	}
 
@@ -530,7 +533,7 @@ public class PulseBaseTest extends PulseTest {
 			}else{
 				refMemberCPUUsage = PulseTestData.Topology.cpuUsagePaintStyleM3;
 			}
-			Assert.assertTrue(findElementById(entry.getValue()).getAttribute("style").contains(refMemberCPUUsage));
+			assertTrue(findElementById(entry.getValue()).getAttribute("style").contains(refMemberCPUUsage));
 	    }
 	}
 
@@ -570,7 +573,7 @@ public class PulseBaseTest extends PulseTest {
 			}else{
 				refMemberCPUUsage = PulseTestData.ServerGroups.heapUsagePaintStyleSG1M3;
 			}
-			Assert.assertTrue(findElementById("SG1(!)"+entry.getValue()).getAttribute("style").contains(refMemberCPUUsage));
+			assertTrue(findElementById("SG1(!)"+entry.getValue()).getAttribute("style").contains(refMemberCPUUsage));
 	    }
 	}
 
@@ -611,7 +614,7 @@ public class PulseBaseTest extends PulseTest {
 			}else{
 				refMemberCPUUsage = PulseTestData.ServerGroups.cpuUsagePaintStyleSG1M3;
 			}
-			Assert.assertTrue(findElementById("SG1(!)"+entry.getValue()).getAttribute("style").contains(refMemberCPUUsage));
+			assertTrue(findElementById("SG1(!)"+entry.getValue()).getAttribute("style").contains(refMemberCPUUsage));
 	    }
 	}
 
@@ -646,7 +649,7 @@ public class PulseBaseTest extends PulseTest {
 			}else{
 				refMemberHeapUsage = PulseTestData.RedundancyZone.heapUsagePaintStyleRZ3M3;
 			}
-			Assert.assertTrue(findElementById("RZ1 RZ2(!)"+entry.getValue()).getAttribute("style").contains(refMemberHeapUsage));
+			assertTrue(findElementById("RZ1 RZ2(!)"+entry.getValue()).getAttribute("style").contains(refMemberHeapUsage));
 	    }
 	}
 
@@ -679,7 +682,7 @@ public class PulseBaseTest extends PulseTest {
 			}else if(entry.getValue().equalsIgnoreCase("M2")){
 				refMemberCPUUsage = PulseTestData.RedundancyZone.cpuUsagePaintStyleRZ1RZ2M2;
 			}
-			Assert.assertTrue(findElementById("RZ1 RZ2(!)"+entry.getValue()).getAttribute("style").contains(refMemberCPUUsage));
+			assertTrue(findElementById("RZ1 RZ2(!)"+entry.getValue()).getAttribute("style").contains(refMemberCPUUsage));
 	    }
 	}
 

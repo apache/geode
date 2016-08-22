@@ -25,7 +25,7 @@ package com.gemstone.gemfire.admin;
  *
  * @see DistributionLocatorConfig
  *
- * @since 3.5
+ * @since GemFire 3.5
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface DistributionLocator extends ManagedEntity {
@@ -38,7 +38,7 @@ public interface DistributionLocator extends ManagedEntity {
   /**
    * Returns the configuration object for this distribution locator.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public DistributionLocatorConfig getConfig();
 

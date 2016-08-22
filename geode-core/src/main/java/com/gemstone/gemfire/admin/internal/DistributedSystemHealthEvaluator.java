@@ -17,14 +17,15 @@
 package com.gemstone.gemfire.admin.internal;
 
 import com.gemstone.gemfire.admin.DistributedSystemHealthConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.MembershipListener;
-import java.util.*;
-
-import com.gemstone.gemfire.distributed.internal.membership.*;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Contains the logic for evaluating the health of an entire GemFire
@@ -41,7 +42,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * system.
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  * */
 class DistributedSystemHealthEvaluator
   extends AbstractHealthEvaluator implements MembershipListener {

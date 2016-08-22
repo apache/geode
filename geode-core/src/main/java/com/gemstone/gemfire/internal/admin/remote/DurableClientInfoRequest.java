@@ -26,7 +26,7 @@ import java.io.*;
  * information about a durable client's proxy in the bridge-servers of its
  * current cache.
  * 
- * @since 5.6
+ * @since GemFire 5.6
  * 
  */
 public class DurableClientInfoRequest extends AdminRequest

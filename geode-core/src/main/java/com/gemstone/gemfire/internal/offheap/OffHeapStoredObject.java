@@ -165,7 +165,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
       // Hopefully the jvm is smart enough to use our stack for this short lived array.
       final byte[] dataCache1 = new byte[1024];
       final byte[] dataCache2 = new byte[dataCache1.length];
-      // TODO OFFHEAP: no need to copy to heap. Just get the address of each and compare each byte. No need to call incReads when reading from address.
       int i;
       // inc it twice since we are reading two different objects
       MemoryAllocatorImpl.getAllocator().getStats().incReads();
@@ -202,7 +201,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
       }
       // We want to be able to do this operation without copying any of the data into the heap.
       // Hopefully the jvm is smart enough to use our stack for this short lived array.
-      // TODO OFFHEAP: no need to copy to heap. Just get the address of each and compare each byte. No need to call incReads when reading from address.
       final byte[] dataCache = new byte[1024];
       int idx=0;
       int i;
@@ -419,13 +417,13 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
       MemoryAllocatorImpl.getAllocator().getStats().incReads();
       return result;
     }
+    /**
+     * This method should only be called on uncompressed objects
+     * @return byte array of the StoredObject value. 
+     */
     protected byte[] getRawBytes() {
-      byte[] result = getCompressedBytes();
-      // TODO OFFHEAP: change the following to assert !isCompressed();
-      if (isCompressed()) {
-        throw new UnsupportedOperationException();
-      }
-      return result;
+      assert !isCompressed();
+      return getCompressedBytes(); 
     }
 
     @Override
@@ -441,10 +439,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
     @Override
     public Object getDeserializedValue(Region r, RegionEntry re) {
       if (isSerialized()) {
-        // TODO OFFHEAP: debug deserializeChunk
         return EntryEventImpl.deserialize(getRawBytes());
-        //assert !isCompressed();
-        //return EntryEventImpl.deserializeChunk(this);
       } else {
         return getRawBytes();
       }

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +42,7 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 
+@Category(DistributedTest.class)
 public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServerTestBase{
   /**
    * 
@@ -47,13 +57,14 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
   
   private static final int NUM_ITERATION=1;
   
-  public PRClientServerFunctionExecutionNoAckDUnitTest(String name) {
-    super(name);
+  public PRClientServerFunctionExecutionNoAckDUnitTest() {
+    super();
   }
 
   /*
    * Execution of the function on server using the name of the function
    */
+  @Test
   public void testServerFunctionExecution_NoAck() {
     createScenario();
 
@@ -71,6 +82,7 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
     client.invoke(() -> PRClientServerFunctionExecutionNoAckDUnitTest.allServerExecution( isByName, functionNoAck , toRegister));
   }
 
+  @Test
   public void testServerFunctionExecution_NoAck_WithoutRegister() {
     createScenario();
 

@@ -20,7 +20,7 @@ package com.gemstone.gemfire.cache;
  * An <code>IncompatibleVersionException</code> that the client version
  * was not compatible with the server version.
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class IncompatibleVersionException extends VersionException {
 private static final long serialVersionUID = 668812986092856749L;

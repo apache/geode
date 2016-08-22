@@ -26,7 +26,7 @@ import javax.management.QueryExp;
  * @see java.io.Serializable
  * @see javax.management.ObjectName
  * @see javax.management.QueryExp
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public class QueryParameterSource implements Serializable {

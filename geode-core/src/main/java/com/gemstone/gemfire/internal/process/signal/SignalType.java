@@ -20,7 +20,7 @@ package com.gemstone.gemfire.internal.process.signal;
 /**
  * The SignalType class...
  * </p>
- * @since 7.0
+ * @since GemFire 7.0
  */
 public enum SignalType {
   CONTROL("Other signals that are used by the JVM for control purposes."),

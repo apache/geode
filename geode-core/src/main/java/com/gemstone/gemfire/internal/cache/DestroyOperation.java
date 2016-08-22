@@ -34,6 +34,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.versions.ConcurrentCacheModificationException;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  * Handles distribution messaging for destroying an entry in a region.
@@ -125,11 +126,9 @@ public class DestroyOperation extends DistributedCacheOperation
     }
 
     @Override
+    @Retained
     protected final InternalCacheEvent createEvent(DistributedRegion rgn)
         throws EntryNotFoundException {
-      if (rgn.keyRequiresRegionContext()) {
-        ((KeyWithRegionContext)this.key).setRegionContext(rgn);
-      }
       EntryEventImpl ev = createEntryEvent(rgn);
       boolean evReturned = false;
       try {
@@ -151,9 +150,10 @@ public class DestroyOperation extends DistributedCacheOperation
       }
     }
 
+    @Retained
     EntryEventImpl createEntryEvent(DistributedRegion rgn)
     {
-      EntryEventImpl event = EntryEventImpl.create(rgn,
+      @Retained EntryEventImpl event = EntryEventImpl.create(rgn,
           getOperation(), this.key, null, this.callbackArg, true, getSender());
 //      event.setNewEventId(); Don't set the event here...
       setOldValueInEvent(event);
@@ -258,6 +258,7 @@ public class DestroyOperation extends DistributedCacheOperation
     }
     
     @Override
+    @Retained
     EntryEventImpl createEntryEvent(DistributedRegion rgn)
     {
       EntryEventImpl event = EntryEventImpl.create(rgn, getOperation(), 

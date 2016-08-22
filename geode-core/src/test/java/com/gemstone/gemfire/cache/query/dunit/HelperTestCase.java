@@ -16,10 +16,14 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.Iterator;
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.Cache;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -42,21 +46,18 @@ import com.gemstone.gemfire.cache.query.RegionNotFoundException;
 import com.gemstone.gemfire.cache.query.internal.index.CompactRangeIndex;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class HelperTestCase extends CacheTestCase {
+@Category(DistributedTest.class)
+public class HelperTestCase extends JUnit4CacheTestCase {
 
-  public HelperTestCase(String name) {
-    super(name);
-  }
-  
   protected void createPartitionRegion(VM vm, final String regionName, final Class valueConstraint) {
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
@@ -252,15 +253,15 @@ public class HelperTestCase extends CacheTestCase {
   
   protected Properties getClientProperties() {
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    p.setProperty(MCAST_PORT, "0");
+    p.setProperty(LOCATORS, "");
     return p;
   }
 
   protected Properties getServerProperties(int mcastPort) {
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.MCAST_PORT_NAME, mcastPort+"");
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    p.setProperty(MCAST_PORT, mcastPort + "");
+    p.setProperty(LOCATORS, "");
     return p;
   }
 }

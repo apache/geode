@@ -28,7 +28,7 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
 
     @see com.gemstone.gemfire.distributed.internal.direct.DirectChannel
 
-    @since 2.0
+    @since GemFire 2.0
    
   */
 public interface ServerDelegate {

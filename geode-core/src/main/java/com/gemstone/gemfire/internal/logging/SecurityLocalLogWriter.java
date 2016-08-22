@@ -25,7 +25,7 @@ import com.gemstone.gemfire.i18n.StringId;
  * Implementation of {@link com.gemstone.gemfire.LogWriter} that will write
  * security related logs to a local stream.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class SecurityLocalLogWriter extends PureLogWriter {
 

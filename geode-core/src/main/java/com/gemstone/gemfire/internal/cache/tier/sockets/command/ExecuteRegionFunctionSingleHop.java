@@ -28,7 +28,6 @@ import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.operations.ExecuteFunctionOperationContext;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
@@ -50,10 +49,10 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 /**
- * 
- *  @since 6.5
+ * @since GemFire 6.5
  */
 public class ExecuteRegionFunctionSingleHop extends BaseCommand {
 
@@ -67,9 +66,8 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
-      throws IOException {
-    
+  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
+
     String regionName = null;
     Object function = null;
     Object args = null;
@@ -81,7 +79,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
     byte functionState = 0;
     int removedNodesSize = 0;
     Set<Object> removedNodesSet = null;
-    int filterSize = 0, bucketIdsSize = 0,  partNumber = 0;
+    int filterSize = 0, bucketIdsSize = 0, partNumber = 0;
     CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
     int functionTimeout = GemFireCacheImpl.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
     try {
@@ -90,10 +88,9 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
       if (bytes.length >= 5 && servConn.getClientVersion().ordinal() >= Version.GFE_8009.ordinal()) {
         functionTimeout = Part.decodeInt(bytes, 1);
       }
-      if(functionState != 1) {
+      if (functionState != 1) {
         hasResult = (byte) ((functionState & 2) - 1);
-      }
-      else {
+      } else {
         hasResult = functionState;
       }
       if (hasResult == 1) {
@@ -107,13 +104,13 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
       if (part != null) {
         Object obj = part.getObject();
         if (obj instanceof MemberMappedArgument) {
-          memberMappedArg = (MemberMappedArgument)obj;
+          memberMappedArg = (MemberMappedArgument) obj;
         }
       }
       isExecuteOnAllBuckets = msg.getPart(5).getSerializedForm()[0];
-      if(isExecuteOnAllBuckets  == 1) {
+      if (isExecuteOnAllBuckets == 1) {
         filter = new HashSet();
-        bucketIdsSize  = msg.getPart(6).getInt();
+        bucketIdsSize = msg.getPart(6).getInt();
         if (bucketIdsSize != 0) {
           buckets = new HashSet<Integer>();
           partNumber = 7;
@@ -122,8 +119,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
           }
         }
         partNumber = 7 + bucketIdsSize;
-      }
-      else {
+      } else {
         filterSize = msg.getPart(6).getInt();
         if (filterSize != 0) {
           filter = new HashSet<Object>();
@@ -131,24 +127,23 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
           for (int i = 0; i < filterSize; i++) {
             filter.add(msg.getPart(partNumber + i).getStringOrObject());
           }
-        } 
+        }
         partNumber = 7 + filterSize;
       }
-      
-      
+
+
       removedNodesSize = msg.getPart(partNumber).getInt();
-      
-      if(removedNodesSize != 0){
+
+      if (removedNodesSize != 0) {
         removedNodesSet = new HashSet<Object>();
         partNumber = partNumber + 1;
-        
+
         for (int i = 0; i < removedNodesSize; i++) {
           removedNodesSet.add(msg.getPart(partNumber + i).getStringOrObject());
         }
       }
-      
-    }
-    catch (ClassNotFoundException exception) {
+
+    } catch (ClassNotFoundException exception) {
       logger.warn(LocalizedMessage.create(LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0, function), exception);
       if (hasResult == 1) {
         writeChunkedException(msg, exception, false, servConn);
@@ -168,213 +163,182 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
       sendError(hasResult, msg, message, servConn);
       return;
     }
-    else {
-      Region region = crHelper.getRegion(regionName);
-      if (region == null) {
-        String message = 
-          LocalizedStrings.ExecuteRegionFunction_THE_REGION_NAMED_0_WAS_NOT_FOUND_DURING_EXECUTE_FUNCTION_REQUEST
-          .toLocalizedString(regionName);
-        logger.warn("{}: {}", servConn.getName(), message);
-        sendError(hasResult, msg, message, servConn);
-        return;
-      }
-      HandShake handShake = (HandShake)servConn.getHandshake();
-      int earlierClientReadTimeout = handShake.getClientReadTimeout();
-      handShake.setClientReadTimeout(functionTimeout);
-      ServerToClientFunctionResultSender resultSender = null;
-      Function functionObject = null;
-      try { 
-        if (function instanceof String) {
-          functionObject = FunctionService.getFunction((String)function);
-          if (functionObject == null) {
-            String message = LocalizedStrings.
-              ExecuteRegionFunction_THE_FUNCTION_0_HAS_NOT_BEEN_REGISTERED
-                .toLocalizedString(function);
+
+    Region region = crHelper.getRegion(regionName);
+    if (region == null) {
+      String message = LocalizedStrings.ExecuteRegionFunction_THE_REGION_NAMED_0_WAS_NOT_FOUND_DURING_EXECUTE_FUNCTION_REQUEST
+        .toLocalizedString(regionName);
+      logger.warn("{}: {}", servConn.getName(), message);
+      sendError(hasResult, msg, message, servConn);
+      return;
+    }
+    HandShake handShake = (HandShake) servConn.getHandshake();
+    int earlierClientReadTimeout = handShake.getClientReadTimeout();
+    handShake.setClientReadTimeout(functionTimeout);
+    ServerToClientFunctionResultSender resultSender = null;
+    Function functionObject = null;
+    try {
+      if (function instanceof String) {
+        functionObject = FunctionService.getFunction((String) function);
+        if (functionObject == null) {
+          String message = LocalizedStrings.
+            ExecuteRegionFunction_THE_FUNCTION_0_HAS_NOT_BEEN_REGISTERED.toLocalizedString(function);
+          logger.warn("{}: {}", servConn.getName(), message);
+          sendError(hasResult, msg, message, servConn);
+          return;
+        } else {
+          byte functionStateOnServer = AbstractExecution.getFunctionState(functionObject.isHA(), functionObject.hasResult(), functionObject
+            .optimizeForWrite());
+          if (functionStateOnServer != functionState) {
+            String message = LocalizedStrings.FunctionService_FUNCTION_ATTRIBUTE_MISMATCH_CLIENT_SERVER.toLocalizedString(function);
             logger.warn("{}: {}", servConn.getName(), message);
             sendError(hasResult, msg, message, servConn);
             return;
           }
-          else {
-            byte functionStateOnServer = AbstractExecution.getFunctionState(
-                functionObject.isHA(), functionObject.hasResult(),
-                functionObject.optimizeForWrite());
-            if (functionStateOnServer != functionState) {
-              String message = LocalizedStrings.FunctionService_FUNCTION_ATTRIBUTE_MISMATCH_CLIENT_SERVER
-                  .toLocalizedString(function);
-              logger.warn("{}: {}", servConn.getName(), message);
-              sendError(hasResult, msg, message, servConn);
-              return;
-            }
-          }
         }
-        else {
-          functionObject = (Function)function;
-        }
-        // check if the caller is authorized to do this operation on server
-        AuthorizeRequest authzRequest = servConn.getAuthzRequest();
-        final String functionName = functionObject.getId();
-        final String regionPath = region.getFullPath();
-        ExecuteFunctionOperationContext executeContext = null;
-        if (authzRequest != null) {
-          executeContext = authzRequest.executeFunctionAuthorize(functionName,
-              regionPath, filter, args, functionObject.optimizeForWrite());
-        }
-        
-        //Construct execution 
-        AbstractExecution execution = (AbstractExecution)FunctionService.onRegion(region);
-        ChunkedMessage m = servConn.getFunctionResponseMessage();
-        m.setTransactionId(msg.getTransactionId());        
-        resultSender = new ServerToClientFunctionResultSender65(m,
-            MessageType.EXECUTE_REGION_FUNCTION_RESULT, servConn,functionObject,executeContext);
-        
-        if (isExecuteOnAllBuckets == 1) {
-          PartitionedRegion pr = (PartitionedRegion)region;
-          Set<Integer> actualBucketSet = pr.getRegionAdvisor().getBucketSet();
-          try {
-            buckets.retainAll(actualBucketSet);
-          }
-          catch (NoSuchElementException done) {
-          }
-          if (buckets.isEmpty()) {
-            throw new FunctionException("Buckets are null");
-          }
-          execution = new PartitionedRegionFunctionExecutor(
-              (PartitionedRegion)region, buckets, args, memberMappedArg,
-              resultSender, removedNodesSet, true, true);
-        }
-        else {
-          execution = new PartitionedRegionFunctionExecutor(
-              (PartitionedRegion)region, filter, args, memberMappedArg,
-              resultSender, removedNodesSet, false, true);
-        }
-        
-        if((hasResult == 1) && filter!= null &&filter.size() == 1) {
-          ServerConnection.executeFunctionOnLocalNodeOnly((byte)1);
-        }
-        
-        if (logger.isDebugEnabled()) {
-          logger.debug("Executing Function: {} on Server: {} with Execution: {}", functionObject.getId(), servConn, execution);
-        }
-        if (hasResult == 1) {
-          if (function instanceof String) {
-            switch (functionState) {
-              case AbstractExecution.NO_HA_HASRESULT_NO_OPTIMIZEFORWRITE:
-                execution.execute((String)function, true, false, false)
-                    .getResult();
-                break;
-              case AbstractExecution.HA_HASRESULT_NO_OPTIMIZEFORWRITE:
-                execution.execute((String)function, true, true, false)
-                    .getResult();
-                break;
-              case AbstractExecution.HA_HASRESULT_OPTIMIZEFORWRITE:
-                execution.execute((String)function, true, true, true)
-                    .getResult();
-                break;
-              case AbstractExecution.NO_HA_HASRESULT_OPTIMIZEFORWRITE:
-                execution.execute((String)function, true, false, true)
-                    .getResult();
-                break;
-            }
-          }
-          else {
-            execution.execute(functionObject).getResult();
-          }
-        }
-        else {
-          if (function instanceof String) {
-            switch (functionState) {
-              case AbstractExecution.NO_HA_NO_HASRESULT_NO_OPTIMIZEFORWRITE:
-                execution.execute((String)function, false, false, false);
-                break;
-              case AbstractExecution.NO_HA_NO_HASRESULT_OPTIMIZEFORWRITE:
-                execution.execute((String)function, false, false, true);
-                break;
-            }
-          }
-          else {
-            execution.execute(functionObject);
-          }
-        }
-      }
-      catch (IOException ioe) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0, function), ioe);
-        final String message = LocalizedStrings.
-          ExecuteRegionFunction_SERVER_COULD_NOT_SEND_THE_REPLY
-            .toLocalizedString();
-        sendException(hasResult, msg, message, servConn,ioe);
-      }
-      catch (FunctionException fe) {
-        String message = fe.getMessage();
-
-        if (fe.getCause() instanceof FunctionInvocationTargetException) {
-          if (functionObject.isHA() && logger.isDebugEnabled()) {
-            logger.debug("Exception on server while executing function: {}: {}", function, message);
-          }
-          else if (logger.isDebugEnabled()) {
-            logger.debug("Exception on server while executing function: {}: {}", function, message, fe);
-          }
-          synchronized (msg) {
-            resultSender.setException(fe);
-          }
-        }
-        else {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0, function), fe);
-          sendException(hasResult, msg, message, servConn, fe);
-        }
-      }
-      catch (Exception e) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0, function), e);
-        String message = e.getMessage();
-        sendException(hasResult, msg, message, servConn,e);
+      } else {
+        functionObject = (Function) function;
       }
 
-      finally{
-        handShake.setClientReadTimeout(earlierClientReadTimeout);
-        ServerConnection.executeFunctionOnLocalNodeOnly((byte)0);
+      GeodeSecurityUtil.authorizeDataWrite();
+
+      // check if the caller is authorized to do this operation on server
+      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      final String functionName = functionObject.getId();
+      final String regionPath = region.getFullPath();
+      ExecuteFunctionOperationContext executeContext = null;
+      if (authzRequest != null) {
+        executeContext = authzRequest.executeFunctionAuthorize(functionName, regionPath, filter, args, functionObject.optimizeForWrite());
       }
+
+      //Construct execution
+      AbstractExecution execution = (AbstractExecution) FunctionService.onRegion(region);
+      ChunkedMessage m = servConn.getFunctionResponseMessage();
+      m.setTransactionId(msg.getTransactionId());
+      resultSender = new ServerToClientFunctionResultSender65(m, MessageType.EXECUTE_REGION_FUNCTION_RESULT, servConn, functionObject, executeContext);
+
+      if (isExecuteOnAllBuckets == 1) {
+        PartitionedRegion pr = (PartitionedRegion) region;
+        Set<Integer> actualBucketSet = pr.getRegionAdvisor().getBucketSet();
+        try {
+          buckets.retainAll(actualBucketSet);
+        } catch (NoSuchElementException done) {
+        }
+        if (buckets.isEmpty()) {
+          throw new FunctionException("Buckets are null");
+        }
+        execution = new PartitionedRegionFunctionExecutor((PartitionedRegion) region, buckets, args, memberMappedArg, resultSender, removedNodesSet, true, true);
+      } else {
+        execution = new PartitionedRegionFunctionExecutor((PartitionedRegion) region, filter, args, memberMappedArg, resultSender, removedNodesSet, false, true);
+      }
+
+      if ((hasResult == 1) && filter != null && filter.size() == 1) {
+        ServerConnection.executeFunctionOnLocalNodeOnly((byte) 1);
+      }
+
+      if (logger.isDebugEnabled()) {
+        logger.debug("Executing Function: {} on Server: {} with Execution: {}", functionObject.getId(), servConn, execution);
+      }
+      if (hasResult == 1) {
+        if (function instanceof String) {
+          switch (functionState) {
+            case AbstractExecution.NO_HA_HASRESULT_NO_OPTIMIZEFORWRITE:
+              execution.execute((String) function, true, false, false).getResult();
+              break;
+            case AbstractExecution.HA_HASRESULT_NO_OPTIMIZEFORWRITE:
+              execution.execute((String) function, true, true, false).getResult();
+              break;
+            case AbstractExecution.HA_HASRESULT_OPTIMIZEFORWRITE:
+              execution.execute((String) function, true, true, true).getResult();
+              break;
+            case AbstractExecution.NO_HA_HASRESULT_OPTIMIZEFORWRITE:
+              execution.execute((String) function, true, false, true).getResult();
+              break;
+          }
+        } else {
+          execution.execute(functionObject).getResult();
+        }
+      } else {
+        if (function instanceof String) {
+          switch (functionState) {
+            case AbstractExecution.NO_HA_NO_HASRESULT_NO_OPTIMIZEFORWRITE:
+              execution.execute((String) function, false, false, false);
+              break;
+            case AbstractExecution.NO_HA_NO_HASRESULT_OPTIMIZEFORWRITE:
+              execution.execute((String) function, false, false, true);
+              break;
+          }
+        } else {
+          execution.execute(functionObject);
+        }
+      }
+    } catch (IOException ioe) {
+      logger.warn(LocalizedMessage.create(LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0, function), ioe);
+      final String message = LocalizedStrings.
+        ExecuteRegionFunction_SERVER_COULD_NOT_SEND_THE_REPLY.toLocalizedString();
+      sendException(hasResult, msg, message, servConn, ioe);
+    } catch (FunctionException fe) {
+      String message = fe.getMessage();
+
+      if (fe.getCause() instanceof FunctionInvocationTargetException) {
+        if (functionObject.isHA() && logger.isDebugEnabled()) {
+          logger.debug("Exception on server while executing function: {}: {}", function, message);
+        } else if (logger.isDebugEnabled()) {
+          logger.debug("Exception on server while executing function: {}: {}", function, message, fe);
+        }
+        synchronized (msg) {
+          resultSender.setException(fe);
+        }
+      } else {
+        logger.warn(LocalizedMessage.create(LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0, function), fe);
+        sendException(hasResult, msg, message, servConn, fe);
+      }
+    } catch (Exception e) {
+      logger.warn(LocalizedMessage.create(LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0, function), e);
+      String message = e.getMessage();
+      sendException(hasResult, msg, message, servConn, e);
+    } finally {
+      handShake.setClientReadTimeout(earlierClientReadTimeout);
+      ServerConnection.executeFunctionOnLocalNodeOnly((byte) 0);
     }
   }
 
-  private void sendException(byte hasResult, Message msg, String message,
-      ServerConnection servConn, Throwable e) throws IOException {
+  private void sendException(byte hasResult, Message msg, String message, ServerConnection servConn, Throwable e)
+    throws IOException {
     synchronized (msg) {
       if (hasResult == 1) {
-        writeFunctionResponseException(msg, MessageType.EXCEPTION, message,
-            servConn, e);
+        writeFunctionResponseException(msg, MessageType.EXCEPTION, message, servConn, e);
         servConn.setAsTrue(RESPONDED);
       }
     }
   }
-  
-  private void sendError(byte hasResult, Message msg, String message,
-      ServerConnection servConn) throws IOException {
+
+  private void sendError(byte hasResult, Message msg, String message, ServerConnection servConn) throws IOException {
     synchronized (msg) {
       if (hasResult == 1) {
-        writeFunctionResponseError(msg,
-            MessageType.EXECUTE_REGION_FUNCTION_ERROR, message, servConn);
+        writeFunctionResponseError(msg, MessageType.EXECUTE_REGION_FUNCTION_ERROR, message, servConn);
         servConn.setAsTrue(RESPONDED);
       }
     }
   }
-  
+
   protected static void writeFunctionResponseException(Message origMsg,
-      int messageType, String message, ServerConnection servConn, Throwable e)
-      throws IOException {
+                                                       int messageType,
+                                                       String message,
+                                                       ServerConnection servConn,
+                                                       Throwable e) throws IOException {
     ChunkedMessage functionResponseMsg = servConn.getFunctionResponseMessage();
     ChunkedMessage chunkedResponseMsg = servConn.getChunkedResponseMessage();
     int numParts = 0;
     if (functionResponseMsg.headerHasBeenSent()) {
-      if (e instanceof FunctionException
-          && e.getCause() instanceof InternalFunctionInvocationTargetException) {
+      if (e instanceof FunctionException && e.getCause() instanceof InternalFunctionInvocationTargetException) {
         functionResponseMsg.setNumberOfParts(3);
         functionResponseMsg.addObjPart(e);
         functionResponseMsg.addStringPart(BaseCommand.getExceptionTrace(e));
-        InternalFunctionInvocationTargetException fe = (InternalFunctionInvocationTargetException)e
-            .getCause();
+        InternalFunctionInvocationTargetException fe = (InternalFunctionInvocationTargetException) e.getCause();
         functionResponseMsg.addObjPart(fe.getFailedNodeSet());
         numParts = 3;
-      }
-      else {
+      } else {
         functionResponseMsg.setNumberOfParts(2);
         functionResponseMsg.addObjPart(e);
         functionResponseMsg.addStringPart(BaseCommand.getExceptionTrace(e));
@@ -386,22 +350,18 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
       functionResponseMsg.setServerConnection(servConn);
       functionResponseMsg.setLastChunkAndNumParts(true, numParts);
       functionResponseMsg.sendChunk(servConn);
-    }
-    else {
+    } else {
       chunkedResponseMsg.setMessageType(messageType);
       chunkedResponseMsg.setTransactionId(origMsg.getTransactionId());
       chunkedResponseMsg.sendHeader();
-      if (e instanceof FunctionException
-          && e.getCause() instanceof InternalFunctionInvocationTargetException) {
+      if (e instanceof FunctionException && e.getCause() instanceof InternalFunctionInvocationTargetException) {
         chunkedResponseMsg.setNumberOfParts(3);
         chunkedResponseMsg.addObjPart(e);
         chunkedResponseMsg.addStringPart(BaseCommand.getExceptionTrace(e));
-        InternalFunctionInvocationTargetException fe = (InternalFunctionInvocationTargetException)e
-            .getCause();
+        InternalFunctionInvocationTargetException fe = (InternalFunctionInvocationTargetException) e.getCause();
         chunkedResponseMsg.addObjPart(fe.getFailedNodeSet());
         numParts = 3;
-      }
-      else {
+      } else {
         chunkedResponseMsg.setNumberOfParts(2);
         chunkedResponseMsg.addObjPart(e);
         chunkedResponseMsg.addStringPart(BaseCommand.getExceptionTrace(e));

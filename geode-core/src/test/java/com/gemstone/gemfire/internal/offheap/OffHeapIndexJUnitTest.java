@@ -16,25 +16,23 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.util.Properties;
-
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.query.*;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.query.IndexExistsException;
-import com.gemstone.gemfire.cache.query.IndexInvalidException;
-import com.gemstone.gemfire.cache.query.IndexNameConflictException;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.RegionNotFoundException;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Test off-heap regions with indexes.
@@ -48,9 +46,9 @@ public class OffHeapIndexJUnitTest {
   @Before
   public void setUp() {
     Properties props = new Properties();
-    props.setProperty("locators", "");
-    props.setProperty("mcast-port", "0");
-    props.setProperty("off-heap-memory-size", "100m");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(ConfigurationProperties.OFF_HEAP_MEMORY_SIZE, "100m");
     this.gfc = (GemFireCacheImpl) new CacheFactory(props).create();
   }
   @After

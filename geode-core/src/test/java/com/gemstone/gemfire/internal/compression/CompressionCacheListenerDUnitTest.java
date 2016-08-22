@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.compression;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +49,8 @@ import com.gemstone.gemfire.test.dunit.VM;
  * Asserts that values received in EntryEvents for CacheWriters and CacheListeners are not compressed.
  * 
  */
-public class CompressionCacheListenerDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class CompressionCacheListenerDUnitTest extends JUnit4CacheTestCase {
   /**
    * The name of our test region.
    */
@@ -156,8 +166,8 @@ public class CompressionCacheListenerDUnitTest extends CacheTestCase {
    * @param name
    *          a test name.
    */
-  public CompressionCacheListenerDUnitTest(String name) {
-    super(name);
+  public CompressionCacheListenerDUnitTest() {
+    super();
   }
 
   @Override
@@ -167,25 +177,13 @@ public class CompressionCacheListenerDUnitTest extends CacheTestCase {
   }
   
   protected void createRegion() {
-    try {
-      SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
-    createCompressedRegionOnVm(getVM(TEST_VM), REGION_NAME, SnappyCompressor.getDefaultInstance());
+    createCompressedRegionOnVm(getVM(TEST_VM), REGION_NAME, new SnappyCompressor());
   }
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     preTearDownCompressionCacheListenerDUnitTest();
-    
-    try {
-      SnappyCompressor.getDefaultInstance();
-      cleanup(getVM(TEST_VM));
-    } catch (Throwable t) {
-      // Not a supported OS
-    }
+    cleanup(getVM(TEST_VM));
   }
   
   protected void preTearDownCompressionCacheListenerDUnitTest() throws Exception {
@@ -219,6 +217,7 @@ public class CompressionCacheListenerDUnitTest extends CacheTestCase {
   /**
    * Tests CacheWriter and CacheListener events on the test vm.
    */
+  @Test
   public void testCacheListenerAndWriter() {
     testCacheListenerAndWriterWithVM(getVM(TEST_VM));
   }
@@ -240,12 +239,6 @@ public class CompressionCacheListenerDUnitTest extends CacheTestCase {
    * @param vm a virtual machine to perform the test on.
    */
   private void testCacheListenerAndWriterWithVM(final VM vm) {
-    try {
-      SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
     vm.invoke(new SerializableRunnable() {
       @Override
       public void run() {

@@ -16,21 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.gemstone.gemfire.cache.lucene.internal;
 
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-import junit.framework.AssertionFailedError;
-
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
@@ -38,10 +36,11 @@ import org.mockito.Mockito;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
+import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
-import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Unit test that async event listener dispatched the events
@@ -51,7 +50,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 public class LuceneEventListenerJUnitTest {
 
   @Test
-  public void testProcessBatch() throws IOException, BucketNotFoundException {
+  public void testProcessBatch() throws Exception {
     RepositoryManager manager = Mockito.mock(RepositoryManager.class);
     IndexRepository repo1 = Mockito.mock(IndexRepository.class);
     IndexRepository repo2 = Mockito.mock(IndexRepository.class);
@@ -88,7 +87,7 @@ public class LuceneEventListenerJUnitTest {
         break;
       case 2:
         Mockito.when(event.getOperation()).thenReturn(Operation.DESTROY);
-        Mockito.when(event.getDeserializedValue()).thenThrow(new AssertionFailedError());
+        Mockito.when(event.getDeserializedValue()).thenThrow(new AssertionError());
         break;
       }
 
@@ -97,13 +96,26 @@ public class LuceneEventListenerJUnitTest {
 
     listener.processEvents(events);
 
-    verify(repo1, atLeast(numEntries / 6)).create(any(), any());
     verify(repo1, atLeast(numEntries / 6)).delete(any());
-    verify(repo1, atLeast(numEntries / 6)).update(any(), any());
-    verify(repo2, atLeast(numEntries / 6)).create(any(), any());
+    verify(repo1, atLeast(numEntries / 3)).update(any(), any());
     verify(repo2, atLeast(numEntries / 6)).delete(any());
-    verify(repo2, atLeast(numEntries / 6)).update(any(), any());
+    verify(repo2, atLeast(numEntries / 3)).update(any(), any());
     verify(repo1, times(1)).commit();
     verify(repo2, times(1)).commit();
+  }
+
+  @Test
+  public void shouldHandleBucketNotFoundExceptionWithoutLoggingError() throws BucketNotFoundException {
+    RepositoryManager manager = Mockito.mock(RepositoryManager.class);
+    Logger log=Mockito.mock(Logger.class);
+    Mockito.when(manager.getRepository(any(), any(), any()))
+      .thenThrow(BucketNotFoundException.class);
+
+    LuceneEventListener listener = new LuceneEventListener(manager);
+    listener.logger = log;
+    AsyncEvent event = Mockito.mock(AsyncEvent.class);
+    boolean result = listener.processEvents(Arrays.asList(new AsyncEvent[] {event}));
+    assertFalse(result);
+    verify(log, never()).error(anyString(), any(Exception.class));
   }
 }

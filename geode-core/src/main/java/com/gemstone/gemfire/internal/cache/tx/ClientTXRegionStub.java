@@ -67,8 +67,8 @@ public class ClientTXRegionStub implements TXRegionStub {
 
   
   public Object findObject(KeyInfo keyInfo, boolean isCreate,
-      boolean generateCallbacks, Object value, boolean preferCD,
-      ClientProxyMembershipID requestingClient, EntryEventImpl event, boolean allowReadFromHDFS) {
+                           boolean generateCallbacks, Object value, boolean preferCD,
+                           ClientProxyMembershipID requestingClient, EntryEventImpl event) {
     return proxy.get(keyInfo.getKey(), keyInfo.getCallbackArg(), event);
   }
 

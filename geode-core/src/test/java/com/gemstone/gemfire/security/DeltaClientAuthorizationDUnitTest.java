@@ -18,12 +18,15 @@
  */
 package com.gemstone.gemfire.security;
 
-import static com.gemstone.gemfire.security.ClientAuthenticationTestUtils.*;
+import static com.gemstone.gemfire.security.ClientAuthenticationTestUtils.createCacheClient;
 import static com.gemstone.gemfire.security.SecurityTestUtils.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
 
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DeltaTestImpl;
 import com.gemstone.gemfire.cache.Region;
@@ -32,13 +35,12 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegionLocalMaxMemoryDUnitT
 import com.gemstone.gemfire.security.generator.AuthzCredentialGenerator;
 import com.gemstone.gemfire.security.generator.CredentialGenerator;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 /**
- * @since 6.1
+ * @since GemFire 6.1
  */
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public final class DeltaClientAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
   private DeltaTestImpl[] deltas = new DeltaTestImpl[8];

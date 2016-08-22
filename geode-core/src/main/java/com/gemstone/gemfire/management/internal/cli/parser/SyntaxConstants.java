@@ -19,7 +19,7 @@ package com.gemstone.gemfire.management.internal.cli.parser;
 /**
  * Syntax constants for the parser
  * 
- * @since 7.0
+ * @since GemFire 7.0
  *
  */
 // TODO merge with CliConstants

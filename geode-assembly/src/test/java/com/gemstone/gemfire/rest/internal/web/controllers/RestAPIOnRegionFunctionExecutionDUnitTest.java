@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.rest.internal.web.controllers;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
@@ -36,17 +45,19 @@ import java.util.*;
 
 /**
  * Dunit Test to validate OnRegion function execution with REST APIs
- * @since 8.0
+ *
+ * @since GemFire 8.0
  */
 
+@Category(DistributedTest.class)
 public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
 
   private final String REPLICATE_REGION_NAME = "sampleRRegion";
 
   private final String PR_REGION_NAME = "samplePRRegion";
 
-  public RestAPIOnRegionFunctionExecutionDUnitTest(String name) {
-    super(name);
+  public RestAPIOnRegionFunctionExecutionDUnitTest() {
+    super();
   }
 
   private class SampleFunction extends RestFunctionTemplate {
@@ -58,22 +69,22 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
       if (context instanceof RegionFunctionContext) {
         RegionFunctionContext rfContext = (RegionFunctionContext) context;
         rfContext.getDataSet().getCache().getLogger()
-                .info("Executing function :  SampleFunction.execute(hasResult=true) with filter: " + rfContext.getFilter() + "  " + rfContext);
+            .info("Executing function :  SampleFunction.execute(hasResult=true) with filter: " + rfContext.getFilter() + "  " + rfContext);
         if (rfContext.getArguments() instanceof Boolean) {
           /* return rfContext.getArguments(); */
           if (hasResult()) {
             rfContext.getResultSender().lastResult(
-                    (Serializable) rfContext.getArguments());
+                (Serializable) rfContext.getArguments());
           } else {
             rfContext
-                    .getDataSet()
-                    .getCache()
-                    .getLogger()
-                    .info(
-                            "Executing function :  SampleFunction.execute(hasResult=false) " + rfContext);
+                .getDataSet()
+                .getCache()
+                .getLogger()
+                .info(
+                    "Executing function :  SampleFunction.execute(hasResult=false) " + rfContext);
             while (true && !rfContext.getDataSet().isDestroyed()) {
               rfContext.getDataSet().getCache().getLogger()
-                      .info("For Bug43513 ");
+                  .info("For Bug43513 ");
               try {
                 Thread.sleep(100);
               } catch (InterruptedException ie) {
@@ -90,7 +101,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
               Thread.sleep(2000);
             } catch (InterruptedException e) {
               rfContext.getDataSet().getCache().getLogger()
-                      .warning("Got Exception : Thread Interrupted" + e);
+                  .warning("Got Exception : Thread Interrupted" + e);
             }
           }
           if (PartitionRegionHelper.isPartitionedRegion(rfContext.getDataSet())) {
@@ -100,11 +111,11 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
              * rfContext).get(key);
              */
             rfContext.getResultSender().lastResult(
-                    (Serializable) PartitionRegionHelper.getLocalDataForContext(
-                            rfContext).get(key));
+                (Serializable) PartitionRegionHelper.getLocalDataForContext(
+                    rfContext).get(key));
           } else {
             rfContext.getResultSender().lastResult(
-                    (Serializable) rfContext.getDataSet().get(key));
+                (Serializable) rfContext.getDataSet().get(key));
           }
           /* return (Serializable)rfContext.getDataSet().get(key); */
         } else if (rfContext.getArguments() instanceof Set) {
@@ -112,7 +123,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
           ArrayList vals = new ArrayList();
           for (Object key : origKeys) {
             Object val = PartitionRegionHelper
-                    .getLocalDataForContext(rfContext).get(key);
+                .getLocalDataForContext(rfContext).get(key);
             if (val != null) {
               vals.add(val);
             }
@@ -136,10 +147,10 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
           DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
           LogWriter logger = ds.getLogWriter();
           logger.info("Executing in SampleFunction on Server : "
-                  + ds.getDistributedMember() + "with Context : " + context);
+              + ds.getDistributedMember() + "with Context : " + context);
           while (ds.isConnected()) {
             logger
-                    .fine("Just executing function in infinite loop for Bug43513");
+                .fine("Just executing function in infinite loop for Bug43513");
             try {
               Thread.sleep(250);
             } catch (InterruptedException e) {
@@ -182,7 +193,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
 
   private boolean createPeerWithPR() {
     RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0,
-            10);
+        10);
     AttributesFactory raf = new AttributesFactory(ra);
     PartitionAttributesImpl pa = new PartitionAttributesImpl();
     pa.setAll(ra.getPartitionAttributes());
@@ -231,10 +242,10 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
   }
 
   private void createCacheAndRegisterFunction() {
-    restURLs.add(vm0.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm0, null)));
-    restURLs.add(vm1.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm1, null)));
-    restURLs.add(vm2.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm2, null)));
-    restURLs.add(vm3.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm3, null)));
+    restURLs.add(vm0.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm0.getHost().getHostName(), null)));
+    restURLs.add(vm1.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm1.getHost().getHostName(), null)));
+    restURLs.add(vm2.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm2.getHost().getHostName(), null)));
+    restURLs.add(vm3.invoke("createCacheWithGroups", () -> createCacheWithGroups(vm3.getHost().getHostName(), null)));
 
     vm0.invoke("registerFunction(new SampleFunction())", () -> FunctionService.registerFunction(new SampleFunction()));
     vm1.invoke("registerFunction(new SampleFunction())", () -> FunctionService.registerFunction(new SampleFunction()));
@@ -242,6 +253,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     vm3.invoke("registerFunction(new SampleFunction())", () -> FunctionService.registerFunction(new SampleFunction()));
   }
 
+  @Test
   public void testOnRegionExecutionWithReplicateRegion() {
     createCacheAndRegisterFunction();
 
@@ -262,6 +274,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     restURLs.clear();
   }
 
+  @Test
   public void testOnRegionExecutionWithPartitionRegion() throws Exception {
     createCacheAndRegisterFunction();
 
@@ -278,12 +291,13 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     restURLs.clear();
   }
 
+  @Test
   public void testOnRegionWithFilterExecutionWithPartitionRegion() throws Exception {
     createCacheAndRegisterFunction();
 
     createPeersWithPR(vm0, vm1, vm2, vm3);
 
-    vm3.invoke("populatePRRegion",() -> populatePRRegion());
+    vm3.invoke("populatePRRegion", () -> populatePRRegion());
 
     CloseableHttpResponse response = executeFunctionThroughRestCall("SampleFunction", PR_REGION_NAME, "key2", null, null, null);
     assertEquals(200, response.getStatusLine().getStatusCode());
@@ -300,21 +314,22 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     }
   }
 
+  @Test
   public void testOnRegionWithFilterExecutionWithPartitionRegionJsonArgs() throws Exception {
     createCacheAndRegisterFunction();
 
     createPeersWithPR(vm0, vm1, vm2, vm3);
 
-    vm3.invoke("populatePRRegion",() -> populatePRRegion());
+    vm3.invoke("populatePRRegion", () -> populatePRRegion());
 
     String jsonBody = "["
-            + "{\"@type\": \"double\",\"@value\": 210}"
-            + ",{\"@type\":\"com.gemstone.gemfire.rest.internal.web.controllers.Item\","
-            + "\"itemNo\":\"599\",\"description\":\"Part X Free on Bumper Offer\","
-            + "\"quantity\":\"2\","
-            + "\"unitprice\":\"5\","
-            + "\"totalprice\":\"10.00\"}"
-            + "]";
+        + "{\"@type\": \"double\",\"@value\": 210}"
+        + ",{\"@type\":\"com.gemstone.gemfire.rest.internal.web.controllers.Item\","
+        + "\"itemNo\":\"599\",\"description\":\"Part X Free on Bumper Offer\","
+        + "\"quantity\":\"2\","
+        + "\"unitprice\":\"5\","
+        + "\"totalprice\":\"10.00\"}"
+        + "]";
 
     CloseableHttpResponse response = executeFunctionThroughRestCall("SampleFunction", PR_REGION_NAME, null, jsonBody, null, null);
     assertEquals(200, response.getStatusLine().getStatusCode());
@@ -324,15 +339,15 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     assertCorrectInvocationCount(4, vm0, vm1, vm2, vm3);
 
     jsonBody = "["
-            + "{\"@type\": \"double\",\"@value\": 220}"
-            + ",{\"@type\":\"com.gemstone.gemfire.rest.internal.web.controllers.Item\","
-            + "\"itemNo\":\"609\",\"description\":\"Part X Free on Bumper Offer\","
-            + "\"quantity\":\"3\","
-            + "\"unitprice\":\"9\","
-            + "\"totalprice\":\"12.00\"}"
-            + "]";
+        + "{\"@type\": \"double\",\"@value\": 220}"
+        + ",{\"@type\":\"com.gemstone.gemfire.rest.internal.web.controllers.Item\","
+        + "\"itemNo\":\"609\",\"description\":\"Part X Free on Bumper Offer\","
+        + "\"quantity\":\"3\","
+        + "\"unitprice\":\"9\","
+        + "\"totalprice\":\"12.00\"}"
+        + "]";
 
-    resetInvocationCounts(vm0,vm1,vm2,vm3);
+    resetInvocationCounts(vm0, vm1, vm2, vm3);
 
     response = executeFunctionThroughRestCall("SampleFunction", PR_REGION_NAME, "key2", jsonBody, null, null);
     assertEquals(200, response.getStatusLine().getStatusCode());

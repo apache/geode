@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.test.fake.Fakes;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -30,9 +32,8 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link SimpleExtensionPoint}.
- * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 @Category(UnitTest.class)
 public class SimpleExtensionPointJUnitTest {
@@ -99,7 +100,6 @@ public class SimpleExtensionPointJUnitTest {
     } catch (NoSuchElementException e) {
       // ignore
     }
-
   }
 
   /**
@@ -179,11 +179,39 @@ public class SimpleExtensionPointJUnitTest {
     assertEquals(0, counter.get());
   }
 
+  /**
+   * Test method for {@link SimpleExtensionPoint#beforeCreate(Cache)} .
+   */
+  @Test
+  public void testBeforeCreate() {
+    final MockImpl m = new MockImpl();
+    final Cache c = Fakes.cache();
+    final AtomicInteger counter = new AtomicInteger(0);
+    final MockExtension extension = new MockExtension() {
+      @Override
+      public void beforeCreate(Extensible<MockInterface> source, Cache cache) {
+        counter.incrementAndGet();
+      }
+    };
+
+    counter.set(0);
+    m.getExtensionPoint().addExtension(extension);
+    // Verify beforeCreate is invoked when the extension is added
+    m.extensionPoint.beforeCreate(c);
+    assertEquals(1, counter.get());
+
+    counter.set(0);
+    m.getExtensionPoint().removeExtension(extension);
+    // Verify beforeCreate is not invoked when the extension is removed
+    m.extensionPoint.beforeCreate(c);
+    assertEquals(0, counter.get());
+  }
+
   private interface MockInterface {
     public void method1();
   }
 
-  private class MockImpl implements MockInterface, Extensible<MockInterface> {
+  private static class MockImpl implements MockInterface, Extensible<MockInterface> {
 
     private SimpleExtensionPoint<MockInterface> extensionPoint = new SimpleExtensionPoint<SimpleExtensionPointJUnitTest.MockInterface>(this, this);
 
@@ -198,7 +226,7 @@ public class SimpleExtensionPointJUnitTest {
 
   }
 
-  private class MockExtension implements Extension<MockInterface> {
+  private static class MockExtension implements Extension<MockInterface> {
 
     @Override
     public XmlGenerator<MockInterface> getXmlGenerator() {
@@ -206,9 +234,13 @@ public class SimpleExtensionPointJUnitTest {
     }
 
     @Override
-    public void onCreate(Extensible<MockInterface> source, Extensible<MockInterface> target) {
+    public void beforeCreate(Extensible<MockInterface> source, Cache cache) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
+    public void onCreate(Extensible<MockInterface> source, Extensible<MockInterface> target) {
+      throw new UnsupportedOperationException();
+    }
   }
 }

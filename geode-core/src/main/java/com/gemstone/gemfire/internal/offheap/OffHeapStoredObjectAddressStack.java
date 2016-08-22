@@ -18,13 +18,15 @@ package com.gemstone.gemfire.internal.offheap;
 
 import org.apache.logging.log4j.Logger;
 
+import com.gemstone.gemfire.internal.offheap.FreeListManager.LongStack;
+
 /**
  * A "stack" of addresses of OffHeapStoredObject instances. The stored objects are not kept
  * in java object form but instead each one is just an off-heap address.
  * This class is used for each "tiny" free-list of the FreeListManager.
  * This class is thread safe.
  */
-public class OffHeapStoredObjectAddressStack {
+public class OffHeapStoredObjectAddressStack implements LongStack {
   // Ok to read without sync but must be synced on write
   private volatile long topAddr;
   
@@ -46,6 +48,7 @@ public class OffHeapStoredObjectAddressStack {
       this.topAddr = e;
     }
   }
+  @Override
   public long poll() {
     long result;
     synchronized (this) {

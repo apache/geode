@@ -22,7 +22,7 @@ package com.gemstone.gemfire.management.membership;
  *
  * @see ClientMembership#registerClientMembershipListener
  *
- * @since 8.0
+ * @since GemFire 8.0
  */
 public interface ClientMembershipListener {
 

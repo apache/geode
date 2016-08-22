@@ -16,14 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.versions;
 
-import java.io.FileReader;
-import java.io.Reader;
+import static org.junit.Assert.*;
+
 import java.net.InetAddress;
 import java.util.BitSet;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
@@ -31,18 +32,31 @@ import com.gemstone.gemfire.internal.cache.versions.RVVException.ReceivedVersion
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class RegionVersionHolderJUnitTest extends TestCase {
-  
-  protected InternalDistributedMember member;
-  
-  int originalBitSetWidth = RegionVersionHolder.BIT_SET_WIDTH;
+public class RegionVersionHolderJUnitTest {
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  private int originalBitSetWidth;
+  private InternalDistributedMember member;
+
+  @Before
+  public final void setUp() throws Exception {
+    originalBitSetWidth = RegionVersionHolder.BIT_SET_WIDTH;
     member = new InternalDistributedMember(InetAddress.getLocalHost(), 12345);
+    postSetUp();
   }
-  
+
+  protected void postSetUp() throws Exception {
+  }
+
+  @After
+  public final void tearDown() throws Exception {
+    RegionVersionHolder.BIT_SET_WIDTH = originalBitSetWidth;
+  }
+
+  protected final InternalDistributedMember member() {
+    return member;
+  }
+
+  @Test
   public void test48066_1() {
     RegionVersionHolder vh1 = new RegionVersionHolder(member);
     for (int i=1; i<=3; i++) {
@@ -74,7 +88,8 @@ public class RegionVersionHolderJUnitTest extends TestCase {
       assertEquals(7, vh3.getVersion());
     }
   }
-   
+
+  @Test
   public void test48066() {
     RegionVersionHolder vh = new RegionVersionHolder(member);
     BitSet bs = new BitSet();
@@ -1472,6 +1487,7 @@ public class RegionVersionHolderJUnitTest extends TestCase {
   /**
    * Test merging two version holders
    */
+  @Test
   public void testInitializeFrom() {
     testInitializeFrom(false);
     testInitializeFrom(true);
@@ -1587,6 +1603,7 @@ public class RegionVersionHolderJUnitTest extends TestCase {
    * Test a case in 46522 where the received exceptions end up 
    * not being in the RVV interval.
    */
+  @Test
   public void testConsumeReceivedRevisions() {
     testConsumeReceivedRevisions(false);
     testConsumeReceivedRevisions(true);
@@ -1630,7 +1647,8 @@ public class RegionVersionHolderJUnitTest extends TestCase {
       RVVException.UseTreeSetsForTesting = false;
     }
   }
-  
+
+  @Test
   public void testChangeSetForm() {
     try {
       RVVException.UseTreeSetsForTesting = true;
@@ -1667,12 +1685,12 @@ public class RegionVersionHolderJUnitTest extends TestCase {
    * 
    * See bug 47106
    */
+  @Test
   public void testDominates() {
     testDominates(false);
     testDominates(true);
   }
-  
-  
+
   private void testDominates(boolean useTreeSets) {
     try {
       RVVException.UseTreeSetsForTesting = useTreeSets;

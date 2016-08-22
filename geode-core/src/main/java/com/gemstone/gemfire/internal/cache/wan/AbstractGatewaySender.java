@@ -34,6 +34,7 @@ import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
@@ -74,6 +75,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.offheap.Releasable;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 
@@ -82,7 +84,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  * common functionality like initializing proxy.
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 
 public abstract class AbstractGatewaySender implements GatewaySender,
@@ -135,7 +137,9 @@ public abstract class AbstractGatewaySender implements GatewaySender,
   protected List<GatewayTransportFilter> transFilters;
 
   protected List<AsyncEventListener> listeners;
-  
+
+  protected boolean forwardExpirationDestroy;
+
   protected GatewayEventSubstitutionFilter substitutionFilter;
   
   protected LocatorDiscoveryCallback locatorDiscoveryCallback;
@@ -155,8 +159,6 @@ public abstract class AbstractGatewaySender implements GatewaySender,
   private int dispatcherThreads;
   
   protected boolean isBucketSorted;
-  
-  protected boolean isHDFSQueue;
   
   protected boolean isMetaQueue;
   
@@ -259,7 +261,6 @@ public abstract class AbstractGatewaySender implements GatewaySender,
     this.maxMemoryPerDispatcherQueue = this.queueMemory / this.dispatcherThreads;
     this.myDSId = InternalDistributedSystem.getAnyInstance().getDistributionManager().getDistributedSystemId();
     this.serialNumber = DistributionAdvisor.createSerialNumber();
-    this.isHDFSQueue = attrs.isHDFSQueue();
     this.isMetaQueue = attrs.isMetaQueue();
     if (!(this.cache instanceof CacheCreation)) {
       this.stopper = new Stopper(cache.getCancelCriterion());
@@ -268,63 +269,12 @@ public abstract class AbstractGatewaySender implements GatewaySender,
         this.statistics = new GatewaySenderStats(cache.getDistributedSystem(),
             id);
       }
-      if (!attrs.isHDFSQueue())
-        initializeEventIdIndex();
+      initializeEventIdIndex();
     }
     this.isBucketSorted = attrs.isBucketSorted();
+    this.forwardExpirationDestroy = attrs.isForwardExpirationDestroy();
   }
-  
-  public void createSender(Cache cache, GatewaySenderAttributes attrs){
-    this.cache = cache;
-    this.id = attrs.getId();
-    this.socketBufferSize = attrs.getSocketBufferSize();
-    this.socketReadTimeout = attrs.getSocketReadTimeout();
-    this.queueMemory = attrs.getMaximumQueueMemory();
-    this.batchSize = attrs.getBatchSize();
-    this.batchTimeInterval = attrs.getBatchTimeInterval();
-    this.isConflation = attrs.isBatchConflationEnabled();
-    this.isPersistence = attrs.isPersistenceEnabled();
-    this.alertThreshold = attrs.getAlertThreshold();
-    this.manualStart = attrs.isManualStart();
-    this.isParallel = attrs.isParallel();
-    this.isForInternalUse = attrs.isForInternalUse();
-    this.diskStoreName = attrs.getDiskStoreName();
-    this.remoteDSId = attrs.getRemoteDSId();
-    this.eventFilters = attrs.getGatewayEventFilters();
-    this.transFilters = attrs.getGatewayTransportFilters();
-    this.listeners = attrs.getAsyncEventListeners();
-    this.substitutionFilter = attrs.getGatewayEventSubstitutionFilter();
-    this.locatorDiscoveryCallback = attrs.getGatewayLocatoDiscoveryCallback();
-    this.isDiskSynchronous = attrs.isDiskSynchronous();
-    this.policy = attrs.getOrderPolicy();
-    this.dispatcherThreads = attrs.getDispatcherThreads();
-    this.parallelismForReplicatedRegion = attrs.getParallelismForReplicatedRegion();
-    //divide the maximumQueueMemory of sender equally using number of dispatcher threads.
-    //if dispatcherThreads is 1 then maxMemoryPerDispatcherQueue will be same as maximumQueueMemory of sender
-    this.maxMemoryPerDispatcherQueue = this.queueMemory / this.dispatcherThreads;
-    this.myDSId = InternalDistributedSystem.getAnyInstance().getDistributionManager().getDistributedSystemId();
-    this.serialNumber = DistributionAdvisor.createSerialNumber();
-    if (!(this.cache instanceof CacheCreation)) {
-      this.stopper = new Stopper(cache.getCancelCriterion());
-      this.senderAdvisor = GatewaySenderAdvisor.createGatewaySenderAdvisor(this);
-      if (!this.isForInternalUse()) {
-        this.statistics = new AsyncEventQueueStats(cache.getDistributedSystem(),
-            id);
-      }
-      else {// this sender lies underneath the AsyncEventQueue. Need to have
-            // AsyncEventQueueStats
-        this.statistics = new AsyncEventQueueStats(
-            cache.getDistributedSystem(), AsyncEventQueueImpl
-                .getAsyncEventQueueIdFromSenderId(id));
-      }
-      if (!attrs.isHDFSQueue())
-        initializeEventIdIndex();
-    }
-    this.isBucketSorted = attrs.isBucketSorted();
-    this.isHDFSQueue = attrs.isHDFSQueue();
-   
-  }
-  
+
   public GatewaySenderAdvisor getSenderAdvisor() {
     return senderAdvisor;
   }
@@ -396,7 +346,11 @@ public abstract class AbstractGatewaySender implements GatewaySender,
   public boolean hasListeners() {
     return !this.listeners.isEmpty();
   }
-  
+
+  public boolean isForwardExpirationDestroy() {
+    return this.forwardExpirationDestroy;
+  }
+
   public boolean isManualStart() {
     return this.manualStart;
   }
@@ -481,10 +435,6 @@ public abstract class AbstractGatewaySender implements GatewaySender,
     return this.isBucketSorted;
   }
 
-  public boolean getIsHDFSQueue() {
-    return this.isHDFSQueue;
-  }
-  
   public boolean getIsMetaQueue() {
     return this.isMetaQueue;
   }
@@ -848,35 +798,59 @@ public abstract class AbstractGatewaySender implements GatewaySender,
     return this.eventProcessor;
   }
 
+  /**
+   * Check if this event can be distributed by senders.
+   * @param event
+   * @param stats
+   * @return boolean True if the event is allowed.
+   */
+  private boolean checkForDistribution(EntryEventImpl event, GatewaySenderStats stats) {
+    if (event.getRegion().getDataPolicy().equals(DataPolicy.NORMAL))
+    {
+      return false;
+    }
+    // Check for eviction and expiration events.
+    if (event.getOperation().isLocal() || event.getOperation().isExpiration()) {
+      // Check if its AEQ and is configured to forward expiration destroy events.
+      if (event.getOperation().isExpiration() && this.isAsyncEventQueue() && this.isForwardExpirationDestroy()) {
+        return true;
+      }
+      return false;
+    }
+    return true;
+  }
+
+
   public void distribute(EnumListenerEvent operation, EntryEventImpl event,
       List<Integer> allRemoteDSIds) {
+
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    
-    final GatewaySenderStats stats = getStatistics();
-    stats.incEventsReceived();
-    // If the event is local (see bug 35831) or an expiration ignore it.
-    //removed the check of isLocal as in notifyGAtewayHub this has been taken care
-    if (/*event.getOperation().isLocal() || */event.getOperation().isExpiration()
-        || event.getRegion().getDataPolicy().equals(DataPolicy.NORMAL)) {
-      getStatistics().incEventsNotQueued();
+
+    // If this gateway is not running, return
+    if (!isRunning()) {
+      if (isDebugEnabled) {
+        logger.debug("Returning back without putting into the gateway sender queue");
+      }
       return;
     }
-    
-    if (getIsHDFSQueue() && event.getOperation().isEviction()) {
-      if (logger.isDebugEnabled())
-        logger.debug("Eviction event not queued: " + event);
+
+    final GatewaySenderStats stats = getStatistics();
+    stats.incEventsReceived();
+
+    if (!checkForDistribution(event, stats)) {
       stats.incEventsNotQueued();
       return;
     }
+
     // this filter is defined by Asif which exist in old wan too. new wan has
     // other GatewaEventFilter. Do we need to get rid of this filter. Cheetah is
-    // not cinsidering this filter
+    // not considering this filter
     if (!this.filter.enqueueEvent(event)) {
-      getStatistics().incEventsFiltered();
+      stats.incEventsFiltered();
       return;
     }
-    
-    EntryEventImpl clonedEvent = new EntryEventImpl(event, false);
+    // released by this method or transfers ownership to TmpQueueEvent
+    @Released EntryEventImpl clonedEvent = new EntryEventImpl(event, false);
     boolean freeClonedEvent = true;
     try {
 
@@ -884,7 +858,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
 
     setModifiedEventId(clonedEvent);
     Object callbackArg = clonedEvent.getRawCallbackArgument();
-    
+
     if (isDebugEnabled) {
       // We can't deserialize here for logging purposes so don't
       // call getNewValue.
@@ -931,7 +905,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
       }
     } else {
       GatewaySenderEventCallbackArgument geCallbackArg = new GatewaySenderEventCallbackArgument(
-          callbackArg, this.getMyDSId(), allRemoteDSIds, true);
+          callbackArg, this.getMyDSId(), allRemoteDSIds);
       clonedEvent.setCallbackArgument(geCallbackArg);
     }
 
@@ -956,6 +930,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
     }
     try {
       // If this gateway is not running, return
+      // The sender may have stopped, after we have checked the status in the beginning. 
       if (!isRunning()) {
         if (isDebugEnabled) {
           logger.debug("Returning back without putting into the gateway sender queue");
@@ -1003,6 +978,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
     }
   }
   
+
   /**
    * During sender is getting started, if there are any cache operation on queue then that event will be stored in temp queue. 
    * Once sender is started, these event from tmp queue will be added to sender queue.

@@ -16,12 +16,14 @@
  */
 package com.gemstone.gemfire.management;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
@@ -33,7 +35,6 @@ import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.statistics.SampleCollector;
@@ -44,7 +45,6 @@ import com.gemstone.gemfire.management.internal.ManagementStrings;
 import com.gemstone.gemfire.management.internal.SystemManagementService;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
@@ -52,20 +52,17 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 
-public class ManagementTestBase extends DistributedTestCase {
-
-  public ManagementTestBase(String name) {
-    super(name);
-
-  }
+@SuppressWarnings("serial")
+public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
 
   private static final int MAX_WAIT = 70 * 1000;
 
-  private static final long serialVersionUID = 1L;
-  /** log writer instance */
+  /**
+   * log writer instance
+   */
   private static LogWriter logWriter;
-
 
   private static Properties props = new Properties();
 
@@ -95,10 +92,8 @@ public class ManagementTestBase extends DistributedTestCase {
   protected static VM locatorVM;
 
   private static SampleCollector sampleCollector;
-  
+
   protected static MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
-
-
 
   private static int mcastPort;
 
@@ -129,14 +124,14 @@ public class ManagementTestBase extends DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     preTearDownManagementTestBase();
-    
+
     closeAllCache();
     managementService = null;
 
     mcastPort = 0;
     disconnectAllFromDS();
     props.clear();
-    
+
     postTearDownManagementTestBase();
   }
 
@@ -146,7 +141,7 @@ public class ManagementTestBase extends DistributedTestCase {
   protected void postTearDownManagementTestBase() throws Exception {
   }
 
-  public void closeAllCache() throws Exception{
+  public void closeAllCache() throws Exception {
     closeCache(managingNode);
     closeCache(managedNode1);
     closeCache(managedNode2);
@@ -178,11 +173,9 @@ public class ManagementTestBase extends DistributedTestCase {
 
   }
 
-
   /**
    * managingNodeFirst variable tests for two different test cases where
    * Managing & Managed Node creation time lines are reversed.
-   *
    */
   public void initManagement(boolean managingNodeFirst) throws Exception {
 
@@ -205,8 +198,6 @@ public class ManagementTestBase extends DistributedTestCase {
     }
   }
 
-
-  @SuppressWarnings("serial")
   public void createCache(VM vm1) throws Exception {
     vm1.invoke(new SerializableRunnable("Create Cache") {
       public void run() {
@@ -216,7 +207,6 @@ public class ManagementTestBase extends DistributedTestCase {
 
   }
 
-  @SuppressWarnings("serial")
   public void createCache(VM vm1, final Properties props) throws Exception {
     vm1.invoke(new SerializableRunnable("Create Cache") {
       public void run() {
@@ -228,8 +218,8 @@ public class ManagementTestBase extends DistributedTestCase {
 
   public Cache createCache(Properties props) {
     System.setProperty("dunitLogPerTest", "true");
-    props.setProperty(DistributionConfig.LOG_FILE_NAME,getTestMethodName()+"-.log");
-    ds = (new ManagementTestBase("temp")).getSystem(props);
+    props.setProperty(LOG_FILE, getTestMethodName() + "-.log");
+    ds = getSystem(props);
     cache = CacheFactory.create(ds);
     managementService = ManagementService.getManagementService(cache);
     logWriter = ds.getLogWriter();
@@ -237,7 +227,6 @@ public class ManagementTestBase extends DistributedTestCase {
     assertNotNull(managementService);
     return cache;
   }
-
 
   public Cache getCache() {
     return cache;
@@ -246,15 +235,15 @@ public class ManagementTestBase extends DistributedTestCase {
   public Cache createCache(boolean management) {
     System.setProperty("dunitLogPerTest", "true");
     if (management) {
-      props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-      props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "false");
-      props.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "0");
-      props.setProperty(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME, "0");
+      props.setProperty(JMX_MANAGER, "true");
+      props.setProperty(JMX_MANAGER_START, "false");
+      props.setProperty(JMX_MANAGER_PORT, "0");
+      props.setProperty(JMX_MANAGER_HTTP_PORT, "0");
     }
-    props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.LOG_FILE_NAME,getTestMethodName()+"-.log");
-    ds = (new ManagementTestBase("temp")).getSystem(props);
+    props.setProperty(ENABLE_TIME_STATISTICS, "true");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+    props.setProperty(LOG_FILE, getTestMethodName() + "-.log");
+    ds = getSystem(props);
     cache = CacheFactory.create(ds);
     managementService = ManagementService.getManagementService(cache);
     logWriter = ds.getLogWriter();
@@ -263,8 +252,6 @@ public class ManagementTestBase extends DistributedTestCase {
     return cache;
   }
 
-
-  @SuppressWarnings("serial")
   public void createManagementCache(VM vm1) throws Exception {
     vm1.invoke(new SerializableRunnable("Create Management Cache") {
       public void run() {
@@ -273,8 +260,6 @@ public class ManagementTestBase extends DistributedTestCase {
     });
   }
 
-
-  @SuppressWarnings("serial")
   public void closeCache(VM vm1) throws Exception {
     vm1.invoke(new SerializableRunnable("Close Cache") {
       public void run() {
@@ -292,9 +277,21 @@ public class ManagementTestBase extends DistributedTestCase {
 
   }
 
+  public void closeCache() throws Exception {
+    GemFireCacheImpl existingInstance = GemFireCacheImpl.getInstance();
+    if (existingInstance != null) {
+      existingInstance.close();
+    }
+    InternalDistributedSystem ds = InternalDistributedSystem
+        .getConnectedInstance();
+    if (ds != null) {
+      ds.disconnect();
+    }
+  }
+
   public String getMemberId(final VM vm) {
     SerializableCallable getMember = new SerializableCallable("getMemberId") {
-      public Object call() throws Exception{
+      public Object call() throws Exception {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
         return cache.getDistributedSystem().getDistributedMember().getId();
       }
@@ -312,7 +309,7 @@ public class ManagementTestBase extends DistributedTestCase {
       }
 
       public boolean done() {
-        SystemManagementService service = (SystemManagementService)managementService;
+        SystemManagementService service = (SystemManagementService) managementService;
         if (service.getMBeanProxy(objectName, interfaceClass) != null) {
           return true;
         } else {
@@ -323,8 +320,8 @@ public class ManagementTestBase extends DistributedTestCase {
     }, MAX_WAIT, 500, true);
   }
 
-  protected void runManagementTaskAdhoc(){
-    SystemManagementService service = (SystemManagementService)managementService;
+  protected void runManagementTaskAdhoc() {
+    SystemManagementService service = (SystemManagementService) managementService;
     service.getLocalManager().runManagementTaskAdhoc();
   }
 
@@ -333,7 +330,6 @@ public class ManagementTestBase extends DistributedTestCase {
    *
    * @throws Exception
    */
-  @SuppressWarnings("serial")
   public void startManagingNode(VM vm1) throws Exception {
     vm1.invoke(new SerializableRunnable("Start Being Managing Node") {
       public void run() {
@@ -358,7 +354,6 @@ public class ManagementTestBase extends DistributedTestCase {
    *
    * @throws Exception
    */
-  @SuppressWarnings("serial")
   public void startManagingNodeAsync(VM vm1) throws Exception {
     vm1.invokeAsync(new SerializableRunnable("Start Being Managing Node") {
 
@@ -380,7 +375,6 @@ public class ManagementTestBase extends DistributedTestCase {
    *
    * @throws Exception
    */
-  @SuppressWarnings("serial")
   public void stopManagingNode(VM vm1) throws Exception {
     vm1.invoke(new SerializableRunnable("Stop Being Managing Node") {
       public void run() {
@@ -398,12 +392,10 @@ public class ManagementTestBase extends DistributedTestCase {
   }
 
   /**
-   *
    * Check various resources clean up Once a VM stops being managable it should
    * remove all the artifacts of management namely a) Notification region b)
    * Monitoring Region c) Management task should stop
    */
-  @SuppressWarnings("serial")
   public void checkManagedNodeCleanup(VM vm) throws Exception {
     vm.invoke(new SerializableRunnable("Managing Node Clean up") {
 
@@ -434,7 +426,6 @@ public class ManagementTestBase extends DistributedTestCase {
   }
 
   /**
-   *
    * Check various resources clean up Once a VM stops being Managing.It should
    * remove all the artifacts of management namely a) proxies b) Monitoring
    * Region c) Management task should stop
@@ -471,7 +462,6 @@ public class ManagementTestBase extends DistributedTestCase {
                 member));
           }
 
-
         } catch (ManagementException e) {
           Assert.fail("failed with ManagementException", e);
         }
@@ -491,33 +481,32 @@ public class ManagementTestBase extends DistributedTestCase {
     if (e.getMessage()
         .equals(ManagementStrings.Management_Service_CLOSED_CACHE)
         || e.getMessage().equals(
-            ManagementStrings.Management_Service_MANAGEMENT_SERVICE_IS_CLOSED
-                .toLocalizedString())
+        ManagementStrings.Management_Service_MANAGEMENT_SERVICE_IS_CLOSED
+            .toLocalizedString())
         || e
-            .getMessage()
-            .equals(
-                ManagementStrings.Management_Service_MANAGEMENT_SERVICE_NOT_STARTED_YET
-                    .toLocalizedString())
-        || e.getMessage().equals(
-            ManagementStrings.Management_Service_NOT_A_GEMFIRE_DOMAIN_MBEAN
+        .getMessage()
+        .equals(
+            ManagementStrings.Management_Service_MANAGEMENT_SERVICE_NOT_STARTED_YET
                 .toLocalizedString())
         || e.getMessage().equals(
-            ManagementStrings.Management_Service_NOT_A_MANAGING_NODE_YET
-                .toLocalizedString())
+        ManagementStrings.Management_Service_NOT_A_GEMFIRE_DOMAIN_MBEAN
+            .toLocalizedString())
+        || e.getMessage().equals(
+        ManagementStrings.Management_Service_NOT_A_MANAGING_NODE_YET
+            .toLocalizedString())
         || e
-            .getMessage()
-            .equals(
-                ManagementStrings.Management_Service_OPERATION_NOT_ALLOWED_FOR_CLIENT_CACHE
-                    .toLocalizedString())
+        .getMessage()
+        .equals(
+            ManagementStrings.Management_Service_OPERATION_NOT_ALLOWED_FOR_CLIENT_CACHE
+                .toLocalizedString())
         || e.getMessage().equals(
-            ManagementStrings.Management_Service_PROXY_NOT_AVAILABLE
-                .toLocalizedString())) {
+        ManagementStrings.Management_Service_PROXY_NOT_AVAILABLE
+            .toLocalizedString())) {
 
       return false;
     }
     return true;
   }
-
 
   public static List<VM> getManagedNodeList() {
     return managedNodeList;
@@ -534,10 +523,8 @@ public class ManagementTestBase extends DistributedTestCase {
   /**
    * Creates a Distributed region
    *
-   * @param vm
-   *          reference to VM
-   * @param regionName
-   *          name of the distributed region
+   * @param vm         reference to VM
+   * @param regionName name of the distributed region
    */
   protected void createDistributedRegion(VM vm, final String regionName)
       throws Exception {
@@ -554,10 +541,8 @@ public class ManagementTestBase extends DistributedTestCase {
   /**
    * Creates a Local region
    *
-   * @param vm
-   *          reference to VM
-   * @param localRegionName
-   *          name of the local region
+   * @param vm              reference to VM
+   * @param localRegionName name of the local region
    */
   protected void createLocalRegion(VM vm, final String localRegionName)
       throws Exception {
@@ -580,8 +565,7 @@ public class ManagementTestBase extends DistributedTestCase {
   /**
    * Creates a Sub region
    *
-   * @param vm
-   *          reference to VM
+   * @param vm reference to VM
    */
   protected void createSubRegion(VM vm, final String parentRegionPath, final String subregionName)
       throws Exception {
@@ -690,7 +674,6 @@ public class ManagementTestBase extends DistributedTestCase {
     final DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
 
     assertNotNull(service.getDistributedSystemMXBean());
-
 
     Wait.waitForCriterion(new WaitCriterion() {
       public String description() {

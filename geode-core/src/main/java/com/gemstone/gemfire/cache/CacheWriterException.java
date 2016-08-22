@@ -29,7 +29,7 @@ package com.gemstone.gemfire.cache;
  * @see com.gemstone.gemfire.cache.Region#create(Object, Object)
  * @see com.gemstone.gemfire.cache.Region#destroyRegion()
  * @see com.gemstone.gemfire.cache.Region#get(Object)
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class CacheWriterException extends OperationAbortedException {
 private static final long serialVersionUID = -2872212342970454458L;

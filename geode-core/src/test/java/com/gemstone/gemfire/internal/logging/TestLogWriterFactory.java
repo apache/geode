@@ -22,7 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.LogWriter;
@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.util.LogFileUtils;
 
 /**
  * Creates LogWriter instances for testing.
- * 
  */
 public class TestLogWriterFactory extends Assert {
 

@@ -16,87 +16,17 @@
  */
 package com.gemstone.gemfire.internal;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.NotSerializableException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamClass;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.io.UTFDataFormatException;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Proxy;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.CanonicalInstantiator;
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.GemFireRethrowable;
-import com.gemstone.gemfire.Instantiator;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.SerializationException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.ToDataException;
+import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.LonerDistributionManager;
-import com.gemstone.gemfire.distributed.internal.PooledDistributionMessage;
-import com.gemstone.gemfire.distributed.internal.SerialDistributionMessage;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerHelper;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientDataSerializerMessage;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
+import com.gemstone.gemfire.internal.cache.tier.sockets.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
@@ -106,17 +36,25 @@ import com.gemstone.gemfire.pdx.NonPortableClassException;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxSerializer;
-import com.gemstone.gemfire.pdx.internal.AutoSerializableManager;
+import com.gemstone.gemfire.pdx.internal.*;
 import com.gemstone.gemfire.pdx.internal.AutoSerializableManager.AutoClassInfo;
-import com.gemstone.gemfire.pdx.internal.EnumInfo;
-import com.gemstone.gemfire.pdx.internal.PdxInputStream;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceEnum;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
-import com.gemstone.gemfire.pdx.internal.PdxOutputStream;
-import com.gemstone.gemfire.pdx.internal.PdxReaderImpl;
-import com.gemstone.gemfire.pdx.internal.PdxType;
-import com.gemstone.gemfire.pdx.internal.PdxWriterImpl;
-import com.gemstone.gemfire.pdx.internal.TypeRegistry;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.sql.Timestamp;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Contains static methods for data serializing instances of internal
@@ -124,7 +62,7 @@ import com.gemstone.gemfire.pdx.internal.TypeRegistry;
  * distribution messaging (and shared memory management) needed to
  * support data serialization.
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public abstract class InternalDataSerializer extends DataSerializer implements DSCODE {
   private static final Logger logger = LogService.getLogger();
@@ -136,16 +74,10 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    */
   private static final ConcurrentHashMap<String, DataSerializer> classesToSerializers = new ConcurrentHashMap<String, DataSerializer>();
   
-  // used by sqlFire
-  public static ConcurrentHashMap<String, DataSerializer> getClassesToSerializers() {
-    return classesToSerializers;
-  }
-  
-  
-  private static final String serializationVersionTxt = System.getProperty("gemfire.serializationVersion");
+  private static final String serializationVersionTxt = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "serializationVersion");
   /**
    * Any time new serialization format is added then a new enum needs to be added here.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   private static enum SERIALIZATION_VERSION {
     vINVALID,
@@ -1732,7 +1664,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    *
    * @see #readSet
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public static void writeSet(Collection<?> set, DataOutput out)
       throws IOException {
@@ -1768,7 +1700,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    *
    * @see #writeSet
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public static Set readSet(DataInput in) 
     throws IOException, ClassNotFoundException {
@@ -2099,7 +2031,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    *           A problem occurs while writing to <code>out</code>
    * 
    * @see DataSerializer#readCharArray
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public static void writeCharArray(char[] array, int length, DataOutput out)
       throws IOException {
@@ -2235,7 +2167,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   
   /**
    * @throws IOException 
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   private static void writePdxEnum(Enum<?> e, DataOutput out) throws IOException {
     TypeRegistry tr =
@@ -2624,11 +2556,11 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   public static final byte NULL_ARRAY = -1; // array is null
   /**
-   * @since 5.7 
+   * @since GemFire 5.7
    */
   private static final byte SHORT_ARRAY_LEN = -2; // array len encoded as unsigned short in next 2 bytes
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte INT_ARRAY_LEN = -3; // array len encoded as int in next 4 bytes
   private static final int MAX_BYTE_ARRAY_LEN = ((byte)-4) & 0xFF; 
@@ -2759,7 +2691,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * @throws IOException
    *         A problem occurs while reading from <code>in</code>
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static String readString(DataInput in, byte header) throws IOException {
     if (header == DSCODE.STRING_BYTES) {
@@ -2818,7 +2750,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   /**
    * Just like readObject but make sure and pdx deserialized is not
    * a PdxInstance. 
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public static final <T> T readNonPdxInstanceObject(final DataInput in)
   throws IOException, ClassNotFoundException {
@@ -2854,8 +2786,6 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       return DSFIDFactory.create(in.readInt(), in);
     case DS_NO_FIXED_ID:
       return readDataSerializableFixedID(in);
-    case SQLF_DVD_ARR:
-      return dvddeserializer.fromData(in);
     case NULL:
       return null;
     case NULL_STRING:
@@ -3338,7 +3268,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * registration message does, the deserializer will wait an amount
    * of time for the registration message to arrive.
    * Made public for unit test access.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static class GetMarker extends Marker {
     /**
@@ -3346,7 +3276,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
      * Note that some tests set this to a small amount to speed up failures.
      * Made public for unit test access.
      */
-    public static int WAIT_MS = Integer.getInteger("gemfire.InternalDataSerializer.WAIT_MS", 60 * 1000);
+    public static int WAIT_MS = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "InternalDataSerializer.WAIT_MS", 60 * 1000);
 
     /**
      * Returns the serializer associated with this marker.  If the
@@ -3394,7 +3324,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * of being registered.
    * It is possible for getSerializer to return <code>null</code>
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   static class InitMarker extends Marker {
     /**
@@ -3793,7 +3723,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   /**
    * Used to implement serialization code for the well known classes we support
    * in DataSerializer.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected static abstract class WellKnownDS extends DataSerializer {
     @Override
@@ -4011,8 +3941,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     }
     return out.size();
   }
-  
-  public static final boolean LOAD_CLASS_EACH_TIME = Boolean.getBoolean("gemfire.loadClassOnEveryDeserialization");
+
+  public static final boolean LOAD_CLASS_EACH_TIME = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "loadClassOnEveryDeserialization");
   private static final CopyOnWriteHashMap<String, WeakReference<Class<?>>> classCache = LOAD_CLASS_EACH_TIME ? null : new CopyOnWriteHashMap<String, WeakReference<Class<?>>>();
   private static final Object cacheAccessLock = new Object();
   

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -40,7 +49,8 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
 @SuppressWarnings("serial")
-public class MultiRegionFunctionExecutionDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class MultiRegionFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
 
   VM vm0 = null;
 
@@ -57,8 +67,8 @@ public class MultiRegionFunctionExecutionDUnitTest extends CacheTestCase {
   static Region LR1 = null ;
   static Cache cache = null ;
 
-  public MultiRegionFunctionExecutionDUnitTest(String name) {
-    super(name);
+  public MultiRegionFunctionExecutionDUnitTest() {
+    super();
   }
 
   @Override
@@ -76,6 +86,7 @@ public class MultiRegionFunctionExecutionDUnitTest extends CacheTestCase {
     Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
   }
   
+  @Test
   public void testMultiRegionFunctionExecution(){
     vm0.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm0());
     vm1.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm1());
@@ -158,7 +169,7 @@ public class MultiRegionFunctionExecutionDUnitTest extends CacheTestCase {
   }
   @SuppressWarnings("unchecked")
   public static void createRegionsOnVm0() {
-    new MultiRegionFunctionExecutionDUnitTest("temp").createCache();  
+    new MultiRegionFunctionExecutionDUnitTest().createCache();  
 
     PartitionAttributesFactory pf = new PartitionAttributesFactory();
     pf.setTotalNumBuckets(12);
@@ -178,7 +189,7 @@ public class MultiRegionFunctionExecutionDUnitTest extends CacheTestCase {
   
   @SuppressWarnings("unchecked")
   public static void createRegionsOnVm1() {
-    new MultiRegionFunctionExecutionDUnitTest("temp").createCache();   
+    new MultiRegionFunctionExecutionDUnitTest().createCache();   
         
     PartitionAttributesFactory pf = new PartitionAttributesFactory();
     pf.setTotalNumBuckets(12);
@@ -198,7 +209,7 @@ public class MultiRegionFunctionExecutionDUnitTest extends CacheTestCase {
   
   @SuppressWarnings("unchecked")
   public static void createRegionsOnVm2() {
-    new MultiRegionFunctionExecutionDUnitTest("temp").createCache();   
+    new MultiRegionFunctionExecutionDUnitTest().createCache();   
         
     PartitionAttributesFactory pf = new PartitionAttributesFactory();
     pf.setTotalNumBuckets(12);
@@ -227,7 +238,7 @@ public class MultiRegionFunctionExecutionDUnitTest extends CacheTestCase {
   
   @SuppressWarnings("unchecked")
   public static void createRegionsOnVm3() {
-    new MultiRegionFunctionExecutionDUnitTest("temp").createCache();   
+    new MultiRegionFunctionExecutionDUnitTest().createCache();   
         
     PartitionAttributesFactory pf = new PartitionAttributesFactory();
     pf.setTotalNumBuckets(12);
@@ -255,7 +266,7 @@ public class MultiRegionFunctionExecutionDUnitTest extends CacheTestCase {
   
   @SuppressWarnings("unchecked")
   public static void createRegionsOnUnitControllerVm() {
-    new MultiRegionFunctionExecutionDUnitTest("temp").createCache();   
+    new MultiRegionFunctionExecutionDUnitTest().createCache();   
         
     PartitionAttributesFactory pf = new PartitionAttributesFactory();
     pf.setTotalNumBuckets(12);

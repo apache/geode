@@ -16,48 +16,37 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.auth;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.*;
+
+import java.security.Principal;
+import java.util.Properties;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Authenticator;
-import com.gemstone.gemfire.internal.ClassLoadUtil;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.AuthInitialize;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 
-import java.lang.reflect.Method;
-import java.security.Principal;
-import java.util.Properties;
-import java.util.Set;
-
-
 // static messages
-import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.HandShake_AUTHENTICATOR_INSTANCE_COULD_NOT_BE_OBTAINED;
-import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.HandShake_FAILED_TO_ACQUIRE_AUTHENTICATOR_OBJECT;
-import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.HandShake_FAILED_TO_ACQUIRE_AUTHINITIALIZE_METHOD_0;
-import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.AUTH_PEER_AUTHENTICATION_FAILED_WITH_EXCEPTION;
-import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.AUTH_PEER_AUTHENTICATION_FAILED;
-import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.AUTH_PEER_AUTHENTICATION_MISSING_CREDENTIALS;
-import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.AUTH_FAILED_TO_ACQUIRE_AUTHINITIALIZE_INSTANCE;
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME;
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME;
 
 public class GMSAuthenticator implements Authenticator {
 
-  private final static String secPrefix =  "gemfire.sys.security-";
-  private final static int gemfireSysPrefixLen = "gemfire.sys.".length();
-
   private Services services;
-  private Properties securityProps = getSecurityProps();
+  private Properties securityProps;
 
   @Override
   public void init(Services s) {
     this.services = s;
+    this.securityProps = this.services.getConfig().getDistributionConfig().getSecurityProps();
   }
 
   @Override
@@ -110,57 +99,59 @@ public class GMSAuthenticator implements Authenticator {
    *         this will be removed since return string is used for failure
    */
   @Override
-  public String authenticate(InternalDistributedMember member, Object credentials) throws AuthenticationFailedException {
+  public String authenticate(InternalDistributedMember member, Properties credentials) throws AuthenticationFailedException {
     return authenticate(member, credentials, this.securityProps, this.services.getJoinLeave().getMemberID());
   }
 
   /**
    * Method is package protected to be used in testing.
    */
-  String authenticate(DistributedMember member, Object credentials, Properties secProps, DistributedMember localMember) throws AuthenticationFailedException {
-
-    String authMethod = secProps.getProperty(SECURITY_PEER_AUTHENTICATOR_NAME);
-    if (authMethod == null || authMethod.length() == 0) {
+  String authenticate(DistributedMember member, Properties credentials, Properties secProps, DistributedMember localMember) throws AuthenticationFailedException {
+    if(!GeodeSecurityUtil.isPeerSecurityRequired()){
       return null;
     }
 
     InternalLogWriter securityLogWriter = this.services.getSecurityLogWriter();
-    String failMsg = null;
-    if (credentials != null) {
-      try {
-        invokeAuthenticator(authMethod, member, credentials);
 
-      } catch (Exception ex) {
-        securityLogWriter.warning(AUTH_PEER_AUTHENTICATION_FAILED_WITH_EXCEPTION, new Object[] {member, authMethod, ex.getLocalizedMessage()}, ex);
-        failMsg = AUTH_PEER_AUTHENTICATION_FAILED.toLocalizedString(localMember);
-      }
-
-    } else { // No credentials - need to send failure message
-      securityLogWriter.warning(AUTH_PEER_AUTHENTICATION_MISSING_CREDENTIALS, new Object[] {member, authMethod});
-      failMsg = AUTH_PEER_AUTHENTICATION_MISSING_CREDENTIALS.toLocalizedString(member, authMethod);
+    if(credentials == null){
+      securityLogWriter.warning(AUTH_PEER_AUTHENTICATION_MISSING_CREDENTIALS, member);
+      return AUTH_PEER_AUTHENTICATION_MISSING_CREDENTIALS.toLocalizedString(member);
     }
 
+    String failMsg = null;
+    try {
+      if(GeodeSecurityUtil.isIntegratedSecurity()){
+        String username = credentials.getProperty("security-username");
+        String password = credentials.getProperty("security-password");
+        GeodeSecurityUtil.login(username, password);
+      }
+      else {
+        invokeAuthenticator(secProps, member, credentials);
+      }
+    } catch (Exception ex) {
+      securityLogWriter.warning(AUTH_PEER_AUTHENTICATION_FAILED_WITH_EXCEPTION, new Object[] {
+        member, ex.getLocalizedMessage()
+      }, ex);
+      failMsg = AUTH_PEER_AUTHENTICATION_FAILED.toLocalizedString(localMember);
+    }
     return failMsg;
   }
+
 
   /**
    * Method is package protected to be used in testing.
    */
-  Principal invokeAuthenticator(String authMethod, DistributedMember member, Object credentials) throws AuthenticationFailedException {
+  Principal invokeAuthenticator(Properties securityProps, DistributedMember member, Properties credentials) throws AuthenticationFailedException {
+      String authMethod = securityProps.getProperty(SECURITY_PEER_AUTHENTICATOR);
     com.gemstone.gemfire.security.Authenticator auth = null;
-
     try {
-      Method getter = ClassLoadUtil.methodFromName(authMethod);
-      auth = (com.gemstone.gemfire.security.Authenticator) getter.invoke(null, (Object[]) null);
-      if (auth == null) {
-        throw new AuthenticationFailedException(HandShake_AUTHENTICATOR_INSTANCE_COULD_NOT_BE_OBTAINED.toLocalizedString());
-      }
+      auth = GeodeSecurityUtil.getObjectOfTypeFromFactoryMethod(authMethod, com.gemstone.gemfire.security.Authenticator .class);
 
       LogWriter logWriter = this.services.getLogWriter();
       LogWriter securityLogWriter = this.services.getSecurityLogWriter();
 
       auth.init(this.securityProps, logWriter, securityLogWriter); // this.securityProps contains security-ldap-basedn but security-ldap-baseDomainName is expected
-      return auth.authenticate((Properties) credentials, member);
+      return auth.authenticate(credentials, member);
 
     } catch (GemFireSecurityException gse) {
       throw gse;
@@ -178,15 +169,15 @@ public class GMSAuthenticator implements Authenticator {
    *
    * @param  member
    *         the target distributed member
-   * @return the credential object
+   * @return the credentials
    */
   @Override
-  public Object getCredentials(InternalDistributedMember member) {
+  public Properties getCredentials(InternalDistributedMember member) {
     try {
       return getCredentials(member, securityProps);
 
     } catch (Exception e) {
-      String authMethod = securityProps.getProperty(SECURITY_PEER_AUTH_INIT_NAME);
+      String authMethod = securityProps.getProperty(SECURITY_PEER_AUTH_INIT);
       services.getSecurityLogWriter().warning(LocalizedStrings.AUTH_FAILED_TO_OBTAIN_CREDENTIALS_IN_0_USING_AUTHINITIALIZE_1_2, new Object[] { authMethod, e.getLocalizedMessage() });
       return null;
     }
@@ -197,16 +188,11 @@ public class GMSAuthenticator implements Authenticator {
    */
   Properties getCredentials(DistributedMember member, Properties secProps) {
     Properties credentials = null;
-    String authMethod = secProps.getProperty(SECURITY_PEER_AUTH_INIT_NAME);
+    String authMethod = secProps.getProperty(SECURITY_PEER_AUTH_INIT);
 
     try {
       if (authMethod != null && authMethod.length() > 0) {
-        Method getter = ClassLoadUtil.methodFromName(authMethod);
-        AuthInitialize auth = (AuthInitialize)getter.invoke(null, (Object[]) null);
-        if (auth == null) {
-          throw new AuthenticationRequiredException(AUTH_FAILED_TO_ACQUIRE_AUTHINITIALIZE_INSTANCE.toLocalizedString(authMethod));
-        }
-
+        AuthInitialize auth = GeodeSecurityUtil.getObjectOfType(authMethod, AuthInitialize.class);
         try {
           LogWriter logWriter = services.getLogWriter();
           LogWriter securityLogWriter = services.getSecurityLogWriter();
@@ -227,16 +213,11 @@ public class GMSAuthenticator implements Authenticator {
     return credentials;
   }
 
+  /**
+   * For testing only.
+   */
   Properties getSecurityProps() {
-    Properties props = new Properties();
-    Set keys = System.getProperties().keySet();
-    for (Object key: keys) {
-      String propKey = (String) key;
-      if (propKey.startsWith(secPrefix)) {
-        props.setProperty(propKey.substring(gemfireSysPrefixLen), System.getProperty(propKey));
-      }
-    }
-    return props;
+    return this.securityProps;
   }
 
   @Override

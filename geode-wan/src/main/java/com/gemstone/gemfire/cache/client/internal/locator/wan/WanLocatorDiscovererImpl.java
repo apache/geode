@@ -16,29 +16,24 @@
  */
 package com.gemstone.gemfire.cache.client.internal.locator.wan;
 
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorDiscovery;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipListener;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorJoinRequest;
 import com.gemstone.gemfire.distributed.internal.WanLocatorDiscoverer;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
+import org.apache.logging.log4j.Logger;
+
+import java.util.StringTokenizer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer{
 
   private static final Logger logger = LogService.getLogger();
+
+  private volatile boolean stopped = false;
   
   private ExecutorService _executor;
   
@@ -65,8 +60,17 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer{
     exchangeRemoteLocators(port, config, locatorListener);
     this._executor.shutdown();
   }
-  
-  
+
+  @Override
+  public void stop() {
+    this.stopped = true;
+  }
+
+  @Override
+  public boolean isStopped() {
+    return this.stopped;
+  }
+
   /**
    * For WAN 70 Exchange the locator information within the distributed system
    * 
@@ -90,7 +94,7 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer{
       DistributionLocatorId localLocatorId = new DistributionLocatorId(
           locatorsOnThisVM.nextToken());
       if (!locatorId.equals(localLocatorId)) {
-        LocatorDiscovery localDiscovery = new LocatorDiscovery(localLocatorId, request, locatorListener);
+        LocatorDiscovery localDiscovery = new LocatorDiscovery(this, localLocatorId, request, locatorListener);
         LocatorDiscovery.LocalLocatorDiscovery localLocatorDiscovery = localDiscovery.new LocalLocatorDiscovery();
         this._executor.execute(localLocatorDiscovery);
       }
@@ -112,7 +116,7 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer{
       while (remoteLocators.hasMoreTokens()) {
         DistributionLocatorId remoteLocatorId = new DistributionLocatorId(
             remoteLocators.nextToken());
-        LocatorDiscovery localDiscovery = new LocatorDiscovery(remoteLocatorId,
+        LocatorDiscovery localDiscovery = new LocatorDiscovery(this, remoteLocatorId,
             request, locatorListener);
         LocatorDiscovery.RemoteLocatorDiscovery remoteLocatorDiscovery = localDiscovery.new RemoteLocatorDiscovery();
         this._executor.execute(remoteLocatorDiscovery);

@@ -27,7 +27,7 @@ import com.gemstone.gemfire.internal.Version;
 
 /**
  * A Token representing null.
- * @since cedar
+ * @since GemFire cedar
  *
  */
 public class NullToken implements DataSerializableFixedID, Comparable {

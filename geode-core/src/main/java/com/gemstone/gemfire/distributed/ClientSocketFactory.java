@@ -27,7 +27,7 @@ import java.net.Socket;
  * factory to manufacture sockets when it connects to server caches.
  * 
  * 
- * @since 6.5
+ * @since GemFire 6.5
  * 
  */
 public interface ClientSocketFactory {

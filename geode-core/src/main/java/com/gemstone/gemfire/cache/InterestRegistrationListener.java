@@ -60,7 +60,7 @@ package com.gemstone.gemfire.cache;
  * </pre>
  *
  *
- * @since 6.0
+ * @since GemFire 6.0
  * 
  * @see com.gemstone.gemfire.cache.server.CacheServer#registerInterestRegistrationListener registerInterestRegistrationListener
  * @see com.gemstone.gemfire.cache.server.CacheServer#unregisterInterestRegistrationListener unregisterInterestRegistrationListener

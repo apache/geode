@@ -88,8 +88,8 @@ public class GatewayReceiverStatsJUnitTest extends MBeanStatsTestCase {
     
     bridge.stopMonitor();
     
-    // TODO:FAIL: assertEquals(0, getCurrentClients());
-    // TODO:FAIL: assertEquals(0, getConnectionThreads());
+    // TODO:FAIL: assertIndexDetailsEquals(0, getCurrentClients());
+    // TODO:FAIL: assertIndexDetailsEquals(0, getConnectionThreads());
   }
   
   @Test
@@ -112,8 +112,8 @@ public class GatewayReceiverStatsJUnitTest extends MBeanStatsTestCase {
     assertEquals(1, getOutoforderBatchesReceived());
     bridge.stopMonitor();
     
-    // TODO:FAIL: assertEquals(0, getOutoforderBatchesReceived());
-    // TODO:FAIL: assertEquals(0, getDuplicateBatchesReceived());
+    // TODO:FAIL: assertIndexDetailsEquals(0, getOutoforderBatchesReceived());
+    // TODO:FAIL: assertIndexDetailsEquals(0, getDuplicateBatchesReceived());
   }
 
   private float getCreateRequestsRate() {

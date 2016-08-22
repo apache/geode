@@ -41,13 +41,13 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
   private int maxQueueMemory = 0;
   private boolean isParallel = false;
   private boolean isBucketSorted = false;
-  private boolean isHDFSQueue = false;
   private int dispatcherThreads = 1;
   private OrderPolicy orderPolicy = OrderPolicy.KEY;
-  
+  private boolean forwardExpirationDestroy = false;
+
   public AsyncEventQueueCreation() {
   }
-  
+
   public AsyncEventQueueCreation(String id, GatewaySenderAttributes senderAttrs, AsyncEventListener eventListener) {
     this.id = id;
     this.batchSize = senderAttrs.batchSize;
@@ -61,11 +61,12 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
     this.dispatcherThreads = senderAttrs.dispatcherThreads;
     this.orderPolicy = senderAttrs.policy;
     this.asyncEventListener = eventListener;
-    this.isBucketSorted = senderAttrs.isBucketSorted; 
-    this.isHDFSQueue = senderAttrs.isHDFSQueue;
+    this.isBucketSorted = senderAttrs.isBucketSorted;
+    this.gatewayEventFilters = senderAttrs.eventFilters;
     this.gatewayEventSubstitutionFilter = senderAttrs.eventSubstitutionFilter;
+    this.forwardExpirationDestroy = senderAttrs.forwardExpirationDestroy;
   }
-  
+
   @Override
   public AsyncEventListener getAsyncEventListener() {
     return this.asyncEventListener;
@@ -213,11 +214,13 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
   public void setBucketSorted(boolean isBucketSorted) {
     this.isBucketSorted = isBucketSorted;
   }
-  public boolean isHDFSQueue() {
-    return this.isHDFSQueue;
+
+  public void setForwardExpirationDestroy(boolean forward) {
+    this.forwardExpirationDestroy = forward;
   }
-  
-  public void setIsHDFSQueue(boolean isHDFSQueue) {
-    this.isHDFSQueue = isHDFSQueue;
+
+  @Override
+  public boolean isForwardExpirationDestroy() {
+    return this.forwardExpirationDestroy;
   }
 }

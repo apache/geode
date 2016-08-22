@@ -16,67 +16,16 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.ForcedDisconnectException;
-import com.gemstone.gemfire.IncompatibleSystemException;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.InvalidDeltaException;
-import com.gemstone.gemfire.SystemConnectException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.ToDataException;
+import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.admin.GemFireHealthConfig;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.Role;
 import com.gemstone.gemfire.distributed.internal.locks.ElderState;
-import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.MemberFactory;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.NetView;
+import com.gemstone.gemfire.distributed.internal.membership.*;
 import com.gemstone.gemfire.i18n.StringId;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.SetUtils;
-import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.admin.remote.AdminConsoleDisconnectMessage;
 import com.gemstone.gemfire.internal.admin.remote.RemoteGfManagerAgent;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
@@ -92,6 +41,13 @@ import com.gemstone.gemfire.internal.tcp.Connection;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
 import com.gemstone.gemfire.internal.tcp.ReenteredConnectException;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * The <code>DistributionManager</code> uses a {@link
@@ -123,7 +79,7 @@ import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
  * So, we refactored the code of those two subclasses into
  * <code>DistributionManager</code>.
  *
- * @since 2.0
+ * @since GemFire 2.0
  *
  * @see DistributionMessage#process
  * @see IgnoredByManager
@@ -208,14 +164,14 @@ public class DistributionManager
    * 
    * Added for normura issue 7033 - they have duplicate link local addresses on different boxes
    */
-  public static volatile boolean INCLUDE_LINK_LOCAL_ADDRESSES = 
-    Boolean.getBoolean("gemfire.IncludeLinkLocalAddresses");
+  public static volatile boolean INCLUDE_LINK_LOCAL_ADDRESSES =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "IncludeLinkLocalAddresses");
   
   /** The DM type for regular distribution managers */
   public static final int NORMAL_DM_TYPE = 10;
 
   /** The DM type for locator distribution managers 
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static final int LOCATOR_DM_TYPE = 11;
 
@@ -289,7 +245,7 @@ public class DistributionManager
    * JMX agent)?  If so, then it creates {@link #ADMIN_ONLY_DM_TYPE}
    * type distribution managers.
    *
-   * @since 4.0 
+   * @since GemFire 4.0
    */
   public static volatile boolean isDedicatedAdminVM = false;
   
@@ -321,12 +277,12 @@ public class DistributionManager
     new MembershipListenersLock();
   /** The <code>MembershipListener</code>s that are registered on this
    * manager for ALL members.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected volatile Set allMembershipListeners = Collections.EMPTY_SET;
   /**
    * A lock to hold while adding and removing all membership listeners.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected final Object allMembershipListenersLock =
     new MembershipListenersLock();
@@ -1626,7 +1582,7 @@ public class DistributionManager
    * hosted locators. The value is a collection of host[port] strings. If a 
    * bind-address was used for a locator then the form is bind-addr[port].
    *
-   * @since 6.6.3
+   * @since GemFire 6.6.3
    */
   public void addHostedLocators(InternalDistributedMember member, Collection<String> locators, boolean isSharedConfigurationEnabled) {
     synchronized (this.membersLock) {
@@ -1700,7 +1656,7 @@ public class DistributionManager
    * hosted locators. The value is a collection of host[port] strings. If a 
    * bind-address was used for a locator then the form is bind-addr[port].
    * 
-   * @since 6.6.3
+   * @since GemFire 6.6.3
    */
   public Collection<String> getHostedLocators(InternalDistributedMember member) {
     synchronized (this.membersLock) {
@@ -1713,7 +1669,7 @@ public class DistributionManager
    * member, and the value is a collection of host[port] strings. If a 
    * bind-address was used for a locator then the form is bind-addr[port].
    * 
-   * @since 6.6.3
+   * @since GemFire 6.6.3
    */
   public Map<InternalDistributedMember, Collection<String>> getAllHostedLocators() {
     synchronized (this.membersLock) {
@@ -1725,7 +1681,7 @@ public class DistributionManager
    * member, and the value is a collection of host[port] strings. If a 
    * bind-address was used for a locator then the form is bind-addr[port].
    * 
-   * @since 8.0
+   * @since GemFire 8.0
    */
   @Override
   public Map<InternalDistributedMember, Collection<String>> getAllHostedLocatorsWithSharedConfiguration() {
@@ -1750,7 +1706,7 @@ public class DistributionManager
    * Returns the low-level distribution channel for this distribution
    * manager. (brought over from ConsoleDistributionManager)
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public DistributionChannel getDistributionChannel() {
     return this.channel;
@@ -1838,7 +1794,7 @@ public class DistributionManager
    * Returns the id of the underlying distribution channel used for
    * communication.
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public long getChannelId() {
     return this.channel.getId();
@@ -2318,7 +2274,7 @@ public class DistributionManager
   
   /**
    * Returns the transport configuration for this distribution manager
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public RemoteTransportConfig getTransport() {
     return this.transport;
@@ -2348,7 +2304,7 @@ public class DistributionManager
   /**
    * Adds a <code>MembershipListener</code> to this distribution
    * manager.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void addAllMembershipListener(MembershipListener l) {
     synchronized (this.allMembershipListenersLock) {
@@ -2366,7 +2322,7 @@ public class DistributionManager
    * @throws IllegalArgumentException
    *         <code>l</code> was not registered on this distribution
    *         manager
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void removeAllMembershipListener(MembershipListener l) {
     synchronized (this.allMembershipListenersLock) {
@@ -2415,7 +2371,7 @@ public class DistributionManager
       return;
     }
     synchronized(this.membershipViewIdGuard) { 
-      while (this.membershipViewIdAcknowledged < id && this.stopper.cancelInProgress() == null) {
+      while (this.membershipViewIdAcknowledged < id && !this.stopper.isCancelInProgress()) {
         if (logger.isDebugEnabled()) {
           logger.debug("waiting for view {}.  Current DM view processed by all listeners is {}", id, this.membershipViewIdAcknowledged);
         }
@@ -2446,7 +2402,7 @@ public class DistributionManager
         // bug 41539 - member events need to be delivered during shutdown
         //             or reply processors may hang waiting for replies from
         //             departed members
-//        if (getCancelCriterion().cancelInProgress() != null) {
+//        if (getCancelCriterion().isCancelInProgress()) {
 //          break; // no message, just quit
 //        }
         if (!DistributionManager.this.system.isConnected &&
@@ -2575,7 +2531,7 @@ public class DistributionManager
 //    * Initializes and returns a <code>DistributedSystem</code> to be
 //    * sent to new members of the distributed system.
 //    *
-//    * @since 3.0
+//    * @since GemFire 3.0
 //    */
 //   protected DistributedState getNewDistributedState() {
 //     DistributedState state = new DistributedState();
@@ -2618,7 +2574,7 @@ public class DistributionManager
   /**
    * Add a membership listener for all members
    * and return other DistribtionManagerIds as an atomic operation
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Set addAllMembershipListenerAndGetAllIds(MembershipListener l) {
     // TO fix this deadlock:
@@ -3897,7 +3853,7 @@ public class DistributionManager
    * Sets the administration agent associated with this distribution
    * manager.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void setAgent(RemoteGfManagerAgent agent) {
     // Don't let the agent be set twice.  There should be a one-to-one
@@ -3918,7 +3874,7 @@ public class DistributionManager
   /**
    * Returns the agent that owns this distribution manager.
    * (in ConsoleDistributionManager)
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public RemoteGfManagerAgent getAgent(){
     return this.agent;
@@ -3931,7 +3887,7 @@ public class DistributionManager
    * @return <code>null</code> if no admin {@linkplain #getAgent
    *         agent} is associated with this distribution manager
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public String getDistributionConfigDescription() {
     if (this.agent == null) {
@@ -3971,7 +3927,7 @@ public class DistributionManager
    * @param owner the agent that owns the returned monitor
    * @return the health monitor created by the owner; <code>null</code>
    *    if the owner has now created a monitor.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public HealthMonitor getHealthMonitor(InternalDistributedMember owner) {
     return (HealthMonitor)this.hmMap.get(owner);
@@ -3981,7 +3937,7 @@ public class DistributionManager
    *
    * @param owner the agent that owns the created monitor
    * @param cfg the configuration to use when creating the monitor
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public void createHealthMonitor(InternalDistributedMember owner,
                                   GemFireHealthConfig cfg) {
@@ -4652,7 +4608,7 @@ public class DistributionManager
 
   /* (non-Javadoc)
    * @see com.gemstone.gemfire.distributed.internal.DM#getMembersOnThisHost()
-   * @since gemfire59poc
+   * @since GemFire 5.9
    */
   public Set<InternalDistributedMember> getMembersInThisZone() {
     return getMembersInSameZone(getDistributionManagerId());

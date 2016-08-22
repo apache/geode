@@ -16,68 +16,18 @@
  */
 package com.gemstone.gemfire.internal.tcp;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
-import java.io.OutputStream;
-import java.net.ConnectException;
-import java.net.Inet6Address;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.nio.ByteBuffer;
-import java.nio.channels.CancelledKeyException;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.ClosedSelectorException;
-import java.nio.channels.SocketChannel;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.ConflationKey;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DirectReplyProcessor;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.distributed.internal.ReplyException;
-import com.gemstone.gemfire.distributed.internal.ReplyMessage;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.distributed.internal.ReplySender;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.direct.DirectChannel;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.i18n.StringId;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.ByteArrayDataInput;
-import com.gemstone.gemfire.internal.DSFIDFactory;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.SocketUtils;
-import com.gemstone.gemfire.internal.SystemTimer;
+import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.SystemTimer.SystemTimerTask;
-import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
@@ -85,12 +35,27 @@ import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.tcp.MsgReader.Header;
 import com.gemstone.gemfire.internal.util.concurrent.ReentrantSemaphore;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.net.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.CancelledKeyException;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.ClosedSelectorException;
+import java.nio.channels.SocketChannel;
+import java.util.*;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /** <p>Connection is a socket holder that sends and receives serialized
     message objects.  A Connection may be closed to preserve system
     resources and will automatically be reopened when it's needed.</p>
 
-    @since 2.0
+    @since GemFire 2.0
 
 */
 
@@ -117,7 +82,7 @@ public class Connection implements Runnable {
    * Small buffer used for send socket buffer on receiver connections
    * and receive buffer on sender connections.
    */
-  public final static int SMALL_BUFFER_SIZE = Integer.getInteger("gemfire.SMALL_BUFFER_SIZE",4096).intValue();
+  public final static int SMALL_BUFFER_SIZE = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "SMALL_BUFFER_SIZE", 4096).intValue();
 
   /** counter to give connections a unique id */
   private static AtomicLong idCounter = new AtomicLong(1);
@@ -262,7 +227,7 @@ public class Connection implements Runnable {
   /**
    * How long to wait if receiver will not accept a message before we
    * go into queue mode.
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   private int asyncDistributionTimeout = 0;
   /**
@@ -270,7 +235,7 @@ public class Connection implements Runnable {
    * with the receiver not accepting any messages,
    * before kicking the receiver out of the distributed system.
    * Ignored if asyncDistributionTimeout is zero.
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   private int asyncQueueTimeout = 0;
   /**
@@ -279,7 +244,7 @@ public class Connection implements Runnable {
    * before kicking the receiver out of the distributed system.
    * Ignored if asyncDistributionTimeout is zero.
    * Canonicalized to bytes (property file has it as megabytes
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   private long asyncMaxQueueSize = 0;
   /**
@@ -604,7 +569,9 @@ public class Connection implements Runnable {
     if (isSocketClosed()) {
       return true;
     }
-    if (isSocketInUse()) {
+    if (isSocketInUse()
+        || (this.sharedResource && !this.preserveOrder)) { // shared/unordered connections are used for failure-detection
+                                                           // and are not subject to idle-timeout
       return false;
     }
     boolean isIdle = !this.accessed;
@@ -878,7 +845,7 @@ public class Connection implements Runnable {
   private void waitForAddressCompletion() {
     InternalDistributedMember myAddr = this.owner.getConduit().getLocalAddress();
     synchronized (myAddr) {
-      while ((owner.getConduit().getCancelCriterion().cancelInProgress() == null)
+      while ((!owner.getConduit().getCancelCriterion().isCancelInProgress())
           && myAddr.getInetAddress() == null && myAddr.getVmViewId() < 0) {
         try {
           myAddr.wait(100); // spurious wakeup ok
@@ -1003,7 +970,7 @@ public class Connection implements Runnable {
 
   /** time between connection attempts*/
   private static final int RECONNECT_WAIT_TIME
-    = Integer.getInteger("gemfire.RECONNECT_WAIT_TIME", 2000).intValue();
+      = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "RECONNECT_WAIT_TIME", 2000).intValue();
 
   /** creates a new connection to a remote server.
    *  We are initiating this connection; the other side must accept us
@@ -1279,7 +1246,7 @@ public class Connection implements Runnable {
         int connectTime = getP2PConnectTimeout();; 
 
         try {
-          SocketUtils.connect(channel.socket(), addr, connectTime);
+          channel.socket().connect(addr, connectTime);
         } catch (NullPointerException e) {
           // bug #45044 - jdk 1.7 sometimes throws an NPE here
           ConnectException c = new ConnectException("Encountered bug #45044 - retrying");
@@ -1330,7 +1297,7 @@ public class Connection implements Runnable {
         s.setKeepAlive(SocketCreator.ENABLE_TCP_KEEP_ALIVE);
         setReceiveBufferSize(s, SMALL_BUFFER_SIZE);
         setSendBufferSize(s);
-        SocketUtils.connect(s, addr, 0);
+        s.connect(addr, 0);
       }
     }
     if (logger.isDebugEnabled()) {
@@ -1800,7 +1767,7 @@ public class Connection implements Runnable {
       } catch (Exception ignore) {}      
       return; // exit loop and thread
     } catch (IOException ex) {
-      if (stopped || owner.getConduit().getCancelCriterion().cancelInProgress() != null) {
+      if (stopped || owner.getConduit().getCancelCriterion().isCancelInProgress()) {
         try { 
           requestClose(LocalizedStrings.Connection_RUNNIOREADER_CAUGHT_SHUTDOWN.toLocalizedString());
         } catch (Exception ignore) {}
@@ -1840,7 +1807,7 @@ public class Connection implements Runnable {
           }
           SystemFailure.checkFailure(); // throws
         }
-        if (this.owner.getConduit().getCancelCriterion().cancelInProgress() != null) {
+        if (this.owner.getConduit().getCancelCriterion().isCancelInProgress()) {
           break;
         }
 
@@ -1946,7 +1913,7 @@ public class Connection implements Runnable {
   /** initiate suspect processing if a shared/ordered connection is lost and we're not shutting down */
   private void initiateSuspicionIfSharedUnordered() {
     if (this.isReceiver && this.handshakeRead && !this.preserveOrder && this.sharedResource) {
-      if (this.owner.getConduit().getCancelCriterion().cancelInProgress() == null) {
+      if (!this.owner.getConduit().getCancelCriterion().isCancelInProgress()) {
         this.owner.getDM().getMembershipManager().suspectMember(this.getRemoteAddress(),
             INITIATING_SUSPECT_PROCESSING);
       }
@@ -2050,7 +2017,7 @@ public class Connection implements Runnable {
       input = new BufferedInputStream(getSocket().getInputStream(), INITIAL_CAPACITY);
     }
     catch (IOException io) {
-      if (stopped || owner.getConduit().getCancelCriterion().cancelInProgress() != null) {
+      if (stopped || owner.getConduit().getCancelCriterion().isCancelInProgress()) {
         return; // bug 37520: exit run loop (and thread)
       }
       logger.fatal(LocalizedMessage.create(LocalizedStrings.Connection_UNABLE_TO_GET_INPUT_STREAM), io);
@@ -2082,7 +2049,7 @@ public class Connection implements Runnable {
           }
           SystemFailure.checkFailure(); // throws
         }
-        if (this.owner.getConduit().getCancelCriterion().cancelInProgress() != null) {
+        if (this.owner.getConduit().getCancelCriterion().isCancelInProgress()) {
           break;
         }
         int len = 0;
@@ -2372,7 +2339,7 @@ public class Connection implements Runnable {
 
               String authInit = System
                   .getProperty(DistributionConfigImpl.SECURITY_SYSTEM_PREFIX
-                      + DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME);
+                      + SECURITY_PEER_AUTH_INIT);
               boolean isSecure = authInit != null && authInit.length() != 0;
 
               if (isSecure) {
@@ -2461,7 +2428,7 @@ public class Connection implements Runnable {
           // sleep a bit to avoid a hot error loop
           try { Thread.sleep(1000); } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
-            if (this.owner.getConduit().getCancelCriterion().cancelInProgress() != null) {
+            if (this.owner.getConduit().getCancelCriterion().isCancelInProgress()) {
               return;
             }
             break;
@@ -2469,7 +2436,7 @@ public class Connection implements Runnable {
         }
       } // IOException
       catch (Exception e) {
-        if (this.owner.getConduit().getCancelCriterion().cancelInProgress() != null) {
+        if (this.owner.getConduit().getCancelCriterion().isCancelInProgress()) {
           return; // bug 37101
         }
         if (!stopped && !(e instanceof InterruptedException) ) {
@@ -2958,7 +2925,7 @@ public class Connection implements Runnable {
 
 
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   private void disconnectSlowReceiver() {
     synchronized (this.outgoingQueue) {
@@ -3029,7 +2996,7 @@ public class Connection implements Runnable {
             }
             SystemFailure.checkFailure(); // throws
           }
-          if (this.owner.getConduit().getCancelCriterion().cancelInProgress() != null) {
+          if (this.owner.getConduit().getCancelCriterion().isCancelInProgress()) {
             break;
           }
           flushId++;
@@ -3892,7 +3859,7 @@ public class Connection implements Runnable {
               try {
                 String authInit = System
                     .getProperty(DistributionConfigImpl.SECURITY_SYSTEM_PREFIX
-                        + DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME);
+                        + SECURITY_PEER_AUTH_INIT);
                 boolean isSecure = authInit!= null && authInit.length() != 0 ;
 
                 if (isSecure) {
@@ -4044,7 +4011,7 @@ public class Connection implements Runnable {
   /**
    * answers whether this connection was initiated in this vm
    * @return true if the connection was initiated here
-   * @since 5.1
+   * @since GemFire 5.1
    */
   protected boolean getOriginatedHere() {
     return !this.isReceiver;

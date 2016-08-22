@@ -21,14 +21,18 @@ import com.gemstone.gemfire.cache.CacheWriter;
 import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
 
 /**
  * MBean that provides access to information and management functionality for a
  * {@link Region}.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
+@ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
 public interface DistributedRegionMXBean {
 
   /**
@@ -130,7 +134,6 @@ public interface DistributedRegionMXBean {
   /**
    * Returns the number of entries in the Region.
    * 
-   * For HDFS regions it will be count of only in memory data.
    */
   public long getSystemRegionEntryCount();
 
@@ -305,14 +308,4 @@ public interface DistributedRegionMXBean {
    * Returns the number of members whose entry count is 0.
    */
   public int getEmptyNodes();
-  
-  
-  /**
-   * An estimated entry count for HDFS Read-Write region.This may not be accurate but acts
-   * as an indicative value.
-   * 
-   * For other regions it will be -1 ( Not Available)
-   */
-  public long getEstimatedSizeForHDFSRegion();
-
 }

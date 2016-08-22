@@ -16,9 +16,19 @@
  */
 package com.gemstone.gemfire.cache;
 
-import java.io.IOException;
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Properties;
 import java.util.Set;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
@@ -41,10 +51,11 @@ import com.gemstone.gemfire.internal.cache.xmlcache.ParallelGatewaySenderCreatio
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.SerialGatewaySenderCreation;
 
+@Category(DistributedTest.class)
 public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
 
-  public CacheXml70GatewayDUnitTest(String name) {
-    super(name);
+  public CacheXml70GatewayDUnitTest() {
+    super();
   }
 
   protected String getGemFireVersion() {
@@ -54,6 +65,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
   /**
    * Added to test the scenario of defect #50600.
    */
+  @Test
   public void testAsyncEventQueueWithGatewayEventFilter() {
     getSystem();
     CacheCreation cache = new CacheCreation();
@@ -87,15 +99,16 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
       CacheXml70DUnitTest.validateAsyncEventQueue(asyncEventQueue, asyncEventQueueOnCache);
     }
   }
-  
-  public void testGatewayReceiver() throws CacheException{
+
+  @Test
+  public void testGatewayReceiver() throws Exception{
     getSystem();
     CacheCreation cache = new CacheCreation();
     
     GatewayReceiverFactory gatewayReceiverFactory = cache.createGatewayReceiverFactory();
     gatewayReceiverFactory.setBindAddress("");
-    gatewayReceiverFactory.setStartPort(54321);
-    gatewayReceiverFactory.setEndPort(54331);
+    gatewayReceiverFactory.setStartPort(20000);
+    gatewayReceiverFactory.setEndPort(29999);
     gatewayReceiverFactory.setMaximumTimeBetweenPings(2000);
     gatewayReceiverFactory.setSocketBufferSize(1500);
     GatewayTransportFilter myStreamfilter1 = new MyGatewayTransportFilter1();
@@ -103,12 +116,9 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
     GatewayTransportFilter myStreamfilter2 = new MyGatewayTransportFilter2();
     gatewayReceiverFactory.addGatewayTransportFilter(myStreamfilter2);
     GatewayReceiver receiver1 = gatewayReceiverFactory.create();
-    try {
-      receiver1.start();
-    }
-    catch (IOException e) {
-      fail("Could not start GatewayReceiver");
-    }
+
+    receiver1.start();
+
     testXml(cache);
     Cache c = getCache();
     assertNotNull(c);
@@ -118,6 +128,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
     }
   }
   
+  @Test
   public void testParallelGatewaySender() throws CacheException{
     getSystem();
     CacheCreation cache = new CacheCreation();
@@ -155,6 +166,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
     }
   }
   
+  @Test
   public void testSerialGatewaySender() throws CacheException{
     getSystem();
     CacheCreation cache = new CacheCreation();

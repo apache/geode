@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.security.generator;
 
 import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.security.AuthInitialize;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
@@ -31,11 +32,11 @@ import java.util.Properties;
  * properties provided in getCredential props argument will also be 
  * copied as new credentials.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class UserPasswordWithExtraPropsAuthInit extends UserPasswordAuthInit {
 
-  public static final String SECURITY_PREFIX = "security-";
+  public static final String SECURITY_PREFIX = DistributionConfig.SECURITY_PREFIX_NAME;
   public static final String EXTRA_PROPS = "security-keep-extra-props";
 
   public static AuthInitialize create() {

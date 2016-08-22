@@ -19,6 +19,7 @@ package com.gemstone.gemfire.internal.cache.extension;
 
 import java.util.ArrayList;
 
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.internal.util.CollectionUtils;
 
 /**
@@ -26,7 +27,7 @@ import com.gemstone.gemfire.internal.util.CollectionUtils;
  * existing objects.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 // UnitTest SimpleExtensionPointJUnitTest
 public class SimpleExtensionPoint<T> implements ExtensionPoint<T> {
@@ -49,7 +50,7 @@ public class SimpleExtensionPoint<T> implements ExtensionPoint<T> {
    * @param target
    *          the <code>T</code> instance being extended. Likely the same as
    *          <code>exensible</code>.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public SimpleExtensionPoint(final Extensible<T> extensible, final T target) {
     this.extensible = extensible;
@@ -74,6 +75,12 @@ public class SimpleExtensionPoint<T> implements ExtensionPoint<T> {
   @Override
   public T getTarget() {
     return target;
+  }
+
+  public void beforeCreate(final Cache cache) {
+    for (final Extension<T> extension : extensions) {
+      extension.beforeCreate(extensible, cache);
+    }
   }
 
   public void fireCreate(final Extensible<T> newTarget) {

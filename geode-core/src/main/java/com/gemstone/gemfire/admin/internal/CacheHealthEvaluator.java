@@ -39,7 +39,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * a {@link CacheHealthConfig}.
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 class CacheHealthEvaluator extends AbstractHealthEvaluator 
   implements CacheLifecycleListener {

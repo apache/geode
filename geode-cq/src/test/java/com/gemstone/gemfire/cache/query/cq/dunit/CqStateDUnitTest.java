@@ -16,7 +16,14 @@
  */
 package com.gemstone.gemfire.cache.query.cq.dunit;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.query.CqQuery;
 import com.gemstone.gemfire.cache.query.dunit.CloseCacheAuthorization;
@@ -33,21 +40,16 @@ import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
+@Category(DistributedTest.class)
 public class CqStateDUnitTest extends HelperTestCase {
 
-  
-  public CqStateDUnitTest(String name) {
-    super(name);
-  }
-  
-  public void testNothingBecauseBug51953() {
-    // remove when bug #51953 is fixed
-  }
-  
   // this test is disabled due to a 25% failure rate in
   // CI testing.  See internal ticket #52229
-  public void disabledtestBug51222() throws Exception {
+  @Ignore("TODO: test is disabled due to flickering")
+  @Test
+  public void testBug51222() throws Exception {
     //The client can log this when the server shuts down.
     IgnoredException.addIgnoredException("Could not find any server");
     IgnoredException.addIgnoredException("java.net.ConnectException");
@@ -103,7 +105,6 @@ public class CqStateDUnitTest extends HelperTestCase {
         CqQuery cq = getCache().getQueryService().getCqs()[0];
         return cq.getState().isRunning();
       }
-      
     });
     
     assertTrue("Cq was not running on server" , isRunning);
@@ -111,22 +112,22 @@ public class CqStateDUnitTest extends HelperTestCase {
   
   public Properties getAuthenticatedServerProperties() {
     Properties props = new Properties();
-    props.put("mcast-port", "0");
-    props.put("security-client-accessor", CloseCacheAuthorization.class.getName() + ".create");
-    props.put("security-client-accessor-pp", CloseCacheAuthorization.class.getName() + ".create");
-    props.put("security-client-authenticator", DummyAuthenticator.class.getName() + ".create");
+    props.put(MCAST_PORT, "0");
+    props.put(SECURITY_CLIENT_ACCESSOR, CloseCacheAuthorization.class.getName() + ".create");
+    props.put(SECURITY_CLIENT_ACCESSOR_PP, CloseCacheAuthorization.class.getName() + ".create");
+    props.put(SECURITY_CLIENT_AUTHENTICATOR, DummyAuthenticator.class.getName() + ".create");
     return props;
   }
   
   public Properties getServerProperties() {
     Properties props = new Properties();
-    props.put("mcast-port", "0");
+    props.put(MCAST_PORT, "0");
     return props;
   }
   
   public Properties getClientProperties() {
     Properties props = new Properties();
-    props.put("security-client-auth-init", UserPasswordAuthInit.class.getName() + ".create");
+    props.put(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName() + ".create");
     props.put("security-username", "root");
     props.put("security-password", "root");
     return props;

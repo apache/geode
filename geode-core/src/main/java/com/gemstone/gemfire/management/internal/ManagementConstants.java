@@ -16,12 +16,11 @@
  */
 package com.gemstone.gemfire.management.internal;
 
-import java.util.concurrent.TimeUnit;
-
-import javax.management.ObjectName;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.management.internal.beans.QueryDataFunction;
+
+import javax.management.ObjectName;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -120,7 +119,9 @@ public interface ManagementConstants {
   public static final String OBJECTNAME__DISKSTORE_MXBEAN              = OBJECTNAME__PREFIX + "service=DiskStore,name={0},type=Member,member={1}";
   
   public static final String OBJECTNAME__LOCATOR_MXBEAN                = OBJECTNAME__PREFIX + "service=Locator,type=Member,member={0}";
-  
+
+  public static final String OBJECTNAME__CACHESERVICE_MXBEAN           = OBJECTNAME__PREFIX + "service=CacheService,name={0},type=Member,member={1}";
+
   public static final String AGGREGATE_MBEAN_PATTERN                   = OBJECTNAME__PREFIX + "*,type=Distributed";
   // Object Name keys 
   
@@ -172,7 +173,9 @@ public interface ManagementConstants {
   public static final String GATEWAY_RECEIVER_STOPPED_PREFIX= "GatewayReceiver Stopped in the VM ";
   
   public static final String ASYNC_EVENT_QUEUE_CREATED_PREFIX= "Async Event Queue is Created  in the VM ";
-  
+
+  public static final String CACHE_SERVICE_CREATED_PREFIX= "Cache Service Created With Name ";
+
   public static final String CACHE_SERVER_STARTED_PREFIX= "Cache Server is Started in the VM ";
   public static final String CACHE_SERVER_STOPPED_PREFIX= "Cache Server is stopped in the VM ";
   

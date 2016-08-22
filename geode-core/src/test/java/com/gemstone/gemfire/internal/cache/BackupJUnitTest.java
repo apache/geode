@@ -16,43 +16,24 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.DiskWriteAttributesFactory;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.cache.persistence.BackupManager;
 import com.gemstone.gemfire.internal.cache.persistence.RestoreScript;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.*;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -61,7 +42,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 public class BackupJUnitTest {
   protected static GemFireCacheImpl cache = null;
   protected static File TMP_DIR;
-  protected static File CACHE_XML_FILE; 
+  protected static File cacheXmlFile;
 
   protected static DistributedSystem ds = null;
   protected static Properties props = new Properties();
@@ -80,18 +61,18 @@ public class BackupJUnitTest {
   @Before
   public void setUp() throws Exception {
     if (TMP_DIR == null) {
-      props.setProperty("mcast-port", "0");
-      props.setProperty("locators", "");
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(LOCATORS, "");
       String tmpDirName = System.getProperty("java.io.tmpdir");
       TMP_DIR = tmpDirName == null ? new File("") : new File(tmpDirName); 
       try {
         URL url = BackupJUnitTest.class.getResource("BackupJUnitTest.cache.xml");
-        CACHE_XML_FILE = new File(url.toURI().getPath());
+        cacheXmlFile = new File(url.toURI().getPath());
       } catch (URISyntaxException e) {
         throw new ExceptionInInitializerError(e);
       }
-      props.setProperty("cache-xml-file", CACHE_XML_FILE.getAbsolutePath());
-      props.setProperty("log-level", "config"); // to keep diskPerf logs smaller
+      props.setProperty(CACHE_XML_FILE, cacheXmlFile.getAbsolutePath());
+      props.setProperty(LOG_LEVEL, "config"); // to keep diskPerf logs smaller
     }
 
     createCache();
@@ -320,7 +301,7 @@ public class BackupJUnitTest {
     backup.finishBackup(backupDir, null, false);
     File cacheXmlBackup = FileUtil.find(backupDir, ".*config.cache.xml");
     assertTrue(cacheXmlBackup.exists());
-    byte[] expectedBytes = getBytes(CACHE_XML_FILE);
+    byte[] expectedBytes = getBytes(cacheXmlFile);
     byte[] backupBytes = getBytes(cacheXmlBackup);
     assertEquals(expectedBytes.length, backupBytes.length);
     for(int i = 0; i < expectedBytes.length; i++) {

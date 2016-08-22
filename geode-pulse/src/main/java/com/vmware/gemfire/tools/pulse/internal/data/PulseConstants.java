@@ -101,6 +101,9 @@ public class PulseConstants {
   public static final String APPLICATION_PROPERTY_PULSE_LOGLEVEL = "pulse.Log-Level";
   public static final String APPLICATION_PROPERTY_PULSE_LOGAPPEND = "pulse.Log-Append";
   public static final String APPLICATION_PROPERTY_PULSE_PRODUCTSUPPORT = "pulse.product";
+  public static final String APPLICATION_PROPERTY_PULSE_SEC_PROFILE_GEMFIRE = "pulse.authentication.gemfire";
+  public static final String APPLICATION_PROPERTY_PULSE_SEC_PROFILE_DEFAULT = "pulse.authentication.default";
+  public static final String APPLICATION_PROPERTY_PULSE_SPRING_PROFILE_KEY = "spring.profiles.default";
 
   // STRING FLAGS
   public static final String STRING_FLAG_TRUE = "true";
@@ -124,6 +127,7 @@ public class PulseConstants {
   public static final String OBJECT_NAME_TABLE_AGGREGATE_PATTERN = OBJECT_DOMAIN_NAME_SQLFIRE + ":service=Table,type=Aggregate,table=";
   public static final String OBJECT_NAME_REGION_ON_MEMBER_REGION = OBJECT_DOMAIN_NAME_GEMFIRE + ":service=Region,name=";
   public static final String OBJECT_NAME_REGION_ON_MEMBER_MEMBER = ",type=Member,member=";
+  public static final String OBJECT_NAME_ACCESSCONTROL_MBEAN = "GemFire:service=AccessControl,type=Distributed";
 
   public static final String MBEAN_KEY_PROPERTY_SERVICE = "service";
   public static final String MBEAN_KEY_PROPERTY_SERVICE_VALUE_REGION = "Region";
@@ -297,7 +301,6 @@ public class PulseConstants {
   public static final String COMPOSITE_DATA_KEY_DISKSTORENAME = "diskStoreName";
   public static final String COMPOSITE_DATA_KEY_DISKSYNCHRONOUS = "diskSynchronous";
   public static final String COMPOSITE_DATA_KEY_COMPRESSIONCODEC = "compressionCodec";
-  public static final String COMPOSITE_DATA_KEY_HDFSWRITEONLY = "hdfsWriteOnly";
   public static final String COMPOSITE_DATA_KEY_ENABLEOFFHEAPMEMORY = "enableOffHeapMemory";
   public static final String COMPOSITE_DATA_KEY_CONNECTIONSACTIVE = "connectionsActive";
   public static final String COMPOSITE_DATA_KEY_CONNECTED = "connected";
@@ -314,6 +317,11 @@ public class PulseConstants {
   public static final String PRODUCT_NAME_GEMFIRE = "gemfire"; // For GemFire
   public static final String PRODUCT_NAME_SQLFIRE = "gemfirexd"; // For SQLFire
 
+  //Following attributes are not present in 9.0
+  //"Members"
+  //"EmptyNodes"
+  //"SystemRegionEntryCount"
+  //"MemberCount"
   public static final String[] REGION_MBEAN_ATTRIBUTES = {
       MBEAN_ATTRIBUTE_MEMBERS, MBEAN_ATTRIBUTE_FULLPATH,
       MBEAN_ATTRIBUTE_DISKREADSRATE, MBEAN_ATTRIBUTE_DISKWRITESRATE,
@@ -403,6 +411,11 @@ public class PulseConstants {
 
   public static final String[] SF_TABLE_MBEAN_ATTRIBUTES = {
       MBEAN_ATTRIBUTE_ENTRYSIZE, MBEAN_ATTRIBUTE_NUMBEROFROWS };
+  
+  public static final String PULSE_ROLES[] = {
+    "CLUSTER:READ",
+    "DATA:READ"
+  };
 
   // SSL Related attributes
 

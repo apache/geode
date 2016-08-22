@@ -16,95 +16,33 @@
  */
 package com.gemstone.gemfire;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.transaction.Synchronization;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.AttributesMutator;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheEvent;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EntryExistsException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.FailedSynchronizationException;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.TransactionEvent;
-import com.gemstone.gemfire.cache.TransactionException;
-import com.gemstone.gemfire.cache.TransactionId;
-import com.gemstone.gemfire.cache.TransactionListener;
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.query.*;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.TransactionListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.NanoTimer; // With java 1.5, please replace with System.nanoTime()
-import com.gemstone.gemfire.internal.cache.AbstractRegion;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.TXManagerImpl;
-import com.gemstone.gemfire.internal.cache.TXStateProxy;
+import com.gemstone.gemfire.internal.NanoTimer;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.util.StopWatch;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.*;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
+
+import javax.transaction.Synchronization;
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * Tests basic transaction functionality
  *
- * @since 4.0
+ * @since GemFire 4.0
  *
  */
 @Category(IntegrationTest.class)
@@ -130,7 +68,7 @@ public class TXJUnitTest {
 
   protected void createCache() throws Exception {
     Properties p = new Properties();
-    p.setProperty("mcast-port", "0"); // loner
+    p.setProperty(MCAST_PORT, "0"); // loner
     this.cache = (GemFireCacheImpl)CacheFactory.create(DistributedSystem.connect(p));
     createRegion();
     this.txMgr = this.cache.getCacheTransactionManager();
@@ -3069,7 +3007,7 @@ public class TXJUnitTest {
       assertNotNull(event.getRegion().getCache());
       assertNotNull(event.getRegion().getCache().getCacheTransactionManager());
       assertEquals(this.getTXId(), event.getTransactionId());
-      // assertEquals(event.getTransactionId(), event.getRegion().getCache().getCacheTransactionManager().getTransactionId(), );
+      // assertIndexDetailsEquals(event.getTransactionId(), event.getRegion().getCache().getCacheTransactionManager().getTransactionId(), );
       if (!isPR()) assertEquals("IsDistributed Assertion!",  this.isDistributed(), event.isDistributed());
       assertEquals(this.getKey(), event.getKey());
       assertSame(this.getCallBackArg(), event.getCallbackArgument());
@@ -3753,28 +3691,28 @@ public class TXJUnitTest {
         assertTrue(!txIt.hasNext());
       }
       reg1.invalidate("key1");
-//      assertEquals(0, nonTxKeys.size());
+//      assertIndexDetailsEquals(0, nonTxKeys.size());
       assertEquals(1, txKeys.size());
-//      assertEquals(0, nonTxValues.size());
+//      assertIndexDetailsEquals(0, nonTxValues.size());
       assertEquals(0, txValues.size());
       assertTrue(txKeys.contains("key1"));
       assertTrue(!txValues.contains("value1"));
       reg1.create("key2", "value2");
       reg1.create("key3", "value3");
-//      assertEquals(0, nonTxKeys.size());
+//      assertIndexDetailsEquals(0, nonTxKeys.size());
       assertEquals(3, txKeys.size());
-//      assertEquals(0, nonTxValues.size());
+//      assertIndexDetailsEquals(0, nonTxValues.size());
       assertEquals(2, txValues.size());
       reg1.put("key1", "value1");
-//      assertEquals(0, nonTxKeys.size());
+//      assertIndexDetailsEquals(0, nonTxKeys.size());
       assertEquals(3, txKeys.size());
-//      assertEquals(0, nonTxValues.size());
+//      assertIndexDetailsEquals(0, nonTxValues.size());
       assertEquals(3, txValues.size());
       reg1.localInvalidate("key2");
-//      assertEquals(0, nonTxValues.size());
+//      assertIndexDetailsEquals(0, nonTxValues.size());
       assertEquals(2, txValues.size());
       reg1.invalidate("key1");
-//      assertEquals(0, nonTxValues.size());
+//      assertIndexDetailsEquals(0, nonTxValues.size());
       assertEquals(1, txValues.size());
       reg1.destroy("key2");
       reg1.destroy("key3");
@@ -3813,7 +3751,7 @@ public class TXJUnitTest {
       this.txMgr.begin();
       reg1.create("key1", "value1");
       Collection txValues = reg1.values();
-//      assertEquals(0, nonTxValues.size());
+//      assertIndexDetailsEquals(0, nonTxValues.size());
       assertEquals(1, txValues.size());
       assertTrue(txValues.contains("value1"));
       {
@@ -3880,7 +3818,7 @@ public class TXJUnitTest {
       assertEquals(1, txValues.size());
       assertTrue(txValues.iterator().hasNext());
       assertEquals("txValue1", txValues.iterator().next());
-//      assertEquals(0, nonTxValues.size());
+//      assertIndexDetailsEquals(0, nonTxValues.size());
       // non-TX collections can now be used in a transactional context
       try {
         nonTxValues.iterator().hasNext();
@@ -4132,7 +4070,7 @@ public class TXJUnitTest {
     assertEquals("LV 2", reg1.getEntry("key1").getValue());
     this.txMgr.rollback();
     assertTrue(!reg1.containsKey("key1"));
-    // assertEquals("LV 2", reg1.getEntry("key1").getValue());
+    // assertIndexDetailsEquals("LV 2", reg1.getEntry("key1").getValue());
     // reg1.localDestroy("key1");
     // TX load: commit check
     this.txMgr.begin();
@@ -4433,7 +4371,7 @@ public class TXJUnitTest {
       void assertValid() {
         assertEquals(this.txRollbacks, this.stats.getTxRollbacks());
         assertEquals(this.txRollbackChanges, this.stats.getTxRollbackChanges());
-        if (Boolean.getBoolean("gemfire.cache.enable-time-statistics")) {
+        if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "cache.enable-time-statistics")) {
           assertTrue(this.txRollbackTime <= this.stats.getTxRollbackTime());
           // assertTrue(this.txRollbackLifeTime+((SLEEP_MS-10)*1000000) <= this.stats.getTxRollbackLifeTime());
 	  assertTrue("RollbackLifeTime " + this.txRollbackLifeTime  
@@ -4480,7 +4418,7 @@ public class TXJUnitTest {
       testRollbackLifeTime += beforeRollback - afterBegin;
       // bruce - time based stats are disabled by default
       String p = (String)cache.getDistributedSystem()
-          .getProperties().get("gemfire.enable-time-statistics");
+          .getProperties().get(DistributionConfig.GEMFIRE_PREFIX + "enable-time-statistics");
       if (p != null && Boolean.getBoolean(p)) {
         assertTrue("Local RollbackLifeTime assertion:  " 
                 + testRollbackLifeTime 
@@ -4489,7 +4427,7 @@ public class TXJUnitTest {
       }
       testTotalTx += afterRollback - beforeBegin;
       final long totalTXMinusRollback = testTotalTx - stats.getTxRollbackTime();
-      if (Boolean.getBoolean("gemfire.cache.enable-time-statistics")) {
+      if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "cache.enable-time-statistics")) {
         assertTrue("Total Tx Minus Rollback assertion:  " 
 		 +  totalTXMinusRollback
 		 + " is not >= " + statsRollbackLifeTime,
@@ -5623,7 +5561,7 @@ public class TXJUnitTest {
         lruRegion.create("key" + i, null);
       }
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_NULL);
-      // assertEquals(lruSize, lruRegion.entrySet(false).size());
+      // assertIndexDetailsEquals(lruSize, lruRegion.entrySet(false).size());
       this.txMgr.begin();
       for(int i=0; i<numToPut; ++i) {
         lruRegion.get("key"+i, new Integer(i));
@@ -5688,8 +5626,8 @@ public class TXJUnitTest {
       // LocalRegion lrReg = (LocalRegion) lruRegion;
       // LRUClockNode lruE = null;
       // assertNotNull(lruE = (LRUClockNode) lrReg.basicGetEntry("key"+(numToPut-1)));
-      // assertEquals(2, lruE.getRefCount());
-      // assertEquals(lruSize, lruRegion.entrySet(false).size());
+      // assertIndexDetailsEquals(2, lruE.getRefCount());
+      // assertIndexDetailsEquals(lruSize, lruRegion.entrySet(false).size());
 
       // Force the Non-Tx "put" to remove each attempt since region is full
       // and all the committed entries are currently part of a TX
@@ -6384,7 +6322,7 @@ public class TXJUnitTest {
     }
     waitForUpdates(aIindex0, 4);
 //     waitForKeys(aIindex0, 3);
-//     assertEquals(3, aIindex0.getStatistics().getNumberOfKeys()); // Shouldn't this be 1, again?
+//     assertIndexDetailsEquals(3, aIindex0.getStatistics().getNumberOfKeys()); // Shouldn't this be 1, again?
     assertEquals(2, aIindex0.getStatistics().getNumberOfValues());
     assertEquals(4, aIindex0.getStatistics().getNumUpdates());
 
@@ -6413,7 +6351,7 @@ public class TXJUnitTest {
     assertEquals(2, aIindex1.getStatistics().getNumberOfKeys()); 
     assertEquals(2, aIindex1.getStatistics().getNumberOfValues());
     assertEquals(2, aIindex1.getStatistics().getNumUpdates());
-//     assertEquals(3, aIindex0.getStatistics().getNumberOfKeys()); 
+//     assertIndexDetailsEquals(3, aIindex0.getStatistics().getNumberOfKeys());
     assertEquals(2, aIindex0.getStatistics().getNumberOfValues());
     assertEquals(4, aIindex0.getStatistics().getNumUpdates());
 
@@ -6456,7 +6394,7 @@ public class TXJUnitTest {
     waitForUpdates(aIindex1, 2);
      waitForKeys(aIindex0, 2);
 //     waitForKeys(aIindex1, 2);
-//     assertEquals(2, aIindex1.getStatistics().getNumberOfKeys()); 
+//     assertIndexDetailsEquals(2, aIindex1.getStatistics().getNumberOfKeys());
     assertEquals(2, aIindex1.getStatistics().getNumberOfValues());
     assertEquals(2, aIindex1.getStatistics().getNumUpdates());
     assertEquals(2, aIindex0.getStatistics().getNumberOfKeys()); 
@@ -6501,7 +6439,7 @@ public class TXJUnitTest {
     assertEquals(3, aIindex1.getStatistics().getNumberOfKeys()); 
     assertEquals(3, aIindex1.getStatistics().getNumberOfValues()); // Shouldn't this be 4?
     assertEquals(5, aIindex1.getStatistics().getNumUpdates()); 
-    //assertEquals(4, aIindex0.getStatistics().getNumberOfKeys()); 
+    //assertIndexDetailsEquals(4, aIindex0.getStatistics().getNumberOfKeys());
     assertEquals(3, aIindex0.getStatistics().getNumberOfValues()); // Shouldn't this be 4?
     assertEquals(7, aIindex0.getStatistics().getNumUpdates());
 

@@ -40,15 +40,15 @@ import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
  * <dd>
  * <dl>
  * <dt>{@link String} regionName</dt>
- * <dd>Name of region on which to create {@link MockCacheExtension}.</dd>
+ * <dd>Name of region on which to create {@link MockRegionExtension}.</dd>
  * <dt>{@link String} value</dt>
- * <dd>Value to set. See {@link MockCacheExtension#getValue()}.</dd>
+ * <dd>Value to set. See {@link MockRegionExtension#getValue()}.</dd>
  * </dl>
  * </dt>
  * </dl>
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public class CreateMockRegionExtensionFunction extends FunctionAdapter {
 
@@ -70,6 +70,7 @@ public class CreateMockRegionExtensionFunction extends FunctionAdapter {
     @SuppressWarnings("unchecked")
     final Extensible<Region<?, ?>> extensible = (Extensible<Region<?, ?>>) region;
     final MockRegionExtension extension = new MockRegionExtension(value);
+    extension.beforeCreate(extensible, cache);
     extension.onCreate(extensible, extensible);
 
     XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", region.getName());
@@ -91,7 +92,7 @@ public class CreateMockRegionExtensionFunction extends FunctionAdapter {
    * @param regionName
    * @param value
    * @return
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public static Object[] toArgs(final String regionName, final String value) {
     return new Object[] { regionName, value };

@@ -19,7 +19,7 @@ package com.gemstone.gemfire.cache.query;
 /**
  * Thrown if type consistency is violated while a query is being executed.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 
 public class TypeMismatchException extends QueryException {

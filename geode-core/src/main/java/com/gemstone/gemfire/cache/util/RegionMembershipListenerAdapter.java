@@ -27,7 +27,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * override the methods for the events of interest.
  * 
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 public abstract class RegionMembershipListenerAdapter<K,V> 
 extends CacheListenerAdapter<K,V> 

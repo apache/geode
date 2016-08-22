@@ -26,6 +26,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.jmock.Expectations;
+import org.jmock.Mockery;
+import org.jmock.lib.legacy.ClassImposteriser;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
@@ -43,15 +51,6 @@ import com.gemstone.gemfire.management.internal.cli.domain.IndexDetails;
 import com.gemstone.gemfire.management.internal.cli.domain.IndexDetails.IndexStatisticsDetails;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 /**
  * The ListIndexFunctionJUnitTest class is test suite of test cases testing the contract and functionality of the
  * ListIndexFunction GemFire function.
@@ -63,20 +62,20 @@ import org.junit.experimental.categories.Category;
  * @see org.jmock.lib.legacy.ClassImposteriser
  * @see org.junit.Assert
  * @see org.junit.Test
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(UnitTest.class)
 public class ListIndexFunctionJUnitTest {
 
-  private AtomicLong mockCounter = new AtomicLong(0l);
-
   private Mockery mockContext;
+  private AtomicLong mockCounter;
 
   @Before
   public void setup() {
     mockContext = new Mockery() {{
       setImposteriser(ClassImposteriser.INSTANCE);
     }};
+    mockCounter = new AtomicLong(0l);
   }
 
   @After
@@ -85,38 +84,34 @@ public class ListIndexFunctionJUnitTest {
     mockContext = null;
   }
 
-  protected void assertEquals(final IndexDetails expectedIndexDetails, final IndexDetails actualIndexDetails) {
-    Assert.assertEquals(expectedIndexDetails.getFromClause(), actualIndexDetails.getFromClause());
-    Assert.assertEquals(expectedIndexDetails.getIndexedExpression(), actualIndexDetails.getIndexedExpression());
-    Assert.assertEquals(expectedIndexDetails.getIndexName(), actualIndexDetails.getIndexName());
-    assertEquals(expectedIndexDetails.getIndexStatisticsDetails(), actualIndexDetails.getIndexStatisticsDetails());
-    Assert.assertEquals(expectedIndexDetails.getIndexType(), actualIndexDetails.getIndexType());
-    Assert.assertEquals(expectedIndexDetails.getMemberId(), actualIndexDetails.getMemberId());
-    Assert.assertEquals(expectedIndexDetails.getMemberName(), actualIndexDetails.getMemberName());
-    Assert.assertEquals(expectedIndexDetails.getProjectionAttributes(), actualIndexDetails.getProjectionAttributes());
-    Assert.assertEquals(expectedIndexDetails.getRegionName(), actualIndexDetails.getRegionName());
-    Assert.assertEquals(expectedIndexDetails.getRegionPath(), actualIndexDetails.getRegionPath());
+  private void assertIndexDetailsEquals(final IndexDetails expectedIndexDetails, final IndexDetails actualIndexDetails) {
+    assertEquals(expectedIndexDetails.getFromClause(), actualIndexDetails.getFromClause());
+    assertEquals(expectedIndexDetails.getIndexedExpression(), actualIndexDetails.getIndexedExpression());
+    assertEquals(expectedIndexDetails.getIndexName(), actualIndexDetails.getIndexName());
+    assertIndexStatisticsDetailsEquals(expectedIndexDetails.getIndexStatisticsDetails(), actualIndexDetails.getIndexStatisticsDetails());
+    assertEquals(expectedIndexDetails.getIndexType(), actualIndexDetails.getIndexType());
+    assertEquals(expectedIndexDetails.getMemberId(), actualIndexDetails.getMemberId());
+    assertEquals(expectedIndexDetails.getMemberName(), actualIndexDetails.getMemberName());
+    assertEquals(expectedIndexDetails.getProjectionAttributes(), actualIndexDetails.getProjectionAttributes());
+    assertEquals(expectedIndexDetails.getRegionName(), actualIndexDetails.getRegionName());
+    assertEquals(expectedIndexDetails.getRegionPath(), actualIndexDetails.getRegionPath());
   }
 
-  protected void assertEquals(final IndexStatisticsDetails expectedIndexStatisticsDetails, final IndexStatisticsDetails actualIndexStatisticsDetails) {
+  private void assertIndexStatisticsDetailsEquals(final IndexStatisticsDetails expectedIndexStatisticsDetails, final IndexStatisticsDetails actualIndexStatisticsDetails) {
     if (expectedIndexStatisticsDetails != null) {
       assertNotNull(actualIndexStatisticsDetails);
-      Assert.assertEquals(expectedIndexStatisticsDetails.getNumberOfKeys(), actualIndexStatisticsDetails
-        .getNumberOfKeys());
-      Assert.assertEquals(expectedIndexStatisticsDetails.getNumberOfUpdates(), actualIndexStatisticsDetails
-        .getNumberOfUpdates());
-      Assert.assertEquals(expectedIndexStatisticsDetails.getNumberOfValues(), actualIndexStatisticsDetails
-        .getNumberOfValues());
-      Assert.assertEquals(expectedIndexStatisticsDetails.getTotalUpdateTime(), actualIndexStatisticsDetails
-        .getTotalUpdateTime());
-      Assert.assertEquals(expectedIndexStatisticsDetails.getTotalUses(), actualIndexStatisticsDetails.getTotalUses());
-    }
-    else {
+      assertEquals(expectedIndexStatisticsDetails.getNumberOfKeys(), actualIndexStatisticsDetails.getNumberOfKeys());
+      assertEquals(expectedIndexStatisticsDetails.getNumberOfUpdates(), actualIndexStatisticsDetails.getNumberOfUpdates());
+      assertEquals(expectedIndexStatisticsDetails.getNumberOfValues(), actualIndexStatisticsDetails.getNumberOfValues());
+      assertEquals(expectedIndexStatisticsDetails.getTotalUpdateTime(), actualIndexStatisticsDetails.getTotalUpdateTime());
+      assertEquals(expectedIndexStatisticsDetails.getTotalUses(), actualIndexStatisticsDetails.getTotalUses());
+
+    } else {
       assertNull(actualIndexStatisticsDetails);
     }
   }
 
-  protected IndexDetails createIndexDetails(final String memberId,
+  private IndexDetails createIndexDetails(final String memberId,
                                             final String regionPath,
                                             final String indexName,
                                             final IndexType indexType,
@@ -124,8 +119,7 @@ public class ListIndexFunctionJUnitTest {
                                             final String indexedExpression,
                                             final String memberName,
                                             final String projectionAttributes,
-                                            final String regionName)
-  {
+                                            final String regionName) {
     final IndexDetails indexDetails = new IndexDetails(memberId, regionPath, indexName);
 
     indexDetails.setFromClause(fromClause);
@@ -138,12 +132,11 @@ public class ListIndexFunctionJUnitTest {
     return indexDetails;
   }
 
-  protected IndexStatisticsDetails createIndexStatisticsDetails(final Long numberOfKeys,
+  private IndexStatisticsDetails createIndexStatisticsDetails(final Long numberOfKeys,
                                                                 final Long numberOfUpdates,
                                                                 final Long numberOfValues,
                                                                 final Long totalUpdateTime,
-                                                                final Long totalUses)
-  {
+                                                                final Long totalUses) {
     final IndexStatisticsDetails indexStatisticsDetails = new IndexStatisticsDetails();
 
     indexStatisticsDetails.setNumberOfKeys(numberOfKeys);
@@ -155,16 +148,14 @@ public class ListIndexFunctionJUnitTest {
     return indexStatisticsDetails;
   }
 
-  protected ListIndexFunction createListIndexFunction(final Cache cache) {
+  private ListIndexFunction createListIndexFunction(final Cache cache) {
     return new TestListIndexFunction(cache);
   }
 
-  protected Index createMockIndex(final IndexDetails indexDetails) {
-    final Index mockIndex = mockContext.mock(Index.class, "Index " + indexDetails.getIndexName() + " "
-      + mockCounter.getAndIncrement());
+  private Index createMockIndex(final IndexDetails indexDetails) {
+    final Index mockIndex = mockContext.mock(Index.class, "Index " + indexDetails.getIndexName() + " " + mockCounter.getAndIncrement());
 
-    final Region mockRegion = mockContext.mock(Region.class, "Region " + indexDetails.getRegionPath() + " "
-      + mockCounter.getAndIncrement());
+    final Region mockRegion = mockContext.mock(Region.class, "Region " + indexDetails.getRegionPath() + " " + mockCounter.getAndIncrement());
 
     mockContext.checking(new Expectations() {{
       oneOf(mockIndex).getFromClause();
@@ -186,8 +177,7 @@ public class ListIndexFunctionJUnitTest {
     }});
 
     if (indexDetails.getIndexStatisticsDetails() != null) {
-      final IndexStatistics mockIndexStatistics = mockContext.mock(IndexStatistics.class, "IndexStatistics "
-        + indexDetails.getIndexName() + " " + mockCounter.getAndIncrement());
+      final IndexStatistics mockIndexStatistics = mockContext.mock(IndexStatistics.class, "IndexStatistics " + indexDetails.getIndexName() + " " + mockCounter.getAndIncrement());
 
       mockContext.checking(new Expectations() {{
         exactly(2).of(mockIndex).getStatistics();
@@ -203,8 +193,8 @@ public class ListIndexFunctionJUnitTest {
         oneOf(mockIndexStatistics).getTotalUses();
         will(returnValue(indexDetails.getIndexStatisticsDetails().getTotalUses()));
       }});
-    }
-    else {
+
+    } else {
       mockContext.checking(new Expectations() {{
         oneOf(mockIndex).getStatistics();
         will(returnValue(null));
@@ -214,7 +204,7 @@ public class ListIndexFunctionJUnitTest {
     return mockIndex;
   }
 
-  protected IndexType getIndexType(final IndexDetails.IndexType type) {
+  private IndexType getIndexType(final IndexDetails.IndexType type) {
     switch (type) {
       case FUNCTIONAL:
         return IndexType.FUNCTIONAL;
@@ -289,12 +279,12 @@ public class ListIndexFunctionJUnitTest {
     final List<?> results = testResultSender.getResults();
 
     assertNotNull(results);
-    Assert.assertEquals(1, results.size());
+    assertEquals(1, results.size());
 
     final Set<IndexDetails> actualIndexDetailsSet = (Set<IndexDetails>) results.get(0);
 
     assertNotNull(actualIndexDetailsSet);
-    Assert.assertEquals(expectedIndexDetailsSet.size(), actualIndexDetailsSet.size());
+    assertEquals(expectedIndexDetailsSet.size(), actualIndexDetailsSet.size());
 
     for (final IndexDetails expectedIndexDetails : expectedIndexDetailsSet) {
       final IndexDetails actualIndexDetails = CollectionUtils.findBy(actualIndexDetailsSet, new Filter<IndexDetails>() {
@@ -304,7 +294,7 @@ public class ListIndexFunctionJUnitTest {
       });
 
       assertNotNull(actualIndexDetails);
-      assertEquals(expectedIndexDetails, actualIndexDetails);
+      assertIndexDetailsEquals(expectedIndexDetails, actualIndexDetails);
     }
   }
 
@@ -342,7 +332,7 @@ public class ListIndexFunctionJUnitTest {
     final List<?> results = testResultSender.getResults();
 
     assertNotNull(results);
-    Assert.assertEquals(1, results.size());
+    assertEquals(1, results.size());
 
     final Set<IndexDetails> actualIndexDetailsSet = (Set<IndexDetails>) results.get(0);
 
@@ -382,15 +372,14 @@ public class ListIndexFunctionJUnitTest {
 
     try {
       testResultSender.getResults();
-    }
-    catch (Throwable t) {
+    } catch (Throwable t) {
       assertTrue(t instanceof RuntimeException);
-      Assert.assertEquals("expected", t.getMessage());
+      assertEquals("expected", t.getMessage());
       throw t;
     }
   }
 
-  protected static class TestListIndexFunction extends ListIndexFunction {
+  private static class TestListIndexFunction extends ListIndexFunction {
 
     private final Cache cache;
 
@@ -405,7 +394,7 @@ public class ListIndexFunctionJUnitTest {
     }
   }
 
-  protected static class TestResultSender implements ResultSender {
+  private static class TestResultSender implements ResultSender {
 
     private final List<Object> results = new LinkedList<Object>();
 
@@ -418,14 +407,17 @@ public class ListIndexFunctionJUnitTest {
       return Collections.unmodifiableList(results);
     }
 
+    @Override
     public void lastResult(final Object lastResult) {
       results.add(lastResult);
     }
 
+    @Override
     public void sendResult(final Object oneResult) {
       results.add(oneResult);
     }
 
+    @Override
     public void sendException(final Throwable t) {
       this.t = t;
     }

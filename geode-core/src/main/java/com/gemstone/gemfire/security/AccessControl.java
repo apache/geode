@@ -18,6 +18,7 @@
 package com.gemstone.gemfire.security;
 
 import java.security.Principal;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheCallback;
 import com.gemstone.gemfire.cache.operations.OperationContext;
@@ -36,7 +37,9 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * class is created for each connection from the client/peer and the
  * <code>authorizeOperation</code> method invoked before/after each operation.
  * 
- * @since 5.5
+ * @since GemFire 5.5
+ *
+ * @deprecated since Geode 1.0, use {@link SecurityManager} instead
  */
 public interface AccessControl extends CacheCallback {
 
@@ -64,8 +67,16 @@ public interface AccessControl extends CacheCallback {
    *                 operations on that connection will throw
    *                 <code>NotAuthorizedException</code>
    */
-  public void init(Principal principal, DistributedMember remoteMember,
+  void init(Principal principal, DistributedMember remoteMember,
       Cache cache) throws NotAuthorizedException;
+
+  default void init(Principal principal, DistributedMember remoteMember) throws NotAuthorizedException {
+    init(principal, remoteMember, null);
+  }
+
+  default void init(Principal principal) throws NotAuthorizedException {
+    init(principal, null, null);
+  }
 
   /**
    * Check if the given operation is allowed for the cache/region.
@@ -89,6 +100,6 @@ public interface AccessControl extends CacheCallback {
    * @return true if the operation is authorized and false otherwise
    * 
    */
-  public boolean authorizeOperation(String regionName, OperationContext context);
+  boolean authorizeOperation(String regionName, OperationContext context);
 
 }

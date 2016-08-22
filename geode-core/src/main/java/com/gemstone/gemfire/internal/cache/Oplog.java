@@ -16,72 +16,14 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.io.SyncFailedException;
-import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.SerializationException;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.DiskAccessException;
-import com.gemstone.gemfire.cache.EntryDestroyedException;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.UnsupportedVersionException;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.OplogCancelledException;
 import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.ByteArrayDataInput;
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.InsufficientDiskSpaceException;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.InternalStatisticsDisabledException;
-import com.gemstone.gemfire.internal.Sendable;
-import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.Flushable;
 import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.ValueWrapper;
 import com.gemstone.gemfire.internal.cache.DiskInitFile.DiskRegionFlag;
@@ -90,19 +32,8 @@ import com.gemstone.gemfire.internal.cache.DiskStoreImpl.OplogEntryIdSet;
 import com.gemstone.gemfire.internal.cache.DistributedRegion.DiskPosition;
 import com.gemstone.gemfire.internal.cache.lru.EnableLRU;
 import com.gemstone.gemfire.internal.cache.lru.NewLRUClockHand;
-import com.gemstone.gemfire.internal.cache.persistence.BytesAndBits;
-import com.gemstone.gemfire.internal.cache.persistence.DiskRecoveryStore;
-import com.gemstone.gemfire.internal.cache.persistence.DiskRegionView;
-import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
-import com.gemstone.gemfire.internal.cache.persistence.UninterruptibleFileChannel;
-import com.gemstone.gemfire.internal.cache.persistence.UninterruptibleRandomAccessFile;
-import com.gemstone.gemfire.internal.cache.versions.CompactVersionHolder;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionHolder;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
-import com.gemstone.gemfire.internal.cache.versions.VersionHolder;
-import com.gemstone.gemfire.internal.cache.versions.VersionSource;
-import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import com.gemstone.gemfire.internal.cache.persistence.*;
+import com.gemstone.gemfire.internal.cache.versions.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
@@ -118,6 +49,25 @@ import com.gemstone.gemfire.internal.util.BlobHelper;
 import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.internal.util.TransformUtils;
 import com.gemstone.gemfire.pdx.internal.PdxWriterImpl;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Implements an operation log to write to disk. As of prPersistSprint2 this
@@ -125,7 +75,7 @@ import com.gemstone.gemfire.pdx.internal.PdxWriterImpl;
  * {@link OverflowOplog}.
  * 
  * 
- * @since 5.1
+ * @since GemFire 5.1
  */
 
 public final class Oplog implements CompactableOplog, Flushable {
@@ -189,7 +139,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * This system property instructs that writes be synchronously written to disk
    * and not to file system. (Use rwd instead of rw - RandomAccessFile property)
    */
-  private static final boolean SYNC_WRITES = Boolean.getBoolean("gemfire.syncWrites");
+  private static final boolean SYNC_WRITES = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "syncWrites");
 
   /**
    * The HighWaterMark of recentValues.
@@ -206,7 +156,7 @@ public final class Oplog implements CompactableOplog, Flushable {
   /**
    * Set to true once compact is called on this oplog.
    * 
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private volatile boolean compacting = false;
 
@@ -241,7 +191,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * NEW_ENTRY records. 1: EndOfRecord Only needs to be written once per oplog
    * and must preceed any OPLOG_NEW_ENTRY_0ID records.
    * 
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_NEW_ENTRY_BASE_ID = 63;
   static final int OPLOG_NEW_ENTRY_BASE_REC_SIZE = 1 + 8 + 1;
@@ -251,7 +201,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * bits) valueLength: value bytes (optional depending on bits) 4: keyLength
    * keyLength: key bytes 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_NEW_ENTRY_0ID = 64;
 
@@ -261,7 +211,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * userBits 1: OplogEntryId RegionId 4: valueLength (optional depending on
    * bits) valueLength: value bytes (optional depending on bits) 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_1ID = 65;
   /**
@@ -270,7 +220,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * userBits 2: OplogEntryId RegionId 4: valueLength (optional depending on
    * bits) valueLength: value bytes (optional depending on bits) 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_2ID = 66;
 
@@ -280,7 +230,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * userBits 3: OplogEntryId RegionId 4: valueLength (optional depending on
    * bits) valueLength: value bytes (optional depending on bits) 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_3ID = 67;
 
@@ -290,7 +240,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * userBits 4: OplogEntryId RegionId 4: valueLength (optional depending on
    * bits) valueLength: value bytes (optional depending on bits) 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_4ID = 68;
 
@@ -300,7 +250,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * userBits 5: OplogEntryId RegionId 4: valueLength (optional depending on
    * bits) valueLength: value bytes (optional depending on bits) 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_5ID = 69;
   /**
@@ -309,7 +259,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * userBits 6: OplogEntryId RegionId 4: valueLength (optional depending on
    * bits) valueLength: value bytes (optional depending on bits) 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_6ID = 70;
   /**
@@ -318,7 +268,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * userBits 7: OplogEntryId RegionId 4: valueLength (optional depending on
    * bits) valueLength: value bytes (optional depending on bits) 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_7ID = 71;
   /**
@@ -327,7 +277,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * userBits 8: OplogEntryId RegionId 4: valueLength (optional depending on
    * bits) valueLength: value bytes (optional depending on bits) 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_8ID = 72;
 
@@ -338,7 +288,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * bits) valueLength: value bytes (optional depending on bits) 4: keyLength
    * keyLength: key bytes 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_WITH_KEY_1ID = 73;
   /**
@@ -348,7 +298,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * bits) valueLength: value bytes (optional depending on bits) 4: keyLength
    * keyLength: key bytes 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_WITH_KEY_2ID = 74;
 
@@ -359,7 +309,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * bits) valueLength: value bytes (optional depending on bits) 4: keyLength
    * keyLength: key bytes 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_WITH_KEY_3ID = 75;
 
@@ -370,7 +320,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * bits) valueLength: value bytes (optional depending on bits) 4: keyLength
    * keyLength: key bytes 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_WITH_KEY_4ID = 76;
 
@@ -381,7 +331,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * bits) valueLength: value bytes (optional depending on bits) 4: keyLength
    * keyLength: key bytes 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_WITH_KEY_5ID = 77;
   /**
@@ -391,7 +341,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * bits) valueLength: value bytes (optional depending on bits) 4: keyLength
    * keyLength: key bytes 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_WITH_KEY_6ID = 78;
   /**
@@ -401,7 +351,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * bits) valueLength: value bytes (optional depending on bits) 4: keyLength
    * keyLength: key bytes 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_WITH_KEY_7ID = 79;
   /**
@@ -411,7 +361,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * bits) valueLength: value bytes (optional depending on bits) 4: keyLength
    * keyLength: key bytes 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_WITH_KEY_8ID = 80;
 
@@ -420,7 +370,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * OplogEntryId. The signed difference is encoded in 1 byte. Byte Format: 1:
    * OplogEntryId 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_1ID = 81;
   /**
@@ -428,7 +378,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * OplogEntryId. The signed difference is encoded in 2 bytes. Byte Format: 2:
    * OplogEntryId 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_2ID = 82;
 
@@ -437,7 +387,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * OplogEntryId. The signed difference is encoded in 3 bytes. Byte Format: 3:
    * OplogEntryId 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_3ID = 83;
 
@@ -446,7 +396,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * OplogEntryId. The signed difference is encoded in 4 bytes. Byte Format: 4:
    * OplogEntryId 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_4ID = 84;
 
@@ -455,7 +405,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * OplogEntryId. The signed difference is encoded in 5 bytes. Byte Format: 5:
    * OplogEntryId 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_5ID = 85;
   /**
@@ -463,7 +413,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * OplogEntryId. The signed difference is encoded in 6 bytes. Byte Format: 6:
    * OplogEntryId 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_6ID = 86;
   /**
@@ -471,7 +421,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * OplogEntryId. The signed difference is encoded in 7 bytes. Byte Format: 7:
    * OplogEntryId 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_7ID = 87;
   /**
@@ -479,7 +429,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * OplogEntryId. The signed difference is encoded in 8 bytes. Byte Format: 8:
    * OplogEntryId 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_8ID = 88;
 
@@ -520,7 +470,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * Each oplog type has a different magic number Followed by EndOfRecord Fix
    * for bug 43824
    * 
-   * @since 8.0
+   * @since GemFire 8.0
    */
   static final byte OPLOG_MAGIC_SEQ_ID = 92;
 
@@ -603,7 +553,7 @@ public final class Oplog implements CompactableOplog, Flushable {
     long availableSpace = this.dirHolder.getAvailableSpace();
     if (availableSpace < maxOplogSizeParam) {
       if (DiskStoreImpl.PREALLOCATE_OPLOGS && !DiskStoreImpl.SET_IGNORE_PREALLOCATE) {
-        throw new InsufficientDiskSpaceException(LocalizedStrings.Oplog_PreAllocate_Failure_Init.toLocalizedString(this.dirHolder,
+        throw new DiskAccessException(LocalizedStrings.Oplog_PreAllocate_Failure_Init.toLocalizedString(this.dirHolder,
             maxOplogSizeParam), new IOException("not enough space left to create and pre grow oplog files, available="
             + availableSpace + ", required=" + maxOplogSizeParam), getParent());
       }
@@ -1070,13 +1020,13 @@ public final class Oplog implements CompactableOplog, Flushable {
          * false; } } }
          */
         closeAndDeleteAfterEx(ioe, olf);
-        throw new InsufficientDiskSpaceException(LocalizedStrings.Oplog_PreAllocate_Failure.toLocalizedString(olf.f
+        throw new DiskAccessException(LocalizedStrings.Oplog_PreAllocate_Failure.toLocalizedString(olf.f
             .getAbsolutePath(), maxSize), ioe, getParent());
       }
     }
     // TODO: Perhaps the test flag is not requierd here. Will re-visit.
     else if (DiskStoreImpl.PREALLOCATE_OPLOGS && !DiskStoreImpl.SET_IGNORE_PREALLOCATE) {
-      throw new InsufficientDiskSpaceException(LocalizedStrings.Oplog_PreAllocate_Failure.toLocalizedString(
+      throw new DiskAccessException(LocalizedStrings.Oplog_PreAllocate_Failure.toLocalizedString(
           olf.f.getAbsolutePath(), maxSize), new IOException("not enough space left to pre-blow, available=" + availableSpace
           + ", required=" + maxSize), getParent());
     }
@@ -1278,7 +1228,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * the value This method should never get invoked for an entry which has been
    * destroyed
    * 
-   * @since 3.2.1
+   * @since GemFire 3.2.1
    * @param id
    *          The DiskId for the entry @param offset The offset in this OpLog
    *          where the entry is present. @param faultingIn @param bitOnly
@@ -1437,21 +1387,21 @@ public final class Oplog implements CompactableOplog, Flushable {
    * Used during recovery to calculate the OplogEntryId of the next NEW_ENTRY
    * record.
    * 
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private long recoverNewEntryId = DiskStoreImpl.INVALID_ID;
   /**
    * Used during writing to remember the last MOD_ENTRY OplogEntryId written to
    * this oplog.
    * 
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private long writeModEntryId = DiskStoreImpl.INVALID_ID;
   /**
    * Used during recovery to calculate the OplogEntryId of the next MOD_ENTRY
    * record.
    * 
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private long recoverModEntryId = DiskStoreImpl.INVALID_ID;
   /**
@@ -1466,14 +1416,14 @@ public final class Oplog implements CompactableOplog, Flushable {
    * Used during writing to remember the last DEL_ENTRY OplogEntryId written to
    * this oplog.
    * 
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private long writeDelEntryId = DiskStoreImpl.INVALID_ID;
   /**
    * Used during recovery to calculate the OplogEntryId of the next DEL_ENTRY
    * record.
    * 
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private long recoverDelEntryId = DiskStoreImpl.INVALID_ID;
 
@@ -1917,7 +1867,6 @@ public final class Oplog implements CompactableOplog, Flushable {
     CountingDataInputStream dis = null;
     try {
       final LocalRegion currentRegion = LocalRegion.getInitializingRegion();
-      final boolean keyRequiresRegionContext = currentRegion != null ? currentRegion.keyRequiresRegionContext() : false;
       final Version version = getProductVersionIfOld();
       final ByteArrayDataInput in = new ByteArrayDataInput();
       final HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
@@ -1959,7 +1908,7 @@ public final class Oplog implements CompactableOplog, Flushable {
           }
             break;
           case OPLOG_NEW_ENTRY_0ID:
-            readNewEntry(dis, opCode, deletedIds, recoverValues, currentRegion, keyRequiresRegionContext, version, in, hdos);
+            readNewEntry(dis, opCode, deletedIds, recoverValues, currentRegion, version, in, hdos);
             recordCount++;
             break;
           case OPLOG_MOD_ENTRY_1ID:
@@ -1970,7 +1919,7 @@ public final class Oplog implements CompactableOplog, Flushable {
           case OPLOG_MOD_ENTRY_6ID:
           case OPLOG_MOD_ENTRY_7ID:
           case OPLOG_MOD_ENTRY_8ID:
-            readModifyEntry(dis, opCode, deletedIds, recoverValues, currentRegion, keyRequiresRegionContext, version, in, hdos);
+            readModifyEntry(dis, opCode, deletedIds, recoverValues, currentRegion, version, in, hdos);
             recordCount++;
             break;
           case OPLOG_MOD_ENTRY_WITH_KEY_1ID:
@@ -1981,7 +1930,7 @@ public final class Oplog implements CompactableOplog, Flushable {
           case OPLOG_MOD_ENTRY_WITH_KEY_6ID:
           case OPLOG_MOD_ENTRY_WITH_KEY_7ID:
           case OPLOG_MOD_ENTRY_WITH_KEY_8ID:
-            readModifyEntryWithKey(dis, opCode, deletedIds, recoverValues, currentRegion, keyRequiresRegionContext, version, in,
+            readModifyEntryWithKey(dis, opCode, deletedIds, recoverValues, currentRegion, version, in,
                 hdos);
             recordCount++;
             break;
@@ -2464,7 +2413,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * @throws IOException
    */
   private void readNewEntry(CountingDataInputStream dis, byte opcode, OplogEntryIdSet deletedIds, boolean recoverValue,
-      final LocalRegion currentRegion, boolean keyRequiresRegionContext, Version version, ByteArrayDataInput in,
+      final LocalRegion currentRegion, Version version, ByteArrayDataInput in,
       HeapDataOutputStream hdos) throws IOException {
     final boolean isPersistRecoveryDebugEnabled = logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY);
     
@@ -2603,9 +2552,6 @@ public final class Oplog implements CompactableOplog, Flushable {
           }
         } else {
           Object key = deserializeKey(keyBytes, version, in);
-          if (keyRequiresRegionContext) {
-            ((KeyWithRegionContext) key).setRegionContext(currentRegion);
-          }
           {
             Object oldValue = getRecoveryMap().put(oplogKeyId, key);
             if (oldValue != null) {
@@ -2655,7 +2601,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * @throws IOException
    */
   private void readModifyEntry(CountingDataInputStream dis, byte opcode, OplogEntryIdSet deletedIds, boolean recoverValue,
-      LocalRegion currentRegion, boolean keyRequiresRegionContext, Version version, ByteArrayDataInput in, HeapDataOutputStream hdos)
+      LocalRegion currentRegion, Version version, ByteArrayDataInput in, HeapDataOutputStream hdos)
       throws IOException {
     final boolean isPersistRecoveryDebugEnabled = logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY);
     
@@ -2761,9 +2707,6 @@ public final class Oplog implements CompactableOplog, Flushable {
         byte[] keyBytes = (byte[]) skippedKeyBytes.get(oplogKeyId);
         if (keyBytes != null) {
           key = deserializeKey(keyBytes, version, in);
-          if (keyRequiresRegionContext) {
-            ((KeyWithRegionContext) key).setRegionContext(currentRegion);
-          }
         }
       }
       if (isPersistRecoveryDebugEnabled) {
@@ -2879,7 +2822,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * @throws IOException
    */
   private void readModifyEntryWithKey(CountingDataInputStream dis, byte opcode, OplogEntryIdSet deletedIds, boolean recoverValue,
-      final LocalRegion currentRegion, final boolean keyRequiresRegionContext, Version version, ByteArrayDataInput in,
+      final LocalRegion currentRegion, Version version, ByteArrayDataInput in,
       HeapDataOutputStream hdos) throws IOException {
     long oplogOffset = -1;
 
@@ -3016,9 +2959,6 @@ public final class Oplog implements CompactableOplog, Flushable {
         }
       } else {
         Object key = deserializeKey(keyBytes, version, in);
-        if (keyRequiresRegionContext) {
-          ((KeyWithRegionContext) key).setRegionContext(currentRegion);
-        }
         Object oldValue = getRecoveryMap().put(oplogKeyId, key);
         if (oldValue != null) {
           throw new AssertionError(LocalizedStrings.Oplog_DUPLICATE_CREATE.toLocalizedString(oplogKeyId));
@@ -4308,7 +4248,6 @@ public final class Oplog implements CompactableOplog, Flushable {
     byte userBits = 0;
     long oplogOffset = did.getOffsetInOplog();
     ReferenceCountHelper.skipRefCountTracking();
-    // TODO OFFHEAP: no need to retain. We just use it while we have the RegionEntry synced.
     @Retained @Released Object value = entry._getValueRetain(dr, true);
     ReferenceCountHelper.unskipRefCountTracking();
     // TODO:KIRK:OK Object value = entry.getValueWithContext(dr);
@@ -5042,7 +4981,7 @@ public final class Oplog implements CompactableOplog, Flushable {
   }
 
   private void setMaxCrfDrfSize() {
-    int crfPct = Integer.getInteger("gemfire.CRF_MAX_PERCENTAGE", 90);
+    int crfPct = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "CRF_MAX_PERCENTAGE", 90);
     if (crfPct > 100 || crfPct < 0) {
       crfPct = 90;
     }
@@ -7090,8 +7029,6 @@ public final class Oplog implements CompactableOplog, Flushable {
     public void handleValueOverflow(RegionEntryContext context) {throw new IllegalStateException();}
 
     @Override
-    public void afterValueOverflow(RegionEntryContext context) {throw new IllegalStateException();}
-    @Override
     public Object prepareValueForCache(RegionEntryContext r, Object val, boolean isEntryUpdate) { throw new IllegalStateException("Should never be called");  }
 
     @Override
@@ -7382,19 +7319,6 @@ public final class Oplog implements CompactableOplog, Flushable {
 
     @Override
     public void setUpdateInProgress(boolean underUpdate) {
-      // TODO Auto-generated method stub
-    }
-    @Override
-    public boolean isMarkedForEviction() {
-      // TODO Auto-generated method stub
-      return false;
-    }
-    @Override
-    public void setMarkedForEviction() {
-      // TODO Auto-generated method stub
-    }
-    @Override
-    public void clearMarkedForEviction() {
       // TODO Auto-generated method stub
     }
     @Override
@@ -7900,7 +7824,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * Used in offline mode to prevent pdx deserialization of keys. The raw bytes
    * are a serialized pdx.
    * 
-   * @since 6.6
+   * @since GemFire 6.6
    */
   private static class RawByteKey implements Sendable {
     final byte[] bytes;

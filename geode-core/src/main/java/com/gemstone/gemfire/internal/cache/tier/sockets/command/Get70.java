@@ -19,17 +19,19 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
+import java.io.IOException;
+
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.internal.GetOp;
 import com.gemstone.gemfire.cache.operations.GetOperationContext;
 import com.gemstone.gemfire.cache.operations.internal.GetOperationContextImpl;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.Token;
+import com.gemstone.gemfire.internal.cache.VersionTagHolder;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
@@ -46,10 +48,8 @@ import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.NotAuthorizedException;
-import com.gemstone.gemfire.i18n.StringId;
-
-import java.io.IOException;
 
 public class Get70 extends BaseCommand {
 
@@ -140,111 +140,115 @@ public class Get70 extends BaseCommand {
       String s = errMessage.toLocalizedString();
       logger.warn("{}: {}", servConn.getName(), s);
       writeErrorResponse(msg, MessageType.REQUESTDATAERROR, s, servConn);
-      // responded = true;
       servConn.setAsTrue(RESPONDED);
+      return;
     }
-    else {
-      Region region = crHelper.getRegion(regionName);
-      if (region == null) {
-        String reason = LocalizedStrings.Request__0_WAS_NOT_FOUND_DURING_GET_REQUEST.toLocalizedString(regionName);
-        writeRegionDestroyedEx(msg, regionName, reason, servConn);
-        servConn.setAsTrue(RESPONDED);
+
+    // for integrated security
+    GeodeSecurityUtil.authorizeRegionRead(regionName, key.toString());
+
+    Region region = crHelper.getRegion(regionName);
+    if (region == null) {
+      String reason = LocalizedStrings.Request__0_WAS_NOT_FOUND_DURING_GET_REQUEST.toLocalizedString(regionName);
+      writeRegionDestroyedEx(msg, regionName, reason, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    }
+
+    GetOperationContext getContext = null;
+    try {
+      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      if (authzRequest != null) {
+        getContext = authzRequest
+          .getAuthorize(regionName, key, callbackArg);
+        callbackArg = getContext.getCallbackArg();
       }
-      else {
-        
-        GetOperationContext getContext = null;
-        
+    }
+    catch (NotAuthorizedException ex) {
+      writeException(msg, ex, false, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    }
+
+    // Get the value and update the statistics. Do not deserialize
+    // the value if it is a byte[].
+    Entry entry;
+    try {
+      entry = getEntry(region, key, callbackArg, servConn);
+    }
+    catch (Exception e) {
+      writeException(msg, e, false, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    }
+
+    @Retained final Object originalData = entry.value;
+    Object data = originalData;
+    try {
+      boolean isObject = entry.isObject;
+      VersionTag versionTag = entry.versionTag;
+      boolean keyNotPresent = entry.keyNotPresent;
+
+      try {
+        AuthorizeRequestPP postAuthzRequest = servConn.getPostAuthzRequest();
+        if (postAuthzRequest != null) {
           try {
-            AuthorizeRequest authzRequest = servConn.getAuthzRequest();
-              if (authzRequest != null) {
-              getContext = authzRequest
-                  .getAuthorize(regionName, key, callbackArg);
-              callbackArg = getContext.getCallbackArg();
+            getContext = postAuthzRequest.getAuthorize(regionName, key, data,
+              isObject, getContext);
+            GetOperationContextImpl gci = (GetOperationContextImpl) getContext;
+            Object newData = gci.getRawValue();
+            if (newData != data) {
+              // user changed the value
+              isObject = getContext.isObject();
+              data = newData;
             }
           }
-          catch (NotAuthorizedException ex) {
-            writeException(msg, ex, false, servConn);
-            servConn.setAsTrue(RESPONDED);
-            return;
-          }
-
-        // Get the value and update the statistics. Do not deserialize
-        // the value if it is a byte[].
-        Entry entry;
-        try {
-          entry = getEntry(region, key, callbackArg, servConn);
-        }
-        catch (Exception e) {
-          writeException(msg, e, false, servConn);
-          servConn.setAsTrue(RESPONDED);
-          return;
-        }
-
-        @Retained final Object originalData = entry.value;
-        Object data = originalData;
-        try {
-        boolean isObject = entry.isObject;
-        VersionTag versionTag = entry.versionTag;
-        boolean keyNotPresent = entry.keyNotPresent;
-        
-        
-        try {
-          AuthorizeRequestPP postAuthzRequest = servConn.getPostAuthzRequest();
-          if (postAuthzRequest != null) {
-            try {
-              getContext = postAuthzRequest.getAuthorize(regionName, key, data,
-                  isObject, getContext);
-              GetOperationContextImpl gci = (GetOperationContextImpl) getContext;
-              Object newData = gci.getRawValue();
-              if (newData != data) {
-                // user changed the value
-                isObject = getContext.isObject();
-                data = newData;
-              }
-            } finally {
-              if (getContext != null) {
-                ((GetOperationContextImpl)getContext).release();
-              }
+          finally {
+            if (getContext != null) {
+              ((GetOperationContextImpl) getContext).release();
             }
           }
         }
-        catch (NotAuthorizedException ex) {
-          writeException(msg, ex, false, servConn);
-          servConn.setAsTrue(RESPONDED);
-          return;
-        }
-        {
-          long oldStart = start;
-          start = DistributionStats.getStatTime();
-          stats.incProcessGetTime(start - oldStart);
-        }
-        
-        if (region instanceof PartitionedRegion) {
-          PartitionedRegion pr = (PartitionedRegion)region;
-          if (pr.isNetworkHop() != (byte)0) {
-            writeResponseWithRefreshMetadata(data, callbackArg, msg, isObject,
-                servConn, pr, pr.isNetworkHop(), versionTag, keyNotPresent);
-            pr.setIsNetworkHop((byte)0);
-            pr.setMetadataVersion(Byte.valueOf((byte)0));
-          }
-          else {
-            writeResponse(data, callbackArg, msg, isObject, versionTag, keyNotPresent, servConn);
-          }
+      }
+      catch (NotAuthorizedException ex) {
+        writeException(msg, ex, false, servConn);
+        servConn.setAsTrue(RESPONDED);
+        return;
+      }
+
+      // post process
+      data = GeodeSecurityUtil.postProcess(regionName, key, data);
+
+      long oldStart = start;
+      start = DistributionStats.getStatTime();
+      stats.incProcessGetTime(start - oldStart);
+
+      if (region instanceof PartitionedRegion) {
+        PartitionedRegion pr = (PartitionedRegion) region;
+        if (pr.isNetworkHop() != (byte) 0) {
+          writeResponseWithRefreshMetadata(data, callbackArg, msg, isObject,
+            servConn, pr, pr.isNetworkHop(), versionTag, keyNotPresent);
+          pr.setIsNetworkHop((byte) 0);
+          pr.setMetadataVersion(Byte.valueOf((byte) 0));
         }
         else {
           writeResponse(data, callbackArg, msg, isObject, versionTag, keyNotPresent, servConn);
         }
-        } finally {
-          OffHeapHelper.release(originalData);
-        }
-        
-        servConn.setAsTrue(RESPONDED);
-        if (logger.isDebugEnabled()) {
-          logger.debug("{}: Wrote get response back to {} for region {} {}", servConn.getName(), servConn.getSocketString(), regionName, entry);
-        }
-        stats.incWriteGetResponseTime(DistributionStats.getStatTime() - start);
+      }
+      else {
+        writeResponse(data, callbackArg, msg, isObject, versionTag, keyNotPresent, servConn);
       }
     }
+    finally {
+      OffHeapHelper.release(originalData);
+    }
+
+    servConn.setAsTrue(RESPONDED);
+    if (logger.isDebugEnabled()) {
+      logger.debug("{}: Wrote get response back to {} for region {} {}", servConn.getName(), servConn.getSocketString(), regionName, entry);
+    }
+    stats.incWriteGetResponseTime(DistributionStats.getStatTime() - start);
+
 
   }
 
@@ -303,13 +307,8 @@ public class Get70 extends BaseCommand {
 //      }
 //    } else {
       ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
-      EntryEventImpl versionHolder = EntryEventImpl.createVersionTagHolder();
-      try {
-        // TODO OFFHEAP: optimize
-      data  = ((LocalRegion) region).get(key, callbackArg, true, true, true, id, versionHolder, true, true /*allowReadFromHDFS*/);
-      }finally {
-        versionHolder.release();
-      }
+      VersionTagHolder versionHolder = new VersionTagHolder();
+      data  = ((LocalRegion) region).get(key, callbackArg, true, true, true, id, versionHolder, true);
 //    }
     versionTag = versionHolder.getVersionTag();
     
@@ -368,12 +367,8 @@ public class Get70 extends BaseCommand {
     @Retained Object data = null;
 
     ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
-    EntryEventImpl versionHolder = EntryEventImpl.createVersionTagHolder();
-    try {
-      data = ((LocalRegion) region).getRetained(key, callbackArg, true, true, id, versionHolder, true);
-    }finally {
-      versionHolder.release();
-    }
+    VersionTagHolder versionHolder = new VersionTagHolder();
+    data = ((LocalRegion) region).getRetained(key, callbackArg, true, true, id, versionHolder, true);
     versionTag = versionHolder.getVersionTag();
     
     // If it is Token.REMOVED, Token.DESTROYED,

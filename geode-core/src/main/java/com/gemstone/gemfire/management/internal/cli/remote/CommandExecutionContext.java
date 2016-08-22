@@ -25,7 +25,7 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 
 /**
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class CommandExecutionContext {
   // ThreadLocal variables that can be uses by commands

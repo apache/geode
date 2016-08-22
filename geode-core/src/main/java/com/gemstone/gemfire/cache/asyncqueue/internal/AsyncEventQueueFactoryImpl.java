@@ -272,13 +272,12 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
     this.attrs.maximumQueueMemory = asyncQueueCreation.getMaximumQueueMemory();
     this.attrs.isParallel = asyncQueueCreation.isParallel();
     this.attrs.isBucketSorted = ((AsyncEventQueueCreation)asyncQueueCreation).isBucketSorted();
-	this.attrs.isHDFSQueue = ((AsyncEventQueueCreation)asyncQueueCreation).isHDFSQueue();
     this.attrs.dispatcherThreads = asyncQueueCreation.getDispatcherThreads();
     this.attrs.policy = asyncQueueCreation.getOrderPolicy();
     this.attrs.eventFilters = asyncQueueCreation.getGatewayEventFilters();
     this.attrs.eventSubstitutionFilter = asyncQueueCreation.getGatewayEventSubstitutionFilter();
     this.attrs.isForInternalUse = true;
-
+    this.attrs.forwardExpirationDestroy = asyncQueueCreation.isForwardExpirationDestroy();
   }
 
   public AsyncEventQueueFactory setParallel(boolean isParallel) {
@@ -289,12 +288,14 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
     this.attrs.isBucketSorted = isbucketSorted;
     return this;
   }
-  public AsyncEventQueueFactory setIsHDFSQueue(boolean isHDFSQueue) {
-    this.attrs.isHDFSQueue = isHDFSQueue;
-    return this;
-  }
   public AsyncEventQueueFactory setIsMetaQueue(boolean isMetaQueue) {
     this.attrs.isMetaQueue = isMetaQueue;
+    return this;
+  }
+
+  @Override
+  public AsyncEventQueueFactory setForwardExpirationDestroy(boolean forward) {
+    this.attrs.forwardExpirationDestroy = forward;
     return this;
   }
 }

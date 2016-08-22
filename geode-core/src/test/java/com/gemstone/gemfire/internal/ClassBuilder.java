@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticCollector;
 import javax.tools.FileObject;
 import javax.tools.ForwardingJavaFileManager;
 import javax.tools.JavaCompiler;
@@ -38,9 +40,9 @@ import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 
 /**
- * Test framework utility class to programatically create classes, JARs and ClassLoaders that include the classes.
+ * Test framework utility class to programmatically create classes, JARs and ClassLoaders that include the classes.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class ClassBuilder implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -214,7 +216,16 @@ public class ClassBuilder implements Serializable {
     fileObjects.add(new JavaSourceFromString(className, classCode));
 
     List<String> options = Arrays.asList("-classpath", this.classPath);
-    javaCompiler.getTask(null, fileManager, null, options, null, fileObjects).call();
+    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+    if (! javaCompiler.getTask(null, fileManager, diagnostics, options, null, fileObjects).call()) {
+      StringBuilder errorMsg = new StringBuilder();
+      for (Diagnostic d : diagnostics.getDiagnostics()) {
+        String err = String.format("Compilation error: Line %d - %s%n", d.getLineNumber(), d.getMessage(null));
+        errorMsg.append(err);
+        System.err.print(err);
+      }
+      throw new IOException(errorMsg.toString());
+    }
     return byteArrayOutputStream.toByteArray();
   }
 

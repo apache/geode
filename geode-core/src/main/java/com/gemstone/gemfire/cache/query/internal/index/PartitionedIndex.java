@@ -50,7 +50,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * This class implements a Partitioned index over a group of partitioned region
  * buckets.
  * 
- * @since 5.1
+ * @since GemFire 5.1
  */
 
 public class PartitionedIndex extends AbstractIndex

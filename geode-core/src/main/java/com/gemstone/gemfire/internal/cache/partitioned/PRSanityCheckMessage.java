@@ -16,16 +16,12 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.Set;
-
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
 import com.gemstone.gemfire.internal.SystemTimer;
@@ -33,6 +29,11 @@ import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionHelper;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Set;
 
 /**
  * PRSanityCheckMessage is used to assert correctness of prID assignments
@@ -97,7 +98,7 @@ public final class PRSanityCheckMessage extends PartitionMessage
    * be enabled with gemfire.PRSanityCheckEnabled=true. 
    */
   public static void schedule(final PartitionedRegion pr) {
-    if (Boolean.getBoolean("gemfire.PRSanityCheckEnabled")) {
+    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRSanityCheckEnabled")) {
       final DM dm = pr.getDistributionManager();
 //      RegionAdvisor ra = pr.getRegionAdvisor();
 //      final Set recipients = ra.adviseAllPRNodes();
@@ -114,7 +115,7 @@ public final class PRSanityCheckMessage extends PartitionMessage
       PRSanityCheckMessage instance = new PRSanityCheckMessage(recipients,
           pr.getPRId(), null, pr.getRegionIdentifier());
       dm.putOutgoing(instance);
-      int sanityCheckInterval = Integer.getInteger("gemfire.PRSanityCheckInterval",
+      int sanityCheckInterval = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "PRSanityCheckInterval",
                                                    5000).intValue();
       if (sanityCheckInterval != 0) {
         final SystemTimer tm = new SystemTimer(dm.getSystem(), true);

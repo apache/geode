@@ -16,33 +16,11 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.NoSubscriptionServersAvailableException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionService;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
 import com.gemstone.gemfire.cache.client.SubscriptionNotEnabledException;
@@ -58,34 +36,42 @@ import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.DummyStatisticsFactory;
 import com.gemstone.gemfire.internal.ScheduledThreadPoolExecutorWithKeepAlive;
 import com.gemstone.gemfire.internal.admin.ClientStatsManager;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.InternalCache;
-import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
-import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
-import com.gemstone.gemfire.internal.cache.PoolStats;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.logging.log4j.Logger;
+
+import java.net.InetSocketAddress;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Manages the client side of client to server connections
  * and client queues. 
  * 
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class PoolImpl implements InternalPool {
-  public static final String ON_DISCONNECT_CLEAR_PDXTYPEIDS = "gemfire.ON_DISCONNECT_CLEAR_PDXTYPEIDS";
+  public static final String ON_DISCONNECT_CLEAR_PDXTYPEIDS = DistributionConfig.GEMFIRE_PREFIX + "ON_DISCONNECT_CLEAR_PDXTYPEIDS";
 
   private static final Logger logger = LogService.getLogger();
-  
-  public static final int HANDSHAKE_TIMEOUT = Long.getLong("gemfire.PoolImpl.HANDSHAKE_TIMEOUT", AcceptorImpl.DEFAULT_HANDSHAKE_TIMEOUT_MS).intValue();
-  public static final long SHUTDOWN_TIMEOUT = Long.getLong("gemfire.PoolImpl.SHUTDOWN_TIMEOUT", 30000).longValue();
-  public static final int BACKGROUND_TASK_POOL_SIZE = Integer.getInteger("gemfire.PoolImpl.BACKGROUND_TASK_POOL_SIZE", 20).intValue();
-  public static final int BACKGROUND_TASK_POOL_KEEP_ALIVE = Integer.getInteger("gemfire.PoolImpl.BACKGROUND_TASK_POOL_KEEP_ALIVE", 1000).intValue();
+
+  public static final int HANDSHAKE_TIMEOUT = Long
+      .getLong(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.HANDSHAKE_TIMEOUT", AcceptorImpl.DEFAULT_HANDSHAKE_TIMEOUT_MS).intValue();
+  public static final long SHUTDOWN_TIMEOUT = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.SHUTDOWN_TIMEOUT", 30000).longValue();
+  public static final int BACKGROUND_TASK_POOL_SIZE = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.BACKGROUND_TASK_POOL_SIZE", 20)
+      .intValue();
+  public static final int BACKGROUND_TASK_POOL_KEEP_ALIVE = Integer
+      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.BACKGROUND_TASK_POOL_KEEP_ALIVE", 1000).intValue();
   //For durable client tests only. Connection Sources read this flag
   //and return an empty list of servers.
   public volatile static boolean TEST_DURABLE_IS_NET_DOWN = false;
@@ -153,7 +139,7 @@ public class PoolImpl implements InternalPool {
   }
 
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected void finishCreate(PoolManagerImpl pm) {
     pm.register(this);
@@ -213,9 +199,9 @@ public class PoolImpl implements InternalPool {
     }
     this.dsys = ds;
     this.cancelCriterion = new Stopper();
-    if(Boolean.getBoolean("gemfire.SPECIAL_DURABLE")) {
-	    ClientProxyMembershipID.setPoolName(name);
-	    this.proxyId = ClientProxyMembershipID.getNewProxyMembership(ds);
+    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE")) {
+      ClientProxyMembershipID.setPoolName(name);
+      this.proxyId = ClientProxyMembershipID.getNewProxyMembership(ds);
 	    ClientProxyMembershipID.setPoolName(null);
     } else {
     	this.proxyId = ClientProxyMembershipID.getNewProxyMembership(ds);
@@ -262,7 +248,7 @@ public class PoolImpl implements InternalPool {
    * Return true if the given Pool is compatible with these attributes.
    * Currently this does what equals would but in the future we might
    * decide to weaken the compatibility contract.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public boolean isCompatible(Pool p) {
     if (p == null) return false;
@@ -466,7 +452,7 @@ public class PoolImpl implements InternalPool {
   public void destroy(boolean keepAlive) {
     int cnt = getAttachCount();
     this.keepAlive = keepAlive;
-    boolean SPECIAL_DURABLE = Boolean.getBoolean("gemfire.SPECIAL_DURABLE");
+    boolean SPECIAL_DURABLE = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE");
         if (cnt > 0) {
         //special case to allow closing durable client pool under the keep alive flag
             //closing regions prior to closing pool can cause them to unregister interest
@@ -700,7 +686,7 @@ public class PoolImpl implements InternalPool {
    * It will only execute it once and on one server.
    * @param op the operation to execute
    * @return the result of execution if any; null if not
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Object execute(Op op) {
     //if(multiuser)
@@ -721,7 +707,7 @@ public class PoolImpl implements InternalPool {
    * @param op the operation to execute
    * @param retries how many times to retry the operation
    * @return the result of execution if any; null if not
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Object execute(Op op, int retries) {
     authenticateIfRequired(op);
@@ -770,7 +756,7 @@ public class PoolImpl implements InternalPool {
    * queues for this pool
    * @param op the operation to execute
    * @return the result of execution if any; null if not
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Object executeOnQueuesAndReturnPrimaryResult(Op op) {
     authenticateOnAllServers(op);
@@ -817,7 +803,7 @@ public class PoolImpl implements InternalPool {
    *
    * @param eventId the EventId of the incoming event
    * @return true if it is already present
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public boolean verifyIfDuplicate(EventID eventId) {
     return ((QueueStateImpl)this.queueManager.getState()).verifyIfDuplicate(eventId);
@@ -1053,7 +1039,7 @@ public class PoolImpl implements InternalPool {
   
   /**
    * Atomic counter used to keep track of services using this pool.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private final AtomicInteger attachCount = new AtomicInteger();
   public static volatile boolean IS_INSTANTIATOR_CALLBACK = false ;
@@ -1061,7 +1047,7 @@ public class PoolImpl implements InternalPool {
   /**
    * Returns number of services currently using/attached to this pool.
    * <p>Made public so it can be used by tests
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public int getAttachCount() {
     return this.attachCount.get();
@@ -1069,7 +1055,7 @@ public class PoolImpl implements InternalPool {
   /**
    * This needs to be called when a service (like a Region or CQService)
    * starts using a pool.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void attach() {
     this.attachCount.getAndIncrement();
@@ -1077,7 +1063,7 @@ public class PoolImpl implements InternalPool {
   /**
    * This needs to be called when a service (like a Region or CQService)
    * stops using a pool.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void detach() {
     this.attachCount.getAndDecrement();

@@ -24,7 +24,7 @@ package com.gemstone.gemfire.cache;
  * signal that the current transaction should be aborted.
  * 
  * @see TransactionWriter#beforeCommit
- * @since 6.5
+ * @since GemFire 6.5
  *
  */
 public class TransactionWriterException extends Exception {

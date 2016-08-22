@@ -44,6 +44,7 @@ import com.gemstone.gemfire.internal.cache.tx.DistTxKeyInfo;
 import com.gemstone.gemfire.internal.cache.tx.DistTxEntryEvent;
 import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 
 /**
  * TxState on a datanode VM
@@ -144,7 +145,7 @@ public class DistTXState extends TXState {
               } 
             } 
           } // end if primary
-        } // end non-hdfs buckets
+        }
       }
     }
   }
@@ -446,7 +447,7 @@ public class DistTXState extends TXState {
         postPutAll(dtop.getPutAllOperation(), versions, dtop.region);
       } else {
         result = putEntryOnRemote(dtop, false/* ifNew */,
-          dtop.hasDelta()/* ifOld */, null/* expectedOldValue */,
+          false/* ifOld */, null/* expectedOldValue */,
           false/* requireOldValue */, 0L/* lastModified */, true/*
                                                                  * overwriteDestroyed
                                                                  * *not*
@@ -568,10 +569,10 @@ public class DistTXState extends TXState {
         InternalDistributedMember myId = theRegion.getDistributionManager()
             .getDistributionManagerId();
         for (int i = 0; i < putallOp.putAllDataSize; ++i) {
-          EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(theRegion,
+          @Released EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(theRegion,
               myId, myId, i, putallOp.putAllData, false, putallOp
                   .getBaseEvent().getContext(), false, !putallOp.getBaseEvent()
-                  .isGenerateCallbacks(), false);
+                  .isGenerateCallbacks());
           try {
 //            ev.setPutAllOperation(putallOp);
             
@@ -628,10 +629,11 @@ public class DistTXState extends TXState {
         InternalDistributedMember myId = theRegion.getDistributionManager()
             .getDistributionManagerId();
         for (int i = 0; i < op.removeAllDataSize; ++i) {
-          EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(theRegion,
+          @Released EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(theRegion,
               myId, myId, i, op.removeAllData, false, op.getBaseEvent()
                   .getContext(), false, !op.getBaseEvent()
                   .isGenerateCallbacks());
+          try {
           ev.setRemoveAllOperation(op);
           // below if condition returns true on secondary when TXState is
           // updated in preCommit only on secondary
@@ -664,6 +666,9 @@ public class DistTXState extends TXState {
           } catch (EntryNotFoundException ignore) {
           }
           successfulOps.addKeyAndVersion(op.removeAllData[i].key, null);
+          } finally {
+            ev.release();
+          }
         }
       }
     }, op.getBaseEvent().getEventId());

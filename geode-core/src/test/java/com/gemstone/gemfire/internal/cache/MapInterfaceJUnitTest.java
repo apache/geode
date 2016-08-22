@@ -16,17 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.*;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -44,11 +42,16 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 @Category(IntegrationTest.class)
 public class MapInterfaceJUnitTest {
 
+  protected boolean hasBeenNotified = false;
+
+  protected Region region2 = null;
+  protected int counter = 0;
+
   @Test
   public void testLocalClear() {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     DistributedSystem ds = DistributedSystem.connect(props);
     Cache cache = null;
     Region region = null;
@@ -61,14 +64,14 @@ public class MapInterfaceJUnitTest {
           .create());
     }
     catch (Exception e) {
-      fail(" failed due to " + e);
+      throw new AssertionError(" failed due to ", e);
     }
     for (int i = 0; i < 100; i++) {
       region.put(new Integer(i), new Integer(i));
     }
-    Assert.assertEquals(new Integer(50), region.get(new Integer(50)));
+    assertEquals(new Integer(50), region.get(new Integer(50)));
     region.localClear();
-    Assert.assertEquals(null, region.get(new Integer(50)));
+    assertEquals(null, region.get(new Integer(50)));
     region.close();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -77,7 +80,7 @@ public class MapInterfaceJUnitTest {
           .create());
     }
     catch (Exception e) {
-      fail(" failed in creating region due to " + e);
+      throw new AssertionError(" failed in creating region due to ", e);
     }
     boolean exceptionOccured = false;
     try {
@@ -100,8 +103,8 @@ public class MapInterfaceJUnitTest {
   @Test
   public void testLocalPutAll() {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     DistributedSystem ds = DistributedSystem.connect(props);
     Cache cache = null;
     Region region = null;
@@ -114,7 +117,7 @@ public class MapInterfaceJUnitTest {
           .create());
     }
     catch (Exception e) {
-      fail(" failed due to " + e);
+      throw new AssertionError(" failed due to ", e);
     }
     HashMap m = new HashMap();
     m.put("aKey", "aValue");
@@ -125,9 +128,9 @@ public class MapInterfaceJUnitTest {
     for (int i = 0; i < 100; i++) {
       region.put(new Integer(i), new Integer(i));
     }
-    Assert.assertEquals(new Integer(50), region.get(new Integer(50)));
+    assertEquals(new Integer(50), region.get(new Integer(50)));
     region.localClear();
-    Assert.assertEquals(null, region.get(new Integer(50)));
+    assertEquals(null, region.get(new Integer(50)));
     region.close();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -136,7 +139,7 @@ public class MapInterfaceJUnitTest {
           .create());
     }
     catch (Exception e) {
-      fail(" failed in creating region due to " + e);
+      throw new AssertionError(" failed in creating region due to ", e);
     }
     boolean exceptionOccured = false;
     try {
@@ -153,14 +156,11 @@ public class MapInterfaceJUnitTest {
     ds.disconnect();
   }
  
-  protected boolean hasBeenNotified = false;
-
   @Test
   public void testBeforeRegionClearCallBack() {
-   
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     DistributedSystem ds = DistributedSystem.connect(props);
     Cache cache = null;
     Region region = null;
@@ -171,6 +171,7 @@ public class MapInterfaceJUnitTest {
       factory.setScope(Scope.LOCAL);
       factory.setCacheWriter(new CacheWriterAdapter() {
 
+        @Override
         public void beforeRegionClear(RegionEvent event) throws CacheWriterException {
           synchronized (this) {
             this.notify();
@@ -192,14 +193,14 @@ public class MapInterfaceJUnitTest {
       }
     }
     catch (Exception e) {
-      fail(" failed due to " + e);
+      throw new AssertionError(" failed due to ", e);
     }
     for (int i = 0; i < 100; i++) {
       region.put(new Integer(i), new Integer(i));
     }
-    Assert.assertEquals(new Integer(50), region.get(new Integer(50)));
+    assertEquals(new Integer(50), region.get(new Integer(50)));
     region.localClear();
-    Assert.assertEquals(null, region.get(new Integer(50)));
+    assertEquals(null, region.get(new Integer(50)));
     region.close();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -208,7 +209,7 @@ public class MapInterfaceJUnitTest {
           .create());
     }
     catch (Exception e) {
-      fail(" failed in creating region due to " + e);
+      throw new AssertionError(" failed in creating region due to ", e);
     }
     boolean exceptionOccured = false;
     try {
@@ -225,14 +226,11 @@ public class MapInterfaceJUnitTest {
     ds.disconnect();
   }
 
-  protected Region region2 = null; 
-  protected int counter = 0;
   @Test
   public void testSetValue() {
-
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     DistributedSystem ds = DistributedSystem.connect(props);
     Cache cache = null;
   
@@ -243,6 +241,7 @@ public class MapInterfaceJUnitTest {
       factory.setScope(Scope.LOCAL);
       factory.setCacheWriter(new CacheWriterAdapter() {
 
+        @Override
         public void beforeUpdate(EntryEvent event) throws CacheWriterException {
           synchronized (this) {
             this.notify();
@@ -267,12 +266,11 @@ public class MapInterfaceJUnitTest {
         fail(" beforeCreate call back did not come");
       }
       
-      Assert.assertEquals(counter,1);
+      assertEquals(counter,1);
     }
     catch (Exception e) {
-      fail(" failed due to " + e);
+      throw new AssertionError(" failed due to ", e);
     }
-   
   }
   
   class DoesClear implements Runnable {
@@ -283,6 +281,7 @@ public class MapInterfaceJUnitTest {
       this.region = reg;
     }
 
+    @Override
     public void run() {
       this.region.clear();
     }
@@ -290,10 +289,10 @@ public class MapInterfaceJUnitTest {
   
   class DoesPut implements Runnable {
 
-  
     DoesPut() {
     }
 
+    @Override
     public void run() {
      ((Map.Entry)(MapInterfaceJUnitTest.this.region2.entrySet().iterator().next())).setValue(new Integer(8));
     }

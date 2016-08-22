@@ -16,24 +16,24 @@
  */
 package com.gemstone.gemfire.internal.compression;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 import java.util.Properties;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.compression.SnappyCompressor;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class CompressionRegionOperationsOffHeapDUnitTest extends
-    CompressionRegionOperationsDUnitTest {
+@Category(DistributedTest.class)
+public class CompressionRegionOperationsOffHeapDUnitTest extends CompressionRegionOperationsDUnitTest {
 
-  public CompressionRegionOperationsOffHeapDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
-  protected final void preTearDownCompressionRegionOperationsDUnitTest() throws Exception {
+  public final void preTearDownAssertions() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
 
       @Override
@@ -50,19 +50,13 @@ public class CompressionRegionOperationsOffHeapDUnitTest extends
   @Override
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");
+    props.setProperty(OFF_HEAP_MEMORY_SIZE, "1m");
     return props;
   }
 
   @Override
   protected void createRegion() {
-    Compressor compressor = null;
-    try {
-      compressor = SnappyCompressor.getDefaultInstance();;
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
+    Compressor compressor = new SnappyCompressor();
     createCompressedRegionOnVm(getVM(TEST_VM), REGION_NAME, compressor, true);
   }
 

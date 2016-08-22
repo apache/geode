@@ -16,32 +16,36 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.*;
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolFactory;
+import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.HARegion;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
- * 
- *
  * The test is written to verify that the rootRegion() in GemfireCache.java
  * doesn't return any metaRegions or HA Regions.
- * 
  */
-
-public class Bug37805DUnitTest extends DistributedTestCase{
+@Category(DistributedTest.class)
+public class Bug37805DUnitTest extends JUnit4DistributedTestCase {
 
   private VM server1VM;
 
@@ -51,16 +55,12 @@ public class Bug37805DUnitTest extends DistributedTestCase{
 
   private int PORT1;
 
-  public Bug37805DUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     this.server1VM = host.getVM(0);
     this.durableClientVM = host.getVM(1);
-    regionName = Bug37805DUnitTest.class.getName() + "_region";
+    regionName = "Bug37805_region";
     CacheServerTestUtil.disableShufflingOfEndpoints();
   }
   
@@ -71,6 +71,7 @@ public class Bug37805DUnitTest extends DistributedTestCase{
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
   }
   
+  @Test
   public void testFunctionality() {
  // Step 1: Starting the servers
 
@@ -112,7 +113,7 @@ public class Bug37805DUnitTest extends DistributedTestCase{
       }
     }
     //assertNull(rootRegions);
-    //assertEquals(0,((Collection)CacheServerTestUtil.getCache().rootRegions()).size());
+    //assertIndexDetailsEquals(0,((Collection)CacheServerTestUtil.getCache().rootRegions()).size());
   }
   
   private Pool getClientPool(String host, int server1Port,
@@ -127,11 +128,11 @@ public class Bug37805DUnitTest extends DistributedTestCase{
   private Properties getDurableClientDistributedSystemProperties(
       String durableClientId, int durableClientTimeout) {
     Properties properties = new Properties();
-    properties.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    properties.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    properties.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME,
+    properties.setProperty(MCAST_PORT, "0");
+    properties.setProperty(LOCATORS, "");
+    properties.setProperty(DURABLE_CLIENT_ID,
         durableClientId);
-    properties.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME,
+    properties.setProperty(DURABLE_CLIENT_TIMEOUT,
         String.valueOf(durableClientTimeout));
     return properties;
   }

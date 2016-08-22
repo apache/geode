@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.management.internal.pulse;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.management.DistributedSystemMXBean;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.ManagementTestBase;
@@ -29,12 +38,13 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * 
  */
 
+@Category(DistributedTest.class)
 public class TestHeapDUnitTest extends ManagementTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public TestHeapDUnitTest(String name) {
-    super(name);
+  public TestHeapDUnitTest() {
+    super();
   }
 
   public static long getHeapSizeOfClient() {
@@ -68,6 +78,7 @@ public class TestHeapDUnitTest extends ManagementTestBase {
     return bean.getTotalHeapSize() * 1000;
   }
 
+  @Test
   public void testTotalHeapSize() throws Exception {
     initManagement(false);
     long totalHeapSizeOnAll = 0;

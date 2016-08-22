@@ -18,6 +18,7 @@ package com.gemstone.gemfire.modules;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Region.Entry;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.modules.Owner.Status;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
@@ -27,6 +28,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
@@ -43,6 +45,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.assertEquals;
 
 @Category(IntegrationTest.class)
@@ -61,16 +64,16 @@ public class HibernateJUnitTest {
   public void setUp() throws Exception {
     // Create a per-user scratch directory
     tmpDir = new File(System.getProperty("java.io.tmpdir"),
-            "gemfire_modules-" + System.getProperty("user.name"));
+        "gemfire_modules-" + System.getProperty("user.name"));
     tmpDir.mkdirs();
     tmpDir.deleteOnExit();
 
     gemfireLog = tmpDir.getPath() +
-            System.getProperty("file.separator") + "gemfire_modules.log";
+        System.getProperty("file.separator") + "gemfire_modules.log";
   }
 
   public static SessionFactory getSessionFactory(Properties overrideProps) {
-    System.setProperty("gemfire.home", "GEMFIREHOME");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "home", "GEMFIREHOME");
     Configuration cfg = new Configuration();
     cfg.setProperty("hibernate.dialect", "org.hibernate.dialect.HSQLDialect");
     cfg.setProperty("hibernate.connection.driver_class",
@@ -88,10 +91,10 @@ public class HibernateJUnitTest {
     cfg.setProperty("hibernate.show_sql", "true");
     cfg.setProperty("hibernate.cache.use_query_cache", "true");
     //cfg.setProperty("gemfire.mcast-port", AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS)+"");
-    cfg.setProperty("gemfire.mcast-port", "0");
-    cfg.setProperty("gemfire.statistic-sampling-enabled", "true");
-    cfg.setProperty("gemfire.log-file", gemfireLog);
-    cfg.setProperty("gemfire.writable-working-dir", tmpDir.getPath());
+    cfg.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
+    cfg.setProperty(DistributionConfig.GEMFIRE_PREFIX + STATISTIC_SAMPLING_ENABLED, "true");
+    cfg.setProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_FILE, gemfireLog);
+    cfg.setProperty(DistributionConfig.GEMFIRE_PREFIX + "writable-working-dir", tmpDir.getPath());
     //cfg.setProperty("gemfire.statistic-archive-file", "plugin-stats-file.gfs");
     //cfg.setProperty("gemfire.default-client-region-attributes-id", "CACHING_PROXY");
     //cfg.setProperty("gemfire.cache-topology", "client-server");
@@ -103,7 +106,7 @@ public class HibernateJUnitTest {
     if (overrideProps != null) {
       Iterator it = overrideProps.keySet().iterator();
       while (it.hasNext()) {
-        String key = (String)it.next();
+        String key = (String) it.next();
         cfg.setProperty(key, overrideProps.getProperty(key));
       }
     }
@@ -124,13 +127,13 @@ public class HibernateJUnitTest {
     Long id = theEvent.getId();
     session.getTransaction().commit();
     session.beginTransaction();
-    Event ev = (Event)session.get(Event.class, id);
+    Event ev = (Event) session.get(Event.class, id);
     log.info("SWAP:load complete: " + ev);
     session.getTransaction().commit();
   }
 
   @Test
-  public void testNothing() throws Exception {
+  public void testSomething() throws Exception {
     java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.ALL);
     log.info("SWAP:creating session factory In hibernateTestCase");
 
@@ -147,7 +150,7 @@ public class HibernateJUnitTest {
     session.getTransaction().commit();
     log.info("commit complete...doing load");
     session.beginTransaction();
-    Event ev = (Event)session.load(Event.class, id);
+    Event ev = (Event) session.load(Event.class, id);
     log.info("load complete: " + ev);
     log.trace("SWAP");
     ev.setTitle("newTitle");
@@ -157,7 +160,7 @@ public class HibernateJUnitTest {
     log.info("save complete " + ev);
 
     session.beginTransaction();
-    ev = (Event)session.load(Event.class, id);
+    ev = (Event) session.load(Event.class, id);
     log.info("load complete: " + ev);
     ev.setTitle("newTitle2");
     session.save(ev);
@@ -165,37 +168,39 @@ public class HibernateJUnitTest {
     session.getTransaction().commit();
     log.info("save complete " + ev);
 
-    ev = (Event)session.load(Event.class, id);
+    ev = (Event) session.load(Event.class, id);
     log.info("second load " + ev);
     session.flush();
     session.close();
     log.info("flush complete session:" + session);
 
-    for (int i=0; i<5; i++) {
+    for (int i = 0; i < 5; i++) {
       session = getSessionFactory(null).openSession();
-      log.info("doing get "+id);
+      log.info("doing get " + id);
       // ev = (Event) session.load(Event.class, id);
-      ev = (Event)session.get(Event.class, id);
+      ev = (Event) session.get(Event.class, id);
       log.info("third load " + ev);
     }
     printExistingDB();
     Iterator it = GemFireCacheImpl.getInstance().rootRegions().iterator();
     while (it.hasNext()) {
-      Region r = (Region)it.next();
-      System.out.println("Region:"+r);
+      Region r = (Region) it.next();
+      System.out.println("Region:" + r);
       Iterator enIt = r.entrySet().iterator();
       while (enIt.hasNext()) {
-        Region.Entry re = (Entry)enIt.next();
-        System.out.println("key:"+re.getKey()+" value:"+re.getValue());
+        Region.Entry re = (Entry) enIt.next();
+        System.out.println("key:" + re.getKey() + " value:" + re.getValue());
       }
     }
     Thread.sleep(3000);
-     //System.in.read();
+    //System.in.read();
     // try direct data
 
   }
 
-  public void _testInvalidation() {
+  @Ignore
+  @Test
+  public void testInvalidation() {
     Session s = getSessionFactory(null).openSession();
   }
 
@@ -205,7 +210,7 @@ public class HibernateJUnitTest {
   public void testRelationship() throws Exception {
     //java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.ALL);
     Properties props = new Properties();
-    props.put("gemfire.topology", "client-server");
+    props.put(DistributionConfig.GEMFIRE_PREFIX + "topology", "client-server");
     Session session = getSessionFactory(null).openSession();
     session.beginTransaction();
 
@@ -217,14 +222,14 @@ public class HibernateJUnitTest {
     session.save(thePerson);
     personId = thePerson.getId();
     log.info("person saved");
-    
+
     Event theEvent = new Event();
     theEvent.setTitle("title");
     theEvent.setDate(new Date());
     session.save(theEvent);
     Long eventId = theEvent.getId();
     log.info("event saved");
-    
+
     Event theEvent2 = new Event();
     theEvent2.setTitle("title2");
     theEvent2.setDate(new Date());
@@ -232,7 +237,7 @@ public class HibernateJUnitTest {
     Long eventId2 = theEvent2.getId();
     log.info("event2 saved");
     session.getTransaction().commit();
-    
+
     session.beginTransaction();
     Person aPerson = (Person) session.load(Person.class, personId);
     Event anEvent = (Event) session.load(Event.class, eventId);
@@ -248,7 +253,7 @@ public class HibernateJUnitTest {
     log.info("opening new session");
     session = getSessionFactory(null).openSession();
     log.info("SWAP:loading person");
-    aPerson = (Person)session.load(Person.class, personId);
+    aPerson = (Person) session.load(Person.class, personId);
     log.info("loading events");
     Iterator<Event> e = aPerson.getE().iterator();
     while (e.hasNext()) {
@@ -258,42 +263,44 @@ public class HibernateJUnitTest {
     log.info("opening new session");
     session = getSessionFactory(null).openSession();
     log.info("SWAP:loading person");
-    aPerson = (Person)session.load(Person.class, personId);
+    aPerson = (Person) session.load(Person.class, personId);
     log.info("loading events");
     e = aPerson.getE().iterator();
     while (e.hasNext()) {
       e.next();
     }
 
-    log.info(aPerson.getE()+"");
+    log.info(aPerson.getE() + "");
     session.close();
     //System.in.read();
-//    log.info("opening third session");
-//    session = getSessionFactory().openSession();
-//    log.info("loading person");
-//    aPerson = (Person)session.load(Person.class, personId);
-//    log.info("loading events");
-//    log.info(aPerson.getEvents()+"");
+    //    log.info("opening third session");
+    //    session = getSessionFactory().openSession();
+    //    log.info("loading person");
+    //    aPerson = (Person)session.load(Person.class, personId);
+    //    log.info("loading events");
+    //    log.info(aPerson.getEvents()+"");
   }
-  
-  public void _testQueryCache() throws Exception {
+
+  @Ignore
+  @Test
+  public void testQueryCache() throws Exception {
     Session session = getSessionFactory(null).openSession();
     Query q = session.createQuery("from Event");
     q.setCacheable(true);
     List l = q.list();
-    log.info("list:"+l);
-//    log.info("Sleeping for 10 seconds");
-//    Thread.sleep(10000);
+    log.info("list:" + l);
+    //    log.info("Sleeping for 10 seconds");
+    //    Thread.sleep(10000);
     l = q.list();
-    log.info("list2:"+l);
+    log.info("list2:" + l);
     log.info("updating an event");
     session.beginTransaction();
-    Event e = (Event)l.get(0);
+    Event e = (Event) l.get(0);
     e.setDate(new Date());
     session.saveOrUpdate(e);
     session.getTransaction().commit();
     l = q.list();
-    log.info("list3:"+l);
+    log.info("list3:" + l);
   }
 
   @Test
@@ -310,7 +317,7 @@ public class HibernateJUnitTest {
     session.saveOrUpdate("Person", p);
     session.getTransaction().commit();
     assertEquals(1, session.getStatistics().getEntityCount());
-    assertEquals(initSize+1, r.size());
+    assertEquals(initSize + 1, r.size());
 
     session.beginTransaction();
     p.setAge(1);
@@ -322,7 +329,7 @@ public class HibernateJUnitTest {
   @Test
   public void testNormalRegion() {
     Properties props = new Properties();
-    props.setProperty("gemfire.default-region-attributes-id", "LOCAL");
+    props.setProperty(DistributionConfig.GEMFIRE_PREFIX + "default-region-attributes-id", "LOCAL");
     Session session = getSessionFactory(props).openSession();
     session.beginTransaction();
     Event theEvent = new Event();
@@ -332,17 +339,16 @@ public class HibernateJUnitTest {
     Long id = theEvent.getId();
     session.getTransaction().commit();
     session.beginTransaction();
-    Event ev = (Event)session.load(Event.class, id);
+    Event ev = (Event) session.load(Event.class, id);
     ev.setTitle("newTitle");
     session.save(ev);
     session.getTransaction().commit();
   }
-  
+
   private void printExistingDB() throws SQLException {
     try {
       Class.forName("org.hsqldb.jdbc.JDBCDriver");
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       System.err.println("ERROR: failed to load HSQLDB JDBC driver.");
       e.printStackTrace();
       return;
@@ -379,10 +385,10 @@ public class HibernateJUnitTest {
         "com.gemstone.gemfire.modules.hibernate.GemFireRegionFactory");
     cfg.setProperty("hibernate.show_sql", "true");
     cfg.setProperty("hibernate.cache.use_query_cache", "true");
-    cfg.setProperty("gemfire.statistic-sampling-enabled", "true");
-    cfg.setProperty("gemfire.log-file", gemfireLog);
-    cfg.setProperty("gemfire.writable-working-dir", tmpDir.getPath());
-    cfg.setProperty("gemfire.mcast-port", "0");
+    cfg.setProperty(DistributionConfig.GEMFIRE_PREFIX + STATISTIC_SAMPLING_ENABLED, "true");
+    cfg.setProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_FILE, gemfireLog);
+    cfg.setProperty(DistributionConfig.GEMFIRE_PREFIX + "writable-working-dir", tmpDir.getPath());
+    cfg.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
     //cfg.setProperty("gemfire.cache-topology", "client-server");
 
     SessionFactory sf = cfg.buildSessionFactory();
@@ -397,10 +403,10 @@ public class HibernateJUnitTest {
     log.info("testEnum:commiting tx");
     session.getTransaction().commit();
     session.close();
-    
+
     session = sf.openSession();
     Owner o1 = (Owner) session.load(Owner.class, id);
-    log.info("loaded:"+o);
+    log.info("loaded:" + o);
     assertEquals(o.getAddress(), o1.getAddress());
     assertEquals(o.getCity(), o1.getCity());
     assertEquals(o.getStatus(), o1.getStatus());

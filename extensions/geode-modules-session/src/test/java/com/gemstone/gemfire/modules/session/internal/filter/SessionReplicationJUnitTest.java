@@ -17,6 +17,7 @@
 
 package com.gemstone.gemfire.modules.session.internal.filter;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.modules.session.filter.SessionCachingFilter;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.mockrunner.mock.web.MockFilterConfig;
@@ -37,7 +38,7 @@ public class SessionReplicationJUnitTest extends CommonTests {
     WebMockObjectFactory factory = getWebMockObjectFactory();
     MockFilterConfig config = factory.getMockFilterConfig();
 
-    config.setInitParameter("gemfire.property.mcast-port", "0");
+    config.setInitParameter(DistributionConfig.GEMFIRE_PREFIX + "property.mcast-port", "0");
     config.setInitParameter("cache-type", "peer-to-peer");
 
     factory.getMockServletContext().setContextPath(CONTEXT_PATH);

@@ -25,10 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.gemstone.gemfire.management.internal.web.AbstractWebTestCase;
-import com.gemstone.gemfire.management.internal.web.domain.Link;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
@@ -40,6 +36,10 @@ import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import com.gemstone.gemfire.management.internal.web.AbstractWebTestCase;
+import com.gemstone.gemfire.management.internal.web.domain.Link;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
 /**
  * The ClientHttpRequestJUnitTest class is a test suite of test cases testing the contract and functionality of the
  * ClientHttpRequest class.
@@ -49,7 +49,7 @@ import org.springframework.util.MultiValueMap;
  * @see org.jmock.Mockery
  * @see org.junit.Assert
  * @see org.junit.Test
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Category(UnitTest.class)
 public class ClientHttpRequestJUnitTest extends AbstractWebTestCase {
@@ -494,12 +494,12 @@ public class ClientHttpRequestJUnitTest extends AbstractWebTestCase {
   }
 
   @SuppressWarnings("unused")
-  protected static interface Library {
+  private static interface Library {
     public String getName();
   }
 
   @SuppressWarnings("unused")
-  protected static interface Book {
+  private static interface Book {
     public String getAuthor();
     public String getIsbn();
     public String getTitle();

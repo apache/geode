@@ -22,7 +22,7 @@ import java.beans.ConstructorProperties;
  * Composite data type used to distribute metrics for the operating system hosting
  * a member of the distributed system.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  *
  */
 public class OSMetrics {

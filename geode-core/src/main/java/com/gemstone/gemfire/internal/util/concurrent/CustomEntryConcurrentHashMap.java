@@ -24,7 +24,7 @@
  * implementations can be plugged in. These HashEntry objects are now assumed to
  * be immutable in the sense that they cannot and should not be cloned in a
  * rehash, and the rehash mechanism has been recoded using locking for that. For
- * GemFire/SQLFire, this is now used to plugin the RegionEntry implementation
+ * Geode, this is now used to plugin the RegionEntry implementation
  * directly as a HashEntry instead of having it as a value and then HashEntry as
  * a separate object having references to key/value which reduces the entry
  * overhead substantially. Other change is to add a "create" method that creates
@@ -128,7 +128,7 @@ import com.gemstone.gemfire.internal.util.ArrayUtils;
  * This class is a member of the <a href="{@docRoot}
  * /../technotes/guides/collections/index.html"> Java Collections Framework</a>.
  * 
- * @since 1.5
+ * @since GemFire 1.5
  * @author Doug Lea
  * @param <K>
  *          the type of keys maintained by this map
@@ -1133,7 +1133,7 @@ RETRYLOOP:
    * value equality instead of equals method.
    * 
    * swale
-   * @since 7.0
+   * @since GemFire 7.0
    */
   static final class IdentitySegment<K, V> extends Segment<K, V> implements
       Serializable {
@@ -1339,7 +1339,7 @@ RETRYLOOP:
    *           if the initial capacity of elements is negative or the load
    *           factor is nonpositive
    * 
-   * @since 1.6
+   * @since GemFire 1.6
    */
   public CustomEntryConcurrentHashMap(final int initialCapacity, final float loadFactor) {
     this(initialCapacity, loadFactor, DEFAULT_CONCURRENCY_LEVEL, false);
@@ -1683,7 +1683,7 @@ RETRYLOOP:
    * Also allows invoking a method when removing from map by a call to
    * {@link #removeConditionally(Object, MapCallback, Object, Object)}.
    * 
-   * @since 7.0
+   * @since GemFire 7.0
    * 
    * @param <K>
    *          the type of key of the map

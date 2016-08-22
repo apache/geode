@@ -185,7 +185,7 @@ public class CompanySerializer extends DataSerializer {
  * @see #writeObject(Object, DataOutput)
  * @see #readObject
  *
- * @since 3.5 */
+ * @since GemFire 3.5 */
 public abstract class DataSerializer {
   
   private static final Logger logger = LogService.getLogger();
@@ -1001,7 +1001,7 @@ public abstract class DataSerializer {
    *         A problem occurs while writing to <code>out</code>
    *
    * @see DataOutput#writeBoolean
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static void writePrimitiveBoolean(boolean value, DataOutput out)
     throws IOException {
@@ -1022,7 +1022,7 @@ public abstract class DataSerializer {
    * @throws IOException
    *         A problem occurs while reading from <code>in</code>
    * @see DataInput#readBoolean
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static boolean readPrimitiveBoolean(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
@@ -1042,7 +1042,7 @@ public abstract class DataSerializer {
    *         A problem occurs while writing to <code>out</code>
    *
    * @see DataOutput#writeByte
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static void writePrimitiveByte(byte value, DataOutput out)
     throws IOException {
@@ -1063,7 +1063,7 @@ public abstract class DataSerializer {
    * @throws IOException
    *         A problem occurs while reading from <code>in</code>
    * @see DataInput#readByte
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static byte readPrimitiveByte(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
@@ -1083,7 +1083,7 @@ public abstract class DataSerializer {
    *         A problem occurs while writing to <code>out</code>
    *
    * @see DataOutput#writeChar
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static void writePrimitiveChar(char value, DataOutput out)
     throws IOException {
@@ -1104,7 +1104,7 @@ public abstract class DataSerializer {
    * @throws IOException
    *         A problem occurs while reading from <code>in</code>
    * @see DataInput#readChar
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static char readPrimitiveChar(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
@@ -1124,7 +1124,7 @@ public abstract class DataSerializer {
    *         A problem occurs while writing to <code>out</code>
    *
    * @see DataOutput#writeShort
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static void writePrimitiveShort(short value, DataOutput out)
     throws IOException {
@@ -1145,7 +1145,7 @@ public abstract class DataSerializer {
    * @throws IOException
    *         A problem occurs while reading from <code>in</code>
    * @see DataInput#readShort
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static short readPrimitiveShort(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
@@ -1166,7 +1166,7 @@ public abstract class DataSerializer {
    *
    * @see DataOutput#writeByte
    * @see DataInput#readUnsignedByte
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static void writeUnsignedByte(int value, DataOutput out)
     throws IOException {
@@ -1186,7 +1186,7 @@ public abstract class DataSerializer {
    *
    * @throws IOException
    *         A problem occurs while reading from <code>in</code>
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static int readUnsignedByte(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
@@ -1207,7 +1207,7 @@ public abstract class DataSerializer {
    *
    * @see DataOutput#writeShort
    * @see DataInput#readUnsignedShort
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static void writeUnsignedShort(int value, DataOutput out)
     throws IOException {
@@ -1227,7 +1227,7 @@ public abstract class DataSerializer {
    *
    * @throws IOException
    *         A problem occurs while reading from <code>in</code>
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static int readUnsignedShort(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
@@ -1267,7 +1267,7 @@ public abstract class DataSerializer {
    * @throws IOException
    *         A problem occurs while reading from <code>in</code>
    * @see DataInput#readInt
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static int readPrimitiveInt(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
@@ -1287,7 +1287,7 @@ public abstract class DataSerializer {
    *         A problem occurs while writing to <code>out</code>
    *
    * @see DataOutput#writeLong
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static void writePrimitiveLong(long value, DataOutput out)
     throws IOException {
@@ -1308,7 +1308,7 @@ public abstract class DataSerializer {
    * @throws IOException
    *         A problem occurs while reading from <code>in</code>
    * @see DataInput#readLong
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static long readPrimitiveLong(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
@@ -1328,7 +1328,7 @@ public abstract class DataSerializer {
    *         A problem occurs while writing to <code>out</code>
    *
    * @see DataOutput#writeFloat
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static void writePrimitiveFloat(float value, DataOutput out)
     throws IOException {
@@ -1349,7 +1349,7 @@ public abstract class DataSerializer {
    * @throws IOException
    *         A problem occurs while reading from <code>in</code>
    * @see DataInput#readFloat
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static float readPrimitiveFloat(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
@@ -1369,7 +1369,7 @@ public abstract class DataSerializer {
    *         A problem occurs while writing to <code>out</code>
    *
    * @see DataOutput#writeDouble
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static void writePrimitiveDouble(double value, DataOutput out)
     throws IOException {
@@ -1390,7 +1390,7 @@ public abstract class DataSerializer {
    * @throws IOException
    *         A problem occurs while reading from <code>in</code>
    * @see DataInput#readDouble
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static double readPrimitiveDouble(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
@@ -1477,7 +1477,7 @@ public abstract class DataSerializer {
    *         if a problem occurs while writing to <code>out</code>
    *
    * @see #readByteArray
-   * @since 5.0.2
+   * @since GemFire 5.0.2
    */
   public static void writeObjectAsByteArray(Object obj, DataOutput out)
     throws IOException {
@@ -1699,7 +1699,7 @@ public abstract class DataSerializer {
    *         A problem occurs while writing to <code>out</code>
    *
    * @see #readCharArray
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static void writeCharArray(char[] array, DataOutput out)
       throws IOException {
@@ -1716,7 +1716,7 @@ public abstract class DataSerializer {
    *         A problem occurs while reading from <code>in</code>
    *
    * @see #writeCharArray
-   * @since 5.7 
+   * @since GemFire 5.7
    */
   public static char[] readCharArray(DataInput in)
     throws IOException {
@@ -1747,7 +1747,7 @@ public abstract class DataSerializer {
    *         A problem occurs while writing to <code>out</code>
    *
    * @see #readBooleanArray
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static void writeBooleanArray(boolean[] array, DataOutput out)
     throws IOException {
@@ -1779,7 +1779,7 @@ public abstract class DataSerializer {
    *         A problem occurs while reading from <code>in</code>
    *
    * @see #writeBooleanArray
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static boolean[] readBooleanArray(DataInput in)
     throws IOException {
@@ -2313,7 +2313,7 @@ public abstract class DataSerializer {
    *         A problem occurs while writing to <code>out</code>
    *
    * @see #readVector
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static void writeVector(Vector<?> list, DataOutput out)
     throws IOException {
@@ -2347,7 +2347,7 @@ public abstract class DataSerializer {
    *         elements cannot be found.
    *
    * @see #writeVector
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static <E> Vector<E> readVector(DataInput in)
     throws IOException, ClassNotFoundException {
@@ -2385,7 +2385,7 @@ public abstract class DataSerializer {
    *         A problem occurs while writing to <code>out</code>
    *
    * @see #readStack
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static void writeStack(Stack<?> list, DataOutput out)
     throws IOException {
@@ -2419,7 +2419,7 @@ public abstract class DataSerializer {
    *         elements cannot be found.
    *
    * @see #writeStack
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static <E> Stack<E> readStack(DataInput in)
     throws IOException, ClassNotFoundException {
@@ -2586,7 +2586,7 @@ public abstract class DataSerializer {
    *         A problem occurs while writing to <code>out</code>
    *
    * @see #readLinkedHashSet
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static void writeLinkedHashSet(LinkedHashSet<?> set, DataOutput out)
     throws IOException {
@@ -2603,7 +2603,7 @@ public abstract class DataSerializer {
    *         elements cannot be found.
    *
    * @see #writeLinkedHashSet
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static <E> LinkedHashSet<E> readLinkedHashSet(DataInput in)
     throws IOException, ClassNotFoundException {
@@ -2794,7 +2794,7 @@ public abstract class DataSerializer {
    *         A problem occurs while writing to <code>out</code>
    *
    * @see #readConcurrentHashMap
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public static void writeConcurrentHashMap(ConcurrentHashMap<?,?> map, DataOutput out)
     throws IOException {
@@ -2832,7 +2832,7 @@ public abstract class DataSerializer {
    *         elements cannot be found.
    *
    * @see #writeConcurrentHashMap
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public static <K,V> ConcurrentHashMap<K,V> readConcurrentHashMap(DataInput in)
     throws IOException, ClassNotFoundException {
@@ -2871,7 +2871,7 @@ public abstract class DataSerializer {
    *         A problem occurs while writing to <code>out</code>
    *
    * @see #readHashtable
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static void writeHashtable(Hashtable<?,?> map, DataOutput out)
     throws IOException {
@@ -2906,7 +2906,7 @@ public abstract class DataSerializer {
    *         elements cannot be found.
    *
    * @see #writeHashtable
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static <K,V> Hashtable<K,V> readHashtable(DataInput in)
     throws IOException, ClassNotFoundException {
@@ -2946,7 +2946,7 @@ public abstract class DataSerializer {
    *         A problem occurs while writing to <code>out</code>
    *
    * @see #readTreeMap
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static void writeTreeMap(TreeMap<?,?> map, DataOutput out)
     throws IOException {
@@ -2982,7 +2982,7 @@ public abstract class DataSerializer {
    *         elements cannot be found.
    *
    * @see #writeTreeMap
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static <K,V> TreeMap<K,V> readTreeMap(DataInput in)
     throws IOException, ClassNotFoundException {
@@ -3437,7 +3437,7 @@ public abstract class DataSerializer {
    * For internal use only.
    * Sets the unique <code>eventId</code> of this
    * <code>DataSerializer</code>. 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public final void setEventId(Object/*EventID*/ eventId) {
     this.eventId = (EventID)eventId;
@@ -3447,7 +3447,7 @@ public abstract class DataSerializer {
    * For internal use only.
    * Returns the unique <code>eventId</code> of this
    * <code>DataSerializer</code>.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public final Object/*EventID*/ getEventId() {
     return this.eventId;
@@ -3457,7 +3457,7 @@ public abstract class DataSerializer {
    * For internal use only.
    * Sets the context of this
    * <code>DataSerializer</code>. 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public final void setContext(Object/*ClientProxyMembershipID*/ context) {
     this.context = (ClientProxyMembershipID)context;
@@ -3467,7 +3467,7 @@ public abstract class DataSerializer {
    * For internal use only.
    * Returns the context of this
    * <code>DataSerializer</code>.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public final Object/*ClientProxyMembershipID*/ getContext() {
     return this.context;
@@ -3505,7 +3505,7 @@ public abstract class DataSerializer {
    * Example: <code>DataSerializer.writeEnum(DAY_OF_WEEK.SUN, out);</code>
    * 
    * @see #readEnum(Class, DataInput)
-   * @since 6.5
+   * @since GemFire 6.5
    * @throws IOException
    */
   public static void writeEnum(Enum e, DataOutput out) throws IOException {
@@ -3533,7 +3533,7 @@ public abstract class DataSerializer {
    * Example:
    * <code>DAY_OF_WEEK d = DataSerializer.readEnum(DAY_OF_WEEK.class, in);</code>
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    * @see #writeEnum(Enum, DataOutput)
    * @throws IOException
    *           A problem occurs while writing to <code>out</code>

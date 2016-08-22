@@ -55,7 +55,7 @@ public abstract class VMStatsDiskRegionEntryOffHeap extends VMStatsDiskRegionEnt
 
     public final Class getEntryClass() {
       // The class returned from this method is used to estimate the memory size.
-      // TODO OFFHEAP: This estimate will not take into account the memory saved by inlining the keys.
+      // This estimate will not take into account the memory saved by inlining the keys.
       return VMStatsDiskRegionEntryOffHeapObjectKey.class;
     }
     public RegionEntryFactory makeVersioned() {

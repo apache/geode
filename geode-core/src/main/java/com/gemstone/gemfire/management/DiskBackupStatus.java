@@ -24,7 +24,7 @@ import com.gemstone.gemfire.cache.persistence.PersistentID;
  * Composite data type used to distribute the status of disk backup
  * operations.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class DiskBackupStatus {
 

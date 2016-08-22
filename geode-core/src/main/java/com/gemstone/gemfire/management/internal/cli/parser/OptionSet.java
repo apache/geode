@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * Stores the result after parsing
  * 
- * @since 7.0
+ * @since GemFire 7.0
  *
  */
 public class OptionSet {

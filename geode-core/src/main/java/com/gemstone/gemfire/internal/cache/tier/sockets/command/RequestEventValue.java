@@ -41,7 +41,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * Represents a request for (full) value of a given event from ha container
  * (client-messages-region).
  * 
- * @since 6.1
+ * @since GemFire 6.1
  */
 public class RequestEventValue extends BaseCommand {
 

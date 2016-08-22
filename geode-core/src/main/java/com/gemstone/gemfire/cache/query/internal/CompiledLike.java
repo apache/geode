@@ -486,7 +486,7 @@ public class CompiledLike extends CompiledComparison
   }
   
   /**
-   * @since 6.6
+   * @since GemFire 6.6
    */
   @Override
   protected PlanInfo protGetPlanInfo(ExecutionContext context)

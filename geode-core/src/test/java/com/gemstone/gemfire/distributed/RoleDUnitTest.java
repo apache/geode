@@ -16,33 +16,33 @@
  */
 package com.gemstone.gemfire.distributed;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests the setting of Roles in a DistributedSystem
- *
  */
-public class RoleDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class RoleDUnitTest extends JUnit4DistributedTestCase {
   
   static Properties distributionProperties = new Properties();
 
-  public RoleDUnitTest(String name) {
-    super(name);
-  }
-  
-  
-  
   @Override
   public Properties getDistributedSystemProperties() {
     return distributionProperties;
@@ -51,15 +51,15 @@ public class RoleDUnitTest extends DistributedTestCase {
   /**
    * Tests usage of Roles in a Loner vm.
    */
+  @Test
   public void testRolesInLonerVM() {
     final String rolesProp = "A,B,C,D,E,F,G";
     final String[] rolesArray = new String[] {"A","B","C","D","E","F","G"};
-//    final List rolesList = Arrays.asList(rolesArray);
-    
+
     distributionProperties = new Properties();
-    distributionProperties.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    distributionProperties.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    distributionProperties.setProperty(DistributionConfig.ROLES_NAME, rolesProp);
+    distributionProperties.setProperty(MCAST_PORT, "0");
+    distributionProperties.setProperty(LOCATORS, "");
+    distributionProperties.setProperty(ROLES, rolesProp);
 
     InternalDistributedSystem system = getSystem(distributionProperties);
     try {
@@ -89,6 +89,7 @@ public class RoleDUnitTest extends DistributedTestCase {
   /**
    * Tests usage of Roles in four distributed vms.
    */
+  @Test
   public void testRolesInDistributedVMs() {  
     // connect all four vms...
     final String[] vmRoles = new String[] 
@@ -104,8 +105,8 @@ public class RoleDUnitTest extends DistributedTestCase {
         public void run() {
           disconnectFromDS();
           Properties config = new Properties();
-          config.setProperty(DistributionConfig.ROLES_NAME, vmRoles[vm]);
-          config.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+          config.setProperty(ROLES, vmRoles[vm]);
+          config.setProperty(LOG_LEVEL, "fine");
           distributionProperties = config;
           getSystem();
         }
@@ -149,13 +150,14 @@ public class RoleDUnitTest extends DistributedTestCase {
   /** 
    * Tests that specifying duplicate role names results in just one Role.
    */
+  @Test
   public void testDuplicateRoleNames() {
     final String rolesProp = "A,A";
     
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    config.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    config.setProperty(DistributionConfig.ROLES_NAME, rolesProp);
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
+    config.setProperty(ROLES, rolesProp);
     distributionProperties = config;
 
     InternalDistributedSystem system = getSystem();

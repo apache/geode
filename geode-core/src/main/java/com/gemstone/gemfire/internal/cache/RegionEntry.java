@@ -35,7 +35,6 @@ import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
-import com.gemstone.gemfire.cache.EvictionCriteria;
 
 /**
  * Internal interface for a region entry.
@@ -43,7 +42,7 @@ import com.gemstone.gemfire.cache.EvictionCriteria;
  * has its own entry class. The "value" field of each of these entries
  * will implement this interface.
  *
- * @since 3.5.1
+ * @since GemFire 3.5.1
  *
 
 Implementations:
@@ -89,7 +88,7 @@ public interface RegionEntry {
    * Returns true if getLastAccessed, getHitCount, and getMissCount can be called
    * without throwing InternalStatisticsDisabledException.
    * Otherwise returns false.
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public boolean hasStats();
     
@@ -201,7 +200,7 @@ public interface RegionEntry {
    * @see InitialImageOperation.RequestImageMessage#chunkEntries
    *
    * @return false if map entry not found
-   * @since 3.2.1
+   * @since GemFire 3.2.1
    */
   public boolean fillInValue(LocalRegion r,
       @Retained(ABSTRACT_REGION_ENTRY_FILL_IN_VALUE) InitialImageOperation.Entry entry,
@@ -272,7 +271,7 @@ public interface RegionEntry {
    * Returns the value as stored by the RegionEntry implementation.  For instance, if compressed this
    * value would be the compressed form.
    *  
-   * @since 8.0
+   * @since GemFire 8.0
    */
   @Retained
   public Object getTransformedValue();
@@ -284,7 +283,6 @@ public interface RegionEntry {
    *
    * @see LocalRegion#getValueInVM
    */
-  @Retained
   public Object getValueInVM(RegionEntryContext context);
   /**
    * Returns the value of an entry as it resides on disk.  For
@@ -359,13 +357,13 @@ public interface RegionEntry {
 
   /**
    * @return true if entry's value came from a netsearch
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public boolean getValueWasResultOfSearch();
   /**
    * @param v true if entry's value should be marked as having been
    * the result of a netsearch.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void setValueResultOfSearch(boolean v);
 
@@ -374,24 +372,21 @@ public interface RegionEntry {
    * on the disk, ignoring heap data.
    * @param localRegion the persistent region 
    * @return the serialized value from disk
-   * @since gemfire5.7_hotfix
+   * @since GemFire 5.7
    */
   public Object getSerializedValueOnDisk(LocalRegion localRegion);
 
   /**
    * Gets the value for this entry. For DiskRegions, unlike
    * {@link #getValue(RegionEntryContext)} this will not fault in the value rather
-   * return a temporary copy. For SQLFabric this is used during table scans in
-   * queries when faulting in every value will be only an unnecessary overhead.
+   * return a temporary copy.
    */
-  @Retained
   public Object getValueInVMOrDiskWithoutFaultIn(LocalRegion owner);
 
   /**
    * Gets the value for this entry. For DiskRegions, unlike
    * {@link #getValue(RegionEntryContext)} this will not fault in the value rather
-   * return a temporary copy. For SQLFabric this is used during table scans in
-   * queries when faulting in every value will be only an unnecessary overhead.
+   * return a temporary copy.
    * The value returned will be kept off heap (and compressed) if possible.
    */
   @Retained
@@ -413,25 +408,6 @@ public interface RegionEntry {
    * @param underUpdate
    */
   public void setUpdateInProgress(final boolean underUpdate);
-
-  /**
-   * Returns true if this entry has been marked for eviction for custom eviction
-   * via {@link EvictionCriteria}.
-   */
-  public boolean isMarkedForEviction();
-
-  /**
-   * Marks this entry for eviction by custom eviction via
-   * {@link EvictionCriteria}.
-   */
-  public void setMarkedForEviction();
-
-  /**
-   * Clears this entry as for eviction by custom eviction via
-   * {@link EvictionCriteria} or when an update is done after it was marked for
-   * eviction.
-   */
-  public void clearMarkedForEviction();
 
   /**
    * Event containing this RegionEntry is being passed through

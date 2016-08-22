@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -35,6 +44,7 @@ import com.gemstone.gemfire.test.dunit.VM;
  *         This class tests PRID generation in multiple partiton
  *         regions on 4 VMs
  */
+@Category(DistributedTest.class)
 public class PartitionedRegionPRIDDUnitTest extends
     PartitionedRegionDUnitTestCase
 {
@@ -51,8 +61,8 @@ public class PartitionedRegionPRIDDUnitTest extends
   /** to store references of 4 vms */
   VM vm[] = new VM[4];
 
-  public PartitionedRegionPRIDDUnitTest(String name) {
-    super(name);
+  public PartitionedRegionPRIDDUnitTest() {
+    super();
   }
   
   /**
@@ -61,6 +71,7 @@ public class PartitionedRegionPRIDDUnitTest extends
    * generation
    * 
    */
+  @Test
   public void testPRIDGenerationInMultiplePartitionRegion() throws Exception
   {
     Host host = Host.getHost(0);

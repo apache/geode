@@ -63,6 +63,11 @@ public class RollbackCommand extends BaseCommand {
         txId = txState.getTxId();
         txMgr.rollback();
         sendRollbackReply(msg, servConn);
+      } else {
+        //could not find TxState in the host server.
+        //Protect against a failover command received so late,
+        //and it is removed from the failoverMap due to capacity.
+        sendRollbackReply(msg, servConn);
       }
     } catch (Exception e) {
       writeException(msg, e, false, servConn);

@@ -69,7 +69,7 @@ import com.gemstone.gemfire.internal.util.BlobHelper;
  * @see DiskRegion
  *
  *
- * @since 3.2
+ * @since GemFire 3.2
  */
 public interface DiskEntry extends RegionEntry {
   /**
@@ -85,13 +85,6 @@ public interface DiskEntry extends RegionEntry {
    * @param context
    */
   public void handleValueOverflow(RegionEntryContext context);
-  
-  /**
-   * In some cases we need to do something just after we unset the value
-   * from a DiskEntry that has been moved (i.e. overflowed) to disk.
-   * @param context
-   */
-  public void afterValueOverflow(RegionEntryContext context);
 
   /**
    * Returns true if the DiskEntry value is equal to {@link Token#DESTROYED}, {@link Token#REMOVED_PHASE1}, or {@link Token#REMOVED_PHASE2}.
@@ -138,7 +131,7 @@ public interface DiskEntry extends RegionEntry {
      * Testing purpose only
      * Get the value of an entry that is on disk without faulting
      * it in and without looking in the io buffer.
-     * @since 3.2.1
+     * @since GemFire 3.2.1
      */
     static Object getValueOnDisk(DiskEntry entry, DiskRegion dr) {
       DiskId id = entry.getDiskId();
@@ -168,7 +161,7 @@ public interface DiskEntry extends RegionEntry {
      * @param entry the entry used to identify the value to fetch
      * @param dr the persistent storage from which to fetch the value
      * @return either null, byte array, or CacheDeserializable
-     * @since gemfire57_hotfix
+     * @since GemFire 57_hotfix
      */
     public static Object getSerializedValueOnDisk(
         DiskEntry entry, DiskRegion dr) {
@@ -199,7 +192,7 @@ public interface DiskEntry extends RegionEntry {
      * This method is used for concurrent map operations and CQ processing
      * 
      * @throws DiskAccessException
-     * @since 5.1
+     * @since GemFire 5.1
      */
     static Object getValueOnDiskOrBuffer(DiskEntry entry, DiskRegion dr, RegionEntryContext context) {
       @Released Object v = getOffHeapValueOnDiskOrBuffer(entry, dr, context);
@@ -247,27 +240,6 @@ public interface DiskEntry extends RegionEntry {
         }
       }
     }
-      
-    /**
-     * Returns false if the entry is INVALID (or LOCAL_INVALID). Determines this
-     * without faulting in the value from disk.
-     * 
-     * @since 3.2.1
-     */
-    /* TODO prpersist - Do we need this method? It was added by the sqlf merge
-    static boolean isValid(DiskEntry entry, DiskRegion dr) {
-      synchronized (entry) {
-        if (entry.isRecovered()) {
-          // We have a recovered entry whose value is still on disk.
-          // So take a peek at it without faulting it in.
-          //long id = entry.getDiskId().getKeyId();
-          //entry.getDiskId().setKeyId(-id);
-          byte bits = dr.getBits(entry.getDiskId());
-          //TODO Asif:Check if resetting is needed
-          return !EntryBits.isInvalid(bits) && !EntryBits.isLocalInvalid(bits);
-        }
-      }
-    }*/
 
     static boolean isOverflowedToDisk(DiskEntry de, DiskRegion dr, DistributedRegion.DiskPosition dp,RegionEntryContext context) {
       Object v = null;
@@ -309,7 +281,7 @@ public interface DiskEntry extends RegionEntry {
     /**
      * Get the value of an entry that is on disk without faulting
      * it in.
-     * @since 3.2.1
+     * @since GemFire 3.2.1
      */
     static boolean fillInValue(DiskEntry de, InitialImageOperation.Entry entry,
                                DiskRegion dr, DM mgr, ByteArrayDataInput in, RegionEntryContext context) {
@@ -372,10 +344,6 @@ public interface DiskEntry extends RegionEntry {
           dr.releaseReadLock();
         }
       }
-      final boolean isEagerDeserialize = entry.isEagerDeserialize();
-      if (isEagerDeserialize) {
-        entry.clearEagerDeserialize();
-      }
       if (Token.isRemovedFromDisk(v)) {
         // fix for bug 31757
         return false;
@@ -386,28 +354,13 @@ public interface DiskEntry extends RegionEntry {
             entry.setSerialized(false);
             entry.value = cd.getDeserializedForReading();
             
-            //For SQLFire we prefer eager deserialized
-//            if(v instanceof ByteSource) {
-//              entry.setEagerDeserialize();
-//            }
           } else {
             // don't serialize here if it is not already serialized
             
             Object tmp = cd.getValue();
-          //For SQLFire we prefer eager deserialized
-//            if(v instanceof ByteSource) {
-//              entry.setEagerDeserialize();
-//            }
             if (tmp instanceof byte[]) {
               byte[] bb = (byte[])tmp;
               entry.value = bb;
-              entry.setSerialized(true);
-            }
-            else if (isEagerDeserialize && tmp instanceof byte[][]) {
-              // optimize for byte[][] since it will need to be eagerly deserialized
-              // for SQLFabric
-              entry.value = tmp;
-              entry.setEagerDeserialize();
               entry.setSerialized(true);
             }
             else {
@@ -437,12 +390,6 @@ public interface DiskEntry extends RegionEntry {
         entry.value = v;
         entry.setSerialized(false);
       }
-      else if (isEagerDeserialize && v instanceof byte[][]) {
-        // optimize for byte[][] since it will need to be eagerly deserialized
-        // for SQLFabric
-        entry.value = v;
-        entry.setEagerDeserialize();
-      }
       else if (v == Token.INVALID) {
         entry.setInvalid();
       }
@@ -460,11 +407,7 @@ public interface DiskEntry extends RegionEntry {
             return false;
           }
         }
-      if (CachedDeserializableFactory.preferObject()) {
-        entry.value = preparedValue;
-        entry.setEagerDeserialize();
-      }
-      else {
+      {
         try {
           HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
           BlobHelper.serializeTo(preparedValue, hdos);
@@ -833,9 +776,7 @@ public interface DiskEntry extends RegionEntry {
         // to the file using the off-heap memory with no extra copying.
         // So we give preference to getRawNewValue over getCachedSerializedNewValue
         Object rawValue = null;
-        if (!event.hasDelta()) {
-          // We don't do this for the delta case because getRawNewValue returns delta
-          // and we want to write the entire new value to disk.
+        {
           rawValue = event.getRawNewValue();
           if (wrapOffHeapReference(rawValue)) {
             return new OffHeapValueWrapper((StoredObject) rawValue);
@@ -848,7 +789,6 @@ public interface DiskEntry extends RegionEntry {
           return createValueWrapper(rawValue, event);
         }
       }
-      // TODO OFFHEAP: No need to retain since we hold the sync on entry but we need a flavor of _getValue that will decompress
       @Retained Object value = entry._getValueRetain(region, true);
       try {
         return createValueWrapper(value, event);
@@ -957,44 +897,36 @@ public interface DiskEntry extends RegionEntry {
           did.setUserBits(re.getUserBits());
           oldValueLength = did.getValueLength();
           did.setValueLength(re.getValueLength());
-          // The following undo and then do fixes bug 41849
-          // First, undo the stats done for the previous recovered value
-          if (oldKeyId < 0) {
-            dr.incNumOverflowOnDisk(-1L);
-            dr.incNumOverflowBytesOnDisk(-oldValueLength);
-            incrementBucketStats(region, 0/*InVM*/, -1/*OnDisk*/, -oldValueLength);
-          } else {
-            dr.incNumEntriesInVM(-1L);
-            incrementBucketStats(region, -1/*InVM*/, 0/*OnDisk*/, 0);
-          }
-          // Second, do the stats done for the current recovered value
+          
           if (re.getRecoveredKeyId() < 0) {
             if (!entry.isValueNull()) {
-              try {
-                entry.handleValueOverflow(region);
-                entry.setValueWithContext(region, null); // fixes bug 41119
-              }finally {
-                entry.afterValueOverflow(region);
-              }
-              
+              entry.handleValueOverflow(region);
+              entry.setValueWithContext(region, null); // fixes bug 41119
             }
-            dr.incNumOverflowOnDisk(1L);
-            dr.incNumOverflowBytesOnDisk(did.getValueLength());
-            incrementBucketStats(region, 0/*InVM*/, 1/*OnDisk*/,
-                                 did.getValueLength());
           } else {
             entry.setValueWithContext(region, entry.prepareValueForCache(region, re.getValue(), false));
-            dr.incNumEntriesInVM(1L);
-            incrementBucketStats(region, 1/*InVM*/, 0/*OnDisk*/, 0);
+          }
+          
+          if (re.getRecoveredKeyId() < 0) {
+            if(oldKeyId >= 0) {
+              dr.incNumEntriesInVM(-1L);
+              dr.incNumOverflowOnDisk(1L);
+              dr.incNumOverflowBytesOnDisk(did.getValueLength());
+              incrementBucketStats(region, -1/*InVM*/, 1/*OnDisk*/,
+                                   did.getValueLength());
+            }
+          } else {
+            if(oldKeyId < 0) {
+              dr.incNumEntriesInVM(1L);
+              dr.incNumOverflowOnDisk(-1L);
+              dr.incNumOverflowBytesOnDisk(-oldValueLength);
+              incrementBucketStats(region, 1/*InVM*/, -1/*OnDisk*/, -oldValueLength);
+            }
           }
         }
         else {
           //The new value in the entry needs to be set after the disk writing 
-          // has succeeded. If not , for GemFireXD , it is possible that other thread
-          // may pick this transient value from region entry ( which for 
-          //offheap will eventually be released ) as index key, 
-          //given that this operation is bound to fail in case of
-          //disk access exception.
+          // has succeeded.
           
           //entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
           
@@ -1009,10 +941,7 @@ public interface DiskEntry extends RegionEntry {
           if (dr.isBackup()) {
             dr.testIsRecoveredAndClear(did); // fixes bug 41409
             if (dr.isSync()) {
-              //In case of compression the value is being set first 
-              // because atleast for now , GemFireXD does not support compression
-              // if and when it does support, this needs to be taken care of else
-              // we risk Bug 48965
+              //In case of compression the value is being set first
               if (AbstractRegionEntry.isCompressible(dr, newValue)) {
                 entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
                 
@@ -1065,24 +994,33 @@ public interface DiskEntry extends RegionEntry {
             dr.incNumEntriesInVM(1L);
             incrementBucketStats(region, 1/*InVM*/, 0/*OnDisk*/, 0);
           }
-        }
-        if (entry instanceof LRUEntry) {
-          LRUEntry le = (LRUEntry)entry;
-          boolean wasEvicted = le.testEvicted();
-          le.unsetEvicted();
-          if (!Token.isRemovedFromDisk(newValue)) {
-            if (oldValue == null
-                // added null check for bug 41759
-                || wasEvicted && did != null && did.isPendingAsync()) {
-              // Note we do not append this entry because that will be
-              // done by lruEntryUpdate
+          
+          if(newValue == Token.TOMBSTONE) {
+            if (oldValue == null) {
+              dr.incNumOverflowOnDisk(-1L);
+              dr.incNumOverflowBytesOnDisk(-oldValueLength);
+              incrementBucketStats(region, 0/*InVM*/, -1/*OnDisk*/, -oldValueLength);
+            } else {
+              dr.incNumEntriesInVM(-1L);
+              incrementBucketStats(region, -1/*InVM*/, 0/*OnDisk*/, 0);
+            }
+          } else {
+            if (oldValue == null) {
               dr.incNumEntriesInVM(1L);
               dr.incNumOverflowOnDisk(-1L);
               dr.incNumOverflowBytesOnDisk(-oldValueLength);
               incrementBucketStats(region, 1/*InVM*/, -1/*OnDisk*/, -oldValueLength);
+            } else if(oldValue == Token.TOMBSTONE) {
+              dr.incNumEntriesInVM(1L);
+              incrementBucketStats(region, 1/*InVM*/, 0/*OnDisk*/, 0/*overflowBytesOnDisk*/);
             }
           }
         }
+        if (entry instanceof LRUEntry) {
+          LRUEntry le = (LRUEntry)entry;
+          le.unsetEvicted();          
+        }
+
       }
       } finally {
         if (syncObj == did) {
@@ -1135,12 +1073,8 @@ public interface DiskEntry extends RegionEntry {
               false));
         } else {
           if (!oldValueWasNull) {
-            try {
-              entry.handleValueOverflow(context);
-              entry.setValueWithContext(context,null); // fixes bug 41119
-            }finally {
-              entry.afterValueOverflow(context);
-            }
+            entry.handleValueOverflow(context);
+            entry.setValueWithContext(context,null); // fixes bug 41119
           }
         }
         if (entry instanceof LRUEntry) {
@@ -1219,11 +1153,6 @@ public interface DiskEntry extends RegionEntry {
       boolean lruFaultedIn = false;
       boolean done = false;
       try {
-      //Asif: If the entry is instance of LRU then DidkRegion cannot be null.
-      //Since SqlFabric is accessing this method direcly & it passes the owning region,
-      //if the region happens to be persistent PR type, the owning region passed is PR,
-      // but it will have DiskRegion as null. SqlFabric takes care of passing owning region
-      // as BucketRegion in case of Overflow type entry. This is fix for Bug # 41804
       if ( entry instanceof LRUEntry && !dr.isSync() ) {
         synchronized (entry) {
           DiskId did = entry.getDiskId();
@@ -1239,11 +1168,6 @@ public interface DiskEntry extends RegionEntry {
                 // Seems like we could end up adding it to the queue multiple times.
                 did.setPendingAsync(false);
               }
-              // since it was evicted fix the stats here
-              dr.incNumEntriesInVM(1L);
-              dr.incNumOverflowOnDisk(-1L);
-              // no need to dec overflowBytesOnDisk because it was not inced in this case.
-              incrementBucketStats(region, 1/*InVM*/, -1/*OnDisk*/, 0);
             }
             lruEntryFaultIn((LRUEntry) entry, region);
             lruFaultedIn = true;
@@ -1392,10 +1316,8 @@ public interface DiskEntry extends RegionEntry {
      * Sets the value in the entry.
      * This is only called by the faultIn code once it has determined that
      * the value is no longer in memory.
-     * return the result will only be off-heap if the value is a sqlf ByteSource. Otherwise result will be on-heap.
      * Caller must have "entry" synced.
      */
-    @Retained
     private static Object readValueFromDisk(DiskEntry entry, DiskRecoveryStore region) {
 
       DiskRegionView dr = region.getDiskRegionView();
@@ -1408,16 +1330,8 @@ public interface DiskEntry extends RegionEntry {
       synchronized (did) {
         Object value = getValueFromDisk(dr, did, null);
         if (value == null) return null;
-        @Unretained Object preparedValue = setValueOnFaultIn(value, did, entry, dr, region);
-        // For Sqlfire we want to return the offheap representation.
-        // So we need to retain it for the caller to release.
-        /*if (preparedValue instanceof ByteSource) {
-          // This is the only case in which we return a retained off-heap ref.
-          ((ByteSource)preparedValue).retain();
-          return preparedValue;
-        } else */{
-          return value;
-        }
+        setValueOnFaultIn(value, did, entry, dr, region);
+        return value;
       }
       } finally {
         dr.releaseReadLock();
@@ -1465,16 +1379,7 @@ public interface DiskEntry extends RegionEntry {
 
     static Object readRawValue(byte[] valueBytes, Version version,
         ByteArrayDataInput in) {
-      /*
-      final StaticSystemCallbacks sysCb;
-      if (version != null && (sysCb = GemFireCacheImpl.FactoryStatics
-          .systemCallbacks) != null) {
-        // may need to change serialized shape for SQLFire
-        return sysCb.fromVersion(valueBytes, false, version, in);
-      }
-      else */ {
-        return valueBytes;
-      }
+      return valueBytes;
     }
 
     public static void incrementBucketStats(Object owner,
@@ -1522,12 +1427,6 @@ public interface DiskEntry extends RegionEntry {
         did = entry.getDiskId();
       }
       
-      // Notify the SQLFire IndexManager if present
-     /* final IndexUpdater indexUpdater = region.getIndexUpdater();
-      if(indexUpdater != null && dr.isSync()) {
-        indexUpdater.onOverflowToDisk(entry);
-      }*/
-      
       int change = 0;
       boolean scheduledAsyncHere = false;
       dr.acquireReadLock();
@@ -1551,7 +1450,6 @@ public interface DiskEntry extends RegionEntry {
             // and now we are faulting it out
           }
         }
-
         boolean movedValueToDisk = false; // added for bug 41849
         
         // If async then if it does not need to be written (because it already was)
@@ -1562,13 +1460,8 @@ public interface DiskEntry extends RegionEntry {
           // do the stats when it is actually written to disk
         } else {
           region.updateSizeOnEvict(entry.getKey(), oldSize);
-          //did.setValueSerializedSize(byteSizeOnDisk);
-          try {
-            entry.handleValueOverflow(region);
-            entry.setValueWithContext(region,null);
-          }finally {
-            entry.afterValueOverflow(region);
-          }
+          entry.handleValueOverflow(region);
+          entry.setValueWithContext(region,null);
           movedValueToDisk = true;
           change = ((LRUClockNode)entry).updateEntrySize(ccHelper);
         }
@@ -1576,10 +1469,12 @@ public interface DiskEntry extends RegionEntry {
         if (movedValueToDisk) {
           valueLength = getValueLength(did);
         }
-        dr.incNumEntriesInVM(-1L);
-        dr.incNumOverflowOnDisk(1L);
-        dr.incNumOverflowBytesOnDisk(valueLength);
-        incrementBucketStats(region, -1/*InVM*/, 1/*OnDisk*/, valueLength);
+        if(dr.isSync() || movedValueToDisk) {
+          dr.incNumEntriesInVM(-1L);
+          dr.incNumOverflowOnDisk(1L);
+          dr.incNumOverflowBytesOnDisk(valueLength);
+          incrementBucketStats(region, -1/*InVM*/, 1/*OnDisk*/, valueLength);
+        }
       }
       } finally {
         dr.releaseReadLock();
@@ -1649,12 +1544,8 @@ public interface DiskEntry extends RegionEntry {
                 dr.incNumOverflowBytesOnDisk(did.getValueLength());
                 incrementBucketStats(region, 0/*InVM*/, 0/*OnDisk*/,
                                      did.getValueLength());
-                try {
-                  entry.handleValueOverflow(region);
-                  entry.setValueWithContext(region,null);
-                }finally {
-                  entry.afterValueOverflow(region);
-                }
+                entry.handleValueOverflow(region);
+                entry.setValueWithContext(region,null);
               }
               
               //See if we the entry we wrote to disk has the same tag
@@ -1701,7 +1592,7 @@ public interface DiskEntry extends RegionEntry {
     /**
      * Flush an entry that was previously scheduled to be written to disk.
      * @param tag 
-     * @since prPersistSprint1
+     * @since GemFire prPersistSprint1
      */
     public static void doAsyncFlush(DiskEntry entry, LocalRegion region, VersionTag tag) {
       if (region.isThisRegionBeingClosedOrDestroyed()) return;
@@ -1765,17 +1656,13 @@ public interface DiskEntry extends RegionEntry {
                   && ((LRUEntry)entry).testEvicted()) {
                 // Moved this here to fix bug 40116.
                 region.updateSizeOnEvict(entry.getKey(), entryValSize);
-                // note the old size was already accounted for
-                // onDisk was already inced so just do the valueLength here
+                dr.incNumEntriesInVM(-1);
+                dr.incNumOverflowOnDisk(1L);
                 dr.incNumOverflowBytesOnDisk(did.getValueLength());
-                incrementBucketStats(region, 0/*InVM*/, 0/*OnDisk*/,
+                incrementBucketStats(region, -1/*InVM*/, 1/*OnDisk*/,
                                      did.getValueLength());
-                try {
-                 entry.handleValueOverflow(region);
-                 entry.setValueWithContext(region,null);
-                }finally {
-                  entry.afterValueOverflow(region);
-                }
+                entry.handleValueOverflow(region);
+                entry.setValueWithContext(region,null);
               }
             } catch (RegionClearedException ignore) {
               // no need to do the op since it was clobbered by a region clear

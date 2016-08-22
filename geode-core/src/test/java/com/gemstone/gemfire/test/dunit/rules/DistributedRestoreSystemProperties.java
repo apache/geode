@@ -16,8 +16,7 @@
  */
 package com.gemstone.gemfire.test.dunit.rules;
 
-import static java.lang.System.getProperties;
-import static java.lang.System.setProperties;
+import static java.lang.System.*;
 
 import java.util.Properties;
 

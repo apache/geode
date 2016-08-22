@@ -21,13 +21,15 @@ import com.gemstone.gemfire.management.internal.cli.parser.OptionSet;
 
 public class CliCommandNotAvailableException extends CliCommandException {
 
-  public CliCommandNotAvailableException(CommandTarget commandTarget) {
-    super(commandTarget);
+  public CliCommandNotAvailableException(final CommandTarget commandTarget) {
+    this(commandTarget, null, null);
   }
 
-  public CliCommandNotAvailableException(CommandTarget commandTarget,
-      OptionSet optionSet) {
-    super(commandTarget, optionSet);
+  public CliCommandNotAvailableException(final CommandTarget commandTarget, final OptionSet optionSet) {
+    this(commandTarget, optionSet, null);
   }
 
+  public CliCommandNotAvailableException(final CommandTarget commandTarget, final OptionSet optionSet, final Throwable cause) {
+    super(commandTarget, optionSet, cause);
+  }
 }

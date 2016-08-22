@@ -30,7 +30,7 @@ import javax.transaction.*;
  * the "2" method.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class TestXACacheLoader implements CacheLoader{
 

@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -25,18 +27,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
-/**
- *
- */
 @Category(UnitTest.class)
-public class CopyOnWriteHashSetJUnitTest extends TestCase {
-  
+public class CopyOnWriteHashSetJUnitTest {
+
+  @Test
   public void testSnapshot() {
     CopyOnWriteHashSet<String> set = new CopyOnWriteHashSet<String>();
     set.add("a");
@@ -46,9 +45,9 @@ public class CopyOnWriteHashSetJUnitTest extends TestCase {
     
     assertEquals(copy, snap);
   }
-  
+
+  @Test
   public void testAllMethods() throws Exception {
-    
     CopyOnWriteHashSet<String> set = new CopyOnWriteHashSet<String>();
     assertTrue(set.add("a"));
     assertFalse(set.add("a"));

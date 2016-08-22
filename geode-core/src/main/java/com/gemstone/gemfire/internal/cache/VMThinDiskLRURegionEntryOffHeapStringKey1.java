@@ -199,7 +199,7 @@ public class VMThinDiskLRURegionEntryOffHeapStringKey1 extends VMThinDiskLRURegi
   /**
    * DiskId
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    */
   protected DiskId id;//= new DiskId();
   public DiskId getDiskId() {

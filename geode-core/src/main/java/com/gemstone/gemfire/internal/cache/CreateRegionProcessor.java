@@ -572,8 +572,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         if (!rgn.getFullPath().contains( 
             DynamicRegionFactoryImpl.dynamicRegionListName)) { 
           result = LocalizedStrings.CreateRegionProcessor_CANNOT_CREATE_REGION_0_WITH_1_GATEWAY_SENDER_IDS_BECAUSE_ANOTHER_CACHE_HAS_THE_SAME_REGION_WITH_2_GATEWAY_SENDER_IDS
-            .toLocalizedString(new Object[] { this.regionPath,
-                otherGatewaySenderIds, myGatewaySenderIds });
+            .toLocalizedString(this.regionPath, myGatewaySenderIds, otherGatewaySenderIds);
         }
       }
       
@@ -582,8 +581,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       if (!isLocalOrRemoteAccessor(rgn, profile) && !otherAsynEventQueueIds
           .equals(myAsyncEventQueueIds)) {
         result = LocalizedStrings.CreateRegionProcessor_CANNOT_CREATE_REGION_0_WITH_1_ASYNC_EVENT_IDS_BECAUSE_ANOTHER_CACHE_HAS_THE_SAME_REGION_WITH_2_ASYNC_EVENT_IDS
-            .toLocalizedString(new Object[] { this.regionPath,
-                otherAsynEventQueueIds, myAsyncEventQueueIds });
+            .toLocalizedString(this.regionPath, myAsyncEventQueueIds, otherAsynEventQueueIds);
       }
       
       final PartitionAttributes pa = rgn.getAttributes()
@@ -611,7 +609,22 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         result = LocalizedStrings.CreateRegionProcessor_CANNOT_CREATE_REGION_0_WITH_OFF_HEAP_EQUALS_1_BECAUSE_ANOTHER_CACHE_2_HAS_SAME_THE_REGION_WITH_OFF_HEAP_EQUALS_3
             .toLocalizedString(new Object[] { this.regionPath, profile.isOffHeap, myId, otherIsOffHeap });
       }
-      
+
+      String cspResult = null;
+      // TODO Compares set sizes and equivalent entries.
+      if (profile.cacheServiceProfiles != null) {
+        for (CacheServiceProfile remoteProfile : profile.cacheServiceProfiles) {
+          CacheServiceProfile localProfile = ((LocalRegion) rgn).getCacheServiceProfile(remoteProfile.getId());
+          cspResult = remoteProfile.checkCompatibility(rgn.getFullPath(), localProfile);
+          if (cspResult != null) {
+            break;
+          }
+        }
+        // Don't overwrite result with null in case it has already been set in a previous compatibility check.
+        if (cspResult != null) {
+          result = cspResult;
+        }
+      }
       if (logger.isDebugEnabled()) {
         logger.debug("CreateRegionProcessor.checkCompatibility: this={}; other={}; result={}", rgn, profile, result);
       }

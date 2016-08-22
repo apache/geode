@@ -70,7 +70,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * 
  * This model is not threadsafe.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * 
  */
 @SuppressWarnings("synthetic-access")
@@ -243,8 +243,7 @@ public class PartitionedRegionLoadModel {
         // [sumedh] remove from buckets array too to be consistent since
         // this method will be invoked repeatedly for all colocated regions,
         // and then we may miss some colocated regions for a bucket leading
-        // to all kinds of issues later (e.g. see SQLF test for #41472 that
-        //   shows some problems including NPEs, hangs etc.)
+        // to all kinds of issues later
         this.buckets[i] = null;
         continue;
       }
@@ -402,6 +401,8 @@ public class PartitionedRegionLoadModel {
         //If the bucket creation failed, we need to undo the changes
         //we made to the model
         attemptedBucketCreations.add(move);
+        //remove the bucket from lowRedundancyBuckets before mutating the state
+        lowRedundancyBuckets.remove(bucket);
         bucket.removeMember(targetMember);
         if(bucket.getRedundancy() < requiredRedundancy) {
           lowRedundancyBuckets.add(bucket);
@@ -553,20 +554,10 @@ public class PartitionedRegionLoadModel {
   public Move findBestPrimaryMove() {
     Move bestMove= null;
     double bestImprovement = 0;
-    GemFireCacheImpl cache = null;
     for(Member source: this.members.values()) {
       for(Bucket bucket: source.getPrimaryBuckets()) {
         for(Member target: bucket.getMembersHosting()) {
           if(source.equals(target)) {
-            continue;
-          }
-          // If node is not fully initialized yet, then skip this node
-          // (SQLFabric DDL replay in progress).
-          if (cache == null) {
-            cache = GemFireCacheImpl.getInstance();
-          }
-          if (cache != null
-              && cache.isUnInitializedMember(target.getMemberId())) {
             continue;
           }
           double improvement = improvement(source.getPrimaryLoad(), source
@@ -1208,12 +1199,6 @@ public class PartitionedRegionLoadModel {
       //make sure this member is not already hosting this bucket
       if(getBuckets().contains(bucket)) {
         return RefusalReason.ALREADY_HOSTING;
-      }
-      // If node is not fully initialized yet, then skip this node (SQLFabric
-      // DDL replay in progress).
-      final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-      if (cache != null && cache.isUnInitializedMember(getMemberId())) {
-        return RefusalReason.UNITIALIZED_MEMBER;
       }
       //Check the ip address
       if(checkZone) {

@@ -16,22 +16,26 @@
  */
 package com.gemstone.gemfire.disttx;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 import java.util.Properties;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.cache.TransactionsWithDeltaDUnitTest;
+import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.internal.cache.TransactionsWithDeltaDUnitTest;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+@Category(DistributedTest.class)
 public class DistTXWithDeltaDUnitTest extends TransactionsWithDeltaDUnitTest {
 
-  public DistTXWithDeltaDUnitTest(String name) {
-    super(name);
+  public DistTXWithDeltaDUnitTest() {
+    super();
   }
   
   @Override
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.DISTRIBUTED_TRANSACTIONS_NAME, "true");
-    // props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    props.setProperty(DISTRIBUTED_TRANSACTIONS, "true");
     return props;
   }
 

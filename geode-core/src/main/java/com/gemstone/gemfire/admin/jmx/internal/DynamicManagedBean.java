@@ -29,7 +29,7 @@ import org.apache.commons.modeler.ManagedBean;
  * Extends ManagedBean to allow for dynamically creating new instances of
  * ManagedBean based on an existing instance of ManagedBean.
  * 
- * @since 5.0.1
+ * @since GemFire 5.0.1
  */
 public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
   private static final long serialVersionUID = 4051924500150228160L;
@@ -87,7 +87,7 @@ public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
    * Removes the operation with the given name from thie
    * <code>ManageBean</code>'s operation descriptor list.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void removeOperation(String name) {
     if (name == null || name.length() < 1) {

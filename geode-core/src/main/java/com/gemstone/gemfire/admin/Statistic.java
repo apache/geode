@@ -20,7 +20,7 @@ package com.gemstone.gemfire.admin;
 /**
  * Interface to represent a single statistic of a <code>StatisticResource</code>
  *
- * @since     3.5
+ * @since GemFire     3.5
  *
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */

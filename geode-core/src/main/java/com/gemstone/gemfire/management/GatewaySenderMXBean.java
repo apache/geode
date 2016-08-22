@@ -17,14 +17,18 @@
 package com.gemstone.gemfire.management;
 
 import com.gemstone.gemfire.cache.wan.GatewaySender;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
 
 /**
  * MBean that provides access to information and management functionality for a
  * {@link GatewaySender}.
- * 
- * @since 7.0
+ *
+ * @since GemFire 7.0
  *
  */
+@ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
 public interface GatewaySenderMXBean {
 
   /**
@@ -170,26 +174,31 @@ public interface GatewaySenderMXBean {
    * configuration cannot be changed.
    * 
    */
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public void start();
 
   /**
    * Stops this GatewaySender.
    */
+  @ResourceOperation(resource=Resource.DATA, operation=Operation.MANAGE)
   public void stop();
 
   /**
    * Pauses this GatewaySender.
    */
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public void pause();
 
   /**
    * Resumes this paused GatewaySender.
    */
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public void resume();
 
   /**
    * Rebalances this GatewaySender.
    */
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public void rebalance();
   
   /**

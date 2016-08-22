@@ -23,7 +23,7 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
  * DLockGrantorHelper provides testing operations that are not normally
  * exposed in the DLockGrantor.
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class DLockGrantorHelper {
   

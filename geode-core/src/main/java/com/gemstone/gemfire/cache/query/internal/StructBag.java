@@ -43,7 +43,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * The values in this set are stored as Object[] and get wrapped in Structs as
  * necessary.
  * 
- * @since 5.1
+ * @since GemFire 5.1
  */
 public final class StructBag extends ResultsBag implements StructFields {
   /**

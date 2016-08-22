@@ -16,51 +16,18 @@
  */
 package com.gemstone.gemfire.internal.admin.remote;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.IncompatibleSystemException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.admin.OperationCancelledException;
 import com.gemstone.gemfire.admin.RuntimeAdminException;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.DisconnectListener;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.ReconnectListener;
-import com.gemstone.gemfire.distributed.internal.MembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.admin.Alert;
-import com.gemstone.gemfire.internal.admin.AlertListener;
-import com.gemstone.gemfire.internal.admin.ApplicationVM;
-import com.gemstone.gemfire.internal.admin.CacheCollector;
-import com.gemstone.gemfire.internal.admin.CacheSnapshot;
-import com.gemstone.gemfire.internal.admin.GemFireVM;
-import com.gemstone.gemfire.internal.admin.GfManagerAgent;
-import com.gemstone.gemfire.internal.admin.GfManagerAgentConfig;
-import com.gemstone.gemfire.internal.admin.JoinLeaveListener;
+import com.gemstone.gemfire.internal.admin.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -69,6 +36,10 @@ import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * An implementation of <code>GfManagerAgent</code> that uses a {@link
@@ -93,7 +64,7 @@ public
   /** The connection to the distributed system through which this
    * admin agent communicates
    *
-   * @since 4.0 */
+   * @since GemFire 4.0 */
   protected InternalDistributedSystem system;
 
   /** Is this agent connected to the distributed system */
@@ -426,7 +397,7 @@ public
    * Returns whether or not this manager agent has created admin
    * objects for the initial members of the distributed system.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public boolean isInitialized() {
     return this.initialized;
@@ -920,7 +891,7 @@ public
    * Returns the thread group in which admin threads should run.  This
    * thread group handles uncaught exceptions nicely.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public ThreadGroup getThreadGroup() {
     return this.threadGroup;

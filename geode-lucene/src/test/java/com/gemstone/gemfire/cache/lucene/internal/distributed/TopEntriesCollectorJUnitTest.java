@@ -16,15 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.gemstone.gemfire.cache.lucene.internal.distributed;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -36,18 +34,19 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class TopEntriesCollectorJUnitTest {
-  EntryScore r1_1 = new EntryScore("1-1", .9f);
-  EntryScore r1_2 = new EntryScore("1-2", .7f);
-  EntryScore r1_3 = new EntryScore("1-3", .5f);
 
-  EntryScore r2_1 = new EntryScore("2-1", .85f);
-  EntryScore r2_2 = new EntryScore("2-2", .65f);
+  private EntryScore<String> r1_1 = new EntryScore<String>("1-1", .9f);
+  private EntryScore<String> r1_2 = new EntryScore<String>("1-2", .7f);
+  private EntryScore<String> r1_3 = new EntryScore<String>("1-3", .5f);
 
-  EntryScore r3_1 = new EntryScore("3-1", .8f);
-  EntryScore r3_2 = new EntryScore("3-2", .6f);
-  EntryScore r3_3 = new EntryScore("3-3", .4f);
+  private EntryScore<String> r2_1 = new EntryScore<String>("2-1", .85f);
+  private EntryScore<String> r2_2 = new EntryScore<String>("2-2", .65f);
 
-  TopEntriesCollectorManager manager;
+  private EntryScore<String> r3_1 = new EntryScore<String>("3-1", .8f);
+  private EntryScore<String> r3_2 = new EntryScore<String>("3-2", .6f);
+  private EntryScore<String> r3_3 = new EntryScore<String>("3-3", .4f);
+
+  private TopEntriesCollectorManager manager;
 
   @Before
   public void setup() {
@@ -122,16 +121,16 @@ public class TopEntriesCollectorJUnitTest {
     TopEntriesJUnitTest.verifyResultOrder(c1.getEntries().getHits(), r1_1, r1_2, r1_3);
 
     ListScanner scanner = new ListScanner(c1.getEntries().getHits());
-    Assert.assertTrue(scanner.hasNext());
+    assertTrue(scanner.hasNext());
     assertEquals(r1_1.getKey(), scanner.peek().getKey());
     assertEquals(r1_1.getKey(), scanner.next().getKey());
-    Assert.assertTrue(scanner.hasNext());
+    assertTrue(scanner.hasNext());
     assertEquals(r1_2.getKey(), scanner.peek().getKey());
     assertEquals(r1_2.getKey(), scanner.next().getKey());
-    Assert.assertTrue(scanner.hasNext());
+    assertTrue(scanner.hasNext());
     assertEquals(r1_3.getKey(), scanner.peek().getKey());
     assertEquals(r1_3.getKey(), scanner.next().getKey());
-    Assert.assertFalse(scanner.hasNext());
+    assertFalse(scanner.hasNext());
 
     assertEquals(3, c1.getEntries().getHits().size());
     TopEntriesJUnitTest.verifyResultOrder(c1.getEntries().getHits(), r1_1, r1_2, r1_3);

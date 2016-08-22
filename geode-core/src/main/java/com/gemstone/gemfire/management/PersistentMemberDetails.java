@@ -22,7 +22,7 @@ import java.beans.ConstructorProperties;
  * Composite data type used to distribute attributes for the missing disk
  * store of a persistent member.
  *
- * @since 7.0
+ * @since GemFire 7.0
  *
  */
 public class PersistentMemberDetails {

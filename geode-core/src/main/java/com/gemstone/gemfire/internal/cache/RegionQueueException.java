@@ -22,7 +22,7 @@ import com.gemstone.gemfire.cache.CacheException;
  * An exception thrown by a <code>RegionQueue</code>.
  *
  *
- * @since 4.2
+ * @since GemFire 4.2
  */
 // Since this exception is in an internal package, we make it
 // a checked exception.

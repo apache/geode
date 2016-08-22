@@ -16,6 +16,14 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
@@ -25,35 +33,24 @@ import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Dunit class for testing gemfire function commands : export logs
- *
  */
+@Category(DistributedTest.class)
 public class MiscellaneousCommandsExportLogsPart4DUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public MiscellaneousCommandsExportLogsPart4DUnitTest(String name) {
-    super(name);
-  }
-
-  public static String getMemberId() {
-    Cache cache = new GemfireDataCommandsDUnitTest("test").getCache();
-    return cache.getDistributedSystem().getDistributedMember().getId();
-  }
-
   void setupForExportLogs() {
     final VM vm1 = Host.getHost(0).getVM(1);
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     vm1.invoke(new SerializableRunnable() {
       public void run() {
@@ -76,6 +73,7 @@ public class MiscellaneousCommandsExportLogsPart4DUnitTest extends CliCommandTes
     return ("_" + formattedStartDate);
   }
 
+  @Test
   public void testExportLogsForTimeRange1() throws IOException {
     setupForExportLogs();
     Date startDate = new Date(System.currentTimeMillis() - 1 * 60 * 1000);
@@ -94,11 +92,11 @@ public class MiscellaneousCommandsExportLogsPart4DUnitTest extends CliCommandTes
     Result cmdResult = misc.exportLogsPreprocessing("./testExportLogsForTimeRange1" + dir, null, null, logLevel, false,
         false, start, end, 1);
 
-    LogWriterUtils.getLogWriter().info("testExportLogsForTimeRange1 command result =" + cmdResult);
+    getLogWriter().info("testExportLogsForTimeRange1 command result =" + cmdResult);
 
     if (cmdResult != null) {
       String cmdStringRsult = commandResultToString((CommandResult) cmdResult);
-      LogWriterUtils.getLogWriter().info("testExportLogsForTimeRange1 cmdStringRsult=" + cmdStringRsult);
+      getLogWriter().info("testExportLogsForTimeRange1 cmdStringRsult=" + cmdStringRsult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testExportLogsForTimeRange1 failed as did not get CommandResult");
@@ -106,6 +104,7 @@ public class MiscellaneousCommandsExportLogsPart4DUnitTest extends CliCommandTes
     FileUtil.delete(new File("testExportLogsForTimeRange1" + dir));
   }
 
+  @Test
   public void testExportLogsForTimeRangeForOnlyStartTime() throws IOException {
     setupForExportLogs();
     Date date = new Date();
@@ -122,11 +121,11 @@ public class MiscellaneousCommandsExportLogsPart4DUnitTest extends CliCommandTes
     Result cmdResult = misc.exportLogsPreprocessing("./testExportLogsForTimeRangeForOnlyStartTime" + dir, null, null,
         logLevel, false, false, s, null, 1);
 
-    LogWriterUtils.getLogWriter().info("testExportLogsForTimeRangeForOnlyStartTime command result =" + cmdResult);
+    getLogWriter().info("testExportLogsForTimeRangeForOnlyStartTime command result =" + cmdResult);
 
     if (cmdResult != null) {
       String cmdStringRsult = commandResultToString((CommandResult) cmdResult);
-      LogWriterUtils.getLogWriter().info("testExportLogsForTimeRangeForOnlyStartTime cmdStringRsult=" + cmdStringRsult);
+      getLogWriter().info("testExportLogsForTimeRangeForOnlyStartTime cmdStringRsult=" + cmdStringRsult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testExportLogsForTimeRangeForOnlyStartTime failed as did not get CommandResult");

@@ -231,8 +231,6 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
           }
         }
         // Send the reply if the operateOnPartitionedRegion returned true
-        // Fix for hang in dunits on sqlfabric after merge.
-        //ReplyMessage.send(getSender(), this.processorId, rex, dm);
         sendReply(getSender(), this.processorId, dm, rex, null, 0, true, false);
       }
     }
@@ -294,7 +292,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
    */
   final public boolean checkCacheClosing(DistributionManager dm) {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-    return (cache == null || cache.getCancelCriterion().cancelInProgress() != null);
+    return (cache == null || cache.getCancelCriterion().isCancelInProgress());
   }
 
   /**

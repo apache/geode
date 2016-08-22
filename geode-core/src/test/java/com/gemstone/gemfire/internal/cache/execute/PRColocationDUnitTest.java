@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -76,7 +85,8 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * 
  */
 @SuppressWarnings("synthetic-access")
-public class PRColocationDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
   VM accessor = null;
 
@@ -112,8 +122,8 @@ public class PRColocationDUnitTest extends CacheTestCase {
 
   Object[] attributeObjects = null;
 
-  public PRColocationDUnitTest(String name) {
-    super(name);
+  public PRColocationDUnitTest() {
+    super();
   }
 
   @Override
@@ -129,6 +139,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
    /*
    * Test for bug 41820 
    */
+  @Test
   public void testDestroyColocatedPartitionedRegion() throws Throwable {
     createCacheInAllVms();
     redundancy = new Integer(0);
@@ -163,6 +174,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
   /*
    * Test for checking the colocation of the regions which forms the tree
    */
+  @Test
   public void testColocatedPartitionedRegion() throws Throwable {
     createCacheInAllVms();
     redundancy = new Integer(0);
@@ -286,6 +298,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
   /*
    * Test for checking the colocation of the regions which forms the tree
    */
+  @Test
   public void testColocatedPartitionedRegion_NoFullPath() throws Throwable {
     createCacheInAllVms();
     redundancy = new Integer(0);
@@ -406,6 +419,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
     
     accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "K" ));
   }
+  @Test
   public void testColocatedSubPartitionedRegion() throws Throwable {
     createCacheInAllVms();
     redundancy = new Integer(1);
@@ -527,6 +541,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
     accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "rootK/K" ));
   }
   
+  @Test
   public void testColocatedSubPartitionedRegion_NoFullPath() throws Throwable {
     createCacheInAllVms();
     redundancy = new Integer(1);
@@ -648,6 +663,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
     accessor.invoke(() -> PRColocationDUnitTest.validateColocatedRegions( "rootK/K" ));
   }
   
+  @Test
   public void testColocatedPRWithAccessorOnDifferentNode1() throws Throwable {
 
     createCacheInAllVms();
@@ -721,6 +737,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
     ex.remove();
   }
 
+  @Test
   public void testColocatedPRWithAccessorOnDifferentNode2() throws Throwable {
 
     createCacheInAllVms();
@@ -792,6 +809,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
     ex.remove();
   }
   
+  @Test
   public void testColocatedPRWithPROnDifferentNode1() throws Throwable {
 
     createCacheInAllVms();
@@ -929,6 +947,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
     });
   }
 
+  @Test
   public void testColocatedPRWithLocalDestroy() throws Throwable {
     createCacheInAllVms();
     redundancy = new Integer(0);
@@ -999,6 +1018,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
     ex.remove();
   }
   
+  @Test
   public void testColocatedPRWithDestroy() throws Throwable {
     createCacheInAllVms();
     redundancy = new Integer(0);
@@ -1090,6 +1110,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
     });
   }
   
+  @Test
   public void testColocatedPRWithClose() throws Throwable {
     createCacheInAllVms();
     redundancy = new Integer(0);
@@ -1135,6 +1156,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
   /*
    * Test For partition Region with Key Based Routing Resolver
    */
+  @Test
   public void testPartitionResolverPartitionedRegion() throws Throwable {
     createCacheInAllVms();
     redundancy = new Integer(0);
@@ -1192,6 +1214,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
    * Test added to check the colocation of regions
    * Also checks for the colocation of the buckets  
    */ 
+  @Test
   public void testColocationPartitionedRegion() throws Throwable {
     // Create Cache in all VMs VM0,VM1,VM2,VM3 
     
@@ -1278,6 +1301,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
    * 
    * @throws Throwable
    */
+  @Test
   public void testColocationPartitionedRegionWithNullColocationSpecifiedOnOneNode()
       throws Throwable {
     try {
@@ -1328,6 +1352,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
    * Test added to check the colocation of regions
    * Also checks for the colocation of the buckets with redundancy specified 
    */ 
+  @Test
   public void testColocationPartitionedRegionWithRedundancy() throws Throwable {
 
     // Create Cache in all VMs VM0,VM1,VM2,VM3
@@ -1425,6 +1450,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
    * Confirm that the redundancy must be the same for colocated partitioned regions
    * @throws Exception
    */
+  @Test
   public void testRedundancyRestriction() throws Exception {
     final String rName = getUniqueName();
     final Integer red0 = Integer.valueOf(0);
@@ -1454,6 +1480,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
    * created.
    * @throws Throwable
    */
+  @Test
   public void testColocatedPRRedundancyRecovery() throws Throwable {
     createCacheInAllVms();
     redundancy = new Integer(1);
@@ -1552,6 +1579,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
     });
   }
   
+  @Test
   public void testColocationPartitionedRegionWithKeyPartitionResolver()
       throws Throwable {
     // Create Cache in all VMs VM0,VM1,VM2,VM3
@@ -1595,6 +1623,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
     accessor.invoke(() -> PRColocationDUnitTest.executeFunction());
   }
 
+  @Test
   public void testColocatedPRRedundancyRecovery2() throws Throwable {
     createCacheInAllVms();
     
@@ -1741,6 +1770,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
    * 
    * @throws Throwable
    */
+  @Test
   public void testSimulaneousChildRegionCreation() throws Throwable {
     createCacheInAllVms();
     
@@ -2550,7 +2580,7 @@ public class PRColocationDUnitTest extends CacheTestCase {
   }
   
   public static void createCacheInVm() {
-    new PRColocationDUnitTest("temp").getCache();
+    new PRColocationDUnitTest().getCache();
   }
 
   @Override

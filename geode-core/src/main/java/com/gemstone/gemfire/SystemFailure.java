@@ -19,6 +19,7 @@
  */
 package com.gemstone.gemfire;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.SystemFailureTestHook;
 import com.gemstone.gemfire.internal.admin.remote.RemoteGfManagerAgent;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -185,7 +186,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
           ...
         }
  * </pre>
- * @since 5.1
+ * @since GemFire 5.1
  */
 @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="DM_GC", justification="This class performs System.gc as last ditch effort during out-of-memory condition.") 
 public final class SystemFailure {
@@ -334,7 +335,7 @@ public final class SystemFailure {
    * <code>gemfire.WATCHDOG_WAIT</code>. The default is 15 sec.
    */
   static public final int WATCHDOG_WAIT = Integer
-      .getInteger("gemfire.WATCHDOG_WAIT", 15).intValue();
+      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "WATCHDOG_WAIT", 15).intValue();
   
   /**
    * This is the watchdog thread
@@ -574,7 +575,7 @@ public final class SystemFailure {
    * @guarded.By {@link #memorySync}
    */
   static long minimumMemoryThreshold = Long.getLong(
-      "gemfire.SystemFailure.chronic_memory_threshold", 1048576).longValue();
+      DistributionConfig.GEMFIRE_PREFIX + "SystemFailure.chronic_memory_threshold", 1048576).longValue();
   
   /**
    * This is the interval, in seconds, that the proctor
@@ -586,7 +587,7 @@ public final class SystemFailure {
    * @see #setFailureMemoryThreshold(long)
    */
   static final public long MEMORY_POLL_INTERVAL = Long.getLong(
-      "gemfire.SystemFailure.MEMORY_POLL_INTERVAL", 1).longValue();
+      DistributionConfig.GEMFIRE_PREFIX + "SystemFailure.MEMORY_POLL_INTERVAL", 1).longValue();
   
   /**
    * This is the maximum amount of time, in seconds, that the proctor thread
@@ -600,7 +601,7 @@ public final class SystemFailure {
    * @see #setFailureMemoryThreshold(long)
    */
   static final public long MEMORY_MAX_WAIT = Long.getLong(
-      "gemfire.SystemFailure.MEMORY_MAX_WAIT", 15).longValue();
+      DistributionConfig.GEMFIRE_PREFIX + "SystemFailure.MEMORY_MAX_WAIT", 15).longValue();
   
   /**
    * Flag that determines whether or not we monitor memory on our own.
@@ -610,10 +611,10 @@ public final class SystemFailure {
    * The default is false, so this monitoring is turned off. This monitoring has been found 
    * to be unreliable in non-Sun VMs when the VM is under stress or behaves in unpredictable ways.
    *
-   * @since 6.5
+   * @since GemFire 6.5
    */
   static final public boolean MONITOR_MEMORY = Boolean.getBoolean(
-      "gemfire.SystemFailure.MONITOR_MEMORY");
+      DistributionConfig.GEMFIRE_PREFIX + "SystemFailure.MONITOR_MEMORY");
   
   /**
    * Start the proctor thread, if it isn't already running.

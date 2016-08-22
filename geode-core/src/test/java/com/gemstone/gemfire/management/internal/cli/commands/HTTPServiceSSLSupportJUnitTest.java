@@ -16,24 +16,24 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import java.io.File;
-import java.util.Properties;
-
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
+import java.io.File;
+import java.util.Properties;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.util.test.TestUtil;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.assertEquals;
 
 /**
- * 
- * @since 8.1
+ * @since GemFire 8.1
  */
 @Category(IntegrationTest.class)
 public class HTTPServiceSSLSupportJUnitTest {
@@ -48,10 +48,10 @@ public class HTTPServiceSSLSupportJUnitTest {
 
   @After
   public void tearDown() throws Exception {
-    System.clearProperty("gemfire.javax.net.ssl.keyStore");
-    System.clearProperty("gemfire.javax.net.ssl.keyStorePassword");
-    System.clearProperty("gemfire.javax.net.ssl.trustStore");
-    System.clearProperty("gemfire.javax.net.ssl.trustStorePassword");
+    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStore");
+    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStorePassword");
+    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStore");
+    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStorePassword");
     System.clearProperty("gemfireSecurityPropertyFile");
   }
 
@@ -68,18 +68,20 @@ public class HTTPServiceSSLSupportJUnitTest {
     return sb.toString();
   }
 
-  public void _testSSLWithClusterSSL() throws Exception {
+  @Ignore("disabled for unknown reason")
+  @Test
+  public void testSSLWithClusterSSL() throws Exception {
 
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    localProps.setProperty(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "true");
-    localProps.setProperty(DistributionConfig.CLUSTER_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    localProps.setProperty(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    localProps.setProperty(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME, "JKS");
-    localProps.setProperty(DistributionConfig.CLUSTER_SSL_PROTOCOLS_NAME, "SSL");
-    localProps.setProperty(DistributionConfig.CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME, "true");
-    localProps.setProperty(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_NAME, jks.getCanonicalPath());
-    localProps.setProperty(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME, "password");
+    localProps.setProperty(MCAST_PORT, "0");
+    localProps.setProperty(CLUSTER_SSL_ENABLED, "true");
+    localProps.setProperty(CLUSTER_SSL_KEYSTORE, jks.getCanonicalPath());
+    localProps.setProperty(CLUSTER_SSL_KEYSTORE_PASSWORD, "password");
+    localProps.setProperty(CLUSTER_SSL_KEYSTORE_TYPE, "JKS");
+    localProps.setProperty(CLUSTER_SSL_PROTOCOLS, "SSL");
+    localProps.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION, "true");
+    localProps.setProperty(CLUSTER_SSL_TRUSTSTORE, jks.getCanonicalPath());
+    localProps.setProperty(CLUSTER_SSL_TRUSTSTORE_PASSWORD, "password");
 
     DistributionConfigImpl config = new DistributionConfigImpl(localProps);
 
@@ -98,15 +100,15 @@ public class HTTPServiceSSLSupportJUnitTest {
   public void testSSLWithDeprecatedClusterSSL_HTTPService() throws Exception {
 
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    localProps.setProperty(DistributionConfig.SSL_ENABLED_NAME, "true");
-    System.setProperty("gemfire.javax.net.ssl.keyStore", jks.getCanonicalPath());
-    System.setProperty("gemfire.javax.net.ssl.keyStorePassword", "password");
+    localProps.setProperty(MCAST_PORT, "0");
+    localProps.setProperty(SSL_ENABLED, "true");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStore", jks.getCanonicalPath());
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStorePassword", "password");
 
-    localProps.setProperty(DistributionConfig.SSL_PROTOCOLS_NAME, "SSL");
-    localProps.setProperty(DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME, "true");
-    System.setProperty("gemfire.javax.net.ssl.trustStore", jks.getCanonicalPath());
-    System.setProperty("gemfire.javax.net.ssl.trustStorePassword", "password");
+    localProps.setProperty(SSL_PROTOCOLS, "SSL");
+    localProps.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStore", jks.getCanonicalPath());
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStorePassword", "password");
 
     DistributionConfigImpl config = new DistributionConfigImpl(localProps);
 
@@ -116,7 +118,7 @@ public class HTTPServiceSSLSupportJUnitTest {
 
     assertEquals(config.getHttpServiceSSLProperties().get("javax.net.ssl.keyStore"), jks.getCanonicalPath());
     assertEquals(config.getHttpServiceSSLProperties().get("javax.net.ssl.keyStorePassword"), "password");
-    // assertEquals(system.getConfig().getHttpServiceSSLKeyStoreType(),"JKS");
+    // assertIndexDetailsEquals(system.getConfig().getHttpServiceSSLKeyStoreType(),"JKS");
     assertEquals(config.getHttpServiceSSLProperties().get("javax.net.ssl.trustStore"), jks.getCanonicalPath());
     assertEquals(config.getHttpServiceSSLProperties().get("javax.net.ssl.trustStorePassword"), "password");
 
@@ -126,11 +128,11 @@ public class HTTPServiceSSLSupportJUnitTest {
   public void testSSLWithDeprecatedClusterSSL_HTTPService_WithSSL_Properties() throws Exception {
 
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    localProps.setProperty(DistributionConfig.SSL_ENABLED_NAME, "true");
+    localProps.setProperty(MCAST_PORT, "0");
+    localProps.setProperty(SSL_ENABLED, "true");
 
-    localProps.setProperty(DistributionConfig.SSL_PROTOCOLS_NAME, "SSL");
-    localProps.setProperty(DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME, "true");
+    localProps.setProperty(SSL_PROTOCOLS, "SSL");
+    localProps.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
 
     Properties sslProps = new Properties();
     sslProps.setProperty("javax.net.ssl.keyStore", jks.getCanonicalPath());

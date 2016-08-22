@@ -16,12 +16,17 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import java.io.IOException;
 import java.util.Properties;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.Connection;
@@ -30,7 +35,6 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
@@ -38,20 +42,19 @@ import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
+@Category(DistributedTest.class)
 public class WANLocatorServerDUnitTest extends WANTestBase {
 
   static PoolImpl proxy;
-
-  public WANLocatorServerDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   protected final void postSetUpWANTestBase() throws Exception {
     final Host host = Host.getHost(0);
   }
 
+  @Test
   public void test_3Locators_2Servers() {
 
     int port1 = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
@@ -88,18 +91,17 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
         port1, port2, port3, port3 ));
 
     vm5.invoke(() -> WANLocatorServerDUnitTest.tryNewConnection());
-
   }
 
   public static void createLocator(Integer port1, Integer port2, Integer port3,
       Integer startingPort) {
     WANTestBase test = new WANTestBase(getTestMethodName());
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "" + 1);
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port1
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
+    props.setProperty(LOCATORS, "localhost[" + port1
         + "],localhost[" + port2 + "],localhost[" + port3 + "]");
-    props.setProperty(DistributionConfig.START_LOCATOR_NAME, "localhost["
+    props.setProperty(START_LOCATOR, "localhost["
         + startingPort
         + "],server=true,peer=true,hostname-for-clients=localhost");
     test.getSystem(props);
@@ -108,8 +110,8 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
   public static void createReceiver(Integer port1, Integer port2, Integer port3) {
     WANTestBase test = new WANTestBase(getTestMethodName());
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port1
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + port1
         + "],localhost[" + port2 + "],localhost[" + port3 + "]");
 
     InternalDistributedSystem ds = test.getSystem(props);
@@ -124,17 +126,15 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
       receiver.start();
     }
     catch (IOException e) {
-      e.printStackTrace();
-      fail("Test " + test.getName()
-          + " failed to start GatewayRecevier on port " + port);
+      fail("Test " + test.getName() + " failed to start GatewayRecevier on port " + port, e);
     }
   }
 
   public static void createServer(Integer port1, Integer port2, Integer port3) {
     WANTestBase test = new WANTestBase(getTestMethodName());
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port1
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + port1
         + "],localhost[" + port2 + "],localhost[" + port3 + "]");
 
     InternalDistributedSystem ds = test.getSystem(props);
@@ -146,9 +146,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
       server.start();
     }
     catch (IOException e) {
-      e.printStackTrace();
-      fail("Test " + test.getName() + " failed to start CacheServer on port "
-          + port);
+      fail("Test " + test.getName() + " failed to start CacheServer on port " + port, e);
     }
     LogWriterUtils.getLogWriter().info(
         "Server Started on port : " + port + " : server : " + server);
@@ -177,7 +175,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
       con1.close(true);
     }
     catch (Exception e) {
-      e.printStackTrace();
+      fail("createClient failed", e);
     }
   }
 

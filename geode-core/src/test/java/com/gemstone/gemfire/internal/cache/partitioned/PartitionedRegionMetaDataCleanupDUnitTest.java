@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
@@ -32,12 +41,14 @@ import com.gemstone.gemfire.test.dunit.Wait;
 /**
  *
  */
-public class PartitionedRegionMetaDataCleanupDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class PartitionedRegionMetaDataCleanupDUnitTest extends JUnit4CacheTestCase {
 
-  public PartitionedRegionMetaDataCleanupDUnitTest(String name) {
-    super(name);
+  public PartitionedRegionMetaDataCleanupDUnitTest() {
+    super();
   }
   
+  @Test
   public void testCleanupOnCloseCache() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -58,6 +69,7 @@ public class PartitionedRegionMetaDataCleanupDUnitTest extends CacheTestCase {
     waitForCreate(vm0, "region1", 15);
   }
   
+  @Test
   public void testCleanupOnCloseRegion() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -78,6 +90,7 @@ public class PartitionedRegionMetaDataCleanupDUnitTest extends CacheTestCase {
     waitForCreate(vm0, "region1", 15);
   }
   
+  @Test
   public void testCrash() throws InterruptedException {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

@@ -19,60 +19,49 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
-import java.util.concurrent.CyclicBarrier;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static org.junit.Assert.*;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CyclicBarrier;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.query.CacheUtils;
+import com.gemstone.gemfire.cache.query.Index;
+import com.gemstone.gemfire.cache.query.IndexType;
+import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.cache.query.data.Portfolio;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-import junit.framework.TestCase;
-
-/**
- *
- */
 @Category(IntegrationTest.class)
 public class AsynchIndexMaintenanceJUnitTest {
+
   private QueryService qs;
 
-  protected Region region;
+  private Region region;
 
-  protected boolean indexUsed = false;
-  protected volatile boolean exceptionOccured = false; 
+  private boolean indexUsed = false;
+  private volatile boolean exceptionOccured = false;
 
   private Set idSet ;
 
-  private void init() {
+  private void init() throws Exception {
     idSet = new HashSet();
-    try {
-      CacheUtils.startCache();
-      Cache cache = CacheUtils.getCache();
-      region = CacheUtils.createRegion("portfolio", Portfolio.class, false);      
-      
-      qs = cache.getQueryService();
+    CacheUtils.startCache();
+    Cache cache = CacheUtils.getCache();
+    region = CacheUtils.createRegion("portfolio", Portfolio.class, false);
 
-    }
-    catch (Exception e) {
-      e.printStackTrace();
-    }
-
+    qs = cache.getQueryService();
   }
 
   @Before
@@ -95,15 +84,15 @@ public class AsynchIndexMaintenanceJUnitTest {
 
   @Test
   public void testIndexMaintenanceBasedOnThreshhold() throws Exception {
-    System.getProperties().put("gemfire.AsynchIndexMaintenanceThreshold", "50");
-    System.getProperties().put("gemfire.AsynchIndexMaintenanceInterval", "0");
+    System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceThreshold", "50");
+    System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceInterval", "0");
     final Index ri = qs.createIndex("statusIndex",
         IndexType.FUNCTIONAL, "p.getID", "/portfolio p");
     for( int i=0; i< 49; ++i) {
       region.put(""+(i+1), new Portfolio(i+1));
       idSet.add((i+1) + "");
     }    
-    //assertEquals(0, getIndexSize(ri));
+    //assertIndexDetailsEquals(0, getIndexSize(ri));
     region.put("50", new Portfolio(50));
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
@@ -118,8 +107,8 @@ public class AsynchIndexMaintenanceJUnitTest {
   
   @Test
   public void testIndexMaintenanceBasedOnTimeInterval() throws Exception {
-    System.getProperties().put("gemfire.AsynchIndexMaintenanceThreshold", "-1");
-    System.getProperties().put("gemfire.AsynchIndexMaintenanceInterval", "10000");
+    System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceThreshold", "-1");
+    System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceInterval", "10000");
     final Index ri = (Index) qs.createIndex("statusIndex",
         IndexType.FUNCTIONAL, "p.getID", "/portfolio p");
     
@@ -129,7 +118,7 @@ public class AsynchIndexMaintenanceJUnitTest {
       idSet.add((i+1) + "");
     }    
 
-    //assertEquals(0, getIndexSize(ri));
+    //assertIndexDetailsEquals(0, getIndexSize(ri));
 
     WaitCriterion evSize = new WaitCriterion() {
       public boolean done() {
@@ -160,14 +149,14 @@ public class AsynchIndexMaintenanceJUnitTest {
       region.put(""+(i+1), new Portfolio(i+1));
       idSet.add((i+1) + "");
     }    
-    //assertEquals(0, getIndexSize(ri));
+    //assertIndexDetailsEquals(0, getIndexSize(ri));
     Wait.waitForCriterion(evSize, 17 * 1000, 200, true);
   }
   
   @Test
   public void testIndexMaintenanceBasedOnThresholdAsZero() throws Exception {
-    System.getProperties().put("gemfire.AsynchIndexMaintenanceThreshold", "0");
-    System.getProperties().put("gemfire.AsynchIndexMaintenanceInterval", "60000");
+    System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceThreshold", "0");
+    System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceInterval", "60000");
     final Index ri = (Index) qs.createIndex("statusIndex",
         IndexType.FUNCTIONAL, "p.getID", "/portfolio p");
     for( int i=0; i<3 ; ++i) {
@@ -188,8 +177,8 @@ public class AsynchIndexMaintenanceJUnitTest {
   
   @Test
   public void testNoIndexMaintenanceBasedOnNegativeThresholdAndZeroSleepTime() throws Exception {
-    System.getProperties().put("gemfire.AsynchIndexMaintenanceThreshold", "-1");
-    System.getProperties().put("gemfire.AsynchIndexMaintenanceInterval", "0");
+    System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceThreshold", "-1");
+    System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceInterval", "0");
     Index ri = (Index) qs.createIndex("statusIndex",
         IndexType.FUNCTIONAL, "p.getID", "/portfolio p");
     
@@ -199,15 +188,13 @@ public class AsynchIndexMaintenanceJUnitTest {
       region.put(""+(i+1), new Portfolio(i+1));
       idSet.add((i+1) + "");
     }    
-    Thread.sleep(10000);
-    //assertEquals(0, this.getIndexSize(ri));    
-        
+    Thread.sleep(10000); // TODO: delete this sleep
   }
   
   @Test
   public void testConcurrentIndexMaintenanceForNoDeadlocks() throws Exception {
-    System.getProperties().put("gemfire.AsynchIndexMaintenanceThreshold", "700");
-    System.getProperties().put("gemfire.AsynchIndexMaintenanceInterval", "500");
+    System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceThreshold", "700");
+    System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceInterval", "500");
     qs.createIndex("statusIndex",
         IndexType.FUNCTIONAL, "p.getID", "/portfolio p");
     final int TOTAL_THREADS = 25;

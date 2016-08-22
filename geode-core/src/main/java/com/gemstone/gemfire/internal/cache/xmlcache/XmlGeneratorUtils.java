@@ -29,7 +29,7 @@ import org.xml.sax.helpers.AttributesImpl;
  * helper methods.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 // UnitTest XmlGeneratorUtilsTest
 public final class XmlGeneratorUtils {
@@ -50,7 +50,7 @@ public final class XmlGeneratorUtils {
    *          of attribute to add.
    * @param value
    *          to add to attribute.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   static public void addAttribute(final AttributesImpl attributes, final String localName, final Object value) {
     if (null != value) {
@@ -72,7 +72,7 @@ public final class XmlGeneratorUtils {
    *          of attribute to add.
    * @param value
    *          to add to attribute.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   static public void addAttribute(final AttributesImpl attributes, final String prefix, final String localName, final Object value) {
     if (null != value) {
@@ -96,7 +96,7 @@ public final class XmlGeneratorUtils {
    *           if
    *           {@link ContentHandler#startElement(String, String, String, Attributes)}
    *           throws {@link SAXException}.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   static public void startElement(final ContentHandler contentHandler, final String prefix, final String localName, final AttributesImpl attributes)
       throws SAXException {
@@ -116,7 +116,7 @@ public final class XmlGeneratorUtils {
    * @throws SAXException
    *           if {@link ContentHandler#endElement(String, String, String)}
    *           throws {@link SAXException}.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   static public void endElement(final ContentHandler contentHandler, final String prefix, final String localName) throws SAXException {
     contentHandler.endElement(XMLConstants.NULL_NS_URI, localName, prefix + ":" + localName);
@@ -139,7 +139,7 @@ public final class XmlGeneratorUtils {
    *           {@link ContentHandler#startElement(String, String, String, Attributes)}
    *           or {@link ContentHandler#endElement(String, String, String)}
    *           throws {@link SAXException}.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   static public void emptyElement(final ContentHandler contentHandler, final String prefix, final String localName, final AttributesImpl attributes)
       throws SAXException {

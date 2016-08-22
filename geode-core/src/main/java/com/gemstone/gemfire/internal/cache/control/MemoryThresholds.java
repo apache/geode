@@ -16,20 +16,21 @@
  */
 package com.gemstone.gemfire.internal.cache.control;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.LowMemoryException;
 import com.gemstone.gemfire.cache.control.ResourceManager;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * Stores eviction and critical thresholds for memory as well as the logic for
  * determining how memory transitions between states.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 public class MemoryThresholds {
 
@@ -77,7 +78,7 @@ public class MemoryThresholds {
    * When this property is set to true, a {@link LowMemoryException} is not
    * thrown, even when usage crosses the critical threshold.
    */
-  private static final boolean DISABLE_LOW_MEM_EXCEPTION = Boolean.getBoolean("gemfire.disableLowMemoryException");
+  private static final boolean DISABLE_LOW_MEM_EXCEPTION = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableLowMemoryException");
   
   /**
    * The default percent of memory at which the VM is considered in a
@@ -98,7 +99,7 @@ public class MemoryThresholds {
    * Memory usage must fall below THRESHOLD-THRESHOLD_THICKNESS before we deliver
    * a down event
    */
-  private static final double THRESHOLD_THICKNESS = Double.parseDouble(System.getProperty("gemfire.thresholdThickness",
+  private static final double THRESHOLD_THICKNESS = Double.parseDouble(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "thresholdThickness",
       "2.00"));
 
   /**
@@ -106,7 +107,7 @@ public class MemoryThresholds {
    * deliver an eviction down event
    */
   private static final double THRESHOLD_THICKNESS_EVICT = Double.parseDouble(System.getProperty(
-      "gemfire.eviction-thresholdThickness", Double.toString(THRESHOLD_THICKNESS)));
+      DistributionConfig.GEMFIRE_PREFIX + "eviction-thresholdThickness", Double.toString(THRESHOLD_THICKNESS)));
 
   private final long maxMemoryBytes;
 

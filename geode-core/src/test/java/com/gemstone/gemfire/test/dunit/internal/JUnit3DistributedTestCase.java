@@ -19,14 +19,15 @@ package com.gemstone.gemfire.test.dunit.internal;
 import java.io.Serializable;
 import java.util.Properties;
 
+import junit.framework.TestCase;
+import org.apache.logging.log4j.Logger;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import junit.framework.TestCase;
-import org.apache.logging.log4j.Logger;
-import org.junit.experimental.categories.Category;
 
 /**
  * This class is the superclass of all distributed tests using JUnit 3.
@@ -36,7 +37,7 @@ public abstract class JUnit3DistributedTestCase extends TestCase implements Dist
 
   private static final Logger logger = LogService.getLogger();
 
-  private final JUnit4DistributedTestCase delegate = new JUnit4DistributedTestCase(this);
+  private final JUnit4DistributedTestCase delegate = new JUnit4DistributedTestCase(this) {};
 
   /**
    * Constructs a new distributed test. All JUnit 3 test classes need to have a
@@ -69,7 +70,7 @@ public abstract class JUnit3DistributedTestCase extends TestCase implements Dist
    * <p>Note: "final" was removed so that WANTestBase can override this method.
    * This was part of the xd offheap merge.
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public final InternalDistributedSystem getSystem(final Properties props) {
     return delegate.getSystem(props);
@@ -85,7 +86,7 @@ public abstract class JUnit3DistributedTestCase extends TestCase implements Dist
    *
    * @see #getSystem(Properties)
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public final InternalDistributedSystem getSystem() {
     return delegate.getSystem();
@@ -106,7 +107,7 @@ public abstract class JUnit3DistributedTestCase extends TestCase implements Dist
   /**
    * Returns a loner distributed system that isn't connected to other vms.
    *
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public final InternalDistributedSystem getLonerSystem() {
     return delegate.getLonerSystem();
@@ -124,7 +125,7 @@ public abstract class JUnit3DistributedTestCase extends TestCase implements Dist
    * {@link DistributedSystem}. Unless overridden, this method will return an
    * empty {@code Properties} object.
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public Properties getDistributedSystemProperties() {
     return delegate.defaultGetDistributedSystemProperties();

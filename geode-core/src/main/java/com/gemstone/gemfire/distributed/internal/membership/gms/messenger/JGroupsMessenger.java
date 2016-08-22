@@ -16,62 +16,10 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 
-import static com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil.replaceStrings;
-import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_REQUEST;
-import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_RESPONSE;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.logging.log4j.Logger;
-import org.jgroups.Address;
-import org.jgroups.Event;
-import org.jgroups.JChannel;
-import org.jgroups.Message;
-import org.jgroups.Message.Flag;
-import org.jgroups.Message.TransientFlag;
-import org.jgroups.ReceiverAdapter;
-import org.jgroups.View;
-import org.jgroups.ViewId;
-import org.jgroups.conf.ClassConfigurator;
-import org.jgroups.protocols.UDP;
-import org.jgroups.protocols.pbcast.NAKACK2;
-import org.jgroups.stack.IpAddress;
-import org.jgroups.util.Digest;
-import org.jgroups.util.UUID;
-
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.ForcedDisconnectException;
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.SystemConnectException;
+import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.DurableClientAttributes;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.distributed.internal.HighPriorityDistributionMessage;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
@@ -82,12 +30,8 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messa
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messenger;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.VersionedDataInputStream;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.cache.DirectReplyMessage;
 import com.gemstone.gemfire.internal.cache.DistributedCacheOperation;
@@ -95,8 +39,30 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.tcp.MemberShunnedException;
-
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import org.apache.logging.log4j.Logger;
+import org.jgroups.*;
+import org.jgroups.Message.Flag;
+import org.jgroups.Message.TransientFlag;
+import org.jgroups.conf.ClassConfigurator;
+import org.jgroups.protocols.UDP;
+import org.jgroups.protocols.pbcast.NAKACK2;
+import org.jgroups.stack.IpAddress;
+import org.jgroups.util.Digest;
+import org.jgroups.util.UUID;
+
+import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
+import static com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil.replaceStrings;
+import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_REQUEST;
+import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_RESPONSE;
 
 public class JGroupsMessenger implements Messenger {
 
@@ -140,7 +106,7 @@ public class JGroupsMessenger implements Messenger {
    * reduces the amount of suspect processing initiated by IOExceptions and the
    * amount of exceptions logged
    */
-  private Set<Address> addressesWithioExceptionsProcessed = Collections.synchronizedSet(new HashSet<Address>());
+  private Set<Address> addressesWithIoExceptionsProcessed = Collections.synchronizedSet(new HashSet<Address>());
   
   static {
     // register classes that we've added to jgroups that are put on the wire
@@ -209,7 +175,8 @@ public class JGroupsMessenger implements Messenger {
       properties = replaceStrings(properties, "MCAST_TTL", String.valueOf(dc.getMcastTtl()));
       properties = replaceStrings(properties, "MCAST_SEND_BUFFER_SIZE", String.valueOf(dc.getMcastSendBufferSize()));
       properties = replaceStrings(properties, "MCAST_RECV_BUFFER_SIZE", String.valueOf(dc.getMcastRecvBufferSize()));
-      properties = replaceStrings(properties, "MCAST_RETRANSMIT_INTERVAL", ""+Integer.getInteger("gemfire.mcast-retransmit-interval", 500));
+      properties = replaceStrings(properties, "MCAST_RETRANSMIT_INTERVAL",
+          "" + Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "mcast-retransmit-interval", 500));
       properties = replaceStrings(properties, "RETRANSMIT_LIMIT", String.valueOf(dc.getUdpFragmentSize()-256));
     }
 
@@ -233,7 +200,7 @@ public class JGroupsMessenger implements Messenger {
     }
     properties = replaceStrings(properties, "BIND_ADDR_SETTING", "bind_addr=\""+str+"\"");
 
-    int port = Integer.getInteger("gemfire.jg-bind-port", 0);
+    int port = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "jg-bind-port", 0);
     if (port != 0) {
       properties = replaceStrings(properties, "MEMBERSHIP_PORT_RANGE_START", ""+port);
       properties = replaceStrings(properties, "MEMBERSHIP_PORT_RANGE", ""+0);
@@ -293,7 +260,7 @@ public class JGroupsMessenger implements Messenger {
     // give the stats to the jchannel statistics recorder
     StatRecorder sr = (StatRecorder)myChannel.getProtocolStack().findProtocol(StatRecorder.class);
     if (sr != null) {
-      sr.setDMStats(services.getStatistics());
+      sr.setServices(services);
     }
     
     Transport transport = (Transport)myChannel.getProtocolStack().getTransport();
@@ -376,7 +343,7 @@ public class JGroupsMessenger implements Messenger {
     logger.trace("installing JGroups view: {}", jgv);
     this.myChannel.down(new Event(Event.VIEW_CHANGE, jgv));
 
-    addressesWithioExceptionsProcessed.clear();
+    addressesWithIoExceptionsProcessed.clear();
   }
   
 
@@ -390,10 +357,10 @@ public class JGroupsMessenger implements Messenger {
     if (services.getManager().shutdownInProgress()) { // GEODE-634 - don't log IOExceptions during shutdown
       return;
     }
-    if (addressesWithioExceptionsProcessed.contains(dest)) {
+    if (addressesWithIoExceptionsProcessed.contains(dest)) {
       return;
     }
-    addressesWithioExceptionsProcessed.add(dest);
+    addressesWithIoExceptionsProcessed.add(dest);
     NetView v = this.view;
     JGAddress jgMbr = (JGAddress)dest;
     if (jgMbr != null && v != null) {
@@ -477,8 +444,11 @@ public class JGroupsMessenger implements Messenger {
 
     // add the JGroups logical address to the GMSMember
     UUID uuid = this.jgAddress;
-    ((GMSMember)localAddress.getNetMember()).setUUID(uuid);
-    ((GMSMember)localAddress.getNetMember()).setMemberWeight((byte)(services.getConfig().getMemberWeight() & 0xff));
+    GMSMember gmsMember = (GMSMember)localAddress.getNetMember();
+    gmsMember.setUUID(uuid);
+    gmsMember.setMemberWeight((byte)(services.getConfig().getMemberWeight() & 0xff));
+    gmsMember.setNetworkPartitionDetectionEnabled(services.getConfig().getDistributionConfig().getEnableNetworkPartitionDetection());
+
   }
   
   @Override
@@ -949,7 +919,7 @@ public class JGroupsMessenger implements Messenger {
           if (digest != null) {
             logger.trace("installing JGroups message digest {}", digest);
             this.myChannel.getProtocolStack()
-                .getTopProtocol().down(new Event(Event.SET_DIGEST, digest));
+                .getTopProtocol().down(new Event(Event.MERGE_DIGEST, digest));
             jrsp.setMessengerData(null);
           }
         } catch (Exception e) {
@@ -1106,8 +1076,6 @@ public class JGroupsMessenger implements Messenger {
     /**
      * returns the handler that should process the given message.
      * The default handler is the membership manager
-     * @param msg
-     * @return
      */
     private MessageHandler getMessageHandler(DistributionMessage msg) {
       Class<?> msgClazz = msg.getClass();

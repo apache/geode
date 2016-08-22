@@ -33,6 +33,7 @@ import java.util.jar.JarFile;
  * Classloader, which allows finding classes in jars  within jars. This is used to check
  * whether a listener, as found in web.xml, is a ServletContextListener
  */
+@SuppressWarnings("deprecation")
 public class JarClassLoader extends URLClassLoader {
 
   public JarClassLoader(URL[] urls, ClassLoader parent) {

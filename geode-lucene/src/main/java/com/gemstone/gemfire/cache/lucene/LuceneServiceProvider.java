@@ -20,7 +20,7 @@
 package com.gemstone.gemfire.cache.lucene;
 
 import com.gemstone.gemfire.annotations.Experimental;
-import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneService;
 import com.gemstone.gemfire.internal.cache.InternalCache;
 
@@ -31,16 +31,15 @@ import com.gemstone.gemfire.internal.cache.InternalCache;
  */
 @Experimental
 public class LuceneServiceProvider {
-  
   /**
    * Retrieve or create the lucene service for this cache
    */
-  public static LuceneService get(Cache cache) {
+  public static LuceneService get(GemFireCache cache) {
     InternalCache internalCache = (InternalCache) cache;
     return internalCache.getService(InternalLuceneService.class);
   }
-  
+
   private LuceneServiceProvider() {
-    
+
   }
 }

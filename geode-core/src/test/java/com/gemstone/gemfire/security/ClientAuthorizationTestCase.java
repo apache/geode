@@ -18,7 +18,7 @@
  */
 package com.gemstone.gemfire.security;
 
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static com.gemstone.gemfire.internal.AvailablePort.*;
 import static com.gemstone.gemfire.security.SecurityTestUtils.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
@@ -55,7 +55,8 @@ import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.Struct;
-import com.gemstone.gemfire.internal.AvailablePort.Keeper;
+import com.gemstone.gemfire.internal.AvailablePort.*;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.AbstractRegionEntry;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.security.generator.AuthzCredentialGenerator;
@@ -70,8 +71,8 @@ import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 /**
  * Base class for tests for authorization from client to server. It contains
  * utility functions for the authorization tests from client to server.
- * 
- * @since 5.5
+ *
+ * @since GemFire 5.5
  */
 public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestCase {
 
@@ -185,13 +186,13 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
   protected static Properties buildProperties(final String authenticator, final String accessor, final boolean isAccessorPP, final Properties extraAuthProps, final Properties extraAuthzProps) {
     Properties authProps = new Properties();
     if (authenticator != null) {
-      authProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR_NAME, authenticator);
+      authProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR, authenticator);
     }
     if (accessor != null) {
       if (isAccessorPP) {
-        authProps.setProperty(SECURITY_CLIENT_ACCESSOR_PP_NAME, accessor);
+        authProps.setProperty(SECURITY_CLIENT_ACCESSOR_PP, accessor);
       } else {
-        authProps.setProperty(SECURITY_CLIENT_ACCESSOR_NAME, accessor);
+        authProps.setProperty(SECURITY_CLIENT_ACCESSOR, accessor);
       }
     }
     return concatProperties(new Properties[] { authProps, extraAuthProps, extraAuthzProps });
@@ -239,8 +240,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
     return str;
   }
 
-  protected static void doOp(final byte opCode, final int[] indices, final int flagsI, final int expectedResult) throws InterruptedException {
-    OperationCode op = OperationCode.fromOrdinal(opCode);
+  protected static void doOp(OperationCode op, final int[] indices, final int flagsI, final int expectedResult) throws InterruptedException {
     boolean operationOmitted = false;
     final int flags = flagsI;
     Region region = getRegion();
@@ -436,7 +436,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
           // if ((flags & OpFlags.CHECK_NOTAUTHZ) > 0) {
           // Object value = region.get(key);
           // assertNotNull(value);
-          // assertEquals(vals[index], value);
+          // assertIndexDetailsEquals(vals[index], value);
           // }
           // else {
           // region.put(key, vals[index]);
@@ -756,7 +756,8 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
         if (useThisVM) {
           SecurityTestUtils.createCacheClientWithDynamicRegion(authInit, clientProps, javaProps, new int[] { port1, port2 }, 0, setupDynamicRegionFactory, NO_EXCEPTION);
         } else {
-          clientVM.invoke(() -> SecurityTestUtils.createCacheClientWithDynamicRegion(authInit, clientProps, javaProps, new int[] { port1, port2 }, 0, setupDynamicRegionFactory, NO_EXCEPTION));
+          clientVM.invoke("SecurityTestUtils.createCacheClientWithDynamicRegion",
+              () -> SecurityTestUtils.createCacheClientWithDynamicRegion(authInit, clientProps, javaProps, new int[] { port1, port2 }, 0, setupDynamicRegionFactory, NO_EXCEPTION));
         }
       }
 
@@ -771,11 +772,11 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
 
       // Perform the operation from selected client
       if (useThisVM) {
-        doOp(opCode.toOrdinal(), currentOp.getIndices(), new Integer(opFlags), new Integer(expectedResult));
+        doOp(opCode, currentOp.getIndices(), new Integer(opFlags), new Integer(expectedResult));
       } else {
-        byte ordinal = opCode.toOrdinal();
         int[] indices = currentOp.getIndices();
-        clientVM.invoke(() -> ClientAuthorizationTestCase.doOp( new Byte(ordinal), indices, new Integer(opFlags), new Integer(expectedResult) ));
+        clientVM.invoke("ClientAuthorizationTestCase.doOp",
+            () -> ClientAuthorizationTestCase.doOp( opCode, indices, new Integer(opFlags), new Integer(expectedResult) ));
       }
     }
   }
@@ -828,10 +829,11 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
     Properties serverProps = buildProperties(authenticator, accessor, false, extraAuthProps, extraAuthzProps);
 
     // Get ports for the servers
-    Keeper locator1PortKeeper = getRandomAvailablePortKeeper(SOCKET);
-    Keeper locator2PortKeeper = getRandomAvailablePortKeeper(SOCKET);
-    Keeper port1Keeper = getRandomAvailablePortKeeper(SOCKET);
-    Keeper port2Keeper = getRandomAvailablePortKeeper(SOCKET);
+    List<Keeper> randomAvailableTCPPortKeepers = AvailablePortHelper.getRandomAvailableTCPPortKeepers(4);
+    Keeper locator1PortKeeper = randomAvailableTCPPortKeepers.get(0);
+    Keeper locator2PortKeeper = randomAvailableTCPPortKeepers.get(1);
+    Keeper port1Keeper = randomAvailableTCPPortKeepers.get(2);
+    Keeper port2Keeper = randomAvailableTCPPortKeepers.get(3);
     int locator1Port = locator1PortKeeper.getPort();
     int locator2Port = locator2PortKeeper.getPort();
     int port1 = port1Keeper.getPort();
@@ -852,8 +854,8 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
           port1Keeper.release();
 
           // Start the first server and execute the operation block
-          server1.invoke(() -> ClientAuthorizationTestCase.createCacheServer(locator1Port, port1, serverProps, javaProps ));
-          server2.invoke(() -> closeCache());
+          server1.invoke("createCacheServer", () -> ClientAuthorizationTestCase.createCacheServer(locator1Port, port1, serverProps, javaProps ));
+          server2.invoke("closeCache", () -> closeCache());
 
           executeOpBlock(opBlock, port1, port2, authInit, extraAuthProps, extraAuthzProps, tgen, rnd);
 
@@ -862,8 +864,8 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
             locator2PortKeeper.release();
             port2Keeper.release();
 
-            server2.invoke(() -> ClientAuthorizationTestCase.createCacheServer(locator2Port, port2, serverProps, javaProps ));
-            server1.invoke(() -> closeCache());
+            server2.invoke("createCacheServer", () -> ClientAuthorizationTestCase.createCacheServer(locator2Port, port2, serverProps, javaProps ));
+            server1.invoke("closeCache", () -> closeCache());
 
             executeOpBlock(opBlock, port1, port2, authInit, extraAuthProps, extraAuthzProps, tgen, rnd);
           }
@@ -881,8 +883,8 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
    * Implements the {@link CqListener} interface and counts the number of
    * different operations and also queues up the received updates to precise
    * checking of each update.
-   * 
-   * @since 5.5
+   *
+   * @since GemFire 5.5
    */
   private static class AuthzCqListener implements CqListener {
 
@@ -969,8 +971,8 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
   /**
    * This class specifies flags that can be used to alter the behaviour of
    * operations being performed by the <code>doOp</code> function.
-   * 
-   * @since 5.5
+   *
+   * @since GemFire 5.5
    */
   protected static class OpFlags {
 
@@ -1126,8 +1128,8 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
   /**
    * This class encapsulates an {@link OperationCode} with associated flags, the
    * client to perform the operation, and the number of operations to perform.
-   * 
-   * @since 5.5
+   *
+   * @since GemFire 5.5
    */
   protected static class OperationWithAction {
 
@@ -1271,8 +1273,8 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
    * Simple interface to generate credentials with authorization based on key
    * indices also. This is utilized by the post-operation authorization tests
    * where authorization is based on key indices.
-   * 
-   * @since 5.5
+   *
+   * @since GemFire 5.5
    */
   protected interface TestCredentialGenerator {
 
@@ -1297,8 +1299,8 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
   /**
    * Contains a {@link AuthzCredentialGenerator} and implements the
    * {@link TestCredentialGenerator} interface.
-   * 
-   * @since 5.5
+   *
+   * @since GemFire 5.5
    */
   protected static class TestAuthzCredentialGenerator implements TestCredentialGenerator {
 

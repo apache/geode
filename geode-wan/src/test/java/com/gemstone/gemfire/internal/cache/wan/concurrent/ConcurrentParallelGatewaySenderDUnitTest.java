@@ -16,6 +16,16 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.concurrent;
 
+import com.jayway.awaitility.Awaitility;
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.EntryExistsException;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
@@ -31,15 +41,17 @@ import com.gemstone.gemfire.test.dunit.Wait;
 
 import java.net.SocketException;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test the functionality of ParallelGatewaySender with multiple dispatchers.
  *
  */
+@Category(DistributedTest.class)
 public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
   
-  public ConcurrentParallelGatewaySenderDUnitTest(String name) {
-    super(name);
+  public ConcurrentParallelGatewaySenderDUnitTest() {
+    super();
   }
   
   /**
@@ -49,12 +61,13 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    * 
    * @throws Exception
    */
+  @Test
   public void testParallelPropagationConcurrentArtifacts() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -129,12 +142,13 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    * Normal happy scenario test case.
    * @throws Exception
    */
+  @Test
   public void testParallelPropagation() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -188,6 +202,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    * Normal happy scenario test case when bucket division tests boundary cases.
    * @throws Exception
    */
+  @Test
   public void testParallelPropagationWithUnEqualBucketDivison() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -197,7 +212,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
       getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
     vm3.invoke(() -> WANTestBase.createPartitionedRegion(
       getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -247,6 +262,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    * We verify that 
    * @throws Exception
    */
+  @Test
   public void testParallelPropagation_withoutRemoteSite() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -289,7 +305,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.createPartitionedRegion(
       getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
 
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     //verify all buckets drained on all sender nodes.
     vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
@@ -308,12 +324,13 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
   /**
    * Testing for colocated region with orderpolicy Partition
    */
+  @Test
   public void testParallelPropogationColocatedPartitionedRegions() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -327,22 +344,16 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
         true, 100, 10, false, false, null, true, 5, OrderPolicy.PARTITION ));
 
 
-    vm4.invoke(() -> WANTestBase.createCustomerOrderShipmentPartitionedRegion( null,
-            "ln", 1, 100, isOffHeap() ));
-    vm5.invoke(() -> WANTestBase.createCustomerOrderShipmentPartitionedRegion( null,
-            "ln", 1, 100, isOffHeap() ));
-    vm6.invoke(() -> WANTestBase.createCustomerOrderShipmentPartitionedRegion( null,
-            "ln", 1, 100, isOffHeap() ));
-    vm7.invoke(() -> WANTestBase.createCustomerOrderShipmentPartitionedRegion( null,
-            "ln", 1, 100, isOffHeap() ));
+    vm4.invoke(() -> WANTestBase.createCustomerOrderShipmentPartitionedRegion("ln", 1, 100, isOffHeap() ));
+    vm5.invoke(() -> WANTestBase.createCustomerOrderShipmentPartitionedRegion("ln", 1, 100, isOffHeap() ));
+    vm6.invoke(() -> WANTestBase.createCustomerOrderShipmentPartitionedRegion("ln", 1, 100, isOffHeap() ));
+    vm7.invoke(() -> WANTestBase.createCustomerOrderShipmentPartitionedRegion("ln", 1, 100, isOffHeap() ));
 
 
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
-    vm2.invoke(() -> WANTestBase.createCustomerOrderShipmentPartitionedRegion( null,
-            "ln", 1, 100, isOffHeap() ));
-    vm3.invoke(() -> WANTestBase.createCustomerOrderShipmentPartitionedRegion( null,
-            "ln", 1, 100, isOffHeap() ));
+    vm2.invoke(() -> WANTestBase.createCustomerOrderShipmentPartitionedRegion("ln", 1, 100, isOffHeap() ));
+    vm3.invoke(() -> WANTestBase.createCustomerOrderShipmentPartitionedRegion("ln", 1, 100, isOffHeap() ));
 
     //before doing any puts, let the senders be running in order to ensure that
     //not a single event will be lost
@@ -376,12 +387,13 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    * 
    * @throws Exception
    */
+  @Test
   public void testParallelPropagationWithLocalCacheClosedAndRebuilt() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -486,12 +498,13 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    * Normal scenario 
    * @throws Exception
    */
+  @Test
   public void testParallelColocatedPropagation() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -532,12 +545,13 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    * Normal scenario 
    * @throws Exception
    */
+  @Test
   public void testParallelColocatedPropagationOrderPolicyPartition() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -572,13 +586,14 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
         getTestMethodName(), 1000 ));
   }
   
+  @Test
   public void testPartitionedParallelPropagationHA() throws Exception {
     IgnoredException.addIgnoredException(SocketException.class.getName()); // for Connection reset
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -608,37 +623,42 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
         getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
 
     AsyncInvocation inv1 = vm7.invokeAsync(() -> WANTestBase.doPuts( getTestMethodName() + "_PR", 5000 ));
-    Wait.pause(500);
+    vm2.invoke(() -> Awaitility.await().atMost(30000, TimeUnit.MILLISECONDS).until(() ->
+      assertEquals("Failure in waiting for at least 10 events to be received by the receiver",
+        true, (getRegionSize(getTestMethodName() + "_PR") > 10 ))));
     AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
     AsyncInvocation inv3 = vm6.invokeAsync(() -> WANTestBase.doPuts( getTestMethodName() + "_PR", 10000 ));
-    Wait.pause(1500);
+    vm2.invoke(() -> Awaitility.await().atMost(30000, TimeUnit.MILLISECONDS).until(() ->
+      assertEquals("Failure in waiting for additional 2000 events to be received by the receiver ",
+        true,getRegionSize(getTestMethodName() + "_PR") > 7000 )));
     AsyncInvocation inv4 = vm5.invokeAsync(() -> WANTestBase.killSender());
     inv1.join();
     inv2.join();
     inv3.join();
     inv4.join();
-    
+
     vm6.invoke(() -> WANTestBase.validateRegionSize(
       getTestMethodName() + "_PR", 10000 ));
     vm7.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_PR", 10000 ));
+
+    vm2.invoke(() -> WANTestBase.validateRegionSize(
+      getTestMethodName() + "_PR", 10000 ));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(
       getTestMethodName() + "_PR", 10000 ));
     
     //verify all buckets drained on the sender nodes that up and running.
     vm6.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
     vm7.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
-
-    vm2.invoke(() -> WANTestBase.validateRegionSize(
-        getTestMethodName() + "_PR", 10000 ));
-    vm3.invoke(() -> WANTestBase.validateRegionSize(
-        getTestMethodName() + "_PR", 10000 ));
   }
   
+  @Test
   public void testWANPDX_PR_MultipleVM_ConcurrentParallelSender() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     createCacheInVMs(lnPort, vm3, vm4);
 
@@ -664,6 +684,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
         getTestMethodName() + "_PR", 10 ));
   }
   
+  @Test
   public void testWANPDX_PR_MultipleVM_ConcurrentParallelSender_StartedLater() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));

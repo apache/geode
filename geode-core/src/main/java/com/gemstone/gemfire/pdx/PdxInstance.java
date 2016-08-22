@@ -48,14 +48,14 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
  * PdxReader will return a default value for the added field even though version 1
  * has no knowledge of it.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 public interface PdxInstance extends java.io.Serializable {
 
   /**
    * Return the full name of the class that this pdx instance represents.
    * @return the name of the class that this pdx instance represents.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public String getClassName();
   /**

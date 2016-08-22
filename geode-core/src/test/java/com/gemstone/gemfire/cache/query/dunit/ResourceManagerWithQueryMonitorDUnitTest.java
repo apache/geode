@@ -16,13 +16,17 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import util.TestException;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
@@ -51,8 +55,8 @@ import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.cache.query.internal.QueryMonitor;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
@@ -74,17 +78,16 @@ import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
+@Category(DistributedTest.class)
 public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCase {
   
   private static int MAX_TEST_QUERY_TIMEOUT = 4000;
   private static int TEST_QUERY_TIMEOUT = 1000;
   private final static int CRITICAL_HEAP_USED = 950;
   private final static int NORMAL_HEAP_USED = 500;
-  public ResourceManagerWithQueryMonitorDUnitTest(String name) {
-    super(name);
-  }
-  
+
   @Override
   public final void postSetUpClientServerTestCase() throws Exception {
     Invoke.invokeInEveryVM(this.setHeapMemoryMonitorTestMode);
@@ -133,98 +136,118 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       return null;
     }
   };
- 
+
+  @Test
   public void testRMAndNoTimeoutSet() throws Exception {
     doCriticalMemoryHitTest("portfolios", false, 85/*crit threshold*/, false, -1, true);
   }
-  
+
+  @Test
   public void testRMAndNoTimeoutSetParReg() throws Exception {
     doCriticalMemoryHitTest("portfolios", true, 85/*crit threshold*/, false, -1, true);
   }
-  
+
+  @Test
   public void testRMButDisabledQueryMonitorForLowMemAndNoTimeoutSet() throws Exception {
     //verify that timeout is not set and that a query can execute properly
     doCriticalMemoryHitTest("portfolios", false, 85/*crit threshold*/, true, -1, true);
   }
-  
+
+  @Test
   public void testRMAndTimeoutSet() throws Exception {
     //verify that we still receive critical heap cancelation
     doCriticalMemoryHitTest("portfolios", false, 85/*crit threshold*/, true, TEST_QUERY_TIMEOUT, true);
   }
-  
+
+  @Test
   public void testRMAndTimeoutSetAndQueryTimesoutInstead() throws Exception {
     //verify that timeout is set correctly and cancel query 
     doCriticalMemoryHitTest("portfolios", false, 85/*crit threshold*/, true, TEST_QUERY_TIMEOUT, false);
   }
-  
+
+  @Test
   public void testRMButDisabledQueryMonitorForLowMemAndTimeoutSet()  throws Exception {
     //verify that timeout is still working properly
     doCriticalMemoryHitTest("portfolios", false, 85/*crit threshold*/, true, TEST_QUERY_TIMEOUT, true);
   }
   
-  
   //Query directly on member with RM and QM set
+  @Test
   public void testRMAndNoTimeoutSetOnServer() throws Exception {
     doCriticalMemoryHitTestOnServer("portfolios", false, 85/*crit threshold*/, false, -1, true);
   }
-  
+
+  @Test
   public void testRMAndNoTimeoutSetParRegOnServer() throws Exception {
     doCriticalMemoryHitTestOnServer("portfolios", true, 85/*crit threshold*/, false, -1, true);
   }
-  
+
+  @Test
   public void testRMButDisabledQueryMonitorForLowMemAndNoTimeoutSetOnServer() throws Exception {
     //verify that timeout is not set and that a query can execute properly
     doCriticalMemoryHitTestOnServer("portfolios", false, 85/*crit threshold*/, true, -1, true);
   }
-  
+
+  @Test
   public void testRMAndTimeoutSetOnServer() throws Exception {
     //verify that we still receive critical heap cancelation
     doCriticalMemoryHitTestOnServer("portfolios", false, 85/*crit threshold*/, true, TEST_QUERY_TIMEOUT, true);
   }
-  
+
+  @Test
   public void testRMAndTimeoutSetAndQueryTimesoutInsteadOnServer() throws Exception {
     //verify that timeout is set correctly and cancel query 
     doCriticalMemoryHitTestOnServer("portfolios", false, 85/*crit threshold*/, true, TEST_QUERY_TIMEOUT, false);
   }
-  
+
+  @Test
   public void testRMButDisabledQueryMonitorForLowMemAndTimeoutSetOnServer()  throws Exception {
     //verify that timeout is still working properly
     doCriticalMemoryHitTestOnServer("portfolios", false, 85/*crit threshold*/, true, TEST_QUERY_TIMEOUT, true);
   }
-  
+
+  @Test
   public void testPRGatherCancellation() throws Exception {
     doCriticalMemoryHitTestWithMultipleServers("portfolios", true, 85/*crit threshold*/, false, -1, true);
   }
 
+  @Test
   public void testPRGatherCancellationWhileGatheringResults() throws Exception {
     doCriticalMemoryHitDuringGatherTestWithMultipleServers("portfolios", true, 85/*crit threshold*/, false, -1, true);
   }
-  
+
+  @Test
   public void testPRGatherCancellationWhileAddingResults() throws Exception {
     doCriticalMemoryHitAddResultsTestWithMultipleServers("portfolios", true, 85/*crit threshold*/, false, -1, true);
   }
-  
+
+  @Test
   public void testIndexCreationCancellationPR() throws Exception {
     doCriticalMemoryHitWithIndexTest("portfolios", true, 85/*crit threshold*/, false, -1, true, "compact");
   }
-  
+
+  @Test
   public void testIndexCreationCancellation() throws Exception {
     doCriticalMemoryHitWithIndexTest("portfolios", false, 85/*crit threshold*/, false, -1, true, "compact");
   }
-  
+
+  @Test
   public void testIndexCreationNoCancellationPR() throws Exception {
     doCriticalMemoryHitWithIndexTest("portfolios", true, 85/*crit threshold*/, true, -1, true, "compact");
   }
-  
+
+  @Test
   public void testHashIndexCreationCancellationPR() throws Exception {
     doCriticalMemoryHitWithIndexTest("portfolios", true, 85/*crit threshold*/, false, -1, true, "hash");
   }
-  
+
+  @Test
   public void testHashIndexCreationCancellation() throws Exception {
     //need to add hook to canceled result set and very it is triggered for multiple servers
     doCriticalMemoryHitWithIndexTest("portfolios", false, 85/*crit threshold*/, false, -1, true, "hash");
   }
-  
+
+  @Test
   public void testHashIndexCreationNoCancellationPR() throws Exception {
     //need to add hook to canceled result set and very it is triggered for multiple servers
     doCriticalMemoryHitWithIndexTest("portfolios", true, 85/*crit threshold*/, true, -1, true, "hash");
@@ -963,10 +986,10 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       public Object call() throws Exception {
         getSystem(getServerProperties(disableQueryMonitorForLowMemory, queryTimeout));
         if (disableQueryMonitorForLowMemory == true) {
-          System.setProperty("gemfire.Cache.DISABLE_QUERY_MONITOR_FOR_LOW_MEMORY", "true");
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "Cache.DISABLE_QUERY_MONITOR_FOR_LOW_MEMORY", "true");
         }
         else {
-          System.clearProperty("gemfire.Cache.DISABLE_QUERY_MONITOR_FOR_LOW_MEMORY");
+          System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "Cache.DISABLE_QUERY_MONITOR_FOR_LOW_MEMORY");
         }
         
         GemFireCacheImpl cache = (GemFireCacheImpl)getCache();
@@ -1052,14 +1075,14 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   
   protected Properties getClientProps() {
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    p.setProperty(MCAST_PORT, "0");
+    p.setProperty(LOCATORS, "");
     return p;
   }
 
   protected Properties getServerProperties(boolean disableQueryMonitorForMemory, int queryTimeout) {
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
+    p.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
     return p;
   }
   
@@ -1094,7 +1117,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       if (spot == 1) {
         try {
           if (!latch.await(8, TimeUnit.SECONDS)) {
-            throw new TestException("query was never unlatched");
+            fail("query was never unlatched");
           }
         } catch (InterruptedException e) {
           e.printStackTrace();

@@ -16,20 +16,25 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
 
-import com.gemstone.gemfire.internal.util.StopWatch;
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
 
-import junit.framework.TestCase;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.util.StopWatch;
 
 /**
  * Tests performance of logging when level is OFF.
- * 
  */
-public abstract class LoggingPerformanceTestCase extends TestCase {
+public abstract class LoggingPerformanceTestCase {
 
-  protected static final boolean TIME_BASED = Boolean.getBoolean("gemfire.test.LoggingPerformanceTestCase.TIME_BASED");
+  protected static final boolean TIME_BASED = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "test.LoggingPerformanceTestCase.TIME_BASED");
   protected static final long TIME_TO_RUN = 1000 * 60 * 10; // ten minutes
   protected static final int LOG_SETS = 1000;
   protected static final int LOG_REPETITIONS_PER_SET = 1000;
@@ -38,23 +43,16 @@ public abstract class LoggingPerformanceTestCase extends TestCase {
   protected File configDirectory = new File(getUniqueName());//null;
   protected File logFile = new File(configDirectory, getUniqueName()+".log");
 
-  public LoggingPerformanceTestCase(String name) {
-    super(name);
-  }
-  
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-  
-  @Override
-  public void tearDown() throws Exception {
-    super.tearDown();
+  @Rule
+  public TestName testName = new TestName();
+
+  @After
+  public void tearDownLoggingPerformanceTestCase() throws Exception {
     this.configDirectory = null; // leave this directory in place for now
   }
 
   protected String getUniqueName() {
-    return getClass().getSimpleName() + "_" + getName();
+    return getClass().getSimpleName() + "_" + testName.getMethodName();
   }
   
   protected long performLoggingTest(final PerformanceLogger perfLogger) {
@@ -171,22 +169,26 @@ public abstract class LoggingPerformanceTestCase extends TestCase {
   }
   
   protected abstract PerformanceLogger createPerformanceLogger() throws IOException;
-  
+
+  @Test
   public void testCountBasedLogging() throws Exception {
     performCountBasedLoggingTest(createPerformanceLogger());
     assertTrue(this.logFile.exists());
   }
 
+  @Test
   public void testTimeBasedLogging() throws Exception {
     performTimeBasedLoggingTest(createPerformanceLogger());
     assertTrue(this.logFile.exists());
   }
 
+  @Test
   public void testCountBasedIsEnabled() throws Exception {
     performCountBasedIsEnabledTest(createPerformanceLogger());
     assertTrue(this.logFile.exists());
   }
 
+  @Test
   public void testTimeBasedIsEnabled() throws Exception {
     performTimeBasedIsEnabledTest(createPerformanceLogger());
     assertTrue(this.logFile.exists());

@@ -27,7 +27,7 @@ import java.util.*;
  *
  * @see #wasInvoked
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public abstract class TestCacheListener extends TestCacheCallback
   implements CacheListener {
@@ -52,7 +52,7 @@ public abstract class TestCacheListener extends TestCacheCallback
   }
   /**
    * Enables collection of event history.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void enableEventHistory() {
     if (this.eventHistory == null) {
@@ -61,7 +61,7 @@ public abstract class TestCacheListener extends TestCacheCallback
   }
   /**
    * Disables collection of events.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void disableEventHistory() {
     this.eventHistory = null;
@@ -69,7 +69,7 @@ public abstract class TestCacheListener extends TestCacheCallback
   /**
    * Returns a copy of the list of events collected in this listener's history.
    * Also clears the current history.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public List getEventHistory() {
     if (this.eventHistory == null) {

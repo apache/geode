@@ -49,12 +49,19 @@ public class Invoke {
    * @see VM#invoke(SerializableRunnableIF)
    */
   public static void invokeInEveryVM(final SerializableRunnableIF runnable) {
+    invokeInEveryVM(null, runnable);
+  }
+
+  public static void invokeInEveryVM(String name, final SerializableRunnableIF runnable) {
     for (int hostIndex = 0; hostIndex < Host.getHostCount(); hostIndex++) {
       Host host = Host.getHost(hostIndex);
-  
+
       for (int vmIndex = 0; vmIndex < host.getVMCount(); vmIndex++) {
         VM vm = host.getVM(vmIndex);
-        vm.invoke(runnable);
+        if (name!=null)
+          vm.invoke(name, runnable);
+        else
+          vm.invoke(runnable);
       }
     }
   }
@@ -94,6 +101,7 @@ public class Invoke {
     }
   }
 
+
   /**
    * Invokes a <code>SerializableCallable</code> in every VM that
    * DUnit knows about.
@@ -102,12 +110,19 @@ public class Invoke {
    * @see VM#invoke(SerializableCallableIF)
    */
   public static <T> Map<VM, T> invokeInEveryVM(final SerializableCallableIF<T> callable) {
+    return invokeInEveryVM(null, callable);
+  }
+
+  public static <T> Map<VM, T> invokeInEveryVM(String name, final SerializableCallableIF<T> callable) {
     Map<VM, T> ret = new HashMap<VM, T>();
     for (int h = 0; h < Host.getHostCount(); h++) {
       Host host = Host.getHost(h);
       for (int v = 0; v < host.getVMCount(); v++) {
         VM vm = host.getVM(v);
-        ret.put(vm, vm.invoke(callable));
+        if(name != null)
+          ret.put(vm, vm.invoke(name, callable));
+        else
+          ret.put(vm, vm.invoke(callable));
       }
     }
     return ret;
@@ -144,7 +159,6 @@ public class Invoke {
    * its execution is repeated, until no assertion failure occurs or
    * <code>repeatTimeoutMs</code> milliseconds have passed.
    * 
-   * @see VM#invoke(RepeatableRunnable)
    * @deprecated Please use {@link com.jayway.awaitility.Awaitility} with {@link #invokeInEveryVM(SerializableCallableIF)} instead.
    */
   public static void invokeInEveryVMRepeatingIfNecessary(final RepeatableRunnable runnable, final long repeatTimeoutMs) {

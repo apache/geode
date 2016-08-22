@@ -27,7 +27,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
  * Gets (full) value (unlike GetOp, which may get either a full value or a delta
  * depending upon delta flag) of a given event from the ha container on server.
  * 
- * @since 6.1
+ * @since GemFire 6.1
  */
 public class GetEventValueOp {
   /**

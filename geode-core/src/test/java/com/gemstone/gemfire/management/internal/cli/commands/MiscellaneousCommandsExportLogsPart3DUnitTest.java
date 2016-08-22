@@ -20,15 +20,17 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,27 +38,27 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 
+import static com.gemstone.gemfire.test.dunit.Assert.assertEquals;
+import static com.gemstone.gemfire.test.dunit.Assert.fail;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 /**
  * Dunit class for testing gemfire function commands : export logs
- *
  */
-
+@Category(DistributedTest.class)
 public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public MiscellaneousCommandsExportLogsPart3DUnitTest(String name) {
-    super(name);
-  }
-
-  public static String getMemberId() {
-    Cache cache = new GemfireDataCommandsDUnitTest("test").getCache();
+  public String getMemberId() {
+    Cache cache = getCache();
     return cache.getDistributedSystem().getDistributedMember().getId();
   }
 
   void setupForExportLogs() {
     final VM vm1 = Host.getHost(0).getVM(1);
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     vm1.invoke(new SerializableRunnable() {
       public void run() {
@@ -79,11 +81,13 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
     return ("_" + formattedStartDate);
   }
 
+  @Category(FlakyTest.class) // GEODE-672: random ports, java.rmi.server.ExportException: Port already in use, HeadlessGfsh, disk IO
+  @Test
   public void testExportLogsForGroup() throws IOException {
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
-    localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
-    createDefaultSetup(localProps);
+    localProps.setProperty(NAME, "Manager");
+    localProps.setProperty(GROUPS, "Group1");
+    setUpJmxManagerOnVm0ThenConnect(localProps);
     String dir = getCurrentTimeString();
 
     Date startDate = new Date(System.currentTimeMillis() - 2 * 60 * 1000);
@@ -103,10 +107,10 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
     Result cmdResult = misc.exportLogsPreprocessing("./testExportLogsForGroup" + dir, groups, null, logLevel, false,
         false, start, end, 1);
 
-    LogWriterUtils.getLogWriter().info("testExportLogsForGroup command result =" + cmdResult);
+    getLogWriter().info("testExportLogsForGroup command result =" + cmdResult);
     if (cmdResult != null) {
       String cmdStringRsult = commandResultToString((CommandResult) cmdResult);
-      LogWriterUtils.getLogWriter().info("testExportLogsForGroup cmdStringRsult=" + cmdStringRsult);
+      getLogWriter().info("testExportLogsForGroup cmdStringRsult=" + cmdStringRsult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testExportLogsForGroup failed as did not get CommandResult");
@@ -114,8 +118,9 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
     FileUtil.delete(new File("testExportLogsForGroup" + dir));
   }
 
+  @Test
   public void testExportLogsForMember() throws IOException {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     Date startDate = new Date(System.currentTimeMillis() - 2 * 60 * 1000);
     SimpleDateFormat sf = new SimpleDateFormat("yyyy/MM/dd");
@@ -125,7 +130,7 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
     String end = sf.format(enddate);
 
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1MemberId = (String) vm1.invoke(() -> MiscellaneousCommandsDUnitTest.getMemberId());
+    final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
     String dir = getCurrentTimeString();
 
     String logLevel = LogWriterImpl.levelToString(LogWriterImpl.INFO_LEVEL);
@@ -136,11 +141,11 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
     Result cmdResult = misc.exportLogsPreprocessing("./testExportLogsForMember" + dir, null, vm1MemberId, logLevel,
         false, false, start, end, 1);
 
-    LogWriterUtils.getLogWriter().info("testExportLogsForMember command result =" + cmdResult);
+    getLogWriter().info("testExportLogsForMember command result =" + cmdResult);
 
     if (cmdResult != null) {
       String cmdStringRsult = commandResultToString((CommandResult) cmdResult);
-      LogWriterUtils.getLogWriter().info("testExportLogsForMember cmdStringRsult=" + cmdStringRsult);
+      getLogWriter().info("testExportLogsForMember cmdStringRsult=" + cmdStringRsult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testExportLogsForMember failed as did not get CommandResult");

@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Provides for inspection of meta-data for off-heap memory blocks.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 public interface MemoryInspector {
 

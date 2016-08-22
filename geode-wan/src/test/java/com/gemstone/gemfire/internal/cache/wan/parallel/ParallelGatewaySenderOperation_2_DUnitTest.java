@@ -16,15 +16,25 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.internal.cache.wan.concurrent.ConcurrentParallelGatewaySenderOperation_2_DUnitTest;
 import com.gemstone.gemfire.test.dunit.VM;
 
+@Category(DistributedTest.class)
 public class ParallelGatewaySenderOperation_2_DUnitTest extends ConcurrentParallelGatewaySenderOperation_2_DUnitTest {
 
   private static final long serialVersionUID = 1L;
 
-  public ParallelGatewaySenderOperation_2_DUnitTest(String name) {
-    super(name);
+  public ParallelGatewaySenderOperation_2_DUnitTest() {
+    super();
   }
 
   protected void createSender(VM vm, int concurrencyLevel, boolean manualStart) {

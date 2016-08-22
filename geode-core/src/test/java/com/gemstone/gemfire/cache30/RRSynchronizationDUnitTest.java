@@ -16,49 +16,30 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
 
-import java.util.Properties;
-import java.util.concurrent.TimeoutException;
+import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.SerialDistributionMessage;
-import com.gemstone.gemfire.distributed.internal.SizeableRunnable;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.DistributedRegion;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
-import com.gemstone.gemfire.internal.cache.Token;
-import com.gemstone.gemfire.internal.cache.VMCachedDeserializable;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.cache.versions.VMVersionTag;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.*;
 
 /**
  * concurrency-control tests for client/server
  * 
  *
  */
-public class RRSynchronizationDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class RRSynchronizationDUnitTest extends JUnit4CacheTestCase {
   static enum TestType {
     IN_MEMORY,
     OVERFLOW,
@@ -67,18 +48,21 @@ public class RRSynchronizationDUnitTest extends CacheTestCase {
   
   public static LocalRegion TestRegion;
 
-  public RRSynchronizationDUnitTest(String name) {
-    super(name);
+  public RRSynchronizationDUnitTest() {
+    super();
   }
 
+  @Test
   public void testThatRegionsSyncOnPeerLoss() {
     doRegionsSyncOnPeerLoss(TestType.IN_MEMORY);
   }
   
+  @Test
   public void testThatRegionsSyncOnPeerLossWithPersistence() {
     doRegionsSyncOnPeerLoss(TestType.PERSISTENT);
   }
   
+  @Test
   public void testThatRegionsSyncOnPeerLossWithOverflow() {
     doRegionsSyncOnPeerLoss(TestType.OVERFLOW);
   }

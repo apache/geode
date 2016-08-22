@@ -23,7 +23,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * An event delivered to a {@link SystemMembershipListener} when a
  * member has joined or left the distributed system.
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class SystemMembershipEventImpl implements SystemMembershipEvent {
 
@@ -56,7 +56,7 @@ public class SystemMembershipEventImpl implements SystemMembershipEvent {
 //    * <code>null</code> for the event delivered to the {@link
 //    * SystemMembershipListener#memberCrashed} method.
 //    *
-//    * @since 4.0
+//    * @since GemFire 4.0
 //    */
 //   public Object getCallbackArgument() {
 //     throw new UnsupportedOperationException("Not implemented yet");

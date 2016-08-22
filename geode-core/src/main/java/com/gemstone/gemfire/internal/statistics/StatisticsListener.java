@@ -17,7 +17,7 @@
 package com.gemstone.gemfire.internal.statistics;
 
 /**
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface StatisticsListener {
   

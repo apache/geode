@@ -26,7 +26,7 @@ package com.gemstone.gemfire.cache;
  * @see com.gemstone.gemfire.cache.Region#invalidate(Object)
  * @see com.gemstone.gemfire.cache.Region#destroy(Object)
  * @see Region.Entry
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class EntryNotFoundException extends CacheException {
 private static final long serialVersionUID = -2404101631744605659L;

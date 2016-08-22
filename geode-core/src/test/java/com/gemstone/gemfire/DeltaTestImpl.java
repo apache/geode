@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegionLocalMaxMemoryDUnitT
 /**
  * Sample test class which implements Delta.
  * 
- * @since 6.1
+ * @since GemFire 6.1
  */
 public class DeltaTestImpl implements DataSerializable, Delta {
   
@@ -51,6 +51,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
   private static long toDeltaInvokations;
   private static long toDeltaFailure;
   private static long fromDeltaFailure;
+  private static long timesConstructed = 0;
   public static boolean NEED_TO_RESET_T0_DELTA = true;
   /** *********************************************************************** */
   
@@ -69,6 +70,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
   private boolean hasDelta = false;
 
   public DeltaTestImpl() {
+    timesConstructed++;
   }
 
   public DeltaTestImpl(int intVal, String str) {
@@ -85,6 +87,14 @@ public class DeltaTestImpl implements DataSerializable, Delta {
     this.testObj = testObj;
   }
 
+  public static long getTimesConstructed() {
+    return timesConstructed;
+  }
+  
+  public static void setTimesConstructed(long cnt) {
+    timesConstructed = cnt;
+  }
+  
   public void resetDeltaStatus() {
     this.deltaBits = 0x0;
     this.hasDelta = false;

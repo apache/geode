@@ -66,7 +66,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  *
  * </ol>
  *
- * @since 4.0
+ * @since GemFire 4.0
  * 
  */
 public class TXFarSideCMTracker

@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.internal.util.concurrent;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -23,23 +26,22 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ConcurrentMap;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-@SuppressWarnings({ "rawtypes", "unchecked" })
 @Category(IntegrationTest.class)
-public class ConcurrentHashMapIteratorJUnitTest extends TestCase {
+@SuppressWarnings({ "rawtypes", "unchecked" })
+public class ConcurrentHashMapIteratorJUnitTest {
 
+  @Test
   public void test() throws InterruptedException {
-    
     //Apparently, we need a distributed system to create
     //this CHM, because it's locks use DS properties.
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
+    props.setProperty(MCAST_PORT, "0");
     DistributedSystem.connect(props);
     java.util.concurrent.ConcurrentHashMap baselineMap = new java.util.concurrent.ConcurrentHashMap();
     CustomEntryConcurrentHashMap testMap = new CustomEntryConcurrentHashMap();
@@ -50,13 +52,8 @@ public class ConcurrentHashMapIteratorJUnitTest extends TestCase {
     assertEquals(baselineMap, testMap);
     initialSet = new HashMap(baselineMap);
     
-//    putter = new Putter(baselineMap, testMap, 1000, 2000);
-//    putter.run();
-    
-    
     RandomMutations randomer = new RandomMutations(baselineMap, testMap, 1001, 50000);
     randomer.start();
-    
     
     for(int i = 0; i < 1000; i++) {
       checkForInitialSet(i, testMap, initialSet);
@@ -75,23 +72,22 @@ public class ConcurrentHashMapIteratorJUnitTest extends TestCase {
       fail("On run " + i + " did not find these elements of the initial set using the iterator " + missed);
     }
   }
-  
-  public void createBaseline(ConcurrentMap baselineMap, ConcurrentMap testMap, 
+
+  private void createBaseline(ConcurrentMap baselineMap, ConcurrentMap testMap,
       int start, int end) {
     for(int i = start; i < end; i++) {
       baselineMap.put(i, i);
       testMap.put(i, i);
     }
   }
-  
-  public static class RandomMutations extends Thread {
+
+  private static class RandomMutations extends Thread {
     private final ConcurrentMap baselineMap;
     private final ConcurrentMap testMap;
     private int start;
     private int end;
     private volatile boolean done;
-    
-    
+
     public RandomMutations(ConcurrentMap baselineMap, ConcurrentMap testMap, int start, int end) {
       this.baselineMap = baselineMap;
       this.testMap = testMap;
@@ -99,6 +95,7 @@ public class ConcurrentHashMapIteratorJUnitTest extends TestCase {
       this.end = end;
     }
 
+    @Override
     public void run() {
       Random random = new Random();
       while(!done) {
@@ -119,6 +116,4 @@ public class ConcurrentHashMapIteratorJUnitTest extends TestCase {
       this.join();
     }
   }
-     
-
 }

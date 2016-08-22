@@ -16,58 +16,19 @@
  */
 package com.gemstone.gemfire.cache.query.internal.cq;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.InvalidDeltaException;
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheEvent;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.TimeoutException;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.internal.GetEventValueOp;
-import com.gemstone.gemfire.cache.client.internal.InternalPool;
-import com.gemstone.gemfire.cache.client.internal.QueueManager;
-import com.gemstone.gemfire.cache.client.internal.ServerCQProxyImpl;
-import com.gemstone.gemfire.cache.client.internal.UserAttributes;
-import com.gemstone.gemfire.cache.query.CqAttributes;
-import com.gemstone.gemfire.cache.query.CqClosedException;
-import com.gemstone.gemfire.cache.query.CqException;
-import com.gemstone.gemfire.cache.query.CqExistsException;
-import com.gemstone.gemfire.cache.query.CqListener;
-import com.gemstone.gemfire.cache.query.CqQuery;
-import com.gemstone.gemfire.cache.query.CqServiceStatistics;
-import com.gemstone.gemfire.cache.query.CqStatusListener;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.cache.query.QueryInvalidException;
-import com.gemstone.gemfire.cache.query.RegionNotFoundException;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.internal.CompiledSelect;
-import com.gemstone.gemfire.cache.query.internal.CqQueryVsdStats;
-import com.gemstone.gemfire.cache.query.internal.CqStateImpl;
-import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
-import com.gemstone.gemfire.cache.query.internal.ExecutionContext;
+import com.gemstone.gemfire.cache.client.internal.*;
+import com.gemstone.gemfire.cache.query.*;
+import com.gemstone.gemfire.cache.query.internal.*;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.cache.FilterProfile;
-import com.gemstone.gemfire.internal.cache.FilterRoutingInfo;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
@@ -76,10 +37,13 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
- * @since 5.5
+ * @since GemFire 5.5
  *
  * Implements the CqService functionality.
  * 
@@ -93,9 +57,9 @@ public final class CqServiceImpl implements CqService  {
   /** 
    * System property to evaluate the query even though the initial results are not required
    * when cq is executed using the execute() method. 
-   */  
-  public static boolean EXECUTE_QUERY_DURING_INIT = 
-      Boolean.valueOf(System.getProperty("gemfire.cq.EXECUTE_QUERY_DURING_INIT", "true")).booleanValue(); 
+   */
+  public static boolean EXECUTE_QUERY_DURING_INIT =
+      Boolean.valueOf(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "cq.EXECUTE_QUERY_DURING_INIT", "true")).booleanValue();
 
   private static final String CQ_NAME_PREFIX = "GfCq";
   
@@ -1123,7 +1087,7 @@ public final class CqServiceImpl implements CqService  {
                 .getQueueManager().getPool(), cqEvent.getEventID(), null);
             Object newVal = null;
             if (result == null || (newVal = result.getObject()) == null) {
-              if (this.cache.getCancelCriterion().cancelInProgress() == null) {
+              if (!cache.getCancelCriterion().isCancelInProgress()) {
                 Exception ex = new Exception(
                     "Failed to retrieve full value from server for eventID "
                     + cqEvent.getEventID());
@@ -1153,7 +1117,7 @@ public final class CqServiceImpl implements CqService  {
         }
         // Handle client side exceptions.
       } catch (Exception ex) {
-        if (this.cache.getCancelCriterion().cancelInProgress() == null) {
+        if (!cache.getCancelCriterion().isCancelInProgress()) {
           logger.warn(LocalizedMessage.create(
               LocalizedStrings.CqService_EXCEPTION_IN_THE_CQLISTENER_OF_THE_CQ_CQNAME_0_ERROR__1,
               new Object[] { cqName, ex.getMessage()}));
@@ -1210,7 +1174,7 @@ public final class CqServiceImpl implements CqService  {
         }
         // Handle client side exceptions.
       } catch (Exception ex) {
-        if (this.cache.getCancelCriterion().cancelInProgress() == null) {
+        if (!cache.getCancelCriterion().isCancelInProgress()) {
           logger.warn(LocalizedMessage.create(
               LocalizedStrings.CqService_EXCEPTION_IN_THE_CQLISTENER_OF_THE_CQ_CQNAME_0_ERROR__1,
               new Object[] { cqName, ex.getMessage()}));
@@ -1398,7 +1362,7 @@ public final class CqServiceImpl implements CqService  {
       
       // Get new value. If its not retrieved.
       if (cqUnfilteredEventsSet_newValue.isEmpty() && (event.getOperation().isCreate() ||  event.getOperation().isUpdate())) {
-        Object newValue = entryEvent.getNewValue(); // TODO OFFHEAP: optimize by not copying the value on to the heap
+        Object newValue = entryEvent.getNewValue();
         if (newValue != null) {
           //We have a new value to run the query on
           cqUnfilteredEventsSet_newValue.add(newValue);

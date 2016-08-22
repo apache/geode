@@ -16,19 +16,21 @@
  */
 package com.gemstone.gemfire.security.templates;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import static org.assertj.core.api.Assertions.*;
+
+import java.io.Serializable;
+
 import org.apache.commons.lang.SerializationUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.Serializable;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link PKCSPrincipal}
  */
-@Category(UnitTest.class)
+@Category({ UnitTest.class, SecurityTest.class })
 public class PKCSPrincipalTest {
 
   @Test

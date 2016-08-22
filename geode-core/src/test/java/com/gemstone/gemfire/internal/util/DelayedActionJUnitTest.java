@@ -16,19 +16,22 @@
  */
 package com.gemstone.gemfire.internal.util;
 
+import static org.junit.Assert.*;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
 @Category(UnitTest.class)
-public class DelayedActionJUnitTest extends TestCase {
+public class DelayedActionJUnitTest {
+
+  @Test
   public void testDelay() throws InterruptedException {
     final AtomicBoolean hit = new AtomicBoolean(false);
     final CountDownLatch complete = new CountDownLatch(1);

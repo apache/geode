@@ -25,7 +25,7 @@ import com.gemstone.gemfire.internal.*;
  * GemFire statistics about Disk Directories
  *
  *
- * @since 3.2
+ * @since GemFire 3.2
  */
 public class DiskDirectoryStats {
 

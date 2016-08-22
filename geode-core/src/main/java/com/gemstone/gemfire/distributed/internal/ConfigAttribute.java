@@ -22,7 +22,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by jiliao on 2/3/16.
  * min and max are used only when type is Integer
  */
 @Target(ElementType.FIELD)

@@ -19,16 +19,11 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.util.Properties;
-
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
@@ -45,6 +40,12 @@ import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 /**
  * Authenticates this client (or a user) on a server. This op ideally should get
  * executed once-per-server.
@@ -58,7 +59,7 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  * 
  * @see PutUserCredentials
  * @see ProxyCache
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class AuthenticateUserOp {
 
@@ -111,8 +112,7 @@ public class AuthenticateUserOp {
       DistributedMember server = new InternalDistributedMember(con.getSocket()
           .getInetAddress(), con.getSocket().getPort(), false);
       DistributedSystem sys = InternalDistributedSystem.getConnectedInstance();
-      String authInitMethod = sys.getProperties().getProperty(
-          DistributionConfig.SECURITY_CLIENT_AUTH_INIT_NAME);
+      String authInitMethod = sys.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
       Properties tmpSecurityProperties = sys.getSecurityProperties();
 
       // LOG: following passes the DS API LogWriters into the security API
@@ -158,8 +158,7 @@ public class AuthenticateUserOp {
             .getSocket().getInetAddress(), cnx.getSocket().getPort(), false);
         DistributedSystem sys = InternalDistributedSystem
             .getConnectedInstance();
-        String authInitMethod = sys.getProperties().getProperty(
-            DistributionConfig.SECURITY_CLIENT_AUTH_INIT_NAME);
+        String authInitMethod = sys.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
 
         Properties credentials = HandShake.getCredentials(authInitMethod,
             this.securityProperties, server, false, (InternalLogWriter)sys.getLogWriter(), (InternalLogWriter)sys

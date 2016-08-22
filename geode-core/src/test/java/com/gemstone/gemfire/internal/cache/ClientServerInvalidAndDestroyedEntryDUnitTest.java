@@ -16,10 +16,16 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
@@ -35,8 +41,6 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.tier.InterestType;
 import com.gemstone.gemfire.test.dunit.Assert;
@@ -46,40 +50,42 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableCallableIF;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This tests the fix for bug #43407 under a variety of configurations and
  * also tests that tombstones are treated in a similar manner.  The ticket
  * complains that a client that does a get(K) does not end up with the entry
  * in its cache if K is invalid on the server.
- *
  */
-public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTestCase {
   
-  public ClientServerInvalidAndDestroyedEntryDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     disconnectAllFromDS();
   }
   
+  @Test
   public void testClientGetsInvalidEntry() throws Exception {
     final String regionName = getUniqueName()+"Region";
     doTestClientGetsInvalidEntry(regionName, false, false);
   }
   
+  @Test
   public void testClientGetsInvalidEntryPR() throws Exception {
     final String regionName = getUniqueName()+"Region";
     doTestClientGetsInvalidEntry(regionName, true, false);
   }
 
+  @Test
   public void testClientGetsTombstone() throws Exception {
     final String regionName = getUniqueName()+"Region";
     doTestClientGetsTombstone(regionName, false, false);
   }
   
+  @Test
   public void testClientGetsTombstonePR() throws Exception {
     final String regionName = getUniqueName()+"Region";
     doTestClientGetsTombstone(regionName, true, false);
@@ -91,21 +97,25 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
   
   
 
+  @Test
   public void testClientGetsInvalidEntryTX() throws Exception {
     final String regionName = getUniqueName()+"Region";
     doTestClientGetsInvalidEntry(regionName, false, true);
   }
   
+  @Test
   public void testClientGetsInvalidEntryPRTX() throws Exception {
     final String regionName = getUniqueName()+"Region";
     doTestClientGetsInvalidEntry(regionName, true, true);
   }
 
+  @Test
   public void testClientGetsTombstoneTX() throws Exception {
     final String regionName = getUniqueName()+"Region";
     doTestClientGetsTombstone(regionName, false, true);
   }
 
+  @Test
   public void testClientGetsTombstonePRTX() throws Exception {
     final String regionName = getUniqueName()+"Region";
     doTestClientGetsTombstone(regionName, true, true);
@@ -114,11 +124,13 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
   
   // tests for bug #46780, tombstones left in client after RI
   
+  @Test
   public void testRegisterInterestRemovesOldEntry() throws Exception {
     final String regionName = getUniqueName()+"Region";
     doTestRegisterInterestRemovesOldEntry(regionName, false);
   }
   
+  @Test
   public void testRegisterInterestRemovesOldEntryPR() throws Exception {
     final String regionName = getUniqueName()+"Region";
     doTestRegisterInterestRemovesOldEntry(regionName, true);
@@ -194,7 +206,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("creating client cache");
     ClientCache c = new ClientCacheFactory()
                     .addPoolServer("localhost", serverPort)
-                    .set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel())
+                    .set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel())
                     .create();
     Region myRegion = c.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);;
     if (useTX) {
@@ -312,7 +324,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("creating client cache");
     ClientCache c = new ClientCacheFactory()
                     .addPoolServer("localhost", serverPort)
-                    .set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel())
+                    .set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel())
                     .create();
     Region myRegion = c.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);;
     if (useTX) {
@@ -434,7 +446,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("creating client cache");
     ClientCache c = new ClientCacheFactory()
                     .addPoolServer("localhost", serverPort)
-                    .set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel())
+                    .set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel())
                     .setPoolSubscriptionEnabled(true)
                     .create();
     

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -74,14 +83,15 @@ import com.gemstone.gemfire.test.dunit.VM;
  * 
  * 
  */
-public class LocalDataSetIndexingDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
 
   protected static VM dataStore1 = null;
 
   protected static VM dataStore2 = null;
 
-  public LocalDataSetIndexingDUnitTest(String name) {
-    super(name);
+  public LocalDataSetIndexingDUnitTest() {
+    super();
   }
 
   @Override
@@ -91,6 +101,7 @@ public class LocalDataSetIndexingDUnitTest extends CacheTestCase {
     dataStore2 = host.getVM(1);
   }
 
+  @Test
   public void testLocalDataSetIndexing() {
     final CacheSerializableRunnable createPRs = new CacheSerializableRunnable(
         "create prs ") {

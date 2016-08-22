@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Properties;
@@ -34,21 +36,21 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.LonerDistributionManager;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 /**
  * Provides helper methods for testing clients and servers. This
  * test case was created by refactoring methods from ConnectionPoolDUnitTest into
  * this class.
  *
- * @since 4.2.1
+ * @since GemFire 4.2.1
  */
-public class ClientServerTestCase extends CacheTestCase {
+public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
   
   public static String NON_EXISTENT_KEY = "NON_EXISTENT_KEY";
   
@@ -74,14 +76,10 @@ public class ClientServerTestCase extends CacheTestCase {
   protected void preTearDownClientServerTestCase() throws Exception {
   }
 
-  public ClientServerTestCase(String name) {
-    super(name);
-  }
-
   /**
    * Starts a bridge server on the given port
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public int startBridgeServer(int port)
     throws IOException {
@@ -105,7 +103,7 @@ public class ClientServerTestCase extends CacheTestCase {
   /**
    * Stops the bridge server that serves up the given cache.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void stopBridgeServers(Cache cache) {
     CacheServer bridge = null;

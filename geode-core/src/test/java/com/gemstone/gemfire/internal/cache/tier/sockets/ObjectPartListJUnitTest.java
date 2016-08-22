@@ -16,31 +16,30 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.util.List;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.CopyHelper;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-/**
- *
- */
 @Category(UnitTest.class)
-public class ObjectPartListJUnitTest extends TestCase {
-  
-  public void testValueAsObject() throws IOException {
+public class ObjectPartListJUnitTest {
+
+  @Test
+  public void testValueAsObject() throws Exception {
     VersionedObjectList list = new VersionedObjectList(100, false, false);
     byte[] normalBytes = "value1".getBytes();
     list.addObjectPart("key", normalBytes , false, null);
     list.addObjectPart("key", "value2", true, null);
     byte[] serializedObjectBytes = BlobHelper.serializeToBlob("value3");
     list.addObjectPart("key", serializedObjectBytes, true, null);
-    list.addExceptionPart("key", new TestException("hello"));
+    list.addExceptionPart("key", new AssertionError("hello"));
     list.addObjectPartForAbsentKey("key", null);
     
     //Create a clone of the this.
@@ -66,18 +65,19 @@ public class ObjectPartListJUnitTest extends TestCase {
     assertEquals("value1", new String((byte[]) values.get(0)));
     assertEquals("value2", values.get(1));
     assertEquals("value3", values.get(2));
-    assertEquals(new TestException("hello"), values.get(3));
+    assertEquals(new AssertionError("hello"), values.get(3));
     assertNull(values.get(4));
   }
-  
-  public void testValueAsObjectByteArray() throws IOException, ClassNotFoundException {
+
+  @Test
+  public void testValueAsObjectByteArray() throws Exception {
     ObjectPartList list = new VersionedObjectList(100, false, false, true);
     byte[] normalBytes = "value1".getBytes();
     list.addObjectPart("key", normalBytes , false, null);
     list.addObjectPart("key", "value2", true, null);
     byte[] serializedObjectBytes = BlobHelper.serializeToBlob("value3");
     list.addObjectPart("key", serializedObjectBytes, true, null);
-    list.addExceptionPart("key", new TestException("hello"));
+    list.addExceptionPart("key", new AssertionError("hello"));
     list.addObjectPartForAbsentKey("key", null);
     
     //Create a clone of the this list.
@@ -100,30 +100,25 @@ public class ObjectPartListJUnitTest extends TestCase {
     assertEquals("value1", new String((byte[]) values.get(0)));
     assertEquals("value2", BlobHelper.deserializeBlob((byte[])values.get(1)));
     assertEquals("value3", BlobHelper.deserializeBlob((byte[])values.get(2)));
-    assertEquals(new TestException("hello"), values.get(3));
+    assertEquals(new AssertionError("hello"), values.get(3));
     assertNull(values.get(4));
   }
   
-  private static class TestException extends Exception {
+  private static class AssertionError extends Exception {
 
-    public TestException(String message) {
+    public AssertionError(String message) {
       super(message);
-      // TODO Auto-generated constructor stub
     }
-    
-    
+
     @Override
     public boolean equals(Object o) {
-      if(!(o instanceof TestException)) {
+      if(!(o instanceof AssertionError)) {
         return false;
       }
-      if(!((TestException) o ).getMessage().equals(getMessage())) {
+      if(!((AssertionError) o ).getMessage().equals(getMessage())) {
         return false;
       }
       return true;
     }
-    
-    
   }
-
 }

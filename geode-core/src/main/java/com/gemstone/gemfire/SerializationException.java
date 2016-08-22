@@ -20,7 +20,7 @@ import com.gemstone.gemfire.GemFireIOException;
 
 /**
  * An exception indicating that a serialization or deserialization failed.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class SerializationException extends GemFireIOException {
 private static final long serialVersionUID = 7783018024920098997L;

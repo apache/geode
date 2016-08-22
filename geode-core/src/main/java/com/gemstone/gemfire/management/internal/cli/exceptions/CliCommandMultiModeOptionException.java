@@ -22,15 +22,18 @@ import com.gemstone.gemfire.management.internal.cli.parser.OptionSet;
 
 public class CliCommandMultiModeOptionException extends CliCommandOptionException {
   
-  public static final int MULTIPLE_LEAD_OPTIONS=1;
-  public static final int OPTIONS_FROM_MULTIPLE_MODES=2;
+  public static final int MULTIPLE_LEAD_OPTIONS = 1; // TODO: move or delete
+  public static final int OPTIONS_FROM_MULTIPLE_MODES = 2; // TODO: move or delete
   
   private String leadOptionString;
   private int code;
 
-  public CliCommandMultiModeOptionException(CommandTarget commandTarget,
-      Option option, String string, int code) {
-    super(commandTarget, option);
+  public CliCommandMultiModeOptionException(final CommandTarget commandTarget, final Option option, final String string, final int code) {
+    this(commandTarget, option, string, code, null);
+  }
+
+  public CliCommandMultiModeOptionException(final CommandTarget commandTarget, final Option option, final String string, final int code, final Throwable cause) {
+    super(commandTarget, option, cause);
     this.leadOptionString = string;
     this.code = code;
   }
@@ -42,7 +45,4 @@ public class CliCommandMultiModeOptionException extends CliCommandOptionExceptio
   public int getCode() {
     return code;
   }
-  
-  
 }
-

@@ -22,7 +22,7 @@ import com.gemstone.gemfire.GemFireCheckedException;
 /**
  * Thrown during by the query engine during parsing or execution.
  * Instances of subclasses are thrown for more specific exceptions.
- * @since 4.0
+ * @since GemFire 4.0
  */
 
 

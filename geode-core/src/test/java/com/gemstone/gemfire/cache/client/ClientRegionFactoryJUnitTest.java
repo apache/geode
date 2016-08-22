@@ -16,33 +16,7 @@
  */
 package com.gemstone.gemfire.cache.client;
 
-import static com.gemstone.gemfire.cache.client.ClientRegionShortcut.*;
-import static org.junit.Assert.*;
-
-import java.net.InetAddress;
-import java.util.Arrays;
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CustomExpiry;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.internal.ProxyRegion;
 import com.gemstone.gemfire.cache.query.Query;
 import com.gemstone.gemfire.cache.query.QueryService;
@@ -51,10 +25,24 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
+
+import java.net.InetAddress;
+import java.util.Arrays;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.cache.client.ClientRegionShortcut.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * Unit test for the ClientRegionFactory class
- * @since 6.5
+ * @since GemFire 6.5
  */
 @Category(IntegrationTest.class)
 public class ClientRegionFactoryJUnitTest {
@@ -482,8 +470,8 @@ public class ClientRegionFactoryJUnitTest {
   
   private Properties createGemFireProperties() {
     Properties props = new Properties();
-    props.put("mcast-port", "0");
-    props.put("locators", "");
+    props.put(MCAST_PORT, "0");
+    props.put(LOCATORS, "");
     return props;
   }
   

@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.admin.StatAlertsManager;
  * 
  * @see StatAlertsManager
  * 
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class ChangeRefreshIntervalMessage extends PooledDistributionMessage {
 

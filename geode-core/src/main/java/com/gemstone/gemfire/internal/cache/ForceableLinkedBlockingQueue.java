@@ -68,7 +68,7 @@ import java.util.NoSuchElementException;
  * <a href="{@docRoot}/../technotes/guides/collections/index.html">
  * Java Collections Framework</a>.
  *
- * @since 1.5
+ * @since GemFire 1.5
  * @author Doug Lea
  * @param <E> the type of elements held in this collection
  *

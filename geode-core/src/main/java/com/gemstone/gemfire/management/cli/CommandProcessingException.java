@@ -24,7 +24,7 @@ package com.gemstone.gemfire.management.cli;
  * <li>errors from invalid values for parameters
  * </ul>
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class CommandProcessingException extends RuntimeException {
 

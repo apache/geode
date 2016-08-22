@@ -46,7 +46,7 @@ import java.util.Set;
  * @see TXOriginatorRecoveryProcessor
  * @see com.gemstone.gemfire.internal.cache.TXFarSideCMTracker
  * 
- * @since 4.1.1
+ * @since GemFire 4.1.1
  */
 public final class TXLockUpdateParticipantsMessage
   extends PooledDistributionMessage 

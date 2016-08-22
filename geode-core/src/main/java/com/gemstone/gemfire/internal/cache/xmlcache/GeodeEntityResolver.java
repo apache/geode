@@ -33,7 +33,7 @@ import org.xml.sax.ext.EntityResolver2;
  * <code>META-INF/services/org.xml.sax.ext.EntityResolver2</code>
  * 
  * 
- * @since 8.1
+ * @since GemFire 8.1
  */
 public final class GeodeEntityResolver extends DefaultEntityResolver2 {
 

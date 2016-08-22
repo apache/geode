@@ -19,15 +19,17 @@ package com.gemstone.gemfire.security.generator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.tier.sockets.HandShake;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.util.test.TestUtil;
 import com.gemstone.gemfire.security.templates.LdapUserAuthenticator;
 import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.util.test.TestUtil;
 import org.apache.logging.log4j.Logger;
 
 import java.security.Principal;
 import java.util.Properties;
 import java.util.Random;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 public class LdapUserCredentialGenerator extends CredentialGenerator {
 
@@ -66,7 +68,7 @@ public class LdapUserCredentialGenerator extends CredentialGenerator {
     if (serverAuthEnabled) {
       String keyStoreFile = TestUtil.getResourcePath(LdapUserCredentialGenerator.class, PKCSCredentialGenerator.keyStoreDir + "/gemfire1.keystore");
       extraProps.setProperty(HandShake.PRIVATE_KEY_FILE_PROP, keyStoreFile);
-      extraProps.setProperty(HandShake.PRIVATE_KEY_ALIAS_PROP, "gemfire1");
+      extraProps.setProperty(HandShake.PRIVATE_KEY_ALIAS_PROP, DistributionConfig.GEMFIRE_PREFIX);
       extraProps.setProperty(HandShake.PRIVATE_KEY_PASSWD_PROP, "gemfire");
     }
 
@@ -97,7 +99,7 @@ public class LdapUserCredentialGenerator extends CredentialGenerator {
     final Properties props = new Properties();
     props.setProperty(UserPasswordAuthInit.USER_NAME, USER_PREFIX + ((index % 10) + 1));
     props.setProperty(UserPasswordAuthInit.PASSWORD, USER_PREFIX + ((index % 10) + 1));
-    props.setProperty(DistributionConfig.SECURITY_CLIENT_DHALGO_NAME, CIPHERS[RANDOM.nextInt(CIPHERS.length)]);
+    props.setProperty(SECURITY_CLIENT_DHALGO, CIPHERS[RANDOM.nextInt(CIPHERS.length)]);
 
     if (serverAuthEnabled) {
       final String keyStoreFile = TestUtil.getResourcePath(PKCSCredentialGenerator.class, PKCSCredentialGenerator.keyStoreDir + "/publickeyfile");
@@ -134,7 +136,7 @@ public class LdapUserCredentialGenerator extends CredentialGenerator {
       throw new IllegalArgumentException("LDAP: [" + userName + "] not a valid user");
     }
 
-    props.setProperty(DistributionConfig.SECURITY_CLIENT_DHALGO_NAME, CIPHERS[RANDOM.nextInt(CIPHERS.length)]);
+    props.setProperty(SECURITY_CLIENT_DHALGO, CIPHERS[RANDOM.nextInt(CIPHERS.length)]);
 
     if (serverAuthEnabled) {
       final String keyStoreFile = TestUtil.getResourcePath(PKCSCredentialGenerator.class, PKCSCredentialGenerator.keyStoreDir + "/publickeyfile");
@@ -150,7 +152,7 @@ public class LdapUserCredentialGenerator extends CredentialGenerator {
     final Properties props = new Properties();
     props.setProperty(UserPasswordAuthInit.USER_NAME, "invalid" + index);
     props.setProperty(UserPasswordAuthInit.PASSWORD, "none");
-    props.setProperty(DistributionConfig.SECURITY_CLIENT_DHALGO_NAME, CIPHERS[RANDOM.nextInt(CIPHERS.length)]);
+    props.setProperty(SECURITY_CLIENT_DHALGO, CIPHERS[RANDOM.nextInt(CIPHERS.length)]);
 
     if (serverAuthEnabled) {
       final String keyStoreFile = TestUtil.getResourcePath(PKCSCredentialGenerator.class, PKCSCredentialGenerator.keyStoreDir + "/publickeyfile");

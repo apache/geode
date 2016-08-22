@@ -20,7 +20,7 @@
 //
 package com.gemstone.gemfire.distributed.internal.streaming;
 
-import static com.gemstone.gemfire.test.dunit.Wait.pause;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,28 +30,26 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ReplyException;
 import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.Token;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.jayway.awaitility.Awaitility;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class StreamingOperationManyDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class StreamingOperationManyDUnitTest extends JUnit4DistributedTestCase {
 
-  public StreamingOperationManyDUnitTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testStreamingManyProvidersNoExceptions() throws Exception {
 //    final String name = this.getUniqueName();
 

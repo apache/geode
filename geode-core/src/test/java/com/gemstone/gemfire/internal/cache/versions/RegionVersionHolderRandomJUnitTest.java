@@ -16,18 +16,18 @@
  */
 package com.gemstone.gemfire.internal.cache.versions;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import static org.junit.Assert.*;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
@@ -41,32 +41,16 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class RegionVersionHolderRandomJUnitTest extends RegionVersionHolderSmallBitSetJUnitTest {
   
-  Random random = new Random();
-  
+  private Random random;
+
   @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  protected final void postSetUpRegionVersionHolderSmallBitSetJUnitTest() throws Exception {
     long seed = System.nanoTime();
-//    seed = 1194319178069961L;
-    random.setSeed(seed);
+    random = new Random();
+    random.setSeed(seed); // 1194319178069961L;
     System.out.println("RegionVersionHolderJUnitTest using random seed " + seed);
   }
   
-  
-  int loopNum = 0;
-  /**
-   * Rerun all of the tests several times to see if anything fails.
-   * @throws InterruptedException
-   */
-//  public void testLoop() throws InterruptedException {
-//    for(int i =0; i < 50; i++) {
-//      loopNum=i;
-//      System.err.println("i=" + i);
-//      testInitializeFrom();
-//      testConsumeReceivedRevisions();
-//      testParallelThreads();
-//    }
-//  }
   /**
    * Record versions in random order, rather than in sequential order
    * This should generate and fill some exceptions.
@@ -92,17 +76,16 @@ public class RegionVersionHolderRandomJUnitTest extends RegionVersionHolderSmall
    * This tries to be a more "real life" test. A bunch of threads perform
    * updates, which should create exceptions. Verify that the final
    * exception list is correct.
-   * @throws InterruptedException
    */
+  @Test
   public void testParallelThreads() throws InterruptedException {
-    RegionVersionHolder vh1 = new RegionVersionHolder(member);
-    RegionVersionHolder vh2 = new RegionVersionHolder(member);
+    RegionVersionHolder vh1 = new RegionVersionHolder(member());
+    RegionVersionHolder vh2 = new RegionVersionHolder(member());
     
     int UPDATES = 50000;
     int NUM_UPDATERS=20;
     int NUM_EXCEPTIONS=500;
-//    int NUM_EXCEPTIONS=0;
-    
+
     Random random = new Random();
     IntOpenHashSet exceptions = new IntOpenHashSet();
     for(int i =0; i < NUM_EXCEPTIONS; i++) {
@@ -136,13 +119,9 @@ public class RegionVersionHolderRandomJUnitTest extends RegionVersionHolderSmall
     for(int i = 1; i < UPDATES; i++) {
       assertEquals("vector is incorrect on item "+  i,!exceptions.contains(i), vh2.contains(i));
     }
-    
   }
-  
-  
-  
+
   private static class HolderUpdater extends Thread {
-    
 
     private int updates;
     private int myNumber;

@@ -48,16 +48,16 @@ ssc.awaitTermination() // Wait for the computation to terminate
 
 #### Spark Streaming With Geode
 Now let's save the running word count to Geode region `str_int_region`, which 
-simply replace print() with saveToGemfire():
+simply replace print() with saveToGeode():
 
 ```
-import io.pivotal.gemfire.spark.connector.streaming._
-runningCounts.saveToGemfire("str_int_region")
+import io.pivotal.geode.spark.connector.streaming._
+runningCounts.saveToGeode("str_int_region")
 ```
 
-You can use the version of saveToGemfire that has the parameter `GemFireConnectionConf`:
+You can use the version of saveToGeode that has the parameter `GeodeConnectionConf`:
 ```
-runningCounts.saveToGemfire("str_int_region", connConf)
+runningCounts.saveToGeode("str_int_region", connConf)
 ```
 
 See [Spark Streaming Programming Guide]

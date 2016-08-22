@@ -16,25 +16,20 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.logging.log4j.Logger;
-
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerQueueStatus;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.security.GemFireSecurityException;
+import org.apache.logging.log4j.Logger;
+
+import java.net.InetSocketAddress;
+import java.util.*;
 
 /**
  * A connection source where the list of endpoints is specified explicitly. 
- * @since 5.7
+ * @since GemFire 5.7
  * 
  * TODO - the UnusedServerMonitor basically will force the pool to
  * have at least one connection to each server. Maybe we need to have it
@@ -55,7 +50,7 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
    * the endpoints list
    */
   private boolean DISABLE_SHUFFLING = Boolean
-      .getBoolean("gemfire.bridge.disableShufflingOfEndpoints");
+      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints");
 
   public ExplicitConnectionSourceImpl(List/*<InetSocketAddress>*/contacts) {
     ArrayList serverList = new ArrayList(contacts.size());

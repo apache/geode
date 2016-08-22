@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
@@ -63,27 +72,32 @@ import com.gemstone.gemfire.test.dunit.VM;
  * indexes on regions with overflow to disk.
  *
  */
-public class SizingFlagDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * @param name
    */
-  public SizingFlagDUnitTest(String name) {
-    super(name);
+  public SizingFlagDUnitTest() {
+    super();
   }
   
+  @Test
   public void testRRMemLRU() {
     doRRMemLRUTest();
   }
   
+  @Test
   public void testRRMemLRUDeltaAndFlag() {
     doRRMemLRUDeltaTest(true);
   }
   
+  @Test
   public void testRRMemLRUDelta() {
     doRRMemLRUDeltaTest(false);
   }
   
+  @Test
   public void testRRListener() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -98,34 +112,42 @@ public class SizingFlagDUnitTest extends CacheTestCase {
     doListenerTestRR(vm0, vm1);
   }
   
+  @Test
   public void testPRMemLRU() {
     doPRMemLRUTest();
   }
   
+  @Test
   public void testPRMemLRUAndFlagDeltaPutOnPrimary() {
     doPRDeltaTestLRU(false, false, true, false);
   }
   
+  @Test
   public void testPRMemLRUDeltaPutOnPrimary() {
     doPRDeltaTestLRU(false, false, true, false);
   }
   
+  @Test
   public void testPRMemLRUAndFlagDeltaPutOnSecondary() {
     doPRDeltaTestLRU(false, false, false, true);
   }
   
+  @Test
   public void testPRMemLRUDeltaPutOnSecondary() {
     doPRDeltaTestLRU(false, false, false, true);
   }
   
+  @Test
   public void testPRNoLRUDelta() {
     doPRNoLRUDeltaTest(false);
   }
   
+  @Test
   public void testPRNoLRUAndFlagDelta() {
     doPRNoLRUDeltaTest(true);
   }
   
+  @Test
   public void testPRListener() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -140,6 +162,7 @@ public class SizingFlagDUnitTest extends CacheTestCase {
     doListenerTestPR(vm0, vm1);
   }
   
+  @Test
   public void testPRHeapLRU() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -172,6 +195,7 @@ public class SizingFlagDUnitTest extends CacheTestCase {
     //Test what happens when we reach the heap threshold??
   }
   
+  @Test
   public void testRRHeapLRU() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -198,23 +222,28 @@ public class SizingFlagDUnitTest extends CacheTestCase {
     //Test what happens when we reach the heap threshold??
   }
   
+  @Test
   public void testPRHeapLRUDeltaWithFlagPutOnPrimary() {
     doPRDeltaTestLRU(false, true, true, false);
   }  
   
+  @Test
   public void testPRHeapLRUDeltaPutOnPrimary() {
     doPRDeltaTestLRU(false, true, true, false);
   }  
 
+  @Test
   public void testPRHeapLRUDeltaWithFlagPutOnSecondary() {
     doPRDeltaTestLRU(false, true, false, true);
   }  
   
+  @Test
   public void testPRHeapLRUDeltaPutOnSecondary() {
     doPRDeltaTestLRU(false, true, false, true);
   }  
 
   // test to cover bug41916
+  @Test
   public void testLargeDelta() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

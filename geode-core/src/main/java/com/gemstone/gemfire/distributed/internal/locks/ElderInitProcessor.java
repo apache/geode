@@ -48,7 +48,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * A processor for initializing the ElderState. This may involve sending
  * a message to every existing member to discover what services they have.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class ElderInitProcessor extends ReplyProcessor21 {
   private static final Logger logger = LogService.getLogger();

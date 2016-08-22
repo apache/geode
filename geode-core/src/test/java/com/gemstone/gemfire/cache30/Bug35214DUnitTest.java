@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
@@ -41,9 +50,10 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * Make sure entry expiration does not happen during gii for bug 35214
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
-public class Bug35214DUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class Bug35214DUnitTest extends JUnit4CacheTestCase {
 
   protected volatile int expirationCount = 0;
 
@@ -51,8 +61,8 @@ public class Bug35214DUnitTest extends CacheTestCase {
 
   protected static volatile boolean callbackFailure;
   
-  public Bug35214DUnitTest(String name) {
-    super(name);
+  public Bug35214DUnitTest() {
+    super();
   }
 
   private VM getOtherVm() {
@@ -148,6 +158,7 @@ public class Bug35214DUnitTest extends CacheTestCase {
   /**
    * make sure entries do not expire during a GII
    */
+  @Test
   public void testNoEntryExpireDuringGII() throws Exception {
     initOtherVm();
     AsyncInvocation updater = null;

@@ -17,6 +17,15 @@
 
 package com.gemstone.gemfire.cache.query.partitioned;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 /**
  * This test tests the PR query behaviour with respect to cache closure
  * happening on one of the data stores. PR is configured with redundantCopies =
@@ -24,6 +33,8 @@ package com.gemstone.gemfire.cache.query.partitioned;
  * recreated, thus avoiding any data loss.
  * 
  */
+
+import static com.gemstone.gemfire.cache.query.Utils.createPortfolioData;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -40,7 +51,9 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 
+@Category(DistributedTest.class)
 public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
 {
 
@@ -50,22 +63,21 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
    * @param name
    */
 
-  public PRQueryCacheCloseDUnitTest(String name) {
+  public PRQueryCacheCloseDUnitTest() {
 
-    super(name);
+    super();
   }
-
-  static Properties props = new Properties();
-
-  int totalNumBuckets = 100;
+  public void setCacheInVMs(VM... vms) {
+    for (VM vm : vms) {
+      vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    }
+  }
 
   int threadSleepTime = 500;
 
-  int querySleepTime = 2000;
-
   int queryTestCycle = 10;
 
-  PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper("");
+  PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();
 
   final String name = "Portfolios";
 
@@ -87,6 +99,7 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
    * 6. then recreates the PR on the same VM <br>
    * 7. Verfies the size , type , contents of both the resultSets Obtained <br>
    */
+  @Test
   public void testPRWithCacheCloseInOneDatastoreWithDelay() throws Exception
   {
 
@@ -98,7 +111,7 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
     VM accessor = host.getVM(0);
     VM datastore1 = host.getVM(1);
     VM datastore2 = host.getVM(2);
-
+    setCacheInVMs(accessor, datastore1, datastore2);
     List vmList = new LinkedList();
     vmList.add(datastore1);
     vmList.add(datastore2);
@@ -109,7 +122,7 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
         .info(
             "PRQueryCacheCloseDUnitTest#testPRWithCacheCloseInOneDatastoreWithDelay: Creating Accessor node on VM0");
     accessor.invoke(PRQHelp.getCacheSerializableRunnableForPRAccessorCreate(name,
-        redundancy));
+        redundancy, PortfolioData.class));
     LogWriterUtils.getLogWriter()
         .info(
             "PRQueryCacheCloseDUnitTest#testPRWithCacheCloseInOneDatastoreWithDelay: Successfully Created Accessor node on VM0");
@@ -118,9 +131,9 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
         .info(
             "PRQueryCacheCloseDUnitTest#testPRWithCacheCloseInOneDatastoreWithDelay: Creating PR's across all VM1 , VM2");
     datastore1.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
-        redundancy));
+        redundancy, PortfolioData.class));
     datastore2.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
-        redundancy));
+        redundancy, PortfolioData.class));
     LogWriterUtils.getLogWriter()
         .info(
             "PRQueryCacheCloseDUnitTest#testPRWithCacheCloseInOneDatastoreWithDelay: Successfully Created PR on VM1 , VM2");
@@ -130,7 +143,7 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
         .info(
             "PRQueryCacheCloseDUnitTest#testPRWithCacheCloseInOneDatastoreWithDelay: Creating Local Region on VM0");
     accessor.invoke(PRQHelp
-        .getCacheSerializableRunnableForLocalRegionCreation(localName));
+        .getCacheSerializableRunnableForLocalRegionCreation(localName, PortfolioData.class));
     LogWriterUtils.getLogWriter()
         .info(
             "PRQueryCacheCloseDUnitTest#testPRWithCacheCloseInOneDatastoreWithDelay: Successfully Created Local Region on VM0");
@@ -138,7 +151,7 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
     // Generating portfolio object array to be populated across the PR's & Local
     // Regions
 
-    final PortfolioData[] portfolio = PRQHelp.createPortfolioData(cnt, cntDest);
+    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
 
     // Putting the data into the accessor node
     LogWriterUtils.getLogWriter()
@@ -175,8 +188,12 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
             "PRQueryCacheCloseDUnitTest#testPRWithCacheCloseInOneDatastoreWithDelay: Calling for cache close on either of the Datastores VM1 , VM2 at random and then recreating the cache, with a predefined Delay ");
     for (int j = 0; j < queryTestCycle; j++) {
       int k = (random.nextInt(vmList.size()));
+      LogWriterUtils.getLogWriter().info("PROperationWithQueryDUnitTest#getCacheSerializableRunnableForCacheClose: Closing cache");
+      ((VM)vmList.get(k)).invoke(() -> closeCache());
+      LogWriterUtils.getLogWriter().info("PROperationWithQueryDUnitTest#getCacheSerializableRunnableForCacheClose: Cache Closed");
+      setCacheInVMs(((VM)vmList.get(k)));
       ((VM)(vmList.get(k))).invoke(PRQHelp.getCacheSerializableRunnableForCacheClose(
-          name, redundancy));
+          name, redundancy, PortfolioData.class));
       Wait.pause(threadSleepTime);
     }
     ThreadUtils.join(async0, 5 * 60 * 1000);
@@ -216,6 +233,7 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
    * 6. then recreates the PR on the same VM <br>
    * 7. Verfies the size , type , contents of both the resultSets Obtained <br>
    */
+  @Test
   public void testPRWithCacheCloseInOneDatastoreWithoutDelay() throws Exception
   {
     LogWriterUtils.getLogWriter()
@@ -225,7 +243,7 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
-
+    setCacheInVMs(vm0, vm1, vm2);
     List vmList = new LinkedList();
     vmList.add(vm1);
     vmList.add(vm2);
@@ -235,7 +253,7 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
         .info(
             "PRQueryCacheCloseDUnitTest#testPRWithCacheCloseInOneDatastoreWithoutDelay: Creating Accessor node on VM0");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRAccessorCreate(name,
-        redundancy));
+        redundancy, PortfolioData.class));
     LogWriterUtils.getLogWriter()
         .info(
             "PRQueryCacheCloseDUnitTest#testPRWithCacheCloseInOneDatastoreWithoutDelay: Successfully Created Accessor node on VM0");
@@ -244,9 +262,9 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
         .info(
             "PRQueryCacheCloseDUnitTest#testPRWithCacheCloseInOneDatastoreWithoutDelay: Creating PR's across all VM1 , VM2");
     vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
-        redundancy));
+        redundancy, PortfolioData.class));
     vm2.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
-        redundancy));
+        redundancy, PortfolioData.class));
     LogWriterUtils.getLogWriter()
         .info(
             "PRQueryCacheCloseDUnitTest#testPRWithCacheCloseInOneDatastoreWithoutDelay: Successfully Created PR on VM1 , VM2");
@@ -256,7 +274,7 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
         .info(
             "PRQueryCacheCloseDUnitTest#testPRWithCacheCloseInOneDatastoreWithoutDelay: Creating Local Region on VM0");
     vm0.invoke(PRQHelp
-        .getCacheSerializableRunnableForLocalRegionCreation(localName));
+        .getCacheSerializableRunnableForLocalRegionCreation(localName, PortfolioData.class));
     LogWriterUtils.getLogWriter()
         .info(
             "PRQueryCacheCloseDUnitTest#testPRWithCacheCloseInOneDatastoreWithoutDelay: Successfully Created Local Region on VM0");
@@ -270,7 +288,7 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
     // Generating portfolio object array to be populated across the PR's & Local
     // Regions
 
-    final PortfolioData[] portfolio = PRQHelp.createPortfolioData(cnt, cntDest);
+    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
     // Putting the data into the accessor node
     LogWriterUtils.getLogWriter()
         .info(
@@ -307,8 +325,12 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
             "PRQueryCacheCloseDUnitTest#testPRWithCacheCloseInOneDatastoreWithoutDelay: Calling for cache close on either of the Datastores VM1 , VM2 at random and then recreating the cache, with no delay ");
     for (int j = 0; j < queryTestCycle; j++) {
       int k = (random.nextInt(vmList.size()));
+      LogWriterUtils.getLogWriter().info("PROperationWithQueryDUnitTest#getCacheSerializableRunnableForCacheClose: Closing cache");
+      ((VM)vmList.get(k)).invoke(() -> closeCache());
+      LogWriterUtils.getLogWriter().info("PROperationWithQueryDUnitTest#getCacheSerializableRunnableForCacheClose: Cache Closed");
+      setCacheInVMs(((VM)vmList.get(k)));
       ((VM)(vmList.get(k))).invoke(PRQHelp.getCacheSerializableRunnableForCacheClose(
-          name, redundancy));
+          name, redundancy, PortfolioData.class));
     }
 
     ThreadUtils.join(async0, 5 * 60 * 1000);

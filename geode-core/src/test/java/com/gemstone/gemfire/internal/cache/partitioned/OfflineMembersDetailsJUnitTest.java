@@ -25,20 +25,17 @@ import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
 import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-/**
- *
- */
 @Category(UnitTest.class)
-public class OfflineMembersDetailsJUnitTest extends TestCase {
-  
+public class OfflineMembersDetailsJUnitTest {
+
+  @Test
   public void testSerialization() throws Exception {
     Set<PersistentMemberID>[] offlineMembers = new Set[5];
     for(int i =0; i < offlineMembers.length; i++) {

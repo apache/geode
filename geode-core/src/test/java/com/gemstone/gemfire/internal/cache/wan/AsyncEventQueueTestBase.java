@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache.wan;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
@@ -35,6 +38,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
@@ -66,10 +71,14 @@ import com.gemstone.gemfire.cache.control.RebalanceResults;
 import com.gemstone.gemfire.cache.control.ResourceManager;
 import com.gemstone.gemfire.cache.persistence.PartitionOfflineException;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache.wan.*;
+import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
+import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
+import com.gemstone.gemfire.cache.wan.GatewayReceiver;
+import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
+import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
@@ -78,16 +87,18 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
 import com.gemstone.gemfire.internal.cache.lru.Sizeable;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class AsyncEventQueueTestBase extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
 
   protected static Cache cache;
 
@@ -100,12 +111,6 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
   protected static VM vm3;
 
   protected static VM vm4;
-
-  protected static VM vm5;
-
-  protected static VM vm6;
-
-  protected static VM vm7;
 
   protected static AsyncEventListener eventListener1;
 
@@ -122,8 +127,8 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
   // list
   protected static int numDispatcherThreadsForTheRun = 1;
 
-  public AsyncEventQueueTestBase(String name) {
-    super(name);
+  public AsyncEventQueueTestBase() {
+    super();
   }
 
   @Override
@@ -134,9 +139,6 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
     vm2 = host.getVM(2);
     vm3 = host.getVM(3);
     vm4 = host.getVM(4);
-    vm5 = host.getVM(5);
-    vm6 = host.getVM(6);
-    vm7 = host.getVM(7);
   }
 
   @Override
@@ -159,31 +161,30 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
     if (Locator.hasLocator()) {
       Locator.getLocator().stop();
     }
-    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
+    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    //props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "" + dsId);
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port
+    props.setProperty(MCAST_PORT, "0");
+    //props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
+    props.setProperty(LOCATORS, "localhost[" + port
         + "]");
-    props.setProperty(DistributionConfig.START_LOCATOR_NAME, "localhost["
+    props.setProperty(START_LOCATOR, "localhost["
         + port + "],server=true,peer=true,hostname-for-clients=localhost");
     test.getSystem(props);
     return port;
   }
 
   public static Integer createFirstRemoteLocator(int dsId, int remoteLocPort) {
-    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
+    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "" + dsId);
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
+    props.setProperty(LOCATORS, "localhost[" + port
         + "]");
-    props.setProperty(DistributionConfig.START_LOCATOR_NAME, "localhost["
+    props.setProperty(START_LOCATOR, "localhost["
         + port + "],server=true,peer=true,hostname-for-clients=localhost");
-    props.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost["
-        + remoteLocPort + "]");
+    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
     test.getSystem(props);
     return port;
   }
@@ -257,12 +258,25 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
   }
 
   public static void createAsyncEventQueue(String asyncChannelId,
-      boolean isParallel, Integer maxMemory, Integer batchSize,
-      boolean isConflation, boolean isPersistent, String diskStoreName,
-      boolean isDiskSynchronous) {
-    createDiskStore(asyncChannelId, diskStoreName);
+                                           boolean isParallel, Integer maxMemory, Integer batchSize,
+                                           boolean isConflation, boolean isPersistent, String diskStoreName,
+                                           boolean isDiskSynchronous)
+  {
+    createAsyncEventQueue(asyncChannelId, isParallel, maxMemory, batchSize, isConflation, isPersistent, diskStoreName,
+      isDiskSynchronous, new MyAsyncEventListener());
+  }
 
-    AsyncEventListener asyncEventListener = new MyAsyncEventListener();
+  public static void createAsyncEventQueue(
+    String asyncChannelId,
+    boolean isParallel,
+    Integer maxMemory,
+    Integer batchSize,
+    boolean isConflation,
+    boolean isPersistent,
+    String diskStoreName,
+    boolean isDiskSynchronous,
+    final AsyncEventListener asyncEventListener) {
+    createDiskStore(asyncChannelId, diskStoreName);
 
     AsyncEventQueueFactory factory = getInitialAsyncEventQueueFactory(isParallel, maxMemory, batchSize, isPersistent, diskStoreName);
     factory.setDiskSynchronous(isDiskSynchronous);
@@ -693,19 +707,19 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
   }
 
   protected static void createCache(Integer locPort) {
-    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
+    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase();
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + locPort
         + "]");
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
   }
 
   public static void createCacheWithoutLocator(Integer mCastPort) {
-    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
+    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase();
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "" + mCastPort);
+    props.setProperty(MCAST_PORT, "" + mCastPort);
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
   }
@@ -914,10 +928,10 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
   }
 
   public static int createReceiver(int locPort) {
-    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
+    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase();
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + locPort
         + "]");
 
     InternalDistributedSystem ds = test.getSystem(props);
@@ -1386,15 +1400,20 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
     assertEquals(expectedToDataInvoations, filter.getNumToDataInvocations());
   }
 
-  public static int getAsyncEventListenerMapSize(String asyncEventQueueId) {
+  public static AsyncEventListener getAsyncEventListener(String asyncEventQueueId) {
     AsyncEventListener theListener = null;
 
     Set<AsyncEventQueue> asyncEventQueues = cache.getAsyncEventQueues();
     for (AsyncEventQueue asyncQueue : asyncEventQueues) {
       if (asyncEventQueueId.equals(asyncQueue.getId())) {
-        theListener = asyncQueue.getAsyncEventListener();
+        return asyncQueue.getAsyncEventListener();
       }
     }
+    return null;
+  }
+
+  public static int getAsyncEventListenerMapSize(String asyncEventQueueId) {
+    AsyncEventListener theListener = getAsyncEventListener(asyncEventQueueId);
 
     final Map eventsMap = ((MyAsyncEventListener)theListener).getEventsMap();
     assertNotNull(eventsMap);
@@ -1549,9 +1568,6 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
     vm2.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
     vm3.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
     vm4.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
-    vm5.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
-    vm6.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
-    vm7.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
   }
 
   public static void cleanupVM() throws IOException {
@@ -1565,7 +1581,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
       cache = null;
     }
     else {
-      AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
+      AsyncEventQueueTestBase test = new AsyncEventQueueTestBase();
       if (test.isConnectedToDS()) {
         test.getSystem().disconnect();
       }
@@ -1573,7 +1589,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
   }
 
   public static void shutdownLocator() {
-    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
+    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase();
     test.getSystem().disconnect();
   }
 
@@ -1589,7 +1605,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
     // of WANTestBase (instead of instances of the subclass). So we can't override
     // this method so that only the off-heap subclasses allocate off heap memory.
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "300m");
+    props.setProperty(OFF_HEAP_MEMORY_SIZE, "300m");
     return props;
   }
   

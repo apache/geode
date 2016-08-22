@@ -52,9 +52,9 @@ import com.gemstone.gemfire.internal.cache.BucketRegion;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation;
-import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
+import com.gemstone.gemfire.internal.cache.VersionTagHolder;
 import com.gemstone.gemfire.internal.cache.tier.InterestType;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
@@ -64,7 +64,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 
 /**
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 public final class FetchBulkEntriesMessage extends PartitionMessage
   {
@@ -296,10 +296,9 @@ public final class FetchBulkEntriesMessage extends PartitionMessage
 
           while (it.hasNext()) {
             Object key = it.next();
-            EntryEventImpl clientEvent = EntryEventImpl
-                .createVersionTagHolder();
+            VersionTagHolder clientEvent = new VersionTagHolder();
             Object value = map.get(key, null, true, true, true, null,
-                clientEvent, allowTombstones, false);
+                clientEvent, allowTombstones);
 
             if (needToWriteBucketInfo) {
               DataSerializer.writePrimitiveInt(map.getId(), mos);
@@ -477,7 +476,7 @@ public final class FetchBulkEntriesMessage extends PartitionMessage
   /**
    * A processor to capture the value returned by {@link 
    * com.gemstone.gemfire.internal.cache.partitioned.FetchBulkEntriesMessage}
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public static class FetchBulkEntriesResponse extends ReplyProcessor21  {
 
@@ -523,8 +522,6 @@ public final class FetchBulkEntriesMessage extends PartitionMessage
         try {
           ByteArrayInputStream byteStream = new ByteArrayInputStream(msg.chunk);
           DataInputStream in = new DataInputStream(byteStream);
-          final boolean requiresRegionContext = this.pr
-              .keyRequiresRegionContext();
           Object key;
           int currentId;
 
@@ -538,9 +535,6 @@ public final class FetchBulkEntriesMessage extends PartitionMessage
               deserializingKey = true;
               key = DataSerializer.readObject(in);
               if (key != null) {
-                if (requiresRegionContext) {
-                  ((KeyWithRegionContext) key).setRegionContext(this.pr);
-                }
                 deserializingKey = false;
                 Object value = DataSerializer.readObject(in);
                 VersionTag versionTag = DataSerializer.readObject(in);

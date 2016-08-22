@@ -24,7 +24,7 @@ import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.Preproce
 /**
  * Option of a Command
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
 public class Option extends Parameter {
@@ -124,7 +124,7 @@ public class Option extends Parameter {
     return true;
   }
 
-  public final List<String> getAggregate() {
+  public List<String> getAggregate() {
     return aggregate;
   }
 

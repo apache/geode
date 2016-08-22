@@ -40,7 +40,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * This class processes the message to be delivered to admin node.
  * [This needs to be redesigned and reimplemented... see 32887]
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class SystemMemberCacheEventProcessor {
   private static final Logger logger = LogService.getLogger();

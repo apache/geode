@@ -16,51 +16,34 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.File;
-import java.net.InetAddress;
-import java.util.Properties;
-
+import com.gemstone.gemfire.GemFireConfigException;
+import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.internal.*;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil;
+import com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig;
+import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
+import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.JoinLeave;
+import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messages.*;
+import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.apache.logging.log4j.Level;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.SerialAckedMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil;
-import com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig;
-import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
-import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.JoinLeave;
-import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.HeartbeatMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.InstallViewMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRequestMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.LeaveRequestMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.RemoveMemberMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectMembersMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.ViewAckMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.net.InetAddress;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.*;
 
 @Category(IntegrationTest.class)
 public class MembershipJUnitTest {
@@ -116,13 +99,13 @@ public class MembershipJUnitTest {
 
       // create configuration objects
       Properties nonDefault = new Properties();
-      nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
-      nonDefault.put(DistributionConfig.MCAST_PORT_NAME, String.valueOf(mcastPort));
-      nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
-      nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
-      nonDefault.put(DistributionConfig.GROUPS_NAME, "red, blue");
-      nonDefault.put(DistributionConfig.MEMBER_TIMEOUT_NAME, "2000");
-      nonDefault.put(DistributionConfig.LOCATORS_NAME, localHost.getHostName()+'['+port+']');
+      nonDefault.put(DISABLE_TCP, "true");
+      nonDefault.put(MCAST_PORT, String.valueOf(mcastPort));
+      nonDefault.put(LOG_FILE, "");
+      nonDefault.put(LOG_LEVEL, "fine");
+      nonDefault.put(GROUPS, "red, blue");
+      nonDefault.put(MEMBER_TIMEOUT, "2000");
+      nonDefault.put(LOCATORS, localHost.getHostName() + '[' + port + ']');
       DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
       RemoteTransportConfig transport = new RemoteTransportConfig(config,
           DistributionManager.NORMAL_DM_TYPE);
@@ -221,7 +204,7 @@ public class MembershipJUnitTest {
   public void testJoinTimeoutSetting() throws Exception {
     long timeout = 30000;
     Properties nonDefault = new Properties();
-    nonDefault.put(DistributionConfig.MEMBER_TIMEOUT_NAME, ""+timeout);
+    nonDefault.put(MEMBER_TIMEOUT, ""+timeout);
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     RemoteTransportConfig transport = new RemoteTransportConfig(config,
         DistributionManager.NORMAL_DM_TYPE);
@@ -237,7 +220,7 @@ public class MembershipJUnitTest {
     
 
     nonDefault.clear();
-    nonDefault.put(DistributionConfig.LOCATORS_NAME, SocketCreator.getLocalHost().getHostAddress()+"["+12345+"]");
+    nonDefault.put(LOCATORS, SocketCreator.getLocalHost().getHostAddress() + "[" + 12345 + "]");
     config = new DistributionConfigImpl(nonDefault);
     transport = new RemoteTransportConfig(config,
         DistributionManager.NORMAL_DM_TYPE);
@@ -262,11 +245,11 @@ public class MembershipJUnitTest {
   @Test
   public void testMulticastDiscoveryNotAllowed() {
     Properties nonDefault = new Properties();
-    nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
-    nonDefault.put(DistributionConfig.MCAST_PORT_NAME, "12345");
-    nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
-    nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
-    nonDefault.put(DistributionConfig.LOCATORS_NAME, "");
+    nonDefault.put(DISABLE_TCP, "true");
+    nonDefault.put(MCAST_PORT, "12345");
+    nonDefault.put(LOG_FILE, "");
+    nonDefault.put(LOG_LEVEL, "fine");
+    nonDefault.put(LOCATORS, "");
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     RemoteTransportConfig transport = new RemoteTransportConfig(config,
         DistributionManager.NORMAL_DM_TYPE);

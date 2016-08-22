@@ -36,6 +36,7 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation.PutAllEntryData;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  * 
@@ -46,7 +47,13 @@ public class DistTxEntryEvent extends EntryEventImpl {
   protected static final byte HAS_PUTALL_OP = 0x1;
   protected static final byte HAS_REMOVEALL_OP = 0x2;
 
-  // For Serialization
+  /**
+   * TODO DISTTX: callers of this constructor need to
+   * make sure that release is called. In general
+   * the distributed tx code needs to be reviewed to
+   * see if it correctly handles off-heap.
+   */
+  @Retained
   public DistTxEntryEvent(EntryEventImpl entry) {
     super(entry);
   }
@@ -131,12 +138,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
     EntryVersionsList versionTags = new EntryVersionsList(
         this.putAllOp.putAllDataSize);
     boolean hasTags = false;
-    // get the "keyRequiresRegionContext" flag from first element assuming
-    // all key objects to be uniform
     final PutAllEntryData[] putAllData = this.putAllOp.getPutAllEntryData();
-    // final boolean requiresRegionContext =
-    // (putAllData[0].key instanceof KeyWithRegionContext);
-    final boolean requiresRegionContext = false;
     for (int i = 0; i < this.putAllOp.putAllDataSize; i++) {
       if (!hasTags && putAllData[i].versionTag != null) {
         hasTags = true;
@@ -144,7 +146,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
       VersionTag<?> tag = putAllData[i].versionTag;
       versionTags.add(tag);
       putAllData[i].versionTag = null;
-      putAllData[i].toData(out, requiresRegionContext);
+      putAllData[i].toData(out);
       putAllData[i].versionTag = tag;
     }
     out.writeBoolean(hasTags);
@@ -179,7 +181,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
         }
       }
     }
-    
+    // TODO DISTTX: release this event?
     EntryEventImpl e = EntryEventImpl.create(
         this.region, Operation.PUTALL_CREATE,
         null, null, null, true, this.getDistributedMember(), true, true);
@@ -199,13 +201,8 @@ public class DistTxEntryEvent extends EntryEventImpl {
         this.removeAllOp.removeAllDataSize);
   
     boolean hasTags = false;
-    // get the "keyRequiresRegionContext" flag from first element assuming
-    // all key objects to be uniform
-    // final boolean requiresRegionContext =
-    // (this.removeAllData[0].key instanceof KeyWithRegionContext);
     final RemoveAllEntryData[] removeAllData = this.removeAllOp
         .getRemoveAllEntryData();
-    final boolean requiresRegionContext = false;
     for (int i = 0; i < this.removeAllOp.removeAllDataSize; i++) {
       if (!hasTags && removeAllData[i].versionTag != null) {
         hasTags = true;
@@ -213,7 +210,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
       VersionTag<?> tag = removeAllData[i].versionTag;
       versionTags.add(tag);
       removeAllData[i].versionTag = null;
-      removeAllData[i].toData(out, requiresRegionContext);
+      removeAllData[i].toData(out);
       removeAllData[i].versionTag = tag;
     }
     out.writeBoolean(hasTags);
@@ -246,7 +243,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
         removeAllData[i].versionTag = versionTags.get(i);
       }
     }
-    
+    // TODO DISTTX: release this event
     EntryEventImpl e = EntryEventImpl.create(
         this.region, Operation.REMOVEALL_DESTROY,
         null, null, null, true, this.getDistributedMember(), true, true);

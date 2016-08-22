@@ -42,7 +42,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
 public class GatewaySenderFactoryImpl implements
@@ -179,10 +179,6 @@ public class GatewaySenderFactoryImpl implements
   
   public GatewaySenderFactory setBucketSorted(boolean isBucketSorted){
     this.attrs.isBucketSorted = isBucketSorted;
-    return this;
-  }
-  public GatewaySenderFactory setIsHDFSQueue(boolean isHDFSQueue){
-    this.attrs.isHDFSQueue = isHDFSQueue;
     return this;
   }
   public GatewaySender create(String id, int remoteDSId) {

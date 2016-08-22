@@ -16,6 +16,16 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -43,7 +53,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  *
  */
-public class GIIFlowControlDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
   
   protected static final String REGION_NAME = "region";
   private static final long MAX_WAIT = 10 * 1000;
@@ -53,8 +64,8 @@ public class GIIFlowControlDUnitTest extends CacheTestCase {
   /**
    * @param name
    */
-  public GIIFlowControlDUnitTest(String name) {
-    super(name);
+  public GIIFlowControlDUnitTest() {
+    super();
   }
 
   @Override
@@ -67,6 +78,7 @@ public class GIIFlowControlDUnitTest extends CacheTestCase {
     });
   }
   
+  @Test
   public void testLotsOfChunks() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -88,6 +100,7 @@ public class GIIFlowControlDUnitTest extends CacheTestCase {
     
   }
   
+  @Test
   public void testFlowControlHappening() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -157,6 +170,7 @@ public class GIIFlowControlDUnitTest extends CacheTestCase {
     closeCache(vm0);
   }
   
+  @Test
   public void testKillSenderNoHang() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -226,13 +240,17 @@ public class GIIFlowControlDUnitTest extends CacheTestCase {
   
   // DISABLED due to high failure rate due, apparently, to problems
   // with the flow-control statistics.  See internal ticket #52221
-  public void disabledtestCloseReceiverCacheNoHang() throws Throwable {
+  @Ignore
+  @Test
+  public void testCloseReceiverCacheNoHang() throws Throwable {
     doCloseTest(false);
   }
   
   // DISABLED due to high failure rate due, apparently, to problems
   // with the flow-control statistics.  See internal ticket #52221
-  public void disabledtestDisconnectReceiverNoHang() throws Throwable {
+  @Ignore
+  @Test
+  public void testDisconnectReceiverNoHang() throws Throwable {
     doCloseTest(true);
   }
   

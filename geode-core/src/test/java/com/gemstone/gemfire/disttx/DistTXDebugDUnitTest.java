@@ -47,6 +47,8 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -879,7 +881,6 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
 //    accessor.invoke(TxOps);
   }
 
-  
   public void performTXRRtestOps(boolean makeDatNodeAsCoordinator) {
     createCacheInAllVms();
     Object[] prAttrs = new Object[] { "pregion1", 1, null, 3, null,

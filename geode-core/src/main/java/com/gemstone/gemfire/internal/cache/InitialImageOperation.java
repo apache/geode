@@ -17,62 +17,19 @@
 
 package com.gemstone.gemfire.internal.cache;
 
-import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ABSTRACT_REGION_ENTRY_FILL_IN_VALUE;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.cache.DiskAccessException;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.query.internal.CqStateImpl;
 import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
-import com.gemstone.gemfire.cache.query.internal.IndexUpdater;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
-import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
 import com.gemstone.gemfire.cache.query.internal.cq.ServerCQ;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.HighPriorityDistributionMessage;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.MessageWithReply;
-import com.gemstone.gemfire.distributed.internal.ReplyException;
-import com.gemstone.gemfire.distributed.internal.ReplyMessage;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.ByteArrayDataInput;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.NullDataOutputStream;
-import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.cache.InitialImageFlowControl.FlowControlPermitMessage;
 import com.gemstone.gemfire.internal.cache.ha.HAContainerWrapper;
 import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
@@ -81,13 +38,7 @@ import com.gemstone.gemfire.internal.cache.tier.InterestType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.cache.versions.DiskRegionVersionVector;
-import com.gemstone.gemfire.internal.cache.versions.DiskVersionTag;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionHolder;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
-import com.gemstone.gemfire.internal.cache.versions.VersionSource;
-import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import com.gemstone.gemfire.internal.cache.versions.*;
 import com.gemstone.gemfire.internal.cache.vmotion.VMotionObserverHolder;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -96,10 +47,15 @@ import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
-import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
 import com.gemstone.gemfire.internal.sequencelog.RegionLogger;
 import com.gemstone.gemfire.internal.util.ObjectIntProcedure;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Handles requests for an initial image from a cache peer
@@ -123,19 +79,19 @@ public class InitialImageOperation  {
    * Allowed number of in flight GII chunks
    */
   public static int CHUNK_PERMITS =
-    Integer.getInteger("gemfire.GetInitialImage.CHUNK_PERMITS", 16).intValue();
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "GetInitialImage.CHUNK_PERMITS", 16).intValue();
 
   /**
    * maximum number of unfinished operations to be supported by delta GII
    */
   public static int MAXIMUM_UNFINISHED_OPERATIONS =
-    Integer.getInteger("gemfire.GetInitialImage.MAXIMUM_UNFINISHED_OPERATIONS", 10000).intValue();
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "GetInitialImage.MAXIMUM_UNFINISHED_OPERATIONS", 10000).intValue();
 
   /**
    * Allowed number GIIs in parallel
    */
   public static int MAX_PARALLEL_GIIS =
-    Integer.getInteger("gemfire.GetInitialImage.MAX_PARALLEL_GIIS", 5).intValue();
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "GetInitialImage.MAX_PARALLEL_GIIS", 5).intValue();
   
   /**
    * the region we are fetching
@@ -548,7 +504,7 @@ public class InitialImageOperation  {
           //Make sure we have applied the tombstone GC as seen on the GII
           //source
           if(this.gcVersions != null) {
-            region.getGemFireCache().getTombstoneService().gcTombstones(region, this.gcVersions);
+            region.getGemFireCache().getTombstoneService().gcTombstones(region, this.gcVersions, false);
           }
           
           if (this.gotImage) {
@@ -807,10 +763,6 @@ public class InitialImageOperation  {
       if (entryCount <= 1000 && isDebugEnabled) {
         keys = new HashSet();
       }
-      final boolean keyRequiresRegionContext = this.region
-          .keyRequiresRegionContext();
-      // get SQLF index manager for the case of recovery from disk
-      final IndexUpdater indexUpdater = this.region.getIndexUpdater();
       final ByteArrayDataInput in = new ByteArrayDataInput();
       for (int i = 0; i < entryCount; i++) {
         // stream is null-terminated
@@ -859,33 +811,7 @@ public class InitialImageOperation  {
         Object tmpValue = entry.value;
         byte[] tmpBytes = null;
 
-        if (keyRequiresRegionContext) {
-          final KeyWithRegionContext key = (KeyWithRegionContext)entry.key;
-          Object keyObject = tmpValue;
-          if (tmpValue != null) {
-            if (entry.isEagerDeserialize()) {
-              tmpValue = CachedDeserializableFactory.create(tmpValue,
-                  CachedDeserializableFactory.getArrayOfBytesSize(
-                      (byte[][])tmpValue, true));
-              entry.setSerialized(false);
-            }
-            else if (entry.isSerialized()) {
-              tmpBytes = (byte[])tmpValue;
-              // force deserialization for passing to key
-              keyObject = EntryEventImpl.deserialize(tmpBytes,
-                  remoteVersion, in);
-              tmpValue = CachedDeserializableFactory.create(keyObject,
-                  CachedDeserializableFactory.getByteSize(tmpBytes));
-              entry.setSerialized(false);
-            }
-            else {
-              tmpBytes = (byte[])tmpValue;
-            }
-          }
-          key.setRegionContext(this.region);
-          entry.key = key.afterDeserializationWithValue(keyObject);
-        }
-        else {
+        {
           if (tmpValue instanceof byte[]) {
             tmpBytes = (byte[])tmpValue;
           }
@@ -922,32 +848,6 @@ public class InitialImageOperation  {
                 //actually are equal, keep don't put the received
                 //entry into the cache (this avoids writing a record to disk)
                 if(entriesEqual) {
-                  // explicit SQLF index maintenance here since
-                  // it was not done during recovery from disk
-                  if (indexUpdater != null && !Token.isInvalidOrRemoved(tmpValue)) {
-                    boolean success = false;
-                    if (entry.isSerialized()) {
-                      tmpValue = CachedDeserializableFactory
-                          .create((byte[])tmpValue);
-                    }
-                    // dummy EntryEvent to pass for SQLF index maintenance
-                    final EntryEventImpl ev = EntryEventImpl.create(this.region,
-                        Operation.CREATE, null, null, null, true, null, false, false);
-                    try {
-                    ev.setKeyInfo(this.region.getKeyInfo(entry.key,
-                        tmpValue, null));
-                    ev.setNewValue(tmpValue);
-                    try {
-                      indexUpdater.onEvent(this.region, ev, re);
-                      success = true;
-                    } finally {
-                      indexUpdater.postEvent(this.region, ev, re,
-                          success);
-                    }
-                    } finally {
-                      ev.release();
-                    }
-                  }
                   continue;
                 }
                 if (entry.isSerialized() && !Token.isInvalidOrRemoved(tmpValue)) {
@@ -1737,7 +1637,7 @@ public class InitialImageOperation  {
               }
             }
             if (this.checkTombstoneVersions && this.versionVector != null && rgn.concurrencyChecksEnabled) {
-              synchronized(rgn.getCache().getTombstoneService().blockGCLock) {
+              synchronized(rgn.getCache().getTombstoneService().getBlockGCLock()) {
               if (goWithFullGII(rgn, this.versionVector)) {
                 if (isGiiDebugEnabled) {
                   logger.trace(LogMarker.GII, "have to do fullGII");
@@ -1907,7 +1807,6 @@ public class InitialImageOperation  {
 
       List chunkEntries = null;
       chunkEntries = new InitialImageVersionedEntryList(rgn.concurrencyChecksEnabled, MAX_ENTRIES_PER_CHUNK);
-      final boolean keyRequiresRegionContext = rgn.keyRequiresRegionContext();
       DiskRegion dr = rgn.getDiskRegion();
       if( dr!=null ){
         dr.setClearCountReference();
@@ -1969,9 +1868,6 @@ public class InitialImageOperation  {
                     entry = new InitialImageOperation.Entry();
                     entry.key = key;
                     entry.setVersionTag(stamp.asVersionTag());
-                    if (keyRequiresRegionContext) {
-                      entry.setEagerDeserialize();
-                    }
                     fillRes = mapEntry.fillInValue(rgn, entry, in, rgn.getDistributionManager());
                     if (versionVector != null) {
                       if (logger.isTraceEnabled(LogMarker.GII)) {
@@ -1982,9 +1878,6 @@ public class InitialImageOperation  {
                 } else {
                   entry = new InitialImageOperation.Entry();
                   entry.key = key;
-                  if (keyRequiresRegionContext) {
-                    entry.setEagerDeserialize();
-                  }
                   fillRes = mapEntry.fillInValue(rgn, entry, in, rgn.getDistributionManager());
                 }
               }
@@ -2003,11 +1896,6 @@ public class InitialImageOperation  {
               entry.setLocalInvalid();
               entry.setLastModified(rgn.getDistributionManager(), mapEntry
                   .getLastModified());
-            }
-            if (keyRequiresRegionContext) {
-              entry.key = ((KeyWithRegionContext)key)
-                  .beforeSerializationWithValue(entry.isInvalid()
-                      || entry.isLocalInvalid());
             }
 
             chunkEntries.add(entry);
@@ -2995,18 +2883,6 @@ public class InitialImageOperation  {
       this.entryBits = EntryBits.setSerialized(this.entryBits, isSerialized);
     }
 
-    public boolean isEagerDeserialize() {
-      return EntryBits.isEagerDeserialize(this.entryBits);
-    }
-
-    void setEagerDeserialize() {
-      this.entryBits = EntryBits.setEagerDeserialize(this.entryBits);
-    }
-
-    void clearEagerDeserialize() {
-      this.entryBits = EntryBits.clearEagerDeserialize(this.entryBits);
-    }
-
     public boolean isInvalid() {
       return (this.value == null) && !EntryBits.isLocalInvalid(this.entryBits);
     }
@@ -3048,12 +2924,7 @@ public class InitialImageOperation  {
       out.writeByte(flags);
       DataSerializer.writeObject(this.key, out);
       if (!EntryBits.isTombstone(this.entryBits)) {
-        if (!isEagerDeserialize()) {
-          DataSerializer.writeObjectAsByteArray(this.value, out);
-        }
-        else {
-          DataSerializer.writeArrayOfByteArrays((byte[][])this.value, out);
-        }
+        DataSerializer.writeObjectAsByteArray(this.value, out);
       }
       out.writeLong(this.lastModified);
       if (this.versionTag != null) {
@@ -3073,11 +2944,7 @@ public class InitialImageOperation  {
       if (EntryBits.isTombstone(this.entryBits)) {
         this.value = Token.TOMBSTONE;
       } else {
-        if (!isEagerDeserialize()) {
-          this.value = DataSerializer.readByteArray(in);
-        } else {
-          this.value = DataSerializer.readArrayOfByteArrays(in);
-        }
+        this.value = DataSerializer.readByteArray(in);
       }
       this.lastModified = in.readLong();
       if ((flags & HAS_VERSION) != 0) {
@@ -4027,8 +3894,8 @@ public class InitialImageOperation  {
     
   }
 
-  public static final boolean TRACE_GII = Boolean.getBoolean("gemfire.GetInitialImage.TRACE_GII");
-  public static boolean FORCE_FULL_GII = Boolean.getBoolean("gemfire.GetInitialImage.FORCE_FULL_GII");
+  public static final boolean TRACE_GII = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "GetInitialImage.TRACE_GII");
+  public static boolean FORCE_FULL_GII = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "GetInitialImage.FORCE_FULL_GII");
 
   // test hooks should be applied and waited in strict order as following
   

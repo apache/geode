@@ -38,7 +38,7 @@ import java.util.Properties;
  * @see AdminDistributedSystem#addDistributionLocator
  * @see com.gemstone.gemfire.distributed.Locator
  *
- * @since 4.0
+ * @since GemFire 4.0
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface DistributionLocatorConfig
@@ -74,14 +74,14 @@ public interface DistributionLocatorConfig
   /**
    * Sets the properties used to configure the locator's
    * DistributedSystem.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void setDistributedSystemProperties(Properties props);
   
   /**
    * Retrieves the properties used to configure the locator's
    * DistributedSystem.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public Properties getDistributedSystemProperties();
 

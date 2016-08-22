@@ -16,30 +16,31 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.wancommand;
 
-import hydra.Log;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
+import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderException;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+
+@Category(DistributedTest.class)
 public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
   
   private static final long serialVersionUID = 1L;
-  
-  public WanCommandCreateGatewaySenderDUnitTest(String name) {
-    super(name);
-  }
 
   private CommandResult executeCommandWithIgnoredExceptions(String command) {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
@@ -55,21 +56,22 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
   /**
    * GatewaySender with all default attributes
    */
+  @Test
   public void testCreateGatewaySenderWithDefault() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm4.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm5.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm3.invoke(() -> createCache( punePort ));
+    vm4.invoke(() -> createCache( punePort ));
+    vm5.invoke(() -> createCache( punePort ));
 
     String command = CliStrings.CREATE_GATEWAYSENDER + " --"
         + CliStrings.CREATE_GATEWAYSENDER__ID + "=ln" 
@@ -77,7 +79,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -92,32 +94,33 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
       fail("testCreateGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
         "ln", true, false ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm4.invoke(() -> verifySenderState(
         "ln", true, false ));
-    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm5.invoke(() -> verifySenderState(
         "ln", true, false ));
   }
   
   /**
    * GatewaySender with given attribute values
    */
+  @Test
   public void testCreateGatewaySender() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm4.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm5.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm3.invoke(() -> createCache( punePort ));
+    vm4.invoke(() -> createCache( punePort ));
+    vm5.invoke(() -> createCache( punePort ));
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT+1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --"
@@ -139,7 +142,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -154,18 +157,18 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
       fail("testCreateGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
         "ln", false, false ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm4.invoke(() -> verifySenderState(
         "ln", false, false ));
-    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm5.invoke(() -> verifySenderState(
         "ln", false, false ));
     
-    vm3.invoke(() -> WANCommandTestBase.verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
+    vm3.invoke(() -> verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
             true, false, 1000, 100, 2, OrderPolicy.THREAD, null, null ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
+    vm4.invoke(() -> verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
             true, false, 1000, 100, 2, OrderPolicy.THREAD, null, null ));
-    vm5.invoke(() -> WANCommandTestBase.verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
+    vm5.invoke(() -> verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
             true, false, 1000, 100, 2, OrderPolicy.THREAD, null, null ));
   }
 
@@ -174,21 +177,22 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
    * Error scenario where dispatcher threads is set to more than 1 and 
    * no order policy provided.
    */
+  @Test
   public void testCreateGatewaySender_Error() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm4.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm5.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm3.invoke(() -> createCache( punePort ));
+    vm4.invoke(() -> createCache( punePort ));
+    vm5.invoke(() -> createCache( punePort ));
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT+1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --"
@@ -209,7 +213,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -226,25 +230,25 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
 
   }
 
-  
   /**
    * GatewaySender with given attribute values and event filters.
    */
+  @Test
   public void testCreateGatewaySenderWithGatewayEventFilters() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm4.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm5.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm3.invoke(() -> createCache( punePort ));
+    vm4.invoke(() -> createCache( punePort ));
+    vm5.invoke(() -> createCache( punePort ));
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT+1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --"
@@ -268,7 +272,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -283,42 +287,43 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
       fail("testCreateGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
         "ln", false, false ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm4.invoke(() -> verifySenderState(
         "ln", false, false ));
-    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm5.invoke(() -> verifySenderState(
         "ln", false, false ));
     
     List<String> eventFilters = new ArrayList<String>();
     eventFilters.add("com.gemstone.gemfire.cache30.MyGatewayEventFilter1");
     eventFilters.add("com.gemstone.gemfire.cache30.MyGatewayEventFilter2");
-    vm3.invoke(() -> WANCommandTestBase.verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
+    vm3.invoke(() -> verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
             true, false, 1000, 100, 2, OrderPolicy.THREAD, eventFilters, null ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
+    vm4.invoke(() -> verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
             true, false, 1000, 100, 2, OrderPolicy.THREAD, eventFilters, null ));
-    vm5.invoke(() -> WANCommandTestBase.verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
+    vm5.invoke(() -> verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
             true, false, 1000, 100, 2, OrderPolicy.THREAD, eventFilters, null ));
   }
 
   /**
    * GatewaySender with given attribute values and transport filters.
    */
+  @Test
   public void testCreateGatewaySenderWithGatewayTransportFilters() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer punePort = (Integer) vm1.invoke(() ->createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm4.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm5.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm3.invoke(() -> createCache( punePort ));
+    vm4.invoke(() -> createCache( punePort ));
+    vm5.invoke(() -> createCache( punePort ));
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT+1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --"
@@ -341,7 +346,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -356,43 +361,44 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
       fail("testCreateGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
         "ln", false, false ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm4.invoke(() -> verifySenderState(
         "ln", false, false ));
-    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm5.invoke(() -> verifySenderState(
         "ln", false, false ));
     
     List<String> transportFilters = new ArrayList<String>();
     transportFilters.add("com.gemstone.gemfire.cache30.MyGatewayTransportFilter1");
-    vm3.invoke(() -> WANCommandTestBase.verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
+    vm3.invoke(() -> verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
             true, false, 1000, 100, 2, OrderPolicy.THREAD, null, transportFilters ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
+    vm4.invoke(() -> verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
             true, false, 1000, 100, 2, OrderPolicy.THREAD, null, transportFilters ));
-    vm5.invoke(() -> WANCommandTestBase.verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
+    vm5.invoke(() -> verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
             true, false, 1000, 100, 2, OrderPolicy.THREAD, null, transportFilters ));
   }
 
   /**
    * GatewaySender with given attribute values on given member.
    */
+  @Test
   public void testCreateGatewaySender_OnMember() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm4.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm5.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm3.invoke(() -> createCache( punePort ));
+    vm4.invoke(() -> createCache( punePort ));
+    vm5.invoke(() -> createCache( punePort ));
     
-    final DistributedMember vm3Member = (DistributedMember) vm3.invoke(() -> WANCommandTestBase.getMember());
+    final DistributedMember vm3Member = (DistributedMember) vm3.invoke(() -> getMember());
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT+1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --"
@@ -415,7 +421,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -430,31 +436,32 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
       fail("testCreateGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
         "ln", false, false ));
     
-    vm3.invoke(() -> WANCommandTestBase.verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
+    vm3.invoke(() -> verifySenderAttributes( "ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000,
             true, false, 1000, 100, 2, OrderPolicy.THREAD, null, null ));
   }
 
   /**
    * GatewaySender with given attribute values on given group
    */
+  @Test
   public void testCreateGatewaySender_Group() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCacheWithGroups( punePort, "SenderGroup1" ));
-    vm4.invoke(() -> WANCommandTestBase.createCacheWithGroups( punePort, "SenderGroup1" ));
-    vm5.invoke(() -> WANCommandTestBase.createCacheWithGroups( punePort, "SenderGroup1" ));
+    vm3.invoke(() -> createCacheWithGroups( punePort, "SenderGroup1" ));
+    vm4.invoke(() -> createCacheWithGroups( punePort, "SenderGroup1" ));
+    vm5.invoke(() -> createCacheWithGroups( punePort, "SenderGroup1" ));
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT+1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --"
@@ -477,7 +484,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -492,11 +499,11 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
       fail("testCreateGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
         "ln", true, false ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm4.invoke(() -> verifySenderState(
         "ln", true, false ));
-    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm5.invoke(() -> verifySenderState(
         "ln", true, false ));
   }
   
@@ -504,21 +511,22 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
    * GatewaySender with given attribute values on given group.
    * Only 2 of 3 members are part of the group.
    */
+  @Test
   public void testCreateGatewaySender_Group_Scenario2() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCacheWithGroups( punePort, "SenderGroup1" ));
-    vm4.invoke(() -> WANCommandTestBase.createCacheWithGroups( punePort, "SenderGroup1" ));
-    vm5.invoke(() -> WANCommandTestBase.createCacheWithGroups( punePort, "SenderGroup2" ));
+    vm3.invoke(() -> createCacheWithGroups( punePort, "SenderGroup1" ));
+    vm4.invoke(() -> createCacheWithGroups( punePort, "SenderGroup1" ));
+    vm5.invoke(() -> createCacheWithGroups( punePort, "SenderGroup2" ));
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT+1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --"
@@ -541,7 +549,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -556,30 +564,31 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
       fail("testCreateGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
         "ln", true, false ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm4.invoke(() -> verifySenderState(
         "ln", true, false ));
   }
   
   /**
    * Parallel GatewaySender with given attribute values
    */
+  @Test
   public void testCreateParallelGatewaySender() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm4.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm5.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm3.invoke(() -> createCache( punePort ));
+    vm4.invoke(() -> createCache( punePort ));
+    vm5.invoke(() -> createCache( punePort ));
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT+1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --"
@@ -599,7 +608,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -614,18 +623,18 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
       fail("testCreateGatewaySender failed as did not get CommandResult");
     }
 
-    vm3.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm3.invoke(() -> verifySenderState(
         "ln", false, false ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm4.invoke(() -> verifySenderState(
         "ln", false, false ));
-    vm5.invoke(() -> WANCommandTestBase.verifySenderState(
+    vm5.invoke(() -> verifySenderState(
         "ln", false, false ));
     
-    vm3.invoke(() -> WANCommandTestBase.verifySenderAttributes( "ln", 2, true, true, 1000, socketReadTimeout, true, 1000, 5000,
+    vm3.invoke(() -> verifySenderAttributes( "ln", 2, true, true, 1000, socketReadTimeout, true, 1000, 5000,
             true, false, 1000, 100, GatewaySender.DEFAULT_DISPATCHER_THREADS, null, null, null ));
-    vm4.invoke(() -> WANCommandTestBase.verifySenderAttributes( "ln", 2, true, true, 1000, socketReadTimeout, true, 1000, 5000,
+    vm4.invoke(() -> verifySenderAttributes( "ln", 2, true, true, 1000, socketReadTimeout, true, 1000, 5000,
             true, false, 1000, 100, GatewaySender.DEFAULT_DISPATCHER_THREADS, null, null, null ));
-    vm5.invoke(() -> WANCommandTestBase.verifySenderAttributes( "ln", 2, true, true, 1000, socketReadTimeout, true, 1000, 5000,
+    vm5.invoke(() -> verifySenderAttributes( "ln", 2, true, true, 1000, socketReadTimeout, true, 1000, 5000,
             true, false, 1000, 100, GatewaySender.DEFAULT_DISPATCHER_THREADS, null, null, null ));
   }
   
@@ -633,22 +642,23 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
    * Parallel GatewaySender with given attribute values.
    * Provide dispatcherThreads as 2 which is not valid for Parallel sender.
    */
+  @Test
   public void testCreateParallelGatewaySender_Error() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
+    props.setProperty(LOCATORS, "localhost[" + punePort
         + "]");
-    createDefaultSetup(props);
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm4.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm5.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm3.invoke(() -> createCache( punePort ));
+    vm4.invoke(() -> createCache( punePort ));
+    vm5.invoke(() -> createCache( punePort ));
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT+1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --"
@@ -673,7 +683,7 @@ public class WanCommandCreateGatewaySenderDUnitTest extends WANCommandTestBase {
       CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
       if (cmdResult != null) {
         String strCmdResult = commandResultToString(cmdResult);
-        Log.getLogWriter().info(
+        getLogWriter().info(
             "testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
         assertEquals(Result.Status.OK, cmdResult.getStatus());
 

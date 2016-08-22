@@ -16,80 +16,23 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.ConcurrentModificationException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Queue;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.CustomExpiry;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.MirrorType;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.query.CqQuery;
+import com.gemstone.gemfire.*;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.query.internal.CqQueryVsdStats;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.internal.cache.Conflatable;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.HARegion;
-import com.gemstone.gemfire.internal.cache.RegionQueue;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientMarkerMessageImpl;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessage;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessageImpl;
+import com.gemstone.gemfire.internal.cache.*;
+import com.gemstone.gemfire.internal.cache.tier.sockets.*;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOp;
-import com.gemstone.gemfire.internal.cache.tier.sockets.HAEventWrapper;
-import com.gemstone.gemfire.internal.cache.tier.sockets.HandShake;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
@@ -98,7 +41,18 @@ import com.gemstone.gemfire.internal.util.concurrent.StoppableCondition;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableWriteLock;
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * An implementation of Queue using Gemfire Region as the underlying
@@ -131,7 +85,7 @@ import com.gemstone.gemfire.i18n.StringId;
  * (See BlockingHARegionQueue)
  * 
  * 
- * @since 4.3
+ * @since GemFire 4.3
  * 
  */
 public class HARegionQueue implements RegionQueue
@@ -268,7 +222,7 @@ public class HARegionQueue implements RegionQueue
   /**
    * Constant used to set region entry expiry time using system property.
    */
-  public static final String REGION_ENTRY_EXPIRY_TIME = "gemfire.MessageTimeToLive";
+  public static final String REGION_ENTRY_EXPIRY_TIME = DistributionConfig.GEMFIRE_PREFIX + "MessageTimeToLive";
   
   /**
    * The default frequency (in seconds) at which a message will be sent by the
@@ -304,13 +258,13 @@ public class HARegionQueue implements RegionQueue
   
   private final CancelCriterion stopper;
   
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   protected byte clientConflation = HandShake.CONFLATION_DEFAULT;
   
   /**
    *  Boolean to indicate whether client is a slow receiver 
    * 
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public boolean isClientSlowReciever = false;
   
@@ -322,7 +276,7 @@ public class HARegionQueue implements RegionQueue
   /**
    * Test hooks for periodic ack
    * 
-   * @since 6.0
+   * @since GemFire 6.0
    */
   static boolean testMarkerMessageRecieved = false;
   static boolean isUsedByTest = false;
@@ -567,7 +521,7 @@ public class HARegionQueue implements RegionQueue
    * 
    * @param val
    * @throws InterruptedException
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected void putInQueue(Object val) throws InterruptedException {
     if (val instanceof HAEventWrapper
@@ -584,7 +538,7 @@ public class HARegionQueue implements RegionQueue
 
   /** 
    * Check whether to conflate an event
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected boolean shouldBeConflated(Conflatable event) {
     boolean retVal = event.shouldBeConflated();
@@ -2228,7 +2182,7 @@ public class HARegionQueue implements RegionQueue
    * @throws ClassNotFoundException
    * @throws CacheException
    * @throws InterruptedException
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static HARegionQueue getHARegionQueueInstance(String regionName,
       Cache cache, HARegionQueueAttributes hrqa, final int haRgnQType,
@@ -2878,7 +2832,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
      * @throws ClassNotFoundException
      * @throws CacheException
      * @throws InterruptedException
-     * @since 5.7
+     * @since GemFire 5.7
      */
     TestOnlyHARegionQueue(String regionName, Cache cache, Map haContainer)
         throws IOException, ClassNotFoundException, CacheException,
@@ -2917,7 +2871,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
      * @throws ClassNotFoundException
      * @throws CacheException
      * @throws InterruptedException
-     * @since 5.7
+     * @since GemFire 5.7
      */
     TestOnlyHARegionQueue(String regionName, Cache cache,
         HARegionQueueAttributes hrqa) throws IOException,
@@ -2959,7 +2913,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
       if (shutdown) {
         return true;
       }
-      if (cache.getCancelCriterion().cancelInProgress() != null) {
+      if (cache.getCancelCriterion().isCancelInProgress()) {
         return true;
       }
       return false;
@@ -3748,7 +3702,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
    * 
    * @param event
    * @param position
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected void putEventInHARegion(Conflatable event, Long position) {
     if (event instanceof HAEventWrapper) {
@@ -3845,7 +3799,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
    * 
    * @param haEventWrapper
    *          An instance of <code>HAEventWrapper</code>
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected void putEntryConditionallyIntoHAContainer(
       HAEventWrapper haEventWrapper) {
@@ -3907,7 +3861,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
    * HAEventWrapper instances held by this queue. Also, removes those instances
    * whose referenceCount becomes zero.
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void updateHAContainer()
   {
@@ -3981,7 +3935,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
    * 
    * @param conflatable
    * @return An instance of <code>ClientUpdateMessage</code>
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Conflatable getAndRemoveFromHAContainer(Conflatable conflatable) 
   {
@@ -4007,7 +3961,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
    * is zero and put is not in progress, removes the entry from the haContainer.
    * 
    * @param wrapper
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void decAndRemoveFromHAContainer(HAEventWrapper wrapper) 
   {
@@ -4079,7 +4033,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
   
   /**
    * Set client conflation override 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setClientConflation(byte value) {
     if (value != HandShake.CONFLATION_OFF && 

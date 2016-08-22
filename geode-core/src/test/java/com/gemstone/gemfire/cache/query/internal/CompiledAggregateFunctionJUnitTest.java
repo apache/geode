@@ -16,13 +16,14 @@
  */
 package com.gemstone.gemfire.cache.query.internal;
 
+import static org.junit.Assert.*;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.jmock.Mockery;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -45,20 +46,19 @@ import com.gemstone.gemfire.cache.query.internal.aggregate.SumDistinctPRQueryNod
 import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-/**
- * 
- *
- */
 @Category(UnitTest.class)
-public class CompiledAggregateFunctionJUnitTest extends TestCase {
+public class CompiledAggregateFunctionJUnitTest {
   
-  Mockery context = new Mockery();
-  private Cache cache = context.mock(Cache.class) ; 
-  private List bucketList = new ArrayList();
+  private Mockery context;
+  private Cache cache;
+  private List bucketList;
   
-  public CompiledAggregateFunctionJUnitTest(String testName) {
-    super(testName);
-    bucketList.add(Integer.valueOf(1)); 
+  @Before
+  public void setUp() throws Exception {
+    context = new Mockery();
+    cache = context.mock(Cache.class);
+    bucketList = new ArrayList();
+    bucketList.add(Integer.valueOf(1));
   }
 
   @Test
@@ -194,6 +194,4 @@ public class CompiledAggregateFunctionJUnitTest extends TestCase {
     MaxMin maxMin1 = (MaxMin) agg1;
     assertFalse(((Boolean) findMax.get(maxMin1)).booleanValue());
   }
-
-  
 }

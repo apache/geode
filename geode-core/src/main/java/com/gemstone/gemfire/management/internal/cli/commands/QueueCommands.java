@@ -21,11 +21,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -35,6 +30,7 @@ import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.domain.AsyncEventQueueDetails;
+import com.gemstone.gemfire.management.internal.cli.functions.AsyncEventQueueFunctionArgs;
 import com.gemstone.gemfire.management.internal.cli.functions.CliFunctionResult;
 import com.gemstone.gemfire.management.internal.cli.functions.CreateAsyncEventQueueFunction;
 import com.gemstone.gemfire.management.internal.cli.functions.ListAsyncEventQueuesFunction;
@@ -45,12 +41,20 @@ import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
+
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
 
 /**
  * The QueueCommands class encapsulates all GemFire Queue commands in Gfsh.
  * </p>
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 public class QueueCommands implements CommandMarker {
   private Gfsh getGfsh() {
@@ -59,6 +63,7 @@ public class QueueCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE, help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__HELP)
   @CliMetaData(writesToSharedConfiguration = true)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result createAsyncEventQueue(
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, 
                  mandatory = true,
@@ -99,10 +104,15 @@ public class QueueCommands implements CommandMarker {
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISKSYNCHRONOUS,
                  unspecifiedDefaultValue = "true",
                  specifiedDefaultValue = "true",
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISKSYNCHRONOUS__HELP) 
+                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISKSYNCHRONOUS__HELP)
       Boolean diskSynchronous,
+      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__FORWARD_EXPIRATION_DESTROY,
+                 unspecifiedDefaultValue = "false",
+                 specifiedDefaultValue = "false",
+                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__FORWARD_EXPIRATION_DESTROY__HELP)
+      Boolean ignoreEvictionAndExpiration,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY,
-                 unspecifiedDefaultValue = "100", 
+                 unspecifiedDefaultValue = "100",
                  help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY__HELP)
       int maxQueueMemory,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISPATCHERTHREADS,
@@ -155,8 +165,15 @@ public class QueueCommands implements CommandMarker {
         return crex.getResult();
       }
 
-      ResultCollector<?, ?> rc = CliUtil.executeFunction(new CreateAsyncEventQueueFunction(), new Object[] { id, parallel, enableBatchConflation, batchSize,batchTimeInterval,
-          persistent, diskStore, diskSynchronous, maxQueueMemory, dispatcherThreads, orderPolicy, gatewayEventFilters, gatewaySubstitutionListener, listener, listenerProperties }, targetMembers);
+      AsyncEventQueueFunctionArgs aeqArgs = new AsyncEventQueueFunctionArgs(id, parallel,
+          enableBatchConflation, batchSize,batchTimeInterval,
+          persistent, diskStore, diskSynchronous, maxQueueMemory, dispatcherThreads, orderPolicy,
+          gatewayEventFilters, gatewaySubstitutionListener, listener, listenerProperties,
+          ignoreEvictionAndExpiration);
+
+      ResultCollector<?, ?> rc = CliUtil.executeFunction(new CreateAsyncEventQueueFunction(),
+          aeqArgs, targetMembers);
+
       List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
 
       XmlEntity xmlEntity = null;
@@ -198,6 +215,7 @@ public class QueueCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.LIST_ASYNC_EVENT_QUEUES, help = CliStrings.LIST_ASYNC_EVENT_QUEUES__HELP)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listAsyncEventQueues() {
     try {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();

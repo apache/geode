@@ -44,7 +44,7 @@ import com.gemstone.gemfire.internal.Version;
  * this class is not synchronized, so take that under advisement
  * if you decide to modify a view with add() or remove().
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class NetView implements DataSerializableFixedID {
 
@@ -338,7 +338,7 @@ public class NetView implements DataSerializableFixedID {
         if (addr.equals(localAddress)) {
           continue;// this is must to add
         }
-        if (addr.getNetMember().preferredForCoordinator()) {
+        if (addr.getNetMember().preferredForCoordinator() && !filter.contains(addr)) {
           results.add(addr);
           if (results.size() >= maxNumberDesired) {
             break;
@@ -350,9 +350,11 @@ public class NetView implements DataSerializableFixedID {
 
       results.add(localAddress);// to add local address
 
-      if (notPreferredCoordinatorList.size() > 0) {
-        int idx = RANDOM.nextInt(notPreferredCoordinatorList.size());
-        results.add(notPreferredCoordinatorList.get(idx)); // to add non preferred local address
+      if (results.size() < maxNumberDesired && notPreferredCoordinatorList.size() > 0) {
+        Iterator<InternalDistributedMember> it = notPreferredCoordinatorList.iterator();
+        while (it.hasNext() && results.size() < maxNumberDesired) {
+          results.add(it.next());
+        }
       }
     }
 

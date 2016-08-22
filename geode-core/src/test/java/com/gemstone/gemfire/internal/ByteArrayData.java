@@ -29,7 +29,7 @@ import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream;
  * {@link #getDataOutput()} to get DataInput or DataOutput as needed for
  * testing.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class ByteArrayData {
 

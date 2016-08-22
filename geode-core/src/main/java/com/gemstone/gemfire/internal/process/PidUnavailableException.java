@@ -20,7 +20,7 @@ package com.gemstone.gemfire.internal.process;
  * A PidUnavailableException is thrown when the pid cannot be parsed from
  * the RuntimeMXBean name or otherwise determined.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public final class PidUnavailableException extends Exception {
   private static final long serialVersionUID = -1660269538268828059L;

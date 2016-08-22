@@ -31,7 +31,6 @@ import java.io.*;
  * <li><code>PERSISTENT_PARTITION</code> in addition to <code>PARTITION</code> also causes data to be stored to disk. The region initialization uses the data stored on disk.
  * <li><code>REPLICATE</code> causes data that this region is interested in to be stored in local memory. A distributed region will be initialized with the data from other caches. On distributed region operations that would cause the contents to differ with other caches are not allowed. This policy is allowed on local scope region but it behaves the same as <code>NORMAL</code>.
  * <li><code>PERSISTENT_REPLICATE</code> in addition to <code>REPLICATE</code> also causes data to be stored to disk. The region initialization uses the data stored on disk. Note that the persistence applies to both local scope and distributed scope.
- * <li><code>HDFS_PARTITION</code> in addition to <code>PARTITION</code> also causes data to be stored to HDFS. The region initialization may use the data stored on HDFS. 
  * </ol>
  *
  *
@@ -39,7 +38,7 @@ import java.io.*;
  * @see AttributesFactory#setDataPolicy
  * @see RegionAttributes#getDataPolicy
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class DataPolicy implements java.io.Serializable {
   private static final long serialVersionUID = 2095573273889467233L;
@@ -92,7 +91,7 @@ public class DataPolicy implements java.io.Serializable {
   /**
    * In addition to <code>PARTITION</code> also causes data to be stored to
    * disk. The region initialization may use the data stored on disk.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final DataPolicy PERSISTENT_PARTITION = new DataPolicy(6, "PERSISTENT_PARTITION");
   
@@ -162,7 +161,7 @@ public class DataPolicy implements java.io.Serializable {
    * @return true if this policy does persistence.
    * @see #PERSISTENT_PARTITION
    * @see #PERSISTENT_REPLICATE
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public boolean withPersistence() {
     return this == PERSISTENT_PARTITION || this == PERSISTENT_REPLICATE;
@@ -172,7 +171,7 @@ public class DataPolicy implements java.io.Serializable {
    * @return true if this policy does partitioning
    * @see #PARTITION
    * @see #PERSISTENT_PARTITION
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public boolean withPartitioning() {
     return this == PARTITION || this == PERSISTENT_PARTITION;
@@ -181,7 +180,7 @@ public class DataPolicy implements java.io.Serializable {
   /** Return whether this policy does preloaded.
    * @return true if this policy does preloaded.
    * @see #PRELOADED
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public boolean withPreloaded() {
     return this == PRELOADED;
@@ -244,16 +243,6 @@ public class DataPolicy implements java.io.Serializable {
   public boolean isPartition() {
     return this == PARTITION;
   }
-  
-  /** Return whether this policy does persistence on HDFS.
-   * @return true if this policy does persistence on HDFS.
-   */
-  public boolean withHDFS() {
-//    return this == HDFS_PARTITION || this == HDFS_PERSISTENT_PARTITION;
-	  return false;
-  }
-  
-  
   
   /** Returns a string representation for this data policy.
      * @return the name of this data policy.

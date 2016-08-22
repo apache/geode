@@ -23,17 +23,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
 
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
-import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
+import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
-import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepositoryImpl;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.LuceneSerializer;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
@@ -50,7 +48,10 @@ import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteHashMap;
  * index repository when the bucket returns to this node.
  */
 public class PartitionedRepositoryManager implements RepositoryManager {
-  /** map of the parent bucket region to the index repository 
+
+  public static IndexRepositoryFactory indexRepositoryFactory = new IndexRepositoryFactory();
+
+  /** map of the parent bucket region to the index repository
    * 
    * This is based on the BucketRegion in case a bucket is rebalanced, we don't want to 
    * return a stale index repository. If a bucket moves off of this node and
@@ -58,7 +59,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
    * 
    * It is weak so that the old BucketRegion will be garbage collected. 
    */
-  CopyOnWriteHashMap<Integer, IndexRepository> indexRepositories = new CopyOnWriteHashMap<Integer, IndexRepository>();
+  private final ConcurrentHashMap<Integer, IndexRepository> indexRepositories = new ConcurrentHashMap<Integer, IndexRepository>();
   
   /** The user region for this index */
   private final PartitionedRegion userRegion;
@@ -67,7 +68,9 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   private final PartitionedRegion chunkRegion;
   private final LuceneSerializer serializer;
   private final Analyzer analyzer;
-  
+  private final LuceneIndexStats indexStats;
+  private final FileSystemStats fileSystemStats;
+
   /**
    * 
    * @param userRegion The user partition region
@@ -75,15 +78,20 @@ public class PartitionedRepositoryManager implements RepositoryManager {
    * @param chunkRegion The partition region users for chunk metadata.
    * @param serializer The serializer that should be used for converting objects to lucene docs.
    */
-  public PartitionedRepositoryManager(PartitionedRegion userRegion, PartitionedRegion fileRegion,
-      PartitionedRegion chunkRegion,
-      LuceneSerializer serializer,
-      Analyzer analyzer) {
+  public PartitionedRepositoryManager(PartitionedRegion userRegion,
+                                      PartitionedRegion fileRegion,
+                                      PartitionedRegion chunkRegion,
+                                      LuceneSerializer serializer,
+                                      Analyzer analyzer,
+                                      LuceneIndexStats indexStats,
+                                      FileSystemStats fileSystemStats) {
     this.userRegion = userRegion;
     this.fileRegion = fileRegion;
     this.chunkRegion = chunkRegion;
     this.serializer = serializer;
     this.analyzer = analyzer;
+    this.indexStats = indexStats;
+    this.fileSystemStats = fileSystemStats;
   }
 
   @Override
@@ -119,45 +127,31 @@ public class PartitionedRepositoryManager implements RepositoryManager {
    */
   private IndexRepository getRepository(Integer bucketId) throws BucketNotFoundException {
     IndexRepository repo = indexRepositories.get(bucketId);
-    
-    //Remove the repository if it has been destroyed (due to rebalancing)
-    if(repo != null && repo.isClosed()) {
-      indexRepositories.remove(bucketId, repo);
-      repo = null;
+    if(repo != null && !repo.isClosed()) {
+      return repo;
     }
-    
-    if(repo == null) {
+
+    repo = indexRepositories.compute(bucketId, (key, oldRepository) -> {
+      if(oldRepository != null && !oldRepository.isClosed()) {
+        return oldRepository;
+      }
+      if(oldRepository != null) {
+        oldRepository.cleanup();
+      }
+
       try {
-        BucketRegion fileBucket = getMatchingBucket(fileRegion, bucketId);
-        BucketRegion chunkBucket = getMatchingBucket(chunkRegion, bucketId);
-        RegionDirectory dir = new RegionDirectory(fileBucket, chunkBucket);
-        IndexWriterConfig config = new IndexWriterConfig(analyzer);
-        IndexWriter writer = new IndexWriter(dir, config);
-        repo = new IndexRepositoryImpl(fileBucket, writer, serializer);
-        IndexRepository oldRepo = indexRepositories.putIfAbsent(bucketId, repo);
-        if(oldRepo != null) {
-          repo = oldRepo;
-        }
+        return indexRepositoryFactory.createIndexRepository(bucketId, userRegion, fileRegion, chunkRegion, serializer,
+          analyzer, indexStats, fileSystemStats);
       } catch(IOException e) {
         throw new InternalGemFireError("Unable to create index repository", e);
       }
-    }
-    
-    return repo;
-  }
 
-  /**
-   * Find the bucket in region2 that matches the bucket id from region1.
-   */
-  private BucketRegion getMatchingBucket(PartitionedRegion region, Integer bucketId) throws BucketNotFoundException {
-    //Force the bucket to be created if it is not already
-    region.getOrCreateNodeForBucketWrite(bucketId, null);
-    
-    BucketRegion result = region.getDataStore().getLocalBucketById(bucketId);
-    if(result == null) {
-      throw new BucketNotFoundException("Bucket not found for region " + region + " bucekt id " + bucketId);
+    });
+
+    if(repo == null) {
+      throw new BucketNotFoundException("Colocated index buckets not found for regions " + chunkRegion + ", " + fileRegion + " bucket id " + bucketId);
     }
-    
-    return result;
+
+    return repo;
   }
 }

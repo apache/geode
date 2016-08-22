@@ -22,7 +22,7 @@ import com.gemstone.gemfire.GemFireCheckedException;
  * An exception thrown during batch processing.
  *
  *
- * @since 4.2
+ * @since GemFire 4.2
  */
 // Note that since this class is inside of an internal package,
 // we make it extend Exception, thereby making it a checked exception.

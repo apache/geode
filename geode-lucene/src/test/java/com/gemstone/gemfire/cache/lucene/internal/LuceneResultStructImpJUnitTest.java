@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.gemstone.gemfire.cache.lucene.internal;
 
 import static org.junit.Assert.*;
@@ -31,7 +30,6 @@ public class LuceneResultStructImpJUnitTest {
 
   @Test
   public void hashCodeAndEquals() {
-    
     //Create 2 equal structs
     LuceneResultStructImpl<String, String> result1 = new LuceneResultStructImpl<String, String>("key1", "value1", 5);
     LuceneResultStructImpl<String, String> result2 = new LuceneResultStructImpl<String, String>("key1", "value1", 5);

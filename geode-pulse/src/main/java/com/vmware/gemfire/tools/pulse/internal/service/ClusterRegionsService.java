@@ -44,7 +44,7 @@ import java.util.Map;
  * 
  * This class contains implementations of getting Cluster's regions details
  * 
- * @since version 7.5
+ * @since GemFire version 7.5
  */
 
 @Component
@@ -154,17 +154,6 @@ public class ClusterRegionsService implements PulseService {
         regionJSON.put("isEnableOffHeapMemory", this.VALUE_ON);
       } else {
         regionJSON.put("isEnableOffHeapMemory", this.VALUE_OFF);
-      }
-
-      Boolean isHDFSWriteOnly = reg.isHdfsWriteOnly();
-      if (regionType.startsWith("HDFS")) {
-        if (isHDFSWriteOnly) {
-          regionJSON.put("isHDFSWriteOnly", this.VALUE_ON);
-        } else {
-          regionJSON.put("isHDFSWriteOnly", this.VALUE_OFF);
-        }
-      } else {
-        regionJSON.put("isHDFSWriteOnly", this.VALUE_NA);
       }
 
       String regCompCodec = reg.getCompressionCodec();

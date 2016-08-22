@@ -22,7 +22,7 @@ package com.gemstone.gemfire.distributed.internal;
  * The implementation will call these methods at to proper time.
  *
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public interface ThrottledMemQueueStatHelper extends QueueStatHelper {
 

@@ -16,6 +16,16 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.serial;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.cache.CacheClosedException;
@@ -23,22 +33,25 @@ import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
+@Category(DistributedTest.class)
 public class SerialWANPropogation_PartitionedRegionDUnitTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public SerialWANPropogation_PartitionedRegionDUnitTest(String name) {
-    super(name);
+  public SerialWANPropogation_PartitionedRegionDUnitTest() {
+    super();
   }
 
+  @Test
   public void testPartitionedSerialPropagation() throws Exception {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -71,6 +84,7 @@ public class SerialWANPropogation_PartitionedRegionDUnitTest extends WANTestBase
         getTestMethodName() + "_PR", 1000 ));
   }
 
+  @Test
   public void testBothReplicatedAndPartitionedSerialPropagation()
       throws Exception {
 
@@ -78,7 +92,7 @@ public class SerialWANPropogation_PartitionedRegionDUnitTest extends WANTestBase
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -128,13 +142,14 @@ public class SerialWANPropogation_PartitionedRegionDUnitTest extends WANTestBase
         getTestMethodName() + "_PR", 1000 ));
   }
 
+  @Test
   public void testSerialReplicatedAndPartitionedPropagation() throws Exception {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -185,6 +200,7 @@ public class SerialWANPropogation_PartitionedRegionDUnitTest extends WANTestBase
         getTestMethodName() + "_PR", 1000 ));
   }
 
+  @Test
   public void testSerialReplicatedAndSerialPartitionedPropagation()
       throws Exception {
 
@@ -192,7 +208,7 @@ public class SerialWANPropogation_PartitionedRegionDUnitTest extends WANTestBase
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -249,6 +265,7 @@ public class SerialWANPropogation_PartitionedRegionDUnitTest extends WANTestBase
         getTestMethodName() + "_PR", 1000 ));
   }
   
+  @Test
   public void testPartitionedSerialPropagationToTwoWanSites() throws Exception {
 
     Integer lnPort = createFirstLocatorWithDSId(1);
@@ -256,9 +273,9 @@ public class SerialWANPropogation_PartitionedRegionDUnitTest extends WANTestBase
     Integer tkPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(3,lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver(nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
     createCacheInVMs(tkPort, vm3);
-    vm3.invoke(() -> WANTestBase.createReceiver(tkPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver());
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -298,6 +315,7 @@ public class SerialWANPropogation_PartitionedRegionDUnitTest extends WANTestBase
         getTestMethodName() + "_PR", 1000 ));
   }
 
+  @Test
   public void testPartitionedSerialPropagationHA() throws Exception {
     IgnoredException.addIgnoredException("Broken pipe");
     IgnoredException.addIgnoredException("Connection reset");
@@ -307,7 +325,7 @@ public class SerialWANPropogation_PartitionedRegionDUnitTest extends WANTestBase
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -350,8 +368,9 @@ public class SerialWANPropogation_PartitionedRegionDUnitTest extends WANTestBase
         getTestMethodName() + "_PR", 1000 ));
   }
 
-  public void testPartitionedSerialPropagationWithParallelThreads()
-      throws Exception {
+  @Category(FlakyTest.class) // GEODE-1147: random ports, time sensitive, waitForCriterion, eats exceptions
+  @Test
+  public void testPartitionedSerialPropagationWithParallelThreads() throws Exception {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -379,9 +398,9 @@ public class SerialWANPropogation_PartitionedRegionDUnitTest extends WANTestBase
         getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
     vm3.invoke(() -> WANTestBase.createPartitionedRegion(
         getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
-    vm4.invoke(() -> WANTestBase.doMultiThreadedPuts(
+    vm4.invoke(() -> WANTestBase.doMultiThreadedPuts( // TODO: eats exceptions
         getTestMethodName() + "_PR", 1000 ));
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(

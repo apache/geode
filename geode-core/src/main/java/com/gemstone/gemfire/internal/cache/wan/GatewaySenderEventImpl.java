@@ -64,7 +64,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  * <code>GatewaySender</code>
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
 public class GatewaySenderEventImpl implements 
@@ -515,10 +515,6 @@ public class GatewaySenderEventImpl implements
    *  //OFFHEAP TODO: Optimize callers by returning a reference to the off heap value
    */
   public Object getValue() {
-    if (CachedDeserializableFactory.preferObject()) {
-      // sqlf does not use CacheDeserializable wrappers
-      return getDeserializedValue();
-    }
     Object rawValue = this.value;
     if (rawValue == null) {
       rawValue = this.substituteValue;
@@ -534,9 +530,6 @@ public class GatewaySenderEventImpl implements
     }
     if (valueIsObject == 0x00) {
       //if the value is a byte array, just return it
-      return rawValue;
-    } else if (CachedDeserializableFactory.preferObject()) {
-      // sqlf does not use CacheDeserializable wrappers
       return rawValue;
     } else if (rawValue instanceof byte[]) {
       return CachedDeserializableFactory.create((byte[]) rawValue);
@@ -590,7 +583,6 @@ public class GatewaySenderEventImpl implements
           throw new IllegalStateException("Value is no longer available. getDeserializedValue must be called before processEvents returns.");
         }
         if (so instanceof StoredObject) {
-          // TODO OFFHEAP: returns off-heap PdxInstance
           return ((StoredObject)so).getValueAsDeserializedHeapObject();
         } else {
           throw new IllegalStateException("expected valueObj field to be an instance of StoredObject but it was " + so);
@@ -604,7 +596,6 @@ public class GatewaySenderEventImpl implements
         if (vo instanceof StoredObject) {
           @Unretained(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)
           StoredObject so = (StoredObject)vo;
-          // TODO OFFHEAP: returns off-heap PdxInstance
           return so.getValueAsDeserializedHeapObject();
         } else {
           return vo; // it is already deserialized
@@ -949,15 +940,10 @@ public class GatewaySenderEventImpl implements
      */
     @Retained(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)
     StoredObject so = null;
-    if (event.hasDelta()) {
-      this.valueIsObject = 0x02;
-    } else {
+    {
       ReferenceCountHelper.setReferenceCountOwner(this);
       so = event.getOffHeapNewValue();
       ReferenceCountHelper.setReferenceCountOwner(null);      
-        // TODO OFFHEAP MERGE: check for a cached serialized value first
-        // so we can use it instead of reading offheap
-        // If we do read offheap then add the serialize new value to the event cache
     }
     
     if (so != null) {
@@ -974,7 +960,7 @@ public class GatewaySenderEventImpl implements
       // can share a reference to the off-heap value.
       this.value = event.getCachedSerializedNewValue();
     } else {
-      final Object newValue = event.getRawNewValue(shouldApplyDelta());
+      final Object newValue = event.getRawNewValue();
       assert !(newValue instanceof StoredObject); // since we already called getOffHeapNewValue() and it returned null
       if (newValue instanceof CachedDeserializable) {
         this.value = ((CachedDeserializable) newValue).getSerializedValue();

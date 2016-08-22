@@ -22,13 +22,12 @@ package com.gemstone.gemfire.internal.cache.wan.parallel;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSBucketRegionQueue;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSGatewayEventImpl;
 import com.gemstone.gemfire.internal.cache.Conflatable;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
+import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
@@ -55,10 +54,13 @@ import com.gemstone.gemfire.internal.size.SingleObjectSizer;
  */
 public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
 
+  private final AbstractGatewaySender sender;
+
   private final ParallelGatewaySenderEventProcessor processors[];
   
-  public ConcurrentParallelGatewaySenderQueue(
+  public ConcurrentParallelGatewaySenderQueue(AbstractGatewaySender sender,
 		  ParallelGatewaySenderEventProcessor pro[]) {
+    this.sender = sender;
     this.processors = pro;
   }
   
@@ -170,9 +172,20 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   }
   
   public void addShadowPartitionedRegionForUserPR(PartitionedRegion pr) {
-	for(int i =0; i< processors.length; i++){
-	  processors[i].addShadowPartitionedRegionForUserPR(pr);
-	 }
+    // Reset enqueuedAllTempQueueEvents if the sender is running
+    // This is done so that any events received while the shadow PR is added are queued in the tmpQueuedEvents
+    // instead of blocking the distribute call which could cause a deadlock. See GEM-801.
+    if (this.sender.isRunning()) {
+      this.sender.setEnqueuedAllTempQueueEvents(false);
+    }
+    this.sender.getLifeCycleLock().writeLock().lock();
+    try {
+      for (int i = 0; i < processors.length; i++) {
+        processors[i].addShadowPartitionedRegionForUserPR(pr);
+      }
+    } finally {
+      this.sender.getLifeCycleLock().writeLock().unlock();
+    }
   }
   
   private ParallelGatewaySenderEventProcessor getPGSProcessor(int bucketId) {
@@ -188,11 +201,6 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
    getPGSProcessor( bucketId).notifyEventProcessorIfRequired(bucketId);
   }
   
-  public HDFSBucketRegionQueue getBucketRegionQueue(PartitionedRegion region,
-    int bucketId) throws ForceReattemptException {
-	return getPGSProcessor(bucketId).getBucketRegionQueue(region, bucketId);
-  }
-  
   public void clear(PartitionedRegion pr, int bucketId) {
   	getPGSProcessor(bucketId).clear(pr, bucketId);
   }
@@ -205,11 +213,6 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   public void conflateEvent(Conflatable conflatableObject, int bucketId,
       Long tailKey) {
   	getPGSProcessor(bucketId).conflateEvent(conflatableObject, bucketId, tailKey);
-  }
-  
-  public HDFSGatewayEventImpl get(PartitionedRegion region, byte[] regionKey,
-      int bucketId) throws ForceReattemptException {
-    return getPGSProcessor(bucketId).get(region, regionKey, bucketId);
   }
   
   public void addShadowPartitionedRegionForUserRR(DistributedRegion userRegion) {

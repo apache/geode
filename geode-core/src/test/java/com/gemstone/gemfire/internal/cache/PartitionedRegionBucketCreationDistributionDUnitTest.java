@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -23,6 +26,10 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -48,15 +55,14 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
- * 
  * This class tests bucket Creation and distribution for the multiple Partition
  * regions.
  */
-public class PartitionedRegionBucketCreationDistributionDUnitTest extends
-    PartitionedRegionDUnitTestCase
-{
+@Category(DistributedTest.class)
+public class PartitionedRegionBucketCreationDistributionDUnitTest extends PartitionedRegionDUnitTestCase {
 
   /** Prefix is used in name of Partition Region */
   protected static String prPrefix = null;
@@ -76,11 +82,6 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
   /** to store references of 4 vms */
   VM vm[] = new VM[4];
 
-  /** constructor */
-  public PartitionedRegionBucketCreationDistributionDUnitTest(String name) {
-    super(name);
-  }
-
   /**
    * This test performs following operations <br>
    * 1. Validate bucket2Node region of the partition regions.</br><br>
@@ -99,6 +100,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
    * (c) In case of the partition regions with redundancy > 0 no two bucket
    * regions with same bucketId should not be present on the same node.</br>
    */
+  @Test
   public void testBucketCreationInMultiplePartitionRegion() throws Throwable
   {
     Host host = Host.getHost(0);
@@ -148,6 +150,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
    * 3. Validates bucket distribution over all the nodes for multiple partition
    * regions.</br>
    */
+  @Test
   public void testBucketCreationInPRPutFromOneNode() throws Throwable
   {
     Host host = Host.getHost(0);
@@ -204,6 +207,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
    * 3. Validates bucket distribution over all the nodes for multiple partition
    * regions.</br>
    */
+  @Test
   public void testBucketCreationInMultiplePartitionRegionFromAllNodes()
       throws Throwable
   {
@@ -264,6 +268,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
    * to enIndexForRegion.</br><br>
    * 5. Validate bucket creation on new node.</br>
    */
+  @Test
   public void testBucketDistributionAfterNodeAdditionInPR() throws Throwable
   {
     Host host = Host.getHost(0);
@@ -339,6 +344,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
    * for the keys in the range 0 to 100 4.test number of buckets created. It
    * should be = 11
    */
+  @Test
   public void testTotalNumBucketProperty() throws Throwable
   {
     Host host = Host.getHost(0);
@@ -384,8 +390,9 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
    * 2. do put() operations so that size of the objects that were put >
    * localMaxMemory of partition region
    */
-  public void _testLocalMaxMemoryInPartitionedRegion() throws Throwable
-  {
+  @Ignore("TODO")
+  @Test
+  public void testLocalMaxMemoryInPartitionedRegion() throws Throwable {
     Host host = Host.getHost(0);
     /** creating 4 VMs */
     createVMs(host);
@@ -421,6 +428,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
    * different reasons, in this case VMs may refuse because they are above
    * their maximum.
    */
+  @Test
   public void testCompleteBucketAllocation() throws Exception {
     final String regionName = getUniqueName();
     final int maxBuckets = 23;
@@ -468,6 +476,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
    * enforce-unique-host = true
    * redundancy-zone = "zone"
    */
+  @Test
   public void testEnforceUniqueHostForLonerDistributedSystem() {
 	  Cache myCache = createLonerCacheWithEnforceUniqueHost();
     try {
@@ -501,7 +510,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
   private final Cache createLonerCacheWithEnforceUniqueHost() {
     Cache myCache = null;
     try {
-      System.setProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
       myCache = CacheFactory.create(getLonerSystemWithEnforceUniqueHost());
     } catch (CacheExistsException e) {
       Assert.fail("the cache already exists", e);
@@ -512,7 +521,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
     } catch (Exception ex) {
       Assert.fail("Checked exception while initializing cache??", ex);
     } finally {
-      System.clearProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
+      System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
     }
     return myCache;
   }
@@ -528,10 +537,10 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
    */
   private final InternalDistributedSystem getLonerSystemWithEnforceUniqueHost() {
     Properties props = getDistributedSystemProperties();
-    props.put(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.put(DistributionConfig.LOCATORS_NAME, "");
-    props.put(DistributionConfig.ENFORCE_UNIQUE_HOST_NAME, "true");
-    props.put(DistributionConfig.REDUNDANCY_ZONE_NAME, "zone1");
+    props.put(MCAST_PORT, "0");
+    props.put(LOCATORS, "");
+    props.put(ENFORCE_UNIQUE_HOST, "true");
+    props.put(REDUNDANCY_ZONE, "zone1");
     return getSystem(props);
   }
 

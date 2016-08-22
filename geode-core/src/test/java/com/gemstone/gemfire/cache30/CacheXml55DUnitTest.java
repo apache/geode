@@ -16,23 +16,28 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests the declarative caching functionality introduced in the GemFire
  * 5.0 (i.e. congo1). Don't be confused by the 45 in my name :-)
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 
+@Category(DistributedTest.class)
 public class CacheXml55DUnitTest extends CacheXml51DUnitTest
 {
 
   // ////// Constructors
 
-  public CacheXml55DUnitTest(String name) {
-    super(name);
+  public CacheXml55DUnitTest() {
+    super();
   }
 
   // ////// Helper methods
@@ -46,6 +51,7 @@ public class CacheXml55DUnitTest extends CacheXml51DUnitTest
    * Tests that a region created with a named attributes has the correct
    * attributes.
    */
+  @Test
   public void testEmpty() throws CacheException
   {}
 

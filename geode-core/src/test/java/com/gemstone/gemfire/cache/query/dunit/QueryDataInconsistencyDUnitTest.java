@@ -16,7 +16,18 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Properties;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
@@ -49,14 +60,14 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * This tests the data inconsistency during update on an index and querying the
  * same UNLOCKED index.
- * 
- * 
  */
-public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class QueryDataInconsistencyDUnitTest extends JUnit4CacheTestCase {
 
   private static final int cnt = 0;
 
@@ -83,14 +94,12 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
   public static String[] queriesForRR = new String[] { "<trace> select * from /"
       + repRegionName + " where ID=1" };
 
-  private static PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper("");
-
   public static volatile boolean hooked = false;
   /**
    * @param name
    */
-  public QueryDataInconsistencyDUnitTest(String name) {
-    super(name);
+  public QueryDataInconsistencyDUnitTest() {
+    super();
   }
 
   @Override
@@ -105,6 +114,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
     server = host.getVM(0);
   }
 
+  @Test
   public void testCompactRangeIndex() {
     // Create caches
     Properties props = new Properties();
@@ -200,6 +210,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
     ThreadUtils.join(putThread, 200);
   }
 
+  @Test
   public void testRangeIndex() {
     // Create caches
     Properties props = new Properties();
@@ -293,8 +304,10 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
     });
     ThreadUtils.join(putThread, 200);
   }
-  
-  public void testRangeIndexWithIndexAndQueryFromCluaseMisMatch() {
+
+  @Category(FlakyTest.class) // GEODE-925: time sensitive, async actions, short timeouts
+  @Test
+  public void testRangeIndexWithIndexAndQueryFromCluaseMisMatch() { // TODO: fix misspelling
     // Create caches
     Properties props = new Properties();
     server.invoke(() -> PRClientServerTestBase.createCacheInVm( props ));
@@ -381,9 +394,10 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
         }
       }
     });
-    ThreadUtils.join(putThread, 200);
+    ThreadUtils.join(putThread, 200); // GEODE-925 occurs here and this is very short join 200 millis
   }
 
+  @Test
   public void testRangeIndexWithIndexAndQueryFromCluaseMisMatch2() {
     // Create caches
     Properties props = new Properties();
@@ -475,7 +489,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
   }
   
   public static void createProxyRegions() {
-    new QueryDataInconsistencyDUnitTest("temp").createProxyRegs();
+    new QueryDataInconsistencyDUnitTest().createProxyRegs();
   }
 
   private void createProxyRegs() {
@@ -488,7 +502,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
   }
 
   public static void createNewPR() {
-    new QueryDataInconsistencyDUnitTest("temp").createPR();
+    new QueryDataInconsistencyDUnitTest().createPR();
   }
   public void createPR() {
     PartitionResolver testKeyBasedResolver = new QueryAPITestPartitionResolver();
@@ -504,7 +518,7 @@ public class QueryDataInconsistencyDUnitTest extends CacheTestCase {
   }
 
   public static void createCacheClientWithoutRegion(String host, Integer port1) {
-    new QueryDataInconsistencyDUnitTest("temp").createCacheClientWithoutReg(
+    new QueryDataInconsistencyDUnitTest().createCacheClientWithoutReg(
         host, port1);
   }
 

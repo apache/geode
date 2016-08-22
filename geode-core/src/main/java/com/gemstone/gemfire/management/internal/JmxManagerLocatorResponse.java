@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.Version;
  * Sent to a locator to request it to find (and possibly start)
  * a jmx manager for us. It returns a JmxManagerLocatorResponse.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  *
  */
 public class JmxManagerLocatorResponse implements DataSerializableFixedID {

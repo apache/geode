@@ -17,8 +17,11 @@
 package com.gemstone.gemfire.security;
 
 import static com.gemstone.gemfire.internal.AvailablePort.*;
+import static com.gemstone.gemfire.security.ClientAuthenticationTestUtils.createCacheClient;
+import static com.gemstone.gemfire.security.ClientAuthenticationTestUtils.createCacheServer;
 import static com.gemstone.gemfire.security.ClientAuthenticationTestUtils.*;
 import static com.gemstone.gemfire.security.SecurityTestUtils.*;
+import static com.gemstone.gemfire.security.SecurityTestUtils.createCacheClient;
 import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
 import static com.gemstone.gemfire.test.dunit.Wait.*;
@@ -218,7 +221,7 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     Properties credentials = gen.getValidCredentials(1);
     getLogWriter().info("testInvalidAuthInit: For first client credentials: " + credentials + " : " + javaProps);
 
-    client1.invoke(() -> createCacheClient("com.gemstone.none", credentials, javaProps, new int[] { port1 }, 0, false, multiUser, true, AUTHREQ_EXCEPTION));
+    client1.invoke(() -> createCacheClient("com.gemstone.none", credentials, javaProps, new int[] { port1 }, 0, false, multiUser, true, SECURITY_EXCEPTION));
   }
 
   protected void doTestNoAuthInitWithCredentials(final boolean multiUser) throws Exception {
@@ -274,22 +277,7 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     int locPort1 = getLocatorPort();
     String locString = getAndClearLocatorString();
 
-    int port1 = server1.invoke(() -> createCacheServer(locPort1, locString, "com.gemstone.gemfire.none", extraProps, javaProps));
-
-    // Trying to create the region on client should throw a security exception
-    Properties credentials2 = gen.getValidCredentials(1);
-    Properties javaProps2 = gen.getJavaProperties();
-    getLogWriter().info("testInvalidAuthenticator: For first client credentials: " + credentials2 + " : " + javaProps2);
-
-    client1.invoke(() -> createCacheClient(authInit, credentials2, javaProps2, port1, 0, AUTHFAIL_EXCEPTION));
-    client1.invoke(() -> closeCache());
-
-    // Also test with invalid credentials
-    Properties credentials3 = gen.getInvalidCredentials(1);
-    Properties javaProps3 = gen.getJavaProperties();
-    getLogWriter().info("testInvalidAuthenticator: For first client credentials: " + credentials3 + " : " + javaProps3);
-
-    client1.invoke(() -> createCacheClient(authInit, credentials3, javaProps3, port1, 0, AUTHFAIL_EXCEPTION));
+    server1.invoke(() -> createCacheServer(locPort1, locString, "com.gemstone.gemfire.none", extraProps, javaProps, AUTHREQ_EXCEPTION));
   }
 
   protected void doTestNoAuthenticatorWithCredentials(final boolean multiUser) throws Exception {
@@ -489,22 +477,7 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     // Now try to connect client2 with invalid auth-init method
     // Trying to create the region on client with valid credentials should
     // throw a security exception
-    client2.invoke(() -> createCacheClient("com.gemstone.none", credentials1, javaProps1, port1, port2, zeroConns, multiUser, AUTHREQ_EXCEPTION));
-
-    // Now start the servers with invalid authenticator method.
-    // Skip this test for a scheme which does not have an authInit in the
-    // first place (e.g. SSL) since that will fail with AuthReqEx before
-    // authenticator is even invoked.
-    if (authInit != null && authInit.length() > 0) {
-      server1.invoke(() -> createCacheServer(locPort1, locString, port1, "com.gemstone.gemfire.none", extraProps, javaProps));
-      server2.invoke(() -> createCacheServer(locPort2, locString, port2, "com.gemstone.gemfire.none", extraProps, javaProps));
-
-      createClient2WithException(multiUser, authInit, port1, port2, credentials1, javaProps1, zeroConns);
-      createClient1WithException(multiUser, authInit, port1, port2, credentials2, javaProps2, zeroConns);
-
-    } else {
-      getLogWriter().info("testCredentialsForNotifications: Skipping invalid authenticator for scheme [" + gen.classCode() + "] which has no authInit");
-    }
+    client2.invoke(() -> createCacheClient("com.gemstone.none", credentials1, javaProps1, port1, port2, zeroConns, multiUser, SECURITY_EXCEPTION));
 
     // Try connection with null auth-init on clients.
     // Skip this test for a scheme which does not have an authInit in the

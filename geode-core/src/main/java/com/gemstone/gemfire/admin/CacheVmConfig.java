@@ -22,7 +22,7 @@ package com.gemstone.gemfire.admin;
  *
  * @see AdminDistributedSystem#addCacheVm()
  *
- * @since 5.7
+ * @since GemFire 5.7
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface CacheVmConfig extends ManagedEntityConfig {

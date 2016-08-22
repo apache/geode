@@ -19,20 +19,6 @@
 
 package com.gemstone.gemfire.cache.lucene.internal.xml;
 
-import static org.junit.Assert.*;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
@@ -45,6 +31,25 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlParser;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionCreation;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.util.test.TestUtil;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.core.SimpleAnalyzer;
+import org.apache.lucene.analysis.standard.ClassicAnalyzer;
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 @Category(IntegrationTest.class)
 public class LuceneIndexXmlParserIntegrationJUnitTest {
@@ -65,19 +70,53 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
    */
   @Test
   public void parseIndex() throws FileNotFoundException {
-    CacheXmlParser parser = CacheXmlParser.parse(new FileInputStream(getXmlFileForTest()));
-    CacheCreation cache = parser.getCacheCreation();
-    RegionCreation region = (RegionCreation) cache.getRegion("region");
+    RegionCreation region = createRegionCreation("region");
     Map<String, String[]> expectedIndexes = new HashMap<String, String[]>();
     expectedIndexes.put("index1", new String[] {"a", "b", "c", "d"});
-    expectedIndexes.put("index2", new String[] { "f", "g"});
+    expectedIndexes.put("index2", new String[] {"f", "g"});
+    validateExpectedIndexes(region, expectedIndexes);
+  }
+
+  @Test
+  public void parseIndexWithAnalyzers() throws FileNotFoundException {
+    RegionCreation region = createRegionCreation("region");
+
+    // Validate expected indexes
+    Map<String, String[]> expectedIndexes = new HashMap<String, String[]>();
+    expectedIndexes.put("index", new String[] {"a", "b", "c"});
+    validateExpectedIndexes(region, expectedIndexes);
+
+    // Validate expected analyzers
+    Map<String, Map<String,Class<? extends Analyzer>>> expectedIndexAnalyzers = new HashMap<>();
+    Map<String,Class<? extends Analyzer>> expectedFieldAnalyzers = new HashMap<>();
+    expectedFieldAnalyzers.put("a", KeywordAnalyzer.class);
+    expectedFieldAnalyzers.put("b", SimpleAnalyzer.class);
+    expectedFieldAnalyzers.put("c", ClassicAnalyzer.class);
+    expectedIndexAnalyzers.put("index", expectedFieldAnalyzers);
+    validateExpectedAnalyzers(region, expectedIndexAnalyzers);
+  }
+
+  private RegionCreation createRegionCreation(String regionName) throws FileNotFoundException {
+    CacheXmlParser parser = CacheXmlParser.parse(new FileInputStream(getXmlFileForTest()));
+    CacheCreation cache = parser.getCacheCreation();
+    return (RegionCreation) cache.getRegion(regionName);
+  }
+
+  private void validateExpectedIndexes(RegionCreation region, Map<String, String[]> expectedIndexes) {
     for(Extension extension : region.getExtensionPoint().getExtensions()) {
       LuceneIndexCreation index = (LuceneIndexCreation) extension;
       assertEquals("/region", index.getRegionPath());
       assertArrayEquals(expectedIndexes.remove(index.getName()), index.getFieldNames());
     }
-    
     assertEquals(Collections.emptyMap(),expectedIndexes);
+  }
+
+  private void validateExpectedAnalyzers(RegionCreation region, Map<String, Map<String,Class<? extends Analyzer>>> expectedIndexAnalyzers) {
+    for(Extension extension : region.getExtensionPoint().getExtensions()) {
+      LuceneIndexCreation index = (LuceneIndexCreation) extension;
+      expectedIndexAnalyzers.remove(index.getName());
+    }
+    assertEquals(Collections.emptyMap(),expectedIndexAnalyzers);
   }
 
   /**
@@ -88,16 +127,18 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
   @Test
   public void createIndex() throws FileNotFoundException {
     CacheFactory cf = new CacheFactory();
-    cf.set("mcast-port", "0");
-    cf.set("cache-xml-file", getXmlFileForTest());
+    cf.set(MCAST_PORT, "0");
+    cf.set(CACHE_XML_FILE, getXmlFileForTest());
     Cache cache = cf.create();
 
     LuceneService service = LuceneServiceProvider.get(cache);
-    assertEquals(2, service.getAllIndexes().size());
+    assertEquals(3, service.getAllIndexes().size());
     LuceneIndex index1 = service.getIndex("index1", "/region");
     LuceneIndex index2 = service.getIndex("index2", "/region");
+    LuceneIndex index3 = service.getIndex("index3", "/region");
     assertArrayEquals(index1.getFieldNames(), new String[] {"a", "b", "c", "d"});
     assertArrayEquals(index2.getFieldNames(), new String[] { "f", "g"});
+    assertArrayEquals(index3.getFieldNames(), new String[] { "h", "i", "j"});
   }
 
   private String getXmlFileForTest() {

@@ -45,7 +45,7 @@ import com.gemstone.gemfire.pdx.internal.AutoSerializableManager.PdxFieldWrapper
  * It is also used as the base class of our {@link PdxInstance} implementation.
  * It is serializable because PdxInstance is.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  * @see InternalDataSerializer#readPdxSerializable(java.io.DataInput)
  */
 public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
@@ -889,9 +889,6 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
       bytes = buffer.array();
     }
     else{
-      // TODO OFFHEAP: this is going to break once we have a ByteSource that is offheap.
-      // Should we just copy the offheap ByteSource to a heap byte[] here or change
-      // PdxString to work with a ByteSource?
       throw new IllegalStateException();
     }
     int offset = getPositionForField(ft) + buffer.arrayOffset();

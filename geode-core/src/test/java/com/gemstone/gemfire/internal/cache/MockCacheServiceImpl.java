@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.management.internal.beans.CacheServiceMBeanBase;
 
 public class MockCacheServiceImpl implements MockCacheService {
   
@@ -30,6 +31,11 @@ public class MockCacheServiceImpl implements MockCacheService {
   @Override
   public Class<? extends CacheService> getInterface() {
     return MockCacheService.class;
+  }
+
+  @Override
+  public CacheServiceMBeanBase getMBean() {
+    return null;
   }
 
   @Override

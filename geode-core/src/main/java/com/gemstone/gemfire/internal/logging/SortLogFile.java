@@ -31,7 +31,7 @@ import java.util.*;
  * @see LogFileParser
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class SortLogFile {
 

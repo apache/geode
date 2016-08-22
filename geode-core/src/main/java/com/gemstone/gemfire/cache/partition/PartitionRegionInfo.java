@@ -29,7 +29,7 @@ import com.gemstone.gemfire.cache.control.ResourceManager;
  * <p>
  * This is an immutable snapshot of the information.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public interface PartitionRegionInfo {
 

@@ -180,7 +180,7 @@ public abstract class DistributionMessage
   /**
    * If true then this message most be sent on an ordered channel.
    * If false then it can be unordered.
-   * @since 5.5 
+   * @since GemFire 5.5
    */
   public boolean orderedDelivery() {
     final int processorType = getProcessorType();
@@ -192,7 +192,7 @@ public abstract class DistributionMessage
         return true;
       case DistributionManager.REGION_FUNCTION_EXECUTION_EXECUTOR:
         // allow nested distributed functions to be executed from within the
-        // execution of a function; this is required particularly for SQLFabric
+        // execution of a function
         // TODO: this can later be adjusted to use a separate property
         return false;
       default:
@@ -216,14 +216,14 @@ public abstract class DistributionMessage
 
   /**
    * Causes this message to be send using multicast if v is true.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void setMulticast(boolean v) {
     this.multicast = v;
   }
   /**
    * Return true if this message should be sent using multicast.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public boolean getMulticast() {
     return this.multicast;
@@ -643,7 +643,7 @@ public abstract class DistributionMessage
    * 
    * @return null if message is not conflatable. Otherwise return
    * a key that can be used to identify the entry to conflate.
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public ConflationKey getConflationKey() {
     return null; // by default conflate nothing; override in subclasses
@@ -651,7 +651,7 @@ public abstract class DistributionMessage
 
   /**
    * @return the ID of the reply processor for this message, or zero if none
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public int getProcessorId() {
     return 0;
@@ -673,7 +673,7 @@ public abstract class DistributionMessage
    * Returns true if the message is for internal-use such as a meta-data region.
    * 
    * @return true if the message is for internal-use such as a meta-data region
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public boolean isInternal() {
     return false;

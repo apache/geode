@@ -21,7 +21,7 @@ package com.gemstone.gemfire.internal.cache;
 /**
  * A factory that produces RegionEntry instances.
  *
- * @since 3.5.1
+ * @since GemFire 3.5.1
  *
  *
  */

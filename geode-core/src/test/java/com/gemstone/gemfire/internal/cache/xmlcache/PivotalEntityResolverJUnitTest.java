@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.xml.sax.EntityResolver;
 
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
 /**
  * Unit test for {@link PivotalEntityResolver} and
  * {@link DefaultEntityResolver2}.
- * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 @Category(UnitTest.class)
 public class PivotalEntityResolverJUnitTest extends AbstractEntityResolverTest {
@@ -41,11 +40,13 @@ public class PivotalEntityResolverJUnitTest extends AbstractEntityResolverTest {
     entityResolver = new PivotalEntityResolver();
   }
 
-  public EntityResolver getEntityResolver() {
+  @Override
+  protected EntityResolver getEntityResolver() {
     return entityResolver;
   }
 
-  public String getSystemId() {
+  @Override
+  protected String getSystemId() {
     return systemId;
   }
 

@@ -16,11 +16,17 @@
  */
 package com.gemstone.gemfire.cache.snapshot;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.examples.snapshot.MyObject;
 import com.examples.snapshot.MyPdxSerializer;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.EntryEvent;
@@ -38,21 +44,25 @@ import com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.cache.util.CqListenerAdapter;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class ClientSnapshotDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class ClientSnapshotDUnitTest extends JUnit4CacheTestCase {
 
   private transient Region<Integer, MyObject> region;
-  
-  public ClientSnapshotDUnitTest(String name) {
-    super(name);
+
+  @Override
+  public final void postSetUp() throws Exception {
+    loadCache();
   }
 
+  @Test
   public void testExport() throws Exception {
     int count = 10000;
     for (int i = 0; i < count; i++) {
@@ -85,6 +95,7 @@ public class ClientSnapshotDUnitTest extends CacheTestCase {
     }
   }
   
+  @Test
   public void testImport() throws Exception {
     int count = 1000;
     for (int i = 0; i < count; i++) {
@@ -156,6 +167,7 @@ public class ClientSnapshotDUnitTest extends CacheTestCase {
     }
   }
   
+  @Test
   public void testClientCallbacks() throws Exception {
     int count = 1000;
     for (int i = 0; i < count; i++) {
@@ -209,6 +221,7 @@ public class ClientSnapshotDUnitTest extends CacheTestCase {
     region.getSnapshotService().load(f, SnapshotFormat.GEMFIRE);
   }
   
+  @Test
   public void testInvalidate() throws Exception {
     SerializableCallable invalid = new SerializableCallable() {
       @Override
@@ -233,11 +246,6 @@ public class ClientSnapshotDUnitTest extends CacheTestCase {
     assertNull(region.get(1));
   }
 
-  @Override
-  public final void postSetUp() throws Exception {
-    loadCache();
-  }
-  
   @SuppressWarnings("serial")
   public void loadCache() throws Exception {
     CacheFactory cf = new CacheFactory().setPdxSerializer(new MyPdxSerializer());
@@ -255,7 +263,7 @@ public class ClientSnapshotDUnitTest extends CacheTestCase {
       @Override
       public Object call() throws Exception {
         ClientCacheFactory cf = new ClientCacheFactory()
-          .set("log-level", LogWriterUtils.getDUnitLogLevel())
+            .set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel())
           .setPdxSerializer(new MyPdxSerializer())
           .addPoolServer(NetworkUtils.getServerHostName(host), port)
           .setPoolSubscriptionEnabled(true)

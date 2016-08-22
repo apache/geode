@@ -16,18 +16,15 @@
  */
 package com.gemstone.gemfire.internal.admin.remote;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.admin.SSLConfig;
 import com.gemstone.gemfire.internal.admin.TransportConfig;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Tranport config for RemoteGfManagerAgent.
@@ -59,7 +56,7 @@ public class RemoteTransportConfig implements TransportConfig {
    * We assume that <code>config</code> already been checked for
    * errors.
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public RemoteTransportConfig(DistributionConfig config, int vmKind) {
     if (config.getBindAddress() == null) {
@@ -259,29 +256,29 @@ public class RemoteTransportConfig implements TransportConfig {
    * appropriate to use with {@link
    * com.gemstone.gemfire.distributed.DistributedSystem#connect}.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   Properties toDSProperties() {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.BIND_ADDRESS_NAME,
+    props.setProperty(BIND_ADDRESS,
                       bindAddress);
 //    System.out.println("entering ds port range property of " + this.membershipPortRange);
     if (this.membershipPortRange != null) {
-      props.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, this.membershipPortRange);
+      props.setProperty(MEMBERSHIP_PORT_RANGE, this.membershipPortRange);
     }
     if (this.tcpPort != 0) {
-      props.setProperty(DistributionConfig.TCP_PORT_NAME, String.valueOf(this.tcpPort));
+      props.setProperty(TCP_PORT, String.valueOf(this.tcpPort));
     }
     if (this.mcastEnabled) {
        // Fix bug 32849
-       props.setProperty(DistributionConfig.MCAST_ADDRESS_NAME,
+      props.setProperty(MCAST_ADDRESS,
                          String.valueOf(this.mcastId.getHost().getHostAddress()));
-       props.setProperty(DistributionConfig.MCAST_PORT_NAME,
+      props.setProperty(MCAST_PORT,
                         String.valueOf(this.mcastId.getPort()));
 
     }
     else {
-      props.setProperty(DistributionConfig.MCAST_PORT_NAME, 
+      props.setProperty(MCAST_PORT,
                         String.valueOf(0));
     }
     // Create locator string
@@ -307,15 +304,15 @@ public class RemoteTransportConfig implements TransportConfig {
       }
     }
 
-    props.setProperty(DistributionConfig.LOCATORS_NAME,
+    props.setProperty(LOCATORS,
         locators.toString());
 
     this.sslConfig.toDSProperties(props);
     
-    props.setProperty(DistributionConfig.DISABLE_TCP_NAME,
+    props.setProperty(DISABLE_TCP,
       this.tcpDisabled? "true" : "false");
     
-    props.setProperty(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, this.disableAutoReconnect? "true" : "false");
+    props.setProperty(DISABLE_AUTO_RECONNECT, this.disableAutoReconnect? "true" : "false");
 
     return props;
   }

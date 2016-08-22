@@ -16,8 +16,14 @@
  */
 package com.gemstone.gemfire.management.internal.cli;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.Properties;
 import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -29,9 +35,7 @@ import com.gemstone.gemfire.cache.execute.FunctionAdapter;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.management.DistributedRegionMXBean;
 import com.gemstone.gemfire.management.ManagementService;
@@ -45,15 +49,14 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-/**
- * 
- *
- */
-public class CliUtilDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class CliUtilDUnitTest extends JUnit4CacheTestCase {
 
-  public CliUtilDUnitTest(String name) {
-    super(name);    
+  public CliUtilDUnitTest() {
+    super();    
   }
 
   public static final String COMMON_REGION="region1";
@@ -217,12 +220,12 @@ public class CliUtilDUnitTest extends CacheTestCase {
   
   public void createCacheWithMemberIdAndGroup(String memberName, String groupName){
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.NAME_NAME, memberName);
-    localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
-    localProps.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-    localProps.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "false");    
+    localProps.setProperty(NAME, memberName);
+    localProps.setProperty(GROUPS, groupName);
+    localProps.setProperty(JMX_MANAGER, "true");
+    localProps.setProperty(JMX_MANAGER_START, "false");
     int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    localProps.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, ""+jmxPort);
+    localProps.setProperty(JMX_MANAGER_PORT, ""+jmxPort);
     LogWriterUtils.getLogWriter().info("Set jmx-port="+ jmxPort);
     getSystem(localProps);
     getCache();
@@ -230,6 +233,7 @@ public class CliUtilDUnitTest extends CacheTestCase {
     assertNotNull(service.getMemberMXBean());
   }
   
+  @Test
   public void testFileToBytes(){
     
     //CliUtil.filesToBytes(fileNames)
@@ -237,6 +241,7 @@ public class CliUtilDUnitTest extends CacheTestCase {
   }
   
   @SuppressWarnings("serial")
+  @Test
   public void testCliUtilMethods() {
     setupMembersWithIdsAndGroups();
     
@@ -388,7 +393,7 @@ public class CliUtilDUnitTest extends CacheTestCase {
     /* "FIXME - Abhishek" This is failing because last param is not considered in method
     set = CliUtil.getRegionAssociatedMembers(region1, cache, false);
     assertNotNull(set);
-    assertEquals(1, set.size());*/
+    assertIndexDetailsEquals(1, set.size());*/
     
     set = CliUtil.getRegionAssociatedMembers(region_group1, cache, true);
     assertNotNull(set);

@@ -25,6 +25,7 @@ import java.util.Map;
 import com.gemstone.gemfire.internal.lang.Filter;
 import com.gemstone.gemfire.internal.lang.ObjectUtils;
 import com.gemstone.gemfire.internal.util.CollectionUtils;
+import com.gemstone.gemfire.management.internal.cli.multistep.CLIMultiStepHelper;
 import com.gemstone.gemfire.management.internal.web.domain.Link;
 import com.gemstone.gemfire.management.internal.web.util.UriUtils;
 
@@ -63,7 +64,7 @@ import org.springframework.web.util.UriTemplate;
  * @see org.springframework.util.MultiValueMap
  * @see org.springframework.web.util.UriComponentsBuilder
  * @see org.springframework.web.util.UriTemplate
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public class ClientHttpRequest implements HttpRequest {
@@ -257,6 +258,14 @@ public class ClientHttpRequest implements HttpRequest {
       final Map<String, List<Object>> queryParameters = CollectionUtils.removeKeys(
         new LinkedMultiValueMap<String, Object>(getParameters()), new Filter<Map.Entry<String, List<Object>>>() {
           @Override public boolean accept(final Map.Entry<String, List<Object>> entry) {
+            //GEODE-1469: since stepArgs has json string in there, we will need to encode it so that it won't interfere with the expand() call afterwards
+            if(entry.getKey().contains(CLIMultiStepHelper.STEP_ARGS)){
+              List<Object> stepArgsList = entry.getValue();
+              if(stepArgsList!=null){
+                String stepArgs = (String)stepArgsList.remove(0);
+                stepArgsList.add(UriUtils.encode(stepArgs));
+              }
+            }
             return !pathVariables.contains(entry.getKey());
           }
       });

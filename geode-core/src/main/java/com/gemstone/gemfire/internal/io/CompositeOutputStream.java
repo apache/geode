@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * Delegates all operations to a collection of OutputStreams.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class CompositeOutputStream extends OutputStream implements Iterable<OutputStream> {
 

@@ -16,9 +16,17 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -33,7 +41,6 @@ import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 import com.gemstone.gemfire.cache30.MyGatewayEventFilter1;
 import com.gemstone.gemfire.cache30.MyGatewayTransportFilter1;
 import com.gemstone.gemfire.cache30.MyGatewayTransportFilter2;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
@@ -42,37 +49,29 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.jayway.awaitility.Awaitility;
 
 /**
  * DUnit for ParallelSenderQueue overflow operations.
- * 
- *
  */
+@Category(DistributedTest.class)
 public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
 
-  private static final long serialVersionUID = 1L;
-  
-  public ParallelGatewaySenderQueueOverflowDUnitTest(String name) {
-    super(name);
-  }
-  
+  @Test
   public void testParallelSenderQueueEventsOverflow_NoDiskStoreSpecified() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-    vm4.invoke(() -> WANTestBase.createSenderWithoutDiskStore( "ln", 2,
-        true, 10, 10, false, false, null, true ));
-    vm5.invoke(() -> WANTestBase.createSenderWithoutDiskStore( "ln", 2,
-        true, 10, 10, false, false, null, true ));
-    vm6.invoke(() -> WANTestBase.createSenderWithoutDiskStore( "ln", 2,
-        true, 10, 10, false, false, null, true ));
-    vm7.invoke(() -> WANTestBase.createSenderWithoutDiskStore( "ln", 2,
-        true, 10, 10, false, false, null, true ));
+    vm4.invoke(() -> WANTestBase.createSenderWithoutDiskStore( "ln", 2, 10, 10, false, true ));
+    vm5.invoke(() -> WANTestBase.createSenderWithoutDiskStore( "ln", 2, 10, 10, false, true ));
+    vm6.invoke(() -> WANTestBase.createSenderWithoutDiskStore( "ln", 2, 10, 10, false, true ));
+    vm7.invoke(() -> WANTestBase.createSenderWithoutDiskStore( "ln", 2, 10, 10, false, true ));
 
     vm4.invoke(() -> WANTestBase.createPartitionedRegion(
         getTestMethodName(), "ln", 1, 100, isOffHeap() ));
@@ -101,47 +100,51 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
     int numEventPuts = 50;
     vm4.invoke(() -> WANTestBase.doHeavyPuts( getTestMethodName(), numEventPuts ));
     
-    long numOvVm4 = (Long) vm4.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk( "ln" ));
-    long numOvVm5 = (Long) vm5.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk( "ln" ));
-    long numOvVm6 = (Long) vm6.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk( "ln" ));
-    long numOvVm7 = (Long) vm7.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk( "ln" ));
     
-    long numMemVm4 = (Long) vm4.invoke(() -> WANTestBase.getNumberOfEntriesInVM( "ln" ));
-    long numMemVm5 = (Long) vm5.invoke(() -> WANTestBase.getNumberOfEntriesInVM( "ln" ));
-    long numMemVm6 = (Long) vm6.invoke(() -> WANTestBase.getNumberOfEntriesInVM( "ln" ));
-    long numMemVm7 = (Long) vm7.invoke(() -> WANTestBase.getNumberOfEntriesInVM( "ln" ));
-    
-    LogWriterUtils.getLogWriter().info("Entries overflown to disk: " + numOvVm4 + "," + numOvVm5 + "," + numOvVm6 + "," + numOvVm7);
-    LogWriterUtils.getLogWriter().info("Entries in VM: " + numMemVm4 + "," + numMemVm5 + "," + numMemVm6 + "," + numMemVm7);
-    
-    long totalOverflown = numOvVm4 + numOvVm5 + numOvVm6 + numOvVm7; 
     //considering a memory limit of 40 MB, maximum of 40 events can be in memory. Rest should be on disk.
-    assertTrue("Total number of entries overflown to disk should be at least greater than 55", (totalOverflown > 55));
-    
-    long totalInMemory = numMemVm4 + numMemVm5 + numMemVm6 + numMemVm7;
-    //expected is twice the number of events put due to redundancy level of 1  
-    assertEquals("Total number of entries on disk and in VM is incorrect", (numEventPuts*2), (totalOverflown + totalInMemory));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(()-> 
+    {
+      long numOvVm4 = (Long) vm4.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk( "ln" ));
+      long numOvVm5 = (Long) vm5.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk( "ln" ));
+      long numOvVm6 = (Long) vm6.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk( "ln" ));
+      long numOvVm7 = (Long) vm7.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk( "ln" ));
+      
+      long numMemVm4 = (Long) vm4.invoke(() -> WANTestBase.getNumberOfEntriesInVM( "ln" ));
+      long numMemVm5 = (Long) vm5.invoke(() -> WANTestBase.getNumberOfEntriesInVM( "ln" ));
+      long numMemVm6 = (Long) vm6.invoke(() -> WANTestBase.getNumberOfEntriesInVM( "ln" ));
+      long numMemVm7 = (Long) vm7.invoke(() -> WANTestBase.getNumberOfEntriesInVM( "ln" ));
+      
+      LogWriterUtils.getLogWriter().info("Entries overflown to disk: " + numOvVm4 + "," + numOvVm5 + "," + numOvVm6 + "," + numOvVm7);
+      LogWriterUtils.getLogWriter().info("Entries in VM: " + numMemVm4 + "," + numMemVm5 + "," + numMemVm6 + "," + numMemVm7);
+      long totalOverflown = numOvVm4 + numOvVm5 + numOvVm6 + numOvVm7; 
+      assertTrue("Total number of entries overflown to disk should be at least greater than 55", (totalOverflown > 55));
+
+      long totalInMemory = numMemVm4 + numMemVm5 + numMemVm6 + numMemVm7;
+      //expected is twice the number of events put due to redundancy level of 1  
+      assertEquals("Total number of entries on disk and in VM is incorrect", (numEventPuts*2), (totalOverflown + totalInMemory));
+      
+    });
     
     vm4.invoke(() -> WANTestBase.resumeSender( "ln" ));
     vm5.invoke(() -> WANTestBase.resumeSender( "ln" ));
     vm6.invoke(() -> WANTestBase.resumeSender( "ln" ));
     vm7.invoke(() -> WANTestBase.resumeSender( "ln" ));
     
-    vm2.invoke(() -> WANTestBase.validateRegionSize( getTestMethodName(), 50 ));
-    vm3.invoke(() -> WANTestBase.validateRegionSize( getTestMethodName(), 50 ));
+    vm2.invoke(() -> WANTestBase.validateRegionSize( getTestMethodName(), 50, 240000 ));
+    vm3.invoke(() -> WANTestBase.validateRegionSize( getTestMethodName(), 50, 240000 ));
   }
   
   /**
    * Keep same max memory limit for all the VMs
-   *   
-   * @throws Exception
    */
-  public void _testParallelSenderQueueEventsOverflow() throws Exception {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testParallelSenderQueueEventsOverflow() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -214,15 +217,15 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
   /**
    * Set a different memory limit for each VM and make sure that all the VMs are utilized to
    * full extent of available memory.
-   * 
-   * @throws Exception
    */
-  public void _testParallelSenderQueueEventsOverflow_2() throws Exception {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testParallelSenderQueueEventsOverflow_2() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -298,12 +301,14 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.validateRegionSize( getTestMethodName(), 50 ));
   }
 
-  public void _testParallelSenderQueueNoEventsOverflow() throws Exception {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testParallelSenderQueueNoEventsOverflow() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -377,15 +382,17 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
    * Test to validate that ParallelGatewaySenderQueue diskSynchronous attribute
    * when persistence of sender is enabled. 
    */
-  public void _test_ValidateParallelGatewaySenderQueueAttributes_1() {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void test_ValidateParallelGatewaySenderQueueAttributes_1() {
     Integer localLocPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     
     Integer remoteLocPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, localLocPort ));
     
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + localLocPort + "]");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + localLocPort + "]");
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);  
 
@@ -440,15 +447,17 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
    * Test to validate that ParallelGatewaySenderQueue diskSynchronous attribute
    * when persistence of sender is not enabled. 
    */
-  public void _test_ValidateParallelGatewaySenderQueueAttributes_2() {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void test_ValidateParallelGatewaySenderQueueAttributes_2() {
     Integer localLocPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     
     Integer remoteLocPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, localLocPort ));
     
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + localLocPort + "]");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + localLocPort + "]");
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);  
 
@@ -488,6 +497,4 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
       ex.remove();
     }
   }
-
-
 }

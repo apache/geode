@@ -16,18 +16,17 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
-/**
- *
- */
 @Category(UnitTest.class)
-public class PartitionedRegionHelperJUnitTest extends TestCase {
-  
+public class PartitionedRegionHelperJUnitTest {
+
+  @Test
   public void testEscapeUnescape() {
     {
       String bucketName = PartitionedRegionHelper.getBucketName("/root/region", 5);
@@ -41,7 +40,5 @@ public class PartitionedRegionHelperJUnitTest extends TestCase {
       assertEquals("/root/region_one" , PartitionedRegionHelper.getPRPath(bucketName));
     }
   }
-  
-  
 
 }

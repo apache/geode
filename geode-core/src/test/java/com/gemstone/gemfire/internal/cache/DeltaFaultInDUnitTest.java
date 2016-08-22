@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -35,16 +44,18 @@ import com.gemstone.gemfire.test.dunit.VM;
  * we fault out and in a delta object.
  *
  */
-public class DeltaFaultInDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class DeltaFaultInDUnitTest extends JUnit4CacheTestCase {
   
 
   /**
    * @param name
    */
-  public DeltaFaultInDUnitTest(String name) {
-    super(name);
+  public DeltaFaultInDUnitTest() {
+    super();
   }
 
+  @Test
   public void test() throws Exception {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -119,7 +130,7 @@ public class DeltaFaultInDUnitTest extends CacheTestCase {
         
         long entriesEvicted = ((AbstractLRURegionMap)((PartitionedRegion)region).entries)._getLruList().stats()
         .getEvictions();
-//        assertEquals(1, entriesEvicted);
+//        assertIndexDetailsEquals(1, entriesEvicted);
         
         TestDelta result = region.get(new Integer(0));
         assertEquals("initial_plus_some_more_data", result.info);

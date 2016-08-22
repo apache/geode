@@ -43,7 +43,7 @@ import com.sun.tools.attach.VirtualMachine;
  * Controls a {@link ControllableProcess} using the Attach API to manipulate
  * MBeans.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 public final class MBeanProcessController implements ProcessController {
 

@@ -43,7 +43,7 @@ import com.vmware.gemfire.tools.pulse.internal.data.Repository;
  * This class contains implementations of getting List of Cluster members and
  * their details
  * 
- * @since version 7.5
+ * @since GemFire version 7.5
  */
 @Component
 @Service("ClusterMembersRGraph")

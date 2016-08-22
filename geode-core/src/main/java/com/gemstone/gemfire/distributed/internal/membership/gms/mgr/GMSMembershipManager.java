@@ -34,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -47,7 +48,6 @@ import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.ToDataException;
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
@@ -254,7 +254,9 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * @see #latestView
    */
   protected ReadWriteLock latestViewLock = new ReentrantReadWriteLock();
-  
+  private final Lock latestViewReadLock = latestViewLock.readLock();
+  private final Lock latestViewWriteLock = latestViewLock.writeLock();
+
   /**
    * This is the listener that accepts our membership events
    */
@@ -352,7 +354,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * @see #shunnedMembers
    */
   static private final int SHUNNED_SUNSET = Integer.getInteger(
-      "gemfire.shunned-member-timeout", 300).intValue();
+      DistributionConfig.GEMFIRE_PREFIX + "shunned-member-timeout", 300).intValue();
   
   /**
    * Set to true when the service should stop.
@@ -377,7 +379,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
    A list of messages received during channel startup that couldn't be processed yet.
    Additions or removals of this list must be synchronized
    via {@link #startupLock}.
-   @since 5.0
+   @since GemFire 5.0
    */
   protected LinkedList<StartupEvent> startupMessages = new LinkedList<StartupEvent>();
   
@@ -459,7 +461,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
 //     }
     // We perform the update under a global lock so that other
     // incoming events will not be lost in terms of our global view.
-    latestViewLock.writeLock().lock();
+    latestViewWriteLock.lock();
     try {
       // first determine the version for multicast message serialization
       Version version = Version.CURRENT;
@@ -632,7 +634,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
       catch (DistributedSystemDisconnectedException se) {
       }
     } finally {
-      latestViewLock.writeLock().unlock();
+      latestViewWriteLock.unlock();
     }
   }
 
@@ -665,7 +667,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     services.setShutdownCause(null);
     services.getCancelCriterion().cancel(null);
     
-    latestViewLock.writeLock().lock();
+    latestViewWriteLock.lock();
     try {
       try {
         this.isJoining = true; // added for bug #44373
@@ -703,7 +705,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
       }
     }
     finally {
-      latestViewLock.writeLock().unlock();
+      latestViewWriteLock.unlock();
     }
   }
 
@@ -736,7 +738,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     
     surpriseMemberTimeout = Math.max(20 * DistributionConfig.DEFAULT_MEMBER_TIMEOUT,
         20 * config.getMemberTimeout());
-    surpriseMemberTimeout = Integer.getInteger("gemfire.surprise-member-timeout", surpriseMemberTimeout).intValue();
+    surpriseMemberTimeout = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "surprise-member-timeout", surpriseMemberTimeout).intValue();
     
   }
   
@@ -915,7 +917,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     final InternalDistributedMember member = (InternalDistributedMember)dm;
     boolean warn = false;
     
-    latestViewLock.writeLock().lock();
+    latestViewWriteLock.lock();
     try {
       // At this point, the join may have been discovered by
       // other means.
@@ -990,7 +992,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         latestView = newMembers;
       }
     } finally {
-      latestViewLock.writeLock().unlock();
+      latestViewWriteLock.unlock();
     }
     if (warn) { // fix for bug #41538 - deadlock while alerting
       logger.warn(LocalizedMessage.create(
@@ -1004,7 +1006,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
 
   /** starts periodic task to perform cleanup chores such as expire surprise members */
   private void startCleanupTimer() {
-    latestViewLock.writeLock().lock();
+    latestViewWriteLock.lock();
     try {
       if (this.cleanupTimer != null) {
         return;
@@ -1015,7 +1017,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         SystemTimer.SystemTimerTask st = new SystemTimer.SystemTimerTask() {
           @Override
           public void run2() {
-            latestViewLock.writeLock().lock();
+            latestViewWriteLock.lock();
             try {
               long oldestAllowed = System.currentTimeMillis() - surpriseMemberTimeout;
               for (Iterator it=surpriseMembers.entrySet().iterator(); it.hasNext(); ) {
@@ -1031,14 +1033,14 @@ public class GMSMembershipManager implements MembershipManager, Manager
                 }
               }
             } finally {
-              latestViewLock.writeLock().unlock();
+              latestViewWriteLock.unlock();
             }
           }
         };
         this.cleanupTimer.scheduleAtFixedRate(st, surpriseMemberTimeout, surpriseMemberTimeout/3);
       } // ds != null && ds.isConnected()
     } finally {
-      latestViewLock.writeLock().unlock();
+      latestViewWriteLock.unlock();
     }
   }
   /**
@@ -1064,7 +1066,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
   }
   
   public void warnShun(DistributedMember m) {
-    latestViewLock.writeLock().lock();
+    latestViewWriteLock.lock();
     try {
       if (!shunnedMembers.containsKey(m)) {
         return; // not shunned
@@ -1074,7 +1076,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
       }
       shunnedAndWarnedMembers.add(m);
     } finally {
-      latestViewLock.writeLock().unlock();
+      latestViewWriteLock.unlock();
     }
     // issue warning outside of sync since it may cause messaging and we don't
     // want to hold the view lock while doing that
@@ -1098,47 +1100,48 @@ public class GMSMembershipManager implements MembershipManager, Manager
     InternalDistributedMember m = msg.getSender();
     boolean shunned = false;
 
-    // First grab the lock: check the sender against our stabilized view.
-    latestViewLock.writeLock().lock();
-    try {
-      if (isShunned(m)) {
-        if (msg instanceof StartupMessage) {
-          endShun(m);
+    // If this member is shunned or new, grab the latestViewWriteLock: update the appropriate data structure.
+    //    synchronized (latestViewLock) {
+    if (isShunnedOrNew(m)) {
+      latestViewWriteLock.lock();
+      try {
+        if (isShunned(m)) {
+          if (msg instanceof StartupMessage) {
+            endShun(m);
+          } else {
+            // fix for bug 41538 - sick alert listener causes deadlock
+            // due to view latestViewReadWriteLock being held during messaging
+            shunned = true;
+          }
         }
-        else {
-          // fix for bug 41538 - sick alert listener causes deadlock
-          // due to view lock being held during messaging
-          shunned = true;
+
+        if (!shunned) {
+          // If it's a new sender, wait our turn, generate the event
+          if (isNew(m)) {
+            shunned = !addSurpriseMember(m);
+          }
         }
-      } // isShunned
-
-      if (!shunned) {
-        isNew = !latestView.contains(m) && !surpriseMembers.containsKey(m);
-
-        // If it's a new sender, wait our turn, generate the event
-        if (isNew) {
-          shunned = !addSurpriseMember(m);
-        } // isNew
+      } finally {
+        latestViewWriteLock.unlock();
       }
-
-      // Latch the view before we unlock
-    } finally {
-      latestViewLock.writeLock().unlock();
     }
-    
+
     if (shunned) { // bug #41538 - shun notification must be outside synchronization to avoid hanging
       warnShun(m);
-      logger.info("Membership: Ignoring message from shunned member <{}>:{}", m, msg);
+      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_VIEWS)) {
+        logger.trace(LogMarker.DISTRIBUTION_VIEWS, "Membership: Ignoring message from shunned member <{}>:{}", m, msg);
+      }
       throw new MemberShunnedException(m);
     }
-    
+
     listener.messageReceived(msg);
   }
 
-  /**
-   * Process a new view object, or place on the startup queue
-   * @param viewArg the new view
-   */
+
+    /**
+     * Process a new view object, or place on the startup queue
+     * @param viewArg the new view
+     */
   protected void handleOrDeferViewEvent(NetView viewArg) {
     if (this.isJoining) {
       // bug #44373 - queue all view messages while joining.
@@ -1149,7 +1152,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         return;
       }
     }
-    latestViewLock.writeLock().lock();
+    latestViewWriteLock.lock();
     try {
       synchronized(startupLock) {
         if (!processingEvents) {
@@ -1166,7 +1169,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
 
       listener.messageReceived(v);
     } finally {
-      latestViewLock.writeLock().unlock();
+      latestViewWriteLock.unlock();
     }
   }
   
@@ -1181,7 +1184,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * @param suspectInfo the suspectee and suspector
    */
   protected void handleOrDeferSuspect(SuspectMember suspectInfo) {
-    latestViewLock.writeLock().lock();
+    latestViewWriteLock.lock();
     try {
       synchronized(startupLock) {
         if (!processingEvents) {
@@ -1198,7 +1201,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         // let's not get huffy about it
       }
     } finally {
-      latestViewLock.writeLock().unlock();
+      latestViewWriteLock.unlock();
     }
   }
 
@@ -1360,9 +1363,9 @@ public class GMSMembershipManager implements MembershipManager, Manager
     // Grab the latest view under a mutex...
     NetView v;
 
-    latestViewLock.readLock().lock();
+    latestViewReadLock.lock();
     v = latestView;
-    latestViewLock.readLock().unlock();
+    latestViewReadLock.unlock();
 
     NetView result = new NetView(v, v.getViewId());
     
@@ -1383,11 +1386,11 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * @return the lead member associated with the latest view
    */
   public DistributedMember getLeadMember() {
-    latestViewLock.readLock().lock();
+    latestViewReadLock.lock();
     try {
       return latestView == null? null : latestView.getLeadMember();
     } finally {
-      latestViewLock.readLock().unlock();
+      latestViewReadLock.unlock();
     }
   }
   
@@ -1400,18 +1403,18 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * @return the current membership view coordinator
    */
   public DistributedMember getCoordinator() {
-    latestViewLock.readLock().lock();
+    latestViewReadLock.lock();
     try {
       return latestView == null? null : latestView.getCoordinator();
     } finally {
-      latestViewLock.readLock().unlock();
+      latestViewReadLock.unlock();
     }
   }
 
   public boolean memberExists(DistributedMember m) {
-    latestViewLock.readLock().lock();
+    latestViewReadLock.lock();
     NetView v = latestView;
-    latestViewLock.readLock().unlock();
+    latestViewReadLock.unlock();
     return v.getMembers().contains(m);
   }
   
@@ -1535,11 +1538,11 @@ public class GMSMembershipManager implements MembershipManager, Manager
         // Make sure that channel information is consistent
         // Probably not important in this particular case, but just
         // to be consistent...
-        latestViewLock.writeLock().lock();
+        latestViewWriteLock.lock();
         try {
           destroyMember(address, false, "orderly shutdown");
         } finally {
-          latestViewLock.writeLock().unlock();
+          latestViewWriteLock.unlock();
         }
       }
     }
@@ -1604,8 +1607,8 @@ public class GMSMembershipManager implements MembershipManager, Manager
     // first save the current cache description so reconnect can rebuild the cache
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     if (cache != null && (cache instanceof Cache)) {
-      if (!Boolean.getBoolean("gemfire.autoReconnect-useCacheXMLFile")
-          && !cache.isSqlfSystem() && !sharedConfigEnabled) {
+      if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile")
+          && !sharedConfigEnabled) {
         try {
           logger.info("generating XML to rebuild the cache after reconnect completes");
           StringPrintWriter pw = new StringPrintWriter(); 
@@ -1719,13 +1722,13 @@ public class GMSMembershipManager implements MembershipManager, Manager
     InternalDistributedMember[] keys;
     if (content.forAll()) {
       allDestinations = true;
-      latestViewLock.writeLock().lock();
+      latestViewReadLock.lock();
       try {
         List<InternalDistributedMember> keySet = latestView.getMembers();
         keys = new InternalDistributedMember[keySet.size()];
         keys = (InternalDistributedMember[])keySet.toArray(keys);
       } finally {
-        latestViewLock.writeLock().unlock();
+        latestViewReadLock.unlock();
       }
     }
     else {
@@ -1744,7 +1747,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
       }
       
       if (sentBytes == 0) {
-        if (services.getCancelCriterion().cancelInProgress() != null) {
+        if (services.getCancelCriterion().isCancelInProgress()) {
           throw new DistributedSystemDisconnectedException();
         }
       }
@@ -1867,7 +1870,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     Set result = null;
     boolean allDestinations = msg.forAll();
     
-    if (services.getCancelCriterion().cancelInProgress() != null) {
+    if (services.getCancelCriterion().isCancelInProgress()) {
       throw new DistributedSystemDisconnectedException("Distributed System is shutting down",
           services.getCancelCriterion().generateCancelledException(null));
     }
@@ -1949,14 +1952,14 @@ public class GMSMembershipManager implements MembershipManager, Manager
   void checkAddressesForUUIDs(InternalDistributedMember[] addresses) {
     for (int i=0; i<addresses.length; i++) {
       InternalDistributedMember m = addresses[i];
-      if(m != null) {
+      if (m != null) {
         GMSMember id = (GMSMember)m.getNetMember();
         if (!id.hasUUID()) {
-          latestViewLock.readLock().lock();
+          latestViewReadLock.lock();
           try {
             addresses[i] = latestView.getCanonicalID(addresses[i]);
           } finally {
-            latestViewLock.readLock().unlock();
+            latestViewReadLock.unlock();
           }
         }
       }
@@ -1976,9 +1979,9 @@ public class GMSMembershipManager implements MembershipManager, Manager
   
   public void setShutdown()
   {
-    latestViewLock.writeLock().lock();
+    latestViewWriteLock.lock();
     shutdownInProgress = true;
-    latestViewLock.writeLock().unlock();
+    latestViewWriteLock.unlock();
   }
 
   @Override
@@ -2000,7 +2003,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
       boolean crashed, final String reason) {
     
     // Make sure it is removed from the view
-    latestViewLock.writeLock().lock();
+    latestViewWriteLock.lock();
     try {
       if (latestView.contains(member)) {
         NetView newView = new NetView(latestView, latestView.getViewId());
@@ -2008,7 +2011,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         latestView = newView;
       }
     } finally {
-      latestViewLock.writeLock().unlock();
+      latestViewWriteLock.unlock();
     }
     
     surpriseMembers.remove(member);
@@ -2066,27 +2069,43 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * list if it was shunned too far in the past.
    * 
    * Concurrency: protected by {@link #latestViewLock} ReentrantReadWriteLock
-   * 
+   *
    * @return true if the given member is a zombie
    */
   public boolean isShunned(DistributedMember m) {
-    latestViewLock.writeLock().lock();
+    if (!shunnedMembers.containsKey(m)) {
+      return false;
+    }
+
+    latestViewWriteLock.lock();
     try {
-      if (!shunnedMembers.containsKey(m))
-        return false;
-      
       // Make sure that the entry isn't stale...
       long shunTime = ((Long)shunnedMembers.get(m)).longValue();
       long now = System.currentTimeMillis();
-      if (shunTime + SHUNNED_SUNSET * 1000 > now)
+      if (shunTime + SHUNNED_SUNSET * 1000 > now) {
         return true;
+      }
       
       // Oh, it _is_ stale.  Remove it while we're here.
       endShun(m);
       return false;
     } finally {
-      latestViewLock.writeLock().unlock();
+      latestViewWriteLock.unlock();
     }
+  }
+
+  private final boolean isShunnedOrNew(final InternalDistributedMember m) {
+    latestViewReadLock.lock();
+    try {
+      return shunnedMembers.containsKey(m) || isNew(m);
+    } finally { // synchronized
+      latestViewReadLock.unlock();
+    }
+  }
+
+  // must be invoked under view read or write lock
+  private final boolean isNew(final InternalDistributedMember m) {
+    return !latestView.contains(m) && !surpriseMembers.containsKey(m);
   }
 
   /**
@@ -2103,7 +2122,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * @return true if the given member is a surprise member
    */
   public boolean isSurpriseMember(DistributedMember m) {
-    latestViewLock.readLock().lock();
+    latestViewReadLock.lock();
     try  {
       if (surpriseMembers.containsKey(m)) {
         long birthTime = ((Long)surpriseMembers.get(m)).longValue();
@@ -2112,7 +2131,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
       }
       return false;
     } finally {
-      latestViewLock.readLock().unlock();
+      latestViewReadLock.unlock();
     }
   }
   
@@ -2126,11 +2145,11 @@ public class GMSMembershipManager implements MembershipManager, Manager
     if (logger.isDebugEnabled()) {
       logger.debug("test hook is adding surprise member {} birthTime={}", m, birthTime);
     }
-    latestViewLock.writeLock().lock();
+    latestViewWriteLock.lock();
     try {
       surpriseMembers.put((InternalDistributedMember)m, Long.valueOf(birthTime));
     } finally {
-      latestViewLock.writeLock().unlock();
+      latestViewWriteLock.unlock();
     }
   }
   
@@ -2288,11 +2307,11 @@ public class GMSMembershipManager implements MembershipManager, Manager
         }
       }
       if (!wait) {
-        latestViewLock.readLock().lock();
+        latestViewReadLock.lock();
         try {
           wait = this.latestView.contains(idm);
         } finally {
-          latestViewLock.readLock().unlock();
+          latestViewReadLock.unlock();
         }
         if (wait && logger.isDebugEnabled()) {
           logger.debug("waiting for {} to leave the membership view", mbr);
@@ -2330,7 +2349,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         Thread.sleep(pauseTime);
       }
     } while (wait && (dc != null && dc.isOpen())
-        && services.getCancelCriterion().cancelInProgress()==null );
+        && !services.getCancelCriterion().isCancelInProgress());
     if (logger.isDebugEnabled()) {
       logger.debug("operations for {} should all be in the cache at this point", mbr);
     }
@@ -2345,7 +2364,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     CountDownLatch currentLatch = null;
     // ARB: preconditions
     // remoteId != null
-    latestViewLock.writeLock().lock();
+    latestViewWriteLock.lock();
     try {
       if (latestView == null) {
         // Not sure how this would happen, but see bug 38460.
@@ -2361,7 +2380,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         this.memberLatch.put(remoteId, currentLatch);
       }
     } finally {
-      latestViewLock.writeLock().unlock();
+      latestViewWriteLock.unlock();
     }
 
     if (!foundRemoteId) {
@@ -2416,7 +2435,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
   
   public void registerTestHook(MembershipTestHook mth) {
     // lock for additions to avoid races during startup
-    latestViewLock.writeLock().lock();
+    latestViewWriteLock.lock();
     try {
       if (this.membershipTestHooks == null) {
         this.membershipTestHooks = Collections.singletonList(mth);
@@ -2427,12 +2446,12 @@ public class GMSMembershipManager implements MembershipManager, Manager
         this.membershipTestHooks = l;
       }
     } finally {
-      latestViewLock.writeLock().unlock();
+      latestViewWriteLock.unlock();
     }
   }
   
   public void unregisterTestHook(MembershipTestHook mth) {
-    latestViewLock.writeLock().lock();
+    latestViewWriteLock.lock();
     try {
       if (this.membershipTestHooks != null) {
         if (this.membershipTestHooks.size() == 1) {
@@ -2444,7 +2463,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
         }
       }
     } finally {
-      latestViewLock.writeLock().unlock();
+      latestViewWriteLock.unlock();
     }
   }
   

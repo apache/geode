@@ -39,7 +39,7 @@ import com.gemstone.gemfire.DataSerializable;
  * load + loadPerConnection*numAdditionalConnections.
  * </code>
  * 
- * @since 5.7
+ * @since GemFire 5.7
  * 
  */
 public final class ServerLoad implements DataSerializable {

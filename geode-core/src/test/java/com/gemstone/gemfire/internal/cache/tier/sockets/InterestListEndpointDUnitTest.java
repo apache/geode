@@ -16,12 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Properties;
 
-import junit.framework.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -41,10 +44,8 @@ import com.gemstone.gemfire.cache.client.internal.QueueConnectionImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
@@ -52,13 +53,11 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-/**
- *
- *
- */
-public class InterestListEndpointDUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
 
   VM server1 = null;
 
@@ -82,11 +81,6 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
   private static final String server_k2 = "server-k2";
 
   static InterestListEndpointDUnitTest impl;
-
-  /** constructor */
-  public InterestListEndpointDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -114,7 +108,7 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
 
   /** subclass support */
   public static void createImpl() {
-    impl = new InterestListEndpointDUnitTest("temp");
+    impl = new InterestListEndpointDUnitTest();
   }
 
   private void createCache(Properties props) throws Exception
@@ -128,6 +122,7 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
    * tests wheteher upadets are sent to clients if put on server directly
    *
    */
+  @Test
   public void testDirectPutOnServer()
   {
     client1.invoke(() -> impl.createEntriesK1andK2());
@@ -143,6 +138,7 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
   * put on non interest list ep and verify updates
   *
   */
+  @Test
   public void testInterestListEndpoint()
   {
     client1.invoke(() -> createEntriesK1andK2());
@@ -156,6 +152,7 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
     client1.invoke(() -> verifyPut());
   }
 
+  @Test
   public void testInterestListEndpointAfterFailover() throws Exception
   {
     final long maxWaitTime = 20000;
@@ -228,7 +225,8 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
   }
 
 
- public void testUpdaterThreadIsAliveForFailedEndPoint(){
+  @Test
+  public void testUpdaterThreadIsAliveForFailedEndPoint(){
       client1.invoke(() -> acquirePoolConnection());
       client1.invoke(() -> processException());
       client1.invoke(() -> verifyUpdaterThreadIsAlive());
@@ -262,8 +260,8 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
  public static void verifyUpdaterThreadIsAlive() throws InterruptedException
  {
    QueueConnectionImpl conn2 = (QueueConnectionImpl) pool.getPrimaryConnection();
-   Assert.assertNotSame(conn1, conn2);
-   Assert.assertFalse(conn1.getServer().equals(conn2.getServer()));
+   assertNotSame(conn1, conn2);
+   assertFalse(conn1.getServer().equals(conn2.getServer()));
    assertNull(((QueueConnectionImpl)conn1).getUpdater());
    assertTrue((conn2).getUpdater().isAlive());
  }
@@ -321,9 +319,9 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
   {
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    new InterestListEndpointDUnitTest("temp").createCache(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    new InterestListEndpointDUnitTest().createCache(props);
     Pool p;
     try {
       p = PoolManager.createFactory()
@@ -362,7 +360,7 @@ public class InterestListEndpointDUnitTest extends DistributedTestCase
 
   public static Integer createServerCache(Integer maxThreads) throws Exception
   {
-    new InterestListEndpointDUnitTest("temp").createCache(new Properties());
+    new InterestListEndpointDUnitTest().createCache(new Properties());
     RegionAttributes attrs = impl.createServerCacheAttributes();
     cache.createRegion(REGION_NAME, attrs);
     CacheServer server1 = cache.addCacheServer();

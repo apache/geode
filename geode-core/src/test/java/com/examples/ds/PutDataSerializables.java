@@ -26,7 +26,7 @@ import java.util.Properties;
  * and {@link com.gemstone.gemfire.Instantiator}s into a cache {@link Region}.  
  * Among other things, this is used to test bug 31573.
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public class PutDataSerializables {
 

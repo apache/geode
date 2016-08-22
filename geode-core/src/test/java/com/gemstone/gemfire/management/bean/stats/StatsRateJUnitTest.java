@@ -14,9 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.management.bean.stats;
 
+import static org.junit.Assert.*;
+
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.Statistics;
@@ -25,33 +28,18 @@ import com.gemstone.gemfire.management.internal.beans.stats.StatType;
 import com.gemstone.gemfire.management.internal.beans.stats.StatsRate;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
-/**
- * 
- * 
- */
 @Category(UnitTest.class)
-public class StatsRateJUnitTest extends TestCase  {
+public class StatsRateJUnitTest  {
 
   private Long SINGLE_STATS_LONG_COUNTER = null;
-
   private Integer SINGLE_STATS_INT_COUNTER = null;
-
   private Long MULTI_STATS_LONG_COUNTER_1 = null;
-
   private Long MULTI_STATS_LONG_COUNTER_2 = null;
-
   private Integer MULTI_STATS_INT_COUNTER_1 = null;
-
   private Integer MULTI_STATS_INT_COUNTER_2 = null;
-  
-  private TestMBeanStatsMonitor statsMonitor = new TestMBeanStatsMonitor("TestStatsMonitor"); 
+  private TestMBeanStatsMonitor statsMonitor;
 
-  public StatsRateJUnitTest(String name) {
-    super(name);
-  }
-
+  @Before
   public void setUp() throws Exception {
     SINGLE_STATS_LONG_COUNTER = 0L;
     SINGLE_STATS_INT_COUNTER = 0;
@@ -59,11 +47,12 @@ public class StatsRateJUnitTest extends TestCase  {
     MULTI_STATS_LONG_COUNTER_2 = 0L;
     MULTI_STATS_INT_COUNTER_1 = 0;
     MULTI_STATS_INT_COUNTER_2 = 0;
+    statsMonitor = new TestMBeanStatsMonitor("TestStatsMonitor");
   }
 
+  @Test
   public void testSingleStatLongRate() throws Exception {
     StatsRate singleStatsRate = new StatsRate("SINGLE_STATS_LONG_COUNTER", StatType.LONG_TYPE, statsMonitor);
-
 
     SINGLE_STATS_LONG_COUNTER = 5000L;
     float actualRate = singleStatsRate.getRate();
@@ -74,13 +63,13 @@ public class StatsRateJUnitTest extends TestCase  {
 
     float expectedRate = 5000;
 
-    assertEquals(expectedRate, actualRate);
+    assertEquals(expectedRate, actualRate, 0);
   }
 
+  @Test
   public void testSingleStatIntRate() throws Exception {
     StatsRate singleStatsRate = new StatsRate("SINGLE_STATS_INT_COUNTER", StatType.INT_TYPE, statsMonitor);
 
-    
     SINGLE_STATS_INT_COUNTER = 5000;
     float actualRate = singleStatsRate.getRate();
 
@@ -91,9 +80,10 @@ public class StatsRateJUnitTest extends TestCase  {
 
     float expectedRate = 5000;
 
-    assertEquals(expectedRate, actualRate);
+    assertEquals(expectedRate, actualRate, 0);
   }
 
+  @Test
   public void testMultiStatLongRate() throws Exception {
     String[] counters = new String[] { "MULTI_STATS_LONG_COUNTER_1", "MULTI_STATS_LONG_COUNTER_2" };
     StatsRate multiStatsRate = new StatsRate(counters, StatType.LONG_TYPE, statsMonitor);
@@ -109,14 +99,13 @@ public class StatsRateJUnitTest extends TestCase  {
 
     float expectedRate = 9000;
 
-    assertEquals(expectedRate, actualRate);
-
+    assertEquals(expectedRate, actualRate, 0);
   }
 
+  @Test
   public void testMultiStatIntRate() throws Exception {
     String[] counters = new String[] { "MULTI_STATS_INT_COUNTER_1", "MULTI_STATS_INT_COUNTER_2" };
     StatsRate multiStatsRate = new StatsRate(counters, StatType.INT_TYPE, statsMonitor);
-
 
     MULTI_STATS_INT_COUNTER_1 = 5000;
     MULTI_STATS_INT_COUNTER_2 = 4000;
@@ -125,27 +114,21 @@ public class StatsRateJUnitTest extends TestCase  {
     MULTI_STATS_INT_COUNTER_1 = 10000;
     MULTI_STATS_INT_COUNTER_2 = 8000;
 
-
     actualRate = multiStatsRate.getRate();
 
     float expectedRate = 9000;
 
-    assertEquals(expectedRate, actualRate);
-
+    assertEquals(expectedRate, actualRate, 0);
   }
   
-  private class TestMBeanStatsMonitor extends MBeanStatsMonitor{
-    
-    
+  private class TestMBeanStatsMonitor extends MBeanStatsMonitor {
+
     public TestMBeanStatsMonitor(String name) {
       super(name);
-      // TODO Auto-generated constructor stub
     }
 
     @Override
     public void addStatisticsToMonitor(Statistics stats) {
-      // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -174,17 +157,11 @@ public class StatsRateJUnitTest extends TestCase  {
 
     @Override
     public void removeStatisticsFromMonitor(Statistics stats) {
-      // TODO Auto-generated method stub
-
     }
 
     @Override
     public void stopListener() {
-      // TODO Auto-generated method stub
-
     }
   }
-
-  
 
 }

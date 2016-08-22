@@ -29,12 +29,17 @@ import org.apache.logging.log4j.Logger;
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
+import com.gemstone.gemfire.internal.cache.CacheObserverHolder;
+import com.gemstone.gemfire.internal.cache.PrimaryBucketException;
+import com.gemstone.gemfire.internal.cache.partitioned.Bucket;
+import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy.TestHook;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
@@ -60,19 +65,19 @@ public class LuceneEventListener implements AsyncEventListener {
     DefaultQuery.setPdxReadSerialized(true);
 
     Set<IndexRepository> affectedRepos = new HashSet<IndexRepository>();
-    
+
     try {
       for (AsyncEvent event : events) {
         Region region = event.getRegion();
         Object key = event.getKey();
         Object callbackArgument = event.getCallbackArgument();
-        
+
         IndexRepository repository = repositoryManager.getRepository(region, key, callbackArgument);
 
         Operation op = event.getOperation();
 
         if (op.isCreate()) {
-          repository.create(key, event.getDeserializedValue());
+          repository.update(key, event.getDeserializedValue());
         } else if (op.isUpdate()) {
           repository.update(key, event.getDeserializedValue());
         } else if (op.isDestroy()) {
@@ -84,12 +89,15 @@ public class LuceneEventListener implements AsyncEventListener {
         }
         affectedRepos.add(repository);
       }
-      
+
       for(IndexRepository repo : affectedRepos) {
         repo.commit();
       }
       return true;
-    } catch(IOException | BucketNotFoundException e) {
+    } catch(BucketNotFoundException | RegionDestroyedException | PrimaryBucketException e) {
+      logger.debug("Bucket not found while saving to lucene index: " + e.getMessage());
+      return false;
+    } catch(IOException e) {
       logger.error("Unable to save to lucene index", e);
       return false;
     } finally {

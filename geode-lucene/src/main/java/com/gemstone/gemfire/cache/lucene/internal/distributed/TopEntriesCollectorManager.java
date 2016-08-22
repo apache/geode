@@ -68,7 +68,7 @@ public class TopEntriesCollectorManager implements CollectorManager<TopEntriesCo
   }
 
   @Override
-  public TopEntriesCollector reduce(Collection<TopEntriesCollector> collectors) throws IOException {
+  public TopEntriesCollector reduce(Collection<TopEntriesCollector> collectors) {
     TopEntriesCollector mergedResult = new TopEntriesCollector(id, limit);
     if (collectors.isEmpty()) {
       return mergedResult;

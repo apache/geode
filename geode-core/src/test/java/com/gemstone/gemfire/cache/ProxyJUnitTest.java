@@ -16,29 +16,32 @@
  */
 package com.gemstone.gemfire.cache;
 
-import static org.junit.Assert.*;
-
-import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.cache.util.*;
-import com.gemstone.gemfire.distributed.*;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
+import com.gemstone.gemfire.cache.util.TransactionListenerAdapter;
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.CachePerfStats;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.util.StopWatch;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import java.util.*;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
+
 /**
  * Unit test for basic DataPolicy.EMPTY feature.
  * NOTE: these tests using a loner DistributedSystem and local scope regions
- * @since 5.0
+ * @since GemFire 5.0
  */
 @Category(IntegrationTest.class)
 public class ProxyJUnitTest {
@@ -49,8 +52,8 @@ public class ProxyJUnitTest {
   @Before
   public void setUp() throws Exception {
     Properties p = new Properties();
-    p.setProperty("mcast-port", "0");
-    p.setProperty("locators", "");
+    p.setProperty(MCAST_PORT, "0");
+    p.setProperty(LOCATORS, "");
     this.ds = DistributedSystem.connect(p);
     this.c = CacheFactory.create(this.ds);
   }

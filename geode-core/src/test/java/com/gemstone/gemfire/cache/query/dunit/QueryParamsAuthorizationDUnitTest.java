@@ -16,6 +16,14 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -27,7 +35,6 @@ import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.security.templates.DummyAuthenticator;
 import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
@@ -37,24 +44,25 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 import org.junit.Ignore;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 /**
  * Test for accessing query bind parameters from authorization callbacks
  * 
  * 
  */
-public class QueryParamsAuthorizationDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class QueryParamsAuthorizationDUnitTest extends JUnit4CacheTestCase {
 
   private final String regName = "exampleRegion";
 
-  public QueryParamsAuthorizationDUnitTest(String name) {
-    super(name);
+  public QueryParamsAuthorizationDUnitTest() {
+    super();
   }
 
-  public void testNothing() {
-    // remove when Bug #51079 is fixed
-  }
   @Ignore("Bug 51079")
-  public void DISABLED_testQueryParamsInAuthCallback() throws Exception {
+  @Test
+  public void testQueryParamsInAuthCallback() throws Exception {
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
     final VM client = host.getVM(1);
@@ -64,10 +72,10 @@ public class QueryParamsAuthorizationDUnitTest extends CacheTestCase {
       @Override
       public Object call() throws Exception {
         CacheFactory cf = new CacheFactory()
-            .set("mcast-port", "0")
-            .set("security-client-accessor",
+            .set(MCAST_PORT, "0")
+            .set(SECURITY_CLIENT_ACCESSOR,
                 "com.gemstone.gemfire.cache.query.dunit.QueryAuthorization.create")
-            .set("security-client-authenticator", DummyAuthenticator.class.getName() + ".create");
+            .set(SECURITY_CLIENT_AUTHENTICATOR, DummyAuthenticator.class.getName() + ".create");
         Cache cache = getCache(cf);
         cache.createRegionFactory(RegionShortcut.REPLICATE).create(regName);
         CacheServer server = cache.addCacheServer();
@@ -84,9 +92,9 @@ public class QueryParamsAuthorizationDUnitTest extends CacheTestCase {
       public Object call() throws Exception {
         ClientCacheFactory ccf = new ClientCacheFactory()
             .addPoolServer(NetworkUtils.getServerHostName(server1.getHost()), port)
-            .set("security-client-auth-init", UserPasswordAuthInit.class.getName() + ".create")
-            .set("security-username", "root")
-            .set("security-password", "root");
+            .set(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName() + ".create")
+            .set(SECURITY_PREFIX+"username", "root")
+            .set(SECURITY_PREFIX+"password", "root");
 
         ClientCache cache = getClientCache(ccf);
         Region r1 = cache.createClientRegionFactory(

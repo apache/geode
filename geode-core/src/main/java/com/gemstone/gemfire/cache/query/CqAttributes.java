@@ -24,7 +24,7 @@ package com.gemstone.gemfire.cache.query;
  * 
  * For compatibility rules and default values, see {@link CqAttributesFactory}.
  *
- * @since 5.5
+ * @since GemFire 5.5
  */
 
 public interface CqAttributes {

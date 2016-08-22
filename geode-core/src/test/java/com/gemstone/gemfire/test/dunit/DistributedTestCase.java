@@ -16,24 +16,15 @@
  */
 package com.gemstone.gemfire.test.dunit;
 
-import com.gemstone.gemfire.test.dunit.internal.JUnit3DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This class is the superclass of all distributed unit tests.
- *
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public abstract class DistributedTestCase extends JUnit3DistributedTestCase {
-  
-  /**
-   * Creates a new <code>DistributedTestCase</code> test with the given name.
-   */
-  public DistributedTestCase(final String name) {
-    super(name);
-    DUnitLauncher.launchIfNeeded();
-  }
+public abstract class DistributedTestCase extends JUnit4DistributedTestCase {
 }

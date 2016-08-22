@@ -23,7 +23,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
 
 /**
  * Resource which uses a {@link DistributionAdvisor}.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public interface DistributionAdvisee {
 

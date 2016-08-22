@@ -16,25 +16,12 @@
  */
 package com.gemstone.gemfire.management;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.data.Position;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.management.internal.cli.json.GfJsonException;
 import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
 import com.gemstone.gemfire.management.internal.cli.json.TypedJson;
@@ -42,6 +29,14 @@ import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.PdxInstanceFactory;
 import com.gemstone.gemfire.pdx.internal.PdxInstanceFactoryImpl;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 @Category(IntegrationTest.class)
 public class TypedJsonJUnitTest {
@@ -161,7 +156,7 @@ public class TypedJsonJUnitTest {
   @Test
 	public void testPDXObject() {
 		final Properties props = new Properties();
-		props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+		props.setProperty(MCAST_PORT, "0");
 		DistributedSystem.connect(props);
 		Cache cache = new CacheFactory().create();
 		PdxInstanceFactory pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
@@ -181,7 +176,7 @@ public class TypedJsonJUnitTest {
   @Test
 	public void testNestedPDXObject() {
 		final Properties props = new Properties();
-		props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+		props.setProperty(MCAST_PORT, "0");
 		DistributedSystem.connect(props);
 		Cache cache = new CacheFactory().create();
 

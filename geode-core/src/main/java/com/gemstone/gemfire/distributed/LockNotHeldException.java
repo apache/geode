@@ -21,7 +21,7 @@ package com.gemstone.gemfire.distributed;
  * A <code>LockNotHeldException</code> is thrown when attempting
  * unlock a lock that is not held by the thread performing the unlock.
  *
- * @since     4.0
+ * @since GemFire     4.0
  */
 public class LockNotHeldException extends IllegalStateException {
 private static final long serialVersionUID = 3827860179805916215L;

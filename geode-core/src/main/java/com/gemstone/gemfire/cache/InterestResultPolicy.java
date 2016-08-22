@@ -31,7 +31,7 @@ import java.io.Serializable;
  * @see com.gemstone.gemfire.cache.Region#registerInterest(Object)
  * @see com.gemstone.gemfire.cache.Region#registerInterestRegex(String)
  *
- * @since 4.2.3
+ * @since GemFire 4.2.3
  */
 public class InterestResultPolicy implements Serializable {
   private static final long serialVersionUID = -4993765891973030160L;
@@ -73,7 +73,7 @@ public class InterestResultPolicy implements Serializable {
     return VALUES[ordinal];
   }
   /** Returns the ordinal value.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public byte getOrdinal() {
     return this.ordinal;

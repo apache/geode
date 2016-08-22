@@ -21,7 +21,7 @@ package com.gemstone.gemfire.cache.query;
  * more than one object in scope or if there is more than one maximally specific
  * overridden method in a class.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 
 public class AmbiguousNameException extends NameResolutionException {

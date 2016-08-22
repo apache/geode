@@ -16,10 +16,11 @@
  */
 package com.gemstone.gemfire.cache;
 
-import java.io.IOException;
-import java.util.Properties;
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
 
-import org.junit.Ignore;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
@@ -29,23 +30,24 @@ import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.internal.DSClock;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.*;
+import org.junit.Ignore;
 
-public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
+import java.io.IOException;
+import java.util.Properties;
 
-  public ClientServerTimeSyncDUnitTest(String name) {
-    super(name);
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+
+@Category(DistributedTest.class)
+public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
+
+  public ClientServerTimeSyncDUnitTest() {
+    super();
   }
 
   @Ignore("Bug 52327")
-  public void DISABLED_testClientTimeAdvances() {
+  @Test
+  public void testClientTimeAdvances() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0); // Server
     VM vm1 = host.getVM(1); // Client
@@ -87,7 +89,7 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
         
       disconnectFromDS();
       Properties props = new Properties();
-      props.setProperty("locators", "");
+      props.setProperty(LOCATORS, "");
       props = getSystem(props).getProperties();
       cache = new ClientCacheFactory(props).setPoolSubscriptionEnabled(true)
           .addPoolServer(hostName, serverPort)
@@ -116,13 +118,11 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
       vm1.invoke(() -> CacheTestCase.disconnectFromDS());
     }
   }
-  
-  public void testNothing() {
-    // place-holder to keep dunit runner from barfing
-  }
+
 
   @Ignore("not yet implemented")
-  public void DISABLED_testClientTimeSlowsDown() {
+  @Test
+  public void testClientTimeSlowsDown() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0); // Server
     VM vm1 = host.getVM(1); // Client
@@ -166,7 +166,7 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
         
       disconnectFromDS();
       Properties props = new Properties();
-      props.setProperty("locators", "");
+      props.setProperty(LOCATORS, "");
       props = getSystem(props).getProperties();
       cache = new ClientCacheFactory(props).setPoolSubscriptionEnabled(true)
           .addPoolServer(hostName, serverPort)

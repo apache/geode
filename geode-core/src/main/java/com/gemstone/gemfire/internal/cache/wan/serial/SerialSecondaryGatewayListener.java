@@ -16,15 +16,18 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.serial;
 
+import java.util.Set;
+
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
+import com.gemstone.gemfire.internal.cache.RegionQueue;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
 import com.gemstone.gemfire.internal.logging.LogService;
 /**
- * @since 7.0
+ * @since GemFire 7.0
  *
  */
 public class SerialSecondaryGatewayListener extends CacheListenerAdapter
@@ -55,11 +58,8 @@ public class SerialSecondaryGatewayListener extends CacheListenerAdapter
    }
    // There is a small window where queue has not been created fully yet. 
    // The underlying region of the queue is created, and it receives afterDestroy callback
-   if (this.sender.getQueues() != null && !this.sender.getQueues().isEmpty()) {
-//     int size = 0;
-//     for(RegionQueue q: this.sender.getQueues()) {
-//       size += q.size();
-//     }
+   final Set<RegionQueue> queues = this.sender.getQueues();
+   if (queues != null && !queues.isEmpty()) {
      this.sender.getStatistics().incQueueSize();
    }
    // fix bug 35730
@@ -76,12 +76,9 @@ public class SerialSecondaryGatewayListener extends CacheListenerAdapter
    }
     // fix bug 37603
     // There is a small window where queue has not been created fully yet. The region is created, and it receives afterDestroy callback.
-   
-   if (this.sender.getQueues() != null && !this.sender.getQueues().isEmpty()) {
-//     int size = 0;
-//     for(RegionQueue q: this.sender.getQueues()) {
-//       size += q.size();
-//     }
+
+   final Set<RegionQueue> queues = this.sender.getQueues();
+   if (queues != null && !queues.isEmpty()) {
      this.sender.getStatistics().decQueueSize();
    }
 

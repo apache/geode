@@ -54,7 +54,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * reply is sent in a {@link 
  * com.gemstone.gemfire.internal.cache.RemoteFetchEntryMessage.FetchEntryReplyMessage}.
  * 
- * @since 5.1
+ * @since GemFire 5.1
  */
 public final class RemoteFetchEntryMessage extends RemoteOperationMessage
   {
@@ -128,9 +128,6 @@ public final class RemoteFetchEntryMessage extends RemoteOperationMessage
     }
     EntrySnapshot val;
       try {
-        if (r.keyRequiresRegionContext()) {
-          ((KeyWithRegionContext)this.key).setRegionContext(r);
-        }
         final KeyInfo keyInfo = r.getKeyInfo(key);
         Region.Entry re = r.getDataView().getEntry(keyInfo, r, true);
         if(re==null) {
@@ -194,7 +191,7 @@ public final class RemoteFetchEntryMessage extends RemoteOperationMessage
   /**
    * This message is used for the reply to a {@link RemoteFetchEntryMessage}.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static final class FetchEntryReplyMessage extends ReplyMessage
    {

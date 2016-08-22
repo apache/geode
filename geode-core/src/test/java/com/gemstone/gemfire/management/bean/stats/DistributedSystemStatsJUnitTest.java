@@ -16,20 +16,9 @@
  */
 package com.gemstone.gemfire.management.bean.stats;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.cache.CachePerfStats;
@@ -38,10 +27,20 @@ import com.gemstone.gemfire.management.DistributedSystemMXBean;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.internal.SystemManagementService;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * 
- * @since  1.4
+ * @since GemFire  1.4
  */
 @Category(IntegrationTest.class)
 public class DistributedSystemStatsJUnitTest {
@@ -58,16 +57,16 @@ public class DistributedSystemStatsJUnitTest {
   public void setUp() throws Exception {
 
     final Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("enable-time-statistics", "true");
-    props.setProperty("statistic-sampling-enabled", "false");
-    props.setProperty("statistic-sample-rate", "60000");
-    props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-    props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(ENABLE_TIME_STATISTICS, "true");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
+    props.setProperty(STATISTIC_SAMPLE_RATE, "60000");
+    props.setProperty(JMX_MANAGER, "true");
+    props.setProperty(JMX_MANAGER_START, "true");
     // set JMX_MANAGER_UPDATE_RATE to practically an infinite value, so that
     // LocalManager wont try to run ManagementTask
-    props.setProperty(DistributionConfig.JMX_MANAGER_UPDATE_RATE_NAME, "60000");
-    props.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "0");
+    props.setProperty(JMX_MANAGER_UPDATE_RATE, "60000");
+    props.setProperty(JMX_MANAGER_PORT, "0");
 
     this.system = (InternalDistributedSystem) DistributedSystem.connect(props);
     assertNotNull(this.system.getStatSampler());

@@ -24,7 +24,7 @@ import java.util.Set;
  * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#GET_DURABLE_CQS} operation for the pre-operation
  * case.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class GetDurableCQsOperationContext extends OperationContext {
 

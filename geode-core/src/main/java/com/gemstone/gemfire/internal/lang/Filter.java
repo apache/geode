@@ -20,7 +20,7 @@ package com.gemstone.gemfire.internal.lang;
 /**
  * The Filter interface defines a contract for implementing objects that act as a filter to segregate other objects.
  * </p>
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface Filter<T> {
 

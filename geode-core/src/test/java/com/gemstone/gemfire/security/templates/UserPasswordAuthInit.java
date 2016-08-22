@@ -16,12 +16,12 @@
  */
 package com.gemstone.gemfire.security.templates;
 
+import java.util.Properties;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.security.AuthInitialize;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
-
-import java.util.Properties;
 
 /**
  * An {@link AuthInitialize} implementation that obtains the user name and
@@ -31,7 +31,7 @@ import java.util.Properties;
  * set to the fully qualified name the static {@code create} method
  * viz. {@code com.gemstone.gemfire.security.templates.UserPasswordAuthInit.create}
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class UserPasswordAuthInit implements AuthInitialize {
 

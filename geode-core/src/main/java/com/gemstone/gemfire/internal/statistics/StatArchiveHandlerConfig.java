@@ -24,7 +24,7 @@ import java.io.File;
  * <p/>
  * Implemented by {@link com.gemstone.gemfire.internal.HostStatSampler}.
 
- * @since 7.0
+ * @since GemFire 7.0
  * @see com.gemstone.gemfire.distributed.internal.RuntimeDistributionConfigImpl
  */
 public interface StatArchiveHandlerConfig {

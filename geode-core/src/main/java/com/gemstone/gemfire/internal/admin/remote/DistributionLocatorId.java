@@ -17,18 +17,18 @@
    
 package com.gemstone.gemfire.internal.admin.remote;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.admin.SSLConfig;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Identifies the host, port, and bindAddress a distribution locator is 
@@ -236,21 +236,21 @@ public class DistributionLocatorId implements java.io.Serializable {
   }
   
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public boolean isPeerLocator() {
     return this.peerLocator;
   }
   
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public boolean isServerLocator() {
     return this.serverLocator;
   }
 
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public String getHostnameForClients() {
     return this.hostnameForClients;

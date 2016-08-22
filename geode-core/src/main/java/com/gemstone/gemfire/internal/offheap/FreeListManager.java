@@ -16,23 +16,17 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.NavigableSet;
+import com.gemstone.gemfire.OutOfOffHeapMemoryException;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReferenceArray;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.OutOfOffHeapMemoryException;
-import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * Manages the free lists and slabs for a MemoryAllocator
@@ -273,7 +267,7 @@ public class FreeListManager {
    * Set this to "true" to perform data integrity checks on allocated and reused Chunks.  This may clobber 
    * performance so turn on only when necessary.
    */
-  final boolean validateMemoryWithFill = Boolean.getBoolean("gemfire.validateOffHeapWithFill");
+  final boolean validateMemoryWithFill = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "validateOffHeapWithFill");
   /**
    * Every allocated chunk smaller than TINY_MULTIPLE*TINY_FREE_LIST_COUNT will allocate a chunk of memory that is a multiple of this value.
    * Sizes are always rounded up to the next multiple of this constant
@@ -282,14 +276,14 @@ public class FreeListManager {
    * This does not account for the additional internal fragmentation caused by the off-heap header
    * which currently is always 8 bytes.
    */
-  public final static int TINY_MULTIPLE = Integer.getInteger("gemfire.OFF_HEAP_ALIGNMENT", 8);
+  public final static int TINY_MULTIPLE = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT", 8);
   static {
     verifyOffHeapAlignment(TINY_MULTIPLE);
   }
   /**
    * Number of free lists to keep for tiny allocations.
    */
-  public final static int TINY_FREE_LIST_COUNT = Integer.getInteger("gemfire.OFF_HEAP_FREE_LIST_COUNT", 16384);
+  public final static int TINY_FREE_LIST_COUNT = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_FREE_LIST_COUNT", 65536);
   static {
     verifyOffHeapFreeListCount(TINY_FREE_LIST_COUNT);
   }
@@ -301,16 +295,47 @@ public class FreeListManager {
     verifyHugeMultiple(HUGE_MULTIPLE);
   }
   public final static int MAX_TINY = TINY_MULTIPLE*TINY_FREE_LIST_COUNT;
+  
+  /**
+   * Return true if the two chunks have been combined into one.
+   * If low and high are adjacent to each other
+   * and the combined size is small enough (see isSmallEnough)
+   * then low's size will be increased by the size of high
+   * and true will be returned.
+   */
+  boolean combineIfAdjacentAndSmallEnough(long lowAddr, long highAddr) {
+    assert lowAddr <= highAddr;
+    int lowSize = OffHeapStoredObject.getSize(lowAddr);
+    if (isAdjacent(lowAddr, lowSize, highAddr)) {
+      int highSize = OffHeapStoredObject.getSize(highAddr);
+      int combinedSize = lowSize + highSize;
+      if (isSmallEnough(combinedSize)) {
+        // append the highAddr chunk to lowAddr
+        OffHeapStoredObject.setSize(lowAddr, (int)combinedSize);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if the area if memory (starting at lowAddr and extending to
+   * lowAddr+lowSize) is right before (i.e. adjacent) to highAddr.
+   */
+  boolean isAdjacent(long lowAddr, int lowSize, long highAddr) {
+    return (lowAddr + lowSize) == highAddr;
+  }
+  /**
+   * Return true if size is small enough to be set as the size
+   * of a OffHeapStoredObject.
+   */
+  boolean isSmallEnough(long size) {
+    return size <= Integer.MAX_VALUE;
+  }
+  
   /**
    * Defragments memory and returns true if enough memory to allocate chunkSize
    * is freed. Otherwise returns false;
-   * TODO OFFHEAP: what should be done about contiguous chunks that end up being bigger than 2G?
-   * Currently if we are given slabs bigger than 2G or that just happen to be contiguous and add
-   * up to 2G then the FreeListManager may unify them together into a single Chunk and our 32-bit chunkSize
-   * field will overflow. This code needs to detect this and just create a chunk of 2G and then start
-   * a new one.
-   * Or to prevent it from happening we could just check the incoming slabs and throw away a few bytes
-   * to keep them from being contiguous.
    */
   boolean defragment(int chunkSize) {
     final long startDefragmentationTime = this.ma.getStats().startDefragmentation();
@@ -323,127 +348,149 @@ public class FreeListManager {
           // So just return true causing the caller to retry the allocation.
           return true;
         }
-        ArrayList<OffHeapStoredObjectAddressStack> freeChunks = new ArrayList<OffHeapStoredObjectAddressStack>();
-        collectFreeChunks(freeChunks);
-        final int SORT_ARRAY_BLOCK_SIZE = 128;
-        long[] sorted = new long[SORT_ARRAY_BLOCK_SIZE];
-        int sortedSize = 0;
-        boolean result = false;
-        int largestFragment = 0;
-        for (OffHeapStoredObjectAddressStack l: freeChunks) {
-          long addr = l.poll();
-          while (addr != 0) {
-            int idx = Arrays.binarySearch(sorted, 0, sortedSize, addr);
-            idx = -idx;
-            idx--;
-            if (idx == sortedSize) {
-              // addr is > everything in the array
-              if (sortedSize == 0) {
-                // nothing was in the array
-                sorted[0] = addr;
-                sortedSize++;
-              } else {
-                // see if we can conflate into sorted[idx]
-                long lowAddr = sorted[idx-1];
-                int lowSize = OffHeapStoredObject.getSize(lowAddr);
-                if (lowAddr + lowSize == addr) {
-                  // append the addr chunk to lowAddr
-                  OffHeapStoredObject.setSize(lowAddr, lowSize + OffHeapStoredObject.getSize(addr));
-                } else {
-                  if (sortedSize >= sorted.length) {
-                    long[] newSorted = new long[sorted.length+SORT_ARRAY_BLOCK_SIZE];
-                    System.arraycopy(sorted, 0, newSorted, 0, sorted.length);
-                    sorted = newSorted;
-                  }
-                  sortedSize++;
-                  sorted[idx] = addr;
-                }
-              }
-            } else {
-              int addrSize = OffHeapStoredObject.getSize(addr);
-              long highAddr = sorted[idx];
-              if (addr + addrSize == highAddr) {
-                // append highAddr chunk to addr
-                OffHeapStoredObject.setSize(addr, addrSize + OffHeapStoredObject.getSize(highAddr));
-                sorted[idx] = addr;
-              } else {
-                boolean insert = idx==0;
-                if (!insert) {
-                  long lowAddr = sorted[idx-1];
-                  //                  if (lowAddr == 0L) {
-                  //                    long[] tmp = Arrays.copyOf(sorted, sortedSize);
-                  //                    throw new IllegalStateException("addr was zero at idx=" + (idx-1) + " sorted="+ Arrays.toString(tmp));
-                  //                  }
-                  int lowSize = OffHeapStoredObject.getSize(lowAddr);
-                  if (lowAddr + lowSize == addr) {
-                    // append the addr chunk to lowAddr
-                    OffHeapStoredObject.setSize(lowAddr, lowSize + addrSize);
-                  } else {
-                    insert = true;
-                  }
-                }
-                if (insert) {
-                  if (sortedSize >= sorted.length) {
-                    long[] newSorted = new long[sorted.length+SORT_ARRAY_BLOCK_SIZE];
-                    System.arraycopy(sorted, 0, newSorted, 0, idx);
-                    newSorted[idx] = addr;
-                    System.arraycopy(sorted, idx, newSorted, idx+1, sortedSize-idx);
-                    sorted = newSorted;
-                  } else {
-                    System.arraycopy(sorted, idx, sorted, idx+1, sortedSize-idx);
-                    sorted[idx] = addr;
-                  }
-                  sortedSize++;
-                }
-              }
-            }
-            addr = l.poll();
-          }
-        }
-        for (int i=sortedSize-1; i > 0; i--) {
-          long addr = sorted[i];
-          long lowAddr = sorted[i-1];
-          int lowSize = OffHeapStoredObject.getSize(lowAddr);
-          if (lowAddr + lowSize == addr) {
-            // append addr chunk to lowAddr
-            OffHeapStoredObject.setSize(lowAddr, lowSize + OffHeapStoredObject.getSize(addr));
-            sorted[i] = 0L;
-          }
-        }
-        this.lastFragmentAllocation.set(0);
-        ArrayList<Fragment> tmp = new ArrayList<Fragment>();
-        for (int i=sortedSize-1; i >= 0; i--) {
-          long addr = sorted[i];
-          if (addr == 0L) continue;
-          int addrSize = OffHeapStoredObject.getSize(addr);
-          Fragment f = createFragment(addr, addrSize);
-          if (addrSize >= chunkSize) {
-            result = true;
-          }
-          if (addrSize > largestFragment) {
-            largestFragment = addrSize;
-            // TODO it might be better to sort them biggest first
-            tmp.add(0, f);
-          } else {
-            tmp.add(f);
-          }
-        }
-        this.fragmentList.addAll(tmp);
-
-        fillFragments();
+        boolean result = doDefragment(chunkSize);
 
         // Signal any waiters that a defragmentation happened.
         this.defragmentationCount.incrementAndGet();
-
-        this.ma.getStats().setLargestFragment(largestFragment);
-        this.ma.getStats().setFragments(tmp.size());        
-        this.ma.getStats().setFragmentation(getFragmentation());
 
         return result;
       } // sync
     } finally {
       this.ma.getStats().endDefragmentation(startDefragmentationTime);
     }
+  }
+  
+  /**
+   * Simple interface the represents a "stack" of primitive longs.
+   * Currently this interface only allows supports poll but more
+   * could be added if needed in the future.
+   * This interface was introduced to aid unit testing.
+   * The only implementation of it is OffHeapStoredObjectAddressStack.
+   */
+  public interface LongStack {
+    /**
+     * Retrieves and removes the top of this stack,
+     * or returns {@code 0L} if this stack is empty.
+     */
+    public long poll();
+  }
+  /**
+   * Manages an array of primitive longs. The array can grow.
+   */
+  public static class ResizableLongArray {
+    private static final int SORT_ARRAY_BLOCK_SIZE = 128;
+    long[] data = new long[SORT_ARRAY_BLOCK_SIZE];
+    int size = 0;
+    
+    public int binarySearch(long l) {
+      return Arrays.binarySearch(data, 0, size, l);
+    }
+    public int size() {
+      return size;
+    }
+    public long get(int idx) {
+      return data[idx];
+    }
+    public void set(int idx, long l) {
+      data[idx] = l;
+    }
+    public void add(long l) {
+      if (size >= data.length) {
+        long[] newData = new long[data.length+SORT_ARRAY_BLOCK_SIZE];
+        System.arraycopy(data, 0, newData, 0, data.length);
+        data = newData;
+      }
+      data[size] = l;
+      size++;
+    }
+    public void insert(int idx, long l) {
+      if (size >= data.length) {
+        long[] newData = new long[data.length+SORT_ARRAY_BLOCK_SIZE];
+        System.arraycopy(data, 0, newData, 0, idx);
+        newData[idx] = l;
+        System.arraycopy(data, idx, newData, idx+1, size-idx);
+        data = newData;
+      } else {
+        System.arraycopy(data, idx, data, idx+1, size-idx);
+        data[idx] = l;
+      }
+      size++;
+    }
+  }
+  /**
+   * Defragments memory and returns true if enough memory to allocate chunkSize
+   * is freed. Otherwise returns false;
+   * Unlike the defragment method this method is not thread safe and does not check
+   * for a concurrent defragment. It should only be called by defragment and unit tests.
+   */
+  boolean doDefragment(int chunkSize) {
+    boolean result = false;
+    ArrayList<LongStack> freeChunks = new ArrayList<LongStack>();
+    collectFreeChunks(freeChunks);
+    ResizableLongArray sorted = new ResizableLongArray();
+    for (LongStack l: freeChunks) {
+      long addr = l.poll();
+      while (addr != 0) {
+        int idx = sorted.binarySearch(addr);
+        idx = -idx;
+        idx--;
+        int sortedSize = sorted.size();
+        if (idx == sortedSize) {
+          // addr is > everything in the array
+          if (sortedSize == 0) {
+            // nothing was in the array
+            sorted.add(addr);
+          } else {
+            if (!combineIfAdjacentAndSmallEnough(sorted.get(idx-1), addr)) {
+              sorted.add(addr);
+            }
+          }
+        } else {
+          if (combineIfAdjacentAndSmallEnough(addr, sorted.get(idx))) {
+            sorted.set(idx, addr);
+          } else {
+            if (idx == 0 || !combineIfAdjacentAndSmallEnough(sorted.get(idx-1), addr)) {
+              sorted.insert(idx, addr);
+            }
+          }
+        }
+        addr = l.poll();
+      }
+    }
+    for (int i=sorted.size()-1; i > 0; i--) {
+      if (combineIfAdjacentAndSmallEnough(sorted.get(i-1), sorted.get(i))) {
+        sorted.set(i, 0L);
+      }
+    }
+    
+    int largestFragment = 0;
+    this.lastFragmentAllocation.set(0);
+    ArrayList<Fragment> tmp = new ArrayList<Fragment>();
+    for (int i=sorted.size()-1; i >= 0; i--) {
+      long addr = sorted.get(i);
+      if (addr == 0L) continue;
+      int addrSize = OffHeapStoredObject.getSize(addr);
+      Fragment f = createFragment(addr, addrSize);
+      if (addrSize >= chunkSize) {
+        result = true;
+      }
+      if (addrSize > largestFragment) {
+        largestFragment = addrSize;
+        // TODO it might be better to sort them biggest first
+        tmp.add(0, f);
+      } else {
+        tmp.add(f);
+      }
+    }
+    this.fragmentList.addAll(tmp);
+
+    fillFragments();
+
+    this.ma.getStats().setLargestFragment(largestFragment);
+    this.ma.getStats().setFragments(tmp.size());        
+    this.ma.getStats().setFragmentation(getFragmentation());
+
+    return result;
   }
 
   /**
@@ -454,16 +501,16 @@ public class FreeListManager {
   
   static void verifyOffHeapAlignment(int tinyMultiple) {
     if (tinyMultiple <= 0 || (tinyMultiple & 3) != 0) {
-      throw new IllegalStateException("gemfire.OFF_HEAP_ALIGNMENT must be a multiple of 8.");
+      throw new IllegalStateException(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT must be a multiple of 8.");
     }
     if (tinyMultiple > 256) {
       // this restriction exists because of the dataSize field in the object header.
-      throw new IllegalStateException("gemfire.OFF_HEAP_ALIGNMENT must be <= 256 and a multiple of 8.");
+      throw new IllegalStateException(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT must be <= 256 and a multiple of 8.");
     }
   }
   static void verifyOffHeapFreeListCount(int tinyFreeListCount) {
     if (tinyFreeListCount <= 0) {
-      throw new IllegalStateException("gemfire.OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
+      throw new IllegalStateException(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
     }
   }
   static void verifyHugeMultiple(int hugeMultiple) {
@@ -500,7 +547,7 @@ public class FreeListManager {
     }
   }
 
-  private void collectFreeChunks(List<OffHeapStoredObjectAddressStack> l) {
+  private void collectFreeChunks(List<LongStack> l) {
     collectFreeFragmentChunks(l);
     collectFreeHugeChunks(l);
     collectFreeTinyChunks(l);
@@ -508,7 +555,7 @@ public class FreeListManager {
   List<Fragment> getFragmentList() {
     return this.fragmentList;
   }
-  private void collectFreeFragmentChunks(List<OffHeapStoredObjectAddressStack> l) {
+  private void collectFreeFragmentChunks(List<LongStack> l) {
     if (this.fragmentList.size() == 0) return;
     OffHeapStoredObjectAddressStack result = new OffHeapStoredObjectAddressStack();
     for (Fragment f: this.fragmentList) {
@@ -537,7 +584,7 @@ public class FreeListManager {
       l.add(result);
     }
   }
-  private void collectFreeTinyChunks(List<OffHeapStoredObjectAddressStack> l) {
+  private void collectFreeTinyChunks(List<LongStack> l) {
     for (int i=0; i < this.tinyFreeLists.length(); i++) {
       OffHeapStoredObjectAddressStack cl = this.tinyFreeLists.get(i);
       if (cl != null) {
@@ -548,7 +595,7 @@ public class FreeListManager {
       }
     }
   }
-  private void collectFreeHugeChunks(List<OffHeapStoredObjectAddressStack> l) {
+  private void collectFreeHugeChunks(List<LongStack> l) {
     OffHeapStoredObject c = this.hugeChunkSet.pollFirst();
     OffHeapStoredObjectAddressStack result = null;
     while (c != null) {

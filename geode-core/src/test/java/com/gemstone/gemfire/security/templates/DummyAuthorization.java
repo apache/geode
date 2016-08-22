@@ -16,6 +16,10 @@
  */
 package com.gemstone.gemfire.security.templates;
 
+import java.security.Principal;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.operations.OperationContext;
@@ -24,16 +28,12 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.security.AccessControl;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 
-import java.security.Principal;
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * A dummy implementation of the {@code AccessControl} interface that
  * allows authorization depending on the format of the {@code Principal}
  * string.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class DummyAuthorization implements AccessControl {
 

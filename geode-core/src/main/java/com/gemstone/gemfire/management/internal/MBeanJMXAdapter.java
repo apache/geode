@@ -574,6 +574,11 @@ public class MBeanJMXAdapter implements ManagementConstants {
     return getObjectName((MessageFormat.format(OBJECTNAME__LOCATOR_MXBEAN, new Object[] { makeCompliantName(member) })));
   }
 
+  public static ObjectName getCacheServiceMBeanName(DistributedMember member, String cacheServiceId) {
+    return getObjectName((MessageFormat.format(OBJECTNAME__CACHESERVICE_MXBEAN, new Object[] { cacheServiceId,
+        getMemberNameOrId(member) })));
+  }
+
   public Map<ObjectName, Object> getLocalGemFireMBean() {
     return this.localGemFireMBean;
   }

@@ -16,9 +16,15 @@
  */
 package com.gemstone.gemfire.pdx;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -35,29 +41,28 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.PdxSerializerObject;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.pdx.internal.AutoSerializableManager;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-/**
- *
- */
-public class PdxClientServerDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
-  public PdxClientServerDUnitTest(String name) {
-    super(name);
+  public PdxClientServerDUnitTest() {
+    super();
   }
 
+  @Test
   public void testSimplePut() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -96,6 +101,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
    * registry if the server is restarted and PDX serialization
    * for a class has changed.  This was reported in Pivotal bug #47338
    */
+  @Test
   public void testNonPersistentServerRestart() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -181,16 +187,17 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
    * Test of bug 47338 - what happens to the client type
    * registry if the server is restarted.
    */
+  @Test
   public void testNonPersistentServerRestartAutoSerializer() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    System.setProperty("gemfire.auto.serialization.no.hardcoded.excludes", "true");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes", "true");
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       public void run() {
-        System.setProperty("gemfire.auto.serialization.no.hardcoded.excludes", "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes", "true");
       }
     });
     try {
@@ -254,11 +261,11 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
         return null;
       }
     });
-    } finally { 
-      System.setProperty("gemfire.auto.serialization.no.hardcoded.excludes", "false");
+    } finally {
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes", "false");
       Invoke.invokeInEveryVM(new SerializableRunnable() {
         public void run() {
-          System.setProperty("gemfire.auto.serialization.no.hardcoded.excludes", "false");
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes", "false");
         }
       });
     }
@@ -268,6 +275,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
    * Test that we through an exception if one of the servers has persistent
    * regions but not a persistent registry.
    */
+  @Test
   public void testServersWithPersistence() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -305,6 +313,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
     });
   }
   
+  @Test
   public void testPutThreadLocalConnections() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -339,6 +348,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
 
   }
   
+  @Test
   public void testSimplePdxInstancePut() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -390,6 +400,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
    * in multiple distributed systems.
    * @throws Exception 
    */
+  @Test
   public void testMultipleServerDSes() throws Exception {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -404,8 +415,8 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         Properties props = new Properties();
-        props.setProperty("mcast-port", "0");
-        props.setProperty("locators", "");
+        props.setProperty(MCAST_PORT, "0");
+        props.setProperty(LOCATORS, "");
         getSystem(props);
         Cache cache = getCache();
         PoolFactory pf = PoolManager.createFactory();
@@ -457,6 +468,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
     assertEquals(new SimpleClass(57, (byte) 3), r.get(1));
   }
   
+  @Test
   public void testUserSerializesObject() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -498,6 +510,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
    * Test that we still use the client
    * type registry, even if pool is created late.
    */
+  @Test
   public void testLatePoolCreation() {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -509,8 +522,8 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         Properties props = new Properties();
-        props.setProperty("mcast-port", "0");
-        props.setProperty("locators", "");
+        props.setProperty(MCAST_PORT, "0");
+        props.setProperty(LOCATORS, "");
         getSystem(props);
         Cache cache = getCache();
         PoolFactory pf = PoolManager.createFactory();
@@ -550,6 +563,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
    * tries to create a pool after we were forced to use a peer
    * type registry.
    */
+  @Test
   public void testExceptionWithPoolAfterTypeRegistryCreation() {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -560,8 +574,8 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         Properties props = new Properties();
-        props.setProperty("mcast-port", "0");
-        props.setProperty("locators", "");
+        props.setProperty(MCAST_PORT, "0");
+        props.setProperty(LOCATORS, "");
         getSystem(props);
         Cache cache = getCache();
         HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
@@ -683,8 +697,8 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         Properties props = new Properties();
-        props.setProperty("locators", "");
-        props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, dsId);
+        props.setProperty(LOCATORS, "");
+        props.setProperty(DISTRIBUTED_SYSTEM_ID, dsId);
         getSystem(props);
         AttributesFactory af = new AttributesFactory();
         af.setScope(Scope.DISTRIBUTED_ACK);

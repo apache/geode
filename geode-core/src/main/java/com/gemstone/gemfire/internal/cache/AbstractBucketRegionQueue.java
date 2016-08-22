@@ -16,26 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSBucketRegionQueue;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSGatewayEventImpl;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
 import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
@@ -48,6 +30,13 @@ import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public abstract class AbstractBucketRegionQueue extends BucketRegion {
   protected static final Logger logger = LogService.getLogger();
@@ -56,8 +45,8 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     * The maximum size of this single queue before we start blocking puts
     * The system property is in megabytes.
     */
-  private final long maximumSize = 1024 * 1024 * Long.getLong("gemfire.GATEWAY_QUEUE_THROTTLE_SIZE_MB", -1);
-  private final long throttleTime = Long.getLong("gemfire.GATEWAY_QUEUE_THROTTLE_TIME_MS", 100);
+  private final long maximumSize = 1024 * 1024 * Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "GATEWAY_QUEUE_THROTTLE_SIZE_MB", -1);
+  private final long throttleTime = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "GATEWAY_QUEUE_THROTTLE_TIME_MS", 100);
   
   private final LRUStatistics stats;
   
@@ -232,7 +221,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     if (logger.isDebugEnabled()) {
       logger.debug(" destroying primary key {}", key);
     }
-    EntryEventImpl event = getPartitionedRegion().newDestroyEntryEvent(key,
+    @Released EntryEventImpl event = getPartitionedRegion().newDestroyEntryEvent(key,
         null);
     event.setEventId(new EventID(cache.getSystem()));
     try {
@@ -458,17 +447,8 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     }
     waitIfQueueFull();
     
-    int sizeOfHdfsEvent = -1;
     try {
-      if (this instanceof HDFSBucketRegionQueue) {
-        // need to fetch the size before event is inserted in queue.
-        // fix for #50016
-        if (this.getBucketAdvisor().isPrimary()) {
-          HDFSGatewayEventImpl hdfsEvent = (HDFSGatewayEventImpl)event.getValue();
-          sizeOfHdfsEvent = hdfsEvent.getSizeOnHDFSInBytes(!((HDFSBucketRegionQueue)this).isBucketSorted);
-        }
-      }
-      
+
       didPut = virtualPut(event, false, false, null, false, startPut, true);
       
       checkReadiness();
@@ -491,7 +471,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
       destroyKey(key);
       didPut = false;
     } else {
-      addToEventQueue(key, didPut, event, sizeOfHdfsEvent);
+      addToEventQueue(key, didPut, event);
     }
     return didPut;
   }
@@ -521,8 +501,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   }
   
   protected abstract void clearQueues();
-  protected abstract void addToEventQueue(Object key, boolean didPut, EntryEventImpl event, 
-      int sizeOfHdfsEvent);
+  protected abstract void addToEventQueue(Object key, boolean didPut, EntryEventImpl event);
   
   @Override
   public void afterAcquiringPrimaryState() {

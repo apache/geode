@@ -16,30 +16,26 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.util.Properties;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Test of interrupting threads doing disk writes to see the effect.
@@ -72,12 +68,12 @@ public class InterruptDiskJUnitTest  {
   @Before
   public void setUp() {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.setProperty("log-level", "config"); // to keep diskPerf logs smaller
-    props.setProperty("statistic-sampling-enabled", "true");
-    props.setProperty("enable-time-statistics", "true");
-    props.setProperty("statistic-archive-file", "stats.gfs");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(LOG_LEVEL, "config"); // to keep diskPerf logs smaller
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+    props.setProperty(ENABLE_TIME_STATISTICS, "true");
+    props.setProperty(STATISTIC_ARCHIVE_FILE, "stats.gfs");
     ds = DistributedSystem.connect(props);
     cache = CacheFactory.create(ds);
     File diskStore = new File("diskStore");

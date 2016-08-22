@@ -16,22 +16,20 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.Collections;
-import java.util.Properties;
-
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.util.Collections;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 
 @Category(IntegrationTest.class)
 public class TXReservationMgrJUnitTest {
@@ -48,8 +46,8 @@ public class TXReservationMgrJUnitTest {
   @Before
   public void setUp() throws Exception {
     Properties p = new Properties();
-    p.setProperty("mcast-port", "0");
-    p.setProperty("locators", "");
+    p.setProperty(MCAST_PORT, "0");
+    p.setProperty(LOCATORS, "");
     this.ds = DistributedSystem.connect(p);
     this.c = CacheFactory.create(this.ds);
     AttributesFactory af = new AttributesFactory();

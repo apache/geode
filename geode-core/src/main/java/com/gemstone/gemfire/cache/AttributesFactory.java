@@ -31,7 +31,6 @@ import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.internal.cache.AbstractRegion;
-import com.gemstone.gemfire.internal.cache.CustomEvictionAttributesImpl;
 import com.gemstone.gemfire.internal.cache.DiskStoreFactoryImpl;
 import com.gemstone.gemfire.internal.cache.DiskWriteAttributesImpl;
 import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
@@ -361,7 +360,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * @see AttributesMutator
  * @see Region#createSubregion(String, RegionAttributes)
  *
- * @since 3.0
+ * @since GemFire 3.0
  * @deprecated as of 6.5 use {@link Cache#createRegionFactory(RegionShortcut)} or {@link ClientCache#createClientRegionFactory(ClientRegionShortcut)} instead.
  */
 @SuppressWarnings("synthetic-access")
@@ -371,7 +370,7 @@ public class AttributesFactory<K,V> {
   /**
    * The default disk synchronous write setting
    * <p>Current value: <code>true</code> each.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final boolean DEFAULT_DISK_SYNCHRONOUS = true;
   
@@ -448,8 +447,6 @@ public class AttributesFactory<K,V> {
         .getPartitionAttributes();
     this.regionAttributes.evictionAttributes = (EvictionAttributesImpl)regionAttributes
         .getEvictionAttributes();
-    this.regionAttributes.customEvictionAttributes = regionAttributes
-        .getCustomEvictionAttributes();
 
     this.regionAttributes.membershipAttributes = regionAttributes.getMembershipAttributes();
     this.regionAttributes.subscriptionAttributes = regionAttributes.getSubscriptionAttributes();
@@ -543,7 +540,7 @@ public class AttributesFactory<K,V> {
    * Adds a cache listener to the end of the list of cache listeners on this factory.
    * @param aListener the cache listener to add to the factory.
    * @throws IllegalArgumentException if <code>aListener</code> is null
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void addCacheListener(CacheListener<K,V> aListener) {
     if (aListener == null) {
@@ -557,7 +554,7 @@ public class AttributesFactory<K,V> {
    * Removes all cache listeners and then adds each listener in the specified array.
    * @param newListeners a possibly null or empty array of listeners to add to this factory.
    * @throws IllegalArgumentException if the <code>newListeners</code> array has a null element
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void initCacheListeners(CacheListener<K,V>[] newListeners) {
     synchronized (this.regionAttributes) {
@@ -723,32 +720,6 @@ public class AttributesFactory<K,V> {
      this.regionAttributes.setHasEvictionAttributes(true);
    }
 
-  /**
-   * Set custom {@link EvictionCriteria} for the region with start time and
-   * frequency of evictor task to be run in milliseconds, or evict incoming rows
-   * in case both start and frequency are specified as zero.
-   * 
-   * @param criteria
-   *          an {@link EvictionCriteria} to be used for eviction for HDFS
-   *          persistent regions
-   * @param start
-   *          the start time at which periodic evictor task should be first
-   *          fired to apply the provided {@link EvictionCriteria}; if this is
-   *          zero then current time is used for the first invocation of evictor
-   * @param interval
-   *          the periodic frequency at which to run the evictor task after the
-   *          initial start; if this is if both start and frequency are zero
-   *          then {@link EvictionCriteria} is applied on incoming insert/update
-   *          to determine whether it is to be retained
-   */
-  public void setCustomEvictionAttributes(EvictionCriteria<K, V> criteria,
-      long start, long interval) {
-    this.regionAttributes.customEvictionAttributes =
-        new CustomEvictionAttributesImpl(criteria, start, interval,
-            start == 0 && interval == 0);
-    this.regionAttributes.setHasCustomEviction(true);
-  }
-
    /** Sets the mirror type for the next <code>RegionAttributes</code> created.
    * @param mirrorType The type of mirroring to use for the region
    * @throws IllegalArgumentException if mirrorType is null
@@ -873,7 +844,7 @@ public class AttributesFactory<K,V> {
   /**
    * Enables or disabled concurrent modification checks.  Concurrency checks are enabled
    * by default.
-   * @since 7.0
+   * @since GemFire 7.0
    * @param concurrencyChecksEnabled whether to perform concurrency checks on operations
    */
   public void setConcurrencyChecksEnabled(boolean concurrencyChecksEnabled) {
@@ -885,7 +856,7 @@ public class AttributesFactory<K,V> {
    * Sets whether or not a persistent backup should be made of the
    * region.
    *
-   * @since 3.2
+   * @since GemFire 3.2
    * @deprecated as of GemFire 5.0, use {@link DataPolicy#PERSISTENT_REPLICATE} instead
    */
   @Deprecated
@@ -912,7 +883,7 @@ public class AttributesFactory<K,V> {
   /**
    * Sets whether or not acks are sent after an operation is processed.
    *
-   * @since 4.1
+   * @since GemFire 4.1
    * @deprecated This setting no longer has any effect. 
    */
   @Deprecated
@@ -924,7 +895,7 @@ public class AttributesFactory<K,V> {
   /**
    * Sets whether or not this region should be considered a publisher.
    *
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    * @deprecated as of 6.5
    */
   @Deprecated
@@ -938,7 +909,7 @@ public class AttributesFactory<K,V> {
    * to async peers.
    * Default value is false.
    *
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    */
   public void setEnableAsyncConflation(boolean enableAsyncConflation) {
     this.regionAttributes.enableAsyncConflation = enableAsyncConflation;
@@ -951,7 +922,7 @@ public class AttributesFactory<K,V> {
    * from a cache server to its clients.
    * Default is false.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void setEnableSubscriptionConflation(boolean enableSubscriptionConflation) {
     this.regionAttributes.enableSubscriptionConflation = enableSubscriptionConflation;
@@ -962,7 +933,7 @@ public class AttributesFactory<K,V> {
    * adds a gateway sender to the end of list of gateway senders on this factory
    * @param gatewaySenderId
    * @throws IllegalArgumentException if <code>gatewaySender</code> is null
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public void addGatewaySenderId(String gatewaySenderId) {
     if (gatewaySenderId == null) {
@@ -977,7 +948,7 @@ public class AttributesFactory<K,V> {
    * Adds a AsyncEventQueue to the end of list of async event queues on this factory
    * @param asyncEventQueueId
    * @throws IllegalArgumentException if <code>gatewaySender</code> is null
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public void addAsyncEventQueueId(String asyncEventQueueId) {
     if (asyncEventQueueId == null) {
@@ -992,7 +963,7 @@ public class AttributesFactory<K,V> {
    * Sets whether or not conflation is enabled for sending messages
    * from a cache server to its clients.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    * @deprecated as of 5.7 use {@link #setEnableSubscriptionConflation} instead.
    */
   @Deprecated
@@ -1016,7 +987,7 @@ public class AttributesFactory<K,V> {
    *
    * @see Region#writeToDisk
    *
-   * @since 3.2
+   * @since GemFire 3.2
    * @deprecated as of 6.5 use {@link #setDiskStoreName} instead
    */
   @Deprecated
@@ -1039,7 +1010,7 @@ public class AttributesFactory<K,V> {
    *
    * @throws GemFireIOException if a directory does not exist
    *
-   * @since 3.2
+   * @since GemFire 3.2
    * @deprecated as of 6.5 use {@link DiskStoreFactory#setDiskDirs} instead
    */
   @Deprecated
@@ -1067,7 +1038,7 @@ public class AttributesFactory<K,V> {
    * Sets the DiskStore name attribute.
    * This causes the region to use the {@link DiskStore}.
    * @param name the name of the diskstore
-   * @since 6.5 
+   * @since GemFire 6.5
    */
   public void setDiskStoreName(String name) {
     if (this.regionAttributes.hasDiskDirs() ||  this.regionAttributes.hasDiskWriteAttributes()) {
@@ -1084,7 +1055,7 @@ public class AttributesFactory<K,V> {
    * 
    * @param isSynchronous
    *          boolean if true indicates synchronous writes
-   * @since 6.5 
+   * @since GemFire 6.5
    */
   @SuppressWarnings("deprecation")
   public void setDiskSynchronous(boolean isSynchronous)
@@ -1110,7 +1081,7 @@ public class AttributesFactory<K,V> {
    * @throws IllegalArgumentException if a dir does not exist or the length of the size array
    * does not match to the length of the dir array or the given length is not a valid positive number
    *
-   * @since 5.1
+   * @since GemFire 5.1
    * @deprecated as of 6.5 use {@link DiskStoreFactory#setDiskDirsAndSizes} instead
    */
   @Deprecated
@@ -1141,7 +1112,7 @@ public class AttributesFactory<K,V> {
    * also establishes a data policy of {@link DataPolicy#PARTITION PARTITION},
    * if the data policy has not already been set.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void setPartitionAttributes(PartitionAttributes partition) {
     if (partition != null) {
@@ -1191,7 +1162,7 @@ public class AttributesFactory<K,V> {
    * Sets the <code>SubscriptionAttributes</code> that describe how the region
    * will subscribe to other distributed cache instances of the region.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void setSubscriptionAttributes(SubscriptionAttributes subscription) {
     this.regionAttributes.subscriptionAttributes = subscription;
@@ -1221,7 +1192,7 @@ public class AttributesFactory<K,V> {
   /**
    * Sets the flag telling a region to ignore JTA transactions.
    * Default is false.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void setIgnoreJTA(boolean flag) {
     this.regionAttributes.ignoreJTA = flag;
@@ -1242,7 +1213,7 @@ public class AttributesFactory<K,V> {
       cache's DistributedSystem (see
       <a href=../distributed/DistributedSystem.html#mcast-port">"mcast-port"</a>).
       Default is false.
-      @since 5.0
+      @since GemFire 5.0
       @see RegionAttributes#getMulticastEnabled
    */
   public void setMulticastEnabled(boolean value) {
@@ -1252,9 +1223,10 @@ public class AttributesFactory<K,V> {
   /**
    * Sets cloning on region.
    * Default is false.
+   * Note: off-heap regions always behave as if cloning is enabled.
    * 
    * @param cloningEnable
-   * @since 6.1
+   * @since GemFire 6.1
    * @see RegionAttributes#getCloningEnabled()
    */
   public void setCloningEnabled(boolean cloningEnable) {
@@ -1277,7 +1249,7 @@ public class AttributesFactory<K,V> {
    * @param name the name of the connection pool to use; if <code>null</code>
    * or <code>""</code> then the connection pool is disabled for regions
    * using these attributes.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setPoolName(String name) {
     String nm = name;
@@ -1291,7 +1263,7 @@ public class AttributesFactory<K,V> {
   
   /**
    * Sets this region's compressor for compressing entry values.
-   * @since 8.0
+   * @since GemFire 8.0
    * @param compressor a compressor.
    */
   public void setCompressor(Compressor compressor) {
@@ -1306,7 +1278,7 @@ public class AttributesFactory<K,V> {
 
   /**
    * Enables this region's usage of off-heap memory if true.
-   * @since 9.0
+   * @since Geode 1.0
    * @param offHeap boolean flag to enable off-heap memory
    */
   public void setOffHeap(boolean offHeap) {
@@ -1334,7 +1306,7 @@ public class AttributesFactory<K,V> {
    * @return the newly created <code>RegionAttributes</code>
    * @throws IllegalStateException if the current settings violate the
    * <a href="#compatibility">compatibility rules</a>
-   * @since 5.0
+   * @since GemFire 5.0
    */
   @SuppressWarnings("unchecked")
   public RegionAttributes<K,V> create() {
@@ -1365,11 +1337,9 @@ public class AttributesFactory<K,V> {
         // on statisticsEnabled.
         setStatisticsEnabled(true);
       }
-      // SQLFabric does not handle PRELOADED, so do not change the policy
       if (attrs.getDataPolicy().withReplication()
           && !attrs.getDataPolicy().withPersistence()
-          && attrs.getScope().isDistributed()
-          && !GemFireCacheImpl.sqlfSystem()) {
+          && attrs.getScope().isDistributed()) {
         RegionAttributesImpl<?,?> rattr = attrs;
         if (!rattr.isForBucketRegion()) {
           if (attrs.getEvictionAttributes().getAction().isLocalDestroy()
@@ -1411,7 +1381,7 @@ public class AttributesFactory<K,V> {
    </ul>
    * @param attrs the attributes to validate
    * @throws IllegalStateException if the attributes are not consistent with each other.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public static void validateAttributes(RegionAttributes<?, ?> attrs) {
     // enforce the creation constraints
@@ -1465,12 +1435,6 @@ public class AttributesFactory<K,V> {
       }
     }
     
-    if (attrs.getHDFSStoreName() != null) {
-      if (!attrs.getDataPolicy().withHDFS() && (attrs.getPartitionAttributes() == null || attrs.getPartitionAttributes().getLocalMaxMemory() != 0)) {
-        throw new IllegalStateException(LocalizedStrings.HDFSSTORE_IS_USED_IN_NONHDFS_REGION.toLocalizedString());        
-      }
-    }
-
     if (!attrs.getStatisticsEnabled() &&
           (attrs.getRegionTimeToLive().getTimeout() != 0 ||
            attrs.getRegionIdleTimeout().getTimeout() != 0 ||
@@ -1633,11 +1597,8 @@ public class AttributesFactory<K,V> {
     SubscriptionAttributes subscriptionAttributes = new SubscriptionAttributes();
     boolean multicastEnabled = false;
     EvictionAttributesImpl evictionAttributes = new EvictionAttributesImpl();  // TODO need to determine the constructor
-    transient CustomEvictionAttributes customEvictionAttributes;
     String poolName = null;
     String diskStoreName = null;
-    String hdfsStoreName = null;
-    private boolean hdfsWriteOnly = false;
     boolean diskSynchronous = DEFAULT_DISK_SYNCHRONOUS;
     protected boolean isBucketRegion = false;
     private boolean isCloningEnabled = false;
@@ -1696,8 +1657,6 @@ public class AttributesFactory<K,V> {
       } else {
         buf.append("; diskStoreName=").append(diskStoreName);
       }
-      buf.append("; hdfsStoreName=").append(hdfsStoreName);
-      buf.append("; hdfsWriteOnly=").append(hdfsWriteOnly);
       buf.append("; GatewaySenderIds=").append(gatewaySenderIds);
       buf.append("; AsyncEventQueueIds=").append(asyncEventQueueIds);
       buf.append("; compressor=").append(compressor == null ? null : compressor.getClass().getName());
@@ -1972,14 +1931,6 @@ public class AttributesFactory<K,V> {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public CustomEvictionAttributes getCustomEvictionAttributes() {
-      return this.customEvictionAttributes;
-    }
-
-    /**
      * @deprecated this API is scheduled to be removed
      */
     public MembershipAttributes getMembershipAttributes() {
@@ -2034,16 +1985,6 @@ public class AttributesFactory<K,V> {
         this.asyncEventQueueIds = new CopyOnWriteArraySet<String>();
       }
       return this.asyncEventQueueIds;
-    }
-
-    @Override
-    public String getHDFSStoreName() {
-      return hdfsStoreName;
-    }
-    
-    @Override
-    public boolean getHDFSWriteOnly() {
-      return hdfsWriteOnly;
     }
 
     @Override

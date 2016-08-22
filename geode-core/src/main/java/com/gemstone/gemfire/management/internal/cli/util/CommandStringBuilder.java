@@ -27,7 +27,7 @@ import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
  * commands
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class CommandStringBuilder {
   private final String OPTION_MARKER    = SyntaxConstants.LONG_OPTION_SPECIFIER;

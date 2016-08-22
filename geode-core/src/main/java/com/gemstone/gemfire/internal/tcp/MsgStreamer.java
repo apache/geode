@@ -16,9 +16,17 @@
  */
 package com.gemstone.gemfire.internal.tcp;
 
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.distributed.internal.DMStats;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionMessage;
+import com.gemstone.gemfire.internal.*;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -28,25 +36,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.ByteBufferWriter;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.ObjToByteArraySerializer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-
 /** <p>MsgStreamer supports streaming a message to a tcp Connection
  * in chunks. This allows us to send a message without needing to
  * perserialize it completely in memory thus saving buffer memory.
 
-    @since 5.0.2
+    @since GemFire 5.0.2
    
     */
 
@@ -64,12 +58,6 @@ public class MsgStreamer extends OutputStream implements
    * Any exceptions that happen during sends
    */
   private ConnectExceptions ce;
-  // TODO OFFHEAP: instead of MsgStreamer extending OutputStream
-  // we could have it extends HeapDataOutputStream.
-  // HDOS can now be given a direct ByteBuffer and told
-  // to not copy large byte sequences it is given.
-  // Also be it being a HDOS we can take advantage of code
-  // that is already optimized to pass Chunk direct ByteBuffers.
   /**
    * The byte buffer we used for preparing a chunk of the message.
    * Currently this buffer is obtained from the connection.
@@ -408,10 +396,6 @@ public class MsgStreamer extends OutputStream implements
       return;
     }
     int len = bb.remaining();
-    // TODO OFFHEAP: if len > remainingSpace and isOverflowMode() then
-    // (and the overflow HDOS has doNotCopy set?) it is probably better to not copy part of
-    // bb to this.buffer and then add the remainder of it to the HDOS. Instead
-    // we can just add the whole bb to the HDOS.
     while (len > 0) {
       int remainingSpace = this.buffer.capacity() - this.buffer.position();
       if (remainingSpace == 0) {
@@ -762,7 +746,7 @@ public class MsgStreamer extends OutputStream implements
    * Use -Dgemfire.ASCII_STRINGS=true if all String instances contain
    * ASCII characters. Setting this to true gives a performance improvement.
    */
-  private static final boolean ASCII_STRINGS = Boolean.getBoolean("gemfire.ASCII_STRINGS");
+  private static final boolean ASCII_STRINGS = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ASCII_STRINGS");
   
   /**
      * Writes two bytes of length information
@@ -938,7 +922,6 @@ public class MsgStreamer extends OutputStream implements
    * will all fit into our current buffer.
    */
   public final void writeAsSerializedByteArray(Object v) throws IOException {
-    // TODO OFFHEAP: update this class to take into account the "noCopy" mode added to HDOS and that we might be adding direct ByteBuffers to this.
     if (v instanceof HeapDataOutputStream) {
       HeapDataOutputStream other = (HeapDataOutputStream)v;
       InternalDataSerializer.writeArrayLength(other.size(), this);

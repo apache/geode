@@ -16,11 +16,11 @@
  */
 package com.gemstone.gemfire.cache.client.internal.locator.wan;
 
-import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
+
+import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * A listener to handle membership when new locator is added to remote locator

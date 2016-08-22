@@ -26,7 +26,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
@@ -59,6 +61,7 @@ import com.gemstone.gemfire.internal.InternalEntity;
 import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.commands.DataCommands;
@@ -77,7 +80,6 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.JsonUtil;
 import com.gemstone.gemfire.pdx.PdxInstance;
-import org.json.JSONArray;
 
 /***
  * 
@@ -607,9 +609,12 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
         valueObject = getClassObject(value,valueClass);
       }catch(ClassNotFoundException e){
         return DataCommandResult.createPutResult(key, null, null, "ClassNotFoundException " + valueClass, false); 
-      }      
-      
-      Object returnValue = region.put(keyObject,valueObject);
+      }
+      Object returnValue;
+      if (putIfAbsent && region.containsKey(keyObject))
+        returnValue = region.get(keyObject);
+      else
+        returnValue = region.put(keyObject,valueObject);
       Object array[] = getJSONForNonPrimitiveObject(returnValue);             
       DataCommandResult result = DataCommandResult.createPutResult(key, array[1], null, null, true);
       if(array[0]!=null)
@@ -912,6 +917,12 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
         CompiledValue compiledQuery = compiler.compileQuery(query);
         Set<String> regions = new HashSet<String>();
         compiledQuery.getRegionsInQuery(regions, null);
+
+        // authorize data read on these regions
+        for(String region:regions){
+          GeodeSecurityUtil.authorizeRegionRead(region);
+        }
+
         regionsInQuery = Collections.unmodifiableSet(regions);
         if (regionsInQuery.size() > 0) {
           Set<DistributedMember> members = DataCommands.getQueryRegionsAssociatedMembers(regionsInQuery, cache, false);
@@ -922,6 +933,22 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
             request.setQuery(query);
             dataResult = DataCommands.callFunctionForRegion(request, function, members);
             dataResult.setInputQuery(query);
+
+            // post process, iterate through the result for post processing
+            if(GeodeSecurityUtil.needPostProcess()) {
+              List<SelectResultRow> rows = dataResult.getSelectResult();
+              for (Iterator<SelectResultRow> itr = rows.iterator(); itr.hasNext(); ) {
+                SelectResultRow row = itr.next();
+                Object newValue = GeodeSecurityUtil.postProcess(null, null, row.getValue());
+                // user is not supposed to see this row
+                if (newValue == null) {
+                  itr.remove();
+                } else {
+                  row.setValue(newValue);
+                }
+              }
+            }
+
             return (dataResult);
           } else {
             return (dataResult = DataCommandResult.createSelectInfoResult(null, null, -1, null,
@@ -940,13 +967,9 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
     }
 
     private String addLimit(String query) {
-      boolean containsLimitOrAggregate = query.contains(" limit")
-          || query.contains(" LIMIT") || query.contains("count(*)");
-      if(!containsLimitOrAggregate){
-        String limitQuery = query + " limit " + getFetchSize();
-        return limitQuery;
-      }
-      else  return query;
+      if (StringUtils.containsIgnoreCase(query, " limit") || StringUtils.containsIgnoreCase(query, " count("))
+        return query;
+      return query + " limit " + getFetchSize();
     }
   };
 

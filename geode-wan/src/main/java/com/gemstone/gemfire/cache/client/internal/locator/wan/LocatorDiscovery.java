@@ -16,12 +16,7 @@
  */
 package com.gemstone.gemfire.cache.client.internal.locator.wan;
 
-import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.WanLocatorDiscoverer;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
@@ -29,19 +24,24 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.tcp.ConnectionException;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipListener;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class represent a runnable task which exchange the locator information
  * with local locators(within the site) as well as remote locators (across the
  * site)
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class LocatorDiscovery{
 
   private static final Logger logger = LogService.getLogger();
-  
+
+  private WanLocatorDiscoverer discoverer;
+
   private DistributionLocatorId locatorId;
   
   private LocatorMembershipListener locatorListener;
@@ -57,8 +57,9 @@ public class LocatorDiscovery{
   public static final int WAN_LOCATOR_PING_INTERVAL = Integer.getInteger(
       "WANLocator.PING_INTERVAL", 10000).intValue();
 
-  public LocatorDiscovery(DistributionLocatorId locotor,RemoteLocatorJoinRequest request,
+  public LocatorDiscovery(WanLocatorDiscoverer discoverer, DistributionLocatorId locotor,RemoteLocatorJoinRequest request,
       LocatorMembershipListener locatorListener) {
+    this.discoverer = discoverer;
     this.locatorId = locotor;
     this.request = request; 
     this.locatorListener = locatorListener;
@@ -76,13 +77,13 @@ public class LocatorDiscovery{
    * practice.
    */
   private static final int FAILURE_MAP_MAXSIZE = Integer.getInteger(
-      "gemfire.GatewaySender.FAILURE_MAP_MAXSIZE", 1000000);
+      DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.FAILURE_MAP_MAXSIZE", 1000000);
 
   /**
    * The maximum interval for logging failures of the same event in millis.
    */
   private static final int FAILURE_LOG_MAX_INTERVAL = Integer.getInteger(
-      "gemfire.LocatorDiscovery.FAILURE_LOG_MAX_INTERVAL", 300000);
+      DistributionConfig.GEMFIRE_PREFIX + "LocatorDiscovery.FAILURE_LOG_MAX_INTERVAL", 300000);
 
   public final boolean skipFailureLogging(DistributionLocatorId locatorId) {
     boolean skipLogging = false;
@@ -119,11 +120,14 @@ public class LocatorDiscovery{
       exchangeRemoteLocators();
     }
   }
-  
+
+  private WanLocatorDiscoverer getDiscoverer() {
+    return this.discoverer;
+  }
   
   private void exchangeLocalLocators() {
     int retryAttempt = 1;
-    while (true) {
+    while (!getDiscoverer().isStopped()) {
       try {
         RemoteLocatorJoinResponse response = (RemoteLocatorJoinResponse)TcpClient
             .requestToServer(locatorId.getHost(), locatorId.getPort(), request,
@@ -169,7 +173,7 @@ public class LocatorDiscovery{
   public void exchangeRemoteLocators() {
     int retryAttempt = 1;
     DistributionLocatorId remoteLocator = this.locatorId;
-    while (true) {
+    while (!getDiscoverer().isStopped()) {
       RemoteLocatorJoinResponse response;
       try {
         response = (RemoteLocatorJoinResponse)TcpClient

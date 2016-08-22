@@ -19,6 +19,16 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheTransactionManager;
 import com.gemstone.gemfire.cache.EntryOperation;
@@ -54,7 +64,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * and not called while local iteration.
  *
  */
-public class PartitionResolverDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
 
   final private static String CUSTOMER = "custRegion";
   final private static String ORDER = "orderRegion";
@@ -65,8 +76,8 @@ public class PartitionResolverDUnitTest extends CacheTestCase {
   /**
    * @param name
    */
-  public PartitionResolverDUnitTest(String name) {
-    super(name);
+  public PartitionResolverDUnitTest() {
+    super();
   }
 
   @Override
@@ -178,36 +189,42 @@ public class PartitionResolverDUnitTest extends CacheTestCase {
       }
     });
   }
+  @Test
   public void testKeysInIterationOnAccessor() {
     resolverInIteration(IteratorType.KEYS, accessor);
     verifyResolverCountInVM(accessor, 0);
     verifyResolverCountInVM(datastore1, 0);
     verifyResolverCountInVM(datastore2, 0);
   }
+  @Test
   public void testValuesInIterationOnAccessor() {
     resolverInIteration(IteratorType.VALUES, accessor);
     verifyResolverCountInVM(accessor, 0);
     verifyResolverCountInVM(datastore1, getNumberOfKeysOwnedByVM(datastore1));
     verifyResolverCountInVM(datastore2, getNumberOfKeysOwnedByVM(datastore2));
   }
+  @Test
   public void testEntriesInIterationOnAccessor() {
     resolverInIteration(IteratorType.ENTRIES, accessor);
     verifyResolverCountInVM(accessor, 0);
     verifyResolverCountInVM(datastore1, getNumberOfKeysOwnedByVM(datastore1));
     verifyResolverCountInVM(datastore2, getNumberOfKeysOwnedByVM(datastore2));
   }
+  @Test
   public void testKeysInIterationOnDataStore() {
     resolverInIteration(IteratorType.KEYS, datastore1);
     verifyResolverCountInVM(accessor, 0);
     verifyResolverCountInVM(datastore1, 0);
     verifyResolverCountInVM(datastore2, 0);
   }
+  @Test
   public void testValuesInIterationOnDataStore() {
     resolverInIteration(IteratorType.VALUES, datastore1);
     verifyResolverCountInVM(accessor, 0);
     verifyResolverCountInVM(datastore1, 0);
     verifyResolverCountInVM(datastore2, getNumberOfKeysOwnedByVM(datastore2));
   }
+  @Test
   public void testEntriesInIterationOnDataStore() {
     resolverInIteration(IteratorType.ENTRIES, datastore1);
     verifyResolverCountInVM(accessor, 0);
@@ -250,6 +267,7 @@ public class PartitionResolverDUnitTest extends CacheTestCase {
     vm.invoke(doIteration);
   }
   
+  @Test
   public void testKeysIterationInFunctionExection() {
     doIterationInFunction(IteratorType.KEYS);
     verifyResolverCountInVM(accessor, 0);
@@ -257,6 +275,7 @@ public class PartitionResolverDUnitTest extends CacheTestCase {
     verifyResolverCountInVM(datastore2, 0);
   }
   
+  @Test
   public void testValuesIterationInFunctionExection() {
     doIterationInFunction(IteratorType.VALUES);
     verifyResolverCountInVM(accessor, 0);
@@ -264,6 +283,7 @@ public class PartitionResolverDUnitTest extends CacheTestCase {
     verifyResolverCountInVM(datastore2, 0);
   }
   
+  @Test
   public void testEntriesIterationInFunctionExection() {
     doIterationInFunction(IteratorType.ENTRIES);
     verifyResolverCountInVM(accessor, 0);
@@ -337,6 +357,7 @@ public class PartitionResolverDUnitTest extends CacheTestCase {
     }
   }
   
+  @Test
   public void testOps() {
     initAccessorAndDataStore(0);
     doOps(false);
@@ -345,7 +366,9 @@ public class PartitionResolverDUnitTest extends CacheTestCase {
     verifyResolverCountInVM(datastore2, getResolverCountForVM(datastore2));
   }
 
-  public void _testTxOps() {
+  @Ignore("TODO")
+  @Test
+  public void testTxOps() {
     initAccessorAndDataStore(0);
     doOps(true);
     verifyResolverCountInVM(accessor, 7);

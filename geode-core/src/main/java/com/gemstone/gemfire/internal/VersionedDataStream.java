@@ -25,10 +25,7 @@ import com.gemstone.gemfire.DataSerializable;
 /**
  * An extension to {@link DataOutput}, {@link DataInput} used internally in
  * product to indicate that the input/output stream is attached to a GemFire
- * peer having a different version. See the spec on rolling upgrades for more
- * details: <a
- * href="https://wiki.gemstone.com/display/SQLF/Rolling+upgrades">Rolling
- * Upgrades</a>.
+ * peer having a different version.
  * 
  * Internal product classes that implement {@link DataSerializableFixedID} and
  * {@link DataSerializable} and change serialization format must check this on
@@ -36,7 +33,7 @@ import com.gemstone.gemfire.DataSerializable;
  * {@link InternalDataSerializer#getVersionForDataStream} methods) and deal with
  * serialization with previous {@link Version}s appropriately.
  * 
- * @since 7.1
+ * @since GemFire 7.1
  */
 public interface VersionedDataStream {
 

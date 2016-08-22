@@ -16,50 +16,60 @@
  */
 package com.gemstone.gemfire.disttx;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 import java.util.Properties;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.internal.cache.execute.PRTransactionWithVersionsDUnitTest;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class PRDistTXWithVersionsDUnitTest extends
-    PRTransactionWithVersionsDUnitTest {
+@Category(DistributedTest.class)
+public class PRDistTXWithVersionsDUnitTest extends PRTransactionWithVersionsDUnitTest {
 
-  public PRDistTXWithVersionsDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.DISTRIBUTED_TRANSACTIONS_NAME, "true");
-//    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    props.setProperty(DISTRIBUTED_TRANSACTIONS, "true");
     return props;
   }
   
-  // [DISTTX] TODO test overridden and intentionally left blank as they fail.
-  // Fix this 
-  
+  @Ignore("[DISTTX] TODO test overridden and intentionally left blank as they fail.")
   @Override
+  @Test
   public void testBasicPRTransactionRedundancy0() {
   }
 
+  @Ignore("[DISTTX] TODO test overridden and intentionally left blank as they fail.")
   @Override
+  @Test
   public void testBasicPRTransactionRedundancy1() {
   }
 
+  @Ignore("[DISTTX] TODO test overridden and intentionally left blank as they fail.")
   @Override
+  @Test
   public void testBasicPRTransactionRedundancy2() {
   }
 
+  @Ignore("[DISTTX] TODO test overridden and intentionally left blank as they fail.")
   @Override
+  @Test
   public void testBasicPRTransactionNoDataRedundancy0() {
   }
 
+  @Ignore("[DISTTX] TODO test overridden and intentionally left blank as they fail.")
   @Override
+  @Test
   public void testBasicPRTransactionNoDataRedundancy1() {
   }
 
+  @Ignore("[DISTTX] TODO test overridden and intentionally left blank as they fail.")
   @Override
+  @Test
   public void testBasicPRTransactionNoDataRedundancy2() {
   }
 

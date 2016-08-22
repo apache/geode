@@ -16,19 +16,27 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.client.ServerOperationException;
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Wait;
 
+@Category(DistributedTest.class)
 public class PDXNewWanDUnitTest extends WANTestBase{
 
   private static final long serialVersionUID = 1L;
   
-  public PDXNewWanDUnitTest(String name) {
-    super(name);
+  public PDXNewWanDUnitTest() {
+    super();
   }
 
   /**
@@ -41,11 +49,12 @@ public class PDXNewWanDUnitTest extends WANTestBase{
    *   6> Put is done with value which is PDXSerializable
    *   7> Validate whether other sites member receive this put operation.    
    */
+  @Test
   public void testWANPDX_RR_SerialSender() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     createCacheInVMs(lnPort, vm3);
 
@@ -80,6 +89,7 @@ public class PDXNewWanDUnitTest extends WANTestBase{
    *   9> Make sure that site 1 get the the PDX types along with entries
    *   and can deserialize entries.     
    */
+  @Test
   public void testWANPDX_RemoveRomoteData() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -136,6 +146,7 @@ public class PDXNewWanDUnitTest extends WANTestBase{
    *   9> Make some conflicting PDX registries in site 1 before the reconnect
    *   10> Make sure we flag a warning about the conflicting updates.     
    */
+  @Test
   public void testWANPDX_ConflictingData() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -215,6 +226,7 @@ public class PDXNewWanDUnitTest extends WANTestBase{
    *   6> Put is done with value which is PDXSerializable
    *   7> Validate whether other sites member receive this put operation.    
    */
+  @Test
   public void testWANPDX_RR_SerialSender3Sites() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -224,9 +236,9 @@ public class PDXNewWanDUnitTest extends WANTestBase{
     createCacheInVMs(lnPort, vm3);
     createCacheInVMs(nyPort, vm4);
     createCacheInVMs(tkPort, vm5);
-    vm3.invoke(() -> WANTestBase.createReceiver( lnPort ));
-    vm4.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm5.invoke(() -> WANTestBase.createReceiver( tkPort ));
+    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm4.invoke(() -> WANTestBase.createReceiver());
+    vm5.invoke(() -> WANTestBase.createReceiver());
 
 
     //Create all of our gateway senders
@@ -289,12 +301,13 @@ public class PDXNewWanDUnitTest extends WANTestBase{
       getTestMethodName() + "_RR", 2 ));
   }
   
+  @Test
   public void testWANPDX_RR_SerialSender_StartedLater() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     createCacheInVMs(lnPort, vm3);
 
@@ -330,6 +343,7 @@ public class PDXNewWanDUnitTest extends WANTestBase{
    *   7> Validate whether other sites member receive this put operation.    
    */
   
+  @Test
   public void testWANPDX_PR_SerialSender() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -337,7 +351,7 @@ public class PDXNewWanDUnitTest extends WANTestBase{
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(
       getTestMethodName() + "_PR", null, 0, 2, isOffHeap() ));
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     createCacheInVMs(lnPort, vm3);
 
@@ -357,6 +371,7 @@ public class PDXNewWanDUnitTest extends WANTestBase{
         getTestMethodName() + "_PR", 1 ));
   }
   
+  @Test
   public void testWANPDX_PR_SerialSender_StartedLater() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -397,6 +412,7 @@ public class PDXNewWanDUnitTest extends WANTestBase{
    *   7> Validate whether other sites member receive this put operation.    
    */
   
+  @Test
   public void testWANPDX_PR_MultipleVM_SerialSender() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -404,7 +420,7 @@ public class PDXNewWanDUnitTest extends WANTestBase{
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(
       getTestMethodName() + "_PR", null,1, 5, isOffHeap() ));
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     createCacheInVMs(lnPort, vm3, vm4);
 
@@ -425,6 +441,7 @@ public class PDXNewWanDUnitTest extends WANTestBase{
         getTestMethodName() + "_PR", 10 ));
   }
   
+  @Test
   public void testWANPDX_PR_MultipleVM_SerialSender_StartedLater() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -468,12 +485,13 @@ public class PDXNewWanDUnitTest extends WANTestBase{
    *   7> Validate whether other sites member receive this put operation.    
    */
   
+  @Test
   public void testWANPDX_PR_ParallelSender() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     vm3.invoke(() -> WANTestBase.createCache( lnPort ));
 
@@ -495,6 +513,7 @@ public class PDXNewWanDUnitTest extends WANTestBase{
         getTestMethodName() + "_PR", 1));
   }
   
+  @Test
   public void testWANPDX_PR_ParallelSender_47826() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -502,7 +521,7 @@ public class PDXNewWanDUnitTest extends WANTestBase{
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(
       getTestMethodName() + "_PR", null, 0, 1, isOffHeap() ));
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     createCacheInVMs(lnPort, vm3);
 
@@ -521,6 +540,7 @@ public class PDXNewWanDUnitTest extends WANTestBase{
         getTestMethodName() + "_PR", 1 ));
   }
   
+  @Test
   public void testWANPDX_PR_ParallelSender_StartedLater() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -551,12 +571,13 @@ public class PDXNewWanDUnitTest extends WANTestBase{
   }
   
   
+  @Test
   public void testWANPDX_PR_MultipleVM_ParallelSender() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     createCacheInVMs(lnPort, vm3, vm4);
 
@@ -582,6 +603,7 @@ public class PDXNewWanDUnitTest extends WANTestBase{
         getTestMethodName() + "_PR", 10 ));
   }
   
+  @Test
   public void testWANPDX_PR_MultipleVM_ParallelSender_StartedLater() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -617,12 +639,13 @@ public class PDXNewWanDUnitTest extends WANTestBase{
   }
   
   
+  @Test
   public void testWANPDX_RR_SerialSenderWithFilter() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     createCacheInVMs(lnPort, vm3);
 
@@ -647,12 +670,13 @@ public class PDXNewWanDUnitTest extends WANTestBase{
   }
   
   
+  @Test
   public void testWANPDX_PR_MultipleVM_ParallelSenderWithFilter() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     createCacheInVMs(lnPort, vm3, vm4);
 
@@ -685,13 +709,14 @@ public class PDXNewWanDUnitTest extends WANTestBase{
   /**
    * When remote site bounces then we should send pdx event again.
    */
-  
-  public void Bug_testWANPDX_PR_SerialSender_RemoteSite_Bounce() {
+  @Ignore
+  @Test
+  public void testWANPDX_PR_SerialSender_RemoteSite_Bounce() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
 
     createCacheInVMs(lnPort, vm3);
 
@@ -714,7 +739,7 @@ public class PDXNewWanDUnitTest extends WANTestBase{
     
     vm2.invoke(() -> WANTestBase.killSender());
 
-    createReceiverInVMs(nyPort, vm2, vm4);
+    createReceiverInVMs(vm2, vm4);
 
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(
       getTestMethodName() + "_PR", null, 1, 2, isOffHeap() ));

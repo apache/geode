@@ -28,7 +28,7 @@ import java.io.*;
 /**
  * A message that is sent to a particular application to get the
  * region for the specified path.
- * @since 3.5
+ * @since GemFire 3.5
  */
 public final class RegionRequest extends AdminRequest {
 

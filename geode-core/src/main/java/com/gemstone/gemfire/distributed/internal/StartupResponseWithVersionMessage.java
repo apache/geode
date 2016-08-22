@@ -31,7 +31,7 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
- * @since 6.6.2
+ * @since GemFire 6.6.2
  */
 public class StartupResponseWithVersionMessage extends StartupResponseMessage {
   private static final Logger logger = LogService.getLogger();

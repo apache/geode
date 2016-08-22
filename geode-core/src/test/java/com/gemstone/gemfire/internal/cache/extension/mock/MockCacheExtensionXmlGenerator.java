@@ -32,7 +32,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
  * {@link MockCacheExtension} {@link XmlGenerator}.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public final class MockCacheExtensionXmlGenerator extends AbstractMockExtensionXmlGenerator<Cache> {
   public MockCacheExtensionXmlGenerator(MockCacheExtension extension) {

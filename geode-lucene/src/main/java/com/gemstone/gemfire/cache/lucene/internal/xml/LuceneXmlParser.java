@@ -21,6 +21,10 @@ package com.gemstone.gemfire.cache.lucene.internal.xml;
 
 import static com.gemstone.gemfire.cache.lucene.internal.xml.LuceneXmlConstants.*;
 
+import com.gemstone.gemfire.cache.CacheXmlException;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.lucene.analysis.Analyzer;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -58,15 +62,18 @@ public class LuceneXmlParser extends AbstractXmlParser {
     }
     LuceneIndexCreation creation = (LuceneIndexCreation) stack.peek();
     String name = atts.getValue(NAME);
-    creation.addField(name);
+    String className = atts.getValue(ANALYZER);
+    if (className == null) {
+      creation.addField(name);
+    } else {
+      Analyzer analyzer = createAnalyzer(className);
+      creation.addFieldAndAnalyzer(name, analyzer);
+    }
   }
 
   private void startIndex(Attributes atts) {
     final RegionCreation region = (RegionCreation) stack.peek();
-    RegionAttributesCreation rac = (RegionAttributesCreation) region.getAttributes();
     String name = atts.getValue(NAME);
-    rac.addAsyncEventQueueId(LuceneServiceImpl.getUniqueIndexName(name, region.getFullPath()));
-    
     LuceneIndexCreation indexCreation = new LuceneIndexCreation();
     indexCreation.setName(name);
     indexCreation.setRegion(region);
@@ -93,5 +100,20 @@ public class LuceneXmlParser extends AbstractXmlParser {
     
     //Remove the index creation from the stack
     stack.pop();
+  }
+
+  private Analyzer createAnalyzer(String className) {
+    Object obj;
+    try {
+      Class c = InternalDataSerializer.getCachedClass(className);
+      obj = c.newInstance();
+    }
+    catch (Exception ex) {
+      throw new CacheXmlException(LocalizedStrings.CacheXmlParser_WHILE_INSTANTIATING_A_0.toLocalizedString(className), ex);
+    }
+    if (!(obj instanceof Analyzer)) {
+      throw new CacheXmlException(LocalizedStrings.LuceneXmlParser_CLASS_0_IS_NOT_AN_INSTANCE_OF_ANALYZER.toLocalizedString(className));
+    }
+    return (Analyzer) obj;
   }
 }

@@ -78,7 +78,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * @see LRUCapacityController
  *
  *
- * @since 2.0.2
+ * @since GemFire 2.0.2
  */
 public final class MemLRUCapacityController extends LRUAlgorithm
   implements Declarable {
@@ -533,7 +533,7 @@ public final class MemLRUCapacityController extends LRUAlgorithm
   /**
    * Returns a brief description of this capacity controller.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   @Override
   public String toString() {

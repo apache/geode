@@ -31,14 +31,14 @@ import java.io.IOException;
  * {@link #hasIncomingFiles()}.
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface Result {
   
   /**
    * Indicates a Results status.
    * 
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public enum Status {
     /**

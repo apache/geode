@@ -32,7 +32,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
    * from the DiskInitFile.
    *
    *
-   * @since prPersistSprint2
+   * @since GemFire prPersistSprint2
    */
   public class PlaceHolderDiskRegion extends AbstractDiskRegion
       implements DiskRecoveryStore {

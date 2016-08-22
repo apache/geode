@@ -16,22 +16,24 @@
  */
 package com.gemstone.gemfire.management.bean.stats;
 
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.Before;
-
-import static org.junit.Assert.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.NanoTimer;
+import org.junit.After;
+import org.junit.Before;
+
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Base test case for the management.bean.stats tests.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public abstract class MBeanStatsTestCase {
 
@@ -47,11 +49,10 @@ public abstract class MBeanStatsTestCase {
     //System.setProperty("gemfire.stats.debug.debugSampleCollector", "true");
 
     final Properties props = new Properties();
-    //props.setProperty("log-level", "finest");
-    props.setProperty("mcast-port", "0");
-    props.setProperty("enable-time-statistics", "true");
-    props.setProperty("statistic-sampling-enabled", "false");
-    props.setProperty("statistic-sample-rate", "60000");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(ENABLE_TIME_STATISTICS, "true");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
+    props.setProperty(STATISTIC_SAMPLE_RATE, "60000");
     
     this.system = (InternalDistributedSystem) DistributedSystem.connect(props);
     assertNotNull(this.system.getStatSampler());

@@ -42,7 +42,6 @@ public class Bug49856JUnitTest {
     GemFireCacheImpl cache = (GemFireCacheImpl)ccf.create();
 
     SystemFailure.getFailure();
-    SequenceLoggerImpl.getInstance();
 
     Thread.sleep(5000);
     // Assert the threads have been started.
@@ -65,20 +64,17 @@ public class Bug49856JUnitTest {
         watchDogRunning = true;
       } else if (t.getName().contains("SystemFailure Proctor")) {
         proctorRunning = true;
-      } else if (t.getName().contains("State Logger Consumer Thread")) {
-        loggerConsumerRunning = true;
       }
     }
     StringBuilder sb = new StringBuilder(new Date(System.currentTimeMillis()).toString());
     sb.append((watchDogRunning ^ expectThreads) ? " SystemFailure WatchDog, " : " ");
     sb.append((proctorRunning ^ expectThreads) ? "SystemFailure Proctor, " : "");
-    sb.append((loggerConsumerRunning ^ expectThreads) ? "State Logger Consumer Thread " : "");
     sb.append(expectThreads ? "not started." : "still running.");
 
     if (expectThreads) {
-      assertTrue(sb.toString(), proctorRunning && watchDogRunning && loggerConsumerRunning);
+      assertTrue(sb.toString(), proctorRunning && watchDogRunning);
     } else {
-      assertTrue(sb.toString(), !proctorRunning && !watchDogRunning && !loggerConsumerRunning);
+      assertTrue(sb.toString(), !proctorRunning && !watchDogRunning);
     }
   }
 

@@ -34,7 +34,7 @@ import com.gemstone.gemfire.internal.Version;
  * The values in this set are stored as Object[] and get wrapped in Structs as
  * necessary.
  * 
- * @since 4.0
+ * @since GemFire 4.0
  */
 public final class SortedStructSet extends TreeSet implements SelectResults,
     DataSerializableFixedID, Ordered, StructFields {

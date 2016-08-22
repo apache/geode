@@ -16,10 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
+import static org.mockito.Mockito.*;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -41,12 +38,9 @@ public class CommitCommandTest {
 	 * No NPE should be thrown from the {@link CommitCommand#writeCommitResponse(com.gemstone.gemfire.internal.cache.TXCommitMessage, Message, ServerConnection)}
 	 * if the response message is null as it is the case when JTA
 	 * transaction is rolled back with TX_SYNCHRONIZATION AFTER_COMPLETION STATUS_ROLLEDBACK 
-	 * @throws IOException 
-	 * 
 	 */
 	@Test
-	public void testWriteNullResponse() throws IOException {
-		
+	public void testWriteNullResponse() throws Exception {
 		Cache cache = mock(Cache.class);
 		Message origMsg = mock(Message.class);
 		ServerConnection servConn = mock(ServerConnection.class);
@@ -55,7 +49,5 @@ public class CommitCommandTest {
 		when(cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
 		
 		CommitCommand.writeCommitResponse(null, origMsg, servConn);
-		
 	}
-	
 }

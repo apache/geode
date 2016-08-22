@@ -22,7 +22,7 @@ import com.gemstone.gemfire.cache.CacheRuntimeException;
  * Thrown if an error occurs while updating query indexes during
  * region modification.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class IndexMaintenanceException extends CacheRuntimeException {
 private static final long serialVersionUID = 3326023943226474039L;

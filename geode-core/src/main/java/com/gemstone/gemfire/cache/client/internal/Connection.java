@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerQueueStatus;
 /**
  * Represents a connection from a client to a server.
  * Instances are created, kept, and used by {@link PoolImpl}.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public interface Connection {
   public static final long DEFAULT_CONNECTION_ID = 26739;

@@ -23,7 +23,7 @@ import com.gemstone.gemfire.GemFireException;
 
 /**
  * Thrown when a configuration that is now allowed by PDX is detected.
- * @since 6.6
+ * @since GemFire 6.6
  *
  */
 public class PdxConfigurationException extends GemFireException {

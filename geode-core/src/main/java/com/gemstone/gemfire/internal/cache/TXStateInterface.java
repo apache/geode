@@ -85,7 +85,7 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
 
   /**
    * Return true if mod counts for this transaction can not be represented by a byte
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public boolean needsLargeModCount();
   
@@ -123,8 +123,14 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
    * @param localRegion
    * @param updateStats TODO
    */
-  public Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion,
-      boolean updateStats, boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadsFromHDFS, boolean retainResult);
+  public Object getDeserializedValue(KeyInfo keyInfo,
+                                     LocalRegion localRegion,
+                                     boolean updateStats,
+                                     boolean disableCopyOnRead,
+                                     boolean preferCD,
+                                     EntryEventImpl clientEvent,
+                                     boolean returnTombstones,
+                                     boolean retainResult);
 
   public TXEvent getEvent();
 
@@ -140,7 +146,6 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
    * @param rememberRead true if the value read from committed state
    *   needs to be remembered in tx state for repeatable read.
    * @param  createTxEntryIfAbsent should a transactional entry be created if not present. 
-   *        Used by sqlfabric system
    * @return a txEntryState or null if the entry doesn't exist in the transaction and/or committed state. 
    */
   public TXEntryState txReadEntry(KeyInfo entryKey, LocalRegion localRegion, boolean rememberRead

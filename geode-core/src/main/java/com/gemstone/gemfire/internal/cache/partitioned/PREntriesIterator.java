@@ -22,11 +22,9 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 
 
 /**
- * This interface is implemented by the iterators
- * GemFireContainer.PRLocalEntriesIterator,
- * PartitionedRegion.PRLocalBucketSetEntriesIterator and
- * PartitionedRegion.KeysSetIterator used by SqlFabric to obtain information of
- * the bucket ID from which the current local entry is being fetched from.
+ * This interface provides the
+ * bucket ID from which the current local entry is being fetched from
+ * and the PartitionedRegion being iterated.
  * 
  */
 public interface PREntriesIterator<T> extends Iterator<T>{

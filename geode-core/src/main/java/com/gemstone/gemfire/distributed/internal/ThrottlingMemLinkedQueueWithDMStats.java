@@ -35,7 +35,7 @@ import java.util.*;
  * Inserting other types of objects will cause class cast exceptions to be thrown
  * on put/take.
  *
- * @since 3.0
+ * @since GemFire 3.0
  *
  */
 

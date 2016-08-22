@@ -35,6 +35,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.internal.cache.versions.ConcurrentCacheModificationException;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  * This operation updates Version stamp of an entry if entry is available and
@@ -90,14 +91,10 @@ public class UpdateEntryVersionOperation extends DistributedCacheOperation {
     }
 
     @Override
+    @Retained
     protected InternalCacheEvent createEvent(DistributedRegion rgn)
         throws EntryNotFoundException {
-      
-      if (rgn.keyRequiresRegionContext()) {
-        ((KeyWithRegionContext)this.key).setRegionContext(rgn);
-      }
-      
-      EntryEventImpl ev = EntryEventImpl.create(rgn, getOperation(), this.key,
+      @Retained EntryEventImpl ev = EntryEventImpl.create(rgn, getOperation(), this.key,
          null /* newValue */, this.callbackArg /*callbackArg*/, true /* originRemote*/ , getSender(), false /*generateCallbacks*/);
       ev.setEventId(this.eventId);
       ev.setVersionTag(this.versionTag);

@@ -57,7 +57,7 @@ The final step is to produce a {@link Region} by calling {@link #create(String)}
     .create("partition");
 </PRE>
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 
 public class RegionFactory<K,V>
@@ -67,7 +67,7 @@ public class RegionFactory<K,V>
 
   /**
    * For internal use only.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   protected RegionFactory(GemFireCacheImpl cache) {
     this.cache = cache;
@@ -76,7 +76,7 @@ public class RegionFactory<K,V>
 
   /**
    * For internal use only.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   protected RegionFactory(GemFireCacheImpl cache, RegionShortcut pra) {
     this.cache = cache;
@@ -90,7 +90,7 @@ public class RegionFactory<K,V>
 
   /**
    * For internal use only.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   protected RegionFactory(GemFireCacheImpl cache, RegionAttributes ra) {
     this.cache = cache;
@@ -99,7 +99,7 @@ public class RegionFactory<K,V>
 
   /**
    * For internal use only.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   protected RegionFactory(GemFireCacheImpl cache, String regionAttributesId) {
     this.cache = cache;
@@ -401,30 +401,6 @@ public class RegionFactory<K,V>
   }
 
   /**
-   * Set custom {@link EvictionCriteria} for the region with start time and
-   * interval of evictor task to be run in milliseconds, or evict incoming rows
-   * in case both start and frequency are specified as zero.
-   * 
-   * @param criteria
-   *          an {@link EvictionCriteria} to be used for eviction for HDFS
-   *          persistent regions
-   * @param start
-   *          the start time at which periodic evictor task should be first
-   *          fired to apply the provided {@link EvictionCriteria}; if this is
-   *          zero then current time is used for the first invocation of evictor
-   * @param interval
-   *          the periodic frequency at which to run the evictor task after the
-   *          initial start; if this is if both start and frequency are zero
-   *          then {@link EvictionCriteria} is applied on incoming insert/update
-   *          to determine whether it is to be retained
-   */
-  public RegionFactory<K, V> setCustomEvictionAttributes(
-      EvictionCriteria<K, V> criteria, long start, long interval) {
-    this.attrsFactory.setCustomEvictionAttributes(criteria, start, interval);
-    return this;
-  }
-
-  /**
    * Sets the scope for the next <code>RegionAttributes</code> created.
    *
    * @param scopeType
@@ -473,7 +449,7 @@ public class RegionFactory<K,V>
   /**
    * Sets whether distributed operations on this region should attempt to use multicast.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    * @param value true to enable multicast
    * @return a reference to this RegionFactory object
    * @see AttributesFactory#setMulticastEnabled(boolean)
@@ -500,7 +476,7 @@ public class RegionFactory<K,V>
    * @return a reference to this RegionFactory object
    * @throws IllegalStateException if a cache loader or cache writer has already
    * been set.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public RegionFactory<K,V> setPoolName(String poolName) {
     this.attrsFactory.setPoolName(poolName);
@@ -509,7 +485,7 @@ public class RegionFactory<K,V>
 
   /**
    * Sets whether or not this region should be considered a publisher.
-   * @since 5.0
+   * @since GemFire 5.0
    * @deprecated as of 6.5
    */
   @Deprecated
@@ -637,7 +613,7 @@ public class RegionFactory<K,V>
    * ensures that region contents are consistent across the distributed
    * system.  This setting must be the same in each member having the region.
    *
-   * @since 7.0
+   * @since GemFire 7.0
    * @param enabled whether concurrency checks should be enabled for the region
    * @see AttributesFactory#setConcurrencyChecksEnabled
    */
@@ -668,7 +644,7 @@ public class RegionFactory<K,V>
    * This causes the region to belong to the DiskStore.
    * @param name the name of the diskstore
    * @return a reference to this RegionFactory object
-   * @since 6.5 
+   * @since GemFire 6.5
    * 
    * @see AttributesFactory#setDiskStoreName
    */
@@ -683,7 +659,7 @@ public class RegionFactory<K,V>
    * @param isSynchronous
    *          boolean if true indicates synchronous writes
    * @return a reference to this RegionFactory object
-   * @since 6.5 
+   * @since GemFire 6.5
    */
   public RegionFactory<K,V> setDiskSynchronous(boolean isSynchronous)
   {
@@ -715,7 +691,7 @@ public class RegionFactory<K,V>
    * @throws IllegalArgumentException if length of the size array
    * does not match to the length of the dir array
    *   
-   * @since 5.1
+   * @since GemFire 5.1
    * @see AttributesFactory#setDiskDirsAndSizes
    * @deprecated as of 6.5 use {@link DiskStoreFactory#setDiskDirsAndSizes} instead
    */
@@ -782,7 +758,7 @@ public class RegionFactory<K,V>
   /**
    * Sets whether operations on this region should be controlled by
    * JTA transactions or not
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public RegionFactory<K,V> setIgnoreJTA(boolean flag) {
     this.attrsFactory.setIgnoreJTA(flag);
@@ -846,6 +822,7 @@ public class RegionFactory<K,V>
     RegionAttributes<K,V> ra = this.attrsFactory.create();
     return getCache().createRegion(name, ra);
   }
+
   /**
    * Creates a sub-region in the {@link Cache} using
    * the configuration contained in this RegionFactory. Validation of the
@@ -864,7 +841,7 @@ public class RegionFactory<K,V>
    *           if the parent region has been closed or destroyed
    * @throws CacheClosedException
    *           if the cache is closed
-   * @since 7.0
+   * @since GemFire 7.0
    */
   @SuppressWarnings("unchecked")
   public Region<K,V> createSubregion(Region<?,?> parent, String name) throws RegionExistsException {
@@ -875,9 +852,10 @@ public class RegionFactory<K,V>
   
   /**
    * Sets cloning on region
+   * Note: off-heap regions always behave as if cloning is enabled.
    * @param cloningEnable
    * @return a reference to this RegionFactory object
-   * @since 6.1
+   * @since GemFire 6.1
    * @see AttributesFactory#setCloningEnabled
    */
   public RegionFactory<K,V> setCloningEnabled(boolean cloningEnable) {
@@ -889,7 +867,7 @@ public class RegionFactory<K,V>
    * Adds a gatewaySenderId to the RegionAttributes
    * @param gatewaySenderId
    * @return a reference to this RegionFactory object
-   * @since 7.0
+   * @since GemFire 7.0
    * @see AttributesFactory#addGatewaySenderId(String) 
    */
   public RegionFactory<K,V> addGatewaySenderId(String gatewaySenderId)
@@ -903,7 +881,7 @@ public class RegionFactory<K,V>
    * 
    * @param asyncEventQueueId id of AsyncEventQueue 
    * @return a reference to this RegionFactory instance
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public RegionFactory<K,V> addAsyncEventQueueId(String asyncEventQueueId) {
     this.attrsFactory.addAsyncEventQueueId(asyncEventQueueId);
@@ -915,7 +893,7 @@ public class RegionFactory<K,V>
    * region entry values.
    * @param compressor a compressor
    * @return a reference to this RegionFactory instance
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public RegionFactory<K,V> setCompressor(Compressor compressor) {
     this.attrsFactory.setCompressor(compressor);
@@ -925,7 +903,7 @@ public class RegionFactory<K,V>
   /**
    * Enables this region's usage of off-heap memory if true.
    * @param offHeap boolean flag to enable off-heap memory
-   * @since 9.0
+   * @since Geode 1.0
    */
   public RegionFactory<K,V> setOffHeap(boolean offHeap) {
     this.attrsFactory.setOffHeap(offHeap);

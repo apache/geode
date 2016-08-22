@@ -25,7 +25,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /** MsgOutputStream should no longer be used except in Connection
  * to do the handshake. Otherwise MsgStreamer should always be used.
 
- @since 3.0
+ @since GemFire 3.0
    
 */
 public class MsgOutputStream extends OutputStream implements ObjToByteArraySerializer {

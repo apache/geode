@@ -53,6 +53,7 @@ import com.gemstone.gemfire.distributed.DistributedLockService;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.MembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
@@ -99,7 +100,7 @@ public class PartitionedRegionHelper
    * modify shared meta-data and this property controls the delay before giving
    * up trying to acquire a global lock
    */
-  static final String VM_OWNERSHIP_WAIT_TIME_PROPERTY = "gemfire.VM_OWNERSHIP_WAIT_TIME";
+  static final String VM_OWNERSHIP_WAIT_TIME_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "VM_OWNERSHIP_WAIT_TIME";
 
   /** Wait forever for ownership */
   static final long VM_OWNERSHIP_WAIT_TIME_DEFAULT = Long.MAX_VALUE;
@@ -248,7 +249,7 @@ public class PartitionedRegionHelper
       factory.setScope(Scope.DISTRIBUTED_ACK);
       factory.setDataPolicy(DataPolicy.REPLICATE);
       factory.addCacheListener(new FixedPartitionAttributesListener());
-      if (Boolean.getBoolean("gemfire.PRDebug")) {
+      if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
         factory.addCacheListener( new CacheListenerAdapter() {
           @Override
           public void afterCreate(EntryEvent event)
@@ -309,6 +310,7 @@ public class PartitionedRegionHelper
         root = (DistributedRegion) gemCache.createVMRegion(PR_ROOT_REGION_NAME, ra, 
             new InternalRegionArguments()
             .setIsUsedForPartitionedRegionAdmin(true)
+            .setInternalRegion(true)
             .setCachePerfStatsHolder(prMetaStatsHolder));
         root.getDistributionAdvisor().addMembershipListener(new MemberFailureListener());
       }
@@ -346,7 +348,7 @@ public class PartitionedRegionHelper
   {
     try {
       final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-      if(cache == null || cache.getCancelCriterion().cancelInProgress() != null) {
+      if(cache == null || cache.getCancelCriterion().isCancelInProgress()) {
         return;
       }
 
@@ -409,7 +411,7 @@ public class PartitionedRegionHelper
     }
 
     for (final Node node1 : nodeList) {
-      if (cache.getCancelCriterion().cancelInProgress() != null) {
+      if (cache.getCancelCriterion().isCancelInProgress()) {
         return;
       }
       if (node1.getMemberId().equals(failedMemId)) {
@@ -932,7 +934,7 @@ public class PartitionedRegionHelper
    * @param callingMethod methodName of the calling method.
    */
   public static void logForDataLoss(PartitionedRegion partitionedRegion, int bucketId, String callingMethod) {
-    if (! Boolean.getBoolean("gemfire.PRDebug")) {
+    if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
       return;
     }
     Region root = PartitionedRegionHelper.getPRRoot(partitionedRegion.getCache());

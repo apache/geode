@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.management.DistributedRegionMXBean;
 import com.gemstone.gemfire.management.ManagementService;
@@ -31,35 +30,36 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.json.GfJsonException;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.List;
 import java.util.Properties;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 /**
  * Dunit class for testing gemfire function commands : execute function, destroy function, list function
- *
  */
+@Category(DistributedTest.class)
 public class FunctionCommandsDUnitTest extends CliCommandTestBase {
+
   private static final long serialVersionUID = 1L;
   private static final String REGION_NAME = "FunctionCommandsReplicatedRegion";
   private static final String REGION_ONE = "RegionOne";
   private static final String REGION_TWO = "RegionTwo";
 
-  public FunctionCommandsDUnitTest(String name) {
-    super(name);
-  }
-
   void setupWith2Regions() {
     final VM vm1 = Host.getHost(0).getVM(1);
     final VM vm2 = Host.getHost(0).getVM(2);
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     vm1.invoke(new SerializableRunnable() {
       public void run() {
@@ -101,7 +101,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     });
   }
 
-  public void testExecuteFunctionWithNoRegionOnManager() {
+  @Test
+  public void testExecuteFunctionWithNoRegionOnManager() throws Exception {
     setupWith2Regions();
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     FunctionService.registerFunction(function);
@@ -111,18 +112,13 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
         FunctionService.registerFunction(function);
       }
     });
-    try {
-      Thread.sleep(2500);
-    } catch (InterruptedException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+    Thread.sleep(2500);
     String command = "execute function --id=" + function.getId() + " --region=" + "/" + "RegionOne";
-    LogWriterUtils.getLogWriter().info("testExecuteFunctionWithNoRegionOnManager command : " + command);
+    getLogWriter().info("testExecuteFunctionWithNoRegionOnManager command : " + command);
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      LogWriterUtils.getLogWriter().info("testExecuteFunctionWithNoRegionOnManager stringResult : " + strCmdResult);
+      getLogWriter().info("testExecuteFunctionWithNoRegionOnManager stringResult : " + strCmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       assertTrue(strCmdResult.contains("Execution summary"));
     } else {
@@ -131,13 +127,14 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
 
   }
 
-  public static String getMemberId() {
-    Cache cache = new FunctionCommandsDUnitTest("test").getCache();
+  public String getMemberId() {
+    Cache cache = getCache();
     return cache.getDistributedSystem().getDistributedMember().getId();
   }
 
+  @Test
   public void testExecuteFunctionOnRegion() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     final Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
@@ -150,14 +147,45 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     });
 
     String command = "execute function --id=" + function.getId() + " --region=" + REGION_NAME;
-    LogWriterUtils.getLogWriter().info("testExecuteFunctionOnRegion command=" + command);
+    getLogWriter().info("testExecuteFunctionOnRegion command=" + command);
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       assertEquals(Result.Status.OK, cmdResult.getStatus());
-      LogWriterUtils.getLogWriter().info("testExecuteFunctionOnRegion cmdResult=" + cmdResult);
+      getLogWriter().info("testExecuteFunctionOnRegion cmdResult=" + cmdResult);
       String stringResult = commandResultToString(cmdResult);
-      LogWriterUtils.getLogWriter().info("testExecuteFunctionOnRegion stringResult=" + stringResult);
-      assert (stringResult.contains("Execution summary"));
+      getLogWriter().info("testExecuteFunctionOnRegion stringResult=" + stringResult);
+      assertTrue(stringResult.contains("Execution summary"));
+    } else {
+      fail("testExecuteFunctionOnRegion did not return CommandResult");
+    }
+  }
+
+  @Test
+  public void testExecuteFunctionOnRegionWithCustomResultCollector() {
+    setUpJmxManagerOnVm0ThenConnect(null);
+
+    final Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RETURN_ARGS);
+    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
+      public void run() {
+        RegionFactory<Integer, Integer> dataRegionFactory = getCache().createRegionFactory(RegionShortcut.REPLICATE);
+        Region region = dataRegionFactory.create(REGION_NAME);
+        assertNotNull(region);
+        FunctionService.registerFunction(function);
+      }
+    });
+
+    String command = "execute function --id=" + function.getId() + " --region=" + REGION_NAME +
+        " --arguments=arg1,arg2" +
+        " --result-collector=" + ToUpperResultCollector.class.getName();
+    getLogWriter().info("testExecuteFunctionOnRegion command=" + command);
+    CommandResult cmdResult = executeCommand(command);
+    if (cmdResult != null) {
+      assertEquals(Result.Status.OK, cmdResult.getStatus());
+      getLogWriter().info("testExecuteFunctionOnRegion cmdResult=" + cmdResult);
+      String stringResult = commandResultToString(cmdResult);
+      getLogWriter().info("testExecuteFunctionOnRegion stringResult=" + stringResult);
+      assertTrue(stringResult.contains("Execution summary"));
+      assertTrue(stringResult.contains("ARG1"));
     } else {
       fail("testExecuteFunctionOnRegion did not return CommandResult");
     }
@@ -165,7 +193,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
 
   void setupForBug51480() {
     final VM vm1 = Host.getHost(0).getVM(1);
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     vm1.invoke(new SerializableRunnable() {
       public void run() {
         final Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
@@ -193,7 +221,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
           if (bean == null) {
             return false;
           } else {
-            LogWriterUtils.getLogWriter().info("Probing for checkRegionMBeans testExecuteFunctionOnRegionBug51480 finished");
+            getLogWriter().info("Probing for checkRegionMBeans testExecuteFunctionOnRegionBug51480 finished");
             return true;
           }
         }
@@ -203,13 +231,14 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
           return "Probing for testExecuteFunctionOnRegionBug51480";
         }
       };
-      Wait.waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
+      waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
       DistributedRegionMXBean bean = ManagementService.getManagementService(getCache()).getDistributedRegionMXBean(
           Region.SEPARATOR + REGION_ONE);
       assertNotNull(bean);
     }
   };
 
+  @Test
   public void testExecuteFunctionOnRegionBug51480() {
     setupForBug51480();
 
@@ -226,29 +255,30 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
 
     String command = "execute function --id=" + function.getId() + " --region=" + REGION_ONE;
 
-    LogWriterUtils.getLogWriter().info("testExecuteFunctionOnRegionBug51480 command=" + command);
+    getLogWriter().info("testExecuteFunctionOnRegionBug51480 command=" + command);
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
-      LogWriterUtils.getLogWriter().info("testExecuteFunctionOnRegionBug51480 cmdResult=" + cmdResult);
+      getLogWriter().info("testExecuteFunctionOnRegionBug51480 cmdResult=" + cmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       String stringResult = commandResultToString(cmdResult);
-      LogWriterUtils.getLogWriter().info("testExecuteFunctionOnRegionBug51480 stringResult=" + stringResult);
-      assert (stringResult.contains("Execution summary"));
+      getLogWriter().info("testExecuteFunctionOnRegionBug51480 stringResult=" + stringResult);
+      assertTrue(stringResult.contains("Execution summary"));
     } else {
       fail("testExecuteFunctionOnRegionBug51480 did not return CommandResult");
 
     }
   }
 
+  @Test
   public void testExecuteFunctionOnMember() {
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
-    localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
-    createDefaultSetup(localProps);
+    localProps.setProperty(NAME, "Manager");
+    localProps.setProperty(GROUPS, "Group1");
+    setUpJmxManagerOnVm0ThenConnect(localProps);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     FunctionService.registerFunction(function);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1MemberId = (String) vm1.invoke(() -> FunctionCommandsDUnitTest.getMemberId());
+    final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
 
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       public void run() {
@@ -261,20 +291,21 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     });
 
     String command = "execute function --id=" + function.getId() + " --member=" + vm1MemberId;
-    LogWriterUtils.getLogWriter().info("testExecuteFunctionOnMember command=" + command);
+    getLogWriter().info("testExecuteFunctionOnMember command=" + command);
     CommandResult cmdResult = executeCommand(command);
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     String stringResult = commandResultToString(cmdResult);
-    LogWriterUtils.getLogWriter().info("testExecuteFunctionOnMember stringResult:" + stringResult);
+    getLogWriter().info("testExecuteFunctionOnMember stringResult:" + stringResult);
     assertTrue(stringResult.contains("Execution summary"));
   }
 
+  @Test
   public void testExecuteFunctionOnMembers() {
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
-    localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
-    createDefaultSetup(localProps);
+    localProps.setProperty(NAME, "Manager");
+    localProps.setProperty(GROUPS, "Group1");
+    setUpJmxManagerOnVm0ThenConnect(localProps);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     FunctionService.registerFunction(function);
     final VM vm1 = Host.getHost(0).getVM(1);
@@ -290,24 +321,25 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
       }
     });
     String command = "execute function --id=" + function.getId();
-    LogWriterUtils.getLogWriter().info("testExecuteFunctionOnMembers command=" + command);
+    getLogWriter().info("testExecuteFunctionOnMembers command=" + command);
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       assertEquals(Result.Status.OK, cmdResult.getStatus());
-      LogWriterUtils.getLogWriter().info("testExecuteFunctionOnMembers cmdResult:" + cmdResult);
+      getLogWriter().info("testExecuteFunctionOnMembers cmdResult:" + cmdResult);
       String stringResult = commandResultToString(cmdResult);
-      LogWriterUtils.getLogWriter().info("testExecuteFunctionOnMembers stringResult:" + stringResult);
+      getLogWriter().info("testExecuteFunctionOnMembers stringResult:" + stringResult);
       assertTrue(stringResult.contains("Execution summary"));
     } else {
       fail("testExecuteFunctionOnMembers did not return CommandResult");
     }
   }
 
+  @Test
   public void testExecuteFunctionOnMembersWithArgs() {
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
-    localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
-    createDefaultSetup(localProps);
+    localProps.setProperty(NAME, "Manager");
+    localProps.setProperty(GROUPS, "Group1");
+    setUpJmxManagerOnVm0ThenConnect(localProps);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RETURN_ARGS);
     FunctionService.registerFunction(function);
 
@@ -324,13 +356,13 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
 
     String command = "execute function --id=" + function.getId() + " --arguments=arg1,arg2";
 
-    LogWriterUtils.getLogWriter().info("testExecuteFunctionOnMembersWithArgs command=" + command);
+    getLogWriter().info("testExecuteFunctionOnMembersWithArgs command=" + command);
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       assertEquals(Result.Status.OK, cmdResult.getStatus());
-      LogWriterUtils.getLogWriter().info("testExecuteFunctionOnMembersWithArgs cmdResult:" + cmdResult);
+      getLogWriter().info("testExecuteFunctionOnMembersWithArgs cmdResult:" + cmdResult);
       String stringResult = commandResultToString(cmdResult);
-      LogWriterUtils.getLogWriter().info("testExecuteFunctionOnMembersWithArgs stringResult:" + stringResult);
+      getLogWriter().info("testExecuteFunctionOnMembersWithArgs stringResult:" + stringResult);
       assertTrue(stringResult.contains("Execution summary"));
       assertTrue(stringResult.contains("arg1"));
     } else {
@@ -338,11 +370,50 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Test
+  public void testExecuteFunctionOnMembersWithArgsAndCustomResultCollector() {
+    Properties localProps = new Properties();
+    localProps.setProperty(NAME, "Manager");
+    localProps.setProperty(GROUPS, "Group1");
+    setUpJmxManagerOnVm0ThenConnect(localProps);
+    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RETURN_ARGS);
+    FunctionService.registerFunction(function);
+
+
+    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
+      public void run() {
+        RegionFactory<Integer, Integer> dataRegionFactory = getCache().createRegionFactory(RegionShortcut.REPLICATE);
+        Region region = dataRegionFactory.create(REGION_NAME);
+        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RETURN_ARGS);
+        assertNotNull(region);
+        FunctionService.registerFunction(function);
+      }
+    });
+
+    String command = "execute function --id=" + function.getId() + " --arguments=\"arg1,arg2\"" +
+        " --result-collector=" + ToUpperResultCollector.class.getName();
+
+    getLogWriter().info("testExecuteFunctionOnMembersWithArgs command=" + command);
+    CommandResult cmdResult = executeCommand(command);
+    if (cmdResult != null) {
+      assertEquals(Result.Status.OK, cmdResult.getStatus());
+      getLogWriter().info("testExecuteFunctionOnMembersWithArgs cmdResult:" + cmdResult);
+      String stringResult = commandResultToString(cmdResult);
+      getLogWriter().info("testExecuteFunctionOnMembersWithArgs stringResult:" + stringResult);
+      assertTrue(stringResult.contains("Execution summary"));
+      assertTrue(stringResult.contains("ARG1"));
+    } else {
+      fail("testExecuteFunctionOnMembersWithArgs did not return CommandResult");
+    }
+  }
+
+  @Category(FlakyTest.class) // GEODE-1563: JMX RMI (java.rmi.NoSuchObjectException: no such object in table)
+  @Test
   public void testExecuteFunctionOnGroups() {
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
-    localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group0");
-    createDefaultSetup(localProps);
+    localProps.setProperty(NAME, "Manager");
+    localProps.setProperty(GROUPS, "Group0");
+    setUpJmxManagerOnVm0ThenConnect(localProps);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     FunctionService.registerFunction(function);
 
@@ -353,7 +424,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
       @Override
       public Object call() throws Exception {
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
+        localProps.setProperty(GROUPS, "Group1");
         getSystem(localProps);
         Cache cache = getCache();
         Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
@@ -366,7 +437,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
       @Override
       public Object call() throws Exception {
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group2");
+        localProps.setProperty(GROUPS, "Group2");
         getSystem(localProps);
         Cache cache = getCache();
         Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
@@ -386,41 +457,42 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     });
 
     String command = "execute function --id=" + TestFunction.TEST_FUNCTION1 + " --groups=Group1,Group2";
-    LogWriterUtils.getLogWriter().info("testExecuteFunctionOnGroups command=" + command);
+    getLogWriter().info("testExecuteFunctionOnGroups command=" + command);
     CommandResult cmdResult = executeCommand(command);
-    LogWriterUtils.getLogWriter().info("testExecuteFunctionOnGroups cmdResult=" + cmdResult);
+    getLogWriter().info("testExecuteFunctionOnGroups cmdResult=" + cmdResult);
     assertEquals(Result.Status.OK, cmdResult.getStatus());
     TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
     List<String> members = resultData.retrieveAllValues("Member ID/Name");
-    LogWriterUtils.getLogWriter().info("testExecuteFunctionOnGroups members=" + members);
+    getLogWriter().info("testExecuteFunctionOnGroups members=" + members);
     assertTrue(members.size() == 2 && members.contains(vm1id) && members.contains(vm2id));
   }
 
-
+  @Test
   public void testDestroyOnMember() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     FunctionService.registerFunction(function);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1MemberId = (String) vm1.invoke(() -> FunctionCommandsDUnitTest.getMemberId());
+    final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
     String command = "destroy function --id=" + function.getId() + " --member=" + vm1MemberId;
-    LogWriterUtils.getLogWriter().info("testDestroyOnMember command=" + command);
+    getLogWriter().info("testDestroyOnMember command=" + command);
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
-      LogWriterUtils.getLogWriter().info("testDestroyOnMember strCmdResult=" + strCmdResult);
+      getLogWriter().info("testDestroyOnMember strCmdResult=" + strCmdResult);
       assertTrue(strCmdResult.contains("Destroyed TestFunction1 Successfully"));
     } else {
       fail("testDestroyOnMember failed as did not get CommandResult");
     }
   }
 
+  @Test
   public void testDestroyOnGroups() {
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
-    localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group0");
-    createDefaultSetup(localProps);
+    localProps.setProperty(NAME, "Manager");
+    localProps.setProperty(GROUPS, "Group0");
+    setUpJmxManagerOnVm0ThenConnect(localProps);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     FunctionService.registerFunction(function);
 
@@ -431,7 +503,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
       @Override
       public Object call() throws Exception {
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
+        localProps.setProperty(GROUPS, "Group1");
         getSystem(localProps);
         Cache cache = getCache();
         Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
@@ -445,7 +517,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
       @Override
       public Object call() throws Exception {
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group2");
+        localProps.setProperty(GROUPS, "Group2");
         getSystem(localProps);
         Cache cache = getCache();
         Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
@@ -462,14 +534,14 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     });
 
     String command = "destroy function --id=" + TestFunction.TEST_FUNCTION1 + " --groups=Group1,Group2";
-    LogWriterUtils.getLogWriter().info("testDestroyOnGroups command=" + command);
+    getLogWriter().info("testDestroyOnGroups command=" + command);
     CommandResult cmdResult = executeCommand(command);
-    LogWriterUtils.getLogWriter().info("testDestroyOnGroups cmdResult=" + cmdResult);
+    getLogWriter().info("testDestroyOnGroups cmdResult=" + cmdResult);
     assertEquals(Result.Status.OK, cmdResult.getStatus());
     String content = null;
     try {
       content = cmdResult.getContent().get("message").toString();
-      LogWriterUtils.getLogWriter().info("testDestroyOnGroups content = " + content);
+      getLogWriter().info("testDestroyOnGroups content = " + content);
     } catch (GfJsonException e) {
       fail("testDestroyOnGroups exception=" + e);
     }
@@ -479,11 +551,12 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
         "[\"Destroyed " + TestFunction.TEST_FUNCTION1 + " Successfully on " + vm2id + "," + vm1id + "\"]"));
   }
 
+  @Test
   public void testListFunction() {
     // Create the default setup, putting the Manager VM into Group1
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
-    createDefaultSetup(localProps);
+    localProps.setProperty(GROUPS, "Group1");
+    setUpJmxManagerOnVm0ThenConnect(localProps);
 
     // Find no functions
     CommandResult cmdResult = executeCommand(CliStrings.LIST_FUNCTION);
@@ -507,8 +580,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     vm1.invoke(new SerializableRunnable() {
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.NAME_NAME, vm1Name);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group2");
+        localProps.setProperty(NAME, vm1Name);
+        localProps.setProperty(GROUPS, "Group2");
         getSystem(localProps);
         getCache();
 
@@ -526,8 +599,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     vm2.invoke(new SerializableRunnable() {
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.NAME_NAME, vm2Name);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group3");
+        localProps.setProperty(NAME, vm2Name);
+        localProps.setProperty(GROUPS, "Group3");
         getSystem(localProps);
         getCache();
 

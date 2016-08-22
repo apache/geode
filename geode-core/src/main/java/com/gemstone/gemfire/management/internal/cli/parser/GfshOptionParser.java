@@ -24,7 +24,7 @@ import com.gemstone.gemfire.management.internal.cli.exceptions.CliException;
 /**
  * Delegate used for parsing by {@link GfshParser}
  *  
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface GfshOptionParser {
 	public void setArguments(LinkedList<Argument> arguments);

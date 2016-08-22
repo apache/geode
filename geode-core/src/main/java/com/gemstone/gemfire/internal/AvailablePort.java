@@ -16,25 +16,25 @@
  */
 package com.gemstone.gemfire.internal;
 
-import java.io.*;
-import java.net.*;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.Random;
 
 /**
  * This class determines whether or not a given port is available and
  * can also provide a randomly selected available port.
- *
  */
 public class AvailablePort {
 
   /** Is the port available for a Socket (TCP) connection? */
   public static final int SOCKET = 0;
-
+  public static final int AVAILABLE_PORTS_LOWER_BOUND = 20001;// 20000/udp is securid
+  public static final int AVAILABLE_PORTS_UPPER_BOUND = 29999;//30000/tcp is spoolfax
   /** Is the port available for a JGroups (UDP) multicast connection */
   public static final int MULTICAST = 1;
 
@@ -48,10 +48,10 @@ public class AvailablePort {
     String name = null;
     try {
       if (protocol == SOCKET) {
-        name = System.getProperty("gemfire.bind-address");
+        name = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "bind-address");
       }
       else if (protocol == MULTICAST) {
-        name = System.getProperty("gemfire.mcast-address");
+        name = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "mcast-address");
       }
       if (name != null) {
         return InetAddress.getByName(name);
@@ -195,10 +195,7 @@ public class AvailablePort {
     try {
       //(new Exception("Opening server socket on " + port)).printStackTrace();
       server = new ServerSocket();
-      String osName = System.getProperty("os.name");
-      if(osName != null && !osName.startsWith("Windows")) {
-        server.setReuseAddress(true);  
-      }      
+      server.setReuseAddress(true);
       if (addr != null) {
         server.bind(new InetSocketAddress(addr, port));
       }
@@ -438,8 +435,8 @@ public class AvailablePort {
 //       rangeBase=1024;
 //       rangeTop=5000;
 //     }
-    rangeBase = 20001; // 20000/udp is securid
-    rangeTop =  29999; // 30000/tcp is spoolfax
+    rangeBase = AVAILABLE_PORTS_LOWER_BOUND; // 20000/udp is securid
+    rangeTop =  AVAILABLE_PORTS_UPPER_BOUND; // 30000/tcp is spoolfax
 
     return rand.nextInt(rangeTop-rangeBase) + rangeBase;
   }

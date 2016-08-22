@@ -51,7 +51,7 @@ import java.util.*;
  *  &lt;/region-attributes&gt;
  *  </pre>
  *
- * @since 2.0.2
+ * @since GemFire 2.0.2
  */
 public final class LRUCapacityController extends LRUAlgorithm
   implements Declarable {
@@ -346,7 +346,7 @@ public final class LRUCapacityController extends LRUAlgorithm
   /**
    * Returns a brief description of this capacity controller.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   @Override
   public String toString() {

@@ -16,20 +16,19 @@
  */
 package com.gemstone.gemfire.internal;
 
-import static org.junit.Assert.assertNotNull;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertNotNull;
 
 @Category(IntegrationTest.class)
 public class GemFireVersionIntegrationJUnitTest {
@@ -45,7 +44,7 @@ public class GemFireVersionIntegrationJUnitTest {
     DistributionConfigImpl.main(args);
     Properties props = new Properties();
     props.load(new FileInputStream(args[0]));
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.setProperty(MCAST_PORT, "0");
     CacheFactory cacheFactory = new CacheFactory(props);
     Cache c = cacheFactory.create();
     assertNotNull(c);

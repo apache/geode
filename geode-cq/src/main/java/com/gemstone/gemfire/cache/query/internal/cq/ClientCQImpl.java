@@ -453,8 +453,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
             if (securityLogWriter.warningEnabled()) {
               securityLogWriter.warning(LocalizedStrings.CqQueryImpl_EXCEPTION_WHILE_EXECUTING_CQ_EXCEPTION_0, ex, null);              
             }
-            throw new CqException(
-              LocalizedStrings.CqQueryImpl_GOT_SECURITY_EXCEPTION_WHILE_EXECUTING_CQ_ON_SERVER.toLocalizedString(), ex.getCause());  
+            throw new CqException(ex.getCause().getMessage(), ex.getCause());
           } else if(ex instanceof CqException) {
             throw (CqException)ex;
           } else {

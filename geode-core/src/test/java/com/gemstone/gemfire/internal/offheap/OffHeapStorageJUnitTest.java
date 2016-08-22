@@ -16,61 +16,54 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.OutOfOffHeapMemoryException;
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.internal.LocalStatisticsFactory;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.experimental.categories.Category;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @Category(UnitTest.class)
 public class OffHeapStorageJUnitTest {
-  @Rule
-  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   private final static long MEGABYTE = 1024 * 1024;
   private final static long GIGABYTE = 1024 * 1024 * 1024;
 
-  @Before
-  public void setUp() throws Exception {
-  }
-
-  @After
-  public void tearDown() throws Exception {
-  }
+  @Rule
+  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Test
   public void testParseOffHeapMemorySizeNegative() {
     assertEquals(0, OffHeapStorage.parseOffHeapMemorySize("-1"));
   }
+
   @Test
   public void testParseOffHeapMemorySizeNull() {
     assertEquals(0, OffHeapStorage.parseOffHeapMemorySize(null));
   }
+
   @Test
   public void testParseOffHeapMemorySizeEmpty() {
     assertEquals(0, OffHeapStorage.parseOffHeapMemorySize(""));
   }
+
   @Test
   public void testParseOffHeapMemorySizeBytes() {
     assertEquals(MEGABYTE, OffHeapStorage.parseOffHeapMemorySize("1"));
     assertEquals(Integer.MAX_VALUE * MEGABYTE, OffHeapStorage.parseOffHeapMemorySize("" + Integer.MAX_VALUE));
   }
+
   @Test
   public void testParseOffHeapMemorySizeKiloBytes() {
     try {
@@ -80,73 +73,80 @@ public class OffHeapStorageJUnitTest {
       // Expected
     }
   }
+
   @Test
   public void testParseOffHeapMemorySizeMegaBytes() {
     assertEquals(MEGABYTE, OffHeapStorage.parseOffHeapMemorySize("1m"));
     assertEquals(Integer.MAX_VALUE * MEGABYTE, OffHeapStorage.parseOffHeapMemorySize("" + Integer.MAX_VALUE + "m"));
   }
+
   @Test
   public void testParseOffHeapMemorySizeGigaBytes() {
     assertEquals(GIGABYTE, OffHeapStorage.parseOffHeapMemorySize("1g"));
     assertEquals(Integer.MAX_VALUE * GIGABYTE, OffHeapStorage.parseOffHeapMemorySize("" + Integer.MAX_VALUE + "g"));
   }
+
   @Test
   public void testCalcMaxSlabSize() {
     assertEquals(100, OffHeapStorage.calcMaxSlabSize(100L));
     assertEquals(Integer.MAX_VALUE, OffHeapStorage.calcMaxSlabSize(Long.MAX_VALUE));
     try {
-      System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "99");
-      assertEquals(99*1024*1024, OffHeapStorage.calcMaxSlabSize(100L*1024*1024));
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "99");
+      assertEquals(99 * 1024 * 1024, OffHeapStorage.calcMaxSlabSize(100L * 1024 * 1024));
       assertEquals(88, OffHeapStorage.calcMaxSlabSize(88));
-      System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "88m");
-      assertEquals(88*1024*1024, OffHeapStorage.calcMaxSlabSize(100L*1024*1024));
-      System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "77M");
-      assertEquals(77*1024*1024, OffHeapStorage.calcMaxSlabSize(100L*1024*1024));
-      System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "1g");
-      assertEquals(1*1024*1024*1024, OffHeapStorage.calcMaxSlabSize(2L*1024*1024*1024));
-      System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "1G");
-      assertEquals(1L*1024*1024*1024, OffHeapStorage.calcMaxSlabSize(2L*1024*1024*1024+1));
-      System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "foobarG");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "88m");
+      assertEquals(88 * 1024 * 1024, OffHeapStorage.calcMaxSlabSize(100L * 1024 * 1024));
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "77M");
+      assertEquals(77 * 1024 * 1024, OffHeapStorage.calcMaxSlabSize(100L * 1024 * 1024));
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "1g");
+      assertEquals(1 * 1024 * 1024 * 1024, OffHeapStorage.calcMaxSlabSize(2L * 1024 * 1024 * 1024));
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "1G");
+      assertEquals(1L * 1024 * 1024 * 1024, OffHeapStorage.calcMaxSlabSize(2L * 1024 * 1024 * 1024 + 1));
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "foobarG");
       try {
         OffHeapStorage.calcMaxSlabSize(100);
         fail("expected IllegalArgumentException");
       } catch (IllegalArgumentException expected) {
       }
-      System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "");
       assertEquals(100, OffHeapStorage.calcMaxSlabSize(100L));
       assertEquals(Integer.MAX_VALUE, OffHeapStorage.calcMaxSlabSize(Long.MAX_VALUE));
     } finally {
-      System.clearProperty("gemfire.OFF_HEAP_SLAB_SIZE");
+      System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE");
     }
   }
+
   @Test
   public void createOffHeapStorageReturnsNullIfForceLocator() {
     System.setProperty(InternalLocator.FORCE_LOCATOR_DM_TYPE, "true");
     assertEquals(null, OffHeapStorage.createOffHeapStorage(null, 1, null));
   }
+
   @Test
   public void createOffHeapStorageReturnsNullIfMemorySizeIsZero() {
     assertEquals(null, OffHeapStorage.createOffHeapStorage(null, 0, null));
   }
+
   @Test
   public void exceptionIfSlabCountTooSmall() {
     StatisticsFactory statsFactory = mock(StatisticsFactory.class);
     try {
-      OffHeapStorage.createOffHeapStorage(statsFactory, OffHeapStorage.MIN_SLAB_SIZE-1, null);
+      OffHeapStorage.createOffHeapStorage(statsFactory, OffHeapStorage.MIN_SLAB_SIZE - 1, null);
     } catch (IllegalArgumentException expected) {
-      expected.getMessage().equals("The amount of off heap memory must be at least " + OffHeapStorage.MIN_SLAB_SIZE + " but it was set to " + (OffHeapStorage.MIN_SLAB_SIZE-1));
+      expected.getMessage().equals("The amount of off heap memory must be at least " + OffHeapStorage.MIN_SLAB_SIZE + " but it was set to " + (OffHeapStorage.MIN_SLAB_SIZE - 1));
     }
   }
+
   @Test
   public void exceptionIfDistributedSystemNull() {
     StatisticsFactory statsFactory = mock(StatisticsFactory.class);
     try {
-      OffHeapStorage.createOffHeapStorage(statsFactory, OffHeapStorage.MIN_SLAB_SIZE, (DistributedSystem)null);
+      OffHeapStorage.createOffHeapStorage(statsFactory, OffHeapStorage.MIN_SLAB_SIZE, (DistributedSystem) null);
     } catch (IllegalArgumentException expected) {
       expected.getMessage().equals("InternalDistributedSystem is null");
     }
   }
-  
+
   @Test
   public void createOffHeapStorageWorks() {
     StatisticsFactory localStatsFactory = new LocalStatisticsFactory(null);
@@ -160,30 +160,31 @@ public class OffHeapStorageJUnitTest {
   public void testCreateOffHeapStorage() {
     StatisticsFactory localStatsFactory = new LocalStatisticsFactory(null);
     OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
-    MemoryAllocator ma = OffHeapStorage.basicCreateOffHeapStorage(localStatsFactory, 1024*1024, ooohml);
+    MemoryAllocator ma = OffHeapStorage.basicCreateOffHeapStorage(localStatsFactory, 1024 * 1024, ooohml);
     try {
       OffHeapMemoryStats stats = ma.getStats();
       assertNotNull(stats.getStats());
-      assertEquals(1024*1024, stats.getFreeMemory());
-      assertEquals(1024*1024, stats.getMaxMemory());
+      assertEquals(1024 * 1024, stats.getFreeMemory());
+      assertEquals(1024 * 1024, stats.getMaxMemory());
       assertEquals(0, stats.getUsedMemory());
       assertEquals(0, stats.getDefragmentations());
+      assertEquals(0, stats.getDefragmentationsInProgress());
       assertEquals(0, stats.getDefragmentationTime());
       assertEquals(0, stats.getFragmentation());
       assertEquals(1, stats.getFragments());
-      assertEquals(1024*1024, stats.getLargestFragment());
+      assertEquals(1024 * 1024, stats.getLargestFragment());
       assertEquals(0, stats.getObjects());
       assertEquals(0, stats.getReads());
 
       stats.incFreeMemory(100);
-      assertEquals(1024*1024+100, stats.getFreeMemory());
+      assertEquals(1024 * 1024 + 100, stats.getFreeMemory());
       stats.incFreeMemory(-100);
-      assertEquals(1024*1024, stats.getFreeMemory());
+      assertEquals(1024 * 1024, stats.getFreeMemory());
 
       stats.incMaxMemory(100);
-      assertEquals(1024*1024+100, stats.getMaxMemory());
+      assertEquals(1024 * 1024 + 100, stats.getMaxMemory());
       stats.incMaxMemory(-100);
-      assertEquals(1024*1024, stats.getMaxMemory());
+      assertEquals(1024 * 1024, stats.getMaxMemory());
 
       stats.incUsedMemory(100);
       assertEquals(100, stats.getUsedMemory());
@@ -210,18 +211,20 @@ public class OffHeapStorageJUnitTest {
 
       stats.setLargestFragment(100);
       assertEquals(100, stats.getLargestFragment());
-      stats.setLargestFragment(1024*1024);
-      assertEquals(1024*1024, stats.getLargestFragment());
+      stats.setLargestFragment(1024 * 1024);
+      assertEquals(1024 * 1024, stats.getLargestFragment());
 
       boolean originalEnableClockStats = DistributionStats.enableClockStats;
       DistributionStats.enableClockStats = true;
       try {
         long start = stats.startDefragmentation();
-        while (stats.startDefragmentation() == start) {
+        assertEquals(1, stats.getDefragmentationsInProgress());
+        while (DistributionStats.getStatTime() == start) {
           Thread.yield();
         }
         stats.endDefragmentation(start);
         assertEquals(1, stats.getDefragmentations());
+        assertEquals(0, stats.getDefragmentationsInProgress());
         assertTrue(stats.getDefragmentationTime() > 0);
       } finally {
         DistributionStats.enableClockStats = originalEnableClockStats;
@@ -236,6 +239,7 @@ public class OffHeapStorageJUnitTest {
       assertEquals(0, stats.getMaxMemory());
       assertEquals(0, stats.getUsedMemory());
       assertEquals(0, stats.getDefragmentations());
+      assertEquals(0, stats.getDefragmentationsInProgress());
       assertEquals(0, stats.getDefragmentationTime());
       assertEquals(0, stats.getFragmentation());
       assertEquals(0, stats.getFragments());
@@ -245,14 +249,14 @@ public class OffHeapStorageJUnitTest {
 
       OutOfOffHeapMemoryException ex = null;
       try {
-        ma.allocate(1024*1024+1);
+        ma.allocate(1024 * 1024 + 1);
         fail("expected OutOfOffHeapMemoryException");
       } catch (OutOfOffHeapMemoryException expected) {
         ex = expected;
       }
       verify(ooohml).outOfOffHeapMemory(ex);
       try {
-        ma.allocate(1024*1024+1);
+        ma.allocate(1024 * 1024 + 1);
         fail("expected OutOfOffHeapMemoryException");
       } catch (OutOfOffHeapMemoryException expected) {
         ex = expected;
@@ -268,16 +272,17 @@ public class OffHeapStorageJUnitTest {
       }
     }
   }
+
   @Test
   public void testCalcSlabCount() {
     final long MSS = OffHeapStorage.MIN_SLAB_SIZE;
-    assertEquals(100, OffHeapStorage.calcSlabCount(MSS*4, MSS*4*100));
-    assertEquals(100, OffHeapStorage.calcSlabCount(MSS*4, (MSS*4*100) + (MSS-1)));
-    assertEquals(101, OffHeapStorage.calcSlabCount(MSS*4, (MSS*4*100) + MSS));
+    assertEquals(100, OffHeapStorage.calcSlabCount(MSS * 4, MSS * 4 * 100));
+    assertEquals(100, OffHeapStorage.calcSlabCount(MSS * 4, (MSS * 4 * 100) + (MSS - 1)));
+    assertEquals(101, OffHeapStorage.calcSlabCount(MSS * 4, (MSS * 4 * 100) + MSS));
     assertEquals(Integer.MAX_VALUE, OffHeapStorage.calcSlabCount(MSS, MSS * Integer.MAX_VALUE));
-    assertEquals(Integer.MAX_VALUE, OffHeapStorage.calcSlabCount(MSS, (MSS * Integer.MAX_VALUE) + MSS-1));
+    assertEquals(Integer.MAX_VALUE, OffHeapStorage.calcSlabCount(MSS, (MSS * Integer.MAX_VALUE) + MSS - 1));
     try {
-      OffHeapStorage.calcSlabCount(MSS, (((long)MSS) * Integer.MAX_VALUE) + MSS);
+      OffHeapStorage.calcSlabCount(MSS, (((long) MSS) * Integer.MAX_VALUE) + MSS);
       fail("Expected IllegalArgumentException");
     } catch (IllegalArgumentException expected) {
     }

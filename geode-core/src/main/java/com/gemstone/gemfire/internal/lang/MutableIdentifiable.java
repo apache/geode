@@ -24,7 +24,7 @@ import com.gemstone.gemfire.lang.Identifiable;
  * <p/>
  * @param <T> the class type of the identifier.
  * @see java.lang.Comparable
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface MutableIdentifiable<T>  extends Identifiable {
 

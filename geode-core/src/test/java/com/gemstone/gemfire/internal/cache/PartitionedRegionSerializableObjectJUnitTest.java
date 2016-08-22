@@ -23,51 +23,47 @@ package com.gemstone.gemfire.internal.cache;
  * 
  */
 
-import java.util.*;
+import static org.junit.Assert.*;
 
-import org.junit.After;
-import org.junit.Before;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
-
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-import junit.framework.TestCase;
-
 @Category(IntegrationTest.class)
-public class PartitionedRegionSerializableObjectJUnitTest
-{
-  String regionName = "SerizableRegion";
+public class PartitionedRegionSerializableObjectJUnitTest {
+
+  private String regionName = "SerizableRegion";
 
   /** It is common region for all the threads */
-  Region root;
+  private Region root;
 
   /**
    * It is map to store thread name and list of objects which are created by
    * that thread.
    */
-  static Map thread2List = new HashMap();
+  private static Map thread2List = new HashMap();
 
-  static int MAX_COUNT = 10;
+  private static int MAX_COUNT = 10;
 
-  static int MAX_THREADS = 10;
+  private static int MAX_THREADS = 10;
 
   /**
    * This test creates a region and threads. This Region is common to all the
    * threads which perform get, put operations on that region. Object used
    * during these operations are serializable. key and value in the partition
    * region are same.
-   * 
    */
   @Test
-  public void testOperationsWithSerializableObject()
-  {
-
+  public void testOperationsWithSerializableObject() {
     int localMaxMemory = 50;
     Thread threadArr[] = new Thread[10];
     root = PartitionedRegionTestHelper.createPartitionedRegion(regionName,
@@ -103,16 +99,15 @@ public class PartitionedRegionSerializableObjectJUnitTest
    * This class creates thread that take list of the objects from thread2List
    * Map and performs get operation with these objects as key and verifying
    * result with itself because key and values are same in the partition Region
-   * 
    */
-  public class getThread extends Thread
-  {
+  private  class getThread extends Thread {
+
     getThread(String threadName) {
       super(threadName);
     }
 
-    public void run()
-    {
+    @Override
+    public void run() {
       Region pr = PartitionedRegionTestHelper
           .getExistingRegion(Region.SEPARATOR + regionName);
       assertNotNull(pr);
@@ -141,17 +136,15 @@ public class PartitionedRegionSerializableObjectJUnitTest
    * This class create threads that put the serializable objects in the partion
    * region and also add the the list of the serializable objects to the
    * thread2List map
-   * 
    */
+  private class putThread extends Thread {
 
-  public class putThread extends Thread
-  {
     putThread(String threadName) {
       super(threadName);
     }
 
-    public void run()
-    {
+    @Override
+    public void run() {
       Region pr = PartitionedRegionTestHelper
           .getExistingRegion(Region.SEPARATOR + regionName);
       assertNotNull(pr);

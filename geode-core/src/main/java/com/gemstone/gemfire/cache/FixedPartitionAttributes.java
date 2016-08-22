@@ -31,7 +31,7 @@ import com.gemstone.gemfire.internal.cache.FixedPartitionAttributesImpl;
  * @see com.gemstone.gemfire.cache.PartitionAttributes
  * @see com.gemstone.gemfire.cache.PartitionAttributesFactory
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 
 public abstract class FixedPartitionAttributes {

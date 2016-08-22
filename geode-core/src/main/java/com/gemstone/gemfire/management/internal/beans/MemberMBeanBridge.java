@@ -16,83 +16,29 @@
  */
 package com.gemstone.gemfire.management.internal.beans;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
-import java.lang.management.OperatingSystemMXBean;
-import java.lang.management.RuntimeMXBean;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import javax.management.JMRuntimeException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsType;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
 import com.gemstone.gemfire.cache.persistence.PersistentID;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.LocatorLauncher;
 import com.gemstone.gemfire.distributed.ServerLauncher;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.locks.DLockService;
 import com.gemstone.gemfire.distributed.internal.locks.DLockStats;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.GemFireStatSampler;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.HostStatHelper;
-import com.gemstone.gemfire.internal.LinuxSystemStats;
-import com.gemstone.gemfire.internal.ProcessStats;
-import com.gemstone.gemfire.internal.PureJavaMode;
-import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.SolarisSystemStats;
-import com.gemstone.gemfire.internal.StatSamplerStats;
-import com.gemstone.gemfire.internal.VMStatsContract;
-import com.gemstone.gemfire.internal.WindowsSystemStats;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
-import com.gemstone.gemfire.internal.cache.CacheServerLauncher;
-import com.gemstone.gemfire.internal.cache.DirectoryHolder;
-import com.gemstone.gemfire.internal.cache.DiskDirectoryStats;
-import com.gemstone.gemfire.internal.cache.DiskRegion;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
-import com.gemstone.gemfire.internal.cache.DiskStoreStats;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionStats;
+import com.gemstone.gemfire.internal.*;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.cache.control.ResourceManagerStats;
 import com.gemstone.gemfire.internal.cache.execute.FunctionServiceStats;
 import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
 import com.gemstone.gemfire.internal.cache.persistence.BackupManager;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.ManagerLogWriter;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppender;
@@ -103,34 +49,33 @@ import com.gemstone.gemfire.internal.process.PidUnavailableException;
 import com.gemstone.gemfire.internal.process.ProcessUtils;
 import com.gemstone.gemfire.internal.stats50.VMStats50;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
-import com.gemstone.gemfire.management.DependenciesNotFoundException;
-import com.gemstone.gemfire.management.DiskBackupResult;
-import com.gemstone.gemfire.management.GemFireProperties;
-import com.gemstone.gemfire.management.JVMMetrics;
-import com.gemstone.gemfire.management.ManagementException;
-import com.gemstone.gemfire.management.OSMetrics;
+import com.gemstone.gemfire.management.*;
 import com.gemstone.gemfire.management.cli.CommandService;
 import com.gemstone.gemfire.management.cli.CommandServiceException;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.management.internal.ManagementStrings;
 import com.gemstone.gemfire.management.internal.SystemManagementService;
-import com.gemstone.gemfire.management.internal.beans.stats.AggregateRegionStatsMonitor;
-import com.gemstone.gemfire.management.internal.beans.stats.GCStatsMonitor;
-import com.gemstone.gemfire.management.internal.beans.stats.MBeanStatsMonitor;
-import com.gemstone.gemfire.management.internal.beans.stats.MemberLevelDiskMonitor;
-import com.gemstone.gemfire.management.internal.beans.stats.StatType;
-import com.gemstone.gemfire.management.internal.beans.stats.StatsAverageLatency;
-import com.gemstone.gemfire.management.internal.beans.stats.StatsKey;
-import com.gemstone.gemfire.management.internal.beans.stats.StatsLatency;
-import com.gemstone.gemfire.management.internal.beans.stats.StatsRate;
-import com.gemstone.gemfire.management.internal.beans.stats.VMStatsMonitor;
+import com.gemstone.gemfire.management.internal.beans.stats.*;
 import com.gemstone.gemfire.management.internal.cli.CommandResponseBuilder;
 import com.gemstone.gemfire.management.internal.cli.remote.CommandExecutionContext;
 import com.gemstone.gemfire.management.internal.cli.remote.MemberCommandService;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+import org.apache.logging.log4j.Logger;
+
+import javax.management.JMRuntimeException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import java.io.File;
+import java.io.IOException;
+import java.lang.management.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class acts as an Bridge between MemberMBean and GemFire Cache and
@@ -1010,32 +955,6 @@ public class MemberMBeanBridge {
     return listDiskStores(true);
   }
 
-  
-
-  
-  /**
-   * @return list all the HDFSStore's name at cache level
-   */
-  
-  public String[] getHDFSStores() {
-    GemFireCacheImpl cacheImpl = (GemFireCacheImpl) cache;
-    String[] retStr = null;
-    Collection<HDFSStoreImpl> hdfsStoreCollection = null;
-    hdfsStoreCollection = cacheImpl.getHDFSStores();
-      
-    if (hdfsStoreCollection != null && hdfsStoreCollection.size() > 0) {
-      retStr = new String[hdfsStoreCollection.size()];
-      Iterator<HDFSStoreImpl> it = hdfsStoreCollection.iterator();
-      int i = 0;
-      while (it.hasNext()) {
-        retStr[i] = it.next().getName();
-        i++;
-
-      }
-    }
-    return retStr;
-  }
-      
   /**
    * 
    * @return log of the member.
@@ -1758,7 +1677,6 @@ public class MemberMBeanBridge {
     if (isGfshRequest) {
       CommandExecutionContext.setShellRequest();
     }
-//    System.out.println("isGfshRequest :: "+isGfshRequest);
     
     Result result = ((MemberCommandService)commandService).processCommand(commandString, env);
     if (!(result instanceof CommandResult)) {// TODO - Abhishek - Shouldn't be needed
@@ -1766,10 +1684,9 @@ public class MemberMBeanBridge {
         result = ResultBuilder.createInfoResult(result.nextLine());
       }
     }
+
     if (isGfshRequest) {
-      String responseJson = CommandResponseBuilder.createCommandResponseJson(getMember(), (CommandResult) result);
-  //    System.out.println("responseJson :: "+responseJson);
-      return responseJson;
+      return CommandResponseBuilder.createCommandResponseJson(getMember(), (CommandResult) result);
     } else {
       return ResultBuilder.resultAsString(result);
     }
@@ -1780,14 +1697,12 @@ public class MemberMBeanBridge {
     if (env != null) {
       appName = env.get(Gfsh.ENV_APP_NAME);
     }
-//    System.out.println("appName :: "+appName);
     
     return Gfsh.GFSH_APP_NAME.equals(appName);
   }
   
   public long getTotalDiskUsage() {
-    long diskSpaceUsage = regionMonitor.getDiskSpace();
-    return diskSpaceUsage;
+    return regionMonitor.getDiskSpace();
   }
 
 

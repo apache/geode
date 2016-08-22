@@ -20,7 +20,7 @@ package com.gemstone.gemfire.internal.admin;
 /**
  * Describes a cache from a GemFireVM's point of view.
  * 
- * @since 3.5
+ * @since GemFire 3.5
  */
 public interface CacheInfo {
   /**
@@ -88,14 +88,14 @@ public interface CacheInfo {
    * Returns the ids of all of the bridge servers that are associated
    * with this cache.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public int[] getBridgeServerIds();
 
   /**
    * Returns whether or not this is a cache "server"
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public boolean isServer();
 }

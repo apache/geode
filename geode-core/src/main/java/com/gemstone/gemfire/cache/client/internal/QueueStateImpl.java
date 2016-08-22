@@ -226,7 +226,7 @@ public class QueueStateImpl implements QueueState {
    * send an ack. 2)It will expire the entries which have exceeded the specified
    * expiry time and for which ack has been alerady sent.
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    * 
    */
 
@@ -259,7 +259,7 @@ public class QueueStateImpl implements QueueState {
     @Override
     public void run2() {
       SystemFailure.checkFailure();
-      if (qManager.getPool().getCancelCriterion().cancelInProgress() != null) {
+      if (qManager.getPool().getCancelCriterion().isCancelInProgress()) {
         return;
       }
       if (PoolImpl.BEFORE_SENDING_CLIENT_ACK_CALLBACK_FLAG) {
@@ -372,7 +372,7 @@ public class QueueStateImpl implements QueueState {
    * A class to store sequenceId and the creation time of the object to be used
    * for expiring the entry
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    * 
    */
   public static class SequenceIdAndExpirationObject {

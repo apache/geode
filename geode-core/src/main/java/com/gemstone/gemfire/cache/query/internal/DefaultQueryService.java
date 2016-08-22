@@ -16,19 +16,6 @@
  */
 package com.gemstone.gemfire.cache.query.internal;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.LowMemoryException;
 import com.gemstone.gemfire.cache.Region;
@@ -37,35 +24,13 @@ import com.gemstone.gemfire.cache.client.internal.InternalPool;
 import com.gemstone.gemfire.cache.client.internal.ProxyCache;
 import com.gemstone.gemfire.cache.client.internal.ServerProxy;
 import com.gemstone.gemfire.cache.client.internal.UserAttributes;
-import com.gemstone.gemfire.cache.query.AmbiguousNameException;
-import com.gemstone.gemfire.cache.query.CqAttributes;
-import com.gemstone.gemfire.cache.query.CqException;
-import com.gemstone.gemfire.cache.query.CqExistsException;
-import com.gemstone.gemfire.cache.query.CqQuery;
-import com.gemstone.gemfire.cache.query.CqServiceStatistics;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexCreationException;
-import com.gemstone.gemfire.cache.query.IndexExistsException;
-import com.gemstone.gemfire.cache.query.IndexNameConflictException;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.MultiIndexCreationException;
-import com.gemstone.gemfire.cache.query.NameResolutionException;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryExecutionLowMemoryException;
-import com.gemstone.gemfire.cache.query.QueryInvalidException;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.RegionNotFoundException;
-import com.gemstone.gemfire.cache.query.TypeMismatchException;
+import com.gemstone.gemfire.cache.query.*;
 import com.gemstone.gemfire.cache.query.internal.cq.ClientCQ;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
-import com.gemstone.gemfire.cache.query.internal.index.AbstractIndex;
-import com.gemstone.gemfire.cache.query.internal.index.IndexCreationData;
-import com.gemstone.gemfire.cache.query.internal.index.IndexData;
-import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
-import com.gemstone.gemfire.cache.query.internal.index.IndexUtils;
-import com.gemstone.gemfire.cache.query.internal.index.PartitionedIndex;
+import com.gemstone.gemfire.cache.query.internal.index.*;
 import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 import com.gemstone.gemfire.internal.cache.InternalCache;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
@@ -74,6 +39,10 @@ import com.gemstone.gemfire.internal.cache.control.MemoryThresholds;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * @version $Revision: 1.2 $
@@ -85,11 +54,11 @@ public class DefaultQueryService implements QueryService {
    * System property to allow query on region with heterogeneous objects. 
    * By default its set to false.
    */
-  public static final boolean QUERY_HETEROGENEOUS_OBJECTS = 
-    Boolean.valueOf(System.getProperty("gemfire.QueryService.QueryHeterogeneousObjects", "true")).booleanValue(); 
+  public static final boolean QUERY_HETEROGENEOUS_OBJECTS =
+      Boolean.valueOf(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "QueryService.QueryHeterogeneousObjects", "true")).booleanValue();
 
-  public static boolean COPY_ON_READ_AT_ENTRY_LEVEL = 
-      Boolean.valueOf(System.getProperty("gemfire.QueryService.CopyOnReadAtEntryLevel", "false")).booleanValue(); 
+  public static boolean COPY_ON_READ_AT_ENTRY_LEVEL =
+      Boolean.valueOf(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "QueryService.CopyOnReadAtEntryLevel", "false")).booleanValue();
 
   
   /** Test purpose only */

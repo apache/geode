@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.internal.jta.dunit;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -23,12 +26,15 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.sql.SQLException;
 import java.util.Properties;
-
 import javax.naming.Context;
 import javax.naming.NamingException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -37,26 +43,22 @@ import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.jta.CacheUtils;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
-*This test sees if the TransactionTimeOut works properly
-*/
-public class TxnTimeOutDUnitTest extends DistributedTestCase {
+ * This test sees if the TransactionTimeOut works properly
+ */
+@Category(DistributedTest.class)
+public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
 
   static DistributedSystem ds;
   static Cache cache = null;
-  private static String tblName;
-  private boolean exceptionOccured = false;
-
-  public TxnTimeOutDUnitTest(String name) {
-    super(name);
-  }
 
   public static void init() throws Exception {
     Properties props = new Properties();
@@ -69,18 +71,10 @@ public class TxnTimeOutDUnitTest extends DistributedTestCase {
     wr.write(modified_file_str);
     wr.flush();
     wr.close();
-    props.setProperty("cache-xml-file", path);
-//    props.setProperty("mcast-port", "10321");
-    props.setProperty("log-level", LogWriterUtils.getDUnitLogLevel());
-    try {
-//      ds = DistributedSystem.connect(props);
-      ds = (new TxnTimeOutDUnitTest("temp")).getSystem(props);
-      if (cache == null || cache.isClosed()) cache = CacheFactory.create(ds);
-    }
-    catch (Exception e) {
-      e.printStackTrace(System.err);
-      throw new Exception("" + e);
-    }
+    props.setProperty(CACHE_XML_FILE, path);
+    props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+    ds = (new TxnTimeOutDUnitTest()).getSystem(props);
+    if (cache == null || cache.isClosed()) cache = CacheFactory.create(ds);
   }
 
   public static Cache getCache() {
@@ -94,8 +88,7 @@ public class TxnTimeOutDUnitTest extends DistributedTestCase {
       }
     }
     catch (Exception e) {
-	fail("Exception in starting cache due to "+e);
-      e.printStackTrace();
+	    fail("Exception in starting cache due to ", e);
     }
   }
 
@@ -109,7 +102,7 @@ public class TxnTimeOutDUnitTest extends DistributedTestCase {
 
     }
     catch (Exception e) {
-	fail("Exception in closing cache or ds due to "+e);
+    	fail("Exception in closing cache or ds due to "+e);
       e.printStackTrace();
     }
   }
@@ -128,7 +121,8 @@ public class TxnTimeOutDUnitTest extends DistributedTestCase {
     vm0.invoke(() -> TxnTimeOutDUnitTest.closeCache());
   }
 
-  public void testMultiThreaded() throws NamingException, SQLException,Throwable {
+  @Test
+  public void testMultiThreaded() throws Exception {
     try{
 	Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -189,7 +183,9 @@ public class TxnTimeOutDUnitTest extends DistributedTestCase {
   e.printStackTrace();
   }
   }
-  public static void testLoginTimeOut() throws Throwable {
+
+  @Test
+  public void testLoginTimeOut() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     AsyncInvocation asyncObj1 =  vm0.invokeAsync(() -> TxnTimeOutDUnitTest.runTest2());
@@ -263,34 +259,26 @@ public class TxnTimeOutDUnitTest extends DistributedTestCase {
     }
   }
 
-  public static  void runTest3(Object o) {
-  
-	   boolean exceptionOccured = false;
-	   try 
-	   {
-			int sleeptime = ((Integer)o).intValue();
-			Context ctx = cache.getJNDIContext();
-			UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
-			utx.begin();
-			utx.setTransactionTimeout(sleeptime);
-			Thread.sleep(sleeptime * 2000);
-			try {
-				 utx.commit();
-			}
-			catch (Exception e) {
-				 exceptionOccured = true;
-			}
-			if(!exceptionOccured)
-			fail("exception did not occur although was supposed to"
-			+" occur");
-	   }
-	   catch (Exception e) {
-	   	fail("Exception in runTest3 due to "+e);
-			e.printStackTrace();
-	   }
+  public static void runTest3(Object o) throws SystemException, NotSupportedException, NamingException, InterruptedException {
+    boolean exceptionOccured = false;
+    int sleeptime = ((Integer)o).intValue();
+    Context ctx = cache.getJNDIContext();
+    UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
+    utx.begin();
+    utx.setTransactionTimeout(sleeptime);
+    Thread.sleep(sleeptime * 2000);
+    try {
+       utx.commit();
+    }
+    catch (Exception e) {
+       exceptionOccured = true;
+    }
+    if(!exceptionOccured) {
+      fail("exception did not occur although was supposed to occur");
+    }
   }
+
   private static String readFile(String filename) throws IOException {
-//    String lineSep = System.getProperty("\n");
     BufferedReader br = new BufferedReader(new FileReader(filename));
     String nextLine = "";
     StringBuffer sb = new StringBuffer();

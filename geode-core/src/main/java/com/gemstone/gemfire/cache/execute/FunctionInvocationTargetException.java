@@ -24,7 +24,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * Function needs to be re-executed if the
  * {@link FunctionException#getCause()} is FunctionInvocationTargetException.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * 
  */
 public class FunctionInvocationTargetException extends FunctionException {
@@ -50,7 +50,7 @@ public class FunctionInvocationTargetException extends FunctionException {
    *                the error message
    * @param id
    *                the DistributedMember id of the source
-   * @since 6.5
+   * @since GemFire 6.5
    * 
    */
   public FunctionInvocationTargetException(String msg, DistributedMember id) {
@@ -83,7 +83,7 @@ public class FunctionInvocationTargetException extends FunctionException {
    * Method to get the member id of the Exception
    * 
    * @return DistributedMember id
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public DistributedMember getMemberId() {
     return this.id;

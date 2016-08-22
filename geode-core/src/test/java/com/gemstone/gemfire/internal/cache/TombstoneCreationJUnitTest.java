@@ -16,27 +16,23 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.net.InetAddress;
-import java.util.Properties;
-
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.net.InetAddress;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 @Category(IntegrationTest.class)
 public class TombstoneCreationJUnitTest {
@@ -55,9 +51,9 @@ public class TombstoneCreationJUnitTest {
   public void testDestroyCreatesTombstone() throws Exception {
     String name = nameRule.getMethodName();
     Properties props = new Properties();
-    props.put(DistributionConfig.LOCATORS_NAME, "");
-    props.put(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.put(DistributionConfig.LOG_LEVEL_NAME, "config");
+    props.put(LOCATORS, "");
+    props.put(MCAST_PORT, "0");
+    props.put(LOG_LEVEL, "config");
     GemFireCacheImpl cache = (GemFireCacheImpl)CacheFactory.create(DistributedSystem.connect(props));
     RegionFactory f = cache.createRegionFactory(RegionShortcut.REPLICATE);
     DistributedRegion region = (DistributedRegion)f.create(name);
@@ -92,9 +88,9 @@ public class TombstoneCreationJUnitTest {
   public void testConcurrentCreateAndDestroy() throws Exception {
     String name = nameRule.getMethodName();
     Properties props = new Properties();
-    props.put(DistributionConfig.LOCATORS_NAME, "");
-    props.put(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.put(DistributionConfig.LOG_LEVEL_NAME, "config");
+    props.put(LOCATORS, "");
+    props.put(MCAST_PORT, "0");
+    props.put(LOG_LEVEL, "config");
     final GemFireCacheImpl cache = (GemFireCacheImpl)CacheFactory.create(DistributedSystem.connect(props));
     RegionFactory f = cache.createRegionFactory(RegionShortcut.REPLICATE);
     final DistributedRegion region = (DistributedRegion)f.create(name);
@@ -167,9 +163,9 @@ public class TombstoneCreationJUnitTest {
   public void testOlderEventIgnoredEvenIfTombstoneHasExpired()  throws Exception {
     String name = nameRule.getMethodName();
     Properties props = new Properties();
-    props.put(DistributionConfig.LOCATORS_NAME, "");
-    props.put(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.put(DistributionConfig.LOG_LEVEL_NAME, "config");
+    props.put(LOCATORS, "");
+    props.put(MCAST_PORT, "0");
+    props.put(LOG_LEVEL, "config");
     final GemFireCacheImpl cache = (GemFireCacheImpl)CacheFactory.create(DistributedSystem.connect(props));
     RegionFactory f = cache.createRegionFactory(RegionShortcut.REPLICATE);
     final DistributedRegion region = (DistributedRegion)f.create(name);
@@ -179,7 +175,7 @@ public class TombstoneCreationJUnitTest {
     // the entry
     String key = "destroyedKey1";
     VersionedThinRegionEntryHeap entry = new VersionedThinRegionEntryHeapObjectKey(region, key, Token.REMOVED_PHASE1);
-    entry.setLastModified(System.currentTimeMillis() - (2 * TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT));
+    entry.setLastModified(System.currentTimeMillis() - (2 * TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT));
     ((AbstractRegionMap)region.getRegionMap()).putEntryIfAbsentForTest(entry);
     cache.getLogger().info("entry inserted into cache: " + entry);
 
@@ -189,7 +185,7 @@ public class TombstoneCreationJUnitTest {
     tag.setIsRemoteForTesting();
     tag.setEntryVersion(3);
     tag.setRegionVersion(12345);
-    tag.setVersionTimeStamp(System.currentTimeMillis() - TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT);
+    tag.setVersionTimeStamp(System.currentTimeMillis() - TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT);
     tag.setDistributedSystemId(1);
     ev.setVersionTag(tag);
     cache.getLogger().info("trying to destroy the entry: " + region.getRegionEntry(key));
@@ -213,7 +209,7 @@ public class TombstoneCreationJUnitTest {
     tag.setIsRemoteForTesting();
     tag.setEntryVersion(1);
     tag.setRegionVersion(12340);
-    tag.setVersionTimeStamp(System.currentTimeMillis() - TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT - 10000);
+    tag.setVersionTimeStamp(System.currentTimeMillis() - TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT - 10000);
     tag.setDistributedSystemId(1);
     ev.setVersionTag(tag);
     cache.getLogger().info("trying to update the entry with an older event: " + region.getRegionEntry(key));

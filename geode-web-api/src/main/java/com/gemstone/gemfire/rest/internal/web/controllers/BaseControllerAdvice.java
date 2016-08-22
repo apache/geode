@@ -38,7 +38,7 @@ import com.gemstone.gemfire.rest.internal.web.exception.ResourceNotFoundExceptio
 /**
  * The CrudControllerAdvice class handles exception thrown while serving the REST request
  * <p/>
- * @since 8.0
+ * @since GemFire 8.0
  */
 
 @ControllerAdvice

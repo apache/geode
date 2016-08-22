@@ -16,11 +16,17 @@
  */
 package com.gemstone.gemfire.cache.client;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -33,21 +39,22 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * The ClientServerRegisterInterestsDUnitTest class is a test suite of test cases testing the interaction between a
  * client and a server in a Register Interests scenario.
  *
- * @see com.gemstone.gemfire.test.dunit.DistributedTestCase
- * @since 8.0
+ * @since GemFire 8.0
  */
-public class ClientServerRegisterInterestsDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTestCase {
 
   protected static final long WAIT_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(5);
 
@@ -58,10 +65,6 @@ public class ClientServerRegisterInterestsDUnitTest extends DistributedTestCase 
   private final Stack entryEvents = new Stack();
 
   private VM gemfireServerVm;
-
-  public ClientServerRegisterInterestsDUnitTest(final String testName) {
-    super(testName);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -93,9 +96,9 @@ public class ClientServerRegisterInterestsDUnitTest extends DistributedTestCase 
         try {
           Cache cache = new CacheFactory()
             .set("name", "ClientServerRegisterInterestsTestGemFireServer")
-            .set("mcast-port", "0")
-            .set("log-file", "clientServerRegisterInterestsTest.log")
-            .set("log-level", "config")
+              .set(MCAST_PORT, "0")
+              .set(LOG_FILE, "clientServerRegisterInterestsTest.log")
+              .set(LOG_LEVEL, "config")
             //.set("jmx-manager", "true")
             //.set("jmx-manager-http-port", "0")
             //.set("jmx-manager-port", "1199")
@@ -148,7 +151,7 @@ public class ClientServerRegisterInterestsDUnitTest extends DistributedTestCase 
 
   private ClientCache setupGemFireClientCache() {
     ClientCache clientCache = new ClientCacheFactory()
-      .set("durable-client-id", "TestDurableClientId")
+        .set(DURABLE_CLIENT_ID, "TestDurableClientId")
       .create();
 
     PoolFactory poolFactory = PoolManager.createFactory();
@@ -206,6 +209,7 @@ public class ClientServerRegisterInterestsDUnitTest extends DistributedTestCase 
     }
   }
 
+  @Test
   public void testClientRegisterInterests() {
     ClientCache clientCache = setupGemFireClientCache();
 

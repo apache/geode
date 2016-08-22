@@ -16,16 +16,16 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.cache.EntryNotFoundException;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.logging.log4j.Logger;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * ExpirationScheduler uses a single instance of java.util.Timer (and
@@ -39,7 +39,7 @@ public class ExpirationScheduler
 
   private final SystemTimer timer;
   private final AtomicInteger pendingCancels = new AtomicInteger();
-  private static final int MAX_PENDING_CANCELS = Integer.getInteger("gemfire.MAX_PENDING_CANCELS", 10000).intValue();
+    private static final int MAX_PENDING_CANCELS = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_PENDING_CANCELS", 10000).intValue();
 
   public ExpirationScheduler(InternalDistributedSystem ds) {
     this.timer = new SystemTimer(ds, true);

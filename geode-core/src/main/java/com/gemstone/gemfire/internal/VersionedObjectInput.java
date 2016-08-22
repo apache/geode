@@ -25,7 +25,7 @@ import java.io.ObjectInput;
  * {@link VersionedDataStream} wrapping given {@link ObjectInput} for a stream
  * coming from a different product version.
  * 
- * @since 7.1
+ * @since GemFire 7.1
  */
 public final class VersionedObjectInput implements ObjectInput,
     VersionedDataStream {

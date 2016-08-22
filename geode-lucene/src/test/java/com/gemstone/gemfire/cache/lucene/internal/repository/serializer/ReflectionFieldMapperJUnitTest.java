@@ -16,16 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.gemstone.gemfire.cache.lucene.internal.repository.serializer;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import org.apache.lucene.document.Document;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.ReflectionLuceneSerializer;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
@@ -37,7 +35,7 @@ public class ReflectionFieldMapperJUnitTest {
 
   @Test
   public void testAllFields() {
-    
+
     String[] allFields = new String[] {"s", "i", "l", "d", "f", "s2"};
     ReflectionLuceneSerializer mapper1 = new ReflectionLuceneSerializer(Type1.class, allFields);
     ReflectionLuceneSerializer mapper2 = new ReflectionLuceneSerializer(Type2.class, allFields);
@@ -69,7 +67,7 @@ public class ReflectionFieldMapperJUnitTest {
   
   @Test
   public void testIgnoreInvalid() {
-    
+
     String[] fields = new String[] {"s", "o", "s2"};
     ReflectionLuceneSerializer mapper = new ReflectionLuceneSerializer(Type2.class, fields);
     
@@ -81,5 +79,21 @@ public class ReflectionFieldMapperJUnitTest {
     assertEquals(2, doc.getFields().size());
     assertEquals("a", doc.getField("s").stringValue());
     assertEquals("b", doc.getField("s2").stringValue());
+  }
+  
+  @Test
+  public void testNullField() {
+
+    String[] fields = new String[] {"s", "o", "s2"};
+    ReflectionLuceneSerializer mapper = new ReflectionLuceneSerializer(Type2.class, fields);
+    
+    Type2 t = new Type2("a", 1, 2L, 3.0, 4.0f, null);
+    
+    Document doc = new Document();
+    mapper.toDocument(t, doc);
+    
+    assertEquals(1, doc.getFields().size());
+    assertEquals("a", doc.getField("s").stringValue());
+    assertNull(doc.getField("s2"));
   }
 }

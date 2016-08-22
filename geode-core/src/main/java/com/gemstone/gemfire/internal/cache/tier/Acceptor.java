@@ -26,7 +26,7 @@ import com.gemstone.gemfire.internal.Version;
  * Server. Multiple communication stacks may provide implementations for the
  * interfaces defined in this package
  *
- * @since 2.0.2
+ * @since GemFire 2.0.2
  */
 public abstract class Acceptor
 {
@@ -80,7 +80,7 @@ public abstract class Acceptor
 
   /**
    * The GFE version of the server.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final Version VERSION = Version.CURRENT.getGemFireVersion();
 

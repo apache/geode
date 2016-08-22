@@ -20,7 +20,6 @@ import java.io.File;
 import java.util.Set;
 
 import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.hdfs.HDFSStore;
 import com.gemstone.gemfire.compression.Compressor;
 
 /** Defines attributes for configuring a region.
@@ -41,7 +40,7 @@ import com.gemstone.gemfire.compression.Compressor;
  * @see AttributesMutator
  * @see Region#getAttributes
  * @see com.gemstone.gemfire.cache.EvictionAttributes
- * @since 2.0
+ * @since GemFire 2.0
  */
 public interface RegionAttributes<K,V> {
 
@@ -113,7 +112,7 @@ public interface RegionAttributes<K,V> {
   /**
    * Gets the flag telling a region to ignore JTA transactions.
    * Default value is set to false.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public boolean getIgnoreJTA();
 
@@ -130,7 +129,7 @@ public interface RegionAttributes<K,V> {
    * Default value of DataPolicy is set to 'Normal'. Please refer the gemfire documentation for more details on this.
    *
    * @return the region's <code>DataPolicy</code>
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public DataPolicy getDataPolicy();
 
@@ -148,11 +147,6 @@ public interface RegionAttributes<K,V> {
    */
   public EvictionAttributes getEvictionAttributes();
 
-  /**
-   * Return the {@link CustomEvictionAttributes}, if any, set for the region.
-   */
-  public CustomEvictionAttributes getCustomEvictionAttributes();
-
   /** Returns the cache listener for the region.
    * @throws IllegalStateException if more than one cache listener exists on this attributes
    * @return the region's <code>CacheListener</code>
@@ -164,7 +158,7 @@ public interface RegionAttributes<K,V> {
   /** Returns an array of all the cache listeners on this attributes.
    * Modifications to the returned array will not effect the attributes.
    * @return the region's <code>CacheListener</code>s; an empty array if no listeners
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public CacheListener<K,V>[] getCacheListeners();
 
@@ -206,7 +200,7 @@ public interface RegionAttributes<K,V> {
    * Multicast must also be enabled in the DistributedSystem.
    * Default value is set to false.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    * @return true if this region is configured to allow use of multicast
    * for distributed messaging
    * @see AttributesFactory#setMulticastEnabled
@@ -224,7 +218,7 @@ public interface RegionAttributes<K,V> {
    * Returns whether or not a persistent backup should be made of the
    * region (as opposed to just writing the overflow data to disk).
    *
-   * @since 3.2
+   * @since GemFire 3.2
    * @deprecated as of GemFire 5.0, use {@link DataPolicy#PERSISTENT_REPLICATE} instead
    */
   @Deprecated
@@ -234,7 +228,7 @@ public interface RegionAttributes<K,V> {
    * Returns the <code>DiskWriteAttributes</code> that configure how
    * the region is written to disk.
    *
-   * @since 3.2
+   * @since GemFire 3.2
    * @deprecated as of 6.5 use {@link #getDiskStoreName} instead.
    */
   @Deprecated
@@ -245,7 +239,7 @@ public interface RegionAttributes<K,V> {
    * multiple directories are used, GemFire will attempt to distribute the
    * data evenly amongst them.
    *
-   * @since 3.2
+   * @since GemFire 3.2
    * @deprecated as of 6.5 use {@link DiskStore#getDiskDirs} instead.
    */
   @Deprecated
@@ -257,7 +251,7 @@ public interface RegionAttributes<K,V> {
    * region is modified or asynchronously in a background thread. 
    * Default value is true.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public boolean getIndexMaintenanceSynchronous();
 
@@ -265,7 +259,7 @@ public interface RegionAttributes<K,V> {
    * Returns the <code>PartitionAttributes</code> that configure how
    * the region is partitioned.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public PartitionAttributes getPartitionAttributes();
 
@@ -281,7 +275,7 @@ public interface RegionAttributes<K,V> {
    * Returns the <code>SubscriptionAttributes</code> that configure
    * how this region behaves as a subscriber to remote caches.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public SubscriptionAttributes getSubscriptionAttributes();
 
@@ -299,7 +293,7 @@ public interface RegionAttributes<K,V> {
    * @return True if acks are sent after updates are processed;
    *         false if acks are sent before updates are processed.
    *
-   * @since 4.1
+   * @since GemFire 4.1
    * @deprecated Setting early ack no longer has any effect.
    */
   @Deprecated
@@ -311,7 +305,7 @@ public interface RegionAttributes<K,V> {
    * @return True if a publisher;
    *         false if not (default).
    *
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    * @deprecated as of 6.5
    */
   public boolean getPublisher();
@@ -328,7 +322,7 @@ public interface RegionAttributes<K,V> {
    * @return True if conflation is enabled;
    *         false conflation is not enabled (default).
    *
-   * @since 4.2
+   * @since GemFire 4.2
    */
   @Deprecated
   public boolean getEnableConflation();
@@ -343,7 +337,7 @@ public interface RegionAttributes<K,V> {
    * @return True if conflation is enabled;
    *         false conflation is not enabled (default).
    *
-   * @since 5.0
+   * @since GemFire 5.0
    * @deprecated as of GemFire 5.0, use {@link #getEnableSubscriptionConflation} instead
    */
   @Deprecated
@@ -361,7 +355,7 @@ public interface RegionAttributes<K,V> {
    * @return True if conflation is enabled;
    *         false conflation is not enabled (default).
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public boolean getEnableSubscriptionConflation();
   /**
@@ -373,7 +367,7 @@ public interface RegionAttributes<K,V> {
    * @return True if async conflation is enabled;
    *         false async conflation is not enabled (default).
    *
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    */
   public boolean getEnableAsyncConflation();
 
@@ -392,7 +386,7 @@ public interface RegionAttributes<K,V> {
    * @return the name of the client-server {@link Pool}
    * this region will use for server communication; <code>null</code> is returned if
    * the region communicates with peers.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public String getPoolName();
   
@@ -403,7 +397,7 @@ public interface RegionAttributes<K,V> {
    * @return True if cloning is enabled;
    *         false cloning is not enabled (default).
    *
-   * @since 6.1
+   * @since GemFire 6.1
    */
   public boolean getCloningEnabled();
 
@@ -414,7 +408,7 @@ public interface RegionAttributes<K,V> {
    * @return the name of the {@link DiskStore} of this region; 
    * <code>null</code> is returned if this region belongs to default 
    * {@link DiskStore}.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public String getDiskStoreName();
   
@@ -423,7 +417,7 @@ public interface RegionAttributes<K,V> {
    * Default is set to true.
    * 
    * @return Returns true if writes to disk are synchronous and false otherwise
-   * @since 6.5 
+   * @since GemFire 6.5
    */
   public boolean isDiskSynchronous();
   
@@ -447,31 +441,14 @@ public interface RegionAttributes<K,V> {
    * 
    * Default is set to true.
    * 
-   * @since 7.0
+   * @since GemFire 7.0
    * @return true if concurrent update checks are turned on
    */
   public boolean getConcurrencyChecksEnabled();
   
   /**
-   * Returns the name of the {@link HDFSStore} that this region belongs
-   * to, if any.
-   * @return the name of the {@link HDFSStore} of this region; 
-   * <code>null</code> is returned if this region has no
-   * {@link HDFSStore}.
-   * @since 9.0
-   */
-  public String getHDFSStoreName();
-  
-  /**
-   * Returns true if this region is configured to
-   * be write-only to HDFS. 
-   * @since 9.0
-   */
-  public boolean getHDFSWriteOnly();
-  
-  /**
    * Returns the compressor used by this region's entry values.
-   * @since 8.0
+   * @since GemFire 8.0
    * @return null if the region does not have compression enabled.
    */
   public Compressor getCompressor();
@@ -480,7 +457,7 @@ public interface RegionAttributes<K,V> {
    * Returns whether or not this region uses off-heap memory.
    * @return True if a usage of off-heap memory is enabled;
    *         false if usage of off-heap memory is disabled (default).
-   * @since 9.0
+   * @since Geode 1.0
    */
   public boolean getOffHeap();
 }

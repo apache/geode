@@ -21,7 +21,7 @@ package com.gemstone.gemfire.internal.process;
  * and the launcher expects to create a new pid file without forcing the
  * deletion of the old one.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public final class FileAlreadyExistsException extends Exception {
   private static final long serialVersionUID = 5471082555536094256L;

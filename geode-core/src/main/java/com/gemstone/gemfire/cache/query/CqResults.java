@@ -44,7 +44,7 @@ package com.gemstone.gemfire.cache.query;
  * @see com.gemstone.gemfire.cache.query.Query#execute()
  * @see com.gemstone.gemfire.cache.query.CqQuery#executeWithInitialResults()
  * 
- * @since 6.5
+ * @since GemFire 6.5
  */
 public interface CqResults<E> extends SelectResults<E> {
 }

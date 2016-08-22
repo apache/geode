@@ -16,63 +16,23 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Lock;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.AttributesMutator;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheRuntimeException;
-import com.gemstone.gemfire.cache.CustomExpiry;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EntryExistsException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.InterestRegistrationEvent;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.ResultSender;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
-import com.gemstone.gemfire.cache.hdfs.HDFSIOException;
-import com.gemstone.gemfire.cache.query.internal.IndexUpdater;
 import com.gemstone.gemfire.cache.query.internal.QCompiler;
 import com.gemstone.gemfire.cache.query.internal.index.IndexCreationData;
 import com.gemstone.gemfire.cache.query.internal.index.PartitionedIndex;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.cache.BucketRegion.RawValue;
 import com.gemstone.gemfire.internal.cache.LocalRegion.RegionPerfStats;
@@ -82,13 +42,7 @@ import com.gemstone.gemfire.internal.cache.execute.BucketMovedException;
 import com.gemstone.gemfire.internal.cache.execute.FunctionStats;
 import com.gemstone.gemfire.internal.cache.execute.PartitionedRegionFunctionResultSender;
 import com.gemstone.gemfire.internal.cache.execute.RegionFunctionContextImpl;
-import com.gemstone.gemfire.internal.cache.partitioned.Bucket;
-import com.gemstone.gemfire.internal.cache.partitioned.PRLocallyDestroyedException;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionFunctionStreamingMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserver;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserverHolder;
-import com.gemstone.gemfire.internal.cache.partitioned.RedundancyAlreadyMetException;
-import com.gemstone.gemfire.internal.cache.partitioned.RemoveBucketMessage;
+import com.gemstone.gemfire.internal.cache.partitioned.*;
 import com.gemstone.gemfire.internal.cache.partitioned.RemoveBucketMessage.RemoveBucketResponse;
 import com.gemstone.gemfire.internal.cache.persistence.BackupManager;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -103,7 +57,16 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableReadLock;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableWriteLock;
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
 
 /**
  * Implementation of DataStore (DS) for a PartitionedRegion (PR). This will be
@@ -178,7 +141,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
    * Update an entry's last access time if a client is interested in the entry.
    */
   private static final boolean UPDATE_ACCESS_TIME_ON_INTEREST = Boolean
-      .getBoolean("gemfire.updateAccessTimeOnClientInterest");
+      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "updateAccessTimeOnClientInterest");
 
   
   //Only for testing
@@ -467,19 +430,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
               Object redundancyLock = lockRedundancyLock(moveSource,
                   possiblyFreeBucketId, replaceOffineData);
               //DAN - I hope this is ok to do without that bucket admin lock
-              // Take SQLF lock to wait for any ongoing index initializations.
-              // The lock is taken here in addition to that in
-              // DistributedRegion#initialize() so as to release only after
-              // assignBucketRegion() has been invoked (see bug #41877).
-              // Assumes that the IndexUpdater#lockForGII() lock is re-entrant.
-              final IndexUpdater indexUpdater = this.partitionedRegion
-              .getIndexUpdater();
-              boolean sqlfIndexLocked = false;
               try {
-                if (indexUpdater != null) {
-                  indexUpdater.lockForGII();
-                  sqlfIndexLocked = true;
-                }
                 buk.initializePrimaryElector(creationRequestor);
                 if (getPartitionedRegion().getColocatedWith() == null) {
                   buk.getBucketAdvisor().setShadowBucketDestroyed(false);
@@ -512,9 +463,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
                   }
                 }
               } finally {
-                if (sqlfIndexLocked) {
-                  indexUpdater.unlockForGII();
-                }
                 releaseRedundancyLock(redundancyLock);
                 if(bukReg == null) {
                   buk.clearPrimaryElector();
@@ -746,8 +694,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
       factory.setCacheLoader(this.loader);
     }
     factory.setEnableAsyncConflation(true);
-    
-    if (Boolean.getBoolean("gemfire.PRDebug")) {
+
+    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
       factory.addCacheListener(createDebugBucketListener());
     }
     
@@ -807,7 +755,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
     LocalRegion rootRegion = PartitionedRegionHelper.getPRRoot(this.partitionedRegion.getCache());
     BucketRegion bucketRegion = null;
 
-    if (Boolean.getBoolean("gemfire.PRDebug")) {
+    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
       logger.info(LocalizedMessage.create(
           LocalizedStrings.PartitionedRegionDataStore_CREATEBUCKETREGION_CREATING_BUCKETID_0_NAME_1,
           new Object[] {this.partitionedRegion.bucketStringForLogs(bucketId), bucketRegionName}));
@@ -854,7 +802,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
     // Determine the size of the bucket (the Region in this case is mirrored,
     // get initial image has populated the bucket, compute the size of the
     // region)
-    if (Boolean.getBoolean("gemfire.PRDebug")) {
+    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
       dumpBuckets(); 
       dumpBucket(bucketId, bucketRegion);
     }
@@ -1872,7 +1820,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
   /**
    * Returns the local BucketRegion given an bucketId.
    * Returns null if no BucketRegion exists.
-   * @since 6.1.2.9
+   * @since GemFire 6.1.2.9
    */
   public BucketRegion getLocalBucketById(Integer bucketId) {
     final BucketRegion bucketRegion = this.localBucket2RegionMap.get(bucketId);
@@ -1895,7 +1843,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
   /**
    * Test hook to return the per entry overhead for a bucket region.
    * PRECONDITION: a bucket must exist and be using LRU.
-   * @since 6.1.2.9
+   * @since GemFire 6.1.2.9
    */
   public int getPerEntryLRUOverhead() {
     BucketRegion br = (localBucket2RegionMap.values().iterator().next());
@@ -2059,13 +2007,13 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
       ForceReattemptException, PRLocallyDestroyedException
   {
 	  return getLocally(bucketId, key,aCallbackArgument, disableCopyOnRead, preferCD, requestingClient, 
-			  clientEvent, returnTombstones, false, false);
+			  clientEvent, returnTombstones, false);
   }
   /**
    * Returns value corresponding to this key.
    * @param key
    *          the key to look for
-   * @param preferCD 
+   * @param preferCD
    * @param requestingClient the client making the request, or null
    * @param clientEvent client's event (for returning version tag)
    * @param returnTombstones whether tombstones should be returned
@@ -2076,21 +2024,28 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
    * @throws PrimaryBucketException if the locally managed bucket is not primary
    * @throws PRLocallyDestroyedException if the PartitionRegion is locally destroyed
    */
-  public Object getLocally(int bucketId, final Object key,
-      final Object aCallbackArgument, boolean disableCopyOnRead, boolean preferCD, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, 
-      boolean returnTombstones, boolean opScopeIsLocal, boolean allowReadFromHDFS) throws PrimaryBucketException,
+  public Object getLocally(int bucketId,
+                           final Object key,
+                           final Object aCallbackArgument,
+                           boolean disableCopyOnRead,
+                           boolean preferCD,
+                           ClientProxyMembershipID requestingClient,
+                           EntryEventImpl clientEvent,
+                           boolean returnTombstones,
+                           boolean opScopeIsLocal) throws PrimaryBucketException,
       ForceReattemptException, PRLocallyDestroyedException
   {
     final BucketRegion bucketRegion = getInitializedBucketForId(key, Integer.valueOf(bucketId));
     //  check for primary (when a loader is present) done deeper in the BucketRegion
     Object ret=null;
     if (logger.isDebugEnabled()) {
-      logger.debug("getLocally:  key {}) bucketId={}{}{} region {} returnTombstones {} allowReadFromHDFS {}", key,
-          this.partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR, bucketId, bucketRegion.getName(), returnTombstones, allowReadFromHDFS);
+      logger.debug("getLocally:  key {}) bucketId={}{}{} region {} returnTombstones {} ", key,
+          this.partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR, bucketId, bucketRegion.getName(), returnTombstones);
     }
     invokeBucketReadHook();
     try {
-      ret = bucketRegion.get(key, aCallbackArgument, true, disableCopyOnRead , preferCD, requestingClient, clientEvent, returnTombstones, opScopeIsLocal, allowReadFromHDFS, false);
+      ret = bucketRegion.get(key, aCallbackArgument, true, disableCopyOnRead , preferCD, requestingClient, clientEvent, returnTombstones, opScopeIsLocal,
+        false);
       checkIfBucketMoved(bucketRegion);
     }
     catch (RegionDestroyedException rde) {
@@ -2122,7 +2077,11 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
    * @throws PrimaryBucketException if the locally managed bucket is not primary
    * @see #getLocally(int, Object, Object, boolean, boolean, ClientProxyMembershipID, EntryEventImpl, boolean)
    */
-  public RawValue getSerializedLocally(KeyInfo keyInfo, boolean doNotLockEntry, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) throws PrimaryBucketException,
+  public RawValue getSerializedLocally(KeyInfo keyInfo,
+                                       boolean doNotLockEntry,
+                                       ClientProxyMembershipID requestingClient,
+                                       EntryEventImpl clientEvent,
+                                       boolean returnTombstones) throws PrimaryBucketException,
       ForceReattemptException {
     final BucketRegion bucketRegion = getInitializedBucketForId(keyInfo.getKey(), keyInfo.getBucketId());
     //  check for primary (when loader is present) done deeper in the BucketRegion
@@ -2133,7 +2092,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
     invokeBucketReadHook();
 
     try {
-      RawValue result = bucketRegion.getSerialized(keyInfo, true, doNotLockEntry, requestingClient, clientEvent, returnTombstones, allowReadFromHDFS);
+      RawValue result = bucketRegion.getSerialized(keyInfo, true, doNotLockEntry, requestingClient, clientEvent, returnTombstones);
       checkIfBucketMoved(bucketRegion);
       return result;
     } catch (RegionDestroyedException rde) {
@@ -2157,7 +2116,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
    * @param access
    *          true if caller wants last accessed time updated
    * @param allowTombstones whether a tombstoned entry can be returned
-   * 
+   *
    * @throws ForceReattemptException
    *           if bucket region is not present in this process
    * @return a RegionEntry for the given key, which will be null if the key is
@@ -2168,7 +2127,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
    *           if the PartitionRegion is locally destroyed
    */
   public EntrySnapshot getEntryLocally(int bucketId, final Object key,
-      boolean access, boolean allowTombstones, boolean allowReadFromHDFS)
+                                       boolean access, boolean allowTombstones)
       throws EntryNotFoundException, PrimaryBucketException,
       ForceReattemptException, PRLocallyDestroyedException
   {
@@ -2181,12 +2140,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
     EntrySnapshot res = null;
     RegionEntry ent = null;
     try {
-      if (allowReadFromHDFS) {
-        ent = bucketRegion.entries.getEntry(key);
-      }
-      else {
-        ent = bucketRegion.entries.getOperationalEntryInVM(key);
-      }
+      ent = bucketRegion.entries.getEntry(key);
 
       if (ent == null) {
         this.getPartitionedRegion().checkReadiness();
@@ -2296,14 +2250,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
     try{
       if (r != null) {
         Set keys = r.keySet(allowTombstones);
-        if (getPartitionedRegion().isHDFSReadWriteRegion()) {
-          // hdfs regions can't copy all keys into memory
-          ret = keys;
-
-        } else  { 
         // A copy is made so that the bucket is free to move
         ret = new HashSet(r.keySet(allowTombstones));
-		}
         checkIfBucketMoved(r);
       }
     }

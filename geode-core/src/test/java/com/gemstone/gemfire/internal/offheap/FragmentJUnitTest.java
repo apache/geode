@@ -14,19 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.offheap;
 
-import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
 import org.assertj.core.api.JUnitSoftAssertions;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -39,24 +36,11 @@ public class FragmentJUnitTest {
 
   private SlabImpl[] slabs;
 
-  static {
-    ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
-  }
-  
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
   
   @Rule
   public JUnitSoftAssertions softly = new JUnitSoftAssertions();
-
-
-  @BeforeClass
-  public static void setUpBeforeClass() throws Exception {
-  }
-
-  @AfterClass
-  public static void tearDownAfterClass() throws Exception {
-  }
 
   @Before
   public void setUp() throws Exception {
@@ -71,15 +55,14 @@ public class FragmentJUnitTest {
       slabs[i].free();
     }
   }
-  
-  
+
   @Test
   public void fragmentConstructorThrowsExceptionForNon8ByteAlignedAddress() {
-      expectedException.expect(IllegalStateException.class);
-      expectedException.expectMessage("address was not 8 byte aligned");
+    expectedException.expect(IllegalStateException.class);
+    expectedException.expectMessage("address was not 8 byte aligned");
 
-      new Fragment(slabs[0].getMemoryAddress() + 2, 0);
-      fail("Constructor failed to throw exception for non-8-byte alignment");
+    new Fragment(slabs[0].getMemoryAddress() + 2, 0);
+    fail("Constructor failed to throw exception for non-8-byte alignment");
   }
 
   @Test

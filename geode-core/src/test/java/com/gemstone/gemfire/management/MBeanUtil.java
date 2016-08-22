@@ -16,8 +16,7 @@
  */
 package com.gemstone.gemfire.management;
 
-import java.util.Map;
-import java.util.Set;
+import static org.junit.Assert.*;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
@@ -27,27 +26,20 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
-import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberManager;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.management.internal.SystemManagementService;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Utility test class to get various proxies
- * 
- * 
  */
 public class MBeanUtil {
-  
 
   private static final int MAX_WAIT = 8 * ManagementConstants.REFRESH_TIME;
   
@@ -522,11 +514,11 @@ public class MBeanUtil {
     try {
       info = mbeanServer.getMBeanInfo(objName);
     } catch (IntrospectionException e1) {
-      DistributedTestCase.fail("Could not obtain Sender Proxy Details");
+      fail("Could not obtain Sender Proxy Details");
     } catch (InstanceNotFoundException e1) {
-      DistributedTestCase.fail("Could not obtain Sender Proxy Details");
+      fail("Could not obtain Sender Proxy Details");
     } catch (ReflectionException e1) {
-      DistributedTestCase.fail("Could not obtain Sender Proxy Details");
+      fail("Could not obtain Sender Proxy Details");
     }
     attributeInfos = info.getAttributes();
     for (MBeanAttributeInfo attributeInfo : attributeInfos) {

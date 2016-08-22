@@ -16,45 +16,31 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-import static com.googlecode.catchexception.CatchException.*;
-import static org.assertj.core.api.Assertions.assertThat;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import static com.googlecode.catchexception.CatchException.catchException;
+import static com.googlecode.catchexception.CatchException.caughtException;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
 
 @Category(UnitTest.class)
 public class FreeListManagerTest {
-  static {
-    ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
-  }
 
   private final int DEFAULT_SLAB_SIZE = 1024*1024*5;
   private final MemoryAllocatorImpl ma = mock(MemoryAllocatorImpl.class);
   private final OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
   private TestableFreeListManager freeListManager;
-  
-
-  @BeforeClass
-  public static void setUpBeforeClass() throws Exception {
-  }
-
-  @AfterClass
-  public static void tearDownAfterClass() throws Exception {
-  }
 
   @Before
   public void setUp() throws Exception {
@@ -70,6 +56,10 @@ public class FreeListManagerTest {
   
   private static TestableFreeListManager createFreeListManager(MemoryAllocatorImpl ma, Slab[] slabs) {
     return new TestableFreeListManager(ma, slabs);
+  }
+  
+  private static TestableFreeListManager createFreeListManager(MemoryAllocatorImpl ma, Slab[] slabs, int maxCombine) {
+    return new TestableFreeListManager(ma, slabs, maxCombine);
   }
   
   private void setUpSingleSlabManager() {
@@ -300,14 +290,22 @@ public class FreeListManagerTest {
   }
   
   @Test
+  public void testSlabImplToString() {
+    Slab slab = new SlabImpl(DEFAULT_SLAB_SIZE);
+    String slabAsString = slab.toString();
+    assertThat(slabAsString.contains("MemoryAddress="+slab.getMemoryAddress()));
+    assertThat(slabAsString.contains("Size="+DEFAULT_SLAB_SIZE));
+  }
+  
+  @Test
   public void defragmentWithChunkSizeOfMaxSlabReturnsTrue() {
     int SMALL_SLAB = 16;
     int MEDIUM_SLAB = 128;
-    Slab slab = new SlabImpl(DEFAULT_SLAB_SIZE);
+    Slab slab = new SlabImpl(DEFAULT_SLAB_SIZE, true);
     this.freeListManager = createFreeListManager(ma, new Slab[] {
-        new SlabImpl(SMALL_SLAB), 
-        new SlabImpl(SMALL_SLAB), 
-        new SlabImpl(MEDIUM_SLAB), 
+        new SlabImpl(SMALL_SLAB, true), 
+        new SlabImpl(SMALL_SLAB, true), 
+        new SlabImpl(MEDIUM_SLAB, true), 
         slab});
     ArrayList<OffHeapStoredObject> chunks = new ArrayList<>();
     chunks.add(this.freeListManager.allocate(SMALL_SLAB-8+1));
@@ -318,8 +316,9 @@ public class FreeListManagerTest {
       OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
     }
     
+    this.freeListManager.firstDefragmentation = false;
     assertThat(this.freeListManager.defragment(DEFAULT_SLAB_SIZE)).isTrue();
-    //assertThat(this.freeListManager.getFragmentList()).hasSize(4); // TODO intermittently fails because Fragments may be merged
+    assertThat(this.freeListManager.getFragmentList()).hasSize(4);
   }
   
   @Test
@@ -341,6 +340,31 @@ public class FreeListManagerTest {
       OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
     }
     
+    this.freeListManager.firstDefragmentation = false;
+    assertThat(this.freeListManager.defragment(DEFAULT_SLAB_SIZE/2)).isTrue();
+  }
+  
+  @Test
+  public void defragmentWhenDisallowingCombine() {
+    int SMALL_SLAB = 16;
+    int MEDIUM_SLAB = 128;
+    Slab slab = new SlabImpl(DEFAULT_SLAB_SIZE);
+    this.freeListManager = createFreeListManager(ma, new Slab[] {
+        new SlabImpl(SMALL_SLAB), 
+        new SlabImpl(SMALL_SLAB), 
+        new SlabImpl(MEDIUM_SLAB), 
+        slab}, DEFAULT_SLAB_SIZE/2);
+    ArrayList<OffHeapStoredObject> chunks = new ArrayList<>();
+    chunks.add(this.freeListManager.allocate(SMALL_SLAB-8+1));
+    chunks.add(this.freeListManager.allocate(DEFAULT_SLAB_SIZE/2-8));
+    chunks.add(this.freeListManager.allocate(DEFAULT_SLAB_SIZE/2-8));
+    this.freeListManager.allocate(SMALL_SLAB-8+1);
+    for (OffHeapStoredObject c: chunks) {
+      OffHeapStoredObject.release(c.getAddress(), this.freeListManager);
+    }
+    
+    this.freeListManager.firstDefragmentation = false;
+    assertThat(this.freeListManager.defragment((DEFAULT_SLAB_SIZE/2)+1)).isFalse();
     assertThat(this.freeListManager.defragment(DEFAULT_SLAB_SIZE/2)).isTrue();
   }
   
@@ -350,7 +374,7 @@ public class FreeListManagerTest {
     OffHeapStoredObject c = freeListManager.allocate(DEFAULT_SLAB_SIZE-8);
     this.freeListManager.firstDefragmentation = false;
     assertThat(this.freeListManager.defragment(1)).isFalse();
-    // call defragmen twice for extra code coverage
+    // call defragment twice for extra code coverage
     assertThat(this.freeListManager.defragment(1)).isFalse();
     assertThat(this.freeListManager.getFragmentList()).isEmpty();
   }
@@ -445,6 +469,7 @@ public class FreeListManagerTest {
     this.freeListManager.allocate(DEFAULT_SLAB_SIZE-8-(OffHeapStoredObject.MIN_CHUNK_SIZE-1));
     this.freeListManager.allocate(MEDIUM_SLAB-8-(OffHeapStoredObject.MIN_CHUNK_SIZE-1));
     
+    this.freeListManager.firstDefragmentation = false;
     assertThat(this.freeListManager.defragment(SMALL_SLAB)).isTrue();
   }
  @Test
@@ -504,7 +529,7 @@ public class FreeListManagerTest {
       FreeListManager.verifyOffHeapFreeListCount(-1);
       fail("expected IllegalStateException");
     } catch (IllegalStateException expected) {
-      assertThat(expected.getMessage()).contains("gemfire.OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
+      assertThat(expected.getMessage()).contains(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
     }
   }
   @Test
@@ -513,7 +538,7 @@ public class FreeListManagerTest {
       FreeListManager.verifyOffHeapFreeListCount(0);
       fail("expected IllegalStateException");
     } catch (IllegalStateException expected) {
-      assertThat(expected.getMessage()).contains("gemfire.OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
+      assertThat(expected.getMessage()).contains(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
     }
   }
   @Test
@@ -526,7 +551,7 @@ public class FreeListManagerTest {
       FreeListManager.verifyOffHeapAlignment(-1);
       fail("expected IllegalStateException");
     } catch (IllegalStateException expected) {
-      assertThat(expected.getMessage()).contains("gemfire.OFF_HEAP_ALIGNMENT must be a multiple of 8");
+      assertThat(expected.getMessage()).contains(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT must be a multiple of 8");
     }
   }
   @Test
@@ -535,7 +560,7 @@ public class FreeListManagerTest {
       FreeListManager.verifyOffHeapAlignment(9);
       fail("expected IllegalStateException");
     } catch (IllegalStateException expected) {
-      assertThat(expected.getMessage()).contains("gemfire.OFF_HEAP_ALIGNMENT must be a multiple of 8");
+      assertThat(expected.getMessage()).contains(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT must be a multiple of 8");
     }
   }
   @Test
@@ -544,7 +569,7 @@ public class FreeListManagerTest {
       FreeListManager.verifyOffHeapAlignment(256+8);
       fail("expected IllegalStateException");
     } catch (IllegalStateException expected) {
-      assertThat(expected.getMessage()).contains("gemfire.OFF_HEAP_ALIGNMENT must be <= 256");
+      assertThat(expected.getMessage()).contains(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT must be <= 256");
     }
   }
   @Test
@@ -821,6 +846,34 @@ public class FreeListManagerTest {
     assertThat(spy.getFragmentation()).isEqualTo(67); //Math.rint(66.66)
   }
   
+  @Test
+  public void isAdjacentBoundaryConditions() {
+    SlabImpl chunk = new SlabImpl(10);
+    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    
+    assertThat(!this.freeListManager.isAdjacent(Long.MAX_VALUE-4, 4, Long.MAX_VALUE+1));
+    assertThat(this.freeListManager.isAdjacent(Long.MAX_VALUE-4, 4, Long.MAX_VALUE));
+    assertThat(this.freeListManager.isAdjacent(-8L, 4, -4L));
+    long lowAddr = Long.MAX_VALUE;
+    long highAddr = lowAddr + 4;
+    assertThat(this.freeListManager.isAdjacent(lowAddr, 4, highAddr));
+    assertThat(!this.freeListManager.isAdjacent(lowAddr, 4, highAddr-1));
+    assertThat(!this.freeListManager.isAdjacent(lowAddr, 4, highAddr+1));
+    lowAddr = highAddr;
+    highAddr = lowAddr + 4;
+    assertThat(this.freeListManager.isAdjacent(lowAddr, 4, highAddr));
+    assertThat(!this.freeListManager.isAdjacent(highAddr, 4, lowAddr));
+  }
+  @Test
+  public void isSmallEnoughBoundaryConditions() {
+    SlabImpl chunk = new SlabImpl(10);
+    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    
+    assertThat(this.freeListManager.isSmallEnough(Integer.MAX_VALUE));
+    assertThat(this.freeListManager.isSmallEnough(Integer.MAX_VALUE-1));
+    assertThat(!this.freeListManager.isSmallEnough(Integer.MAX_VALUE+1L));
+    assertThat(!this.freeListManager.isSmallEnough(Long.MAX_VALUE));
+  }
   /**
    * Just like Fragment except that the first time allocate is called
    * it returns false indicating that the allocate failed.
@@ -829,9 +882,11 @@ public class FreeListManagerTest {
    */
   private static class TestableFragment extends Fragment {
     private boolean allocateCalled = false;
+
     public TestableFragment(long addr, int size) {
       super(addr, size);
     }
+
     @Override
     public boolean allocate(int oldOffset, int newOffset) {
       if (!allocateCalled) {
@@ -841,9 +896,21 @@ public class FreeListManagerTest {
       return super.allocate(oldOffset, newOffset);
     }
   }
+
   private static class TestableFreeListManager extends FreeListManager {
     private boolean firstTime = true;
-    
+    private boolean firstDefragmentation = true;
+    private final int maxCombine;
+
+    public TestableFreeListManager(MemoryAllocatorImpl ma, Slab[] slabs) {
+      this(ma, slabs, 0);
+    }
+
+    public TestableFreeListManager(MemoryAllocatorImpl ma, Slab[] slabs, int maxCombine) {
+      super(ma, slabs);
+      this.maxCombine = maxCombine;
+    }
+
     @Override
     protected Fragment createFragment(long addr, int size) {
       return new TestableFragment(addr, size);
@@ -861,19 +928,25 @@ public class FreeListManagerTest {
       return super.createFreeListForEmptySlot(freeLists, idx);
     }
 
-    public boolean firstDefragmentation = true;
     @Override
     protected void afterDefragmentationCountFetched() {
       if (this.firstDefragmentation) {
         this.firstDefragmentation = false;
         // Force defragmentation into thinking a concurrent defragmentation happened.
         this.defragmentationCount.incrementAndGet();
+      } else {
+        super.afterDefragmentationCountFetched();
       }
     }
-    
-    public TestableFreeListManager(MemoryAllocatorImpl ma, Slab[] slabs) {
-      super(ma, slabs);
+    @Override
+    boolean isSmallEnough(long size) {
+      if (this.maxCombine != 0) {
+        return size <= this.maxCombine;
+      } else {
+        return super.isSmallEnough(size);
+      }
     }
+
     
   }
 }

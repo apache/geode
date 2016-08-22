@@ -18,12 +18,13 @@ package com.gemstone.gemfire.test.dunit.cache.internal;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
+
+import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -40,6 +41,7 @@ import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -56,7 +58,8 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.logging.log4j.Logger;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
  * This class is the base class for all distributed tests using JUnit 4 that
@@ -64,7 +67,7 @@ import org.apache.logging.log4j.Logger;
  *
  * TODO: make this class abstract when JUnit3CacheTestCase is deleted
  */
-public class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements CacheTestFixture {
+public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements CacheTestFixture {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -80,7 +83,7 @@ public class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements Ca
   private final CacheTestFixture cacheTestFixture;
 
   public JUnit4CacheTestCase() {
-    this((CacheTestFixture)null);
+    this(null);
   }
 
   JUnit4CacheTestCase(final CacheTestFixture cacheTestFixture) {
@@ -106,9 +109,11 @@ public class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements Ca
   private final void createCache(final boolean client, final CacheFactory factory) {
     synchronized(JUnit4CacheTestCase.class) {
       try {
-        System.setProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
         Cache newCache;
         if (client) {
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "locators", "");
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
           newCache = (Cache)new ClientCacheFactory(getSystem().getProperties()).create();
         } else {
           if(factory == null) {
@@ -131,7 +136,9 @@ public class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements Ca
       } catch (Exception ex) {
         Assert.fail("Checked exception while initializing cache??", ex);
       } finally {
-        System.clearProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
+        System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
+        System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "locators");
+        System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT);
       }
     }
   }
@@ -143,7 +150,7 @@ public class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements Ca
   public final Cache createLonerCache() {
     synchronized(JUnit4CacheTestCase.class) {
       try {
-        System.setProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
         Cache newCache = CacheFactory.create(getLonerSystem());
         cache = newCache;
       } catch (CacheExistsException e) {
@@ -155,7 +162,7 @@ public class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements Ca
       } catch (Exception ex) {
         Assert.fail("Checked exception while initializing cache??", ex);
       } finally {
-        System.clearProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
+        System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
       }
       return cache;
     }
@@ -239,7 +246,7 @@ public class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements Ca
     synchronized (JUnit4CacheTestCase.class) {
       final GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
       if (gemFireCache != null && !gemFireCache.isClosed()
-              && gemFireCache.getCancelCriterion().cancelInProgress() != null) {
+              && gemFireCache.getCancelCriterion().isCancelInProgress()) {
         Wait.waitForCriterion(new WaitCriterion() { // TODO: replace with Awaitility
           @Override
           public boolean done() {
@@ -265,13 +272,13 @@ public class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements Ca
   /**
    * Creates a client cache from the factory if one does not already exist.
    *
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public final ClientCache getClientCache(final ClientCacheFactory factory) {
     synchronized (JUnit4CacheTestCase.class) {
       final GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
       if (gemFireCache != null && !gemFireCache.isClosed()
-              && gemFireCache.getCancelCriterion().cancelInProgress() != null) {
+              && gemFireCache.getCancelCriterion().isCancelInProgress()) {
         Wait.waitForCriterion(new WaitCriterion() { // TODO: replace with Awaitility
           @Override
           public boolean done() {

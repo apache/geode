@@ -16,24 +16,18 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.net.Inet4Address;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
-import org.jgroups.Address;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
+import com.gemstone.gemfire.internal.SocketCreator;
 import org.jgroups.Global;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.util.UUID;
 
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
-import com.gemstone.gemfire.internal.SocketCreator;
+import java.io.*;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
 
 /**
  * This is a copy of JGroups 3.6.4 IpAddress (Apache 2.0 License)
@@ -46,7 +40,7 @@ public class JGAddress extends UUID {
   private static final long       serialVersionUID=-1818672332115113291L;
 
   // whether to show UUID info in toString()
-  private final static boolean SHOW_UUIDS = Boolean.getBoolean("gemfire.show_UUIDs");
+  private final static boolean SHOW_UUIDS = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "show_UUIDs");
 
   private InetAddress             ip_addr;
   private int                     port;

@@ -728,7 +728,7 @@ public class IndexStatisticsJUnitTest {
     region.put(1, obj1);
     assertEquals(1, stats.getNumberOfValues());
     assertEquals(1, stats.getNumberOfKeys());
-    // assertEquals(1, stats.getNumberOfValues(20f));
+    // assertIndexDetailsEquals(1, stats.getNumberOfValues(20f));
     assertEquals(1, stats.getNumUpdates());
 
     // add a second object with the same index key
@@ -737,21 +737,21 @@ public class IndexStatisticsJUnitTest {
     region.put(2, obj2);
     assertEquals(2, stats.getNumberOfValues());
     assertEquals(1, stats.getNumberOfKeys());
-    // assertEquals(2, stats.getNumberOfValues(20f));
+    // assertIndexDetailsEquals(2, stats.getNumberOfValues(20f));
     assertEquals(2, stats.getNumUpdates());
 
     // remove the second object and check that keys are 1
     region.remove(2);
     assertEquals(1, stats.getNumberOfValues());
     assertEquals(1, stats.getNumberOfKeys());
-    // assertEquals(1, stats.getNumberOfValues(20f));
+    // assertIndexDetailsEquals(1, stats.getNumberOfValues(20f));
     assertEquals(3, stats.getNumUpdates());
 
     // remove the first object and check that keys are 0
     region.remove(1);
     assertEquals(0, stats.getNumberOfValues());
     assertEquals(0, stats.getNumberOfKeys());
-    // assertEquals(0, stats.getNumberOfValues(20f));
+    // assertIndexDetailsEquals(0, stats.getNumberOfValues(20f));
     assertEquals(4, stats.getNumUpdates());
 
     // add object with a different key and check results
@@ -759,7 +759,7 @@ public class IndexStatisticsJUnitTest {
     region.put(3, obj2);
     assertEquals(1, stats.getNumberOfValues());
     assertEquals(1, stats.getNumberOfKeys());
-    // assertEquals(0, stats.getNumberOfValues(20f));
+    // assertIndexDetailsEquals(0, stats.getNumberOfValues(20f));
     assertEquals(5, stats.getNumUpdates());
 
     // add object with original key and check that num keys are 2
@@ -767,7 +767,7 @@ public class IndexStatisticsJUnitTest {
     region.put(1, obj1);
     assertEquals(2, stats.getNumberOfValues());
     assertEquals(2, stats.getNumberOfKeys());
-    // assertEquals(1, stats.getNumberOfValues(20f));
+    // assertIndexDetailsEquals(1, stats.getNumberOfValues(20f));
     assertEquals(6, stats.getNumUpdates());
   }
   

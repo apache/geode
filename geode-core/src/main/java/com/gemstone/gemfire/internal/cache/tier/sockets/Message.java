@@ -16,6 +16,21 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import com.gemstone.gemfire.SerializationException;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.HeapDataOutputStream;
+import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.cache.TXManagerImpl;
+import com.gemstone.gemfire.internal.cache.tier.MessageType;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
+import com.gemstone.gemfire.internal.util.BlobHelper;
+import org.apache.logging.log4j.Logger;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,22 +41,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.SerializationException;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.SocketUtils;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.TXManagerImpl;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
-import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
-import com.gemstone.gemfire.internal.util.BlobHelper;
 
 /**
  * This class encapsulates the wire protocol. It provides accessors to
@@ -86,7 +85,7 @@ public class Message  {
   /**
    * maximum size of an outgoing message.  See GEODE-478
    */
-  public static int MAX_MESSAGE_SIZE = Integer.getInteger("gemfire.client.max-message-size", DEFAULT_MAX_MESSAGE_SIZE).intValue();
+  public static int MAX_MESSAGE_SIZE = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "client.max-message-size", DEFAULT_MAX_MESSAGE_SIZE).intValue();
 
   private static final Logger logger = LogService.getLogger();
   
@@ -327,22 +326,6 @@ public class Message  {
     }
     // create the HDOS with a flag telling it that it can keep any byte[] or ByteBuffers/ByteSources passed to it.
     hdos = new HeapDataOutputStream(chunkSize, v, true);
-    // TODO OFFHEAP: Change Part to look for an HDOS and just pass a reference to its DirectByteBuffer.
-    // Then change HDOS sendTo(SocketChannel...) to use the GatheringByteChannel to write a bunch of bbs.
-    // TODO OFFHEAP This code optimizes one part which works pretty good for getAll since all the values are
-    // returned in one part. But the following seems even better...
-    // BETTER: change Message to consolidate all the part hdos bb lists into a single bb array and have it do the GatheringByteChannel write.
-    // Message can use slice for the small parts (msg header and part header) that are not in the parts data (its a byte array, Chunk, or HDOS).
-    // EVEN BETTER: the message can have a single HDOS which owns a direct comm buffer. It can reserve space if it does not yet know the value to write (for example the size of the message or part).
-    // If we write something to the HDOS that is direct then it does not need to be copied.
-    // But large heap byte arrays will need to be copied to the hdos (the socket write does this anyway).
-    // If the direct buffer is full then we can allocate another one. If a part is already in a heap byte array
-    // then we could defer copying it by slicing the current direct bb and then adding the heap byte array
-    // as bb using ByteBuffer.wrap. Once we have all the data in the HDOS we can finally generate the header
-    // and then start working on sending the ByteBuffers to the channel. If we have room in a direct bb then
-    // we can copy a heap bb to it. Otherwise we can write the bb ahead of it which would free up room to copy
-    // the heap bb to the existing direct bb without needing to allocate extra direct bbs.
-    // Delaying the flush uses more direct memory but reduces the number of system calls.
     try {
       BlobHelper.serializeTo(o, hdos);
     } catch (IOException ex) {
@@ -530,18 +513,21 @@ public class Message  {
       // Keep track of the fact that we are making progress.
       this.sc.updateProcessingMessage();
     }
-    if (this.socket != null) {
+    if (this.socket == null) {
+      throw new IOException(LocalizedStrings.Message_DEAD_CONNECTION.toLocalizedString());
+    }
+    try {
       final ByteBuffer cb = getCommBuffer();
       if (cb == null) {
         throw new IOException("No buffer");
       }
       int msgLen = 0;
-      synchronized(cb) {
+      synchronized (cb) {
         long totalPartLen = 0;
         long headerLen = 0;
         int partsToTransmit = this.numberOfParts;
-        
-        for (int i=0; i < this.numberOfParts; i++) {
+
+        for (int i = 0; i < this.numberOfParts; i++) {
           Part part = this.partsList[i];
           headerLen += PART_HEADER_SIZE;
           totalPartLen += part.getLength();
@@ -557,27 +543,27 @@ public class Message  {
           partsToTransmit++;
         }
 
-        if ( (headerLen + totalPartLen) > Integer.MAX_VALUE ) {
-          throw new MessageTooLargeException("Message size (" + (headerLen + totalPartLen) 
+        if ((headerLen + totalPartLen) > Integer.MAX_VALUE) {
+          throw new MessageTooLargeException("Message size (" + (headerLen + totalPartLen)
               + ") exceeds maximum integer value");
         }
-        
-        msgLen = (int)(headerLen + totalPartLen);
-        
+
+        msgLen = (int) (headerLen + totalPartLen);
+
         if (msgLen > MAX_MESSAGE_SIZE) {
           throw new MessageTooLargeException("Message size (" + msgLen
               + ") exceeds gemfire.client.max-message-size setting (" + MAX_MESSAGE_SIZE + ")");
         }
-        
+
         cb.clear();
         packHeaderInfoForSending(msgLen, (securityPart != null));
-        for (int i=0; i < partsToTransmit; i++) {
+        for (int i = 0; i < partsToTransmit; i++) {
           Part part = (i == this.numberOfParts) ? securityPart : partsList[i];
 
           if (cb.remaining() < PART_HEADER_SIZE) {
             flushBuffer();
           }
-          
+
           int partLen = part.getLength();
           cb.putInt(partLen);
           cb.put(part.getTypeCode());
@@ -603,12 +589,10 @@ public class Message  {
           this.os.flush();
         }
       }
-      if(clearMessage) {
+    } finally {
+      if (clearMessage) {
         clearParts();
       }
-    }
-    else {
-      throw new IOException(LocalizedStrings.Message_DEAD_CONNECTION.toLocalizedString());
     }
   }
 
@@ -1036,7 +1020,7 @@ public class Message  {
   public void setComms(Socket socket, ByteBuffer bb, MessageStats msgStats) throws IOException {
     this.sockCh = socket.getChannel();
     if (this.sockCh == null) {
-      setComms(socket, SocketUtils.getInputStream(socket), SocketUtils.getOutputStream(socket), bb, msgStats);
+      setComms(socket, socket.getInputStream(), socket.getOutputStream(), bb, msgStats);
     } else {
       setComms(socket, null, null,  bb, msgStats);
     }
@@ -1055,7 +1039,7 @@ public class Message  {
   }
   /**
    * Undo any state changes done by setComms.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void unsetComms() {
     this.socket = null;

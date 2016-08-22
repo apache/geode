@@ -48,7 +48,7 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  * operation is encapsulated in a {@link OperationContext} object that can be
  * modified by the pre-processing authorization callbacks.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class AuthorizeRequest {
 
@@ -94,11 +94,6 @@ public class AuthorizeRequest {
         LocalizedStrings.AuthorizeRequest_AUTHORIZEREQUEST_CLIENT_0_IS_SETTING_AUTHORIZATION_CALLBACK_TO_1,
         new Object[] {id, authzFactoryName});
     }
-  }
- 
-  public AccessControl getAuthzCallback() {
-
-    return this.authzCallback;
   }
 
   public GetOperationContext getAuthorize(String regionName, Object key,

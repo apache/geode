@@ -16,17 +16,19 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
 @Category(UnitTest.class)
-public class OrderedTombstoneMapJUnitTest extends TestCase {
-  
+public class OrderedTombstoneMapJUnitTest {
+
+  @Test
   public void test() {
     OrderedTombstoneMap<String> map = new OrderedTombstoneMap<String>();
     

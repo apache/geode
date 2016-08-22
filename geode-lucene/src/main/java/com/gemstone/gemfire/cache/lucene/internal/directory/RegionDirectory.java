@@ -21,7 +21,9 @@ package com.gemstone.gemfire.cache.lucene.internal.directory;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.lucene.store.BaseDirectory;
@@ -34,6 +36,7 @@ import org.apache.lucene.store.SingleInstanceLockFactory;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystem;
+import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
 
 /**
  * An implementation of Directory that stores data in geode regions.
@@ -45,20 +48,22 @@ import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystem;
 public class RegionDirectory extends BaseDirectory {
 
   private final FileSystem fs;
-  
+
   /**
    * Create a region directory with a given file and chunk region. These regions
    * may be bucket regions or they may be replicated regions.
    */
-  public RegionDirectory(ConcurrentMap<String, File> fileRegion, ConcurrentMap<ChunkKey, byte[]> chunkRegion) {
+  public RegionDirectory(ConcurrentMap<String, File> fileRegion, ConcurrentMap<ChunkKey, byte[]> chunkRegion, FileSystemStats stats) {
     super(new SingleInstanceLockFactory());
-    fs = new FileSystem(fileRegion, chunkRegion);
+    fs = new FileSystem(fileRegion, chunkRegion, stats);
   }
-  
+
   @Override
   public String[] listAll() throws IOException {
     ensureOpen();
-    return fs.listFileNames().toArray(new String[] {});
+    String[] array = fs.listFileNames().toArray(new String[]{});
+    Arrays.sort(array);
+    return array;
   }
 
   @Override
@@ -79,7 +84,15 @@ public class RegionDirectory extends BaseDirectory {
     final File file = fs.createFile(name);
     final OutputStream out = file.getOutputStream();
 
-    return new OutputStreamIndexOutput(name, out, 1000);
+    return new OutputStreamIndexOutput(name, name, out, 1000);
+  }
+
+  public IndexOutput createTempOutput(String prefix, String suffix, IOContext context) throws IOException {
+    String name = prefix + "_temp_" + UUID.randomUUID() + suffix;
+    final File file = fs.createTemporaryFile(name);
+    final OutputStream out = file.getOutputStream();
+
+    return new OutputStreamIndexOutput(name, name, out, 1000);
   }
 
   @Override

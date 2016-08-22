@@ -16,16 +16,14 @@
  */
 package com.gemstone.gemfire.management.internal.configuration.utils;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpressionException;
-
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
+import com.gemstone.gemfire.internal.cache.extension.Extension;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
+import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
+import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils.XPathContext;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -37,14 +35,15 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
-import com.gemstone.gemfire.internal.cache.extension.Extension;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
-import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
-import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils.XPathContext;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Unit tests for {@link XmlUtils#addNewNode(Document, XmlEntity)} and
@@ -53,7 +52,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * new config and applying it to the current shared config.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 @Category(IntegrationTest.class)
 public class XmlUtilsAddNewNodeJUnitTest {
@@ -68,7 +67,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
 
   @BeforeClass
   public static void beforeClass() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     xPathContext.addNamespace(CacheXml.PREFIX, CacheXml.GEODE_NAMESPACE);
     xPathContext.addNamespace(TEST_PREFIX, TEST_NAMESPACE);
   }
@@ -92,7 +91,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * 
    * @throws Exception
    * @throws XPathExpressionException 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testAddNewNodeNewNamed() throws Exception {
@@ -145,7 +144,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * <code>region</code> elements.
    * 
    * @throws Exception
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testAddNewNodeNewUnnamed() throws Exception {
@@ -182,7 +181,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * element.
    * 
    * @throws Exception
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testAddNewNodeNewUnnamedExtension() throws Exception {
@@ -222,7 +221,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * with same <code>name</code>.
    * 
    * @throws Exception
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testAddNewNodeReplaceNamed() throws Exception {
@@ -257,7 +256,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * <code>pdx</code>. It should replace <code>pdx</code> element.
    * 
    * @throws Exception
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testAddNewNodeReplaceUnnamed() throws Exception {
@@ -293,7 +292,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * <code>test:cache</code> element.
    * 
    * @throws Exception
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testAddNewNodeReplaceUnnamedExtension() throws Exception {
@@ -329,7 +328,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * with same <code>name</code>.
    * 
    * @throws Exception
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testDeleteNodeNamed() throws Exception {
@@ -358,7 +357,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * <code>pdx</code>. It should remove the existing <code>pdx</code> element.
    * 
    * @throws Exception
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testDeleteNodeUnnamed() throws Exception {
@@ -388,7 +387,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * <code>test:cache</code> element.
    * 
    * @throws Exception
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testDeleteNodeUnnamedExtension() throws Exception {

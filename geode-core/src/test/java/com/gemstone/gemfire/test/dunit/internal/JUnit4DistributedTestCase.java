@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.test.dunit.internal;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
@@ -26,10 +27,15 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+
 import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HoplogConfig;
 import com.gemstone.gemfire.cache.query.QueryTestUtils;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
@@ -61,18 +67,11 @@ import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher;
 import com.gemstone.gemfire.test.junit.rules.serializable.SerializableTestName;
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
 
 /**
  * This class is the base class for all distributed tests using JUnit 4.
- *
- * TODO: make this class abstract when JUnit3DistributedTestCase is deleted
  */
-public class JUnit4DistributedTestCase implements DistributedTestFixture, Serializable {
+public abstract class JUnit4DistributedTestCase implements DistributedTestFixture, Serializable {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -98,7 +97,7 @@ public class JUnit4DistributedTestCase implements DistributedTestFixture, Serial
    * no-arg constructor.
    */
   public JUnit4DistributedTestCase() {
-    this((DistributedTestFixture)null);
+    this(null);
   }
 
   /**
@@ -155,7 +154,7 @@ public class JUnit4DistributedTestCase implements DistributedTestFixture, Serial
    * <p>Note: "final" was removed so that WANTestBase can override this method.
    * This was part of the xd offheap merge.
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public final InternalDistributedSystem getSystem(final Properties props) {
     // Setting the default disk store name is now done in setUp
@@ -169,11 +168,11 @@ public class JUnit4DistributedTestCase implements DistributedTestFixture, Serial
       if (logPerTest) {
         String testMethod = getTestMethodName();
         String testName = lastSystemCreatedInTest.getName() + '-' + testMethod;
-        String oldLogFile = p.getProperty(DistributionConfig.LOG_FILE_NAME);
-        p.put(DistributionConfig.LOG_FILE_NAME,
+        String oldLogFile = p.getProperty(LOG_FILE);
+        p.put(LOG_FILE,
                 oldLogFile.replace("system.log", testName+".log"));
-        String oldStatFile = p.getProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME);
-        p.put(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME,
+        String oldStatFile = p.getProperty(STATISTIC_ARCHIVE_FILE);
+        p.put(STATISTIC_ARCHIVE_FILE,
                 oldStatFile.replace("statArchive.gfs", testName+".gfs"));
       }
       system = (InternalDistributedSystem)DistributedSystem.connect(p);
@@ -226,7 +225,7 @@ public class JUnit4DistributedTestCase implements DistributedTestFixture, Serial
    *
    * @see #getSystem(Properties)
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public final InternalDistributedSystem getSystem() {
     return getSystem(getDistributedSystemProperties());
@@ -247,12 +246,12 @@ public class JUnit4DistributedTestCase implements DistributedTestFixture, Serial
   /**
    * Returns a loner distributed system that isn't connected to other vms.
    *
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public final InternalDistributedSystem getLonerSystem() {
     Properties props = getDistributedSystemProperties();
-    props.put(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.put(DistributionConfig.LOCATORS_NAME, "");
+    props.put(MCAST_PORT, "0");
+    props.put(LOCATORS, "");
     return getSystem(props);
   }
 
@@ -270,7 +269,7 @@ public class JUnit4DistributedTestCase implements DistributedTestFixture, Serial
    *
    * <p>Override this as needed. Default implementation returns empty {@code Properties}.
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   @Override
   public Properties getDistributedSystemProperties() {
@@ -335,6 +334,7 @@ public class JUnit4DistributedTestCase implements DistributedTestFixture, Serial
    * name of the class as well as the name of the method.
    */
   public final String getUniqueName() {
+    assertNotNull(getName());
     return getTestClass().getSimpleName() + "_" + getName();
   }
 
@@ -376,7 +376,7 @@ public class JUnit4DistributedTestCase implements DistributedTestFixture, Serial
       Host host = Host.getHost(hostIndex);
       for (int vmIndex = 0; vmIndex < host.getVMCount(); vmIndex++) {
         final String vmDefaultDiskStoreName = getDefaultDiskStoreName(hostIndex, vmIndex, className, methodName);
-        host.getVM(vmIndex).invoke(()->setUpVM(methodName, vmDefaultDiskStoreName));
+        host.getVM(vmIndex).invoke("setupVM", ()->setUpVM(methodName, vmDefaultDiskStoreName));
       }
     }
 
@@ -416,7 +416,6 @@ public class JUnit4DistributedTestCase implements DistributedTestFixture, Serial
     assertNotNull("defaultDiskStoreName must not be null", defaultDiskStoreName);
     setTestMethodName(methodName);
     GemFireCacheImpl.setDefaultDiskStoreName(defaultDiskStoreName);
-    System.setProperty(HoplogConfig.ALLOW_LOCAL_HDFS_PROP, "true");
     setUpCreationStackGenerator();
   }
 
@@ -485,7 +484,7 @@ public class JUnit4DistributedTestCase implements DistributedTestFixture, Serial
   }
 
   private final void tearDownDistributedTestCase() throws Exception {
-    Invoke.invokeInEveryVM(()->tearDownCreationStackGenerator());
+    Invoke.invokeInEveryVM("tearDownCreationStackGenerator", ()->tearDownCreationStackGenerator());
     if (logPerTest) {
       disconnectAllFromDS();
     }
@@ -535,7 +534,7 @@ public class JUnit4DistributedTestCase implements DistributedTestFixture, Serial
 
   private static final void cleanupAllVms() {
     tearDownVM();
-    Invoke.invokeInEveryVM(()->tearDownVM());
+    Invoke.invokeInEveryVM("tearDownVM", ()->tearDownVM());
     Invoke.invokeInLocator(()->{
       DistributionMessageObserver.setInstance(null);
       DistributedTestUtils.unregisterInstantiatorsInThisVM();
@@ -568,8 +567,7 @@ public class JUnit4DistributedTestCase implements DistributedTestFixture, Serial
     Message.MAX_MESSAGE_SIZE = Message.DEFAULT_MAX_MESSAGE_SIZE;
 
     // clear system properties -- keep alphabetized
-    System.clearProperty("gemfire.log-level");
-    System.clearProperty(HoplogConfig.ALLOW_LOCAL_HDFS_PROP);
+    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "log-level");
     System.clearProperty("jgroups.resolve_dns");
 
     if (InternalDistributedSystem.systemAttemptingReconnect != null) {

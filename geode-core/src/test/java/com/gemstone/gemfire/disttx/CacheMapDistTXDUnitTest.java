@@ -16,20 +16,29 @@
  */
 package com.gemstone.gemfire.disttx;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache30.CacheMapTxnDUnitTest;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 
 /**
  * Same tests as that of {@link CacheMapTxnDUnitTest} after setting
  * "distributed-transactions" property to true
  */
+@Category(DistributedTest.class)
 public class CacheMapDistTXDUnitTest extends CacheMapTxnDUnitTest {
 
-  public CacheMapDistTXDUnitTest(String name) {
-    super(name);
+  public CacheMapDistTXDUnitTest() {
+    super();
   }
 
   @Override
@@ -59,8 +68,7 @@ public class CacheMapDistTXDUnitTest extends CacheMapTxnDUnitTest {
   }
 
   public static void setDistributedTX() {
-    props.setProperty(DistributionConfig.DISTRIBUTED_TRANSACTIONS_NAME, "true");
-//    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    props.setProperty(DISTRIBUTED_TRANSACTIONS, "true");
   }
 
   public static void checkIsDistributedTX() {
@@ -68,6 +76,7 @@ public class CacheMapDistTXDUnitTest extends CacheMapTxnDUnitTest {
   }
   
   @Override
+  @Test
   public void testCommitTxn() {
     // [DISTTX] TODO test overridden intentionally and left blank as it fails
     // fix this 

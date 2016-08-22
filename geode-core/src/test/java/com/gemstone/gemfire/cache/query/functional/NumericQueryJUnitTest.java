@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.cache.query.functional;
 
+import static org.junit.Assert.*;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.ParseException;
@@ -28,10 +30,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
-
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -46,12 +44,9 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.data.Numbers;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-/**
- * 
- *
- */
 @Category(IntegrationTest.class)
 public class NumericQueryJUnitTest {
 
@@ -59,17 +54,15 @@ public class NumericQueryJUnitTest {
   private static Region testRegion;
   private static int numElem = 100;
 
-  
   private static String EQ = "=";
   private static String LT = "<";
   private static String GT = ">";
   private static String GTE = ">=";
   private static String LTE = "<=";
-  
 
   @Before
   public void setUp() throws Exception {
-    System.setProperty("gemfire.Query.VERBOSE", "true");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE", "true");
     CacheUtils.startCache();
   }
 

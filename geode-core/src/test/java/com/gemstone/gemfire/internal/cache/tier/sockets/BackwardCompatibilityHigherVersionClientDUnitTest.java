@@ -16,7 +16,13 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -25,27 +31,26 @@ import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.tier.ConnectionProxy;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.ConnectionFactoryImpl;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.cache.tier.ConnectionProxy;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
- * 
  * Test to verify that server responds to a higher versioned client.
  */
+@Category(DistributedTest.class)
+public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4DistributedTestCase {
 
-public class BackwardCompatibilityHigherVersionClientDUnitTest extends
-    DistributedTestCase {
   /** the cache */
   private static Cache cache = null;
 
@@ -68,11 +73,6 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends
 
   private static short currentClientVersion = ConnectionProxy.VERSION.ordinal();
 
-  /** constructor */
-  public BackwardCompatibilityHigherVersionClientDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
@@ -92,12 +92,11 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends
 
   public static void createClientCache(String host, Integer port1)
       throws Exception {
-    new BackwardCompatibilityHigherVersionClientDUnitTest("temp");
+    new BackwardCompatibilityHigherVersionClientDUnitTest();
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    new BackwardCompatibilityHigherVersionClientDUnitTest("temp")
-        .createCache(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    new BackwardCompatibilityHigherVersionClientDUnitTest().createCache(props);
     PoolImpl p = (PoolImpl)PoolManager.createFactory().addServer(host,
         port1.intValue()).setSubscriptionEnabled(true)
         .setSubscriptionRedundancy(1).setThreadLocalConnections(true)
@@ -116,7 +115,7 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends
   }
 
   public static Integer createServerCache() throws Exception {
-    new BackwardCompatibilityHigherVersionClientDUnitTest("temp")
+    new BackwardCompatibilityHigherVersionClientDUnitTest()
         .createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -154,6 +153,7 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends
   /**
    * Verify that server responds to a higher versioned client.
    */
+  @Test
   public void testHigherVersionedClient() {
     Integer port1 = ((Integer)server1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.createServerCache()));
 

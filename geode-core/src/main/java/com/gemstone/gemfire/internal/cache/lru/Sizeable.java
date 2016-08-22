@@ -46,7 +46,7 @@ package com.gemstone.gemfire.internal.cache.lru;
   }<br>
  *
  *
- * @since 3.2
+ * @since GemFire 3.2
  */
 public interface Sizeable {
 

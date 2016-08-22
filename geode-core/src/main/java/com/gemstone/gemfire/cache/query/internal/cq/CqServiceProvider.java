@@ -16,21 +16,22 @@
  */
 package com.gemstone.gemfire.cache.query.internal.cq;
 
+import com.gemstone.gemfire.cache.query.internal.cq.spi.CqServiceFactory;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+
 import java.io.DataInput;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.ServiceLoader;
-
-import com.gemstone.gemfire.cache.query.internal.cq.spi.CqServiceFactory;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 
 public class CqServiceProvider {
   
   private static final CqServiceFactory factory;
   // System property to maintain the CQ event references for optimizing the updates.
   // This will allows to run the CQ query only once during update events.   
-  public static boolean MAINTAIN_KEYS = 
-    Boolean.valueOf(System.getProperty("gemfire.cq.MAINTAIN_KEYS", "true")).booleanValue();
+  public static boolean MAINTAIN_KEYS =
+      Boolean.valueOf(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "cq.MAINTAIN_KEYS", "true")).booleanValue();
   /**
    * A debug flag used for testing vMotion during CQ registration
    */

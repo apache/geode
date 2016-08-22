@@ -112,9 +112,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
       
       logger.info(LocalizedMessage.create(LocalizedStrings.ParallelGatewaySenderImpl_STARTED__0, this));
       
-      if (!tmpQueuedEvents.isEmpty()) {
-        enqueueTempEvents();
-      }
+      enqueueTempEvents();
     }
     finally {
       this.getLifeCycleLock().writeLock().unlock();

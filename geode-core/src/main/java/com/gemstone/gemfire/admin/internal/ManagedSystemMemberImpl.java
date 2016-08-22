@@ -19,8 +19,9 @@ package com.gemstone.gemfire.admin.internal;
 import com.gemstone.gemfire.admin.AdminException;
 import com.gemstone.gemfire.admin.ConfigurationParameter;
 import com.gemstone.gemfire.admin.ManagedEntityConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.admin.GemFireVM;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
 
 /**
  * A <code>SystemMember</code> that is also managed (or manageable) by
@@ -30,7 +31,7 @@ import com.gemstone.gemfire.internal.admin.GemFireVM;
  * reflectively (for MBean operations) on instances of its
  * subclasses. 
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
   implements InternalManagedEntity {
@@ -238,7 +239,7 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
       String value = param.getValueAsString();
 
       if (value != null && !value.equals("")) {
-        if (name.equals(DistributionConfig.LOCATORS_NAME)) {
+        if (name.equals(LOCATORS)) {
           // Use the new locator syntax so that is plays nicely with
           // rsh.  See bug 32306.
           String locator = value;

@@ -16,136 +16,117 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.DiskWriteAttributes;
 import com.gemstone.gemfire.cache.DiskWriteAttributesFactory;
-import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
-import junit.framework.TestCase;
 
 /**
  * Tests if DiskWriteAttributeFactory returns the correct DWA object with the
  * desired values
- * 
- *  
  */
 @Category(UnitTest.class)
-public class DiskWriteAttributesJUnitTest extends TestCase
-{
+public class DiskWriteAttributesJUnitTest {
 
-  public DiskWriteAttributesJUnitTest(String arg0) {
-    super(arg0);
-  }
-
-  protected void setUp() throws Exception
-  {
-    super.setUp();
-  }
-
-  protected void tearDown() throws Exception
-  {
-    super.tearDown();
-  }
-
-  /*
+  /**
    * Test method for
    * 'com.gemstone.gemfire.cache.DiskWriteAttributes.getDefaultInstance()'
    */
-  public void testGetDefaultInstance()
-  {
+  @Test
+  public void testGetDefaultInstance() {
     DiskWriteAttributesFactory dwaf = new DiskWriteAttributesFactory();
     DiskWriteAttributes dwa = dwaf.create();
-    Assert.assertTrue(!dwa.isSynchronous());
-    Assert.assertTrue(dwa.isRollOplogs());
+    assertTrue(!dwa.isSynchronous());
+    assertTrue(dwa.isRollOplogs());
   }
 
-  /*
+  /**
    * Test method for
    * 'com.gemstone.gemfire.cache.DiskWriteAttributes.getDefaultSync()'
    */
-  public void testGetDefaultSync()
-  {
+  @Test
+  public void testGetDefaultSync() {
     DiskWriteAttributesFactory dwaf = new DiskWriteAttributesFactory();
     dwaf.setSynchronous(true);
     DiskWriteAttributes dwa = dwaf.create();
-    Assert.assertTrue(dwa.isSynchronous());
-    Assert.assertTrue(dwa.isRollOplogs());
+    assertTrue(dwa.isSynchronous());
+    assertTrue(dwa.isRollOplogs());
   }
 
-  /*
+  /**
    * Test method for
    * 'com.gemstone.gemfire.cache.DiskWriteAttributes.getDefaultAsync()'
    */
-  public void testGetDefaultAsync()
-  {
+  @Test
+  public void testGetDefaultAsync() {
     DiskWriteAttributesFactory dwaf = new DiskWriteAttributesFactory();
     DiskWriteAttributes dwa = dwaf.create();
-    Assert.assertTrue(!dwa.isSynchronous());
-    Assert.assertTrue(dwa.isRollOplogs());
+    assertTrue(!dwa.isSynchronous());
+    assertTrue(dwa.isRollOplogs());
   }
 
-  /*
+  /**
    * Test method for
    * 'com.gemstone.gemfire.cache.DiskWriteAttributes.getDefaultRollingSync()'
    */
-  public void testGetDefaultRollingSync()
-  {
+  @Test
+  public void testGetDefaultRollingSync() {
     DiskWriteAttributesFactory dwaf = new DiskWriteAttributesFactory();
     dwaf.setSynchronous(true);
     DiskWriteAttributes dwa = dwaf.create();
 
-    Assert.assertTrue(dwa.isSynchronous());
-    Assert.assertTrue(dwa.isRollOplogs());
+    assertTrue(dwa.isSynchronous());
+    assertTrue(dwa.isRollOplogs());
   }
 
-  /*
+  /**
    * Test method for
    * 'com.gemstone.gemfire.cache.DiskWriteAttributes.getDefaultRollingAsync()'
    */
-  public void testGetDefaultRollingAsync()
-  {
+  @Test
+  public void testGetDefaultRollingAsync() {
     DiskWriteAttributesFactory dwaf = new DiskWriteAttributesFactory();
     DiskWriteAttributes dwa = dwaf.create();
-    Assert.assertTrue(!dwa.isSynchronous());
-    Assert.assertTrue(dwa.isRollOplogs());
-
+    assertTrue(!dwa.isSynchronous());
+    assertTrue(dwa.isRollOplogs());
   }
 
-  /*
+  /**
    * Test method for
    * 'com.gemstone.gemfire.cache.DiskWriteAttributes.getDefaultNonRollingSync()'
    */
-  public void testGetDefaultNonRollingSync()
-  {
-
+  @Test
+  public void testGetDefaultNonRollingSync() {
     DiskWriteAttributesFactory dwaf = new DiskWriteAttributesFactory();
     dwaf.setRollOplogs(false);
     dwaf.setSynchronous(true);
     DiskWriteAttributes dwa = dwaf.create();
-    Assert.assertTrue(dwa.isSynchronous());
-    Assert.assertTrue(!dwa.isRollOplogs());
-
+    assertTrue(dwa.isSynchronous());
+    assertTrue(!dwa.isRollOplogs());
   }
 
-  /*
+  /**
    * Test method for
    * 'com.gemstone.gemfire.cache.DiskWriteAttributes.getDefaultNonRollingAsync()'
    */
-  public void testGetDefaultNonRollingAsync()
-  {
+  @Test
+  public void testGetDefaultNonRollingAsync() {
     DiskWriteAttributesFactory dwaf = new DiskWriteAttributesFactory();
     dwaf.setRollOplogs(false);
     DiskWriteAttributes dwa = dwaf.create();
-    Assert.assertTrue(!dwa.isSynchronous());
-    Assert.assertTrue(!dwa.isRollOplogs());
+    assertTrue(!dwa.isSynchronous());
+    assertTrue(!dwa.isRollOplogs());
   }
   
   /**
    * Tests the behaviour of DiskWriteAttributesFactory & DiskWritesAttrbutes with
    * various combinations of  time interval & buffer size.
    */
+  @Test
   public void testDiskWriteAttributesCreation() {
     DiskWriteAttributesFactory dwaf = new DiskWriteAttributesFactory();
     dwaf.setSynchronous(true);

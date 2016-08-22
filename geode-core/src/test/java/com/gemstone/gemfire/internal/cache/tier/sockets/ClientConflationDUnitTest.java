@@ -16,8 +16,14 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.Iterator;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -35,28 +41,29 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This test verifies the per-client queue conflation override functionality
  * Taken from the existing ConflationDUnitTest.java and modified.
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
-public class ClientConflationDUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
+
   VM vm0 = null; // server
   VM vm1 = null; // client
   private static Cache cacheClient = null;
@@ -66,11 +73,6 @@ public class ClientConflationDUnitTest extends DistributedTestCase
   private static int poolNameCounter = 0;
   private static final String REGION_NAME1 = "ClientConflationDUnitTest_region1" ;
   private static final String REGION_NAME2 = "ClientConflationDUnitTest_region2" ;
-
-  /** constructor */
-  public ClientConflationDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -104,6 +106,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
     System.setProperty("slowStartTimeForTesting","15000");
   }
 
+  @Test
   public void testConflationDefault() {
     try {
       performSteps(DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_DEFAULT);
@@ -113,6 +116,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
     }
   }
   
+  @Test
   public void testConflationOn() {
     try {
       performSteps(DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_ON);
@@ -122,6 +126,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
     }
   }
   
+  @Test
   public void testConflationOff() {
     try {
       performSteps(DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_OFF);
@@ -153,10 +158,10 @@ public class ClientConflationDUnitTest extends DistributedTestCase
    */
   private static Properties createProperties1(String conflation){
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.DELTA_PROPAGATION_PROP_NAME, "false");
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    props.setProperty(DistributionConfig.CLIENT_CONFLATION_PROP_NAME, conflation);
+    props.setProperty(DELTA_PROPAGATION, "false");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(CONFLATE_EVENTS, conflation);
     return props;
   }
 
@@ -183,7 +188,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
    */
   public static void createClientCache(String host, Integer port, String conflation) throws Exception
   {
-    ClientConflationDUnitTest test = new ClientConflationDUnitTest("temp");
+    ClientConflationDUnitTest test = new ClientConflationDUnitTest();
     cacheClient = test.createCache(createProperties1(conflation));
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -228,7 +233,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
 
   public static void createClientCacheFeeder(String host, Integer port) throws Exception
   {
-    ClientConflationDUnitTest test = new ClientConflationDUnitTest("temp");
+    ClientConflationDUnitTest test = new ClientConflationDUnitTest();
     cacheFeeder = test.createCache(createProperties1(DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_DEFAULT));
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -403,8 +408,8 @@ public class ClientConflationDUnitTest extends DistributedTestCase
   public static Integer createServerCache() throws Exception
   {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.DELTA_PROPAGATION_PROP_NAME, "false");
-    ClientConflationDUnitTest test = new ClientConflationDUnitTest("temp");
+    props.setProperty(DELTA_PROPAGATION, "false");
+    ClientConflationDUnitTest test = new ClientConflationDUnitTest();
     cacheServer = test.createCache(props);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);

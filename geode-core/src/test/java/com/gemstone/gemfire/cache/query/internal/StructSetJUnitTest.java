@@ -22,10 +22,11 @@
  */
 package com.gemstone.gemfire.cache.query.internal;
 
+import static org.junit.Assert.*;
+
 import java.util.Iterator;
 
-import junit.framework.TestCase;
-
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.query.SelectResults;
@@ -35,16 +36,10 @@ import com.gemstone.gemfire.cache.query.internal.types.TypeUtils;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-/**
- *
- */
 @Category(UnitTest.class)
-public class StructSetJUnitTest extends TestCase {
+public class StructSetJUnitTest {
   
-  public StructSetJUnitTest(String testName) {
-    super(testName);
-  }
-  
+  @Test
   public void testIntersectionAndRetainAll() {
     String names[] = {"p","pos"};
     ObjectType types[] = {TypeUtils.OBJECT_TYPE, TypeUtils.OBJECT_TYPE};

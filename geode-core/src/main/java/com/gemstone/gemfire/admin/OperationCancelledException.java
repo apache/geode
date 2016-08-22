@@ -24,7 +24,7 @@ package com.gemstone.gemfire.admin;
  * in a remote system member is cancelled.  The cancelation may occur
  * because the system member has left the distributed system.
  *
- * @since 3.5
+ * @since GemFire 3.5
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public class OperationCancelledException extends RuntimeAdminException {

@@ -33,9 +33,10 @@ import com.gemstone.gemfire.lang.Identifiable;
  * @see FunctionService
  *
  *
- * @since 6.0
+ * @since GemFire 6.0
  */
-public interface Function extends Identifiable {
+@FunctionalInterface
+public interface Function extends Identifiable<String> {
 
   /**
    * Specifies whether the function sends results while executing.
@@ -51,9 +52,11 @@ public interface Function extends Identifiable {
    * </p>
    * 
    * @return whether this function returns a Result back to the caller.
-   * @since 6.0
+   * @since GemFire 6.0
    */
-  public boolean hasResult();
+  public default boolean hasResult() {
+    return true;
+  }
 
   /**
    * The method which contains the logic to be executed. This method should be
@@ -64,7 +67,7 @@ public interface Function extends Identifiable {
    * provided in parameter is instance of {@link RegionFunctionContext}.
    * 
    * @param context as created by {@link Execution}
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public void execute(FunctionContext context);
 
@@ -73,9 +76,11 @@ public interface Function extends Identifiable {
    * with {@link FunctionService}
    * 
    * @return string identifying this function
-   * @since 6.0
+   * @since GemFire 6.0
    */
-  public String getId();
+  public default String getId() {
+    return getClass().getCanonicalName();
+  }
 
   /**
    * <p>Return true to indicate to GemFire the method
@@ -91,10 +96,12 @@ public interface Function extends Identifiable {
    * </p>
    *
    * @return false if the function is read only, otherwise returns true
-   * @since 6.0
+   * @since GemFire 6.0
    * @see FunctionService
    */
-  public boolean optimizeForWrite();
+  public default boolean optimizeForWrite() {
+    return false;
+  }
   
   /**
    * Specifies whether the function is eligible for re-execution (in case of
@@ -103,8 +110,10 @@ public interface Function extends Identifiable {
    * @return whether the function is eligible for re-execution.
    * @see RegionFunctionContext#isPossibleDuplicate()
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
-  public boolean isHA();
+  public default boolean isHA() {
+    return true;
+  }
 
 }

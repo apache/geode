@@ -16,20 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.CacheException;
@@ -40,16 +26,26 @@ import com.gemstone.gemfire.cache.client.internal.LocatorDiscoveryCallback;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.pdx.internal.TypeRegistry;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Implementation of PoolFactory.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class PoolFactoryImpl implements PoolFactory {
   private static final Logger logger = LogService.getLogger();
@@ -310,7 +306,7 @@ public class PoolFactoryImpl implements PoolFactory {
    * @throws IllegalStateException if the connection pool name already exists
    * @throws IllegalStateException if this factory does not have any locators or servers
    * @return the newly created connection pool.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Pool create(String name) throws CacheException {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();

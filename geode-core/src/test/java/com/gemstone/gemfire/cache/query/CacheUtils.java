@@ -21,25 +21,20 @@
  */
 package com.gemstone.gemfire.cache.query;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.query.types.CollectionType;
+import com.gemstone.gemfire.cache.query.types.ObjectType;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.query.types.CollectionType;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * 
@@ -61,7 +56,7 @@ public class CacheUtils {
 
   static void init() throws Exception {
     if (GemFireCacheImpl.getInstance() == null) {
-      props.setProperty("mcast-port", "0");
+      props.setProperty(MCAST_PORT, "0");
       cache = new CacheFactory(props).create();
     } else {
       cache = GemFireCacheImpl.getInstance();
@@ -361,7 +356,7 @@ public class CacheUtils {
           if (p1 instanceof Struct) { 
             Object[] values1 = ((Struct)p1).getFieldValues(); 
             Object[] values2 = ((Struct)p2).getFieldValues(); 
-            //test.assertEquals(values1.length, values2.length); 
+            //test.assertIndexDetailsEquals(values1.length, values2.length);
             if(values1.length != values2.length) { 
               ok = false; 
               break outer; 

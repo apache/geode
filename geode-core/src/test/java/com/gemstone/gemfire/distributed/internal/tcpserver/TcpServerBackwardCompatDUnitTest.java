@@ -16,54 +16,38 @@
  */
 package com.gemstone.gemfire.distributed.internal.tcpserver;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.Properties;
-import java.util.Vector;
 
-import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import junit.framework.Assert;
 
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpServer;
-import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This tests the rolling upgrade for locators with
  * different GOSSIPVERSION.
- *
- *
  */
 @Category(DistributedTest.class)
-//@Ignore("Test was disabled by renaming to DisabledTest")
-public class TcpServerBackwardCompatDUnitTest extends DistributedTestCase {
-
-  /**
-   * @param name
-   */
-  public TcpServerBackwardCompatDUnitTest(String name) {
-    super(name);
-  }
+public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
@@ -94,6 +78,7 @@ public class TcpServerBackwardCompatDUnitTest extends DistributedTestCase {
    * GOSSIPVERSION and verifies that it has recoverd the system
    * View. Then we upgrade next locator.
    */
+  @Test
   public void testGossipVersionBackwardCompatibility() {
     Host host = Host.getHost(0);
     final VM locator0 = host.getVM(0);
@@ -115,10 +100,10 @@ public class TcpServerBackwardCompatDUnitTest extends DistributedTestCase {
                             host.getHostName() + "[" + port1 + "]";
     
     final Properties props = new Properties();
-    props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "finest");
+    props.setProperty(LOCATORS, locators);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+//    props.setProperty(LOG_LEVEL, "finest");
     
     // Start locator0 with props.
     //props.setProperty(DistributionConfig.START_LOCATOR_NAME, host.getHostName() + "["+port0+"]");
@@ -158,8 +143,8 @@ public class TcpServerBackwardCompatDUnitTest extends DistributedTestCase {
           TcpServer.OLDTESTVERSION -= 100;
           TcpServer.getGossipVersionMapForTestOnly().put(TcpServer.TESTVERSION, Version.CURRENT_ORDINAL);
           TcpServer.getGossipVersionMapForTestOnly().put(TcpServer.OLDTESTVERSION, Version.GFE_57.ordinal());
-//          assertEquals("Gossip Version and Test version are not same", TcpServer.GOSSIPVERSION, TcpServer.TESTVERSION);
-//          assertEquals("Previous Gossip Version and Test version are not same", TcpServer.OLDGOSSIPVERSION, TcpServer.OLDTESTVERSION);
+//          assertIndexDetailsEquals("Gossip Version and Test version are not same", TcpServer.GOSSIPVERSION, TcpServer.TESTVERSION);
+//          assertIndexDetailsEquals("Previous Gossip Version and Test version are not same", TcpServer.OLDGOSSIPVERSION, TcpServer.OLDTESTVERSION);
 
           Locator.startLocatorAndDS(port1, logFile1, props);
 
@@ -198,8 +183,8 @@ public class TcpServerBackwardCompatDUnitTest extends DistributedTestCase {
           TcpServer.OLDTESTVERSION -= 100;
           TcpServer.getGossipVersionMapForTestOnly().put(TcpServer.TESTVERSION, Version.CURRENT_ORDINAL);
           TcpServer.getGossipVersionMapForTestOnly().put(TcpServer.OLDTESTVERSION, Version.GFE_57.ordinal());
-//          assertEquals("Gossip Version and Test version are not same", TcpServer.GOSSIPVERSION, TcpServer.TESTVERSION);
-//          assertEquals("Previous Gossip Version and Test version are not same", TcpServer.OLDGOSSIPVERSION, TcpServer.OLDTESTVERSION);
+//          assertIndexDetailsEquals("Gossip Version and Test version are not same", TcpServer.GOSSIPVERSION, TcpServer.TESTVERSION);
+//          assertIndexDetailsEquals("Previous Gossip Version and Test version are not same", TcpServer.OLDGOSSIPVERSION, TcpServer.OLDTESTVERSION);
 
           Locator.startLocatorAndDS(port0, logFile0, props);
 

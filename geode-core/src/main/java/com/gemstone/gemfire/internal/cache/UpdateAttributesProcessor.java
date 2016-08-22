@@ -62,7 +62,7 @@ public class UpdateAttributesProcessor {
   /**
    * If true then sender is telling receiver to remove the sender's profile.
    * No profile exchange is needed in this case.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private boolean removeProfile = false;
   private ReplyProcessor21 processor;
@@ -74,7 +74,7 @@ public class UpdateAttributesProcessor {
 
   /**
    * Creates a new instance of UpdateAttributesProcessor
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public UpdateAttributesProcessor(DistributionAdvisee da, boolean removeProfile) {
     this.advisee = da;
@@ -191,7 +191,7 @@ public class UpdateAttributesProcessor {
      * Registers this processor as a membership listener and
      * returns a set of the current members.
      * @return a Set of the current members
-     * @since 5.7
+     * @since GemFire 5.7
      */
     @Override
     protected Set addListenerAndGetMembers() {
@@ -205,7 +205,7 @@ public class UpdateAttributesProcessor {
     }
     /**
      * Unregisters this processor as a membership listener
-     * @since 5.7
+     * @since GemFire 5.7
      */
     @Override
     protected void removeListener() {
@@ -220,7 +220,7 @@ public class UpdateAttributesProcessor {
      * If this processor being used by controller then return
      * ALL members; otherwise defer to super.
      * @return a Set of the current members
-     * @since 5.7
+     * @since GemFire 5.7
      */
     @Override
     protected Set getDistributionManagerIds() {
@@ -369,14 +369,7 @@ public class UpdateAttributesProcessor {
       // set the processor ID to be able to send reply to sender in case of any
       // unexpected exception during deserialization etc.
       ReplyProcessor21.setMessageRPId(this.processorId);
-      try {
-        this.profile = DataSerializer.readObject(in);
-      } catch (DSFIDFactory.SqlfSerializationException ex) {
-        // Ignore SQLFabric serialization errors and reply with nothing.
-        // This can happen even during normal startup of all SQLFabric VMs
-        // when DS connect is complete but SQLFabric boot is still in progress.
-        this.profile = null;
-      }
+      this.profile = DataSerializer.readObject(in);
       this.exchangeProfiles = in.readBoolean();
       this.removeProfile = in.readBoolean();
     }
@@ -460,7 +453,7 @@ public class UpdateAttributesProcessor {
   }
   /**
    * Used to return multiple profiles
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static class ProfilesReplyMessage extends ReplyMessage {
     Profile[] profiles;

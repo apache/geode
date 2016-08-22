@@ -16,12 +16,14 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
+import java.io.EOFException;
+
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 
 /**
  * Tell a server that a connection is being closed
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class CloseConnectionOp {
   /**
@@ -33,7 +35,11 @@ public class CloseConnectionOp {
     throws Exception
   {
     AbstractOp op = new CloseConnectionOpImpl(keepAlive);
-    con.execute(op);
+    try {
+      con.execute(op);
+    } catch (EOFException e) {
+      // expected
+    }
   }
                                                                
   private CloseConnectionOp() {
@@ -48,13 +54,7 @@ public class CloseConnectionOp {
       super(MessageType.CLOSE_CONNECTION, 1);
       getMessage().addRawPart(new byte[]{(byte)(keepAlive?1:0)}, false);
     }
-    @Override  
-    protected Message createResponseMessage() {
-      // no response is sent
-      return null;
-    }
-
-    @Override
+     @Override
     protected void processSecureBytes(Connection cnx, Message message)
         throws Exception {
     }
@@ -70,11 +70,15 @@ public class CloseConnectionOp {
       getMessage().send(false);
     }
 
-    @Override  
+    @Override
     protected Object processResponse(Message msg) throws Exception {
-      throw new IllegalStateException("should never be called");
+      // CloseConnectionOp doesn't return anything - we wait for a response
+      // so that we know that the server has processed the request before
+      // we return from execute();
+      return null;
     }
-    @Override  
+
+    @Override
     protected boolean isErrorResponse(int msgType) {
       return false;
     }

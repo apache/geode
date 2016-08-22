@@ -16,17 +16,17 @@
  */
 package com.gemstone.gemfire;
 
-import static org.junit.Assert.*;
-
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.*;
-
-import java.util.*;
-
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.assertTrue;
 
 /**
  * This is an abstract superclass for classes that test GemFire.  It
@@ -44,9 +44,9 @@ public abstract class GemFireTestCase {
   public void setUp() throws Exception {
     Properties p = new Properties();
     // make it a loner
-    p.setProperty("mcast-port", "0");
-    p.setProperty("locators", "");
-    p.setProperty(DistributionConfig.NAME_NAME, getName());
+    p.setProperty(MCAST_PORT, "0");
+    p.setProperty(LOCATORS, "");
+    p.setProperty(NAME, getName());
     DistributedSystem.connect(p);
   }
 

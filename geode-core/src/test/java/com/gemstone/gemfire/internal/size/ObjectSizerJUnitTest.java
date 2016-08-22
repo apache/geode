@@ -16,26 +16,19 @@
  */
 package com.gemstone.gemfire.internal.size;
 
+import static com.gemstone.gemfire.internal.size.SizeTestUtil.*;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-import static com.gemstone.gemfire.internal.size.SizeTestUtil.*;
-
 @Category(UnitTest.class)
-public class ObjectSizerJUnitTest extends TestCase {
-  
-  
-  public ObjectSizerJUnitTest() {
-    super();
-  }
+public class ObjectSizerJUnitTest {
 
-  public ObjectSizerJUnitTest(String name) {
-    super(name);
-  }
-
-  public void test() throws IllegalArgumentException, IllegalAccessException {
+  @Test
+  public void test() throws Exception {
     assertEquals(roundup(OBJECT_SIZE), ObjectGraphSizer.size(new Object()));
     
     assertEquals(roundup(OBJECT_SIZE + 4), ObjectGraphSizer.size(new TestObject1()));

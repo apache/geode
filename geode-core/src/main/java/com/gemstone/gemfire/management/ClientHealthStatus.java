@@ -24,7 +24,7 @@ import java.util.Map;
  * Composite data type used to distribute statistics which can be used to 
  * determine the health of a cache client.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class ClientHealthStatus {
   

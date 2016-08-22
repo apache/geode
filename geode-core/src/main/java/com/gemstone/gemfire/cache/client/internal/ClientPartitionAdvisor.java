@@ -43,7 +43,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * Stores the information such as partition attributes and meta data details
  * 
  * 
- * @since 6.5
+ * @since GemFire 6.5
  * 
  */
 public class ClientPartitionAdvisor {

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.management;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Map;
 
 import javax.management.MBeanServer;
@@ -39,6 +48,7 @@ import com.gemstone.gemfire.test.dunit.VM;
  * 
  * 
  */
+@Category(DistributedTest.class)
 public class WANManagementDUnitTest extends ManagementTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -46,10 +56,11 @@ public class WANManagementDUnitTest extends ManagementTestBase {
    
   public static MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
 
-  public WANManagementDUnitTest(String name) throws Exception {
-    super(name);
+  public WANManagementDUnitTest() throws Exception {
+    super();
     }
 
+  @Test
   public void testMBeanCallback() throws Exception {
 
     VM nyLocator =   getManagedNodeList().get(0);
@@ -81,7 +92,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     
     nyReceiver.invoke(() -> WANTestBase.createCache( nyPort ));
     nyReceiver.invoke(() -> WANTestBase.createPartitionedRegion( getTestMethodName() + "_PR", null, 1, 100, false ));
-    nyReceiver.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    nyReceiver.invoke(() -> WANTestBase.createReceiver());
 
     WANTestBase.startSenderInVMs("pn", puneSender, managing);
 
@@ -107,6 +118,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
   }
   
+  @Test
   public void testReceiverMBean() throws Exception {
 
     VM nyLocator = getManagedNodeList().get(0);
@@ -123,7 +135,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
     nyReceiver.invoke(() -> WANTestBase.createCache( nyPort ));
     nyReceiver.invoke(() -> WANTestBase.createPartitionedRegion( getTestMethodName() + "_PR", null, 1, 100, false ));
-    nyReceiver.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    nyReceiver.invoke(() -> WANTestBase.createReceiver());
 
     // keep a larger batch to minimize number of exception occurrences in the
     // log
@@ -153,6 +165,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
   }
   
   
+  @Test
   public void testAsyncEventQueue() throws Exception {
     
     VM nyLocator =   getManagedNodeList().get(0);
@@ -185,7 +198,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
     WANTestBase.createCacheInVMs(nyPort, nyReceiver);
     nyReceiver.invoke(() -> WANTestBase.createPartitionedRegion( getTestMethodName() + "_PR", null, 1, 100, false ));
-    nyReceiver.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    nyReceiver.invoke(() -> WANTestBase.createReceiver());
 
     checkAsyncQueueMBean(puneSender);
     checkAsyncQueueMBean(managing);

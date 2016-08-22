@@ -25,7 +25,7 @@ import com.gemstone.gemfire.cache.Region;
  * Gemfire Context passed to <code>PartitionResolver</code> to compute the
  * data location
  * 
- * @since 5.8
+ * @since GemFire 5.8
  * 
  */
 public class EntryOperationImpl implements EntryOperation {
@@ -38,7 +38,7 @@ public class EntryOperationImpl implements EntryOperation {
 
   private final Object key;
 
-  private Object callbackArgument = Token.NOT_AVAILABLE;
+  private final Object callbackArgument;
 
   public EntryOperationImpl(Region region, Operation operation, Object key,
       Object value, Object callbackArgument) {
@@ -64,7 +64,7 @@ public class EntryOperationImpl implements EntryOperation {
    * Return a description of the operation that triggered this event.
    * 
    * @return the operation that triggered this event.
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public Operation getOperation() {
     return this.operation;
@@ -101,18 +101,5 @@ public class EntryOperationImpl implements EntryOperation {
 
   public Object getRawNewValue() {
     return this.value;
-  }
-
-  /**
-   * Method for internal use. (Used by SQLFabric)
-   */
-  public void setCallbackArgument(Object newCallbackArgument) {
-    if (this.callbackArgument instanceof WrappedCallbackArgument) {
-      ((WrappedCallbackArgument)this.callbackArgument)
-          .setOriginalCallbackArgument(newCallbackArgument);
-    }
-    else {
-      this.callbackArgument = newCallbackArgument;
-    }
   }
 }

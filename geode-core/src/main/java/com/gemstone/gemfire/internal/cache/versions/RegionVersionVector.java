@@ -16,28 +16,10 @@
  */
 package com.gemstone.gemfire.internal.cache.versions;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.ConcurrentModificationException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.MembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
@@ -51,6 +33,17 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * RegionVersionVector tracks the highest region-level version number of
@@ -60,18 +53,18 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 public abstract class RegionVersionVector<T extends VersionSource<?>> implements DataSerializableFixedID, MembershipListener {
   
   private static final Logger logger = LogService.getLogger();
-  
-  public static boolean DEBUG = Boolean.getBoolean("gemfire.VersionVector.VERBOSE"); //TODO:LOG:CONVERT: REMOVE THIS
+
+  public static boolean DEBUG = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "VersionVector.VERBOSE"); //TODO:LOG:CONVERT: REMOVE THIS
   
   
   
   ////////////////////  The following statics exist for unit testing. ////////////////////////////
   
   /** maximum ms wait time while waiting for dominance to be achieved */
-  public static long MAX_DOMINANCE_WAIT_TIME = Long.getLong("gemfire.max-dominance-wait-time", 5000);
+  public static long MAX_DOMINANCE_WAIT_TIME = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "max-dominance-wait-time", 5000);
   
   /** maximum ms pause time while waiting for dominance to be achieved */
-  public static long DOMINANCE_PAUSE_TIME = Math.min(Long.getLong("gemfire.dominance-pause-time", 300), MAX_DOMINANCE_WAIT_TIME);
+  public static long DOMINANCE_PAUSE_TIME = Math.min(Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "dominance-pause-time", 300), MAX_DOMINANCE_WAIT_TIME);
   
   private static int INITIAL_CAPACITY = 2;
   private static int CONCURRENCY_LEVEL = 2;

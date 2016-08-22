@@ -25,7 +25,7 @@ package com.gemstone.gemfire;
  * <p> Note: if user code catches this error (or its subclasses) then it <em>must</em>
  * be rethrown.
  * 
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class GemFireRethrowable extends Error {
   private static final long serialVersionUID = 8349791552668922571L;

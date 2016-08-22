@@ -19,65 +19,47 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache30.CacheTestCase;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
 import com.gemstone.gemfire.internal.cache.DestroyOperation.DestroyMessage;
-import com.gemstone.gemfire.internal.cache.DistributedCacheOperation;
-import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.DistributedTombstoneOperation.TombstoneMessage;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.InitialImageOperation;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation.GIITestHook;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation.GIITestHookType;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation.RequestImageMessage;
-import com.gemstone.gemfire.internal.cache.InitialImageOperation.RequestRVVMessage;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.LocalRegion.NonTXEntry;
-import com.gemstone.gemfire.internal.cache.TombstoneService;
 import com.gemstone.gemfire.internal.cache.UpdateOperation.UpdateMessage;
 import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
 import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.junit.experimental.categories.Category;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
-
-/**
- *
- */
-public class GIIDeltaDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
   VM P; // GII provider
   VM R; // GII requester
@@ -93,8 +75,8 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
   /**
    * @param name
    */
-  public GIIDeltaDUnitTest(String name) {
-    super(name);
+  public GIIDeltaDUnitTest() {
+    super();
   }
 
   @Override
@@ -256,6 +238,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * vm1 becomes offline then restarts. 
    * The deltaGII should only exchange RVV. No need to send data from vm0 to vm1.  
    */
+  @Test
   public void testDeltaGIIWithSameRVV() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -310,6 +293,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * vm1 becomes offline then restarts. https://wiki.gemstone.com/display/gfepersistence/DeltaGII+Spec+for+8.0
    * The deltaGII should send delta to R, revoke unfinished opeation R4,R5  
    */
+  @Test
   public void testDeltaGIIWithExceptionList() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -368,8 +352,9 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * create some exception list.
    * Before GII, P's RVV is P6,R6(3-6), R's RVV is P6,R6, RVVGC are both P4,R0   
    * vm1 becomes offline then restarts.
-   * The deltaGII should send delta which only contains unfinished opeation R4,R5  
+   * The deltaGII should send delta which only contains unfinished operation R4,R5  
    */
+  @Test
   public void testDeltaGIIWithOnlyUnfinishedOp() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -444,6 +429,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * vm1 becomes offline then restarts.
    * The deltaGII should send delta which only contains unfinished opeation R4,R5  
    */
+  @Test
   public void testDeltaGIIWithOnlyUnfinishedOp_GCAtR() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -503,6 +489,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * vm1 becomes offline then restarts. https://wiki.gemstone.com/display/gfepersistence/DeltaGII+Spec+for+8.0
    * The deltaGII should send delta to R, revoke unfinished opeation R4,R5  
    */
+  @Test
   public void testDeltaGIIWithDifferentRVVGC() throws Throwable {
     final String testcase = "testDeltaGIIWithExceptionList";
     prepareForEachTest();
@@ -562,6 +549,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * i.e. before GII, P's RVVGC=P0,R0, upon received RequestImageMessage, it becomes P4,R0
    * it should cause the fullGII. 
    */
+  @Test
   public void testFullGIITriggeredByHigherRVVGC() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -629,6 +617,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * If R did not save the rvvgc, restarted R will have a way smaller rvvgc (maybe the same as T's) 
    * Let T requests GII from R, it wll become deltaGII, which is wrong. 
    */
+  @Test
   public void testSavingRVVGC() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -697,6 +686,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * vm1 becomes offline then restarts. https://wiki.gemstone.com/display/gfepersistence/DeltaGII+Spec+for+8.0
    * The deltaGII should send delta to R, revoke unfinished opeation R4,R5  
    */
+  @Test
   public void testDeltaGIIWithoutRVVGC() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -747,6 +737,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * P's RVV=P9,R6(3-6), RVVGC=P8,R0, R's RVV=P9(7-9),R6, RVV
    * It should trigger fullGII
    */
+  @Test
   public void testFullGIINotDorminatedByProviderRVVGC() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -804,6 +795,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * still P:x,R3, without exception list. But actually R4, R5 are unfinished ops by 
    * all means.  
    */
+  @Test
   public void testUnfinishedOpsWithoutExceptionList() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -872,6 +864,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    *
    * When image (which contains P4, P5) arrives, it should fill the special exception
    */
+  @Test
   public void testFillSpecialException() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -926,6 +919,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    *  This test will let the 2 operations happen before RIM, so the rvv will match between R and P and
    *  no gii will happen. In this way, the chunk will not contain the missing entries.
    */
+  @Test
   public void testFillSpecialException2() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -974,6 +968,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * 3. gii packing should wait for tombstone GC
    * 4. gii packing should wait for other on-fly operations
    */
+  @Test
   public void testHooks() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -1196,6 +1191,8 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * In this test, GII thread will get the GIILock before tombstone GC, so tombstone GC should 
    * wait for all GIIs to finish
    */
+  @Category(FlakyTest.class) // GEODE-633: SLOW_DISTRIBUTION_MS, non-thread safe test hook, async actions, time sensitive, waitForCriterion, thread joins, forceGC
+  @Test
   public void testTombstoneGCInMiddleOfGII() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -1327,6 +1324,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * The deltaGII should send nothing to R since the RVVs are the same. So after GII, P and R will 
    * have different tombstone number. But P's tombstones should be expired.  
    */
+  @Test
   public void testExpiredTombstoneSkippedAtProviderOnly() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -1422,6 +1420,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * vm1 becomes offline then restarts. 
    * The deltaGII should only exchange RVV. No need to send data from vm0 to vm1.  
    */
+  @Test
   public void testRequesterHasHigherRVVGC() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -1474,6 +1473,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * P8 is clear() operation. After that, R offline. Run P9 is a put. Restart R.   
    * R will do deltaGII to get P9 as delta  
    */
+  @Test
   public void testDeltaGIIAfterClear() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -1539,6 +1539,8 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * R off line, then run P7. Restart R. It will trigger deltaGII to chunk entry P7(key1).
    * After that, do clear(). Make sure R should not contain key1 after GII.     
    */
+  @Category(FlakyTest.class) // GEODE-1068: time sensitive, SLOW_DISTRIBUTION_MS, waitForCriterion, possible thread unsafe test hooks, async actions, depends on stats
+  @Test
   public void testClearAfterChunkEntries() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -1609,6 +1611,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * R off line, then run P7. Restart R. When P's RVV arrives, do clear(). It should trigger
    * fullGII. Make sure R should not contain key1 after GII.     
    */
+  @Test
   public void testClearAfterSavedRVV() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -1673,6 +1676,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * R offline, then P8 is clear() operation. Run P9 is a put. Restart R.   
    * R will do fullGII since R missed a clear  
    */
+  @Test
   public void testFullGIIAfterClear() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -1724,6 +1728,8 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * Before GII, P's RVV is P7,R6(3-6), R's RVV is P6,R6, RVVGC are both P4,R0
    * By changing MAX_UNFINISHED_OPERATIONS to be 1, 2. It should be fullGII then deltaGII.    
    */
+  @Category(FlakyTest.class) // GEODE-686: time sensitive, SLOW_DISTRIBUTION_MS, forceGC
+  @Test
   public void testFullGIITriggeredByTooManyUnfinishedOps() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -1759,6 +1765,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * R off line, then run P7. Restart R. When P's RVV arrives, restart R. It should trigger
    * fullGII.      
    */
+  @Test
   public void testRestartWithOnlyGIIBegion() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -1823,6 +1830,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * still initializes from the local data. See bug 48066
    * @throws Throwable
    */
+  @Test
   public void testRecoverFromUntrustedRVV() throws Throwable {
     prepareForEachTest();
     final DiskStoreID memberP = getMemberID(P);
@@ -1894,6 +1902,8 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
    * at the end. 
    * @throws Throwable
    */
+  @Category(FlakyTest.class) // GEODE-1137: orphaned AsyncInvocations, time sensitive, GC, waitForCriterion, thread unsafe test hooks/observers, expiration
+  @Test
   public void testTombstoneGCDuringFullGII() throws Throwable {
     prepareForEachTest();
     
@@ -2024,7 +2034,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
       public void run() {
         try {
-          String value = System.getProperty("gemfire.no-flush-on-close");
+          String value = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close");
           assertNull(value);
           RegionFactory f = getCache().createRegionFactory(getRegionAttributes());
 //          CCRegion = (LocalRegion)f.create(REGION_NAME);
@@ -2044,10 +2054,10 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
       public void run() {
         try {
           Cache cache = getCache();
-          System.setProperty("gemfire.no-flush-on-close", "true");
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close", "true");
           cache.close();
         } finally {
-          System.getProperties().remove("gemfire.no-flush-on-close");
+          System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close");
         }
       }
     };
@@ -2076,7 +2086,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
   protected void changeTombstoneTimout(VM vm, final long value) {
     SerializableRunnable change = new SerializableRunnable() {
       public void run() {
-        TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT = value;
+        TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT = value;
       }
     };
     vm.invoke(change);
@@ -2483,13 +2493,13 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
           assertTrue(entry != null && entry.getRegionEntry().isTombstone());
         }
         
-        System.out.println("GGG:new timeout="+TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT);
+        System.out.println("GGG:new timeout="+TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT);
         if (entry == null || !entry.getRegionEntry().isTombstone()) {
           return (false == expectExist);
         } else {
           long ts = entry.getRegionEntry().getVersionStamp().getVersionTimeStamp();
           if (expectExpired) {
-            return (ts + TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT <= ((GemFireCacheImpl)cache).cacheTimeMillis()); // use MAX_WAIT as timeout
+            return (ts + TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT <= ((GemFireCacheImpl)cache).cacheTimeMillis()); // use MAX_WAIT as timeout
           } else {
             return (true == expectExist);
           }

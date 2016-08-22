@@ -31,7 +31,7 @@ import com.gemstone.gemfire.pdx.internal.PdxString;
 
 /**
  * Implementation of Struct
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class StructImpl
   implements Struct, DataSerializableFixedID, Serializable {

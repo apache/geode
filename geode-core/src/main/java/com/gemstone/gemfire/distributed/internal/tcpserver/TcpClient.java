@@ -43,7 +43,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * 
  * TODO - refactor this to support keep-alive connections to the server. requestToServer
  * probably shouldn't a static method.
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 public class TcpClient {
@@ -213,7 +213,7 @@ public class TcpClient {
       out.flush();
 
       DataInputStream in = new DataInputStream(sock.getInputStream());
-      in = new VersionedDataInputStream(in, Version.GFE_90); 
+      in = new VersionedDataInputStream(in, Version.GFE_57); 
       try {
         VersionResponse response = DataSerializer.readObject(in);
         if (response != null) {
@@ -238,9 +238,9 @@ public class TcpClient {
       logger.debug("Locator " + ipAddr + " did not respond to a request for its version.  I will assume it is using v5.7 for safety.");
     }
     synchronized(serverVersions) {
-      serverVersions.put(ipAddr, Version.GFE_90.ordinal());
+      serverVersions.put(ipAddr, Version.GFE_57.ordinal());
     }
-    return Short.valueOf(Version.GFE_90.ordinal());
+    return Short.valueOf(Version.GFE_57.ordinal());
   }
 
   private TcpClient() {

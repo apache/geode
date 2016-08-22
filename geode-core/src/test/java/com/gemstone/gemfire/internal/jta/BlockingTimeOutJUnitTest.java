@@ -16,37 +16,31 @@
  */
 package com.gemstone.gemfire.internal.jta;
 
-import static org.junit.Assert.assertNotNull;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.OutputStreamWriter;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Properties;
-import java.util.Random;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.test.TestUtil;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.util.test.TestUtil;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+import java.io.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
+import java.util.Random;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.assertNotNull;
 
 @Category(IntegrationTest.class)
 public class BlockingTimeOutJUnitTest {
@@ -147,9 +141,9 @@ public class BlockingTimeOutJUnitTest {
     wr.write(modified_file_str);
     wr.flush();
     wr.close();
-    props.setProperty("cache-xml-file", path);
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(CACHE_XML_FILE, path);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     String tableName = "";
     cache = new CacheFactory(props).create();
     if (className != null && !className.equals("")) {

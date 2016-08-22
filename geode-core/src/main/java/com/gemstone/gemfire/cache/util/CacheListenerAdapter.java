@@ -30,7 +30,7 @@ import com.gemstone.gemfire.cache.RegionEvent;
  * </p>
  * 
  * 
- * @since 3.0
+ * @since GemFire 3.0
  */
 public abstract class CacheListenerAdapter<K,V> implements CacheListener<K,V> {
 

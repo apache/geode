@@ -46,7 +46,7 @@ import java.util.List;
  *
  * This class contains implementations of getting Cluster's selected region details
  *
- * @since version 7.5 cedar  2014-03-01
+ * @since GemFire version 7.5 cedar  2014-03-01
  */
 
 @Component
@@ -187,12 +187,6 @@ public class ClusterSelectedRegionService implements PulseService {
       regionJSON.put("persistence", reg.getPersistentEnabled() ? PulseService.VALUE_ON : PulseService.VALUE_OFF);
 
       regionJSON.put("isEnableOffHeapMemory", reg.isEnableOffHeapMemory() ? PulseService.VALUE_ON : PulseService.VALUE_OFF);
-
-      if (regionType.startsWith("HDFS")) {
-        regionJSON.put("isHDFSWriteOnly", reg.isHdfsWriteOnly() ? PulseService.VALUE_ON : PulseService.VALUE_OFF);
-      } else {
-        regionJSON.put("isHDFSWriteOnly", PulseService.VALUE_NA);
-      }
 
       String regCompCodec = reg.getCompressionCodec();
       if (StringUtils.isNotNullNotEmptyNotWhiteSpace(regCompCodec)) {

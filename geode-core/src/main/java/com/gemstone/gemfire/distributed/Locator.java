@@ -31,13 +31,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * Represents a distribution locator server that provides discovery information
  * to members and clients of a GemFire distributed system. In most GemFire
  * distributed cache architectures, distribution locators are run in their own
- * process. A stand-alone locator process is managed using 
- * {@linkplain com.gemstone.gemfire.admin.DistributionLocator administration
- * API} or the <code>gemfire</code> command line utility:
- * 
- * <PRE>
- * $ gemfire start-locator
- * </PRE>
+ * process. A stand-alone locator process is managed using gfsh command line utility. 
  * 
  * The stand-alone locator configuration provides high-availability of
  * membership information.
@@ -47,12 +41,16 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * This class allows a GemFire application VM to host a distribution locator.
  * Such a configuration minimizes the number of processes that are required to
  * run GemFire. However, hosting distribution locators is not generally
- * recommended because if the application VM exits, the primary membership list
- * for the distributed system would be lost and it would not be possible for new
- * applications to connect to the distributed system.
+ * recommended because if the application VM exits it would not be possible for new
+ * applications to connect to the distributed system until it is restarted.
  * 
  * <P>
+ * Locators persist membership information in a locatorXXXview.dat file.  This
+ * file is used to recover information about the cluster when a locator starts
+ * if there are no other currently running locators.  It allows the restarted
+ * locator to rejoin the cluster.
  * 
+ * <P>
  * <b>NOTE:</b> In this release of the product locators log membership views and
  * cache server status in a locatorXXXviews.log file, where XXX is the locator's port.
  * This is a rolling log
@@ -61,10 +59,10 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * or be started so that it creates a DistributedSystem.  This means that it is
  * not possible in this release to use APIs to start a locator and <i>then</i>
  * start a DistributedSystem.
- * 
  * <P>
+ *   
  *  
- * @since 4.0
+ * @since GemFire 4.0
  */
 public abstract class Locator {
 
@@ -73,15 +71,12 @@ public abstract class Locator {
   /** The file to which this locator logs */
   protected File logFile;
 
-  /** The port on which this locator listens */
-  protected int port;
-
   /** The bind address for this locator */
   protected InetAddress bindAddress;
 
   /**
    * the hostname to give to clients so they can connect to this locator.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected String hostnameForClients;
   
@@ -137,7 +132,7 @@ public abstract class Locator {
    * relied on for stable membership information. The locator will provide provide
    * peer and cache server location services.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    * 
    * @param port
    *                The port on which the locator will listen for membership
@@ -218,7 +213,7 @@ public abstract class Locator {
    * information. The locator will provide provide
    * peer and cache server location services.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    *
    * @param port
    *        The port on which the locator will listen for membership
@@ -267,7 +262,7 @@ public abstract class Locator {
    * information. The locator will provide provide
    * peer and cache server location services.
    *
-   * @since 5.7
+   * @since GemFire 5.7
    *
    * @param port
    *        The port on which the locator will listen for membership
@@ -306,7 +301,7 @@ public abstract class Locator {
    * @throws IOException
    *         If the locator cannot be started
    *         
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static Locator startLocatorAndDS(
     int port,
@@ -394,7 +389,7 @@ public abstract class Locator {
    * Returns the locator if it exists in this JVM.
    * Otherwise returns null.
    * @return the locator that exists in this JVM; null if no locator.
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static Locator getLocator() {
     return InternalLocator.getLocator();
@@ -413,7 +408,7 @@ public abstract class Locator {
    * Returns true if a locator exists in this JVM.
    * 
    * @return true if a locator exists in this JVM.
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static boolean hasLocator() {
     return InternalLocator.hasLocator();
@@ -423,9 +418,7 @@ public abstract class Locator {
   /**
    * Returns the port on which this locator runs
    */
-  public int getPort() {
-    return this.port;
-  }
+  public abstract Integer getPort();
 
   /**
    * Returns the distributed system started by this locator, if any
@@ -452,7 +445,7 @@ public abstract class Locator {
    * Returns the hostname that will be given to clients so that they can
    * connect to this locator. Returns <code>null</code> if clients should
    * use the bind address.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public String getHostnameForClients() {
     String result = this.hostnameForClients;
@@ -504,7 +497,7 @@ public abstract class Locator {
       }
     }
     StringBuilder locatorString = new StringBuilder(String.valueOf(ba));
-    locatorString.append('[').append(this.port).append(']');
+    locatorString.append('[').append(this.getPort()).append(']');
     return locatorString.toString();
   }
 
@@ -543,7 +536,7 @@ public abstract class Locator {
    * to use to connect to this locator.
    * If unspecified, defaults to the bind-address.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static void main(String args[]) {
     com.gemstone.gemfire.internal.DistributionLocator.main(args);

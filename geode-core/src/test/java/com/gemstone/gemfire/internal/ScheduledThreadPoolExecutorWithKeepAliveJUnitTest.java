@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.internal;
 
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -34,11 +33,10 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.jayway.awaitility.Awaitility;
 
-/**
- *
- */
 @Category(IntegrationTest.class)
 public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
   
@@ -87,7 +85,8 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
     
     assertEquals(2, ex.getLargestPoolSize());
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-1138: time sensitive, thread sleeps, expiration
   @Test
   public void testConcurrentExecutionAndExpiration() throws InterruptedException, ExecutionException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(
@@ -191,9 +190,12 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
       }
     };
     ScheduledFuture f = ex.scheduleAtFixedRate(run, 0, 1, TimeUnit.SECONDS);
-    Thread.sleep(5000);
-    f.cancel(true);
-    assertTrue("Task was not executed repeatedly", counter.get() > 1);
+    Awaitility.await().atMost(30,TimeUnit.SECONDS).until(() -> assertEquals("Task was not executed repeatedly"
+      ,true, counter.get() > 1));
+    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> assertEquals("The task could not be cancelled"
+      ,true, f.cancel(true)));
+    Awaitility.await().atMost(30,TimeUnit.SECONDS).until(() -> assertEquals("Task was not cancelled within 30 sec"
+      ,true,f.isCancelled()));
     int oldValue = counter.get();
     Thread.sleep(5000);
     assertEquals("Task was not cancelled", oldValue, counter.get());

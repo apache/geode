@@ -16,13 +16,6 @@
  */
 package com.gemstone.gemfire.security.generator;
 
-import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.security.AccessControl;
-import com.gemstone.gemfire.security.templates.DummyAuthorization;
-import com.gemstone.gemfire.security.templates.XmlAuthorization;
-import org.apache.logging.log4j.Logger;
-
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,12 +24,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
+
+import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.security.AccessControl;
+import com.gemstone.gemfire.security.templates.DummyAuthorization;
+import com.gemstone.gemfire.security.templates.XmlAuthorization;
+
 /**
  * Encapsulates obtaining authorized and unauthorized credentials for a given
  * operation in a region. Implementations will be for different kinds of
  * authorization scheme and authentication scheme combos.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public abstract class AuthzCredentialGenerator {
   
@@ -319,7 +320,7 @@ public abstract class AuthzCredentialGenerator {
    * <p>All dunit tests will automagically start testing the new implementation
    * after this.
    *
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public static final class ClassCode {
 

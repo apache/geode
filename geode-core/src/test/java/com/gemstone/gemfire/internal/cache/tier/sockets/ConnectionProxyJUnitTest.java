@@ -20,26 +20,7 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.Map;
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.Connection;
@@ -49,7 +30,6 @@ import com.gemstone.gemfire.cache.client.internal.QueueStateImpl.SequenceIdAndEx
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
@@ -57,6 +37,18 @@ import com.gemstone.gemfire.internal.cache.ha.ThreadIdentifier;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Map;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -82,8 +74,8 @@ public class ConnectionProxyJUnitTest
   {
 
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    p.setProperty(MCAST_PORT, "0");
+    p.setProperty(LOCATORS, "");
     this.system = DistributedSystem.connect(p);
     this.cache = CacheFactory.create(system);
     final String addExpectedPEM =
@@ -124,20 +116,18 @@ public class ConnectionProxyJUnitTest
    * configured for the client <br>
    *
    */
-  public void DISABLE_testListenerOnServerSitForever()
+  @Ignore
+  @Test
+  public void testListenerOnServerSitForever() throws Exception
   {
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     Region testRegion = null ;
-    try {
-      CacheServer server = this.cache.addCacheServer();
-      server.setMaximumTimeBetweenPings(10000);
-      server.setPort(port3);
-      server.start();
-    }
-    catch (Exception e) {
-      e.printStackTrace();
-      fail("Failed to create server");
-    }
+
+    CacheServer server = this.cache.addCacheServer();
+    server.setMaximumTimeBetweenPings(10000);
+    server.setPort(port3);
+    server.start();
+
     try {
       PoolFactory pf = PoolManager.createFactory();
       pf.addServer("localhost", port3);

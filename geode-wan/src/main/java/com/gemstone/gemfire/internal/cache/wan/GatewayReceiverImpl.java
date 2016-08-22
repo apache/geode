@@ -40,9 +40,9 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
- * 
- * @since 7.0
+ * @since GemFire 7.0
  */
+@SuppressWarnings("deprecation")
 public class GatewayReceiverImpl implements GatewayReceiver {
 
   private static final Logger logger = LogService.getLogger();

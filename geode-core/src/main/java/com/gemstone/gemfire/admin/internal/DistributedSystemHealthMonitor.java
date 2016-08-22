@@ -60,7 +60,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * special-case code.
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  * */
 class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
 

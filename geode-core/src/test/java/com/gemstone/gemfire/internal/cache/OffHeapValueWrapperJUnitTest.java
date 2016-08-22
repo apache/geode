@@ -16,8 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -27,11 +26,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.OffHeapValueWrapper;
 import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.Flushable;
+import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.OffHeapValueWrapper;
+import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
 import com.gemstone.gemfire.internal.offheap.NullOffHeapMemoryStats;
 import com.gemstone.gemfire.internal.offheap.NullOutOfOffHeapMemoryListener;
-import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
 import com.gemstone.gemfire.internal.offheap.SlabImpl;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
@@ -39,7 +38,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class OffHeapValueWrapperJUnitTest {
 
-  private static OffHeapValueWrapper createChunkValueWrapper(byte[] bytes, boolean isSerialized) {
+  private OffHeapValueWrapper createChunkValueWrapper(byte[] bytes, boolean isSerialized) {
     StoredObject c = MemoryAllocatorImpl.getAllocator().allocateAndInitialize(bytes, isSerialized, false);
     return new OffHeapValueWrapper(c);
   }

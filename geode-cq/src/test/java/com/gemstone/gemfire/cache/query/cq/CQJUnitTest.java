@@ -16,17 +16,20 @@
  */
 package com.gemstone.gemfire.cache.query.cq;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.Properties;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.query.CacheUtils;
 import com.gemstone.gemfire.cache.query.CqAttributes;
 import com.gemstone.gemfire.cache.query.CqAttributesFactory;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
@@ -35,43 +38,34 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class CQJUnitTest extends TestCase {
+public class CQJUnitTest {
+
   private DistributedSystem ds;
   private Cache cache;
   private QueryService qs;
   
-  /////////////////////////////////////
-  // Methods for setUp and tearDown
-  /////////////////////////////////////
-  
-  public CQJUnitTest(String name) {
-    super(name);
-  }
-  
+  @Before
   public void setUp() throws Exception {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("log-level", "config");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOG_LEVEL, "config");
     this.ds = DistributedSystem.connect(props);
     this.cache = CacheFactory.create(ds);
     this.qs = cache.getQueryService();
   }
-  
+
+  @After
   public void tearDown() throws Exception {
     this.cache.close();
     this.ds.disconnect();
   }
 
-  /////////////////////////////////////
-  // Test Methods
-  /////////////////////////////////////
-  
-  
   /**
    * Test to make sure CQs that have invalid syntax
    * throw QueryInvalidException, and CQs that have unsupported
    * CQ features throw UnsupportedOperationException
    */
+  @Test
   public void testValidateCQ() throws Exception {
    
     AttributesFactory attributesFactory = new AttributesFactory();
@@ -133,18 +127,4 @@ public class CQJUnitTest extends TestCase {
     }
   }
   
-  /* would need to make the constructServerSideQuery method package
-   * accessible and move this to the internal package in order
-   * to test that method
-   * 
-  public void testConstructServerSideQuery() throws Exception {
-    // default attributes
-    CqAttributes attrs = new CqAttributesFactory().create();
-    
-    // valid CQ
-    CqQuery cq = this.qs.newCq("SELECT * FROM /region WHERE status = 'active'",
-                              attrs);
-    Query serverSideQuery = ((CqQueryImpl)cq).constructServerSideQuery();
-  }
-  */
 }

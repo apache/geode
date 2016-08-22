@@ -29,7 +29,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import com.gemstone.gemfire.CancelCriterion;
@@ -39,20 +41,27 @@ import com.gemstone.gemfire.StatisticsType;
 import com.gemstone.gemfire.internal.StatArchiveReader.StatValue;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.util.StopWatch;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @since 7.0
+ * @since GemFire 7.0
  */
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class StatSamplerJUnitTest {
+
   private static final Logger logger = LogService.getLogger();
-  
-  @Rule
-  public TestName testName = new TestName();
 
   private Map<String,String> statisticTypes;
   private Map<String,Map<String,Number>> allStatistics;
+
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public TestName testName = new TestName();
 
   @Before
   public void setUp() {
@@ -62,27 +71,27 @@ public class StatSamplerJUnitTest {
   
   @After
   public void tearDown() {
-    System.clearProperty("stats.log-level");
-    System.clearProperty("stats.disable");
-    System.clearProperty("stats.name");
-    System.clearProperty("stats.archive-file");
-    System.clearProperty("stats.file-size-limit");
-    System.clearProperty("stats.disk-space-limit");
-    System.clearProperty("stats.sample-rate");
     this.statisticTypes = null;
     this.allStatistics = null;
     StatisticsTypeFactoryImpl.clear();
     StatArchiveWriter.clearTraceFilter();
   }
+
+  private String getName() {
+    return getClass().getSimpleName() + "_" + testName.getMethodName();
+  }
   
   @Test
   public void testStatSampler() throws Exception {
     StatArchiveWriter.setTraceFilter("st1_1", "ST1");
-    
+
+    File folder = temporaryFolder.newFolder();
+    String archiveFileName = folder.getAbsolutePath() + File.separator + getName() + ".gfs";
+
     System.setProperty("stats.log-level", "config");
     System.setProperty("stats.disable", "false");
-    System.setProperty("stats.name", getClass().getSimpleName() + "_" + testName.getMethodName());
-    System.setProperty("stats.archive-file", getClass().getSimpleName() + "_" + testName.getMethodName() + ".gfs");
+    System.setProperty("stats.name", getName());
+    System.setProperty("stats.archive-file", archiveFileName);
     System.setProperty("stats.file-size-limit", "0");
     System.setProperty("stats.disk-space-limit", "0");
     System.setProperty("stats.sample-rate", "100");
@@ -108,24 +117,31 @@ public class StatSamplerJUnitTest {
         factory.createLongCounter(  "long_counter_9",   "d9",  "u9"),
         factory.createLongCounter(  "long_counter_10",  "d10", "u10", true),
         factory.createLongGauge(    "long_gauge_11",    "d11", "u11"),
-        factory.createLongGauge(    "long_gauge_12",    "d12", "u12", false)
+        factory.createLongGauge(    "long_gauge_12",    "d12", "u12", false),
+        factory.createLongGauge(    "sampled_long",    "d13", "u13", false),
+        factory.createIntGauge(    "sampled_int",    "d14", "u14", false),
+        factory.createDoubleGauge(    "sampled_double",    "d15", "u15", false)
     };
     final StatisticsType ST1 = factory.createType("ST1", "ST1", statsST1);
     final Statistics st1_1 = factory.createAtomicStatistics(ST1, "st1_1", 1);
-    
+    st1_1.setIntSupplier("sampled_int", () -> 5);
+    getOrCreateExpectedValueMap(st1_1).put("sampled_int", 5);
+    st1_1.setLongSupplier("sampled_long", () -> 6);
+    getOrCreateExpectedValueMap(st1_1).put("sampled_long", 6);
+    st1_1.setDoubleSupplier("sampled_double", () -> 7.0);
+    getOrCreateExpectedValueMap(st1_1).put("sampled_double", 7.0);
+
     boolean done = false;
-    try {
-      Statistics[] samplerStatsInstances = factory.findStatisticsByTextId("statSampler");
-      for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 4000; done = (samplerStatsInstances != null && samplerStatsInstances.length > 0)) {
-        Thread.sleep(10);
-        samplerStatsInstances = factory.findStatisticsByTextId("statSampler");
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
-    assertTrue("Waiting for statSampler stats", done);
 
     Statistics[] samplerStatsInstances = factory.findStatisticsByTextId("statSampler");
+    for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 4000; done = (samplerStatsInstances != null && samplerStatsInstances.length > 0)) {
+      Thread.sleep(10);
+      samplerStatsInstances = factory.findStatisticsByTextId("statSampler");
+    }
+
+    assertTrue("Waiting for statSampler stats", done);
+
+    samplerStatsInstances = factory.findStatisticsByTextId("statSampler");
     assertNotNull(samplerStatsInstances);
     assertEquals(1, samplerStatsInstances.length);
     final Statistics samplerStats = samplerStatsInstances[0];
@@ -265,10 +281,8 @@ public class StatSamplerJUnitTest {
     final StatArchiveReader reader = new StatArchiveReader(
         new File[]{archiveFile}, null, false);
 
-    @SuppressWarnings("rawtypes")
     List resources = reader.getResourceInstList();
-    for (@SuppressWarnings("rawtypes")
-    Iterator iter = resources.iterator(); iter.hasNext();) {
+    for (Iterator iter = resources.iterator(); iter.hasNext();) {
       StatArchiveReader.ResourceInst ri = (StatArchiveReader.ResourceInst) iter.next();
       String resourceName = ri.getName();
       assertNotNull(resourceName);
@@ -303,26 +317,18 @@ public class StatSamplerJUnitTest {
     }
   }
   
-  private void waitForStatSample(final Statistics samplerStats) {
+  private void waitForStatSample(final Statistics samplerStats) throws InterruptedException {
     int startSampleCount = samplerStats.getInt("sampleCount");
     boolean done = false;
-    try {
-      for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 3000; done = (samplerStats.getInt("sampleCount") > startSampleCount)) {
-        Thread.sleep(10);
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
+    for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 3000; done = (samplerStats.getInt("sampleCount") > startSampleCount)) {
+      Thread.sleep(10);
     }
     assertTrue("Waiting for statSampler sampleCount to increment", done);
   }
   
   private void incDouble(Statistics statistics, String stat, double value) {
     assertFalse(statistics.isClosed());
-    Map<String,Number> statValues = this.allStatistics.get(statistics.getTextId());
-    if (statValues == null) {
-      statValues = new HashMap<String,Number>();
-      this.allStatistics.put(statistics.getTextId(), statValues);
-    }
+    Map<String, Number> statValues = getOrCreateExpectedValueMap(statistics);
     statistics.incDouble(stat, value);
     statValues.put(stat, statistics.getDouble(stat));
     if (this.statisticTypes.get(statistics.getTextId()) == null) {
@@ -332,11 +338,7 @@ public class StatSamplerJUnitTest {
   
   private void incInt(Statistics statistics, String stat, int value) {
     assertFalse(statistics.isClosed());
-    Map<String,Number> statValues = this.allStatistics.get(statistics.getTextId());
-    if (statValues == null) {
-      statValues = new HashMap<String,Number>();
-      this.allStatistics.put(statistics.getTextId(), statValues);
-    }
+    Map<String, Number> statValues = getOrCreateExpectedValueMap(statistics);
     statistics.incInt(stat, value);
     statValues.put(stat, statistics.getInt(stat));
     if (this.statisticTypes.get(statistics.getTextId()) == null) {
@@ -344,13 +346,18 @@ public class StatSamplerJUnitTest {
     }
   }
 
-  private void incLong(Statistics statistics, String stat, long value) {
-    assertFalse(statistics.isClosed());
+  private Map<String, Number> getOrCreateExpectedValueMap(final Statistics statistics) {
     Map<String,Number> statValues = this.allStatistics.get(statistics.getTextId());
     if (statValues == null) {
       statValues = new HashMap<String,Number>();
       this.allStatistics.put(statistics.getTextId(), statValues);
     }
+    return statValues;
+  }
+
+  private void incLong(Statistics statistics, String stat, long value) {
+    assertFalse(statistics.isClosed());
+    Map<String, Number> statValues = getOrCreateExpectedValueMap(statistics);
     statistics.incLong(stat, value);
     statValues.put(stat, statistics.getLong(stat));
     if (this.statisticTypes.get(statistics.getTextId()) == null) {

@@ -39,7 +39,7 @@ import com.gemstone.gemfire.i18n.StringId;
  *
  * @see LoggingThreadGroup#createThreadGroup
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class LoggingThreadGroup extends ThreadGroup {
 
@@ -73,7 +73,7 @@ public class LoggingThreadGroup extends ThreadGroup {
    *        is okay for this argument to be <code>null</code>.
    *
    * author David Whitlock
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public static LoggingThreadGroup createThreadGroup(final String name,
                                                      final InternalLogWriter logWriter) {
@@ -106,7 +106,6 @@ public class LoggingThreadGroup extends ThreadGroup {
       if (group == null) {
         group = new LoggingThreadGroup(name, logWriter);
         // force autoclean to false and not inherit from parent group
-        // (happens to be true for SQLFabric started threads as seen in #41438)
         group.setDaemon(false);
         loggingThreadGroups.add(group);
       }
@@ -128,7 +127,7 @@ public class LoggingThreadGroup extends ThreadGroup {
    *        is okay for this argument to be <code>null</code>.
    *
    * author David Whitlock
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public static LoggingThreadGroup createThreadGroup(final String name,
                                                      final Logger logger) {
@@ -161,7 +160,6 @@ public class LoggingThreadGroup extends ThreadGroup {
       if (group == null) {
         group = new LoggingThreadGroup(name, logger);
         // force autoclean to false and not inherit from parent group
-        // (happens to be true for SQLFabric started threads as seen in #41438)
         group.setDaemon(false);
         loggingThreadGroups.add(group);
       }
@@ -184,7 +182,7 @@ public class LoggingThreadGroup extends ThreadGroup {
 //   *        is okay for this argument to be <code>null</code>.
 //   *
 //   * author kbanks 
-//   * @since 6.0
+//   * @since GemFire 6.0
 //   */
 //  @Deprecated public static LoggingThreadGroup createThreadGroup(final String name,
 //                                                                 final LogWriter logger) {
@@ -334,7 +332,7 @@ public class LoggingThreadGroup extends ThreadGroup {
   /**
    * clean up the threadgroup, releasing resources that could be problematic
    * (bug 35388)
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    */
   public synchronized void cleanup() {
     // the logwriter holds onto a distribution config, which holds onto

@@ -35,10 +35,14 @@ import com.gemstone.gemfire.test.dunit.VM;
  * An instance of this class is delegated to by test classes that test
  * disk regions.
  *
- *
+ * Used by: DiskDistributedNoAckRegionTestCase
+ * TODO: move this content into DiskDistributedNoAckRegionTestCase
  */
 public class DiskRegionTestImpl implements Serializable {
-  
+
+  private static final int NUM_ENTRIES = 1000;
+  private static final int VALUE_SIZE = 2000;
+
   final RegionTestCase rtc;
 
   private CacheSerializableRunnable createRgnRunnable(final String name) {
@@ -64,12 +68,6 @@ public class DiskRegionTestImpl implements Serializable {
     
     vm0.invoke(createRgnRunnable(name));
   }
-  
-  
-  
-  
-  private static final int NUM_ENTRIES = 1000;
-  private static final int VALUE_SIZE = 2000;
 
   /**
    * Tests fillValues on backup regions.

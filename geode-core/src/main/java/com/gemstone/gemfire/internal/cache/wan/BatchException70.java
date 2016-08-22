@@ -25,7 +25,7 @@ import java.util.List;
  * An exception thrown during batch processing.
  *
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 // Note that since this class is inside of an internal package,
 // we make it extend Exception, thereby making it a checked exception.

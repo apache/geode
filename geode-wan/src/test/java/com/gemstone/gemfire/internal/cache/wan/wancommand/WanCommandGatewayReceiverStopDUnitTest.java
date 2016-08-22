@@ -16,48 +16,51 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.wancommand;
 
-import hydra.Log;
-
-import java.util.List;
-import java.util.Properties;
-
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import java.util.List;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.test.dunit.Wait.pause;
+
+@Category(DistributedTest.class)
 public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
 
   private static final long serialVersionUID = 1L;
-
-  public WanCommandGatewayReceiverStopDUnitTest(String name) {
-    super(name);
-  }
 
   /**
    * Test wan commands for error in input 1> start gateway-sender command needs
    * only one of member or group.
    */
+  @Test
   public void testStopGatewayReceiver_ErrorConditions() {
 
     VM puneLocator = Host.getLocator();
-    int punePort = (Integer) puneLocator.invoke(() -> WANCommandTestBase.getLocatorPort());
+    int punePort = (Integer) puneLocator.invoke(() -> getLocatorPort());
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createReceiver( punePort ));
+    vm3.invoke(() -> createReceiver( punePort ));
 
-    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> WANCommandTestBase.getMember());
+    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> getMember());
 
     String command = CliStrings.STOP_GATEWAYRECEIVER + " --"
         + CliStrings.STOP_GATEWAYRECEIVER__MEMBER + "=" + vm1Member.getId()
@@ -66,7 +69,7 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStopGatewayReceiver_ErrorConditions stringResult : "
               + strCmdResult + ">>>>");
       assertEquals(Result.Status.ERROR, cmdResult.getStatus());
@@ -76,32 +79,33 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
     }
   }
 
+  @Test
   public void testStopGatewayReceiver() {
 
     VM puneLocator = Host.getLocator();
-    int punePort = (Integer) puneLocator.invoke(() -> WANCommandTestBase.getLocatorPort());
+    int punePort = (Integer) puneLocator.invoke(() -> getLocatorPort());
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createAndStartReceiver( punePort ));
-    vm4.invoke(() -> WANCommandTestBase.createAndStartReceiver( punePort ));
-    vm5.invoke(() -> WANCommandTestBase.createAndStartReceiver( punePort ));
+    vm3.invoke(() -> createAndStartReceiver( punePort ));
+    vm4.invoke(() -> createAndStartReceiver( punePort ));
+    vm5.invoke(() -> createAndStartReceiver( punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
-    vm4.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
-    vm5.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
+    vm3.invoke(() -> verifyReceiverState( true ));
+    vm4.invoke(() -> verifyReceiverState( true ));
+    vm5.invoke(() -> verifyReceiverState( true ));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.STOP_GATEWAYRECEIVER;
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStopGatewayReceiver stringResult : " + strCmdResult + ">>>>");
 
       TabularResultData resultData = (TabularResultData) cmdResult
@@ -114,44 +118,45 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
       fail("testStopGatewayReceiver failed as did not get CommandResult");
     }
 
-    vm3.invoke(() -> WANCommandTestBase.verifyReceiverState( false ));
-    vm4.invoke(() -> WANCommandTestBase.verifyReceiverState( false ));
-    vm5.invoke(() -> WANCommandTestBase.verifyReceiverState( false ));
+    vm3.invoke(() -> verifyReceiverState( false ));
+    vm4.invoke(() -> verifyReceiverState( false ));
+    vm5.invoke(() -> verifyReceiverState( false ));
   }
 
   /**
    * test to validate that the start gateway sender starts the gateway sender on
    * a member
    */
+  @Test
   public void testStopGatewayReceiver_onMember() {
 
     VM puneLocator = Host.getLocator();
-    int punePort = (Integer) puneLocator.invoke(() -> WANCommandTestBase.getLocatorPort());
+    int punePort = (Integer) puneLocator.invoke(() -> getLocatorPort());
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createAndStartReceiver( punePort ));
-    vm4.invoke(() -> WANCommandTestBase.createAndStartReceiver( punePort ));
-    vm5.invoke(() -> WANCommandTestBase.createAndStartReceiver( punePort ));
+    vm3.invoke(() -> createAndStartReceiver( punePort ));
+    vm4.invoke(() -> createAndStartReceiver( punePort ));
+    vm5.invoke(() -> createAndStartReceiver( punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
-    vm4.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
-    vm5.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
+    vm3.invoke(() -> verifyReceiverState( true ));
+    vm4.invoke(() -> verifyReceiverState( true ));
+    vm5.invoke(() -> verifyReceiverState( true ));
 
-    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> WANCommandTestBase.getMember());
-    Wait.pause(10000);
+    final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> getMember());
+    pause(10000);
     String command = CliStrings.STOP_GATEWAYRECEIVER + " --"
         + CliStrings.STOP_GATEWAYRECEIVER__MEMBER + "=" + vm1Member.getId();
 
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStopGatewayReceiver_onMember stringResult : " + strCmdResult
               + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -160,42 +165,43 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
       fail("testStopGatewayReceiver failed as did not get CommandResult");
     }
 
-    vm3.invoke(() -> WANCommandTestBase.verifyReceiverState( false ));
-    vm4.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
-    vm5.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
+    vm3.invoke(() -> verifyReceiverState( false ));
+    vm4.invoke(() -> verifyReceiverState( true ));
+    vm5.invoke(() -> verifyReceiverState( true ));
   }
 
   /**
    * test to validate that the start gateway sender starts the gateway sender on
    * a group of members
    */
+  @Test
   public void testStopGatewayReceiver_Group() {
 
     VM puneLocator = Host.getLocator();
-    int punePort = (Integer) puneLocator.invoke(() -> WANCommandTestBase.getLocatorPort());
+    int punePort = (Integer) puneLocator.invoke(() -> getLocatorPort());
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createAndStartReceiverWithGroup( punePort, "RG1" ));
-    vm4.invoke(() -> WANCommandTestBase.createAndStartReceiverWithGroup( punePort, "RG1" ));
-    vm5.invoke(() -> WANCommandTestBase.createAndStartReceiverWithGroup( punePort, "RG1" ));
+    vm3.invoke(() -> createAndStartReceiverWithGroup( punePort, "RG1" ));
+    vm4.invoke(() -> createAndStartReceiverWithGroup( punePort, "RG1" ));
+    vm5.invoke(() -> createAndStartReceiverWithGroup( punePort, "RG1" ));
 
-    vm3.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
-    vm4.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
-    vm5.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
+    vm3.invoke(() -> verifyReceiverState( true ));
+    vm4.invoke(() -> verifyReceiverState( true ));
+    vm5.invoke(() -> verifyReceiverState( true ));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.STOP_GATEWAYRECEIVER + " --"
         + CliStrings.STOP_GATEWAYRECEIVER__GROUP + "=RG1";
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStopGatewayReceiver_Group stringResult : " + strCmdResult
               + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -210,9 +216,9 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
       fail("testStopGatewayReceiver_Group failed as did not get CommandResult");
     }
 
-    vm3.invoke(() -> WANCommandTestBase.verifyReceiverState( false ));
-    vm4.invoke(() -> WANCommandTestBase.verifyReceiverState( false ));
-    vm5.invoke(() -> WANCommandTestBase.verifyReceiverState( false ));
+    vm3.invoke(() -> verifyReceiverState( false ));
+    vm4.invoke(() -> verifyReceiverState( false ));
+    vm5.invoke(() -> verifyReceiverState( false ));
   }
 
   /**
@@ -220,37 +226,38 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
    * sender members belongs to multiple groups
    * 
    */
+  @Test
   public void testStopGatewayReceiver_MultipleGroup() {
 
     VM puneLocator = Host.getLocator();
-    int punePort = (Integer) puneLocator.invoke(() -> WANCommandTestBase.getLocatorPort());
+    int punePort = (Integer) puneLocator.invoke(() -> getLocatorPort());
 
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + punePort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createAndStartReceiverWithGroup( punePort, "RG1" ));
-    vm4.invoke(() -> WANCommandTestBase.createAndStartReceiverWithGroup( punePort, "RG1" ));
-    vm5.invoke(() -> WANCommandTestBase.createAndStartReceiverWithGroup( punePort, "RG1" ));
-    vm6.invoke(() -> WANCommandTestBase.createAndStartReceiverWithGroup( punePort, "RG1, RG2" ));
-    vm7.invoke(() -> WANCommandTestBase.createAndStartReceiverWithGroup( punePort, "RG3" ));
+    vm3.invoke(() -> createAndStartReceiverWithGroup( punePort, "RG1" ));
+    vm4.invoke(() -> createAndStartReceiverWithGroup( punePort, "RG1" ));
+    vm5.invoke(() -> createAndStartReceiverWithGroup( punePort, "RG1" ));
+    vm6.invoke(() -> createAndStartReceiverWithGroup( punePort, "RG1, RG2" ));
+    vm7.invoke(() -> createAndStartReceiverWithGroup( punePort, "RG3" ));
 
-    vm3.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
-    vm4.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
-    vm5.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
-    vm6.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
-    vm7.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
+    vm3.invoke(() -> verifyReceiverState( true ));
+    vm4.invoke(() -> verifyReceiverState( true ));
+    vm5.invoke(() -> verifyReceiverState( true ));
+    vm6.invoke(() -> verifyReceiverState( true ));
+    vm7.invoke(() -> verifyReceiverState( true ));
 
-    Wait.pause(10000);
+    pause(10000);
     String command = CliStrings.STOP_GATEWAYRECEIVER + " --"
         + CliStrings.STOP_GATEWAYRECEIVER__GROUP + "=RG1,RG2";
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      Log.getLogWriter().info(
+      getLogWriter().info(
           "testStopGatewayReceiver_Group stringResult : " + strCmdResult
               + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -265,10 +272,10 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
       fail("testStopGatewayReceiver failed as did not get CommandResult");
     }
 
-    vm3.invoke(() -> WANCommandTestBase.verifyReceiverState( false ));
-    vm4.invoke(() -> WANCommandTestBase.verifyReceiverState( false ));
-    vm5.invoke(() -> WANCommandTestBase.verifyReceiverState( false ));
-    vm6.invoke(() -> WANCommandTestBase.verifyReceiverState( false ));
-    vm7.invoke(() -> WANCommandTestBase.verifyReceiverState( true ));
+    vm3.invoke(() -> verifyReceiverState( false ));
+    vm4.invoke(() -> verifyReceiverState( false ));
+    vm5.invoke(() -> verifyReceiverState( false ));
+    vm6.invoke(() -> verifyReceiverState( false ));
+    vm7.invoke(() -> verifyReceiverState( true ));
   }
 }

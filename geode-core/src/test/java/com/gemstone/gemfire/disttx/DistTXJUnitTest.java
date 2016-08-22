@@ -16,14 +16,6 @@
  */
 package com.gemstone.gemfire.disttx;
 
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.TXJUnitTest;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -31,6 +23,15 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.junit.categories.DistributedTransactionsTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Run the basic transaction functionality tests in TXJUnitTest after setting
@@ -46,9 +47,8 @@ public class DistTXJUnitTest extends TXJUnitTest {
   @Override
   protected void createCache() throws Exception {
     Properties p = new Properties();
-    p.setProperty("mcast-port", "0"); // loner
-    p.setProperty("distributed-transactions", "true");
-//    p.setProperty("log-level", "fine");
+    p.setProperty(MCAST_PORT, "0"); // loner
+    p.setProperty(DISTRIBUTED_TRANSACTIONS, "true");
     this.cache = (GemFireCacheImpl)CacheFactory.create(DistributedSystem.connect(p));
     createRegion();
     this.txMgr = this.cache.getCacheTransactionManager();

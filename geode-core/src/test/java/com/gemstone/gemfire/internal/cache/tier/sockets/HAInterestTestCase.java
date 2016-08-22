@@ -16,6 +16,18 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -31,37 +43,28 @@ import com.gemstone.gemfire.cache.client.internal.RegisterInterestTracker;
 import com.gemstone.gemfire.cache.client.internal.ServerRegionProxy;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.tier.InterestType;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.junit.experimental.categories.Category;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests Interest Registration Functionality
  */
+@Category(DistributedTest.class)
 @SuppressWarnings({"deprecation", "rawtypes", "serial", "unchecked"})
-public class HAInterestTestCase extends DistributedTestCase {
+public class HAInterestTestCase extends JUnit4DistributedTestCase {
   
   protected static final int TIMEOUT_MILLIS = 60 * 1000;
   protected static final int INTERVAL_MILLIS = 10;
@@ -94,10 +97,6 @@ public class HAInterestTestCase extends DistributedTestCase {
   protected static VM server3 = null;
   
   protected volatile static boolean exceptionOccured = false;
-
-  public HAInterestTestCase(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -146,7 +145,7 @@ public class HAInterestTestCase extends DistributedTestCase {
   /**
    * Return the current primary waiting for a primary to exist.
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static VM getPrimaryVM() {
     return getPrimaryVM(null);
@@ -156,7 +155,7 @@ public class HAInterestTestCase extends DistributedTestCase {
    * Return the current primary waiting for a primary to exist and for it not to
    * be the oldPrimary (if oldPrimary is NOT null).
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static VM getPrimaryVM(final VM oldPrimary) {
     WaitCriterion wc = new WaitCriterion() {
@@ -208,7 +207,7 @@ public class HAInterestTestCase extends DistributedTestCase {
   /**
    * Given a server vm (server1, server2, or server3) return its port.
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static int getServerPort(VM vm) {
     if (vm == server1) {
@@ -226,7 +225,7 @@ public class HAInterestTestCase extends DistributedTestCase {
   /**
    * Given a server port (PORT1, PORT2, or PORT3) return its vm.
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static VM getServerVM(int port) {
     if (port == PORT1) {
@@ -890,9 +889,9 @@ public class HAInterestTestCase extends DistributedTestCase {
 
   public static void createClientPoolCache(String testName, String host) throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    new HAInterestTestCase("temp").createCache(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    new HAInterestTestCase().createCache(props);
     CacheServerTestUtil.disableShufflingOfEndpoints();
     PoolImpl p;
     try {
@@ -924,9 +923,9 @@ public class HAInterestTestCase extends DistributedTestCase {
 
   public static void createClientPoolCacheWithSmallRetryInterval(String testName, String host) throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    new HAInterestTestCase("temp").createCache(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    new HAInterestTestCase().createCache(props);
     CacheServerTestUtil.disableShufflingOfEndpoints();
     PoolImpl p;
     try {
@@ -959,9 +958,9 @@ public class HAInterestTestCase extends DistributedTestCase {
 
   public static void createClientPoolCacheConnectionToSingleServer(String testName, String hostName) throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    new HAInterestTestCase("temp").createCache(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    new HAInterestTestCase().createCache(props);
     PoolImpl p = (PoolImpl) PoolManager.createFactory()
         .addServer(hostName, PORT1)
         .setSubscriptionEnabled(true)
@@ -982,7 +981,7 @@ public class HAInterestTestCase extends DistributedTestCase {
   }
 
   public static Integer createServerCache() throws Exception {
-    new HAInterestTestCase("temp").createCache(new Properties());
+    new HAInterestTestCase().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableBridgeConflation(true);
@@ -1001,7 +1000,7 @@ public class HAInterestTestCase extends DistributedTestCase {
   }
 
   public static Integer createServerCacheWithLocalRegion() throws Exception {
-    new HAInterestTestCase("temp").createCache(new Properties());
+    new HAInterestTestCase().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     factory.setConcurrencyChecksEnabled(true);

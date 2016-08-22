@@ -16,25 +16,25 @@
  */
 package com.gemstone.gemfire.internal;
 
-import static org.junit.Assert.*;
-import static org.junit.Assume.*;
-
 import com.gemstone.gemfire.admin.internal.InetAddressUtil;
-import com.gemstone.gemfire.internal.lang.SystemUtils;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 
-import org.junit.After;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
+ * multicast availability is tested in JGroupsMessengerJUnitTest
  */
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class AvailablePortJUnitTest {
   
   private ServerSocket socket;
@@ -65,9 +65,8 @@ public class AvailablePortJUnitTest {
     socket = new ServerSocket();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     socket.bind(new InetSocketAddress((InetAddress)null, port));
-    System.out.println("bind addr="+System.getProperty("gemfire.bind-address"));
+    System.out.println("bind addr=" + System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "bind-address"));
     assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET));
   }
   
-  // multicast availability is tested in JGroupsMessengerJUnitTest
 }

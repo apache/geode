@@ -16,15 +16,10 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import java.lang.reflect.Method;
-
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.StatisticsTypeFactory;
+import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
@@ -32,13 +27,15 @@ import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
+import java.lang.reflect.Method;
+
 /**
  * Enables off-heap storage by creating a MemoryAllocator.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 public class OffHeapStorage implements OffHeapMemoryStats {
-  public static final String STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY = "gemfire.offheap.stayConnectedOnOutOfOffHeapMemory";
+  public static final String STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "offheap.stayConnectedOnOutOfOffHeapMemory";
   
   // statistics type
   private static final StatisticsType statsType;
@@ -59,6 +56,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   private static final int largestFragmentId;
   private static final int defragmentationTimeId;
   private static final int fragmentationId;
+  private static final int defragmentationsInProgressId;
   // NOTE!!!! When adding new stats make sure and update the initialize method on this class
   
   // creates and registers the statistics type
@@ -67,6 +65,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     
     final String usedMemoryDesc = "The amount of off-heap memory, in bytes, that is being used to store data.";
     final String defragmentationDesc = "The total number of times off-heap memory has been defragmented.";
+    final String defragmentationsInProgressDesc = "Current number of defragment operations currently in progress.";
     final String defragmentationTimeDesc = "The total time spent defragmenting off-heap memory.";
     final String fragmentationDesc = "The percentage of off-heap free memory that is fragmented.  Updated every time a defragmentation is performed.";
     final String fragmentsDesc = "The number of fragments of free off-heap memory. Updated every time a defragmentation is done.";
@@ -78,6 +77,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
 
     final String usedMemory = "usedMemory";
     final String defragmentations = "defragmentations";
+    final String defragmentationsInProgress = "defragmentationsInProgress";
     final String defragmentationTime = "defragmentationTime";
     final String fragmentation = "fragmentation";
     final String fragments = "fragments";
@@ -92,7 +92,8 @@ public class OffHeapStorage implements OffHeapMemoryStats {
         statsTypeDescription,
         new StatisticDescriptor[] {
             f.createLongGauge(usedMemory, usedMemoryDesc, "bytes"),
-            f.createIntCounter(defragmentations, defragmentationDesc, "defragmentations"),
+            f.createIntCounter(defragmentations, defragmentationDesc, "operations"),
+            f.createIntGauge(defragmentationsInProgress, defragmentationsInProgressDesc, "operations"),
             f.createLongCounter(defragmentationTime, defragmentationTimeDesc, "nanoseconds", false),
             f.createIntGauge(fragmentation, fragmentationDesc, "percentage"),
             f.createLongGauge(fragments, fragmentsDesc, "fragments"),
@@ -106,6 +107,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     
     usedMemoryId = statsType.nameToId(usedMemory);
     defragmentationId = statsType.nameToId(defragmentations);
+    defragmentationsInProgressId = statsType.nameToId(defragmentationsInProgress);
     defragmentationTimeId = statsType.nameToId(defragmentationTime);
     fragmentationId = statsType.nameToId(fragmentation);
     fragmentsId = statsType.nameToId(fragments);
@@ -125,7 +127,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   }
   
   public static long calcMaxSlabSize(long offHeapMemorySize) {
-    final String offHeapSlabConfig = System.getProperty("gemfire.OFF_HEAP_SLAB_SIZE");
+    final String offHeapSlabConfig = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE");
     long result = 0;
     if (offHeapSlabConfig != null && !offHeapSlabConfig.equals("")) {
       result = parseLongWithUnits(offHeapSlabConfig, MAX_SLAB_SIZE, 1024*1024);
@@ -309,13 +311,20 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   }
   
   @Override
+  public int getDefragmentationsInProgress() {
+    return this.stats.getInt(defragmentationsInProgressId);
+  }
+  
+  @Override
   public long startDefragmentation() {
+    this.stats.incInt(defragmentationsInProgressId, 1);
     return DistributionStats.getStatTime();
   }
   
   @Override
   public void endDefragmentation(long start) {
     incDefragmentations();
+    this.stats.incInt(defragmentationsInProgressId, -1);
     if (DistributionStats.enableClockStats) {
       stats.incLong(defragmentationTimeId, DistributionStats.getStatTime()-start);
     }
@@ -353,6 +362,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     setObjects(oldStats.getObjects());
     setReads(oldStats.getReads());
     setDefragmentations(oldStats.getDefragmentations());
+    setDefragmentationsInProgress(oldStats.getDefragmentationsInProgress());
     setFragments(oldStats.getFragments());
     setLargestFragment(oldStats.getLargestFragment());
     setDefragmentationTime(oldStats.getDefragmentationTime());
@@ -367,6 +377,10 @@ public class OffHeapStorage implements OffHeapMemoryStats {
 
   private void setDefragmentations(int value) {
     this.stats.setInt(defragmentationId, value);
+  }
+  
+  private void setDefragmentationsInProgress(int value) {
+    this.stats.setInt(defragmentationsInProgressId, value);
   }
 
   private void setReads(long value) {

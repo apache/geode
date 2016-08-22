@@ -16,23 +16,18 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.fail;
-
-import java.util.Properties;
-
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
 
 /**
  * AFTER_REGION_CREATE was being sent before region
@@ -65,7 +60,7 @@ public class Bug33726JUnitTest{
   @Test
   public void testAfterRegionCreate() {
     Properties props = new Properties();
-    props.put(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.put(MCAST_PORT, "0");
     DistributedSystem ds = DistributedSystem.connect(props);
     AttributesFactory factory = new AttributesFactory();
     factory.setCacheListener(new TestCacheListener());

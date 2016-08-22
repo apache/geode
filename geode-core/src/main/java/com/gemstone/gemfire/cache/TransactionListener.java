@@ -36,7 +36,7 @@ package com.gemstone.gemfire.cache;
  *
  * @see CacheTransactionManager#setListener
  * @see CacheTransactionManager#getListener
- * @since 4.0
+ * @since GemFire 4.0
  */
 
 public interface TransactionListener extends CacheCallback {

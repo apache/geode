@@ -54,9 +54,8 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link AbstractRegion}.
- * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 @Category(UnitTest.class)
 public class AbstractRegionJUnitTest {
@@ -66,7 +65,6 @@ public class AbstractRegionJUnitTest {
    * 
    * Assert that method returns a {@link SimpleExtensionPoint} instance and
    * assume that {@link com.gemstone.gemfire.internal.cache.extension.SimpleExtensionPointJUnitTest} has covered the rest.
-   * 
    */
   @Test
   public void testGetExtensionPoint() {

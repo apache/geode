@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Properties;
@@ -50,10 +59,11 @@ import com.gemstone.gemfire.test.dunit.VM;
  * functionality. This test is performed for different region scopes - D_ACK and
  * D_NO_ACK for PartitionedRegion.
  */
+@Category(DistributedTest.class)
 public class PartitionedRegionAPIDUnitTest extends PartitionedRegionDUnitTestCase {
 
-	public PartitionedRegionAPIDUnitTest(String name) {
-		super(name);
+	public PartitionedRegionAPIDUnitTest() {
+		super();
 	}
 
 	Properties props = new Properties();
@@ -1259,7 +1269,8 @@ public class PartitionedRegionAPIDUnitTest extends PartitionedRegionDUnitTestCas
 	 * This is a PartitionedRegion test for scope = D_ACK. 4 VMs are used to
 	 * create the PR with and without(Only Accessor) the DataStore.
 	 */
-	public void testPartitionedRegionOperationsScopeDistAck() throws Exception {
+  @Test
+  public void testPartitionedRegionOperationsScopeDistAck() throws Exception {
 	  Host host = Host.getHost(0);
 	  // create the VM(0 - 4)
 	  vm0 = host.getVM(0);
@@ -1296,6 +1307,7 @@ public class PartitionedRegionAPIDUnitTest extends PartitionedRegionDUnitTestCas
    * for scope = D_ACK. 4 VMs are used to
    * create the PR with and without(Only Accessor) the DataStore.
    */
+  @Test
   public void testPartitionedRegionConcurrentOperations() throws Exception {
     Host host = Host.getHost(0);
     // create the VM(0 - 4)
@@ -1320,6 +1332,7 @@ public class PartitionedRegionAPIDUnitTest extends PartitionedRegionDUnitTestCas
    * 
    * @throws Exception
    */
+  @Test
   public void testPartitionedRegionsOperationsScopeDistEarlyAck()
   		throws Exception {
   	final String rName = getUniqueName();
@@ -1384,6 +1397,7 @@ public class PartitionedRegionAPIDUnitTest extends PartitionedRegionDUnitTestCas
    * 
    * @throws Exception
    */
+  @Test
   public void testBug36685() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -1429,7 +1443,8 @@ public class PartitionedRegionAPIDUnitTest extends PartitionedRegionDUnitTestCas
 		});
 	}
 
-	public void testCacherLoaderHelper() throws Exception
+  @Test
+  public void testCacherLoaderHelper() throws Exception
 	{
 	  final String rName = getUniqueName();
 	  Host host = Host.getHost(0);

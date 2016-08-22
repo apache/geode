@@ -23,16 +23,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.util.JSR166TestCase;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.JSR166TestCase;
 
 @Category(IntegrationTest.class)
-public class RLJBarJUnitTest extends JSR166TestCase
-{
+public class RLJBarJUnitTest extends JSR166TestCase { // TODO: reformat
 
-    public static final int ITERS = 10;
+  public static final int ITERS = 10;
   public static boolean OneKey = false ; 			// alloc once or once per iteration
 
   public static boolean UseBar = false ;
@@ -47,10 +47,7 @@ public class RLJBarJUnitTest extends JSR166TestCase
   public static int quiesce = 0 ;
   public static Condition EndCondition = End.newCondition();
 
-  public RLJBarJUnitTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testRLJBar() throws Exception {
     main(new String[0]);
   }

@@ -16,9 +16,13 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
-
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -28,46 +32,36 @@ import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This Dunit test is to verify the bug in put() operation. When the put is invoked on the server
  * and NotifyBySubscription is false then it follows normal path and then again calls put of region
- * on which regionqueue is based. so recurssion is happening.
- *
+ * on which region queue is based. so recurssion is happening.
  */
+@Category(DistributedTest.class)
+public class HABugInPutDUnitTest extends JUnit4DistributedTestCase {
 
-public class HABugInPutDUnitTest extends DistributedTestCase
-{
+  private static final String REGION_NAME = HABugInPutDUnitTest.class.getSimpleName() + "_region";
 
-  VM server1 = null;
-
-  VM server2 = null;
-
-  VM client1 = null;
-
-  VM client2 = null;
-
-  private static final String REGION_NAME = "HABugInPutDUnitTest_region";
+  private VM server1 = null;
+  private VM server2 = null;
+  private VM client1 = null;
+  private VM client2 = null;
 
   final static String KEY1 = "KEY1";
-
   final static String VALUE1 = "VALUE1";
 
   protected static Cache cache = null;
-
-  public HABugInPutDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -125,7 +119,7 @@ public class HABugInPutDUnitTest extends DistributedTestCase
 
   public static Integer createServerCache() throws Exception
   {
-    new HABugInPutDUnitTest("temp").createCache(new Properties());
+    new HABugInPutDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -146,9 +140,9 @@ public class HABugInPutDUnitTest extends DistributedTestCase
     int PORT1 = port1.intValue();
     int PORT2 = port2.intValue();
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    new HABugInPutDUnitTest("temp").createCache(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    new HABugInPutDUnitTest().createCache(props);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     ClientServerTestCase.configureConnectionPool(factory, hostName, new int[] {PORT1,PORT2}, true, -1, 2, null);
@@ -157,9 +151,9 @@ public class HABugInPutDUnitTest extends DistributedTestCase
     Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     assertNotNull(region);
     region.registerInterest(KEY1);
-
   }
 
+  @Test
   public void testBugInPut() throws Exception
   {
     client1.invoke(new CacheSerializableRunnable("putFromClient1") {

@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.xml.sax.EntityResolver;
+
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Unit test for {@link GeodeEntityResolver} and
@@ -38,11 +38,13 @@ public class GeodeEntityResolverJUnitTest extends AbstractEntityResolverTest {
     entityResolver = new GeodeEntityResolver();
   }
 
-  public EntityResolver getEntityResolver() {
+  @Override
+  protected EntityResolver getEntityResolver() {
     return entityResolver;
   }
 
-  public String getSystemId() {
+  @Override
+  protected String getSystemId() {
     return systemId;
   }
 

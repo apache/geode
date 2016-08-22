@@ -17,15 +17,6 @@
 
 package com.gemstone.gemfire.distributed.internal;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.cache.TimeoutException;
@@ -33,6 +24,7 @@ import com.gemstone.gemfire.cache.UnsupportedVersionException;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.deadlock.MessageDependencyMonitor;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.DSFIDNotFoundException;
 import com.gemstone.gemfire.internal.Version;
@@ -42,7 +34,9 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
 
 /**
  * This class processes responses to {@link DistributionMessage}s. It
@@ -79,7 +73,7 @@ import com.gemstone.gemfire.i18n.StringId;
  * @see MessageWithReply
  *
  *
- * @since 2.1
+ * @since GemFire 2.1
  */
 public class ReplyProcessor21
     implements MembershipListener {
@@ -181,7 +175,7 @@ public class ReplyProcessor21
   //////////////////////  Static Methods  /////////////////////
 
   static {
-    String str = System.getProperty("gemfire.ack-severe-alert-reduction-ratio", ".80");
+    String str = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "ack-severe-alert-reduction-ratio", ".80");
     double ratio;
     try {
       ratio = Double.parseDouble(str);
@@ -551,7 +545,7 @@ public class ReplyProcessor21
    * Registers this processor as a membership listener and
    * returns a set of the current members.
    * @return a Set of the current members
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected Set addListenerAndGetMembers() {
     return getDistributionManager()
@@ -559,7 +553,7 @@ public class ReplyProcessor21
   }
   /**
    * Unregisters this processor as a membership listener
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected void removeListener() {
     try {
@@ -572,7 +566,7 @@ public class ReplyProcessor21
   /**
    * Returns the set of members that this processor should care about.
    * @return a Set of the current members
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected Set getDistributionManagerIds() {
     return getDistributionManager().getDistributionManagerIds();
@@ -615,8 +609,7 @@ public class ReplyProcessor21
   }
 
   // start waiting for replies without explicitly waiting for all of them using
-  // waitForReplies* methods; useful for streaming of results in function
-  // execution and SQLFabric
+  // waitForReplies* methods; useful for streaming of results in function execution
   public final void startWait() {
     if (!this.waiting && stillWaiting()) {
       preWait();
@@ -624,8 +617,7 @@ public class ReplyProcessor21
   }
 
   // end waiting for replies without explicitly invoking waitForReplies*
-  // methods; useful for streaming of results in function execution and
-  // SQLFabric
+  // methods; useful for streaming of results in function execution
   public final void endWait(boolean doCleanup) {
     try {
       postWait();
@@ -868,7 +860,7 @@ public class ReplyProcessor21
   /**
    * Used to cleanup resources allocated by the processor
    * after we are done using it.
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public void cleanup() {
     if (!this.keeperCleanedUp) {
@@ -950,7 +942,7 @@ public class ReplyProcessor21
 
   /**
    * Control of reply processor waiting behavior in the face of exceptions.
-   * @since 5.7
+   * @since GemFire 5.7
    * @return true to stop waiting when exceptions are present
    */
   protected boolean stopBecauseOfExceptions() {

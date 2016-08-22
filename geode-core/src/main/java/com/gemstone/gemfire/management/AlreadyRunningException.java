@@ -20,7 +20,7 @@ package com.gemstone.gemfire.management;
  * Indicates that a request to start a management service
  * failed because it was already running.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
 public class AlreadyRunningException extends ManagementException {

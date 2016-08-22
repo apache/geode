@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,28 +33,22 @@ import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.QueryTestUtils;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 
 @Category(DistributedTest.class)
-public class PartitionedRegionCompactRangeIndexDUnitTest extends DistributedTestCase {
-
-  public PartitionedRegionCompactRangeIndexDUnitTest(String name) {
-    super(name);
-  }
+public class PartitionedRegionCompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
 
   private Properties getSystemProperties(String cacheXML) {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-    props.setProperty("cache-xml-file", TestUtil.getResourcePath(getClass(), cacheXML));
+    props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+    props.setProperty(CACHE_XML_FILE, TestUtil.getResourcePath(getClass(), cacheXML));
     return props;
   }
   

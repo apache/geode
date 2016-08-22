@@ -18,15 +18,21 @@ package com.gemstone.gemfire.internal.admin.remote;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.admin.*;
-//import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.CacheRuntimeException;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.internal.cache.*;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.admin.CacheInfo;
+import com.gemstone.gemfire.internal.admin.StatResource;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.*;
+
+//import com.gemstone.gemfire.internal.*;
 
 /**
  * This class is an implementation of the {@link CacheInfo} interface.
@@ -66,7 +72,7 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
     } else {
       try {
         final Set roots;
-        if (!Boolean.getBoolean("gemfire.PRDebug"))  {
+        if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
           roots = c.rootRegions();
         } else {
           roots = c.rootRegions(true);

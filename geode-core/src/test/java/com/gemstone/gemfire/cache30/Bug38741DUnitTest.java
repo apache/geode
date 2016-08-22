@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -23,6 +26,9 @@ import java.util.Collection;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.CopyHelper;
 import com.gemstone.gemfire.DataSerializable;
@@ -34,11 +40,10 @@ import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.BucketRegion;
 import com.gemstone.gemfire.internal.cache.BucketRegion.RawValue;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.CachedDeserializable;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
@@ -56,13 +61,13 @@ import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
- *
- * @since bugfix5.7
+ * @since GemFire bugfix5.7
  */
+@Category(DistributedTest.class)
 public class Bug38741DUnitTest extends ClientServerTestCase {
-  private static final long serialVersionUID = 1L;
 
   protected RegionAttributes getRegionAttributes() {
     AttributesFactory factory = new AttributesFactory();
@@ -70,16 +75,13 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
     return factory.create();
   }
 
-  public Bug38741DUnitTest(String name) {
-    super(name);
-  }
-
   /**
    * Test that CopyOnRead doesn't cause {@link HARegionQueue#peek()} to create a copy,
    * assuming that creating copies performs a serialize and de-serialize operation.
    * @throws Exception when there is a failure
-   * @since bugfix5.7
+   * @since GemFire bugfix5.7
    */
+  @Test
   public void testCopyOnReadWithBridgeServer() throws Exception {
     final Host h = Host.getHost(0);
     final VM client = h.getVM(2);
@@ -262,6 +264,7 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
    * expected number of copies when copy-on-read is set to true
    * @throws Exception
    */
+  @Test
   public void testPartitionedRegionAndCopyOnRead() throws Exception {
     final Host h = Host.getHost(0);
     final VM accessor = h.getVM(2);
@@ -308,7 +311,7 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
             BucketRegion br = (BucketRegion) r;
             try {
               KeyInfo keyInfo = new KeyInfo(k1, null, bucketId);
-              RawValue rv = br.getSerialized(keyInfo, false, false, null, null, false, false);
+              RawValue rv = br.getSerialized(keyInfo, false, false, null, null, false);
               Object val = rv.getRawValue();
               assertTrue(val instanceof CachedDeserializable);
               CachedDeserializable cd = (CachedDeserializable)val;
@@ -355,7 +358,7 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
 
   public Properties getDistributedSystemProperties() {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.DELTA_PROPAGATION_PROP_NAME, "false");
+    props.setProperty(DELTA_PROPAGATION, "false");
     return props;
   }
 

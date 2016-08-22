@@ -48,7 +48,7 @@ import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
- * @since 7.0
+ * @since GemFire 7.0
  *
  */
 public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
@@ -111,9 +111,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       
       logger.info(LocalizedMessage.create(LocalizedStrings.ParallelGatewaySenderImpl_STARTED__0, this));
       
-      if (!tmpQueuedEvents.isEmpty()) {
-        enqueueTempEvents();
-      }
+      enqueueTempEvents();
     }
     finally {
       this.getLifeCycleLock().writeLock().unlock();

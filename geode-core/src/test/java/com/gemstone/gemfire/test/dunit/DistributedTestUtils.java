@@ -16,19 +16,20 @@
  */
 package com.gemstone.gemfire.test.dunit;
 
-import static org.junit.Assert.assertEquals;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
+import com.gemstone.gemfire.internal.InternalInstantiator;
 
 import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.InternalInstantiator;
+import static org.junit.Assert.assertEquals;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * <code>DistributedTestUtils</code> provides static utility methods that 
@@ -125,8 +126,8 @@ public class DistributedTestUtils {
     Properties dsProperties = DUnitEnv.get().getDistributedSystemProperties();
     
     // our tests do not expect auto-reconnect to be on by default
-    if (!dsProperties.contains(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME)) {
-      dsProperties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    if (!dsProperties.contains(DISABLE_AUTO_RECONNECT)) {
+      dsProperties.put(DISABLE_AUTO_RECONNECT, "true");
     }
   
     for (Iterator<Map.Entry<Object,Object>> iterator = properties.entrySet().iterator(); iterator.hasNext();) {

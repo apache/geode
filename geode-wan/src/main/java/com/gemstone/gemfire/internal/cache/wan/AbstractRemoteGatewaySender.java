@@ -16,29 +16,26 @@
  */
 package com.gemstone.gemfire.internal.cache.wan;
 
-import java.io.IOException;
-import java.net.ConnectException;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorResponse;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.WanLocatorDiscoverer;
+import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.net.ConnectException;
+import java.util.Iterator;
+import java.util.StringTokenizer;
 
 public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender {
   private static final Logger logger = LogService.getLogger();

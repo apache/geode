@@ -32,7 +32,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * annotation can be applied to Interfaces, Classes, Public and Protected
  * Fields, Enums, Enum Constants, Public and Protected Methods, Packages,
  * and Constructors.
- * 
  */
 @Category(UnitTest.class)
 public class ExperimentalJUnitTest {

@@ -16,27 +16,28 @@
  */
 package com.gemstone.gemfire.internal;
 
-import java.lang.ref.WeakReference;
-import java.util.*;
+import static org.junit.Assert.*;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
-import junit.framework.*;
 
 /**
  * This class tests the functionality of the {@link ObjIdMap} class.
  */
 @Category(UnitTest.class)
-public class ObjIdMapJUnitTest extends TestCase {
+public class ObjIdMapJUnitTest {
 
-  public ObjIdMapJUnitTest(String name) {
-    super(name);
-  }
-
-  ////////  Test methods
-
+  @Test
   public void testSimplePut() {
     ObjIdMap map = new ObjIdMap();
     int key = 4;
@@ -45,12 +46,14 @@ public class ObjIdMapJUnitTest extends TestCase {
     assertSame(value, map.get(key));
   }
 
+  @Test
   public void testGetNotThere() {
     ObjIdMap map = new ObjIdMap();
     int key = 4;
     assertSame(null, map.get(key));
   }
 
+  @Test
   public void testSimpleContainsKey() {
     ObjIdMap map = new ObjIdMap();
     int key = 4;
@@ -59,6 +62,7 @@ public class ObjIdMapJUnitTest extends TestCase {
     assertTrue(map.containsKey(key));
   }
 
+  @Test
   public void testSimpleRemove() {
     ObjIdMap map = new ObjIdMap();
     int key = 4;
@@ -67,6 +71,7 @@ public class ObjIdMapJUnitTest extends TestCase {
     assertSame(value, map.remove(key));
   }
 
+  @Test
   public void testSimpleValues() {
     ObjIdMap map = new ObjIdMap();
     for (int i = 0; i < 20; i++) {
@@ -88,6 +93,7 @@ public class ObjIdMapJUnitTest extends TestCase {
     }
   }
 
+  @Test
   public void testRandomMap() {
     final ObjIdMap map = new ObjIdMap();
     final int size = 1000;
@@ -157,8 +163,8 @@ public class ObjIdMapJUnitTest extends TestCase {
     }
   }
 
+  @Test
   public void testRandomGrowRemoveRelease() {
-
     ObjIdMap map = new ObjIdMap();
     Random random = new Random(System.currentTimeMillis());
     List saver = new ArrayList();
@@ -229,6 +235,7 @@ public class ObjIdMapJUnitTest extends TestCase {
     );
   }
 
+  @Test
   public void testIterator() {
     int size = 10;
     ObjIdMap map = new ObjIdMap();

@@ -16,18 +16,6 @@
 */
 package com.gemstone.gemfire.modules.hibernate.internal;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
@@ -36,9 +24,14 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.execute.FunctionService;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.modules.util.BootstrappingFunction;
 import com.gemstone.gemfire.modules.util.CreateRegionFunction;
 import com.gemstone.gemfire.modules.util.RegionConfiguration;
+
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
 
 public class ClientServerRegionFactoryDelegate extends RegionFactoryDelegate {
 
@@ -56,7 +49,7 @@ public class ClientServerRegionFactoryDelegate extends RegionFactoryDelegate {
   @Override
   public GemFireCache startCache() {
     log.info("Creating a GemFire client cache");
-    String locatorsString = (String)gemfireProperties.remove("locators");
+    String locatorsString = (String) gemfireProperties.remove(LOCATORS);
     checkExistingCache();
     ClientCacheFactory ccf = new ClientCacheFactory(gemfireProperties).setPoolSubscriptionEnabled(true);
     List<LocatorHolder> locators = getLocatorsMap(locatorsString);
@@ -152,7 +145,7 @@ public class ClientServerRegionFactoryDelegate extends RegionFactoryDelegate {
     if (rType != null) {
       return rType.toUpperCase();
     }
-    rType = regionProperties.getProperty("gemfire.default-client-region-attributes-id");
+    rType = regionProperties.getProperty(DistributionConfig.GEMFIRE_PREFIX + "default-client-region-attributes-id");
     if (rType == null) {
       rType = DEFAULT_CLIENT_REGION_TYPE;
     }
@@ -164,7 +157,7 @@ public class ClientServerRegionFactoryDelegate extends RegionFactoryDelegate {
     if (rType != null) {
       return rType.toUpperCase();
     }
-    rType = regionProperties.getProperty("gemfire.default-region-attributes-id");
+    rType = regionProperties.getProperty(DistributionConfig.GEMFIRE_PREFIX + "default-region-attributes-id");
     if (rType == null) {
       rType = DEFAULT_SERVER_REGION_TYPE;
     }

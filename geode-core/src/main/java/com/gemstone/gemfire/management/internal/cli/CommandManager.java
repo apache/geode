@@ -16,49 +16,32 @@
  */
 package com.gemstone.gemfire.management.internal.cli;
 
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.ClassPathLoader;
+import com.gemstone.gemfire.management.cli.CliMetaData;
+import com.gemstone.gemfire.management.internal.cli.annotation.CliArgument;
+import com.gemstone.gemfire.management.internal.cli.help.CliTopic;
+import com.gemstone.gemfire.management.internal.cli.parser.*;
+import com.gemstone.gemfire.management.internal.cli.parser.jopt.JoptOptionParser;
+import com.gemstone.gemfire.management.internal.cli.util.ClasspathScanLoadHelper;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.internal.cli.annotation.CliArgument;
-import com.gemstone.gemfire.management.internal.cli.help.CliTopic;
-import com.gemstone.gemfire.management.internal.cli.parser.Argument;
-import com.gemstone.gemfire.management.internal.cli.parser.AvailabilityTarget;
-import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
-import com.gemstone.gemfire.management.internal.cli.parser.GfshMethodTarget;
-import com.gemstone.gemfire.management.internal.cli.parser.GfshOptionParser;
-import com.gemstone.gemfire.management.internal.cli.parser.Option;
-import com.gemstone.gemfire.management.internal.cli.parser.jopt.JoptOptionParser;
-import com.gemstone.gemfire.management.internal.cli.util.ClasspathScanLoadHelper;
-import com.gemstone.gemfire.management.internal.security.CLIOperationContext;
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.Map.Entry;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class CommandManager {
   //1. Load Commands, availability indicators - Take from GfshParser
@@ -67,7 +50,7 @@ public class CommandManager {
   
   private static final Object INSTANCE_LOCK = new Object();
   private static CommandManager INSTANCE = null;
-  public static final String USER_CMD_PACKAGES_PROPERTY = "gemfire." + DistributionConfig.USER_COMMAND_PACKAGES;
+  public static final String USER_CMD_PACKAGES_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + USER_COMMAND_PACKAGES;
   public static final String USER_CMD_PACKAGES_ENV_VARIABLE = "GEMFIRE_USER_COMMAND_PACKAGES";
   
   private Properties cacheProperties;
@@ -112,7 +95,7 @@ public class CommandManager {
     
     // Find by  packages specified in the distribution config
     if (this.cacheProperties != null) {
-      String cacheUserCmdPackages = this.cacheProperties.getProperty(DistributionConfig.USER_COMMAND_PACKAGES);
+      String cacheUserCmdPackages = this.cacheProperties.getProperty(ConfigurationProperties.USER_COMMAND_PACKAGES);
       if (cacheUserCmdPackages != null && !cacheUserCmdPackages.isEmpty()) {
         StringTokenizer tokenizer = new StringTokenizer(cacheUserCmdPackages, ",");
         while (tokenizer.hasMoreTokens()) {
@@ -149,7 +132,7 @@ public class CommandManager {
   /**
    * Loads commands via {@link ServiceLoader} from {@link ClassPathLoader}. 
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private void loadPluginCommands() {
     final Iterator<CommandMarker> iterator  = ServiceLoader.load(CommandMarker.class, ClassPathLoader.getLatest().asClassLoader()).iterator();
@@ -366,8 +349,8 @@ public class CommandManager {
           for (Annotation annotation : annotations) {
             if (annotation instanceof CliArgument) {
               // Here we need to create the argument Object
-              arguments.add(createArgument((CliArgument) annotation,
-                  parameterType, parameterNo));
+              Argument argumentToAdd = createArgument((CliArgument) annotation, parameterType, parameterNo);
+              arguments.add(argumentToAdd);
               parameterNo++;
             } else if (annotation instanceof CliOption) {
               Option createdOption = createOption((CliOption) annotation, parameterType, parameterNo);
@@ -456,8 +439,6 @@ public class CommandManager {
             }
           }
         }
-        
-        CLIOperationContext.registerCommand(this, method, commandTarget);
         
       } else if (method.getAnnotation(CliAvailabilityIndicator.class) != null) {
         // Now add this availability Indicator to the list of

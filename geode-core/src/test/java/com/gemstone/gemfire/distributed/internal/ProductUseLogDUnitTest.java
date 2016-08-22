@@ -16,37 +16,38 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class ProductUseLogDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class ProductUseLogDUnitTest extends JUnit4CacheTestCase {
 
-  public ProductUseLogDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public void preSetUp() {
     disconnectAllFromDS();
@@ -55,10 +56,11 @@ public class ProductUseLogDUnitTest extends CacheTestCase {
   @Override
   public Properties getDistributedSystemProperties() {
     Properties p = super.getDistributedSystemProperties();
-    p.put(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
+    p.put(USE_CLUSTER_CONFIGURATION, "false");
     return p;
   }
   
+  @Test
   public void testMembershipMonitoring() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -67,8 +69,8 @@ public class ProductUseLogDUnitTest extends CacheTestCase {
     // use a locator so we will monitor server load and record member->server mappings
     int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     Properties p = new Properties();
-    p.put(DistributionConfig.START_LOCATOR_NAME, "localhost["+locatorPort+"],peer=false");
-    p.put(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
+    p.put(START_LOCATOR, "localhost[" + locatorPort + "],peer=false");
+    p.put(USE_CLUSTER_CONFIGURATION, "false");
     InternalDistributedSystem system = getSystem(p);
     
     InternalLocator locator = (InternalLocator)Locator.getLocator();

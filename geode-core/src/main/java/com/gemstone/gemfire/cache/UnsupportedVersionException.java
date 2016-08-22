@@ -19,7 +19,7 @@ package com.gemstone.gemfire.cache;
 /**
  * An <code>UnsupportedVersionException</code> indicates an unsupported version.
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class UnsupportedVersionException extends VersionException {
 private static final long serialVersionUID = 1152280300663399399L;

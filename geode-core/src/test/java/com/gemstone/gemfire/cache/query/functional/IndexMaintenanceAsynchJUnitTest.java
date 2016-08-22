@@ -102,7 +102,7 @@ public class IndexMaintenanceAsynchJUnitTest {
   public void testAddEntry() throws Exception {
 
     new NewThread(region, index);
-    //assertEquals(5, stats.getNumberOfValues());
+    //assertIndexDetailsEquals(5, stats.getNumberOfValues());
     Thread.sleep(12000);
   }
 

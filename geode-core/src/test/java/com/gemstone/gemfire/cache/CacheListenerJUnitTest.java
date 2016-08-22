@@ -16,25 +16,31 @@
  */
 package com.gemstone.gemfire.cache;
 
-import static org.junit.Assert.*;
-
-import com.gemstone.gemfire.cache.util.*;
-import com.gemstone.gemfire.distributed.*;
+import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
+import com.gemstone.gemfire.cache.util.RegionMembershipListenerAdapter;
+import com.gemstone.gemfire.cache.util.RegionRoleListenerAdapter;
+import com.gemstone.gemfire.cache.util.TransactionListenerAdapter;
+import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import java.util.*;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * Unit test for basic CacheListener feature.
  * NOTE: these tests using a loner DistributedSystem and local scope regions
  *   so all the listener features tested are for local listeners being invoked
  *   for local operations.
- * @since 5.0
+ * @since GemFire 5.0
  */
 @Category(IntegrationTest.class)
 public class CacheListenerJUnitTest {
@@ -47,8 +53,8 @@ public class CacheListenerJUnitTest {
   @Before
   public void setUp() throws Exception {
     Properties p = new Properties();
-    p.setProperty("mcast-port", "0");
-    p.setProperty("locators", "");
+    p.setProperty(MCAST_PORT, "0");
+    p.setProperty(LOCATORS, "");
     this.ds = DistributedSystem.connect(p);
     this.c = CacheFactory.create(this.ds);
   }

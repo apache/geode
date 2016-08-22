@@ -16,10 +16,14 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
-
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
 
 import java.util.Iterator;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -29,36 +33,34 @@ import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ConflationDUnitTest;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
- *
- *  Dunit test to verify HA feature. Have 2 nodes S1 & S2. Client is connected to S1 & S2 with S1 as the primary end point.
- *  Do some puts on S1 .The expiry is on high side. Stop S1 , the client is failing to S2.During fail over duration do some
- *  puts on S1. The client on failing to S2 may receive duplicate events but should not miss any events.
- *
- *
+ * Dunit test to verify HA feature. Have 2 nodes S1 & S2. Client is connected to S1 & S2 with S1 as the primary end point.
+ * Do some puts on S1 .The expiry is on high side. Stop S1 , the client is failing to S2.During fail over duration do some
+ * puts on S1. The client on failing to S2 may receive duplicate events but should not miss any events.
  */
-public class FailoverDUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class FailoverDUnitTest extends JUnit4DistributedTestCase {
+
   protected static Cache cache = null;
   //server
   private static VM vm0 = null;
@@ -69,11 +71,6 @@ public class FailoverDUnitTest extends DistributedTestCase
   private static int PORT2;
 
   private static final String regionName = "interestRegion";
-
-  /** constructor */
-  public FailoverDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -101,6 +98,7 @@ public class FailoverDUnitTest extends DistributedTestCase
     }
   }
 
+  @Test
   public void testFailover()
   {
     createEntries();
@@ -128,21 +126,10 @@ public class FailoverDUnitTest extends DistributedTestCase
     PORT1 = port1.intValue();
     PORT2 = port2.intValue();
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    new FailoverDUnitTest("temp").createCache(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    new FailoverDUnitTest().createCache(props);
 
-    /*props.setProperty("retryAttempts", "5");
-    props.setProperty("endpoints", "ep1=" + hostName + ":"+PORT1+",ep2="
-        + hostName + ":"+PORT2);
-    props.setProperty("redundancyLevel", "-1");
-    props.setProperty("establishCallbackConnection", "true");
-    props.setProperty("LBPolicy", "RoundRobin");
-    props.setProperty("readTimeout", "250");
-    props.setProperty("socketBufferSize", "32768");
-    props.setProperty("retryInterval", "1000");
-    props.setProperty("connectionsPerServer", "2");
-*/
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     ClientServerTestCase.configureConnectionPoolWithName(factory, hostName, new int[] {PORT1,PORT2}, true, -1, 2, null, "FailoverPool");
@@ -160,7 +147,7 @@ public class FailoverDUnitTest extends DistributedTestCase
 
   public static Integer createServerCache() throws Exception
   {
-    new FailoverDUnitTest("temp").createCache(new Properties());
+    new FailoverDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -230,7 +217,6 @@ public class FailoverDUnitTest extends DistributedTestCase
     }
   }
 
-
   public static void stopServer()
   {
     try {
@@ -241,7 +227,7 @@ public class FailoverDUnitTest extends DistributedTestCase
       }
     }
     catch (Exception e) {
-      fail("failed while stopServer()" + e);
+      fail("failed while stopServer()", e);
     }
   }
 
@@ -288,7 +274,7 @@ public class FailoverDUnitTest extends DistributedTestCase
           PoolImpl.BEFORE_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = false;
         }
     });
-}
+  }
 
   public static void putDuringFailover()
   {
@@ -320,7 +306,6 @@ public class FailoverDUnitTest extends DistributedTestCase
     assertEquals("value-5", r.getEntry("key-5").getValue());
     assertEquals("value-4", r.getEntry("key-4").getValue());
   }
-
 
   @Override
   public final void preTearDown() throws Exception {

@@ -16,25 +16,33 @@
  */
 package com.gemstone.gemfire.cache;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 /**
  * verifies the count of clear operation
- *  
  */
-public class CacheRegionClearStatsDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class CacheRegionClearStatsDUnitTest extends JUnit4DistributedTestCase {
+
   /** the cache */
   private static GemFireCacheImpl cache = null;
 
@@ -55,11 +63,6 @@ public class CacheRegionClearStatsDUnitTest extends DistributedTestCase {
   
   private static final int clearOp = 2;
   
-  /** constructor */
-  public CacheRegionClearStatsDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
@@ -78,11 +81,11 @@ public class CacheRegionClearStatsDUnitTest extends DistributedTestCase {
 
   public static void createClientCache(String host, Integer port1)
       throws Exception {
-    new CacheRegionClearStatsDUnitTest("temp");
+    new CacheRegionClearStatsDUnitTest();
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    new CacheRegionClearStatsDUnitTest("temp").createCache(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    new CacheRegionClearStatsDUnitTest().createCache(props);
     PoolImpl p = (PoolImpl)PoolManager.createFactory().addServer(host,
         port1.intValue()).setSubscriptionEnabled(false)
         .setThreadLocalConnections(true).setMinConnections(1).setReadTimeout(
@@ -103,7 +106,7 @@ public class CacheRegionClearStatsDUnitTest extends DistributedTestCase {
   }
 
   private static Integer createCache(DataPolicy dataPolicy) throws Exception {
-    new CacheRegionClearStatsDUnitTest("temp").createCache(new Properties());
+    new CacheRegionClearStatsDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(dataPolicy);
@@ -123,11 +126,11 @@ public class CacheRegionClearStatsDUnitTest extends DistributedTestCase {
 
   public static void createClientCacheDisk(String host, Integer port1)
       throws Exception {
-    new CacheRegionClearStatsDUnitTest("temp");
+    new CacheRegionClearStatsDUnitTest();
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    new CacheRegionClearStatsDUnitTest("temp").createCache(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    new CacheRegionClearStatsDUnitTest().createCache(props);
     PoolImpl p = (PoolImpl)PoolManager.createFactory().addServer(host,
         port1.intValue()).setSubscriptionEnabled(false)
         .setThreadLocalConnections(true).setMinConnections(1).setReadTimeout(
@@ -142,10 +145,12 @@ public class CacheRegionClearStatsDUnitTest extends DistributedTestCase {
     Region region = cache.createRegion(REGION_NAME, attrs);
     //region.registerInterest("ALL_KEYS");
   }
+
   /**
    * This test does the following (<b> clear stats counter </b>):<br>
    * 1)Verifies that clear operation count matches with stats count<br>
    */
+  @Test
   public void testClearStatsWithNormalRegion(){
     Integer port1 = ((Integer)server1.invoke(() -> CacheRegionClearStatsDUnitTest.createServerCache()));
 
@@ -163,10 +168,12 @@ public class CacheRegionClearStatsDUnitTest extends DistributedTestCase {
     
     server1.invoke(() -> CacheRegionClearStatsDUnitTest.validationClearStat());
   }
+
   /**
    * This test does the following (<b> clear stats counter when disk involved </b>):<br>
    * 1)Verifies that clear operation count matches with stats count <br>
    */
+  @Test
   public void testClearStatsWithDiskRegion(){
     Integer port1 = ((Integer)server1.invoke(() -> CacheRegionClearStatsDUnitTest.createServerCacheDisk()));
 

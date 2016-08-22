@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.cache.management;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,6 +28,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.AttributesMutator;
@@ -44,13 +50,11 @@ import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.cache.control.ResourceManager;
 import com.gemstone.gemfire.cache.management.MemoryThresholdsDUnitTest.Range;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
@@ -70,7 +74,6 @@ import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
@@ -82,14 +85,16 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests the Off-Heap Memory thresholds of {@link ResourceManager}
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
+@Category(DistributedTest.class)
 public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
-  private static final long serialVersionUID = -684231183212051910L;
 
   final String expectedEx = LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_CRITICAL_THRESHOLD.getRawText().replaceAll("\\{[0-9]+\\}",
       ".*?");
@@ -100,10 +105,6 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   final String addExpectedBelow = "<ExpectedException action=add>" + this.expectedBelow + "</ExpectedException>";
   final String removeExpectedBelow = "<ExpectedException action=remove>" + this.expectedBelow + "</ExpectedException>";
 
-  public MemoryThresholdsOffHeapDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public final void postSetUpClientServerTestCase() throws Exception {
     IgnoredException.addIgnoredException(expectedEx);
@@ -132,22 +133,18 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
   /**
    * Make sure appropriate events are delivered when moving between states.
-   * 
-   * @throws Exception
    */
+  @Test
   public void testEventDelivery() throws Exception {
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
     final VM server2 = host.getVM(1);
     
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int port1 = ports[0];
-    final int port2 = ports[1];
     final String regionName = "offHeapEventDelivery";
 
-    startCacheServer(server1, port1, 0f, 0f,
+    startCacheServer(server1, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    startCacheServer(server2, port2, 70f, 90f,
+    startCacheServer(server2, 70f, 90f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     registerTestMemoryThresholdListener(server1);
@@ -233,8 +230,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   /**
    * test that disabling threshold does not cause remote event and
    * remote DISABLED events are delivered
-   * @throws Exception
    */
+  @Test
   public void testDisabledThresholds() throws Exception {
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
@@ -242,10 +239,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     
     final String regionName = "offHeapDisabledThresholds";
 
-    //set port to 0 in-order for system to pickup a random port.
-    startCacheServer(server1, 0, 0f, 0f,
+    startCacheServer(server1, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    startCacheServer(server2, 0, 0f, 0f,
+    startCacheServer(server2, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     registerTestMemoryThresholdListener(server1);
@@ -347,22 +343,19 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   /**
    * test that puts in a client are rejected when a remote VM crosses
    * critical threshold
-   * @throws Exception
    */
+  @Test
   public void testDistributedRegionRemoteClientPutRejection() throws Exception {
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
     final VM server2 = host.getVM(1);
     final VM client = host.getVM(2);
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int port1 = ports[0];
-    final int port2 = ports[1];
     final String regionName = "offHeapDRRemoteClientPutReject";
 
-    startCacheServer(server1, port1, 0f, 0f,
+    final int port1 = startCacheServer(server1, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    startCacheServer(server2, port2, 0f, 90f,
+    startCacheServer(server2, 0f, 90f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     startClient(client, server1, port1, regionName);
@@ -390,35 +383,39 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     setUsageBelowEviction(server2, regionName);
   }
 
+  @Test
   public void testDistributedRegionRemotePutRejectionLocalDestroy() throws Exception {
     doDistributedRegionRemotePutRejection(true, false);
   }
-  
+
+  @Test
   public void testDistributedRegionRemotePutRejectionCacheClose() throws Exception {
     doDistributedRegionRemotePutRejection(false, true);
   }
-  
+
+  @Test
   public void testDistributedRegionRemotePutRejectionBelowThreshold() throws Exception {
     doDistributedRegionRemotePutRejection(false, false);
   }
-  
+
+  @Test
   public void testGettersAndSetters() {
     getSystem(getOffHeapProperties());
     ResourceManager rm = getCache().getResourceManager();
-    assertEquals(0.0f, rm.getCriticalOffHeapPercentage());
-    assertEquals(0.0f, rm.getEvictionOffHeapPercentage());
+    assertEquals(0.0f, rm.getCriticalOffHeapPercentage(),0);
+    assertEquals(0.0f, rm.getEvictionOffHeapPercentage(),0);
     
     rm.setEvictionOffHeapPercentage(50);
     rm.setCriticalOffHeapPercentage(90);
     
     // verify
-    assertEquals(50.0f, rm.getEvictionOffHeapPercentage());
-    assertEquals(90.0f, rm.getCriticalOffHeapPercentage());
+    assertEquals(50.0f, rm.getEvictionOffHeapPercentage(),0);
+    assertEquals(90.0f, rm.getCriticalOffHeapPercentage(),0);
     
     getCache().createRegionFactory(RegionShortcut.REPLICATE_HEAP_LRU).create(getName());
     
-    assertEquals(50.0f, rm.getEvictionOffHeapPercentage());
-    assertEquals(90.0f, rm.getCriticalOffHeapPercentage());
+    assertEquals(50.0f, rm.getEvictionOffHeapPercentage(),0);
+    assertEquals(90.0f, rm.getCriticalOffHeapPercentage(),0);
   }
   
   /**
@@ -434,9 +431,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final String regionName = "offHeapDRRemotePutRejection";
 
     //set port to 0 in-order for system to pickup a random port.
-    startCacheServer(server1, 0, 0f, 0f,
+    startCacheServer(server1, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    startCacheServer(server2, 0, 0f, 90f,
+    startCacheServer(server2, 0f, 90f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     registerTestMemoryThresholdListener(server1);
@@ -510,8 +507,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
    * Test that DistributedRegion cacheLoade and netLoad are passed through to the 
    * calling thread if the local VM is in a critical state.  Once the VM has moved
    * to a safe state then test that they are allowed.
-   * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-438: test pollution, async actions, time sensitive, waitForCriterion, TODO: consider disconnect DS in setup
+  @Test
   public void testDRLoadRejection() throws Exception {
     final Host host = Host.getHost(0);
     final VM replicate1 = host.getVM(1);
@@ -519,8 +517,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final String rName = getUniqueName();
     
     // Make sure the desired VMs will have a fresh DS.
-    AsyncInvocation d1 = replicate1.invokeAsync(() -> DistributedTestCase.disconnectFromDS());
-    AsyncInvocation d2 = replicate2.invokeAsync(() -> DistributedTestCase.disconnectFromDS());
+    AsyncInvocation d1 = replicate1.invokeAsync(() -> disconnectFromDS());
+    AsyncInvocation d2 = replicate2.invokeAsync(() -> disconnectFromDS());
     d1.join();
     assertFalse(d1.exceptionOccurred());
     d2.join();
@@ -720,27 +718,34 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
       getCache().getLoggerI18n().fine(removeExpectedBelow);
     };
   };
-  
+
+  @Test
   public void testPR_RemotePutRejectionLocalDestroy() throws Exception {
     prRemotePutRejection(false, true, false);
   }
 
+  @Test
   public void testPR_RemotePutRejectionCacheClose() throws Exception {
     prRemotePutRejection(true, false, false);
   }
 
+  @Test
   public void testPR_RemotePutRejection() throws Exception {
     prRemotePutRejection(false, false, false);
   }
 
+  @Test
   public void testPR_RemotePutRejectionLocalDestroyWithTx() throws Exception {
     prRemotePutRejection(false, true, true);
   }
 
+  @Test
   public void testPR_RemotePutRejectionCacheCloseWithTx() throws Exception {
     prRemotePutRejection(true, false, true);
   }
 
+  @Category(FlakyTest.class) // GEODE-500: time sensitive, memory sensitive and GC dependent, waitForCriterions
+  @Test
   public void testPR_RemotePutRejectionWithTx() throws Exception {
     prRemotePutRejection(false, false, true);
   }
@@ -753,15 +758,14 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     servers[1] = host.getVM(2);
     servers[2] = host.getVM(3);
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
     final String regionName = "offHeapPRRemotePutRejection";
     final int redundancy = 1;
 
-    startCacheServer(servers[0], ports[0], 0f, 90f,
+    startCacheServer(servers[0], 0f, 90f,
         regionName, true/*createPR*/, false/*notifyBySubscription*/, redundancy);
-    startCacheServer(servers[1], ports[1], 0f, 90f,
+    startCacheServer(servers[1], 0f, 90f,
         regionName, true/*createPR*/, false/*notifyBySubscription*/, redundancy);
-    startCacheServer(servers[2], ports[2], 0f, 90f,
+    startCacheServer(servers[2], 0f, 90f,
         regionName, true/*createPR*/, false/*notifyBySubscription*/, redundancy);
     accessor.invoke(new SerializableCallable() {
       public Object call() throws Exception {
@@ -914,17 +918,18 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   /**
    * Test that a Partitioned Region loader invocation is rejected
    * if the VM with the bucket is in a critical state.
-   * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-551: waitForCriterion, memory sensitive
+  @Test
   public void testPRLoadRejection() throws Exception {
     final Host host = Host.getHost(0);
     final VM accessor = host.getVM(1);
     final VM ds1 = host.getVM(2);
     final String rName = getUniqueName();
 
-    // Make sure the desired VMs will have a fresh DS.
-    AsyncInvocation d0 = accessor.invokeAsync(() -> DistributedTestCase.disconnectFromDS());
-    AsyncInvocation d1 = ds1.invokeAsync(() -> DistributedTestCase.disconnectFromDS());
+    // Make sure the desired VMs will have a fresh DS. TODO: convert these from AsyncInvocation to invoke
+    AsyncInvocation d0 = accessor.invokeAsync(() -> disconnectFromDS());
+    AsyncInvocation d1 = ds1.invokeAsync(() -> disconnectFromDS());
     d0.join();
     assertFalse(d0.exceptionOccurred());
     d1.join();
@@ -1140,14 +1145,14 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
    * Test that LocalRegion cache Loads are not stored in the Region
    * if the VM is in a critical state, then test that they are allowed
    * once the VM is no longer critical
-   * @throws Exception
    */
+  @Test
   public void testLRLoadRejection() throws Exception {
     final Host host = Host.getHost(0);
     final VM vm = host.getVM(2);
     final String rName = getUniqueName();
 
-    vm.invoke(() -> DistributedTestCase.disconnectFromDS());
+    vm.invoke(() -> disconnectFromDS());
     
     vm.invoke(new CacheSerializableRunnable("test LocalRegion load passthrough when critical") {
       @Override
@@ -1258,22 +1263,19 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     }
     return ret;
   }
-  
+
+  @Test
   public void testCleanAdvisorClose() throws Exception {
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
     final VM server2 = host.getVM(1);
     final VM server3 = host.getVM(2);
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    final int port1 = ports[0];
-    final int port2 = ports[1];
-    final int port3 = ports[2];
     final String regionName = "testEventOrder";
 
-    startCacheServer(server1, port1, 0f, 0f,
+    startCacheServer(server1, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    startCacheServer(server2, port2, 0f, 0f,
+    startCacheServer(server2, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     verifyProfiles(server1, 2);
@@ -1288,17 +1290,19 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
     verifyProfiles(server1, 1);
 
-    startCacheServer(server3, port3, 0f, 0f,
+    startCacheServer(server3, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     verifyProfiles(server1, 2);
     verifyProfiles(server3, 2);
   }
-  
+
+  @Test
   public void testPRClientPutRejection() throws Exception {
     doClientServerTest("parRegReject", true/*createPR*/);
   }
 
+  @Test
   public void testDistributedRegionClientPutRejection() throws Exception {
     doClientServerTest("distrReject", false/*createPR*/);
   }
@@ -1384,8 +1388,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final Object bigKey = -1;
     final Object smallKey = -2;
 
-    final int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    startCacheServer(server, port, 0f, 90f,
+    final int port = startCacheServer(server, 0f, 90f,
         regionName, createPR, false, 0);
     startClient(client, server, port, regionName);
     doPuts(client, regionName, false/*catchServerException*/,
@@ -1597,11 +1600,11 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     });
   }
 
-  private void startCacheServer(VM server, final int port,
+  private int startCacheServer(VM server,
       final float evictionThreshold, final float criticalThreshold, final String regionName,
       final boolean createPR, final boolean notifyBySubscription, final int prRedundancy) throws Exception {
 
-    server.invoke(new SerializableCallable() {
+    return (Integer)server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         getSystem(getOffHeapProperties());
         GemFireCacheImpl cache = (GemFireCacheImpl)getCache();
@@ -1629,10 +1632,10 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
           assertTrue(region instanceof DistributedRegion);
         }
         CacheServer cacheServer = getCache().addCacheServer();
-        cacheServer.setPort(port);
+        cacheServer.setPort(0);
         cacheServer.setNotifyBySubscription(notifyBySubscription);
         cacheServer.start();
-        return null;
+        return cacheServer.getPort();
       }
     });
   }
@@ -1807,15 +1810,15 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   
   private Properties getOffHeapProperties() {
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-    p.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");
+    p.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+    p.setProperty(OFF_HEAP_MEMORY_SIZE, "1m");
     return p;
   }
   
   protected Properties getClientProps() {
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    p.setProperty(MCAST_PORT, "0");
+    p.setProperty(LOCATORS, "");
     return p;
   }
 }

@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.ClassPathLoader;
  * Default behavior for EntityResolver2 implementations.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 // UnitTest PivotalEntityResolverJUnitTest
 abstract public class DefaultEntityResolver2 implements EntityResolver2 {
@@ -56,7 +56,7 @@ abstract public class DefaultEntityResolver2 implements EntityResolver2 {
    * @param path
    *          to resource to get {@link InputSource} for.
    * @return InputSource if resource found, otherwise null.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   protected final InputSource getClassPathInputSource(final String publicId, final String systemId, final String path) {
     final InputStream stream = ClassPathLoader.getLatest().getResourceAsStream(getClass(), path);

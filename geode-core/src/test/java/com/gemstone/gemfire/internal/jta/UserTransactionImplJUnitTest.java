@@ -16,26 +16,21 @@
  */
 package com.gemstone.gemfire.internal.jta;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Properties;
-
-import javax.transaction.Status;
-import javax.transaction.Transaction;
-import javax.transaction.UserTransaction;
-
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import javax.transaction.Status;
+import javax.transaction.Transaction;
+import javax.transaction.UserTransaction;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  */
@@ -50,7 +45,7 @@ public class UserTransactionImplJUnitTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.setProperty(MCAST_PORT, "0");
     ds = DistributedSystem.connect(props);
     tm = TransactionManagerImpl.getTransactionManager();
   }

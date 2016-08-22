@@ -32,6 +32,8 @@ import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
+import com.gemstone.gemfire.distributed.internal.DistributionManager;
+import com.gemstone.gemfire.internal.cache.CacheService;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -1062,7 +1064,33 @@ public class ManagementAdapter {
 
   }
 
-  
+  public void handleCacheServiceCreation(CacheService cacheService)
+      throws ManagementException {
+    if (!isServiceInitialised("handleCacheServiceCreation")) {
+      return;
+    }
+    // Don't register the CacheServices in the Locator
+    InternalDistributedMember member = cacheImpl.getDistributedSystem().getDistributedMember();
+    if (member.getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
+      return;
+    }
+    CacheServiceMBeanBase mbean = cacheService.getMBean();
+    if (mbean != null) {
+      String id = mbean.getId();
+      ObjectName cacheServiceObjectName = MBeanJMXAdapter.getCacheServiceMBeanName(member, id);
+
+      ObjectName changedMBeanName = service.registerInternalMBean(mbean, cacheServiceObjectName);
+
+      service.federate(changedMBeanName, mbean.getInterfaceClass(), true);
+
+      Notification notification = new Notification(
+          JMXNotificationType.CACHE_SERVICE_CREATED, memberSource,
+          SequenceNumber.next(), System.currentTimeMillis(),
+          ManagementConstants.CACHE_SERVICE_CREATED_PREFIX + id);
+      memberLevelNotifEmitter.sendNotification(notification);
+    }
+  }
+
   /**
    * Private class which acts as a ClientMembershipListener to propagate client
    * joined/left notifications

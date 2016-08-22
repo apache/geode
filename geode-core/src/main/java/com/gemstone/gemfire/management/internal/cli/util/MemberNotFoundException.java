@@ -24,7 +24,7 @@ import com.gemstone.gemfire.GemFireException;
  * distributed system.
  * </p>
  * @see com.gemstone.gemfire.GemFireException
- * @since 7.0
+ * @since GemFire 7.0
  */
 // TODO this GemFireException should be moved to a more appropriate package!
 @SuppressWarnings("unused")

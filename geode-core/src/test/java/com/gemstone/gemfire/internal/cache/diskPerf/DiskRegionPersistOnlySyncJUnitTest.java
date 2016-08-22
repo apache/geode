@@ -16,19 +16,17 @@
  */
 package com.gemstone.gemfire.internal.cache.diskPerf;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.DiskRegionHelperFactory;
 import com.gemstone.gemfire.internal.cache.DiskRegionProperties;
 import com.gemstone.gemfire.internal.cache.DiskRegionTestingBase;
@@ -37,20 +35,16 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Disk region perf test for Persist only with sync writes.
- *  
  */
 @Category(IntegrationTest.class)
-public class DiskRegionPersistOnlySyncJUnitTest extends DiskRegionTestingBase
-{
+public class DiskRegionPersistOnlySyncJUnitTest extends DiskRegionTestingBase {
 
-  LogWriter log = null;
+  private LogWriter log = null;
 
-  DiskRegionProperties diskProps = new DiskRegionProperties();
+  private DiskRegionProperties diskProps = new DiskRegionProperties();
 
-  @Before
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  protected final void postSetUp() throws Exception {
     diskProps.setDiskDirs(dirs);
     diskProps.setPersistBackup(true);
     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
@@ -58,37 +52,27 @@ public class DiskRegionPersistOnlySyncJUnitTest extends DiskRegionTestingBase
     log = ds.getLogWriter();
   }
 
-  @After
-  public void tearDown() throws Exception
-  {
-    super.tearDown();
-  }
-
-  
-
   private static int ENTRY_SIZE = 1024;
   
   /* OP_COUNT can be increased/decrease as per the requirement.
    * If required to be set as higher value such as 1000000
    * one needs to set the VM heap size accordingly.
    * (For example:Default setting in build.xml is <jvmarg value="-Xmx256M"/>
-   *    
    */
   private static int OP_COUNT = 1000;
 
   private static boolean UNIQUE_KEYS = Boolean.getBoolean("DRP.UNIQUE_KEYS");
 
   @Test
-  public void testPopulate1kbwrites()
-  {
+  public void testPopulate1kbwrites() {
     RegionAttributes ra = region.getAttributes();
 //    final String key = "K";
     final byte[] value = new byte[ENTRY_SIZE];
     Arrays.fill(value, (byte)77);
     String config = "ENTRY_SIZE=" + ENTRY_SIZE + " OP_COUNT=" + OP_COUNT
         + " UNIQUE_KEYS=" + UNIQUE_KEYS + " opLogEnabled="
-        + !Boolean.getBoolean("gemfire.disableOpLog") + " syncWrites="
-        + Boolean.getBoolean("gemfire.syncWrites");
+        + !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableOpLog") + " syncWrites="
+        + Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "syncWrites");
     if (ra.getDiskStoreName() != null) {
       config += " diskStoreName="+ra.getDiskStoreName();
     } else {
@@ -172,8 +156,7 @@ public class DiskRegionPersistOnlySyncJUnitTest extends DiskRegionTestingBase
   }
 
   @Test
-  public void testPopulate5kbwrites()
-  {
+  public void testPopulate5kbwrites() {
     ENTRY_SIZE = 1024 * 5;
     
     /* OP_COUNT can be increased/decrease as per the requirement.
@@ -190,8 +173,8 @@ public class DiskRegionPersistOnlySyncJUnitTest extends DiskRegionTestingBase
     Arrays.fill(value, (byte)77);
     String config = "ENTRY_SIZE=" + ENTRY_SIZE + " OP_COUNT=" + OP_COUNT
         + " UNIQUE_KEYS=" + UNIQUE_KEYS + " opLogEnabled="
-        + !Boolean.getBoolean("gemfire.disableOpLog") + " syncWrites="
-        + Boolean.getBoolean("gemfire.syncWrites");
+        + !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableOpLog") + " syncWrites="
+        + Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "syncWrites");
     if (ra.getDiskStoreName() != null) {
       config += " diskStoreName="+ra.getDiskStoreName();
     } else {

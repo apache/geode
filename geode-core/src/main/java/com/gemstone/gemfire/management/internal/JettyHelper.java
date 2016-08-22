@@ -38,7 +38,7 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
- * @since 8.1
+ * @since GemFire 8.1
  */
 @SuppressWarnings("unused")
 public class JettyHelper {

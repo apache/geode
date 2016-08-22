@@ -57,7 +57,7 @@ public abstract class RecoveryRunnable implements Runnable {
         .getGemFireCache().getDistributedSystem().getCancelCriterion();
     DistributedSystem.setThreadsSocketPolicy(true /* conserve sockets */);
     SystemFailure.checkFailure();
-    if (stopper.cancelInProgress() != null) {
+    if (stopper.isCancelInProgress()) {
       return;
     }
     try {

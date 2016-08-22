@@ -45,7 +45,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * This message is used as the notification that a client interest registration or
  * unregistration event occurred.
  *
- * @since 5.8BetaSUISSE
+ * @since GemFire 5.8BetaSUISSE
  */
 public class InterestEventMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
@@ -157,7 +157,7 @@ public class InterestEventMessage extends PartitionMessage {
   /**
    * This message is used for the reply to a {@link InterestEventMessage}.
    *
-   * @since 5.8BetaSUISSE
+   * @since GemFire 5.8BetaSUISSE
    */
   public static class InterestEventReplyMessage extends
       HighPriorityDistributionMessage {
@@ -248,7 +248,7 @@ public class InterestEventMessage extends PartitionMessage {
    * A processor to capture the value returned by {@link
    * com.gemstone.gemfire.internal.cache.partitioned.InterestEventMessage.InterestEventReplyMessage}
    *
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static class InterestEventResponse extends PartitionResponse {
 

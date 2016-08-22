@@ -17,114 +17,64 @@
 
 package com.gemstone.gemfire.internal.cache;
 
-import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ABSTRACT_REGION_ENTRY_FILL_IN_VALUE;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.InvalidDeltaException;
 import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskAccessException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.LossAction;
-import com.gemstone.gemfire.cache.MembershipAttributes;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.RegionAccessException;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.RegionDistributionException;
-import com.gemstone.gemfire.cache.RegionMembershipListener;
-import com.gemstone.gemfire.cache.ResumptionAction;
-import com.gemstone.gemfire.cache.RoleException;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.TransactionId;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.execute.ResultSender;
 import com.gemstone.gemfire.cache.persistence.PersistentReplicatesOfflineException;
-import com.gemstone.gemfire.cache.query.internal.IndexUpdater;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.distributed.DistributedLockService;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.LockServiceDestroyedException;
 import com.gemstone.gemfire.distributed.Role;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisee;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisor;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.ProfileVisitor;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.MembershipListener;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
 import com.gemstone.gemfire.distributed.internal.locks.DLockRemoteToken;
 import com.gemstone.gemfire.distributed.internal.locks.DLockService;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation.GIIStatus;
 import com.gemstone.gemfire.internal.cache.RemoteFetchVersionMessage.FetchVersionResponse;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
 import com.gemstone.gemfire.internal.cache.control.MemoryEvent;
-import com.gemstone.gemfire.internal.cache.execute.DistributedRegionFunctionExecutor;
-import com.gemstone.gemfire.internal.cache.execute.DistributedRegionFunctionResultSender;
-import com.gemstone.gemfire.internal.cache.execute.DistributedRegionFunctionResultWaiter;
-import com.gemstone.gemfire.internal.cache.execute.FunctionStats;
-import com.gemstone.gemfire.internal.cache.execute.LocalResultCollector;
-import com.gemstone.gemfire.internal.cache.execute.RegionFunctionContextImpl;
-import com.gemstone.gemfire.internal.cache.execute.ServerToClientFunctionResultSender;
+import com.gemstone.gemfire.internal.cache.execute.*;
 import com.gemstone.gemfire.internal.cache.lru.LRUEntry;
-import com.gemstone.gemfire.internal.cache.persistence.CreatePersistentRegionProcessor;
-import com.gemstone.gemfire.internal.cache.persistence.PersistenceAdvisor;
-import com.gemstone.gemfire.internal.cache.persistence.PersistenceAdvisorImpl;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberManager;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberView;
+import com.gemstone.gemfire.internal.cache.persistence.*;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
 import com.gemstone.gemfire.internal.cache.versions.ConcurrentCacheModificationException;
 import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
-import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import com.gemstone.gemfire.internal.cache.wan.AsyncEventQueueConfigurationException;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderConfigurationException;
-import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.sequencelog.RegionLogger;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 /**
  * 
  */
@@ -165,7 +115,7 @@ public class DistributedRegion extends LocalRegion implements
   /**
    * Provides a queue for reliable message delivery
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   protected final ReliableMessageQueue rmq;
 
@@ -687,7 +637,7 @@ public class DistributedRegion extends LocalRegion implements
    * @throws RoleException
    *           if a required role is missing and the LossAction is either
    *           NO_ACCESS or LIMITED_ACCESS.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   protected boolean isNoDistributionOk()
   {
@@ -706,7 +656,7 @@ public class DistributedRegion extends LocalRegion implements
   /**
    * returns true if this Region does not distribute its operations to other
    * members.
-   * @since 6.0
+   * @since GemFire 6.0
    * @see HARegion#localDestroyNoCallbacks(Object)
    */
   public boolean doesNotDistribute() {
@@ -730,7 +680,7 @@ public class DistributedRegion extends LocalRegion implements
    *          removed from this set.
    * @return the set, possibly null, of recipients that are currently having
    *         their data queued.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   protected Set adjustForQueuing(Set recipients)
   {
@@ -770,7 +720,7 @@ public class DistributedRegion extends LocalRegion implements
    * @param b
    *          a non-null non-empty set
    * @return true if sets a and b intersect; false if not
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static boolean intersects(Set a, Set b)
   {
@@ -947,8 +897,10 @@ public class DistributedRegion extends LocalRegion implements
   protected boolean lostReliability(final InternalDistributedMember id,
       final Set newlyMissingRoles)
   {
-    if (DistributedRegion.ignoreReconnect)
+    if (DistributedRegion.ignoreReconnect) { // test hook
       return false;
+    }
+
     boolean async = false;
     try {
       if (getMembershipAttributes().getLossAction().isReconnect()) {
@@ -1001,12 +953,11 @@ public class DistributedRegion extends LocalRegion implements
           public void run()
           {
             try {
-              // TODO: may need to check isReconnecting and checkReadiness...
-              if (logger.isDebugEnabled()) {
-                logger.debug("Reliability loss with policy of reconnect and membership thread doing reconnect");
-              }
+              logger.debug("Reliability loss with policy of reconnect and membership thread doing reconnect");
+
               initializationLatchAfterMemberTimeout.await();
               getSystem().tryReconnect(false, "Role Loss", getCache());
+
               synchronized (missingRequiredRoles) {
                 // any number of threads may be waiting on missingRequiredRoles
                 missingRequiredRoles.notifyAll();
@@ -1184,21 +1135,8 @@ public class DistributedRegion extends LocalRegion implements
       getLockService(); // create lock service eagerly now
     }
 
-    final IndexUpdater indexUpdater = getIndexUpdater();
-    boolean sqlfGIILockTaken = false;
-    // this try block is to release the SQLF GII lock in finally
-    // which should be done after bucket status will be set
-    // properly in LocalRegion#initialize()
-    try {
      try {
       try {
-        // take the GII lock to avoid missing entries while updating the
-        // index list for SQLFabric (#41330 and others)
-        if (indexUpdater != null) {
-          indexUpdater.lockForGII();
-          sqlfGIILockTaken = true;
-        }
-        
         PersistentMemberID persistentId = null;
         boolean recoverFromDisk = isRecoveryNeeded();
         DiskRegion dskRgn = getDiskRegion();
@@ -1242,11 +1180,6 @@ public class DistributedRegion extends LocalRegion implements
         this.eventTracker.setInitialized();
       }
      }
-    } finally {
-      if (sqlfGIILockTaken) {
-        indexUpdater.unlockForGII();
-      }
-    }
   }
 
   @Override
@@ -1262,8 +1195,6 @@ public class DistributedRegion extends LocalRegion implements
    */
   private final Set<DistributedMember> memoryThresholdReachedMembers =
     new CopyOnWriteArraySet<DistributedMember>();
-
-  private ConcurrentParallelGatewaySenderQueue hdfsQueue;
 
   /** Sets and returns giiMissingRequiredRoles */
   private boolean checkInitialImageForReliability(
@@ -1895,7 +1826,7 @@ public class DistributedRegion extends LocalRegion implements
   /**
    * Distribute the invalidate of a region given its event.
    * This implementation sends the invalidate to peers.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected void distributeInvalidateRegion(RegionEventImpl event) {
     new InvalidateRegionOperation(event).distribute();
@@ -2323,13 +2254,6 @@ public class DistributedRegion extends LocalRegion implements
     }
     profile.serialNumber = getSerialNumber();
     profile.regionInitialized = this.isInitialized();
-    if (!this.isUsedForPartitionedRegionBucket()) {
-      profile.memberUnInitialized = getCache().isUnInitializedMember(
-          profile.getDistributedMember());
-    }
-    else {
-      profile.memberUnInitialized = false;
-    }
     profile.persistentID = getPersistentID();
     if(getPersistenceAdvisor() != null) {
       profile.persistenceInitialized = getPersistenceAdvisor().isOnline();
@@ -2423,9 +2347,16 @@ public class DistributedRegion extends LocalRegion implements
   /** @return the deserialized value */
   @Override
   @Retained
-  protected Object findObjectInSystem(KeyInfo keyInfo, boolean isCreate,
-      TXStateInterface txState, boolean generateCallbacks, Object localValue, boolean disableCopyOnRead,
-        boolean preferCD, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS)
+  protected Object findObjectInSystem(KeyInfo keyInfo,
+                                      boolean isCreate,
+                                      TXStateInterface txState,
+                                      boolean generateCallbacks,
+                                      Object localValue,
+                                      boolean disableCopyOnRead,
+                                      boolean preferCD,
+                                      ClientProxyMembershipID requestingClient,
+                                      EntryEventImpl clientEvent,
+                                      boolean returnTombstones)
       throws CacheLoaderException, TimeoutException
   {
     checkForLimitedOrNoAccess();
@@ -2442,13 +2373,12 @@ public class DistributedRegion extends LocalRegion implements
     }
     long lastModified = 0L;
     boolean fromServer = false;
-    EntryEventImpl event = null;
+    @Released EntryEventImpl event = null;
     @Retained Object result = null;
     try {
     {
       if (this.srp != null) {
-        EntryEventImpl holder = EntryEventImpl.createVersionTagHolder();
-        try {
+        VersionTagHolder holder = new VersionTagHolder();
         Object value = this.srp.get(key, aCallbackArgument, holder);
         fromServer = value != null;
         if (fromServer) {
@@ -2460,9 +2390,6 @@ public class DistributedRegion extends LocalRegion implements
           if (clientEvent != null && clientEvent.getVersionTag() == null) {
             clientEvent.setVersionTag(holder.getVersionTag());
           }
-        }
-        } finally {
-          holder.release();
         }
       }
     }
@@ -2532,11 +2459,7 @@ public class DistributedRegion extends LocalRegion implements
     }
     
     if (preferCD) {
-      if (event.hasDelta()) {
-        result = event.getNewValue();
-      } else {
         result = event.getRawNewValueAsHeapObject();
-      }    
     } else {
       result = event.getNewValue();     
     }
@@ -2548,18 +2471,6 @@ public class DistributedRegion extends LocalRegion implements
     }
   }
   
-  protected ConcurrentParallelGatewaySenderQueue getHDFSQueue() {
-    if (this.hdfsQueue == null) {
-      String asyncQId = this.getPartitionedRegion().getHDFSEventQueueName();
-      final AsyncEventQueueImpl asyncQ =  (AsyncEventQueueImpl)this.getCache().getAsyncEventQueue(asyncQId);
-      final AbstractGatewaySender gatewaySender = (AbstractGatewaySender)asyncQ.getSender();
-      AbstractGatewaySenderEventProcessor ep = gatewaySender.getEventProcessor();
-      if (ep == null) return null;
-      hdfsQueue = (ConcurrentParallelGatewaySenderQueue)ep.getQueue();
-    }
-    return hdfsQueue;
-  }
-
   /** hook for subclasses to note that a cache load was performed
    * @see BucketRegion#performedLoad
    */
@@ -2696,7 +2607,7 @@ public class DistributedRegion extends LocalRegion implements
     //Fix for #48066 - make sure that region operations are completely
     //distributed to peers before destroying the region.
     long timeout = 1000L * getCache().getDistributedSystem().getConfig().getAckWaitThreshold();
-    Boolean flushOnClose = !Boolean.getBoolean("gemfire.no-flush-on-close"); // test hook
+    Boolean flushOnClose = !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close"); // test hook
     if (!this.cache.forcedDisconnect() &&
         flushOnClose && this.getDistributionManager().getMembershipManager() != null
         && this.getDistributionManager().getMembershipManager().isConnected()) {
@@ -3260,7 +3171,7 @@ public class DistributedRegion extends LocalRegion implements
   }
   static class DiskPage extends DiskPosition {
 
-    static final long DISK_PAGE_SIZE = Long.getLong("gemfire.DISK_PAGE_SIZE", 8 * 1024L).longValue();
+    static final long DISK_PAGE_SIZE = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "DISK_PAGE_SIZE", 8 * 1024L).longValue();
     
     DiskPage(DiskPosition dp) {
       this.setPosition(dp.oplogId, dp.offset / DISK_PAGE_SIZE);
@@ -3597,7 +3508,7 @@ public class DistributedRegion extends LocalRegion implements
   /**
    * Distribute the PutAllOp.
    * This implementation distributes it to peers.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   @Override
   public void postPutAllSend(DistributedPutAllOperation putAllOp, VersionedObjectList successfulPuts) {
@@ -3777,7 +3688,7 @@ public class DistributedRegion extends LocalRegion implements
    * Used to get membership events from our advisor to implement
    * RegionMembershipListener invocations.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   protected class AdvisorListener implements MembershipListener
   {
@@ -3968,12 +3879,10 @@ public class DistributedRegion extends LocalRegion implements
   /**
    * Used to bootstrap txState.
    * @param key
-   * @return  distributedRegions,
-   * member with parimary bucket for partitionedRegions
+   * @return member with primary bucket for partitionedRegions
    */
   @Override
   public DistributedMember getOwnerForKey(KeyInfo key) {
-    //Asif: fix for  sqlfabric bug 42266
     assert !this.isInternalRegion() || this.isMetaRegionWithTransactions();
     if (!this.getAttributes().getDataPolicy().withStorage()
         || (this.concurrencyChecksEnabled && this.getAttributes()
@@ -3996,7 +3905,7 @@ public class DistributedRegion extends LocalRegion implements
    * 
    * @param function
    * @param args
-   * @since 5.8
+   * @since GemFire 5.8
    */  
   @Override
   public ResultCollector executeFunction(
@@ -4091,8 +4000,7 @@ public class DistributedRegion extends LocalRegion implements
       if (this.randIndex < 0) {
         this.randIndex = PartitionedRegion.rand.nextInt(numProfiles);
       }
-      if (cp.dataPolicy.withReplication() && cp.regionInitialized
-          && !cp.memberUnInitialized) {
+      if (cp.dataPolicy.withReplication() && cp.regionInitialized) {
         if (onlyPersistent && !cp.dataPolicy.withPersistence()) {
           return true;
         }

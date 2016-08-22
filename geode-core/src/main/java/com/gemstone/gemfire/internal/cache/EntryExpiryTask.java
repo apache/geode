@@ -21,20 +21,14 @@ package com.gemstone.gemfire.internal.cache;
  * EntryExpiryTask represents a timeout event for a region entry.
  */
 
-import java.util.concurrent.locks.Lock;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.EntryDestroyedException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.TimeoutException;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.InternalStatisticsDisabledException;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import org.apache.logging.log4j.Logger;
+
+import java.util.concurrent.locks.Lock;
 
 public class EntryExpiryTask extends ExpiryTask {
 
@@ -53,7 +47,7 @@ public class EntryExpiryTask extends ExpiryTask {
    * necessary.
    */
   public static boolean expireSendsEntryAsCallback =
-      Boolean.getBoolean("gemfire.EXPIRE_SENDS_ENTRY_AS_CALLBACK");
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "EXPIRE_SENDS_ENTRY_AS_CALLBACK");
 
   protected EntryExpiryTask(LocalRegion region, RegionEntry re) {
     super(region);
@@ -120,7 +114,7 @@ public class EntryExpiryTask extends ExpiryTask {
     RegionEntry re = getCheckedRegionEntry();
     Object key = re.getKey();
     LocalRegion lr = getLocalRegion();
-    EntryEventImpl event = EntryEventImpl.create(
+    @Released EntryEventImpl event = EntryEventImpl.create(
         lr, Operation.EXPIRE_DESTROY, key, null,
         createExpireEntryCallback(lr, key), false, lr.getMyId());
     try {
@@ -142,7 +136,7 @@ public class EntryExpiryTask extends ExpiryTask {
     RegionEntry re = getCheckedRegionEntry();
     Object key = re.getKey();
     LocalRegion lr = getLocalRegion();
-    EntryEventImpl event = EntryEventImpl.create(lr,
+    @Released EntryEventImpl event = EntryEventImpl.create(lr,
         Operation.EXPIRE_INVALIDATE, key, null,
         createExpireEntryCallback(lr, key), false, lr.getMyId());
     try {
@@ -162,7 +156,7 @@ public class EntryExpiryTask extends ExpiryTask {
     RegionEntry re = getCheckedRegionEntry();
     Object key = re.getKey();
     LocalRegion lr = getLocalRegion();
-    EntryEventImpl event = EntryEventImpl.create(lr,
+    @Released EntryEventImpl event = EntryEventImpl.create(lr,
         Operation.EXPIRE_LOCAL_DESTROY, key, null,
         createExpireEntryCallback(lr, key), false, lr.getMyId());
     try {
@@ -182,7 +176,7 @@ public class EntryExpiryTask extends ExpiryTask {
     RegionEntry re = getCheckedRegionEntry();
     Object key = re.getKey();
     LocalRegion lr = getLocalRegion();
-    EntryEventImpl event = EntryEventImpl.create(lr,
+    @Released EntryEventImpl event = EntryEventImpl.create(lr,
         Operation.EXPIRE_LOCAL_INVALIDATE, key, null,
         createExpireEntryCallback(lr, key), false, lr.getMyId());
     try {

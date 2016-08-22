@@ -16,27 +16,25 @@
  */
 package com.gemstone.gemfire.rest.internal.web.controllers;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
+import java.util.Properties;
+
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.rest.internal.web.RestFunctionTemplate;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import com.gemstone.gemfire.test.junit.categories.*;
 
-import java.util.Properties;
-
+@Category(DistributedTest.class)
 public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase {
-
-  private static final long serialVersionUID = 1L;
-
-  public RestAPIsOnMembersFunctionExecutionDUnitTest(String name) {
-    super(name);
-  }
 
   private class OnMembersFunction extends RestFunctionTemplate {
     public static final String Id = "OnMembersFunction";
@@ -44,7 +42,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     @Override
     public void execute(FunctionContext context) {
 
-      LogWriterUtils.getLogWriter().fine("SWAP:1:executing OnMembersFunction:" + invocationCount);
+      System.out.println("SWAP:1:executing OnMembersFunction:" + invocationCount);
       invocationCount++;
 
       context.getResultSender().lastResult(Boolean.TRUE);
@@ -71,27 +69,26 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     }
   }
 
-  private String createCacheAndRegisterFunction(VM vm, String memberName) {
-    final String hostName = vm.getHost().getHostName();
-    final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+  private String createCacheAndRegisterFunction(String hostName, String memberName) {
+    final int servicePort = AvailablePortHelper.getRandomAvailableTCPPort();
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.NAME_NAME, memberName);
-    props.setProperty(DistributionConfig.START_DEV_REST_API_NAME, "true");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_BIND_ADDRESS_NAME, hostName);
-    props.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(serverPort));
+    props.setProperty(NAME, memberName);
+    props.setProperty(START_DEV_REST_API, "true");
+    props.setProperty(HTTP_SERVICE_BIND_ADDRESS, hostName);
+    props.setProperty(HTTP_SERVICE_PORT, String.valueOf(servicePort));
 
     Cache c = null;
     try {
-      c = CacheFactory.getInstance(new RestAPIsOnMembersFunctionExecutionDUnitTest("temp").getSystem(props));
+      c = CacheFactory.getInstance(new RestAPIsOnMembersFunctionExecutionDUnitTest().getSystem(props));
       c.close();
     } catch (CacheClosedException cce) {
     }
 
-    c = CacheFactory.create(new RestAPIsOnMembersFunctionExecutionDUnitTest("temp").getSystem(props));
+    c = CacheFactory.create(new RestAPIsOnMembersFunctionExecutionDUnitTest().getSystem(props));
     FunctionService.registerFunction(new OnMembersFunction());
 
-    String restEndPoint = "http://" + hostName + ":" + serverPort + "/gemfire-api/v1";
+    String restEndPoint = "http://" + hostName + ":" + servicePort + "/gemfire-api/v1";
     return restEndPoint;
 
   }
@@ -101,6 +98,8 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     return OnMembersFunction.Id;
   }
 
+  @Test
+  @Category(FlakyTest.class) // GEODE-1594 HTTP server fails to respond
   public void testFunctionExecutionOnAllMembers() {
     createCacheForVMs();
 
@@ -115,12 +114,13 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
   }
 
   private void createCacheForVMs() {
-    restURLs.add(vm0.invoke(() -> createCacheAndRegisterFunction(vm0, "m1")));
-    restURLs.add(vm1.invoke(() -> createCacheAndRegisterFunction(vm1, "m2")));
-    restURLs.add(vm2.invoke(() -> createCacheAndRegisterFunction(vm2, "m3")));
-    restURLs.add(vm3.invoke(() -> createCacheAndRegisterFunction(vm3, "m4")));
+    restURLs.add(vm0.invoke("createCacheAndRegisterFunction",() -> createCacheAndRegisterFunction(vm0.getHost().getHostName(), "m1")));
+    restURLs.add(vm1.invoke("createCacheAndRegisterFunction",() -> createCacheAndRegisterFunction(vm1.getHost().getHostName(), "m2")));
+    restURLs.add(vm2.invoke("createCacheAndRegisterFunction",() -> createCacheAndRegisterFunction(vm2.getHost().getHostName(), "m3")));
+    restURLs.add(vm3.invoke("createCacheAndRegisterFunction",() -> createCacheAndRegisterFunction(vm3.getHost().getHostName(), "m4")));
   }
 
+  @Test
   public void testFunctionExecutionEOnSelectedMembers() {
     createCacheForVMs();
 
@@ -134,6 +134,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     restURLs.clear();
   }
 
+  @Test
   public void testFunctionExecutionOnMembersWithFilter() {
     createCacheForVMs();
 

@@ -16,23 +16,26 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import java.io.Serializable;
-import java.util.Properties;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.Serializable;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.test.dunit.Assert.assertEquals;
+import static com.gemstone.gemfire.test.dunit.Assert.assertNotNull;
+import static com.gemstone.gemfire.test.dunit.Host.getHost;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getDUnitLogLevel;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * The ListAndDescribeDiskStoreCommandsDUnitTest class is a test suite of functional tests cases testing the proper
@@ -40,11 +43,54 @@ import com.gemstone.gemfire.test.dunit.VM;
  *
  * @see com.gemstone.gemfire.management.internal.cli.commands.CliCommandTestBase
  * @see com.gemstone.gemfire.management.internal.cli.commands.DiskStoreCommands
- * @since 7.0
+ * @since GemFire 7.0
  */
+@Category(DistributedTest.class)
 public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
-  protected static String toString(final Result result) {
+  @Override
+  public final void postSetUpCliCommandTestBase() throws Exception {
+    setUpJmxManagerOnVm0ThenConnect(null);
+    setupGemFire();
+  }
+
+  @Test
+  public void testListDiskStore() throws Exception {
+    final Result result = executeCommand(CliStrings.LIST_DISK_STORE);
+
+    assertNotNull(result);
+    getLogWriter().info(toString(result));
+    assertEquals(Result.Status.OK, result.getStatus());
+  }
+
+  @Test
+  public void testDescribeDiskStore() throws Exception {
+    final Result result = executeCommand(CliStrings.DESCRIBE_DISK_STORE + " --member=producerServer --name=producerData");
+
+    assertNotNull(result);
+    getLogWriter().info(toString(result));
+    assertEquals(Result.Status.OK, result.getStatus());
+  }
+
+  @Test
+  public void testDescribeDiskStoreWithInvalidMemberName() throws Exception {
+    final Result commandResult = executeCommand(CliStrings.DESCRIBE_DISK_STORE + " --member=badMemberName --name=producerData");
+
+    assertNotNull(commandResult);
+    assertEquals(Result.Status.ERROR, commandResult.getStatus());
+    assertEquals(CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, "badMemberName"), toString(commandResult));
+  }
+
+  @Test
+  public void testDescribeDiskStoreWithInvalidDiskStoreName() {
+    final Result commandResult = executeCommand(CliStrings.DESCRIBE_DISK_STORE + " --member=producerServer --name=badDiskStoreName");
+
+    assertNotNull(commandResult);
+    assertEquals(Result.Status.ERROR, commandResult.getStatus());
+    assertEquals("A disk store with name (badDiskStoreName) was not found on member (producerServer).", toString(commandResult));
+  }
+
+  private static String toString(final Result result) {
     assert result != null : "The Result object from the command execution cannot be null!";
 
     final StringBuilder buffer = new StringBuilder(System.getProperty("line.separator"));
@@ -57,25 +103,13 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
     return buffer.toString().trim();
   }
 
-  public ListAndDescribeDiskStoreCommandsDUnitTest(final String testName) {
-    super(testName);
-  }
-
-  @Override
-  public final void postSetUp() throws Exception {
-    createDefaultSetup(null);
-    setupGemFire();
-  }
-
-  protected Peer createPeer(final Properties distributedSystemConfiguration, final VM vm) {
+  private Peer createPeer(final Properties distributedSystemConfiguration, final VM vm) {
     return new Peer(distributedSystemConfiguration, vm);
   }
 
-  protected void setupGemFire() throws Exception {
-    final Host host = Host.getHost(0);
-
-    final VM vm1 = host.getVM(1);
-    final VM vm2 = host.getVM(2);
+  private void setupGemFire() throws Exception {
+    final VM vm1 = getHost(0).getVM(1);
+    final VM vm2 = getHost(0).getVM(2);
 
     final Peer peer1 = createPeer(createDistributedSystemProperties("consumerServer"), vm1);
     final Peer peer2 = createPeer(createDistributedSystemProperties("producerServer"), vm2);
@@ -86,16 +120,16 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
     createPersistentRegion(peer2, "producer-factory", "producerData");
   }
 
-  protected Properties createDistributedSystemProperties(final String gemfireName) {
+  private Properties createDistributedSystemProperties(final String gemfireName) {
     final Properties distributedSystemProperties = new Properties();
 
-    distributedSystemProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
-    distributedSystemProperties.setProperty(DistributionConfig.NAME_NAME, gemfireName);
+    distributedSystemProperties.setProperty(ConfigurationProperties.LOG_LEVEL, getDUnitLogLevel());
+    distributedSystemProperties.setProperty(NAME, gemfireName);
 
     return distributedSystemProperties;
   }
 
-  protected void createPersistentRegion(final Peer peer, final String regionName, final String diskStoreName) throws Exception {
+  private void createPersistentRegion(final Peer peer, final String regionName, final String diskStoreName) throws Exception {
     peer.run(new SerializableRunnable("Creating Persistent Region for Member " + peer.getName()) {
       @Override
       public void run() {
@@ -121,44 +155,7 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
     });
   }
 
-  public void testListDiskStore() throws Exception {
-    final Result result = executeCommand(CliStrings.LIST_DISK_STORE);
-
-    assertNotNull(result);
-    LogWriterUtils.getLogWriter().info(toString(result));
-    assertEquals(Result.Status.OK, result.getStatus());
-  }
-
-  public void testDescribeDiskStore() throws Exception {
-    final Result result = executeCommand(
-        CliStrings.DESCRIBE_DISK_STORE + " --member=producerServer --name=producerData");
-
-    assertNotNull(result);
-    LogWriterUtils.getLogWriter().info(toString(result));
-    assertEquals(Result.Status.OK, result.getStatus());
-  }
-
-  public void testDescribeDiskStoreWithInvalidMemberName() throws Exception {
-    final Result commandResult = executeCommand(
-        CliStrings.DESCRIBE_DISK_STORE + " --member=badMemberName --name=producerData");
-
-    assertNotNull(commandResult);
-    assertEquals(Result.Status.ERROR, commandResult.getStatus());
-    assertEquals(CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, "badMemberName"),
-        toString(commandResult));
-  }
-
-  public void testDescribeDiskStoreWithInvalidDiskStoreName() {
-    final Result commandResult = executeCommand(
-        CliStrings.DESCRIBE_DISK_STORE + " --member=producerServer --name=badDiskStoreName");
-
-    assertNotNull(commandResult);
-    assertEquals(Result.Status.ERROR, commandResult.getStatus());
-    assertEquals("A disk store with name (badDiskStoreName) was not found on member (producerServer).",
-        toString(commandResult));
-  }
-
-  protected static class Peer implements Serializable {
+  private static class Peer implements Serializable {
 
     private final Properties distributedSystemConfiguration;
     private final VM vm;
@@ -174,7 +171,7 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
     }
 
     public String getName() {
-      return getDistributedSystemConfiguration().getProperty(DistributionConfig.NAME_NAME);
+      return getDistributedSystemConfiguration().getProperty(NAME);
     }
 
     public VM getVm() {

@@ -36,13 +36,14 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.util.JSR166TestCase;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.JSR166TestCase;
 
 @Category(IntegrationTest.class)
-public class StringMapLoopsJUnitTest extends JSR166TestCase {
+public class StringMapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
 
     static int nkeys       = 1000;
     static int pinsert     = 60;
@@ -54,10 +55,7 @@ public class StringMapLoopsJUnitTest extends JSR166TestCase {
 
     static final ExecutorService pool = Executors.newCachedThreadPool();
 
-    public StringMapLoopsJUnitTest(String name) {
-      super(name);
-    }
-
+    @Test
     public void testStringMapLoops() throws Exception {
       main(new String[0]);
     }

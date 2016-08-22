@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.gemstone.gemfire.cache.lucene.internal.distributed;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -29,12 +29,13 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class EntryScoreJUnitTest {
+
   @Test
   public void testSerialization() {
     LuceneServiceImpl.registerDataSerializables();
-    EntryScore entry = new EntryScore("entry", .1f);
-    EntryScore copy = CopyHelper.deepCopy(entry);
-    Assert.assertEquals("entry", copy.getKey());
-    Assert.assertEquals(.1f, copy.getScore(), 0f);
+    EntryScore<String> entry = new EntryScore<String>("entry", .1f);
+    EntryScore<String> copy = CopyHelper.deepCopy(entry);
+    assertEquals("entry", copy.getKey());
+    assertEquals(.1f, copy.getScore(), 0f);
   }
 }

@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.process;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -32,11 +34,11 @@ import java.io.IOException;
  * <li>http://weblogs.java.net/blog/kohsuke/archive/2009/01/writing_a_unix.html
  * <li>http://www.enderunix.org/docs/eng/daemon.php
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public final class LocalProcessLauncher {
 
-  public static final String PROPERTY_IGNORE_IS_PID_ALIVE = "gemfire.test.LocalProcessLauncher.ignoreIsPidAlive";
+  public static final String PROPERTY_IGNORE_IS_PID_ALIVE = DistributionConfig.GEMFIRE_PREFIX + "test.LocalProcessLauncher.ignoreIsPidAlive";
   
   private final int pid;
   private final File pidFile;

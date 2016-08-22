@@ -16,35 +16,18 @@
  */
 package com.gemstone.gemfire.internal;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.CharArrayWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.lang.management.LockInfo;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MonitorInfo;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-import java.util.zip.GZIPOutputStream;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.io.TeePrintStream;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.lang.management.*;
+import java.util.*;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Used to interact with operating system processes.
@@ -55,9 +38,9 @@ import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
  */
 public class OSProcess {
   private static final Logger logger = LogService.getLogger();
-  
-  public static final String DISABLE_OUTPUT_REDIRECTION_PROPERTY = "gemfire.OSProcess.DISABLE_OUTPUT_REDIRECTION";
-  public static final String ENABLE_OUTPUT_REDIRECTION_PROPERTY = "gemfire.OSProcess.ENABLE_OUTPUT_REDIRECTION";
+
+  public static final String DISABLE_OUTPUT_REDIRECTION_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "OSProcess.DISABLE_OUTPUT_REDIRECTION";
+  public static final String ENABLE_OUTPUT_REDIRECTION_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "OSProcess.ENABLE_OUTPUT_REDIRECTION";
   
   private static final boolean DISABLE_OUTPUT_REDIRECTION = Boolean.getBoolean(DISABLE_OUTPUT_REDIRECTION_PROPERTY);
   private static final boolean ENABLE_OUTPUT_REDIRECTION = Boolean.getBoolean(ENABLE_OUTPUT_REDIRECTION_PROPERTY);
@@ -134,7 +117,7 @@ public class OSProcess {
                       Map<String, String> env)
 	throws IOException
     {
-		String commandShell = System.getProperty("gemfire.commandShell", "bash");
+      String commandShell = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "commandShell", "bash");
         if (cmdarray.length == 0) {
             throw new java.lang.IndexOutOfBoundsException();
         }
@@ -334,7 +317,7 @@ public class OSProcess {
    * @throws IllegalArgumentException
    *         If <code>pid</code> is not positive
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   private static void checkPid(int pid) {
     if (pid <= 0) {

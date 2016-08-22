@@ -46,7 +46,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * Does a region removeAll on a server
- * @since 8.1
+ * @since GemFire 8.1
  */
 public class RemoveAllOp {
   

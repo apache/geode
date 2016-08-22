@@ -16,17 +16,14 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
-import java.sql.Timestamp;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -53,7 +50,7 @@ public class PdxCopyOnReadQueryJUnitTest {
     CacheFactory cf = new CacheFactory();
     cf.setPdxSerializer(serializer);
     cf.setPdxReadSerialized(false);
-    cf.set("mcast-port", "0");
+    cf.set(MCAST_PORT, "0");
     cache = cf.create();
     cache.setCopyOnRead(true);
     

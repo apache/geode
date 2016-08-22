@@ -33,7 +33,7 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
 /**
  * Reusable Input/Output operation utility methods.
  * <p/>
- * @since 6.6
+ * @since GemFire 6.6
  */
 @SuppressWarnings("unused")
 public abstract class IOUtils {

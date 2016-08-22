@@ -16,25 +16,25 @@
  */
 package com.gemstone.gemfire.internal.sequencelog;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.OSProcess;
+import com.gemstone.gemfire.internal.sequencelog.io.OutputStreamAppender;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.EnumSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.sequencelog.io.OutputStreamAppender;
-
 /**
  *
  */
 public class SequenceLoggerImpl implements SequenceLogger {
 
-  private static final SequenceLogger INSTANCE;
-  
-  public static final String ENABLED_TYPES_PROPERTY = "gemfire.GraphLoggerImpl.ENABLED_TYPES";
-  
+  private static final SequenceLoggerImpl INSTANCE;
+
+  public static final String ENABLED_TYPES_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "GraphLoggerImpl.ENABLED_TYPES";
+
   private final EnumSet<GraphType> enabledTypes;
   
   static {
@@ -59,8 +59,8 @@ public class SequenceLoggerImpl implements SequenceLogger {
    * Should be invoked when GemFire cache is closing or closed. 
    */
   public static void signalCacheClose() {
-    if (INSTANCE != null) {
-      ((SequenceLoggerImpl)INSTANCE).consumerThread.interrupt();
+    if (INSTANCE != null && INSTANCE.consumerThread != null) {
+      INSTANCE.consumerThread.interrupt();
     }
   }
 
@@ -95,8 +95,10 @@ public class SequenceLoggerImpl implements SequenceLogger {
   }
   
   private void start() {
-    consumerThread = new ConsumerThread();
-    consumerThread.start();
+    if(!enabledTypes.isEmpty()) {
+      consumerThread = new ConsumerThread();
+      consumerThread.start();
+    }
   }
 
   private class ConsumerThread extends Thread {
@@ -110,13 +112,6 @@ public class SequenceLoggerImpl implements SequenceLogger {
     public void run() {
       Transition edge;
       while(true) {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-        if (cache == null || cache.isClosed()) {
-          if (appender != null) {
-            appender.close();
-          }
-          break;
-        }
         try {
           edge = edges.take();
           if(edge instanceof FlushToken) {

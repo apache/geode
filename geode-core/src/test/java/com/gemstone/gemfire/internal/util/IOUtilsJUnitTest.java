@@ -70,7 +70,7 @@ public class IOUtilsJUnitTest {
    * @param pathElements a String array containing the elements of the path.
    * @return a fully-qualified pathname as a String value.
    */
-  protected String toPathname(final String... pathElements) {
+  private String toPathname(final String... pathElements) {
     if (pathElements != null) {
       final StringBuilder buffer = new StringBuilder();
       for (String pathElement : pathElements) {
@@ -274,7 +274,7 @@ public class IOUtilsJUnitTest {
     }
   }
 
-  protected static final class MockFile extends File {
+  private static final class MockFile extends File {
 
     private boolean isGetAbsoluteFileCalled = false;
     private boolean isGetCanonicalFileCalled = false;

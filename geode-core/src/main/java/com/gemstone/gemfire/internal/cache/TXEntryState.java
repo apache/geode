@@ -17,36 +17,13 @@
 
 package com.gemstone.gemfire.internal.cache;
 
-import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.TX_ENTRY_STATE;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.CacheRuntimeException;
-import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryDestroyedException;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.TimeoutException;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.delta.Delta;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.lang.StringUtils;
@@ -58,13 +35,23 @@ import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.pdx.PdxSerializationException;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.TX_ENTRY_STATE;
 
 /**
  * TXEntryState is the entity that tracks transactional changes, except for
  * those tracked by {@link TXEntryUserAttrState}, to an entry.
  * 
  * 
- * @since 4.0
+ * @since GemFire 4.0
  *  
  */
 public class TXEntryState implements Releasable
@@ -85,19 +72,15 @@ public class TXEntryState implements Releasable
   protected int modSerialNum;
   /**
    * Used to remember the event id to use on the farSide for this entry. See bug 39434.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private int farSideEventOffset = -1;
   /**
    * Used to remember the event id to use on the nearSide for this entry. See bug 39434.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private int nearSideEventOffset = -1;
 
-  //Asif: In case of Sqlfabric, the pending value may be a SerializableDelta object 
-  //which may be containing base value ( in case of Tx create) along with bunch 
-  //of incremental deltas, so for correct behaviour this field should be accessed only 
-  //by its getter. Do not use it directly  
   private Object pendingValue;
   
   /**
@@ -188,7 +171,7 @@ public class TXEntryState implements Releasable
    * Benefits of read conflict detection are at:
    * https://wiki.gemstone.com/display/PR/Read+conflict+detection
    */
-  private static final boolean DETECT_READ_CONFLICTS = Boolean.getBoolean("gemfire.detectReadConflicts");
+  private static final boolean DETECT_READ_CONFLICTS = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "detectReadConflicts");
 
   // @todo darrel: optimize footprint by having this field on a subclass
   //      that is only created by TXRegionState when it knows its region needs refCounts.
@@ -246,7 +229,7 @@ public class TXEntryState implements Releasable
   /**
    * Use this system property if you need to display/log string values in conflict messages
    */
-  private static final boolean VERBOSE_CONFLICT_STRING = Boolean.getBoolean("gemfire.verboseConflictString");
+  private static final boolean VERBOSE_CONFLICT_STRING = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "verboseConflictString");
 
   /**
    * This constructor is used to create a singleton used by LocalRegion to
@@ -302,24 +285,12 @@ public class TXEntryState implements Releasable
   }
 
   public Object getOriginalValue() {
-    Object value = this.originalValue;
-    
-    if(value instanceof Delta) {
-      value = ((Delta) value).getResultantValue();
-    }
-    
-    return value;
+    return this.originalValue;
   }
 
   public Object getPendingValue()
   {
-    Object value = this.pendingValue;
-    
-    if(value instanceof Delta) {
-      value = ((Delta) value).getResultantValue();
-    }
-    
-    return value;
+    return this.pendingValue;
   }
   
   public Object getCallbackArgument()
@@ -347,12 +318,7 @@ public class TXEntryState implements Releasable
 
   void setPendingValue(Object pv)
   {
-    if(pv instanceof Delta) {
-      Object toMerge = this.pendingValue;      
-      this.pendingValue = ((Delta)pv).merge(toMerge, this.op == OP_CREATE);
-    }else {
-      this.pendingValue = pv;
-    }
+    this.pendingValue = pv;
   }
   
   void setCallbackArgument(Object callbackArgument)
@@ -365,7 +331,7 @@ public class TXEntryState implements Releasable
    * this entry.
    * @param modNum the next modified serial number gotten from TXState
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void updateForWrite(final int modNum)
   {
@@ -375,14 +341,14 @@ public class TXEntryState implements Releasable
 
   /**
    * Returns true if this entry has been written; false if only read
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public boolean isDirty() {
     return DETECT_READ_CONFLICTS || this.dirty;
   }
   /**
    * Return true if entry has an operation.
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public boolean hasOp() {
     return this.op != OP_NULL;
@@ -539,7 +505,7 @@ public class TXEntryState implements Releasable
   /**
    * Returns true if this operation has an event for the tx listener
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   final boolean isOpAnyEvent(LocalRegion r)
   {
@@ -721,7 +687,7 @@ public class TXEntryState implements Releasable
   }
   /**
    * Calculate and return the event offset based on the sequence id on TXState.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private static int generateEventOffset(TXState txState) {
     long seqId = EventID.reserveSequenceId();
@@ -732,7 +698,7 @@ public class TXEntryState implements Releasable
   /**
    * Generate offsets for different eventIds; one for nearside and one for farside
    * for the ops for this entry.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void generateBothEventOffsets(TXState txState) {
     assert this.farSideEventOffset == -1;
@@ -742,7 +708,7 @@ public class TXEntryState implements Releasable
   /**
    * Generate the offset for an eventId that will be used for both a farside and nearside
    * op for this entry.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void generateSharedEventOffset(TXState txState) {
     assert this.farSideEventOffset == -1;
@@ -752,7 +718,7 @@ public class TXEntryState implements Releasable
   /**
    * Generate the offset for an eventId that will be used for the nearside
    * op for this entry. No farside op will be done.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void generateNearSideOnlyEventOffset(TXState txState) {
     generateNearSideEventOffset(txState);
@@ -776,7 +742,7 @@ public class TXEntryState implements Releasable
   /**
    * Calculate (if farside has not already done so) and return then eventID
    * to use for near side op applications.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private EventID getNearSideEventId(TXState txState) {
     assert this.nearSideEventOffset != -1;
@@ -785,7 +751,7 @@ public class TXEntryState implements Releasable
 
   /**
    * Calculate and return the event offset for this entry's farSide operation.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   void generateEventOffsets(TXState txState) {
     switch (this.op) {
@@ -948,16 +914,15 @@ public class TXEntryState implements Releasable
   //                       + " isDis=" + isLocalEventDistributed());
   //    System.out.flush();
   //  }
+  @Retained
   EntryEvent getEvent(LocalRegion r, Object key, TXState txs)
   {
     // dumpOp();
-    //TODO:ASIF : Shopuld we generate EventID ? At this point not generating
     LocalRegion eventRegion = r;
     if (r.isUsedForPartitionedRegionBucket()) {
       eventRegion = r.getPartitionedRegion();
     }
-    EntryEventImpl result = new TxEntryEventImpl(eventRegion, key);
-    // OFFHEAP: freeOffHeapResources on this event is called from TXEvent.freeOffHeapResources.
+    @Retained EntryEventImpl result = new TxEntryEventImpl(eventRegion, key);
     boolean returnedResult = false;
     try {
     if (this.destroy == DESTROY_NONE || isOpDestroy()) {
@@ -1123,20 +1088,6 @@ public class TXEntryState implements Releasable
     }
   }
   
-
-  /* TODO OFFHEAP MERGE: is this code needed?
-  @Retained
-  protected final Object getRetainedValueInTXOrRegion() {
-    @Unretained Object val = this.getValueInTXOrRegion();
-    if (val instanceof Chunk) {
-      if (!((Chunk) val).retain()) {
-        throw new IllegalStateException("Could not retain OffHeap value=" + val);
-      }
-    }
-    return val;
-  }
-  */
-
   /**
    * Perform operation algebra
    * 
@@ -1808,8 +1759,8 @@ public class TXEntryState implements Releasable
   
   void applyChanges(LocalRegion r, Object key, TXState txState)
   {
-    if (LogService.getLogger().isDebugEnabled()) {
-      LogService.getLogger().debug(
+    if (logger.isDebugEnabled()) {
+      logger.debug(
           "applyChanges txState=" + txState + " ,key=" + key + " ,r="
               + r.getDisplayName() + " ,op=" + this.op + " ,isDirty="
               + isDirty());
@@ -1966,7 +1917,7 @@ public class TXEntryState implements Releasable
    * @param sendShadowKey
    *          true if wan shadowKey should be sent to peers 7.0.1 and above
    *          
-   * @since 5.0
+   * @since GemFire 5.0
    */
   void toFarSideData(DataOutput out, boolean largeModCount, boolean sendVersionTag, boolean sendShadowKey) throws IOException
   {
@@ -2015,7 +1966,7 @@ public class TXEntryState implements Releasable
    * 
    * @param key
    *          the key for this op
-   * @since 5.0
+   * @since GemFire 5.0
    */
   QueuedOperation toFarSideQueuedOp(Object key)
   {
@@ -2028,9 +1979,6 @@ public class TXEntryState implements Releasable
         valueBytes = (byte[])v;
       }
       else {
-        // this value shouldn't be a Delta
-        Assert.assertTrue(!(v instanceof Delta));
-    
         deserializationPolicy = DistributedCacheOperation.DESERIALIZATION_POLICY_LAZY;
         valueBytes = EntryEventImpl.serialize(v);
       }
@@ -2058,13 +2006,14 @@ public class TXEntryState implements Releasable
    * Just like an EntryEventImpl but also has access to TxEntryState to make it
    * Comparable
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public final class TxEntryEventImpl extends EntryEventImpl implements Comparable
   {
     /**
      * Creates a local tx entry event
      */
+    @Retained
     TxEntryEventImpl(LocalRegion r, Object key) {
       //TODO:ASIF :Check if the eventID should be created. Currently not
       // creating it
@@ -2102,7 +2051,6 @@ public class TXEntryState implements Releasable
   }
   
 
-  // Asif:Add for sql fabric as it has to plug in its own TXEntry object
   private final static TXEntryStateFactory factory = new TXEntryStateFactory() {
 
     public TXEntryState createEntry()

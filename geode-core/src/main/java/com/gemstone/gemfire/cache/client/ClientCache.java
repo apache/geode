@@ -47,7 +47,7 @@ import com.gemstone.gemfire.cache.query.QueryService;
  * is used by {@link Region}s (created using {@link ClientRegionFactory}) to talk to
  * regions on the server.
  * <p>More pools can be created using {@link PoolManager} or by declaring them in cache.xml.
- * @since 6.5
+ * @since GemFire 6.5
  */
 public interface ClientCache extends GemFireCache {
   /**
@@ -152,14 +152,14 @@ public interface ClientCache extends GemFireCache {
   
   /**
    * Returns a set of the servers to which this client is currently connected.
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public Set<InetSocketAddress> getCurrentServers();
   
   /**
    * Returns the default server pool. If one or more non-default pools were
    * configured, this may return null.
-   * @since 7.0
+   * @since GemFire 7.0
    * @see com.gemstone.gemfire.cache.client.Pool
    */
   public Pool getDefaultPool();

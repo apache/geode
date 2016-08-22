@@ -18,53 +18,12 @@
 package com.gemstone.gemfire.internal.cache;
 
 /* enumerate each imported class because conflict with dl.u.c.TimeoutException */
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.CacheEvent;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.TimeoutException;
+import com.gemstone.gemfire.*;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.HighPriorityDistributionMessage;
-import com.gemstone.gemfire.distributed.internal.MembershipListener;
-import com.gemstone.gemfire.distributed.internal.PooledDistributionMessage;
-import com.gemstone.gemfire.distributed.internal.ProcessorKeeper21;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.distributed.internal.SerialDistributionMessage;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
@@ -74,6 +33,18 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.util.*;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
 
 /**
@@ -95,7 +66,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   public static final int SMALL_BLOB_SIZE =
      Integer.getInteger("DistributionManager.OptimizedUpdateByteLimit", 2000).intValue();
 
-  static final long RETRY_TIME = Long.getLong("gemfire.search-retry-interval", 2000).longValue();
+  static final long RETRY_TIME = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "search-retry-interval", 2000).longValue();
 
 
   private InternalDistributedMember selectedNode;
@@ -211,7 +182,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     int action = paction;
     this.requestInProgress = true;
-    Scope scope = this.region.scope;
+    Scope scope = this.region.getScope();
     if (localWriter != null) {
       doLocalWrite(localWriter, event, action);
       this.requestInProgress = false;
@@ -220,14 +191,21 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     if (scope == Scope.LOCAL && (region.getPartitionAttributes() == null)) {
       return false;
     }
-    CacheEvent listenerEvent = getEventForListener(event);
+    @Released CacheEvent listenerEvent = getEventForListener(event);
+    try {
     if (action == BEFOREUPDATE && listenerEvent.getOperation().isCreate()) {
       action = BEFORECREATE;
     }
-    boolean cacheWrote = netWrite(getEventForListener(event), action, netWriteRecipients);
+    boolean cacheWrote = netWrite(listenerEvent, action, netWriteRecipients);
     this.requestInProgress = false;
     return cacheWrote;
-
+    } finally {
+      if (event != listenerEvent) {
+        if (listenerEvent instanceof EntryEventImpl) {
+          ((EntryEventImpl) listenerEvent).release();
+        }
+      }
+    }
   }
 
   public void memberJoined(InternalDistributedMember id) {
@@ -810,16 +788,20 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
   /**
    * Returns an event for listener notification.  The event's operation
-   * may be altered to conform to the ConcurrentMap implementation specification
+   * may be altered to conform to the ConcurrentMap implementation specification.
+   * If the returned value is not == to the event parameter then the caller
+   * is responsible for releasing it.
    * @param event the original event
    * @return the original event or a new event having a change in operation
    */
+  @Retained
   private CacheEvent getEventForListener(CacheEvent event) {
     Operation op = event.getOperation();
     if (!op.isEntry()) {
       return event;
     } else {
       EntryEventImpl r = (EntryEventImpl)event;
+      @Retained
       EntryEventImpl result = r;
       if (r.isSingleHop()) {
         // fix for bug #46130 - origin remote incorrect for one-hop operation in receiver
@@ -856,7 +838,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         return false;
       }
     }
-    CacheEvent event = getEventForListener(pevent);
+    @Released CacheEvent event = getEventForListener(pevent);
     
     int action = paction;
     if (event.getOperation().isCreate() && action == BEFOREUPDATE) {
@@ -898,8 +880,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   /** Return true if cache writer was invoked */
   private boolean netWrite(CacheEvent event, int action, Set writeCandidateSet)
   throws CacheWriterException, TimeoutException {
-
-    // assert !writeCandidateSet.isEmpty();
+    if (writeCandidateSet == null || writeCandidateSet.isEmpty()) {
+      return false;
+    }
     ArrayList list = new ArrayList(writeCandidateSet);
     Collections.shuffle(list);
     InternalDistributedMember[] writeCandidates = (InternalDistributedMember[])list.
@@ -1915,9 +1898,6 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           setClearCountReference(region);		
 	  try {
 	    boolean initialized = region.isInitialized();
-	    if(region.keyRequiresRegionContext()) {
-	      ((KeyWithRegionContext)this.key).setRegionContext(region);
-	    }
             RegionEntry entry = region.basicGetEntry(this.key);
             if (entry != null) {
               synchronized (entry) {

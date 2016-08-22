@@ -19,24 +19,24 @@
  */
 package com.gemstone.gemfire.internal.datasource;
 
-import static org.junit.Assert.fail;
-
-import java.sql.Connection;
-import java.util.Properties;
-
-import javax.naming.Context;
-
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import javax.naming.Context;
+import java.sql.Connection;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.fail;
+
 //import javax.sql.PooledConnection;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.util.test.TestUtil;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * 
@@ -53,9 +53,9 @@ public class CleanUpJUnitTest {
   @Before
   public void setUp() {
     props = new Properties();
-    props.setProperty("mcast-port","0");
+    props.setProperty(MCAST_PORT, "0");
     String path = TestUtil.getResourcePath(CleanUpJUnitTest.class, "/jta/cachejta.xml");
-    props.setProperty("cache-xml-file", path);
+    props.setProperty(CACHE_XML_FILE, path);
     ds1 = DistributedSystem.connect(props);
     cache = CacheFactory.create(ds1);
   }

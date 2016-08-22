@@ -40,7 +40,7 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 /**
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 // Doesn't have to be org.springframework.roo.shell.ExecutionStrategy
 public class RemoteExecutionStrategy {

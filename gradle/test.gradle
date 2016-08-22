@@ -80,6 +80,10 @@ subprojects {
       excludeCategories 'com.gemstone.gemfire.test.junit.categories.UITest'
     }
 
+    //Skip launching any DUnit VMs during this run. This will prevent
+    //junit from launching VMs while parsing categories
+    systemProperty 'gemfire.DUnitLauncher.LAUNCHED', 'true'
+
     beforeTest { descriptor ->
       throw new GradleException("The test " + descriptor.getClassName() + "." + descriptor.getName() + " does not include a junit category.");
     }
@@ -87,20 +91,10 @@ subprojects {
 
 
   test {
-    include '**/*Test.class'
     useJUnit {
       includeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.PerformanceTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.HydraTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.ContainerTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UITest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.FlakyTest'
     }
-    
-    // run each test in its own vm to avoid interference issues if a test doesn't clean up
-    // state
-    //forkEvery 1
     
     doFirst {
       writeTestProperties(buildDir, name)
@@ -108,35 +102,21 @@ subprojects {
   }
 
   task integrationTest(type:Test) {
-    include '**/*Test.class'
-    exclude '**/*DUnitTest.class'
     useJUnit {
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
       includeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.PerformanceTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.HydraTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.ContainerTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UITest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.FlakyTest'
     }
 
     forkEvery 1
-
     doFirst {
       writeTestProperties(buildDir, name)
     }
   }
 
   task uiTest(type:Test) {
-    include '**/*Test.class'
     useJUnit {
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.PerformanceTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.HydraTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.ContainerTest'
       includeCategories 'com.gemstone.gemfire.test.junit.categories.UITest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.FlakyTest'
     }
 
     doFirst {
@@ -145,26 +125,39 @@ subprojects {
   }
   
   task distributedTest(type:Test) {
-    include '**/*Test.class'
-    
-    // maxParallelForks = 2
-    // maxParallelForks = Runtime.runtime.availableProcessors()
-    
     useJUnit {
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
       includeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.PerformanceTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.HydraTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.ContainerTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UITest'
+      excludeCategories 'com.gemstone.gemfire.test.junit.categories.FlakyTest'
+    }
+    forkEvery 30
+  }
+  
+  task flakyTest(type:Test) {
+    useJUnit {
+      includeCategories 'com.gemstone.gemfire.test.junit.categories.FlakyTest'
     }
     
-    //I'm hoping this might deal with SOME OOMEs I've seen
-    forkEvery 30
+    forkEvery 1
+    doFirst {
+      writeTestProperties(buildDir, name)
+    }
+
+    reports.junitXml.destination = file "$buildDir/test-reports-flaky"
+    
+  }
+  task securityTest(type:Test) {
+    useJUnit {
+      includeCategories 'com.gemstone.gemfire.test.junit.categories.SecurityTest'
+    }
+
+    forkEvery 1
+    doFirst {
+      writeTestProperties(buildDir, name)
+    }
+
+    reports.junitXml.destination = file "$buildDir/test-reports-security"
 
   }
-
   // By proving a file with an arbitrary list of test classes, we can select only those
   // tests to run. Activated using -Dcustom.tests=<file> customTest
   def customTestList = []
@@ -211,6 +204,10 @@ subprojects {
         if (logLevel != null) {
           systemProperty 'logLevel', logLevel
         }
+        def log4jLocation = System.getProperty('log4j.configurationFile')
+        if (log4jLocation != null) {
+          systemProperty 'log4j.configurationFile', log4jLocation
+        }
 
         def eol = System.getProperty('line.separator')
         def progress = new File(resultsDir, "$test.name-progress.txt")
@@ -232,17 +229,18 @@ subprojects {
   })
 
   // Make precheckin task run all validation tests for checking in code.
-  task precheckin (dependsOn: [ build, integrationTest, distributedTest ]) {
-    description 'Run this task before checking in code to validate changes. This task combines the following tasks: build, integrationTest, and distributedTest'
+  task precheckin (dependsOn: [ build, integrationTest, distributedTest, flakyTest ]) {
+    description 'Run this task before checking in code to validate changes. This task combines the following tasks: build, integrationTest, distributedTest, and flakyTest'
   }
 
   check.dependsOn checkMissedTests
   
-  combineReports.mustRunAfter check, test, integrationTest, distributedTest, checkMissedTests
+  combineReports.mustRunAfter check, test, integrationTest, distributedTest, flakyTest, checkMissedTests
   build.finalizedBy combineReports
   check.finalizedBy combineReports
   test.finalizedBy combineReports
   integrationTest.finalizedBy combineReports
   distributedTest.finalizedBy combineReports
+  flakyTest.finalizedBy combineReports
   checkMissedTests.finalizedBy combineReports
 }

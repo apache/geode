@@ -25,7 +25,7 @@ import com.gemstone.gemfire.cache.query.internal.QCompiler;
 
 /**
  * 
- * @since 8.1
+ * @since GemFire 8.1
  *
  */
 public class ASTHint extends GemFireAST {

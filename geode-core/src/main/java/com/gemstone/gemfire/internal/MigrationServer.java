@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 import com.gemstone.gemfire.admin.internal.InetAddressUtil;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -26,22 +28,14 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.SocketException;
+import java.io.*;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
  * MigrationServer creates a cache using a supplied cache.xml and then
@@ -102,7 +96,7 @@ import java.util.Properties;
  * The client is then run with a different cache description having different
  * disk-dirs to hold the migrated information.
  * 
- * @since 6.0.1
+ * @since GemFire 6.0.1
  */
 public class MigrationServer {
   final static boolean VERBOSE = Boolean.getBoolean("Migration.VERBOSE");
@@ -212,13 +206,13 @@ public class MigrationServer {
   private void createDistributedSystem() throws Exception {
     Properties dsProps = new Properties();
     // if no discovery information has been explicitly given, use a loner ds 
-    if (System.getProperty("gemfire." + DistributionConfig.MCAST_PORT_NAME) == null
-        && System.getProperty("gemfire." + DistributionConfig.LOCATORS_NAME) == null) {
-      dsProps.put(DistributionConfig.MCAST_PORT_NAME, "0");
+    if (System.getProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT) == null
+        && System.getProperty(DistributionConfig.GEMFIRE_PREFIX + LOCATORS) == null) {
+      dsProps.put(MCAST_PORT, "0");
     }
-    dsProps.put(DistributionConfig.LOG_FILE_NAME, "migrationServer.log");
+    dsProps.put(LOG_FILE, "migrationServer.log");
     if (this.cacheXmlFile != null) {
-      dsProps.put(DistributionConfig.CACHE_XML_FILE_NAME, this.cacheXmlFile.getName());
+      dsProps.put(CACHE_XML_FILE, this.cacheXmlFile.getName());
     }
     this.distributedSystem = DistributedSystem.connect(dsProps);
     if (VERBOSE) {

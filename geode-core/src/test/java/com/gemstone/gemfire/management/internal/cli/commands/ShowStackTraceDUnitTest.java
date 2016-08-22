@@ -16,31 +16,35 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.test.dunit.Assert.assertFalse;
+import static com.gemstone.gemfire.test.dunit.Assert.assertTrue;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+
 /***
  * DUnit test for 'show stack-trace' command
- *
  */
+@Category(DistributedTest.class)
 public class ShowStackTraceDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
-
-  public ShowStackTraceDUnitTest(String name) {
-    super(name);
-  }
 
   private void createCache(Properties props) {
     getSystem(props);
@@ -49,12 +53,12 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
 
   private Properties createProperties(Host host, String name, String groups) {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
-    props.setProperty(DistributionConfig.NAME_NAME, name);
-    props.setProperty(DistributionConfig.GROUPS_NAME, groups);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+    props.setProperty(ENABLE_TIME_STATISTICS, "true");
+    props.setProperty(NAME, name);
+    props.setProperty(GROUPS, groups);
     return props;
   }
 
@@ -69,7 +73,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     final Properties propsManager = createProperties(host, "Manager", "G1");
     final Properties propsServer2 = createProperties(host, "Server", "G2");
 
-    createDefaultSetup(propsManager);
+    setUpJmxManagerOnVm0ThenConnect(propsManager);
 
     servers[1].invoke(new SerializableRunnable("Create cache for server1") {
       public void run() {
@@ -84,6 +88,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
    * @throws ClassNotFoundException
    * @throws IOException
    */
+  @Test
   public void testExportStacktrace() throws ClassNotFoundException, IOException {
     setupSystem();
 
@@ -93,9 +98,9 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, allStacktracesFile.getCanonicalPath());
     String commandString = csb.toString();
-    LogWriterUtils.getLogWriter().info("CommandString : " + commandString);
+    getLogWriter().info("CommandString : " + commandString);
     CommandResult commandResult = executeCommand(commandString);
-    LogWriterUtils.getLogWriter().info("Output : \n" + commandResultToString(commandResult));
+    getLogWriter().info("Output : \n" + commandResultToString(commandResult));
     assertTrue(commandResult.getStatus().equals(Status.OK));
 
     File mgrStacktraceFile = new File("managerStacktrace.txt");
@@ -105,9 +110,9 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, mgrStacktraceFile.getCanonicalPath());
     csb.addOption(CliStrings.EXPORT_STACKTRACE__MEMBER, "Manager");
     commandString = csb.toString();
-    LogWriterUtils.getLogWriter().info("CommandString : " + commandString);
+    getLogWriter().info("CommandString : " + commandString);
     commandResult = executeCommand(commandString);
-    LogWriterUtils.getLogWriter().info("Output : \n" + commandResultToString(commandResult));
+    getLogWriter().info("Output : \n" + commandResultToString(commandResult));
     assertTrue(commandResult.getStatus().equals(Status.OK));
 
     File serverStacktraceFile = new File("serverStacktrace.txt");
@@ -117,9 +122,9 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, serverStacktraceFile.getCanonicalPath());
     csb.addOption(CliStrings.EXPORT_STACKTRACE__MEMBER, "Server");
     commandString = csb.toString();
-    LogWriterUtils.getLogWriter().info("CommandString : " + commandString);
+    getLogWriter().info("CommandString : " + commandString);
     commandResult = executeCommand(commandString);
-    LogWriterUtils.getLogWriter().info("Output : \n" + commandResultToString(commandResult));
+    getLogWriter().info("Output : \n" + commandResultToString(commandResult));
     assertTrue(commandResult.getStatus().equals(Status.OK));
 
     File groupStacktraceFile = new File("groupstacktrace.txt");
@@ -129,9 +134,9 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, groupStacktraceFile.getCanonicalPath());
     csb.addOption(CliStrings.EXPORT_STACKTRACE__GROUP, "G2");
     commandString = csb.toString();
-    LogWriterUtils.getLogWriter().info("CommandString : " + commandString);
+    getLogWriter().info("CommandString : " + commandString);
     commandResult = executeCommand(commandString);
-    LogWriterUtils.getLogWriter().info("Output : \n" + commandResultToString(commandResult));
+    getLogWriter().info("Output : \n" + commandResultToString(commandResult));
     assertTrue(commandResult.getStatus().equals(Status.OK));
 
     File wrongStackTraceFile = new File("wrongStackTrace.txt");
@@ -141,9 +146,9 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, wrongStackTraceFile.getCanonicalPath());
     csb.addOption(CliStrings.EXPORT_STACKTRACE__MEMBER, "WrongMember");
     commandString = csb.toString();
-    LogWriterUtils.getLogWriter().info("CommandString : " + commandString);
+    getLogWriter().info("CommandString : " + commandString);
     commandResult = executeCommand(commandString);
-    LogWriterUtils.getLogWriter().info("Output : \n" + commandResultToString(commandResult));
+    getLogWriter().info("Output : \n" + commandResultToString(commandResult));
     assertFalse(commandResult.getStatus().equals(Status.OK));
   }
 }

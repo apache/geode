@@ -59,7 +59,6 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
-import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
@@ -73,11 +72,13 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  * PR removeAll
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
 {
@@ -258,10 +259,6 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
       EntryVersionsList versionTags = new EntryVersionsList(removeAllPRDataSize);
 
       boolean hasTags = false;
-      // get the "keyRequiresRegionContext" flag from first element assuming
-      // all key objects to be uniform
-      final boolean requiresRegionContext =
-        (this.removeAllPRData[0].getKey() instanceof KeyWithRegionContext);
       for (int i = 0; i < this.removeAllPRDataSize; i++) {
         // If sender's version is >= 7.0.1 then we can send versions list.
         if (!hasTags && removeAllPRData[i].versionTag != null) {
@@ -271,7 +268,7 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
         VersionTag<?> tag = removeAllPRData[i].versionTag;
         versionTags.add(tag);
         removeAllPRData[i].versionTag = null;
-        removeAllPRData[i].toData(out, requiresRegionContext);
+        removeAllPRData[i].toData(out);
         removeAllPRData[i].versionTag = tag;
         // RemoveAllEntryData's toData did not serialize eventID to save
         // performance for DR, but in PR,
@@ -339,12 +336,13 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
   }
 
   /* we need a event with content for waitForNodeOrCreateBucket() */
+  @Retained
   public EntryEventImpl getFirstEvent(PartitionedRegion r) {
     if (removeAllPRDataSize == 0) {
       return null;
     }
     
-    EntryEventImpl ev = EntryEventImpl.create(r, 
+    @Retained EntryEventImpl ev = EntryEventImpl.create(r, 
         removeAllPRData[0].getOp(),
         removeAllPRData[0].getKey(), 
         null /*value*/, 
@@ -388,7 +386,7 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
     }
     
     DistributedRemoveAllOperation op = null;
-    EntryEventImpl baseEvent = null;
+    @Released EntryEventImpl baseEvent = null;
     BucketRegion bucketRegion = null;
     PartitionedRegionDataStore ds = r.getDataStore();
     InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
@@ -420,12 +418,8 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
     // Fix the updateMsg misorder issue
     // Lock the keys when doing postRemoveAll
     Object keys[] = new Object[removeAllPRDataSize];
-    final boolean keyRequiresRegionContext = r.keyRequiresRegionContext();
     for (int i = 0; i < removeAllPRDataSize; ++i) {
       keys[i] = removeAllPRData[i].getKey();
-      if (keyRequiresRegionContext) {
-        ((KeyWithRegionContext)keys[i]).setRegionContext(r);
-      }
     }
 
     if (!notificationOnly) {
@@ -466,7 +460,7 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
            * in this request, because these request will be blocked by foundKey
            */
           for (int i=0; i<removeAllPRDataSize; i++) {
-            EntryEventImpl ev = getEventFromEntry(r, myId, eventSender, i,removeAllPRData,notificationOnly,bridgeContext,posDup,skipCallbacks);
+            @Released EntryEventImpl ev = getEventFromEntry(r, myId, eventSender, i,removeAllPRData,notificationOnly,bridgeContext,posDup,skipCallbacks);
             try {
             key = ev.getKey();
 
@@ -574,14 +568,14 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
   public boolean canStartRemoteTransaction() {
         return true;
   }
-  
+  @Retained
   public static EntryEventImpl getEventFromEntry(LocalRegion r,
       InternalDistributedMember myId, InternalDistributedMember eventSender,
       int idx, DistributedRemoveAllOperation.RemoveAllEntryData[] data,
       boolean notificationOnly, ClientProxyMembershipID bridgeContext,
       boolean posDup, boolean skipCallbacks) {
     RemoveAllEntryData dataItem = data[idx];
-    EntryEventImpl ev = EntryEventImpl.create(r, dataItem.getOp(), dataItem.getKey(), null, null, false, eventSender, !skipCallbacks, dataItem.getEventID());
+    @Retained EntryEventImpl ev = EntryEventImpl.create(r, dataItem.getOp(), dataItem.getKey(), null, null, false, eventSender, !skipCallbacks, dataItem.getEventID());
     boolean evReturned = false;
     try {
 
@@ -766,7 +760,7 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
   
   /**
    * A processor to capture the value returned by {@link RemoveAllPRMessage}
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public static class RemoveAllResponse extends PartitionResponse {
     private volatile boolean returnValue;

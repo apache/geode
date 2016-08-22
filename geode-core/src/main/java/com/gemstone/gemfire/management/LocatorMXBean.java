@@ -17,13 +17,17 @@
 package com.gemstone.gemfire.management;
 
 import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
 
 /**
  * MBean that provides access to information and management functionality for a
  * {@link Locator}.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
+@ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
 public interface LocatorMXBean {
 
   /**

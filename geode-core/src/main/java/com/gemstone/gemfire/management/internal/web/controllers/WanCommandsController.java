@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @see org.springframework.web.bind.annotation.RequestMethod
  * @see org.springframework.web.bind.annotation.RequestParam
  * @see org.springframework.web.bind.annotation.ResponseBody
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Controller("wanController")
 @RequestMapping(AbstractCommandsController.REST_API_VERSION)
@@ -264,7 +264,7 @@ public class WanCommandsController extends AbstractCommandsController {
                                     @RequestParam(value = CliStrings.RESUME_GATEWAYSENDER__GROUP, required = false) final String[] groups,
                                     @RequestParam(value = CliStrings.RESUME_GATEWAYSENDER__MEMBER, required = false) final String[] members)
   {
-    CommandStringBuilder command = new CommandStringBuilder(CliStrings.RESUME_GATEWAYSENDER__ID);
+    CommandStringBuilder command = new CommandStringBuilder(CliStrings.RESUME_GATEWAYSENDER);
 
     command.addOption(CliStrings.RESUME_GATEWAYSENDER__ID, decode(gatewaySenderId));
 

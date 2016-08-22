@@ -16,10 +16,22 @@
  */
 package com.gemstone.gemfire.cache.query.cq.dunit;
 
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.query.CqAttributes;
@@ -43,18 +55,19 @@ import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * This class tests the ContiunousQuery mechanism in GemFire.
  * This includes the test with diffetent data activities.
- *
  */
-public class CqPerfDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class CqPerfDUnitTest extends JUnit4CacheTestCase {
 
-  protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest("CqPerfDUnitTest");
+  protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
   
-  public CqPerfDUnitTest(String name) {
-    super(name);
+  public CqPerfDUnitTest() {
+    super();
   }
 
   @Override
@@ -73,7 +86,9 @@ public class CqPerfDUnitTest extends CacheTestCase {
    * Tests the cq performance.
    * @throws Exception
    */
-  public void perf_testCQPerf() throws Exception {
+  @Ignore("perf")
+  @Test
+  public void testCQPerf() throws Exception {
     
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);
@@ -179,6 +194,7 @@ public class CqPerfDUnitTest extends CacheTestCase {
    * Test for maintaining keys for update optimization.
    * @throws Exception
    */
+  @Test
   public void testKeyMaintainance() throws Exception {
     
     final Host host = Host.getHost(0);
@@ -399,6 +415,8 @@ public class CqPerfDUnitTest extends CacheTestCase {
    * To test the changes relating to, executing CQ only once for all similar CQs.
    * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-1164: random ports, thread sleeps, time sensitive, eats exceptions (fixed 1), async behavior
+  @Test
   public void testMatchingCqs() throws Exception {
     
     final Host host = Host.getHost(0);
@@ -510,6 +528,7 @@ public class CqPerfDUnitTest extends CacheTestCase {
    * To test the changes relating to, executing CQ only once for all similar CQs.
    * @throws Exception
    */
+  @Test
   public void testMatchingCQWithMultipleClients() throws Exception {
     
     final Host host = Host.getHost(0);
@@ -669,6 +688,7 @@ public class CqPerfDUnitTest extends CacheTestCase {
    * Test for CQ Fail over.
    * @throws Exception
    */
+  @Test
   public void testMatchingCQsWithMultipleServers() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -829,6 +849,7 @@ public class CqPerfDUnitTest extends CacheTestCase {
    * Test for CQ Fail over.
    * @throws Exception
    */
+  @Test
   public void testMatchingCQsOnDataNodeWithMultipleServers() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -879,7 +900,9 @@ public class CqPerfDUnitTest extends CacheTestCase {
    * Performance test for Matching CQ optimization changes.
    * @throws Exception
    */
-  public void perf_testPerformanceForMatchingCQs() throws Exception {
+  @Ignore("perf")
+  @Test
+  public void testPerformanceForMatchingCQs() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
     VM server2 = host.getVM(1);

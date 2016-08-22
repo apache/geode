@@ -16,11 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +38,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 public class CacheCreationJUnitTest {
 
   @Mock
-  GemFireCacheImpl cache;
+  private GemFireCacheImpl cache;
 
   @Before
   public void setUp() {
@@ -167,7 +163,6 @@ public class CacheCreationJUnitTest {
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), cache, configuredServerPort, configuredServerBindAddress, disableDefaultCacheServer);
 
     verify(cache, never()).addCacheServer();
-
   }
 
   @Test

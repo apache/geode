@@ -37,6 +37,7 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.management.AlreadyRunningException;
 import com.gemstone.gemfire.management.AsyncEventQueueMXBean;
 import com.gemstone.gemfire.management.CacheServerMXBean;
@@ -56,13 +57,12 @@ import com.gemstone.gemfire.management.internal.beans.ManagementAdapter;
 import com.gemstone.gemfire.management.membership.MembershipEvent;
 import com.gemstone.gemfire.management.membership.MembershipListener;
 
-
 /**
  * This is the concrete implementation of ManagementService
  * which is the gateway to various JMX operations over a GemFire
  * System
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public final class SystemManagementService extends BaseManagementService {
   private static final Logger logger = LogService.getLogger();
@@ -130,7 +130,6 @@ public final class SystemManagementService extends BaseManagementService {
    */
   private List<ProxyListener> proxyListeners;
 
-
   private UniversalListenerContainer universalListenerContainer = new UniversalListenerContainer();
   
   public static BaseManagementService newSystemManagementService(Cache cache) {
@@ -152,6 +151,7 @@ public final class SystemManagementService extends BaseManagementService {
     this.jmxAdapter = new MBeanJMXAdapter();      
     this.repo = new ManagementResourceRepo();
 
+    GeodeSecurityUtil.initSecurity(system.getConfig().getSecurityProps());
 
     this.notificationHub = new NotificationHub(repo);
     if (system.getConfig().getJmxManager()) {
@@ -270,7 +270,11 @@ public final class SystemManagementService extends BaseManagementService {
       }
       if (this.agent != null && this.agent.isRunning()) {
         this.agent.stopAgent();
-      }     
+      }
+
+      // clean out Shiro's thread local content
+      GeodeSecurityUtil.close();
+
       getGemFireCacheImpl().getJmxManagerAdvisor().broadcastChange();
       instances.remove(cache);
       localManager  = null;

@@ -16,23 +16,19 @@
  */
 package com.gemstone.gemfire.management.internal;
 
-import java.net.UnknownHostException;
-
 import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisee;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisor;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 
+import java.net.UnknownHostException;
+
 /**
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class JmxManagerAdvisee implements DistributionAdvisee {
 

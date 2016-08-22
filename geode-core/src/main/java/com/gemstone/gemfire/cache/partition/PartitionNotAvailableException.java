@@ -22,7 +22,7 @@ import com.gemstone.gemfire.GemFireException;
  * This exception is thrown when for the given fixed partition, datastore
  * (local-max-memory > 0) is not available.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 
 public class PartitionNotAvailableException extends GemFireException {

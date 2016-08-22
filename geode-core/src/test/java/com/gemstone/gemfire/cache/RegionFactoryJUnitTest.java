@@ -16,8 +16,20 @@
  */
 package com.gemstone.gemfire.cache;
 
-import static com.gemstone.gemfire.cache.RegionShortcut.*;
-import static org.junit.Assert.*;
+import com.gemstone.gemfire.CancelException;
+import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
+import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -26,28 +38,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
-
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.cache.RegionShortcut.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 /**
  * Unit test for the RegionFactory class
- * @since 5.0
+ * @since GemFire 5.0
  */
 @Category(IntegrationTest.class)
 public class RegionFactoryJUnitTest {
@@ -237,7 +234,7 @@ public class RegionFactoryJUnitTest {
     // Assert failure when a Distributed system exists but with different properties 
     this.distSys = DistributedSystem.connect(createGemFireProperties()); // for teardown 
     final Properties failed = new Properties();
-    failed.put("mcast-ttl", "64");
+    failed.put(MCAST_TTL, "64");
   
     try {
       new RegionFactory(failed);
@@ -346,11 +343,11 @@ public class RegionFactoryJUnitTest {
   @Test
   public void testRegionFactoryProperties() throws Exception {
     final Properties gemfireProperties = createGemFireProperties();
-    gemfireProperties.put("mcast-ttl", "64");
+    gemfireProperties.put(MCAST_TTL, "64");
     RegionFactory factory = new RegionFactory(gemfireProperties);
     r1 = factory.create(this.r1Name);
     assertBasicRegionFunctionality(r1, r1Name);
-    assertEquals(gemfireProperties.get("mcast-ttl"), r1.getCache().getDistributedSystem().getProperties().get("mcast-ttl"));
+    assertEquals(gemfireProperties.get(MCAST_TTL), r1.getCache().getDistributedSystem().getProperties().get(MCAST_TTL));
   }
 
   /**
@@ -374,9 +371,9 @@ public class RegionFactoryJUnitTest {
     File xmlFile = null;
     try {
       final Properties gemfireProperties = createGemFireProperties();
-      gemfireProperties.put("mcast-ttl", "64");
+      gemfireProperties.put(MCAST_TTL, "64");
       final String xmlFileName = getName() + "-cache.xml";
-      gemfireProperties.put("cache-xml-file", xmlFileName);
+      gemfireProperties.put(CACHE_XML_FILE, xmlFileName);
       xmlFile = new File(xmlFileName);
       xmlFile.delete();
       xmlFile.createNewFile();
@@ -402,8 +399,9 @@ public class RegionFactoryJUnitTest {
       RegionFactory factory = new RegionFactory(gemfireProperties, attrsId);
       r1 = factory.create(this.r1Name);
       assertBasicRegionFunctionality(r1, r1Name);
-      assertEquals(gemfireProperties.get("mcast-ttl"), r1.getCache().getDistributedSystem().getProperties().get("mcast-ttl"));
-      assertEquals(gemfireProperties.get("cache-xml-file"), r1.getCache().getDistributedSystem().getProperties().get("cache-xml-file"));
+      assertEquals(gemfireProperties.get(MCAST_TTL), r1.getCache().getDistributedSystem().getProperties().get(MCAST_TTL));
+      assertEquals(gemfireProperties.get(CACHE_XML_FILE),
+          r1.getCache().getDistributedSystem().getProperties().get(CACHE_XML_FILE));
       RegionAttributes ra = r1.getAttributes();
       assertEquals(ra.getStatisticsEnabled(), true);
       assertEquals(ra.getScope().isDistributedAck(), true);
@@ -1131,8 +1129,8 @@ public class RegionFactoryJUnitTest {
   
   private Properties createGemFireProperties() {
     Properties props = new Properties();
-    props.put("mcast-port", "0");
-    props.put("locators", "");
+    props.put(MCAST_PORT, "0");
+    props.put(LOCATORS, "");
     return props;
   }
   

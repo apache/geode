@@ -56,7 +56,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * @see StatAlert
  * 
  * 
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class StatAlertsManager {
   private static final Logger logger = LogService.getLogger();
@@ -354,7 +354,7 @@ public class StatAlertsManager {
       final boolean isDebugEnabled = logger.isDebugEnabled();
       
       synchronized (StatAlertsManager.this) {
-        if (dm.getCancelCriterion().cancelInProgress() != null) {
+        if (dm.getCancelCriterion().isCancelInProgress()) {
           return;
         }
         

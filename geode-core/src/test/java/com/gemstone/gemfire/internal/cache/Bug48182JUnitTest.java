@@ -16,22 +16,20 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.Properties;
-
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * TestCase that emulates the conditions that produce defect 48182 and ensures that the fix works under those conditions.
@@ -124,9 +122,9 @@ public class Bug48182JUnitTest {
    */
   protected GemFireCacheImpl createCache() {
     Properties props = new Properties();
-    props.setProperty("locators", "");
-    props.setProperty("mcast-port", "0");
-    props.setProperty("off-heap-memory-size", getOffHeapMemorySize());
+    props.setProperty(LOCATORS, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(ConfigurationProperties.OFF_HEAP_MEMORY_SIZE, getOffHeapMemorySize());
     GemFireCacheImpl result = (GemFireCacheImpl) new CacheFactory(props).create();
     return result;
   }

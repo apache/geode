@@ -1,16 +1,16 @@
 ## Loading Data from Geode
 
 To expose full data set of a Geode region as a Spark
-RDD, call `gemfireRegion` method on the SparkContext object.
+RDD, call `geodeRegion` method on the SparkContext object.
 
 ```
-val rdd = sc.gemfireRegion("region path")
+val rdd = sc.geodeRegion("region path")
 ```
 
-Or with specific `GemfireConectionConf` object instance (see 
-[Connecting to  Geode](3_connecting.md) for how to create GemfireConectionConf):
+Or with specific `GeodeConectionConf` object instance (see 
+[Connecting to  Geode](3_connecting.md) for how to create GeodeConectionConf):
 ```
-val rdd = sc.gemfireRegion("region path", connConf)
+val rdd = sc.geodeRegion("region path", connConf)
 ```
 
 ## Geode RDD Partitions
@@ -22,24 +22,24 @@ upon multiple servers, and may have duplicates for high
 availability.
 
 Since replicated region has its full dataset available on every
-server, there is only one RDD partition for a `GemFireRegionRDD` that 
+server, there is only one RDD partition for a `GeodeRegionRDD` that 
 represents a replicated region.
 
-For a `GemFireRegionRDD` that represents a partitioned region, there are 
+For a `GeodeRegionRDD` that represents a partitioned region, there are 
 many potential  ways to create RDD partitions. So far, we have 
 implemented ServerSplitsPartitioner, which will split the bucket set
 on each Geode server into two RDD partitions by default.
 The number of splits is configurable, the following shows how to set 
 three partitions per Geode server:
 ```
-import io.pivotal.gemfire.spark.connector._
+import io.pivotal.geode.spark.connector._
 
 val opConf = Map(PreferredPartitionerPropKey -> ServerSplitsPartitionerName,
                  NumberPartitionsPerServerPropKey -> "3")
 
-val rdd1 = sc.gemfireRegion[String, Int]("str_int_region", opConf = opConf)
+val rdd1 = sc.geodeRegion[String, Int]("str_int_region", opConf = opConf)
 // or
-val rdd2 = sc.gemfireRegion[String, Int]("str_int_region", connConf, opConf)  
+val rdd2 = sc.geodeRegion[String, Int]("str_int_region", connConf, opConf)  
 ```
 
 
@@ -48,7 +48,7 @@ Server-side filtering allow exposing partial dataset of a Geode region
 as a RDD, this reduces the amount of data transferred from Geode to 
 Spark to speed up processing.
 ```
-val rdd = sc.gemfireRegion("<region path>").where("<where clause>")
+val rdd = sc.geodeRegion("<region path>").where("<where clause>")
 ```
 
 The above call is translated to OQL query `select key, value from /<region path>.entries where <where clause>`, then 
@@ -59,7 +59,7 @@ In the following demo, javabean class `Emp` is used, it has 5 attributes: `id`, 
 In order to make `Emp` class available on Geode servers, we need to deploy a jar file that contains `Emp` class, 
 now build the `emp.jar`,  deploy it and create region `emps` in `gfsh`:
 ```
-zip $CONNECTOR/gemfire-spark-demos/basic-demos/target/scala-2.10/basic-demos_2.10-0.5.0.jar \
+zip $CONNECTOR/geode-spark-demos/basic-demos/target/scala-2.10/basic-demos_2.10-0.5.0.jar \
   -i "demo/Emp.class" --out $CONNECTOR/emp.jar
   
 gfsh
@@ -73,7 +73,7 @@ only contains `Emp.class`.
 Now in Spark shell, generate some random `Emp` records, and save them to region `emps` (remember to add `emp.jar` to 
 Spark shell classpath before starting Spark shell):
 ```
-import io.pivotal.gemfire.spark.connector._
+import io.pivotal.geode.spark.connector._
 import scala.util.Random
 import demo.Emp
 
@@ -84,12 +84,12 @@ def rpick(xs: List[String]): String = xs(Random.nextInt(xs.size))
 
 val d1 = (1 to 20).map(x => new Emp(x, rpick(lnames), rpick(fnames), 20+Random.nextInt(41), rpick(locs))).toArray
 val rdd1 = sc.parallelize(d1) 
-rdd1.saveToGemfire("emps", e => (e.getId, e))
+rdd1.saveToGeode("emps", e => (e.getId, e))
 ```
 
 Now create a RDD that contains all employees whose age is less than 40, and display its contents:
 ```
-val rdd1s = sc.gemfireRegion("emps").where("value.getAge() < 40")
+val rdd1s = sc.geodeRegion("emps").where("value.getAge() < 40")
 
 rdd1s.foreach(println)
 (5,Emp(5, Taylor, Robert, 32, FL))

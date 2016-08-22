@@ -28,7 +28,7 @@ import com.gemstone.gemfire.cache.RegionEvent;
  * only override the methods for the events of interest.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class CacheWriterAdapter<K,V> implements CacheWriter<K,V> {
 

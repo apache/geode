@@ -16,8 +16,10 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import org.junit.Rule;
+import static org.junit.Assert.*;
+
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
 
@@ -32,19 +34,21 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.XmlParser;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests 8.1 schema based configuration. From this point all config test cases
  * should extend this test case where {@link #getUseSchema()} will return true.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
+@Category(DistributedTest.class)
 public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
   private static final long serialVersionUID = 1L;
   
-  public CacheXml81DUnitTest(String name) {
-    super(name);
+  public CacheXml81DUnitTest() {
+    super();
   }
 
   protected String getGemFireVersion() {
@@ -59,18 +63,21 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
    * Test extensions to
    * <code>cache<code> element.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
+  @Test
   public void testCacheExtension() {
     final CacheCreation cache = new CacheCreation();
     final MockCacheExtension extension = new MockCacheExtension("testCacheExtension");
     cache.getExtensionPoint().addExtension(extension);
 
+    assertEquals(0, extension.beforeCreateCounter.get());
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(0, extension.getXmlGeneratorCounter.get());
 
     testXml(cache);
 
+    assertEquals(0, extension.beforeCreateCounter.get());
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(1, extension.getXmlGeneratorCounter.get());
 
@@ -80,6 +87,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     final MockCacheExtension m = (MockCacheExtension) c.getExtensionPoint().getExtensions().iterator().next();
     assertNotNull(m);
 
+    assertEquals(1, m.beforeCreateCounter.get());
     assertEquals(1, m.onCreateCounter.get());
     assertEquals(0, m.getXmlGeneratorCounter.get());
 
@@ -88,8 +96,9 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
   /**
    * Test extensions to <code>region</code> element.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
+  @Test
   public void testRegionExtension() {
     final String regionName = "testRegionExtension";
     final CacheCreation cache = new CacheCreation();
@@ -100,11 +109,13 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     final MockRegionExtension extension = new MockRegionExtension("test");
     region.getExtensionPoint().addExtension(extension);
 
+    assertEquals(0, extension.beforeCreateCounter.get());
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(0, extension.getXmlGeneratorCounter.get());
 
     testXml(cache);
 
+    assertEquals(0, extension.beforeCreateCounter.get());
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(1, extension.getXmlGeneratorCounter.get());
 
@@ -114,6 +125,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     final MockRegionExtension m = (MockRegionExtension) r.getExtensionPoint().getExtensions().iterator().next();
     assertNotNull(m);
 
+    assertEquals(1, m.beforeCreateCounter.get());
     assertEquals(1, m.onCreateCounter.get());
     assertEquals(0, m.getXmlGeneratorCounter.get());
 
@@ -123,7 +135,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
    * Test {@link Locator} is used in {@link SAXParseException}.
    * Exercises {@link XmlParser#setDocumentLocator(Locator)}
    * 
-   * @since 8.2
+   * @since GemFire 8.2
    */
   @Test
   public void testLocatorInException() {
@@ -136,6 +148,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     final MockRegionExtension extension = new MockRegionExtension("exception");
     region.getExtensionPoint().addExtension(extension);
 
+    assertEquals(0, extension.beforeCreateCounter.get());
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(0, extension.getXmlGeneratorCounter.get());
 

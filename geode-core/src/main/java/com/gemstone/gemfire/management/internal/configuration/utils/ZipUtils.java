@@ -62,7 +62,6 @@ public class ZipUtils {
 
         if (child.isDirectory()) {
           fileStack.push(child);
-          name = name.endsWith(File.separator) ? name : name + File.separator;
           zos.putNextEntry(new ZipEntry(name));
         } else {
           if (!name.endsWith("zip")) {

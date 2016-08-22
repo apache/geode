@@ -30,7 +30,7 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
  * participants (currently VM in a Distributed System).
  *
  * 
- * @since 4.0
+ * @since GemFire 4.0
  * 
  * @see TXManagerImpl#begin
  * @see com.gemstone.gemfire.cache.CacheTransactionManager#getTransactionId

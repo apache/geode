@@ -16,10 +16,22 @@
  */
 package com.gemstone.gemfire.cache.query.cq.dunit;
 
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.query.CqAttributes;
@@ -47,14 +59,14 @@ import com.gemstone.gemfire.test.dunit.Wait;
 /**
  * This class tests the ContiunousQuery mechanism in GemFire.
  * This includes the test with diffetent data activities.
- *
  */
-public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
-  protected CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest("CqPerfUsingPoolDUnitTest");
+  protected CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest(); // TODO: get rid of this!
   
-  public CqPerfUsingPoolDUnitTest(String name) {
-    super(name);
+  public CqPerfUsingPoolDUnitTest() {
+    super();
   }
 
   @Override
@@ -73,7 +85,9 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
    * Tests the cq performance.
    * @throws Exception
    */
-  public void perf_testCQPerf() throws Exception {
+  @Ignore("perf")
+  @Test
+  public void testCQPerf() throws Exception {
     
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);
@@ -179,6 +193,7 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
    * Test for maintaining keys for update optimization.
    * @throws Exception
    */
+  @Test
   public void testKeyMaintenance() throws Exception {
     
     final Host host = Host.getHost(0);
@@ -399,6 +414,7 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
    * To test the changes relating to, executing CQ only once for all similar CQs.
    * @throws Exception
    */
+  @Test
   public void testMatchingCqs() throws Exception {
     
     final Host host = Host.getHost(0);
@@ -406,7 +422,7 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
     VM client = host.getVM(1);
     
     cqDUnitTest.createServer(server);
-    final int port = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int port = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort()); // TODO: move static methods from other dunit into util class
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     //cqDUnitTest.createClient(client, port, host0);
     
@@ -426,7 +442,6 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
     // Create.
     cqDUnitTest.createValues(server, cqDUnitTest.regions[0], size);
     cqDUnitTest.waitForCreated(client, "testMatchingCqs_0", CqQueryUsingPoolDUnitTest.KEY+size);
-    cqDUnitTest.waitForCreated(client, "testMatchingCqs_3", CqQueryUsingPoolDUnitTest.KEY+size);
 
     // Close one of the CQ.
     cqDUnitTest.closeCQ(client, "testMatchingCqs_0");      
@@ -435,6 +450,7 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
     // Update.
     cqDUnitTest.createValues(server, cqDUnitTest.regions[0], size);
     cqDUnitTest.waitForUpdated(client, "testMatchingCqs_3", CqQueryUsingPoolDUnitTest.KEY+size);
+    cqDUnitTest.waitForUpdated(client, "testMatchingCqs_1", CqQueryUsingPoolDUnitTest.KEY+size);
     
     // Stop one of the CQ.
     cqDUnitTest.stopCQ(client, "testMatchingCqs_1");      
@@ -513,6 +529,7 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
    * To test the changes relating to, executing CQ only once for all similar CQs.
    * @throws Exception
    */
+  @Test
   public void testMatchingCQWithMultipleClients() throws Exception {
     
     final Host host = Host.getHost(0);
@@ -676,6 +693,7 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
    * Test for CQ Fail over.
    * @throws Exception
    */
+  @Test
   public void testMatchingCQsWithMultipleServers() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -839,7 +857,9 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
    * Performance test for Matching CQ optimization changes.
    * @throws Exception
    */
-  public void perf_testPerformanceForMatchingCQs() throws Exception {
+  @Ignore("perf")
+  @Test
+  public void testPerformanceForMatchingCQs() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
     VM server2 = host.getVM(1);

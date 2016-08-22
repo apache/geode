@@ -16,25 +16,6 @@
  */
 package com.gemstone.gemfire.cache.operations;
 
-import static org.junit.Assert.*;
-import static org.junit.matchers.JUnitMatchers.*;
-
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.matchers.JUnitMatchers;
-import org.junit.rules.ExpectedException;
-
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -42,29 +23,20 @@ import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.PdxReader;
 import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxWriter;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-@Category(UnitTest.class)
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+
+@Category(IntegrationTest.class)
 public class PutOperationContextJUnitTest {
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
-  
-  @BeforeClass
-  public static void setUpBeforeClass() throws Exception {
-  }
-
-  @AfterClass
-  public static void tearDownAfterClass() throws Exception {
-  }
-
-  @Before
-  public void setUp() throws Exception {
-  }
-
-  @After
-  public void tearDown() throws Exception {
-  }
 
   @Test
   public void testGetSerializedValue() throws IOException {
@@ -100,7 +72,8 @@ public class PutOperationContextJUnitTest {
 
     {
       // create a loner cache so that pdx serialization will work
-      Cache c = (new CacheFactory()).set("locators", "").set("mcast-port", "0").setPdxReadSerialized(true).create();
+      Cache c = (new CacheFactory()).set(LOCATORS, "")
+          .set(MCAST_PORT, "0").setPdxReadSerialized(true).create();
       try {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
@@ -150,7 +123,7 @@ public class PutOperationContextJUnitTest {
 
     {
       // create a loner cache so that pdx serialization will work
-      Cache c = (new CacheFactory()).set("locators", "").set("mcast-port", "0").setPdxReadSerialized(true).create();
+      Cache c = (new CacheFactory()).set(LOCATORS, "").set(MCAST_PORT, "0").setPdxReadSerialized(true).create();
       try {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
@@ -201,7 +174,7 @@ public class PutOperationContextJUnitTest {
 
     {
       // create a loner cache so that pdx serialization will work
-      Cache c = (new CacheFactory()).set("locators", "").set("mcast-port", "0").setPdxReadSerialized(true).create();
+      Cache c = (new CacheFactory()).set(LOCATORS, "").set(MCAST_PORT, "0").setPdxReadSerialized(true).create();
       try {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);

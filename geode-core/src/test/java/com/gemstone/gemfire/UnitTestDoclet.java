@@ -37,7 +37,7 @@ import perffmwk.Formatter;
  * @see com.sun.javadoc.Doclet
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class UnitTestDoclet {
 

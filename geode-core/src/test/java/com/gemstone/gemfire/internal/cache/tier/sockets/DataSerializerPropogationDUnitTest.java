@@ -16,12 +16,16 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.TestDataSerializer;
@@ -39,28 +43,26 @@ import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.InternalDataSerializer.SerializerAttributesHolder;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.StoppableWaitCriterion;
-import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
-
-  private static final long serialVersionUID = 0L;
+@Category(DistributedTest.class)
+public class DataSerializerPropogationDUnitTest extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;
 
@@ -88,11 +90,6 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
 
   public static boolean successfullyLoadedTestDataSerializer = false;
 
-  public DataSerializerPropogationDUnitTest(String name) {
-    super(name);
-    // TODO Auto-generated constructor stub
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
@@ -114,9 +111,9 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
   public static void createClientCache(String host, Integer port1)
       throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    new DataSerializerPropogationDUnitTest("temp").createCache(props);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    new DataSerializerPropogationDUnitTest().createCache(props);
     Pool p = PoolManager.createFactory().addServer(host, port1.intValue())
         .setMinConnections(1).setSubscriptionEnabled(true).setPingInterval(200)
         .create("ClientServerDataSerializersRegistrationDUnitTestPool");
@@ -138,7 +135,7 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
   }
 
   public static Integer createServerCache(Integer maxThreads) throws Exception {
-    new DataSerializerPropogationDUnitTest("temp")
+    new DataSerializerPropogationDUnitTest()
         .createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -398,6 +395,7 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
    * Verified if the 2 DataSerializers get propogated to client when client gets
    * connected.
    */
+  @Test
   public void testServerUpFirstClientLater() throws Exception {
     PORT1 = initServerCache(server1);
 
@@ -460,6 +458,7 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
     });
   }
 
+  @Test
   public void testDataSerializersWith2ClientsN2Servers() throws Exception {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
@@ -485,6 +484,7 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
   }
 
   // this test is for bug 44112
+  @Test
   public void testLocalOnlyDS() throws Exception {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
@@ -510,6 +510,7 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
     client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(0) ));
   }
 
+  @Test
   public void testDataSerializersWithServerKill() throws Exception {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
@@ -555,6 +556,7 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
     expectedEx.remove();
   }
 
+  @Test
   public void testDataSerializers() throws Exception {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
@@ -581,6 +583,7 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
     client2.invoke(() -> DataSerializerPropogationDUnitTest.verifyDataSerializers( new Integer(2) ));
   }
 
+  @Test
   public void testDataSerializersWithServerKillAndReInvoked() throws Exception {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
@@ -637,6 +640,7 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
     expectedEx.remove();
   }
 
+  @Test
   public void testDataSerializerCount() throws Exception {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
@@ -669,6 +673,7 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
    * servers
    * 
    */
+  @Test
   public void testDataSerializersEventIdVerificationClientsAndServers()
       throws Exception {
     PORT1 = initServerCache(server1, 1);
@@ -694,6 +699,7 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
 
   }
 
+  @Test
   public void testLazyLoadingOfDataSerializersWith2ClientsN2Servers() throws Exception {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
@@ -809,7 +815,7 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
    */
   public static Integer createServerCacheTwo(Integer maxThreads)
       throws Exception {
-    new DataSerializerPropogationDUnitTest("temp")
+    new DataSerializerPropogationDUnitTest()
         .createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -835,7 +841,7 @@ public class DataSerializerPropogationDUnitTest extends DistributedTestCase {
    */
   public static Integer createServerCacheOne(Integer maxThreads)
       throws Exception {
-    new DataSerializerPropogationDUnitTest("temp").createCache(new Properties());
+    new DataSerializerPropogationDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setMirrorType(MirrorType.KEYS_VALUES);

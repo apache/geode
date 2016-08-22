@@ -30,7 +30,6 @@ import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.cache.TransactionId;
-import com.gemstone.gemfire.cache.query.internal.IndexUpdater;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.ByteArrayDataInput;
@@ -44,34 +43,22 @@ import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 
 /**
  * Internal implementation of {@link RegionMap}for regions whose DataPolicy is
  * proxy. Proxy maps are always empty.
  * 
- * @since 5.0
+ * @since GemFire 5.0
  * 
  *  
  */
 final class ProxyRegionMap implements RegionMap {
 
-  /** An internal Listener for index maintenance for SQLFabric. */
-  private final IndexUpdater indexUpdater;
-
   protected ProxyRegionMap(LocalRegion owner, Attributes attr,
       InternalRegionArguments internalRegionArgs) {
     this.owner = owner;
     this.attr = attr;
-    if (internalRegionArgs != null) {
-      this.indexUpdater = internalRegionArgs.getIndexUpdater();
-    }
-    else {
-      this.indexUpdater = null;
-    }
-  }
-
-  public final IndexUpdater getIndexUpdater() {
-    return this.indexUpdater;
   }
 
   /**
@@ -248,13 +235,6 @@ final class ProxyRegionMap implements RegionMap {
     lastModified = // fix for bug 40129
       this.owner.basicPutPart2(event, markerEntry, true,
         lastModified, false /*Clear conflict occurred */);
-    // invoke SQLFabric index manager if present
-    final IndexUpdater indexUpdater = getIndexUpdater();
-    if (indexUpdater != null) {
-      // postEvent not required to be invoked since this is currently used
-      // only for FK checks
-      indexUpdater.onEvent(this.owner, event, markerEntry);
-    }
     this.owner.basicPutPart3(event, markerEntry, true,
           lastModified, true, ifNew, ifOld, expectedOldValue, requireOldValue);
     return markerEntry;
@@ -279,7 +259,7 @@ final class ProxyRegionMap implements RegionMap {
       if (AbstractRegionMap.shouldCreateCBEvent(this.owner,
                                                 !inTokenMode)) {
         // fix for bug 39526
-        EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, op,
+        @Released EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, op,
             key, null, txId, txEvent, eventId, aCallbackArgument,filterRoutingInfo,bridgeContext, txEntryState, versionTag, tailKey);
         boolean cbEventInPending = false;
         try {
@@ -310,7 +290,7 @@ final class ProxyRegionMap implements RegionMap {
                                                 this.owner.isInitialized())) {
         // fix for bug 39526
         boolean cbEventInPending = false;
-        EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, 
+        @Released EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, 
             localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE,
             key, newValue, txId, txEvent, eventId, aCallbackArgument,filterRoutingInfo,bridgeContext, txEntryState, versionTag, tailKey);
         try {
@@ -344,7 +324,7 @@ final class ProxyRegionMap implements RegionMap {
                                                 this.owner.isInitialized())) {
         // fix for bug 39526
         boolean cbEventInPending = false;
-        EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, putOp, key, 
+        @Released EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, putOp, key, 
             newValue, txId, txEvent, eventId, aCallbackArgument,filterRoutingInfo,bridgeContext, txEntryState, versionTag, tailKey);
         try {
         AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
@@ -398,7 +378,7 @@ final class ProxyRegionMap implements RegionMap {
   }
 
   public void removeEntry(Object key, RegionEntry re, boolean updateStat,
-      EntryEventImpl event, LocalRegion owner, IndexUpdater indexUpdater) {
+      EntryEventImpl event, LocalRegion owner) {
     // nothing to do
   }
 
@@ -625,27 +605,6 @@ final class ProxyRegionMap implements RegionMap {
     }
 
     @Override
-    public boolean isMarkedForEviction() {
-      throw new UnsupportedOperationException(LocalizedStrings
-          .ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
-    }
-
-    @Override
-    public void setMarkedForEviction() {
-      throw new UnsupportedOperationException(LocalizedStrings
-          .ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
-    }
-
-    @Override
-    public void clearMarkedForEviction() {
-      throw new UnsupportedOperationException(LocalizedStrings
-          .ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
-    }
-
-    @Override
     public boolean isValueNull() {
       throw new UnsupportedOperationException(LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0.toLocalizedString(DataPolicy.EMPTY));
     }
@@ -757,13 +716,6 @@ final class ProxyRegionMap implements RegionMap {
   
   public boolean isTombstoneNotNeeded(RegionEntry re, int destroyedVersion) {
     throw new IllegalStateException("removeTombstone should never be called on a proxy");
-  }
-
-
-  /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.RegionMap#unscheduleTombstone(com.gemstone.gemfire.internal.cache.RegionEntry)
-   */
-  public void unscheduleTombstone(RegionEntry re) {
   }
 
   public void setEntryFactory(RegionEntryFactory f) {

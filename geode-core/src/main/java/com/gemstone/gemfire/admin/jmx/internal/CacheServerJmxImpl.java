@@ -54,7 +54,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * MBean representation of a {@link
  * com.gemstone.gemfire.admin.CacheVm}. 
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class CacheServerJmxImpl extends CacheServerImpl
   implements ManagedResource, CacheVmConfig, CacheServerConfig, SystemMemberJmx {

@@ -17,6 +17,8 @@
    
 package com.gemstone.gemfire.internal;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
 /**
  * Used to determine if product should use pure java mode.
  */
@@ -24,12 +26,12 @@ public final class PureJavaMode {
   /**
    * System property to set to true to force pure java mode
    */
-  public final static String PURE_MODE_PROPERTY = "gemfire.pureJavaMode";
+  public final static String PURE_MODE_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "pureJavaMode";
   /**
    * System property to set to true enable debug information regarding native library loading.
-   * @since 5.1
+   * @since GemFire 5.1
    */
-  public final static String LOADLIBRARY_DEBUG_PROPERTY = "gemfire.loadLibrary.debug";
+  public final static String LOADLIBRARY_DEBUG_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "loadLibrary.debug";
 
   private static final boolean debug = Boolean.getBoolean(LOADLIBRARY_DEBUG_PROPERTY);
 

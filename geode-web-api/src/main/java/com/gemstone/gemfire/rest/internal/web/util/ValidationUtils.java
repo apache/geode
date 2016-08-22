@@ -20,7 +20,7 @@ package com.gemstone.gemfire.rest.internal.web.util;
 /**
  * The ValidationUtils class is a utility class for performing validations.
  * <p/>
- * @since 8.0
+ * @since GemFire 8.0
  */
 
 @SuppressWarnings("unused")

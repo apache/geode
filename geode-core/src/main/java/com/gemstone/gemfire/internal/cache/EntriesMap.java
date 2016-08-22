@@ -106,7 +106,7 @@ public interface EntriesMap extends ConcurrentMap {
    * @see InitialImageOperation.RequestImageMessage#chunkEntries
    *
    * @return false if map entry not found
-   * @since 3.2.1
+   * @since GemFire 3.2.1
    */
   public boolean fillInValue(InitialImageOperation.Entry entry, DM mgr);       
 

@@ -16,11 +16,7 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,7 +26,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.IntStream;
 
-import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -40,16 +36,15 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class IndexElemArrayJUnitTest {
   
-  private IndexElemArray list = new IndexElemArray(7);
+  private IndexElemArray list;
 
-  @After
-  public void tearDown() {
-    //System.clearProperty("index_elemarray_size");
+  @Before
+  public void setUp() throws Exception {
+    list = new IndexElemArray(7);
   }
-  
+
   @Test
   public void testFunctionality() throws Exception {
-    list.clear();
     boundaryCondition();
     add();
     clearAndAdd();
@@ -63,14 +58,13 @@ public class IndexElemArrayJUnitTest {
     clearAndAdd();
   }
 
-  @Test
   /**
    * This tests concurrent modification of IndexElemArray and to make 
    * sure elementData and size are updated atomically. Ticket# GEODE-106.   
    */
+  @Test
   public void testFunctionalityUsingMultiThread() throws Exception {
-    list.clear();
-    Collection<Callable> callables = new ConcurrentLinkedQueue<>();    
+    Collection<Callable> callables = new ConcurrentLinkedQueue<>();
     IntStream.range(0, 1000).parallel().forEach(i -> {
       callables.add(() -> {
         if (i%3 == 0) {

@@ -17,7 +17,7 @@
 package com.gemstone.gemfire.internal.cache.lru;
 
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.control.ResourceManager;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
@@ -29,7 +29,7 @@ import com.gemstone.gemfire.internal.offheap.MemoryAllocator;
  * Triggers centralized eviction(asynchronously) when the ResourceManager sends
  * an eviction event for off-heap regions. This is registered with the ResourceManager.
  *
- * @since 9.0
+ * @since Geode 1.0
  */
 public class OffHeapEvictor extends HeapEvictor {
   private static final String EVICTOR_THREAD_GROUP_NAME = "OffHeapEvictorThreadGroup";
@@ -44,7 +44,8 @@ public class OffHeapEvictor extends HeapEvictor {
   }
 
   private void calculateEvictionBurst() {
-    float evictionBurstPercentage = Float.parseFloat(System.getProperty("gemfire.HeapLRUCapacityController.evictionBurstPercentage", "0.4"));
+    float evictionBurstPercentage = Float
+        .parseFloat(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "HeapLRUCapacityController.evictionBurstPercentage", "0.4"));
     
     MemoryAllocator allocator = ((GemFireCacheImpl) this.cache).getOffHeapStore();
     

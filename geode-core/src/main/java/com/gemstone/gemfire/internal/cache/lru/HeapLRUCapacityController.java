@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache.lru;
 
-import java.util.Properties;
-
 import com.gemstone.gemfire.StatisticDescriptor;
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.StatisticsType;
@@ -26,14 +24,13 @@ import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
-import com.gemstone.gemfire.internal.cache.AbstractRegion;
-import com.gemstone.gemfire.internal.cache.BucketRegion;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.Token;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
+import java.util.Properties;
 
 /**
  * A <code>HeapLRUCapacityController</code> controls the contents of
@@ -57,7 +54,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * options improve the behavior of the <code>HeapLRUCapacityController</code>.
  * 
  * 
- * @since 3.2
+ * @since GemFire 3.2
  */
 @SuppressWarnings("synthetic-access")
 public class HeapLRUCapacityController extends LRUAlgorithm {
@@ -65,7 +62,7 @@ public class HeapLRUCapacityController extends LRUAlgorithm {
   /**
    * The default percentage of VM heap usage over which LRU eviction occurs
    */
-  public static final String TOP_UP_HEAP_EVICTION_PERCENTAGE_PROPERTY = "gemfire.topUpHeapEvictionPercentage";
+  public static final String TOP_UP_HEAP_EVICTION_PERCENTAGE_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "topUpHeapEvictionPercentage";
   
   public static final float DEFAULT_TOP_UP_HEAP_EVICTION_PERCENTAGE = 4.0f;
   
@@ -173,7 +170,7 @@ public class HeapLRUCapacityController extends LRUAlgorithm {
   /**
    * Returns a brief description of this eviction controller.
    * 
-   * @since 4.0
+   * @since GemFire 4.0
    */
   @Override
   public String toString() {

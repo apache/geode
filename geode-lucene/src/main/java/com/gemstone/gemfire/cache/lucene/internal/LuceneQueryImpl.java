@@ -19,13 +19,23 @@
 
 package com.gemstone.gemfire.cache.lucene.internal;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.execute.Execution;
+import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.lucene.LuceneQuery;
+import com.gemstone.gemfire.cache.lucene.LuceneQueryException;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
+import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
+import com.gemstone.gemfire.cache.lucene.PageableLuceneQueryResults;
+import com.gemstone.gemfire.cache.lucene.internal.distributed.EntryScore;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunctionContext;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntries;
@@ -42,8 +52,9 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
   /* the lucene Query object to be wrapped here */
   private LuceneQueryProvider query;
   private Region<K, V> region;
+  private String defaultField;
   
-  public LuceneQueryImpl(String indexName, Region<K, V> region, LuceneQueryProvider provider, String[] projectionFields, 
+  public LuceneQueryImpl(String indexName, Region<K, V> region, LuceneQueryProvider provider, String[] projectionFields,
       int limit, int pageSize) {
     this.indexName = indexName;
     this.region = region;
@@ -54,20 +65,70 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
   }
 
   @Override
-  public LuceneQueryResults<K, V> search() {
+  public Collection<K> findKeys() throws LuceneQueryException {
+    TopEntries<K> entries = findTopEntries();
+    final List<EntryScore<K>> hits = entries.getHits();
+
+    return hits.stream()
+      .map(hit -> hit.getKey())
+      .collect(Collectors.toList());
+  }
+
+  @Override
+  public Collection<V> findValues() throws LuceneQueryException {
+    final List<LuceneResultStruct<K, V>> page = findResults();
+
+    return page.stream()
+      .map(entry -> entry.getValue())
+      .collect(Collectors.toList());
+  }
+
+  @Override
+  public List<LuceneResultStruct<K, V>> findResults() throws LuceneQueryException {
+    PageableLuceneQueryResults<K, V> pages = findPages(0);
+    if(!pages.hasNext()) {
+      return Collections.emptyList();
+    }
+
+    return pages.next();
+  }
+
+  @Override
+  public PageableLuceneQueryResults<K, V> findPages() throws LuceneQueryException {
+    return findPages(pageSize);
+  }
+
+  private PageableLuceneQueryResults<K, V> findPages(int pageSize) throws LuceneQueryException {
+    TopEntries<K> entries = findTopEntries();
+    return new PageableLuceneQueryResultsImpl<K, V>(entries.getHits(), region, pageSize);
+  }
+
+  private TopEntries<K> findTopEntries() throws LuceneQueryException {
     TopEntriesCollectorManager manager = new TopEntriesCollectorManager(null, limit);
     LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(query, indexName, manager, limit);
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
 
-    ResultCollector<TopEntriesCollector, TopEntries> rc = (ResultCollector<TopEntriesCollector, TopEntries>) FunctionService.onRegion(region)
+    ResultCollector<TopEntriesCollector, TopEntries<K>> rc = (ResultCollector<TopEntriesCollector, TopEntries<K>>) onRegion()
         .withArgs(context)
         .withCollector(collector)
         .execute(LuceneFunction.ID);
-    
+
     //TODO provide a timeout to the user?
-    TopEntries entries = rc.getResult();
-    
-    return new LuceneQueryResultsImpl<K, V>(entries.getHits(), region, pageSize);
+    TopEntries<K> entries;
+    try {
+      entries = rc.getResult();
+    } catch(FunctionException e) {
+      if(e.getCause() instanceof LuceneQueryException) {
+        throw new LuceneQueryException(e);
+      } else {
+        throw e;
+      }
+    }
+    return entries;
+  }
+
+  protected Execution onRegion() {
+    return FunctionService.onRegion(region);
   }
 
   @Override

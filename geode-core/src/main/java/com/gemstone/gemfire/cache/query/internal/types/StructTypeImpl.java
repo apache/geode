@@ -31,7 +31,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * Implementation of StructType
- * @since 4.0
+ * @since GemFire 4.0
  */
 public final class StructTypeImpl extends ObjectTypeImpl implements StructType {
   private static final long serialVersionUID = -6368710865627039204L;

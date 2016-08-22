@@ -37,7 +37,7 @@ import com.gemstone.gemfire.management.internal.web.util.UriUtils;
  * @see com.gemstone.gemfire.management.internal.web.domain.LinkIndex
  * @see com.gemstone.gemfire.management.internal.web.util.UriUtils
  * @see com.gemstone.gemfire.management.internal.web.http.HttpMethod
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 @XmlType(name = "link", propOrder = { "method", "href", "relation" })

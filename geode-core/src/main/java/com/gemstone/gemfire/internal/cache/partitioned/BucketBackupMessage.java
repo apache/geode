@@ -38,7 +38,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * if one or more needs to be backed-up in order to satisfy the redundantCopies
  * setting
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 public final class BucketBackupMessage extends PartitionMessage
   {

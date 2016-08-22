@@ -266,13 +266,6 @@ public class ServerFunctionExecutor extends AbstractExecution {
             .toLocalizedString("buckets as filter"));
   }
 
-  @Override
-  public AbstractExecution withRoutingObjects(Set<Object> routingObjects) {
-    throw new FunctionException(
-        LocalizedStrings.ExecuteFunction_CANNOT_SPECIFY_0_FOR_DATA_INDEPENDENT_FUNCTIONS
-            .toLocalizedString("routing objects"));
-  }
-
   public Execution withArgs(Object args) {
     if (args == null) {
       throw new FunctionException(

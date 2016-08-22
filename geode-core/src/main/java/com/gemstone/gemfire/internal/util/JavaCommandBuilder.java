@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.util;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,7 +83,7 @@ public class JavaCommandBuilder {
 
   private static String getDashServerArg(final File javaBinDir) {
     // the gemfire.vmarg.dashserver property allows customers to add a custom argument in place of -server
-    final String altDashServerArg = System.getProperty("gemfire.vmarg.dashserver", null);
+    final String altDashServerArg = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "vmarg.dashserver", null);
     return (altDashServerArg != null ? altDashServerArg : (omitDashServerArg(javaBinDir) ? null : "-server"));
   }
 

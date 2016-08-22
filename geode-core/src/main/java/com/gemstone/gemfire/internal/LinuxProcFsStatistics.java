@@ -16,18 +16,15 @@
  */
 package com.gemstone.gemfire.internal;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.logging.log4j.Logger;
 
 public class LinuxProcFsStatistics {
   private enum CPU { 
@@ -36,9 +33,9 @@ public class LinuxProcFsStatistics {
     OTHER
   }  
   
-  private static final int DEFAULT_PAGESIZE = 4 * 1024; 
-  private static final int OneMeg = 1024 * 1024; 
-  private static final String pageSizeProperty = "gemfire.statistics.linux.pageSize"; 
+  private static final int DEFAULT_PAGESIZE = 4 * 1024;
+  private static final int OneMeg = 1024 * 1024;
+  private static final String pageSizeProperty = DistributionConfig.GEMFIRE_PREFIX + "statistics.linux.pageSize";
   private static CpuStat cpuStatSingleton;
   private static int pageSize;
   private static int sys_cpus;

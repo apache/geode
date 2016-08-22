@@ -16,23 +16,15 @@
  */
 package com.gemstone.gemfire.internal;
 
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.NoSystemException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.UncreatedSystemException;
-import com.gemstone.gemfire.UnstartedSystemException;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
+import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.admin.AdminException;
 import com.gemstone.gemfire.admin.BackupStatus;
 import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
 import com.gemstone.gemfire.cache.persistence.PersistentID;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.distributed.internal.HighPriorityAckedMessage;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.StatArchiveReader.ResourceInst;
 import com.gemstone.gemfire.internal.StatArchiveReader.StatValue;
@@ -40,53 +32,22 @@ import com.gemstone.gemfire.internal.admin.remote.TailLogResponse;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.DateFormatter;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.internal.logging.MergeLogFiles;
 import com.gemstone.gemfire.internal.util.JavaCommandBuilder;
 import com.gemstone.gemfire.internal.util.PasswordUtil;
 import com.gemstone.gemfire.internal.util.PluckStacks;
 import com.gemstone.gemfire.internal.util.PluckStacks.ThreadStack;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.RandomAccessFile;
-import java.io.StringWriter;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.net.UnknownHostException;
+import java.io.*;
+import java.net.*;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.START_LOCATOR;
 
 /**
  * Provides static methods for various system administation tasks.
@@ -402,7 +363,7 @@ public class SystemAdmin {
   /**
    * Tails the end of the locator's log file
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public String locatorTailLog(File directory) {
     File logFile =
@@ -498,7 +459,7 @@ public class SystemAdmin {
   private static InternalDistributedSystem getAdminCnx() {
     InternalDistributedSystem.setCommandLineAdmin(true);
     Properties props = propertyOption;
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "warning");
+    props.setProperty(LOG_LEVEL, "warning");
     DistributionConfigImpl dsc = new DistributionConfigImpl(props);
     System.out.print("Connecting to distributed system:");
     if (!"".equals(dsc.getLocators())) {
@@ -1295,8 +1256,6 @@ public class SystemAdmin {
   }
 
   public SystemAdmin() {
-    // no instances allowed
-    // [sumedh] now is overridden by SQLF
     // register DSFID types first; invoked explicitly so that all message type
     // initializations do not happen in first deserialization on a possibly
     // "precious" thread
@@ -1396,7 +1355,7 @@ public class SystemAdmin {
   private final static String[] validCommands = new String [] {
     "version",
     "stats",
-    "start-locator", "stop-locator", "status-locator", "info-locator",
+      START_LOCATOR, "stop-locator", "status-locator", "info-locator",
     "tail-locator-log",
  "merge-logs", "encrypt-password",
     "revoke-missing-disk-store",
@@ -1472,7 +1431,7 @@ public class SystemAdmin {
         usage();
       } else {
         if (cmd.equalsIgnoreCase("locator-start")) {
-          cmd = "start-locator";
+          cmd = START_LOCATOR;
         } else if (cmd.equalsIgnoreCase("locator-stop")) {
           cmd = "stop-locator";
         } else if (cmd.equalsIgnoreCase("locator-info")) {
@@ -1547,7 +1506,7 @@ public class SystemAdmin {
       }));
     helpMap.put("encrypt-password",
       LocalizedStrings.SystemAdmin_ENCRYPTS_A_PASSWORD_FOR_USE_IN_CACHE_XML_DATA_SOURCE_CONFIGURATION.toLocalizedString());
-    helpMap.put("start-locator", 
+    helpMap.put(START_LOCATOR,
       LocalizedStrings.SystemAdmin_START_LOCATOR_HELP
         .toLocalizedString(new Object[] { "-port=",  Integer.valueOf(DistributionLocator.DEFAULT_LOCATOR_PORT), "-address=", "-dir=", "-properties=", "-peer=", "-server=", "-hostname-for-clients=", "-D", "-X" })); 
     helpMap.put("stop-locator",  
@@ -1578,7 +1537,7 @@ public class SystemAdmin {
                 "This command uses the compaction threshold that each member has " +
                 "configured for its disk stores. The disk store must have allow-force-compaction " +
                 "set to true in order for this command to work.\n" +
-                "This command will use the \"gemfire.properties\" file to determine what distributed system to connect to.");
+                    "This command will use the gemfire.properties file to determine what distributed system to connect to.");
     helpMap.put("modify-disk-store",
                 LocalizedStrings.SystemAdmin_MODIFY_DISK_STORE.toLocalizedString()); 
     helpMap.put("revoke-missing-disk-store",
@@ -1589,24 +1548,24 @@ public class SystemAdmin {
                 "missing disk stores.\n" +
                 "You must pass the in the unique id for the disk store to revoke. The unique id is listed in the output " +
                 "of the list-missing-disk-stores command, for example a63d7d99-f8f8-4907-9eb7-cca965083dbb.\n" +
-                "This command will use the \"gemfire.properties\" file to determine what distributed system to connect to."); 
+                    "This command will use the gemfire.properties file to determine what distributed system to connect to.");
     helpMap.put("list-missing-disk-stores",
                 "Prints out a description of the disk stores that are currently missing from a distributed system\n\\n."
-                + "This command will use the \"gemfire.properties\" file to determine what distributed system to connect to."); 
+                    + "This command will use the gemfire.properties file to determine what distributed system to connect to.");
     helpMap.put("export-disk-store", 
                 "Exports an offline disk store.  The persistent data is written to a binary format.\n"
                 + "  -outputDir=<directory> specifies the location of the exported snapshot files.");
     helpMap.put("shut-down-all",
                 "Connects to a running system and asks all its members that have a cache to close the cache and disconnect from system." +
                 "The timeout parameter allows you to specify that the system should be shutdown forcibly after the time has exceeded.\n" +
-                "This command will use the \"gemfire.properties\" file to determine what distributed system to connect to."); 
+                    "This command will use the gemfire.properties file to determine what distributed system to connect to.");
     helpMap.put("backup",
                 "Connects to a running system and asks all its members that have persistent data " +
                 "to backup their data to the specified directory. The directory specified must exist " +
                 "on all members, but it can be a local directory on each machine. This command " +
                 "takes care to ensure that the backup files will not be corrupted by concurrent " +
                 "operations. Backing up a running system with filesystem copy is not recommended.\n" +
-                "This command will use the \"gemfire.properties\" file to determine what distributed system to connect to.");
+                    "This command will use the gemfire.properties file to determine what distributed system to connect to.");
     helpMap.put("print-stacks",
                 "fetches stack dumps of all processes.  By default an attempt" +
                 " is made to remove idle GemFire threads from the dump.  " +
@@ -1644,7 +1603,7 @@ public class SystemAdmin {
         .toLocalizedString());
     helpMap.put("-properties=", 
       LocalizedStrings.SystemAdmin_USED_TO_SPECIFY_THE_0_FILE_TO_BE_USED_IN_CONFIGURING_THE_LOCATORS_DISTRIBUTEDSYSTEM
-        .toLocalizedString("gemfire.properties")); 
+          .toLocalizedString(DistributionConfig.GEMFIRE_PREFIX + "properties"));
     helpMap.put("-archive=", 
       LocalizedStrings.SystemAdmin_THE_ARGUMENT_IS_THE_STATISTIC_ARCHIVE_FILE_THE_0_COMMAND_SHOULD_READ
         .toLocalizedString("stats")); 
@@ -1663,8 +1622,8 @@ public class SystemAdmin {
         .toLocalizedString(new Object[] {"stats", DateFormatter.FORMAT_STRING})); 
     helpMap.put("-dir=", 
       LocalizedStrings.SystemAdmin_DIR_ARGUMENT_HELP
-            .toLocalizedString(new Object[] { "gemfire.properties",
-                "gemfire.systemDirectory", "GEMFIRE", "defaultSystem",
+          .toLocalizedString(new Object[] { DistributionConfig.GEMFIRE_PREFIX + "properties",
+              DistributionConfig.GEMFIRE_PREFIX + "systemDirectory", "GEMFIRE", "defaultSystem",
                 "version" }));
     helpMap.put("-D", 
       LocalizedStrings.SystemAdmin_SETS_A_JAVA_SYSTEM_PROPERTY_IN_THE_LOCATOR_VM_USED_MOST_OFTEN_FOR_CONFIGURING_SSL_COMMUNICATION
@@ -1709,7 +1668,8 @@ public class SystemAdmin {
     usageMap.put("version", "version");
     usageMap.put("help", "help [" + join(helpTopics, "|") + "]");
     usageMap.put("stats", "stats ([<instanceId>][:<typeId>][.<statId>])* [-details] [-nofilter|-persec|-persample] [-prunezeros] [-starttime=<time>] [-endtime=<time>] -archive=<statFile>");
-    usageMap.put("start-locator", "start-locator [-port=<port>] [-address=<ipAddr>] [-dir=<locatorDir>] [-properties=<gemfire.properties>] [-peer=<true|false>] [-server=<true|false>] [-hostname-for-clients=<ipAddr>] [-D<system.property>=<value>] [-X<vm-setting>]");
+    usageMap.put(START_LOCATOR,
+        "start-locator [-port=<port>] [-address=<ipAddr>] [-dir=<locatorDir>] [-properties=<gemfire.properties>] [-peer=<true|false>] [-server=<true|false>] [-hostname-for-clients=<ipAddr>] [-D<system.property>=<value>] [-X<vm-setting>]");
     usageMap.put("stop-locator", "stop-locator [-port=<port>] [-address=<ipAddr>] [-dir=<locatorDir>]");
     usageMap.put("status-locator", "status-locator [-dir=<locatorDir>]");
     usageMap.put("info-locator", "info-locator [-dir=<locatorDir>]");
@@ -1774,7 +1734,8 @@ public class SystemAdmin {
     cmdOptionsMap.put("help", new String[] {});
     cmdOptionsMap.put("merge-logs", new String[] {"-out="});
     cmdOptionsMap.put("stats", new String[] {"-details", "-monitor", "-nofilter", "-persec", "-persample", "-prunezeros", "-archive=", "-starttime=", "-endtime="});
-    cmdOptionsMap.put("start-locator",  new String[] {"-port=", "-dir=", "-address=", "-properties=", "-D", "-X", "-peer=", "-server=", "-hostname-for-clients="});
+    cmdOptionsMap
+        .put(START_LOCATOR, new String[] { "-port=", "-dir=", "-address=", "-properties=", "-D", "-X", "-peer=", "-server=", "-hostname-for-clients=" });
     cmdOptionsMap.put("stop-locator",  new String[] {"-port=", "-dir=", "-address=", "-D"});
     cmdOptionsMap.put("status-locator",  new String[] {"-dir=", "-D"});
     cmdOptionsMap.put("info-locator",  new String[] {"-dir=", "-D"});
@@ -2134,7 +2095,7 @@ public class SystemAdmin {
           usage(cmd);
         }
         help(cmdLine);
-      } else if (cmd.equalsIgnoreCase("start-locator")) {
+      } else if (cmd.equalsIgnoreCase(START_LOCATOR)) {
         if (cmdLine.size() != 0) {
           System.err.println( LocalizedStrings.SystemAdmin_ERROR_UNEXPECTED_COMMAND_LINE_ARGUMENTS_0.toLocalizedString(join(cmdLine)));
           usage(cmd);

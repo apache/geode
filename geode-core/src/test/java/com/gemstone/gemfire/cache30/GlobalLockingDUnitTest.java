@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.concurrent.locks.Lock;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -35,12 +44,13 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * This class tests distributed locking of global region entries.
  */
-public class GlobalLockingDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
 
   public static Region region_testBug32356;
   
-  public GlobalLockingDUnitTest(String name) {
-    super(name);
+  public GlobalLockingDUnitTest() {
+    super();
   }
 
   /**
@@ -71,6 +81,7 @@ public class GlobalLockingDUnitTest extends CacheTestCase {
   /** 
    * Tests for 32356 R2 tryLock w/ 0 timeout broken in Distributed Lock Service
    */
+  @Test
   public void testBug32356() throws Exception {
     LogWriterUtils.getLogWriter().fine("[testBug32356]");
     Host host = Host.getHost(0);
@@ -107,6 +118,7 @@ public class GlobalLockingDUnitTest extends CacheTestCase {
     }
   }
 
+  @Test
   public void testNonGlobalRegion() throws CacheException {
     String name = this.getUniqueName();
     AttributesFactory factory = new AttributesFactory(getGlobalAttrs());
@@ -136,6 +148,7 @@ public class GlobalLockingDUnitTest extends CacheTestCase {
     }
   }
 
+  @Test
   public void testSingleVMLockUnlock() throws CacheException {
     String name = this.getUniqueName() + "-GLOBAL";
     Region region = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
@@ -145,6 +158,7 @@ public class GlobalLockingDUnitTest extends CacheTestCase {
     lock.unlock();
   }
   
+  @Test
   public void testIsLockGrantorAttribute() throws Exception {
     String name = this.getUniqueName() + "-testIsLockGrantorAttribute";
     AttributesFactory factory = new AttributesFactory(getGlobalAttrs());
@@ -161,6 +175,7 @@ public class GlobalLockingDUnitTest extends CacheTestCase {
   /**
    * Get the lock in one VM, try to create in other
    */
+  @Test
   public void testCreateLockTimeout() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -193,6 +208,7 @@ public class GlobalLockingDUnitTest extends CacheTestCase {
   /**
    * get the lock in one VM, try to put() in other
    */
+  @Test
   public void testPutLockTimeout() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -224,6 +240,7 @@ public class GlobalLockingDUnitTest extends CacheTestCase {
   /**
    * get lock in one VM, try to invoke loader in other
    */
+  @Test
   public void testLoadLockTimeout() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -265,6 +282,7 @@ public class GlobalLockingDUnitTest extends CacheTestCase {
   /**
    * get lock in one VM, try to invalidate in other
    */
+  @Test
   public void testInvalidateLockTimeout() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -296,6 +314,7 @@ public class GlobalLockingDUnitTest extends CacheTestCase {
   /**
    * get lock in one VM, try to destroy in other
    */
+  @Test
   public void testDestroyLockTimeout() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -329,6 +348,7 @@ public class GlobalLockingDUnitTest extends CacheTestCase {
   /**
    * get the lock, region.get(), region.put(), release lock
    */
+  @Test
   public void testLockGetPut() throws CacheException {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -379,6 +399,7 @@ public class GlobalLockingDUnitTest extends CacheTestCase {
   /**
    * Test Region.getRegionDistributedLock(), calling lock() and then unlock()
    */
+  @Test
   public void testRegionDistributedLockSimple() throws CacheException
   {
     final String name = this.getUniqueName();

@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -40,13 +43,10 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.functions.TestFunction;
@@ -59,8 +59,9 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 
-public class PRClientServerTestBase extends CacheTestCase {
+public class PRClientServerTestBase extends JUnit4CacheTestCase {
 
   protected VM server1 = null;
 
@@ -101,13 +102,13 @@ public class PRClientServerTestBase extends CacheTestCase {
   private boolean isSelector = false;
   
   public PRClientServerTestBase(String name, boolean isSingleHop, boolean isSelector) {
-    super(name);
+    super();
     this.isSingleHop = isSingleHop;
     this.isSelector = isSelector;
   }
 
-  public PRClientServerTestBase(String name) {
-    super(name);
+  public PRClientServerTestBase() {
+    super();
   }
 
   @Override
@@ -591,13 +592,13 @@ public class PRClientServerTestBase extends CacheTestCase {
     server3.invoke(() -> PRClientServerTestBase.createCacheInVm( props ));
 
     Properties props2 = new Properties();
-    props2.setProperty("mcast-port", "0");
-    props2.setProperty("locators", "");
+    props2.setProperty(MCAST_PORT, "0");
+    props2.setProperty(LOCATORS, "");
     client.invoke(() -> PRClientServerTestBase.createCacheInVm( props2 ));
   }
   
   public static void createCacheInVm(Properties props) {
-    new PRClientServerTestBase("temp").createCache(props);
+    new PRClientServerTestBase().createCache(props);
   }
 
   private void createCache(Properties props) {

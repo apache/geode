@@ -24,28 +24,21 @@ import com.gemstone.gemfire.cache.client.internal.ServerRegionDataAccess;
 import com.gemstone.gemfire.cache.client.internal.ServerRegionProxy;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.TXCommitMessage;
-import com.gemstone.gemfire.internal.cache.TXLockRequest;
-import com.gemstone.gemfire.internal.cache.TXRegionLockRequestImpl;
-import com.gemstone.gemfire.internal.cache.TXStateProxy;
-import com.gemstone.gemfire.internal.cache.TXStateStub;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.cache.locks.TXRegionLockRequest;
 import com.gemstone.gemfire.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
 
+import javax.transaction.Status;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-
-import javax.transaction.Status;
-
-import org.apache.logging.log4j.Logger;
 
 public class ClientTXStateStub extends TXStateStub {
   private static final Logger logger = LogService.getLogger();
@@ -75,7 +68,7 @@ public class ClientTXStateStub extends TXStateStub {
   /**
    * System property to disable conflict checks on clients.
    */
-  private static final boolean DISABLE_CONFLICT_CHECK_ON_CLIENT = Boolean.getBoolean("gemfire.disableConflictChecksOnClient");
+  private static final boolean DISABLE_CONFLICT_CHECK_ON_CLIENT = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableConflictChecksOnClient");
 
   /**
    * @return true if transactional operation recording is enabled (test hook)

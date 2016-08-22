@@ -17,64 +17,70 @@
 
 package com.gemstone.gemfire.admin.internal;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.admin.AdminDistributedSystem;
 import com.gemstone.gemfire.admin.DistributionLocator;
 import com.gemstone.gemfire.admin.DistributionLocatorConfig;
 import com.gemstone.gemfire.admin.ManagedEntityConfig;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.logging.log4j.Logger;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
 
 /**
  * Default administrative implementation of a DistributionLocator.
  *
- * @since     3.5
+ * @since GemFire     3.5
  */
 public class DistributionLocatorImpl
-  implements DistributionLocator, InternalManagedEntity {
-  
+    implements DistributionLocator, InternalManagedEntity {
+
   private static final Logger logger = LogService.getLogger();
-  
-  /** How many new <code>DistributionLocator</code>s have been created? */
+
+  /**
+   * How many new <code>DistributionLocator</code>s have been created?
+   */
   private static int newLocators = 0;
 
   ////////////////////  Instance Fields  ////////////////////
 
-  /** The configuration object for this locator */
+  /**
+   * The configuration object for this locator
+   */
   private final DistributionLocatorConfigImpl config;
 
-  /** The id of this distribution locator */
+  /**
+   * The id of this distribution locator
+   */
   private final String id;
-  
-  /** Used to control the actual DistributionLocator service */
+
+  /**
+   * Used to control the actual DistributionLocator service
+   */
   private ManagedEntityController controller;
 
-  /** The system that this locator is a part of */
+  /**
+   * The system that this locator is a part of
+   */
   private AdminDistributedSystemImpl system;
 
   // -------------------------------------------------------------------------
   //   constructor(s)...
   // -------------------------------------------------------------------------
-  
+
   /**
    * Constructs new instance of <code>DistributionLocatorImpl</code>
    * that is a member of the given distributed system.
    */
   public DistributionLocatorImpl(DistributionLocatorConfig config,
-                                 AdminDistributedSystemImpl system) {
+      AdminDistributedSystemImpl system) {
     this.config = (DistributionLocatorConfigImpl) config;
     this.config.validate();
     this.config.setManagedEntity(this);
@@ -82,14 +88,14 @@ public class DistributionLocatorImpl
     this.controller = system.getEntityController();
     this.system = system;
   }
-  
+
   // -------------------------------------------------------------------------
   //   Attribute accessors/mutators...
   // -------------------------------------------------------------------------
-  
-        public String getId() {
-                return this.id;
-        }
+
+  public String getId() {
+    return this.id;
+  }
 
   public String getNewId() {
     synchronized (DistributionLocatorImpl.class) {
@@ -100,7 +106,7 @@ public class DistributionLocatorImpl
   /**
    * Returns the configuration object for this locator.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public DistributionLocatorConfig getConfig() {
     return this.config;
@@ -124,16 +130,17 @@ public class DistributionLocatorImpl
   // -------------------------------------------------------------------------
   //   Operations...
   // -------------------------------------------------------------------------
-  
+
   /**
    * Polls to determine whether or not this managed entity has
    * started.
    */
-  public boolean waitToStart(long timeout) 
-    throws InterruptedException {
+  public boolean waitToStart(long timeout)
+      throws InterruptedException {
 
-    if (Thread.interrupted()) throw new InterruptedException();
-    
+    if (Thread.interrupted())
+      throw new InterruptedException();
+
     long start = System.currentTimeMillis();
     while (System.currentTimeMillis() - start < timeout) {
       if (this.isRunning()) {
@@ -145,7 +152,7 @@ public class DistributionLocatorImpl
     }
 
     logger.info(LocalizedMessage.create(
-      LocalizedStrings.DistributionLocatorImpl_DONE_WAITING_FOR_LOCATOR));
+        LocalizedStrings.DistributionLocatorImpl_DONE_WAITING_FOR_LOCATOR));
     return this.isRunning();
   }
 
@@ -153,11 +160,12 @@ public class DistributionLocatorImpl
    * Polls to determine whether or not this managed entity has
    * stopped.
    */
-  public boolean waitToStop(long timeout) 
-    throws InterruptedException {
+  public boolean waitToStop(long timeout)
+      throws InterruptedException {
 
-    if (Thread.interrupted()) throw new InterruptedException();
-    
+    if (Thread.interrupted())
+      throw new InterruptedException();
+
     long start = System.currentTimeMillis();
     while (System.currentTimeMillis() - start < timeout) {
       if (!this.isRunning()) {
@@ -172,24 +180,23 @@ public class DistributionLocatorImpl
   }
 
   public boolean isRunning() {
-    DM dm = ((AdminDistributedSystemImpl)getDistributedSystem()).getDistributionManager();
-    if(dm == null) {
+    DM dm = ((AdminDistributedSystemImpl) getDistributedSystem()).getDistributionManager();
+    if (dm == null) {
       try {
         return this.controller.isRunning(this);
-      }
-      catch (IllegalStateException e) {
+      } catch (IllegalStateException e) {
         return false;
       }
     }
-    
+
     String host = getConfig().getHost();
     int port = getConfig().getPort();
     String bindAddress = getConfig().getBindAddress();
-    
+
     boolean found = false;
     Map<InternalDistributedMember, Collection<String>> hostedLocators = dm.getAllHostedLocators();
-    for (Iterator<InternalDistributedMember> memberIter = hostedLocators.keySet().iterator(); memberIter.hasNext();) {
-      for (Iterator<String> locatorIter = hostedLocators.get(memberIter.next()).iterator(); locatorIter.hasNext();) {
+    for (Iterator<InternalDistributedMember> memberIter = hostedLocators.keySet().iterator(); memberIter.hasNext(); ) {
+      for (Iterator<String> locatorIter = hostedLocators.get(memberIter.next()).iterator(); locatorIter.hasNext(); ) {
         DistributionLocatorId locator = new DistributionLocatorId(locatorIter.next());
         found = found || locator.getHost().getHostAddress().equals(host);
         found = found || locator.getHost().getHostName().equals(host);
@@ -200,8 +207,7 @@ public class DistributionLocatorImpl
             if (!found) {
               found = locator.getHost().getHostAddress().equals(inetAddr.getHostAddress());
             }
-          }
-          catch (UnknownHostException e) {
+          } catch (UnknownHostException e) {
             // try config host as if it is an IP address instead of host name
           }
         }
@@ -217,32 +223,32 @@ public class DistributionLocatorImpl
     }
     return found;
   }
-  
+
   public void start() {
     this.config.validate();
     this.controller.start(this);
     this.config.setLocator(this);
     this.system.updateLocatorsString();
   }
-  
+
   public void stop() {
     this.controller.stop(this);
     this.config.setLocator(null);
   }
-  
+
   public String getLog() {
     return this.controller.getLog(this);
   }
-  
-	/**
-	 * Returns a string representation of the object.
-	 * 
-	 * @return a string representation of the object
-	 */
+
+  /**
+   * Returns a string representation of the object.
+   *
+   * @return a string representation of the object
+   */
   @Override
-	public String toString() {
-		return "DistributionLocator " + getId();
-	}
+  public String toString() {
+    return "DistributionLocator " + getId();
+  }
 
   ////////////////////////  Command execution  ////////////////////////
 
@@ -264,8 +270,8 @@ public class DistributionLocatorImpl
     Properties props = config.getDistributedSystemProperties();
     Enumeration en = props.propertyNames();
     while (en.hasMoreElements()) {
-      String pn = (String)en.nextElement();
-      sb.append(" -Dgemfire." + pn + "=" + props.getProperty(pn));
+      String pn = (String) en.nextElement();
+      sb.append(" -D" + DistributionConfig.GEMFIRE_PREFIX + "" + pn + "=" + props.getProperty(pn));
     }
 
     String bindAddress = this.getConfig().getBindAddress();
@@ -276,7 +282,7 @@ public class DistributionLocatorImpl
     sb.append(" ");
 
     String sslArgs =
-      this.controller.buildSSLArguments(this.system.getConfig());
+        this.controller.buildSSLArguments(this.system.getConfig());
     if (sslArgs != null) {
       sb.append(sslArgs);
     }
@@ -300,7 +306,7 @@ public class DistributionLocatorImpl
     sb.append(" ");
 
     String sslArgs =
-      this.controller.buildSSLArguments(this.system.getConfig());
+        this.controller.buildSSLArguments(this.system.getConfig());
     if (sslArgs != null) {
       sb.append(sslArgs);
     }

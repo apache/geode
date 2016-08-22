@@ -36,9 +36,6 @@ import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSBucketRegionQueue;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSGatewayEventImpl;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSParallelGatewaySenderQueue;
 import com.gemstone.gemfire.cache.wan.GatewayQueueEvent;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
@@ -110,7 +107,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor extends AbstractGatew
     createProcessors(sender.getDispatcherThreads(), targetRs);
     
 //    this.queue = parallelQueue;
-    this.queue = new ConcurrentParallelGatewaySenderQueue(this.processors);
+    this.queue = new ConcurrentParallelGatewaySenderQueue(sender, this.processors);
     setDaemon(true);
   }
   
@@ -240,6 +237,9 @@ public class ConcurrentParallelGatewaySenderEventProcessor extends AbstractGatew
     if (!this.isAlive()) {
       return;
     }
+
+    setIsStopped(true);
+
     final LoggingThreadGroup loggingThreadGroup = LoggingThreadGroup
         .createThreadGroup("ConcurrentParallelGatewaySenderEventProcessor Logger Group", logger);
 
@@ -251,12 +251,12 @@ public class ConcurrentParallelGatewaySenderEventProcessor extends AbstractGatew
         return thread;
       }
     };
-    
+
     List<SenderStopperCallable> stopperCallables = new ArrayList<SenderStopperCallable>();
     for (ParallelGatewaySenderEventProcessor parallelProcessor : this.processors) {
       stopperCallables.add(new SenderStopperCallable(parallelProcessor));
     }
-    
+
     ExecutorService stopperService = Executors.newFixedThreadPool(processors.length, threadFactory);
     try {
       List<Future<Boolean>> futures = stopperService.invokeAll(stopperCallables);
@@ -273,12 +273,11 @@ public class ConcurrentParallelGatewaySenderEventProcessor extends AbstractGatew
         }
       }
     } catch (InterruptedException e) {
-      throw new InternalGemFireException(e.getMessage());
+      throw new InternalGemFireException(e);
     } catch (RejectedExecutionException rejectedExecutionEx) {
       throw rejectedExecutionEx;
     }
     
-    setIsStopped(true);
     stopperService.shutdown();
     closeProcessor();
     if (logger.isDebugEnabled()) {

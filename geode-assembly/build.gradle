@@ -45,6 +45,7 @@ configurations {
   bundled {
     description 'A dependency that is shipped with geode, but is not required to compile'
   }
+  gfshDependencies
 }
 
 dependencies {
@@ -52,8 +53,7 @@ dependencies {
 
   archives project(':geode-common')  
   archives project(':geode-json')  
-  archives project(':geode-joptsimple')  
-  archives project(':geode-core')  
+  archives project(':geode-core')
   archives project(':geode-lucene')
   archives project(':geode-web')
   archives project(':geode-web-api')
@@ -72,6 +72,13 @@ dependencies {
   testCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
 
   testRuntime files("${System.getProperty('java.home')}/../lib/tools.jar")
+  testRuntime files("$buildDir/install/${distributions.main.baseName}/lib/geode-dependencies.jar")
+
+
+  gfshDependencies ('org.springframework:spring-web:' + project.'springframework.version'){
+    exclude module: 'spring-core'
+    exclude module: 'commons-logging'
+  }
 }
 
 sourceSets {
@@ -83,7 +90,7 @@ test {
   // test from the actual classpath not the gradle classpath
   dependsOn installDist
   // @TODO: this doesn't seem to be working need to get basename first.
-  classpath += files "$buildDir/install/apache-geode/lib/geode-dependencies.jar"
+  classpath += files "$buildDir/install/${distributions.main.baseName}/lib/geode-dependencies.jar"
 }
 
 tasks.withType(Test){
@@ -147,15 +154,17 @@ def cp = {
       it.contains('jetty-xml') ||
       it.contains('jline') ||
       it.contains('jna') ||
+      it.contains('jopt-simple') ||
       it.contains('log4j-api') ||
       it.contains('log4j-core') ||
       it.contains('log4j-jcl') ||
       it.contains('log4j-jul') ||
       it.contains('log4j-slf4j-impl') ||
+      it.contains('shiro') ||
       it.contains('slf4j-api') ||
       it.contains('spring-core') ||
       it.contains('spring-shell') ||
-      it.contains('snappy-java') ||
+      it.contains('snappy') ||
       it.contains('hbase') ||
       it.contains('jgroups') ||
       it.contains('netty') ||
@@ -187,13 +196,12 @@ task depsJar (type: Jar, dependsOn: ':geode-core:classes') {
 // a dependent project.  Please fix me.
 task gfshDepsJar (type: Jar, dependsOn: ':geode-core:classes') {
   description 'Assembles the jar archive that defines the gfsh classpath.'
-  def springWeb = configurations.runtime.collect { it.getName() }.find { it.contains('spring-web') }
   archiveName 'gfsh-dependencies.jar'
   doFirst {
     manifest {
       attributes("Class-Path": cp() + 
         ' ' + project(':geode-core').webJar.archiveName +
-        ' ' + springWeb
+        ' ' + configurations.gfshDependencies.collect{ it.getName() }.flatten().join(' ')
       )
     }
   }
@@ -226,13 +234,24 @@ task docs(type: Javadoc) {
    }
 }
 
+task writeBuildInfo {
+  def buildInfo = file "$buildDir/.buildinfo"
+  outputs.file buildInfo
+  doLast {
+    buildInfo.getParentFile().mkdirs();
+    new FileOutputStream(buildInfo).withStream { fos ->
+      project(':geode-core').readScmInfo().store(fos, '')
+    }
+  }
+}
+
 gradle.taskGraph.whenReady( { graph ->
   tasks.withType(AbstractArchiveTask).findAll {
     it.name.toLowerCase().contains("dist")
   }.each { archive ->
     archive.doLast {
-      ant.checksum file:"${archive.archivePath}", algorithm:"md5"
-      ant.checksum file:"${archive.archivePath}", algorithm:"sha-256"
+      ant.checksum file:"${archive.archivePath}", algorithm:"md5", format: 'MD5SUM'
+      ant.checksum file:"${archive.archivePath}", algorithm:"sha-256", format: 'MD5SUM', fileext: '.sha256'
     }
   }
 })
@@ -241,12 +260,13 @@ distributions {
   src {
     baseName = 'apache-geode-src'
     contents {
+      from writeBuildInfo
       from (rootDir) {
         exclude 'KEYS'
-        exclude 'gradlew'
-        exclude 'gradlew.bat'
-        exclude 'gradle/wrapper/gradle-wrapper.jar'
-        exclude '.gradle'
+        exclude '**/gradlew'
+        exclude '**/gradlew.bat'
+        exclude '**/gradle/wrapper/gradle-wrapper.jar'
+        exclude '**/.gradle'
         exclude '**/build/**'
         exclude 'geode-spark-connector/**/target/**'
         exclude 'geode-spark-connector/project/project'
@@ -254,10 +274,11 @@ distributions {
         exclude '**/.classpath'
         exclude '**/.settings/**'
         exclude '**/build-eclipse/**'
-        exclude '.idea/**'
+        exclude '**/.idea/**'
         exclude '**/*.iml'
         exclude '**/*.ipr'
         exclude '**/*.iws'
+        exclude '**/.travis.yml'
         exclude '**/tags'
 
         //These directories are generated on the jenkins server by gradle
@@ -265,6 +286,10 @@ distributions {
         exclude 'daemon'
         exclude 'native'
         exclude 'wrapper'
+      }
+
+      into ('geode-examples') {
+        from project.file( 'src/src/dist/gradlew' )
       }
     }
   }
@@ -296,9 +321,6 @@ distributions {
         from project(":geode-json").configurations.runtime
         from project(":geode-json").configurations.archives.allArtifacts.files
 
-        from project(":geode-joptsimple").configurations.runtime
-        from project(":geode-joptsimple").configurations.archives.allArtifacts.files
-
         from project(":geode-wan").configurations.runtime
         from project(":geode-wan").configurations.archives.allArtifacts.files
 
@@ -312,6 +334,7 @@ distributions {
         from project(":geode-lucene").configurations.archives.allArtifacts.files
 
         from configurations.bundled
+        from configurations.gfshDependencies
 
         //These tasks are included as closures (wrapped in {}) because gradle may evaluate
         //this CopySpec before it evaluates the geode-core build file.
@@ -364,6 +387,7 @@ def dependOnInstalledProduct = {
 test dependOnInstalledProduct
 distributedTest dependOnInstalledProduct
 integrationTest dependOnInstalledProduct
+flakyTest dependOnInstalledProduct
 
 // Make build final task to generate all test and product resources
 build.dependsOn installDist

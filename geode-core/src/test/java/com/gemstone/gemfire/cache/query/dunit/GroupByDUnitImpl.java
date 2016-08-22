@@ -16,6 +16,10 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.IndexExistsException;
@@ -29,21 +33,19 @@ import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 /**
  * 
  *
  */
-public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByTestInterface{
+public abstract class GroupByDUnitImpl extends JUnit4CacheTestCase implements GroupByTestInterface{
 
-
-  public GroupByDUnitImpl(String name) {
-    super(name);
-  }
 
   protected abstract GroupByTestInterface createTestInstance();
 
   @Override
+  @Test
   public void testAggregateFuncAvg() throws Exception {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -57,6 +59,7 @@ public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByT
   }
 
   @Override
+  @Test
   public void testAggregateFuncAvgDistinct() throws Exception {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -70,6 +73,7 @@ public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByT
   }
 
   @Override
+  @Test
   public void testAggregateFuncCountDistinctStar_1()
       throws Exception {
     Host host = Host.getHost(0);
@@ -84,6 +88,7 @@ public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByT
   }
 
   @Override
+  @Test
   public void testAggregateFuncCountDistinctStar_2()
       throws Exception {
     Host host = Host.getHost(0);
@@ -98,6 +103,7 @@ public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByT
   }
 
   @Override
+  @Test
   public void testAggregateFuncCountStar()
       throws Exception {
     Host host = Host.getHost(0);
@@ -112,6 +118,7 @@ public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByT
   }
 
   @Override
+  @Test
   public void testAggregateFuncMax()
       throws Exception {
     Host host = Host.getHost(0);
@@ -126,6 +133,7 @@ public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByT
   }
 
   @Override
+  @Test
   public void testAggregateFuncMin() throws Exception {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -139,6 +147,7 @@ public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByT
   }
 
   @Override
+  @Test
   public void testAggregateFuncNoGroupBy() throws Exception {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -152,6 +161,7 @@ public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByT
   }
 
   @Override
+  @Test
   public void testAggregateFuncSum() throws Exception {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -165,6 +175,7 @@ public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByT
   }
 
   @Override
+  @Test
   public void testAggregateFuncSumDistinct() throws Exception {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -178,6 +189,7 @@ public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByT
   }
   
   @Override
+  @Test
   public void testConvertibleGroupByQuery_1() throws Exception {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -191,6 +203,7 @@ public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByT
   }
   
   @Override
+  @Test
   public void testConvertibleGroupByQuery_refer_column() throws Exception {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -204,6 +217,7 @@ public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByT
   }
   
   @Override
+  @Test
   public void testConvertibleGroupByQuery_refer_column_alias_Bug520141() throws Exception {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -217,6 +231,7 @@ public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByT
   }
   
   @Override
+  @Test
   public void testSumWithMultiColumnGroupBy() throws Exception {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -230,6 +245,7 @@ public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByT
   }
   
   @Override
+  @Test
   public void testComplexValueAggregateFuncAvgDistinct() throws Exception {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -243,6 +259,7 @@ public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByT
   }
   
   @Override
+  @Test
   public void testAggregateFuncWithOrderBy() throws Exception {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -256,6 +273,7 @@ public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByT
   }
   
   @Override
+  @Test
   public void testCompactRangeIndex() throws Exception {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -269,6 +287,7 @@ public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByT
   }
 
   @Override
+  @Test
   public void testDistinctCountWithoutGroupBy() throws Exception {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -280,7 +299,8 @@ public abstract class GroupByDUnitImpl extends CacheTestCase implements GroupByT
     test.testDistinctCountWithoutGroupBy();
     this.closeCache(vm0, vm1, vm2, vm3);
   }
-  
+
+  @Test
   public void testLimitWithGroupBy() throws Exception {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);

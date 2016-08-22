@@ -22,7 +22,7 @@ import com.gemstone.gemfire.internal.lang.ObjectUtils;
 /**
  * The Customer class models a customer entity.
  * <p/>
- * @since 8.0
+ * @since GemFire 8.0
  */
 
 public class Customer implements Serializable {

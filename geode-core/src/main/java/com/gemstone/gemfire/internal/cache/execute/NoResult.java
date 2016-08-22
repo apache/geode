@@ -35,7 +35,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * 
  * 
  * 
- * @since 5.8 Beta
+ * @since GemFire 5.8 Beta
  * 
  * @see Function#hasResult()
  * 

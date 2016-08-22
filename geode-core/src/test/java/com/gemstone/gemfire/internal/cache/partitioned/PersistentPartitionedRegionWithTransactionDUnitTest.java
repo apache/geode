@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheTransactionManager;
 import com.gemstone.gemfire.cache.Region;
@@ -32,12 +41,13 @@ import com.gemstone.gemfire.test.dunit.VM;
  * Tests the basic use cases for PR persistence.
  *
  */
+@Category(DistributedTest.class)
 public class PersistentPartitionedRegionWithTransactionDUnitTest extends PersistentPartitionedRegionTestBase {
 
   private static final long MAX_WAIT = 0;
 
-  public PersistentPartitionedRegionWithTransactionDUnitTest(String name) {
-    super(name);
+  public PersistentPartitionedRegionWithTransactionDUnitTest() {
+    super();
   }
   
   @Override
@@ -61,6 +71,7 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest extends Persist
     });
   }
 
+  @Test
   public void testRollback() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

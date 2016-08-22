@@ -16,24 +16,9 @@
  */
 package com.gemstone.gemfire.pdx;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.ToDataException;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.FileUtil;
@@ -42,6 +27,17 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -81,7 +77,7 @@ public class PdxAttributesJUnitTest {
   public void testPdxPersistent() throws Exception {
     {
       CacheFactory cf = new CacheFactory();
-      cf.set("mcast-port", "0");
+      cf.set(MCAST_PORT, "0");
       Cache cache = cf.create();
 
       //define a type
@@ -95,7 +91,7 @@ public class PdxAttributesJUnitTest {
 
     {
       CacheFactory cf = new CacheFactory();
-      cf.set("mcast-port", "0");
+      cf.set(MCAST_PORT, "0");
       cf.setPdxPersistent(true);
       Cache cache = cf.create();
 
@@ -111,7 +107,7 @@ public class PdxAttributesJUnitTest {
   public void testPdxDiskStore() throws Exception {
     {
       CacheFactory cf = new CacheFactory();
-      cf.set("mcast-port", "0");
+      cf.set(MCAST_PORT, "0");
       cf.setPdxPersistent(true);
       cf.setPdxDiskStore("diskstore1");
       Cache cache = cf.create();
@@ -129,7 +125,7 @@ public class PdxAttributesJUnitTest {
 
     {
       CacheFactory cf = new CacheFactory();
-      cf.set("mcast-port", "0");
+      cf.set(MCAST_PORT, "0");
       cf.setPdxPersistent(true);
       Cache cache = cf.create();
 
@@ -145,7 +141,7 @@ public class PdxAttributesJUnitTest {
   public void testNonPersistentRegistryWithOverflowRegion() throws Exception {
     {
       CacheFactory cf = new CacheFactory();
-      cf.set("mcast-port", "0");
+      cf.set(MCAST_PORT, "0");
       Cache cache = cf.create();
       cache.createDiskStoreFactory().setDiskDirs(new File[] {diskDir}).setMaxOplogSize(1).create("diskstore1");
       cache.createRegionFactory(RegionShortcut.LOCAL_OVERFLOW).setDiskStoreName("diskstore1").create("region");
@@ -156,7 +152,7 @@ public class PdxAttributesJUnitTest {
     
     {
       CacheFactory cf = new CacheFactory();
-      cf.set("mcast-port", "0");
+      cf.set(MCAST_PORT, "0");
       Cache cache = cf.create();
       defineAType();
       cache.createDiskStoreFactory().setDiskDirs(new File[] {diskDir}).setMaxOplogSize(1).create("diskstore1");
@@ -168,7 +164,7 @@ public class PdxAttributesJUnitTest {
   public void testNonPersistentRegistryWithPersistentRegion() throws Exception {
     {
       CacheFactory cf = new CacheFactory();
-      cf.set("mcast-port", "0");
+      cf.set(MCAST_PORT, "0");
       Cache cache = cf.create();
       cache.createDiskStoreFactory().setDiskDirs(new File[] {diskDir}).setMaxOplogSize(1).create("diskstore1");
       cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("diskstore1").create("region");
@@ -185,7 +181,7 @@ public class PdxAttributesJUnitTest {
     
     {
       CacheFactory cf = new CacheFactory();
-      cf.set("mcast-port", "0");
+      cf.set(MCAST_PORT, "0");
       Cache cache = cf.create();
       defineATypeNoEnum();
       cache.createDiskStoreFactory().setDiskDirs(new File[] {diskDir}).setMaxOplogSize(1).create("diskstore1");
@@ -209,7 +205,7 @@ public class PdxAttributesJUnitTest {
     //Test that we can become a peer registry
     {
       CacheFactory cf = new CacheFactory();
-      cf.set("mcast-port", "0");
+      cf.set(MCAST_PORT, "0");
       Cache cache = cf.create();
       //This should work, because this is a peer.
       defineAType();
@@ -220,7 +216,7 @@ public class PdxAttributesJUnitTest {
     //Test that we can become a client registry.
     {
       CacheFactory cf = new CacheFactory();
-      cf.set("mcast-port", "0");
+      cf.set(MCAST_PORT, "0");
       Cache cache = cf.create();
       int port = AvailablePortHelper.getRandomAvailableTCPPort();
       PoolManager.createFactory().addServer("localhost", port).create("pool");

@@ -36,6 +36,8 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 public abstract class AbstractCache {
 
   protected GemFireCache cache;
@@ -111,7 +113,7 @@ public abstract class AbstractCache {
   }
 
   public String getLogFileName() {
-    String logFileName = getGemFireProperties().get(DistributionConfig.LOG_FILE_NAME);
+    String logFileName = getGemFireProperties().get(LOG_FILE);
     if (logFileName == null) {
       logFileName = DEFAULT_LOG_FILE_NAME;
     }
@@ -119,7 +121,7 @@ public abstract class AbstractCache {
   }
 
   public String getStatisticArchiveFileName() {
-    String statisticsArchiveFileName = getGemFireProperties().get(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME);
+    String statisticsArchiveFileName = getGemFireProperties().get(STATISTIC_ARCHIVE_FILE);
     if (statisticsArchiveFileName == null) {
       statisticsArchiveFileName = DEFAULT_STATISTIC_ARCHIVE_FILE_NAME;
     }
@@ -127,7 +129,7 @@ public abstract class AbstractCache {
   }
 
   public String getCacheXmlFileName() {
-    String cacheXmlFileName = getGemFireProperties().get(DistributionConfig.CACHE_XML_FILE_NAME);
+    String cacheXmlFileName = getGemFireProperties().get(CACHE_XML_FILE);
     if (cacheXmlFileName == null) {
       cacheXmlFileName = getDefaultCacheXmlFileName();
     }
@@ -219,19 +221,19 @@ public abstract class AbstractCache {
     if (getCacheXmlFileName().equals(getDefaultCacheXmlFileName()) && !cacheXmlFile.exists()) {
       absoluteCacheXmlFileName = DistributionConfig.DEFAULT_CACHE_XML_FILE.getName();
     }
-    properties.put(DistributionConfig.CACHE_XML_FILE_NAME, absoluteCacheXmlFileName);
+    properties.put(CACHE_XML_FILE, absoluteCacheXmlFileName);
 
     // Replace the log file in the properties
-    properties.put(DistributionConfig.LOG_FILE_NAME, getLogFile().getAbsolutePath());
+    properties.put(LOG_FILE, getLogFile().getAbsolutePath());
 
     // Replace the statistics archive file in the properties
     File statisticArchiveFile = getStatisticArchiveFile();
     if (statisticArchiveFile == null) {
       // Remove the statistics archive file name since statistic sampling is disabled
-      properties.remove(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME);
-      properties.remove(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME);
+      properties.remove(STATISTIC_ARCHIVE_FILE);
+      properties.remove(STATISTIC_SAMPLING_ENABLED);
     } else {
-      properties.put(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, statisticArchiveFile.getAbsolutePath());
+      properties.put(STATISTIC_ARCHIVE_FILE, statisticArchiveFile.getAbsolutePath());
     }
     getLogger().info("Creating distributed system from: " + properties);
 
@@ -261,7 +263,7 @@ public abstract class AbstractCache {
         logFile = new File("servers" + separator + weblogicName + separator +
             "logs" + separator + logFileName);
       } else {
-        logFile = new File(System.getProperty("gemfire.logdir"), logFileName);
+        logFile = new File(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "logdir"), logFileName);
       }
     }
     return logFile;
@@ -269,7 +271,7 @@ public abstract class AbstractCache {
 
   protected File getStatisticArchiveFile() {
     File statisticsArchiveFile = null;
-    String statisticSamplingEnabled = getGemFireProperties().get(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME);
+    String statisticSamplingEnabled = getGemFireProperties().get(STATISTIC_SAMPLING_ENABLED);
     if (statisticSamplingEnabled != null && statisticSamplingEnabled.equals("true")) {
       String statisticsArchiveFileName = getStatisticArchiveFileName();
       statisticsArchiveFile = new File(statisticsArchiveFileName);
@@ -283,7 +285,7 @@ public abstract class AbstractCache {
           statisticsArchiveFile = new File("servers" + separator + weblogicName + separator +
               "logs" + separator + statisticsArchiveFileName);
         } else {
-          statisticsArchiveFile = new File(System.getProperty("gemfire.statisticsdir"), statisticsArchiveFileName);
+          statisticsArchiveFile = new File(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "statisticsdir"), statisticsArchiveFileName);
         }
       }
     }

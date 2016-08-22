@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.offheap;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
-import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 
@@ -31,11 +30,6 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.offheap.NullOffHeapMemoryStats;
-import com.gemstone.gemfire.internal.offheap.NullOutOfOffHeapMemoryListener;
-import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
-import com.gemstone.gemfire.internal.offheap.SlabImpl;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)

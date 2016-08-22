@@ -24,7 +24,7 @@ import com.gemstone.gemfire.cache.control.ResourceManager;
  * Due to various threads using the method, access to the query object may not be available for certain threads
  * This exception is generically used and caught by DefaultQuery, which will then throw the appropriate exception
 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class QueryExecutionCanceledException extends CacheRuntimeException {
   

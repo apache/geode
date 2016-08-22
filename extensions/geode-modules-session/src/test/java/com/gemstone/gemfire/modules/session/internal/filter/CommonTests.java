@@ -14,15 +14,9 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
 package com.gemstone.gemfire.modules.session.internal.filter;
 
-import com.mockrunner.mock.web.MockHttpServletRequest;
-import com.mockrunner.mock.web.MockHttpServletResponse;
-import com.mockrunner.mock.web.MockHttpSession;
-import com.mockrunner.servlet.BasicServletTestCaseAdapter;
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 import java.util.concurrent.TimeUnit;
 import javax.servlet.http.Cookie;
@@ -31,8 +25,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionAttributeListener;
 
-import static junit.framework.Assert.assertEquals;
-import static org.junit.Assert.*;
+import com.mockrunner.mock.web.MockHttpServletRequest;
+import com.mockrunner.mock.web.MockHttpServletResponse;
+import com.mockrunner.mock.web.MockHttpSession;
+import com.mockrunner.servlet.BasicServletTestCaseAdapter;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  * This servlet tests the effects of the downstream SessionCachingFilter filter.

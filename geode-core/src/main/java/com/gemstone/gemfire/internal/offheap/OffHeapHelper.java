@@ -24,7 +24,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 /**
  * Utility class that provides static method to do some common tasks for off-heap references.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 public class OffHeapHelper {
   private OffHeapHelper() {
@@ -33,7 +33,6 @@ public class OffHeapHelper {
   
   /**
    * If o is off-heap then return its heap form; otherwise return o since it is already on the heap.
-   * Note even if o is sqlf off-heap byte[] or byte[][] the heap form will be created.
    */
   public static Object getHeapForm(Object o) {
     if (o instanceof StoredObject) {

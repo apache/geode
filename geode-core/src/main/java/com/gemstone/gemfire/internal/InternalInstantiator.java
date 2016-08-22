@@ -54,7 +54,7 @@ import com.gemstone.gemfire.i18n.StringId;
  * Contains the implementation of {@link com.gemstone.gemfire.Instantiator}
  * registration and distribution messaging (and shared memory management).
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public class InternalInstantiator {
 
@@ -977,7 +977,7 @@ public class InternalInstantiator {
    * registered.
    *
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static final class RegistrationContextMessage extends RegistrationMessage {
 

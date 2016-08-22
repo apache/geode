@@ -16,22 +16,7 @@
  */
 package com.gemstone.gemfire.internal;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.File;
-import java.util.Collection;
-import java.util.Properties;
-import java.util.regex.Pattern;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.pdx.PdxReader;
 import com.gemstone.gemfire.pdx.PdxSerializable;
@@ -39,6 +24,17 @@ import com.gemstone.gemfire.pdx.PdxWriter;
 import com.gemstone.gemfire.pdx.internal.EnumInfo;
 import com.gemstone.gemfire.pdx.internal.PdxType;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.util.Collection;
+import java.util.Properties;
+import java.util.regex.Pattern;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
 
 @Category(IntegrationTest.class)
 public class PdxRenameJUnitTest {
@@ -46,8 +42,8 @@ public class PdxRenameJUnitTest {
   public void testGetPdxTypes() throws Exception {
     String DS_NAME = "PdxRenameJUnitTestDiskStore";
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     File f = new File(DS_NAME);
     f.mkdir();
     try {
@@ -79,8 +75,8 @@ public class PdxRenameJUnitTest {
   public void testPdxRename() throws Exception {
     String DS_NAME = "PdxRenameJUnitTestDiskStore";
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     File f = new File(DS_NAME);
     f.mkdir();
     try {

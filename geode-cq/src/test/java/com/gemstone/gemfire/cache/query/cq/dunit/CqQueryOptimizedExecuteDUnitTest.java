@@ -16,30 +16,35 @@
  */
 package com.gemstone.gemfire.cache.query.cq.dunit;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.internal.cq.CqServiceImpl;
 import com.gemstone.gemfire.cache.query.internal.cq.CqServiceProvider;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.*;
 
 /**
  * Test class for testing {@link CqServiceImpl#EXECUTE_QUERY_DURING_INIT} flag
  *
  */
+@Category(DistributedTest.class)
 public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
 
-  public CqQueryOptimizedExecuteDUnitTest(String name) {
-    super(name);
+  public CqQueryOptimizedExecuteDUnitTest() {
+    super();
   }
 
   @Override
@@ -61,6 +66,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
     });
   }
   
+  @Test
   public void testCqExecuteWithoutQueryExecution() throws Exception {
     final Host host = Host.getHost(0);
     final VM server = host.getVM(0);
@@ -153,6 +159,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
     closeServer(server);    
   }
 
+  @Test
   public void testCqExecuteWithoutQueryExecutionAndNoRSCaching() throws Exception {
     final Host host = Host.getHost(0);
     final VM server = host.getVM(0);
@@ -186,7 +193,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
     server.invoke(new CacheSerializableRunnable("execute cq") {
       public void run2() throws CacheException {
         assertFalse("CqServiceImpl.EXECUTE_QUERY_DURING_INIT flag should be false ", CqServiceImpl.EXECUTE_QUERY_DURING_INIT);
-        assertFalse("gemfire.cq.MAINTAIN_KEYS flag should be false ", CqServiceProvider.MAINTAIN_KEYS);
+        assertFalse(DistributionConfig.GEMFIRE_PREFIX + "cq.MAINTAIN_KEYS flag should be false ", CqServiceProvider.MAINTAIN_KEYS);
         int numOfQueryExecutions = (Integer) ((GemFireCacheImpl)getCache()).getCachePerfStats().getStats().get("queryExecutions");
         assertEquals("Number of query executions for cq.execute should be 0 ", 0, numOfQueryExecutions);
       }
@@ -256,6 +263,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
   // Each cq uses a different pool and the servers are shutdown.
   // The listeners for each cq should receive a connect and disconnect
   // when their respective servers are shutdown
+  @Test
   public void testCQAllServersLeaveMultiplePool() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(1);

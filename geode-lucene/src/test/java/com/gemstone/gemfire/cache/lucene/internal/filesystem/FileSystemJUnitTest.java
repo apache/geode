@@ -16,58 +16,67 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.gemstone.gemfire.cache.lucene.internal.filesystem;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.rules.DiskDirRule;
 
 @Category(UnitTest.class)
 public class FileSystemJUnitTest {
 
   private static final int SMALL_CHUNK = 523;
   private static final int LARGE_CHUNK = 1024 * 1024 * 5 + 33;
+
   private FileSystem system;
   private Random rand = new Random();
   private ConcurrentHashMap<String, File> fileRegion;
   private ConcurrentHashMap<ChunkKey, byte[]> chunkRegion;
 
+  @Rule
+  public DiskDirRule dirRule = new DiskDirRule();
+  private FileSystemStats fileSystemStats;
+
   @Before
   public void setUp() {
     fileRegion = new ConcurrentHashMap<String, File>();
     chunkRegion = new ConcurrentHashMap<ChunkKey, byte[]>();
-    system = new FileSystem(fileRegion, chunkRegion);
+    fileSystemStats = mock(FileSystemStats.class);
+    system = new FileSystem(fileRegion, chunkRegion, fileSystemStats);
   }
   
   /**
    * A test of reading and writing to a file.
    */
   @Test
-  public void testReadWriteBytes() throws IOException {
+  public void testReadWriteBytes() throws Exception {
     long start = System.currentTimeMillis();
     
     File file1= system.createFile("testFile1");
@@ -143,7 +152,7 @@ public class FileSystemJUnitTest {
    * but they should not hurt each other.
    */
   @Test
-  public void testCloneReader() throws IOException {
+  public void testCloneReader() throws Exception {
     File file1= system.createFile("testFile1");
     
     byte[] data = writeRandomBytes(file1);
@@ -180,7 +189,7 @@ public class FileSystemJUnitTest {
    * A test that skip can jump to the correct position in the stream
    */
   @Test
-  public void testSeek() throws IOException {
+  public void testSeek() throws Exception {
     File file= system.createFile("testFile1");
 
     ByteArrayOutputStream expected = new ByteArrayOutputStream();
@@ -238,10 +247,9 @@ public class FileSystemJUnitTest {
 
   /**
    * Test basic file operations - rename, delete, listFiles.
-   * @throws IOException
    */
   @Test
-  public void testFileOperations() throws IOException {
+  public void testFileOperations() throws Exception {
     String name1 = "testFile1";
     File file1= system.createFile(name1);
     byte[] file1Data = writeRandomBytes(file1);
@@ -292,19 +300,17 @@ public class FileSystemJUnitTest {
   
   /**
    * Test what happens if you have an unclosed stream and you create a new file.
-   * @throws IOException
    */
   @Test
-  public void testUnclosedStreamSmallFile() throws IOException {
+  public void testUnclosedStreamSmallFile() throws Exception {
     doUnclosedStream(SMALL_CHUNK);
   }
   
   /**
    * Test what happens if you have an unclosed stream and you create a new file.
-   * @throws IOException
    */
   @Test
-  public void testUnclosedStreamLargeFile() throws IOException {
+  public void testUnclosedStreamLargeFile() throws Exception {
     doUnclosedStream(LARGE_CHUNK);
   }
   
@@ -314,7 +320,7 @@ public class FileSystemJUnitTest {
     byte[] bytes = getRandomBytes(size );
     file1.getOutputStream().write(bytes);
     
-    FileSystem system2 = new FileSystem(fileRegion, chunkRegion);
+    FileSystem system2 = new FileSystem(fileRegion, chunkRegion, fileSystemStats);
     File file = system2.getFile(name1);
     
     assertTrue(file.getLength() <= bytes.length);
@@ -346,16 +352,16 @@ public class FileSystemJUnitTest {
    * the partial rename.
    */
   @Test
-  public void testPartialRename() throws IOException {
+  public void testPartialRename() throws Exception {
 
     final CountOperations countOperations = new CountOperations();
     //Create a couple of mock regions where we count the operations
     //that happen to them. We will then use this to abort the rename
     //in the middle.
-    ConcurrentHashMap<String, File> spyFileRegion = Mockito.mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, fileRegion));
-    ConcurrentHashMap<ChunkKey, byte[]> spyChunkRegion = Mockito.mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, chunkRegion));
+    ConcurrentHashMap<String, File> spyFileRegion = mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, fileRegion));
+    ConcurrentHashMap<ChunkKey, byte[]> spyChunkRegion = mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, chunkRegion));
     
-    system = new FileSystem(spyFileRegion, spyChunkRegion);
+    system = new FileSystem(spyFileRegion, spyChunkRegion, fileSystemStats);
     
     String name = "file";
     File file = system.createFile(name);
@@ -387,11 +393,11 @@ public class FileSystemJUnitTest {
     try {
       system.renameFile(name2, name3);
       fail("should have seen an error");
-    } catch(CacheClosedException e) {
+    } catch(CacheClosedException expectedException) {
       
     }
     
-    system = new FileSystem(fileRegion, chunkRegion);
+    system = new FileSystem(fileRegion, chunkRegion, fileSystemStats);
     
     //This is not the ideal behavior. We are left
     //with two duplicate files. However, we will still
@@ -413,16 +419,16 @@ public class FileSystemJUnitTest {
    * the partial rename.
    */
   @Test
-  public void testPartialDelete() throws IOException {
+  public void testPartialDelete() throws Exception {
 
     final CountOperations countOperations = new CountOperations();
     //Create a couple of mock regions where we count the operations
     //that happen to them. We will then use this to abort the rename
     //in the middle.
-    ConcurrentHashMap<String, File> spyFileRegion = Mockito.mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, fileRegion));
-    ConcurrentHashMap<ChunkKey, byte[]> spyChunkRegion = Mockito.mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, chunkRegion));
+    ConcurrentHashMap<String, File> spyFileRegion = mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, fileRegion));
+    ConcurrentHashMap<ChunkKey, byte[]> spyChunkRegion = mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, chunkRegion));
     
-    system = new FileSystem(spyFileRegion, spyChunkRegion);
+    system = new FileSystem(spyFileRegion, spyChunkRegion, fileSystemStats);
     
     String name1 = "file1";
     String name2 = "file2";
@@ -456,32 +462,93 @@ public class FileSystemJUnitTest {
     try {
       system.deleteFile(name2);
       fail("should have seen an error");
-    } catch(CacheClosedException e) {
-      
+    } catch(CacheClosedException expectedException) {
     }
     
-    system = new FileSystem(fileRegion, chunkRegion);
+    system = new FileSystem(fileRegion, chunkRegion, fileSystemStats);
     
     if(system.listFileNames().size() == 0) {
       //File was deleted, but shouldn't have any dangling chunks at this point
       assertEquals(Collections.EMPTY_SET, fileRegion.keySet());
       //TODO - need to purge chunks of deleted files somehow.
-//      assertEquals(Collections.EMPTY_SET, chunkRegion.keySet());
+//      assertIndexDetailsEquals(Collections.EMPTY_SET, chunkRegion.keySet());
     } else {
       file2 = system.getFile(name2);
       assertContents(expected.toByteArray(), file2);
     }
-    
   }
 
-  private File getOrCreateFile(String name) throws IOException {
-    try {
-      return system.getFile(name);
-    } catch(FileNotFoundException e) {
-      return system.createFile(name);
-    }
+  @Test
+  public void testExport() throws IOException {
+    String name1 = "testFile1";
+    File file1= system.createFile(name1);
+    byte[] file1Data = writeRandomBytes(file1);
+
+    String name2 = "testFile2";
+    File file2= system.createFile(name2);
+    byte[] file2Data = writeRandomBytes(file2);
+
+    java.io.File parentDir = dirRule.get();
+    system.export(dirRule.get());
+    String[] foundFiles = parentDir.list();
+    Arrays.sort(foundFiles);
+    assertArrayEquals(new String[] {"testFile1", "testFile2"}, foundFiles);
+
+    assertExportedFileContents(file1Data, new java.io.File(parentDir, "testFile1"));
+    assertExportedFileContents(file2Data, new java.io.File(parentDir, "testFile2"));
   }
-  
+
+  @Test
+  public void testIncrementFileCreates() throws IOException {
+    File file= system.createFile("file");
+    verify(fileSystemStats).incFileCreates(1);
+  }
+  @Test
+  public void testIncrementFileDeletes() throws IOException {
+    File file= system.createFile("file");
+    system.deleteFile("file");
+    verify(fileSystemStats).incFileDeletes(1);
+  }
+
+  @Test
+  public void testIncrementFileRenames() throws IOException {
+    File file= system.createFile("file");
+    system.renameFile("file", "dest");
+    verify(fileSystemStats).incFileRenames(1);
+  }
+
+  @Test
+  public void testIncrementTemporaryFileCreates() throws IOException {
+    File file= system.createTemporaryFile("file");
+    verify(fileSystemStats).incTemporaryFileCreates(1);
+  }
+
+  @Test
+  public void testIncrementWrittenBytes() throws IOException {
+    File file= system.createTemporaryFile("file");
+    final byte[] bytes = writeRandomBytes(file);
+    ArgumentCaptor<Integer> captor = ArgumentCaptor.forClass(Integer.class);
+    verify(fileSystemStats, atLeast(1)).incWrittenBytes(captor.capture());
+    final int actualByteCount = captor.getAllValues().stream().mapToInt(Integer::intValue).sum();
+    assertEquals(bytes.length, actualByteCount);
+  }
+
+  @Test
+  public void testIncrementReadBytes() throws IOException {
+    File file= system.createTemporaryFile("file");
+    final byte[] bytes = writeRandomBytes(file);
+    file.getInputStream().read(bytes);
+    ArgumentCaptor<Integer> captor = ArgumentCaptor.forClass(Integer.class);
+    verify(fileSystemStats, atLeast(1)).incReadBytes(captor.capture());
+    final int actualByteCount = captor.getAllValues().stream().mapToInt(Integer::intValue).sum();
+    assertEquals(bytes.length, actualByteCount);
+  }
+
+  private void assertExportedFileContents(final byte[] expected, final java.io.File exportedFile) throws IOException {
+    byte[] actual = Files.readAllBytes(exportedFile.toPath());
+    assertArrayEquals(expected, actual);
+  }
+
   private void assertContents(byte[] data, File file) throws IOException {
     assertEquals(data.length, file.getLength());
     
@@ -512,11 +579,11 @@ public class FileSystemJUnitTest {
     outputStream.close();
   }
   
-  public byte[] getRandomBytes() {
+  private byte[] getRandomBytes() {
     return getRandomBytes(rand.nextInt(LARGE_CHUNK) + SMALL_CHUNK);
   }
-  
-  public byte[] getRandomBytes(int length) {
+
+  private byte[] getRandomBytes(int length) {
     byte[] data = new byte[length];
     rand.nextBytes(data);
     

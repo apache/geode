@@ -16,14 +16,15 @@
  */
 package com.gemstone.gemfire.internal;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
-import junit.framework.TestCase;
 
 /**
  * This test prints out the version information obtained from the
@@ -31,15 +32,16 @@ import junit.framework.TestCase;
  * of GemFire (and the JDK) was used to run the unit tests.
  */
 @Category(UnitTest.class)
-public class GemFireVersionJUnitTest extends TestCase {
+public class GemFireVersionJUnitTest {
 
   /**
    * Prints both the GemFire version info and the system properties.
    * We have to print both 
    */
+  @Test
   public void testPrintInfo() {
-	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	PrintStream ps = new PrintStream(baos);
+	  ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	  PrintStream ps = new PrintStream(baos);
     GemFireVersion.print(ps);
     final String versionOutput = baos.toString();
     System.out.println(versionOutput);
@@ -50,6 +52,7 @@ public class GemFireVersionJUnitTest extends TestCase {
     assertTrue(versionOutput.contains("Running on:"));
   }
 
+  @Test
   public void testMajorMinorVersions() {
     assertEquals(1, GemFireVersion.getMajorVersion("1.0.3"));
     assertEquals(33, GemFireVersion.getMajorVersion("33.0.3"));
@@ -77,7 +80,8 @@ public class GemFireVersionJUnitTest extends TestCase {
     assertTrue("7.0.2.13 should be == 7.0.2.13", GemFireVersion.compareVersions("7.0.2.13", "7.0.2.13", true) == 0);
     assertTrue("7.0.2.15 should be > 7.0.2.13", GemFireVersion.compareVersions("7.0.2.14", "7.0.2.13", true) > 0);
   }
-  
+
+  @Test
   public void testVersionClass() throws Exception {
     compare(Version.GFE_662, Version.GFE_66);
     compare(Version.GFE_6622, Version.GFE_662);

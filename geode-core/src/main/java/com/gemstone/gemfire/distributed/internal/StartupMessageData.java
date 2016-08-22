@@ -37,7 +37,7 @@ import com.gemstone.gemfire.internal.GemFireVersion;
  * backwards compatibility. All new fields added should be written to allow
  * for version compatibility.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 class StartupMessageData {
 

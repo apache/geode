@@ -33,7 +33,7 @@ import com.gemstone.gemfire.distributed.internal.ReplyMessage;
  * should be removed but it it there for rolling upgrade support when request
  * come from old version member to shut down hubs.
  * 
- * @since 9.0
+ * @since Geode 1.0
  *
  */
 public class ShutdownAllGatewayHubsRequest extends DistributionMessage {

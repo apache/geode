@@ -24,7 +24,7 @@ import com.gemstone.gemfire.GemFireException;
  * on a member specified by name!
  * </p>
  * @see com.gemstone.gemfire.GemFireException
- * @since 7.0
+ * @since GemFire 7.0
  */
 // TODO this GemFireException should be moved to a more appropriate package!
   @SuppressWarnings("unused")

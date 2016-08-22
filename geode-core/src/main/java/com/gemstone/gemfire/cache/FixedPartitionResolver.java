@@ -54,7 +54,7 @@ import java.util.Set;
  * &nbsp }<br>
  *
  * @see PartitionResolver
- * @since 6.6
+ * @since GemFire 6.6
  *
  * 
  */

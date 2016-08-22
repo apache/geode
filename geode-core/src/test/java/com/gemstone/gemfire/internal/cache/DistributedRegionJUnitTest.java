@@ -16,28 +16,25 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.*;
+
 import org.junit.experimental.categories.Category;
-import org.mockito.Mockito;
 
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
-
-/**
- *
- */
 @Category(UnitTest.class)
 public class DistributedRegionJUnitTest extends AbstractDistributedRegionJUnitTest {
 
+  @Override
   protected void setInternalRegionArguments(InternalRegionArguments ira) {
   }
-  
+
+  @Override
   protected DistributedRegion createAndDefineRegion(boolean isConcurrencyChecksEnabled,
       RegionAttributes ra, InternalRegionArguments ira, GemFireCacheImpl cache) {
     DistributedRegion region = new DistributedRegion("testRegion", ra, null, cache, ira);
@@ -46,7 +43,7 @@ public class DistributedRegionJUnitTest extends AbstractDistributedRegionJUnitTe
     }
     
     // since it is a real region object, we need to tell mockito to monitor it
-    region = Mockito.spy(region);
+    region = spy(region);
 
     doNothing().when(region).distributeUpdate(any(), anyLong(), anyBoolean(), anyBoolean(), any(), anyBoolean());
     doNothing().when(region).distributeDestroy(any(), any());
@@ -55,7 +52,8 @@ public class DistributedRegionJUnitTest extends AbstractDistributedRegionJUnitTe
     
     return region;
   }
-  
+
+  @Override
   protected void verifyDistributeUpdate(DistributedRegion region, EntryEventImpl event, int cnt) {
     region.virtualPut(event, false, false, null, false, 12345L, false);
     // verify the result
@@ -66,6 +64,7 @@ public class DistributedRegionJUnitTest extends AbstractDistributedRegionJUnitTe
     }
   }
 
+  @Override
   protected void verifyDistributeDestroy(DistributedRegion region, EntryEventImpl event, int cnt) {
     region.basicDestroy(event, false, null);
     // verify the result
@@ -76,6 +75,7 @@ public class DistributedRegionJUnitTest extends AbstractDistributedRegionJUnitTe
     }
   }
 
+  @Override
   protected void verifyDistributeInvalidate(DistributedRegion region, EntryEventImpl event, int cnt) {
     region.basicInvalidate(event);
     // verify the result
@@ -86,6 +86,7 @@ public class DistributedRegionJUnitTest extends AbstractDistributedRegionJUnitTe
     }
   }
 
+  @Override
   protected void verifyDistributeUpdateEntryVersion(DistributedRegion region, EntryEventImpl event, int cnt) {
     region.basicUpdateEntryVersion(event);
     // verify the result

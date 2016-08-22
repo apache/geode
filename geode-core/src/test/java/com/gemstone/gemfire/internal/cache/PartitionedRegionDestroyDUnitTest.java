@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Iterator;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -43,14 +52,15 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * 
  *  
  */
+@Category(DistributedTest.class)
 public class PartitionedRegionDestroyDUnitTest extends
     PartitionedRegionDUnitTestCase
 {
 
   //////constructor //////////
-  public PartitionedRegionDestroyDUnitTest(String name) {
+  public PartitionedRegionDestroyDUnitTest() {
 
-    super(name);
+    super();
   }//end of constructor
 
   public static final String PR_PREFIX = "PR";
@@ -61,6 +71,7 @@ public class PartitionedRegionDestroyDUnitTest extends
   
   VM vm0, vm1,vm2,vm3;
   
+  @Test
   public void testDestroyRegion() throws Exception, Throwable
   {
     Host host = Host.getHost(0);
@@ -239,7 +250,7 @@ public class PartitionedRegionDestroyDUnitTest extends
         while (itr.hasNext()) {
           Region rg = (Region)itr.next();
           LogWriterUtils.getLogWriter().info("Root Region SubRegionName = " + rg.getName());
-//          assertEquals("REGION NAME FOUND:"+rg.getName(),-1, rg.getName().indexOf(
+//          assertIndexDetailsEquals("REGION NAME FOUND:"+rg.getName(),-1, rg.getName().indexOf(
 //              PartitionedRegionHelper.BUCKET_2_NODE_TABLE_PREFIX));
           assertEquals("regionFound that should be gone!:"+rg.getName(),-1, rg.getName().indexOf(
               PartitionedRegionHelper.BUCKET_REGION_PREFIX));

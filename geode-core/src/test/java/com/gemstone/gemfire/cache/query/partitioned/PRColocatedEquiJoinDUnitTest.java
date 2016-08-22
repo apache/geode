@@ -19,6 +19,17 @@
  */
 package com.gemstone.gemfire.cache.query.partitioned;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+import static com.gemstone.gemfire.cache.query.Utils.*;
+
 import java.util.ArrayList;
 
 import parReg.query.unittest.NewPortfolio;
@@ -62,13 +73,14 @@ import com.gemstone.gemfire.test.dunit.Wait;
 /**
  *
  */
+@Category(DistributedTest.class)
 public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase {
 
   int totalNumBuckets = 100;
 
   int queryTestCycle = 10;
 
-  PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper("");
+  PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();
 
   final String name = "Portfolios1";
 
@@ -85,10 +97,14 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
   /**
    * @param name
    */
-  public PRColocatedEquiJoinDUnitTest(String name) {
-    super(name);
+  public PRColocatedEquiJoinDUnitTest() {
+    super();
   }
-
+  public void setCacheInVMs(VM... vms) {
+    for (VM vm : vms) {
+      vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    }
+  }
   /**
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1.
@@ -96,11 +112,12 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * 3. Fires a LOCAL query on one data store VM and verifies the result. 
    * @throws Exception
    */
+  @Test
   public void testPRLocalQuerying() throws Exception
   {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-
+    setCacheInVMs(vm0);
     LogWriterUtils.getLogWriter()
         .info(
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR Test with DACK Started");
@@ -146,8 +163,8 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
     // Generating portfolio object array to be populated across the PR's & Local
     // Regions
 
-    final Portfolio[] portfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
-    final NewPortfolio[] newPortfolio = PRQHelp.createNewPortfoliosAndPositions(cntDest);
+    final Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
+    final NewPortfolio[] newPortfolio = createNewPortfoliosAndPositions(cntDest);
     
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName, portfolio,
         cnt, cntDest));
@@ -174,12 +191,13 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR's Test ENDED");
   }
 
+  @Test
   public void testNonColocatedPRLocalQuerying() throws Exception
   {
     IgnoredException.addIgnoredException("UnsupportedOperationException");
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-
+    setCacheInVMs(vm0);
     LogWriterUtils.getLogWriter()
         .info(
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR Test with DACK Started");
@@ -259,8 +277,8 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
     // Generating portfolio object array to be populated across the PR's & Local
     // Regions
 
-    final Portfolio[] portfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
-    final NewPortfolio[] newPortfolio = PRQHelp.createNewPortfoliosAndPositions(cntDest);
+    final Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
+    final NewPortfolio[] newPortfolio = createNewPortfoliosAndPositions(cntDest);
     
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName, portfolio,
         cnt, cntDest));
@@ -379,11 +397,12 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * 3. Fires a LOCAL query on one data store VM and verifies the result. 
    * @throws Exception
    */
+  @Test
   public void testPRLocalQueryingWithIndexes() throws Exception {
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-
+    setCacheInVMs(vm0);
     LogWriterUtils.getLogWriter()
         .info(
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR Test with DACK Started");
@@ -433,8 +452,8 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
     // Generating portfolio object array to be populated across the PR's & Local
     // Regions
 
-    final Portfolio[] portfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
-    final NewPortfolio[] newPortfolio = PRQHelp.createNewPortfoliosAndPositions(cntDest);
+    final Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
+    final NewPortfolio[] newPortfolio = createNewPortfoliosAndPositions(cntDest);
     
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName, portfolio,
         cnt, cntDest));
@@ -468,11 +487,12 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * 3. Fires a LOCAL query on one data store VM and verifies the result. 
    * @throws Exception
    */
+  @Test
   public void testPRLocalQueryingWithIndexOnOneRegion() throws Exception {
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-
+    setCacheInVMs(vm0);
     LogWriterUtils.getLogWriter()
         .info(
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR Test with DACK Started");
@@ -520,8 +540,8 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
     // Generating portfolio object array to be populated across the PR's & Local
     // Regions
 
-    final Portfolio[] portfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
-    final NewPortfolio[] newPortfolio = PRQHelp.createNewPortfoliosAndPositions(cntDest);
+    final Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
+    final NewPortfolio[] newPortfolio = createNewPortfoliosAndPositions(cntDest);
     
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName, portfolio,
         cnt, cntDest));
@@ -555,11 +575,12 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * 3. Fires a LOCAL query on one data store VM and verifies the result. 
    * @throws Exception
    */
+  @Test
   public void testPRRRLocalQuerying() throws Exception
   {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-
+    setCacheInVMs(vm0);
     LogWriterUtils.getLogWriter()
         .info(
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR Test with DACK Started");
@@ -604,8 +625,8 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
     // Generating portfolio object array to be populated across the PR's & Local
     // Regions
 
-    final Portfolio[] portfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
-    final NewPortfolio[] newPortfolio = PRQHelp.createNewPortfoliosAndPositions(cntDest);
+    final Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
+    final NewPortfolio[] newPortfolio = createNewPortfoliosAndPositions(cntDest);
     
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName, portfolio,
         cnt, cntDest));
@@ -639,11 +660,12 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * 3. Fires a LOCAL query on one data store VM and verifies the result. 
    * @throws Exception
    */
+  @Test
   public void testPRRRLocalQueryingWithIndexes() throws Exception {
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-
+    setCacheInVMs(vm0);
     LogWriterUtils.getLogWriter()
         .info(
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR Test with DACK Started");
@@ -693,8 +715,8 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
     // Generating portfolio object array to be populated across the PR's & Local
     // Regions
 
-    final Portfolio[] portfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
-    final NewPortfolio[] newPortfolio = PRQHelp.createNewPortfoliosAndPositions(cntDest);
+    final Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
+    final NewPortfolio[] newPortfolio = createNewPortfoliosAndPositions(cntDest);
     
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName, portfolio,
         cnt, cntDest));
@@ -728,11 +750,12 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * 3. Fires a LOCAL query on one data store VM and verifies the result. 
    * @throws Exception
    */
+  @Test
   public void testPRRRLocalQueryingWithIndexOnOnePRRegion() throws Exception {
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-
+    setCacheInVMs(vm0);
     LogWriterUtils.getLogWriter()
         .info(
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR Test with DACK Started");
@@ -779,8 +802,8 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
     // Generating portfolio object array to be populated across the PR's & Local
     // Regions
 
-    final Portfolio[] portfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
-    final NewPortfolio[] newPortfolio = PRQHelp.createNewPortfoliosAndPositions(cntDest);
+    final Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
+    final NewPortfolio[] newPortfolio = createNewPortfoliosAndPositions(cntDest);
     
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName, portfolio,
         cnt, cntDest));
@@ -814,11 +837,12 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * 3. Fires a LOCAL query on one data store VM and verifies the result. 
    * @throws Exception
    */
+  @Test
   public void testRRPRLocalQuerying() throws Exception
   {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-
+    setCacheInVMs(vm0);
     LogWriterUtils.getLogWriter()
         .info(
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR Test with DACK Started");
@@ -863,8 +887,8 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
     // Generating portfolio object array to be populated across the PR's & Local
     // Regions
 
-    final Portfolio[] portfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
-    final NewPortfolio[] newPortfolio = PRQHelp.createNewPortfoliosAndPositions(cntDest);
+    final Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
+    final NewPortfolio[] newPortfolio = createNewPortfoliosAndPositions(cntDest);
     
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName, portfolio,
         cnt, cntDest));
@@ -898,11 +922,12 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * 3. Fires a LOCAL query on one data store VM and verifies the result. 
    * @throws Exception
    */
+  @Test
   public void testRRPRLocalQueryingWithIndexes() throws Exception {
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-
+    setCacheInVMs(vm0);
     LogWriterUtils.getLogWriter()
         .info(
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR Test with DACK Started");
@@ -950,8 +975,8 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
     // Generating portfolio object array to be populated across the PR's & Local
     // Regions
 
-    final Portfolio[] portfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
-    final NewPortfolio[] newPortfolio = PRQHelp.createNewPortfoliosAndPositions(cntDest);
+    final Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
+    final NewPortfolio[] newPortfolio = createNewPortfoliosAndPositions(cntDest);
     
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName, portfolio,
         cnt, cntDest));
@@ -985,11 +1010,12 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * 3. Fires a LOCAL query on one data store VM and verifies the result. 
    * @throws Exception
    */
+  @Test
   public void testRRPRLocalQueryingWithIndexOnOnePRRegion() throws Exception {
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-
+    setCacheInVMs(vm0);
     LogWriterUtils.getLogWriter()
         .info(
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR Test with DACK Started");
@@ -1036,8 +1062,8 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
     // Generating portfolio object array to be populated across the PR's & Local
     // Regions
 
-    final Portfolio[] portfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
-    final NewPortfolio[] newPortfolio = PRQHelp.createNewPortfoliosAndPositions(cntDest);
+    final Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
+    final NewPortfolio[] newPortfolio = createNewPortfoliosAndPositions(cntDest);
     
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName, portfolio,
         cnt, cntDest));
@@ -1071,12 +1097,13 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * 3. Fires a LOCAL query on one data store VM and verifies the result. 
    * @throws Exception
    */
+  @Test
   public void testPRNonLocalQueryException() throws Exception {
     
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-
+    setCacheInVMs(vm0, vm1);
     LogWriterUtils.getLogWriter()
         .info(
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR Test with DACK Started");
@@ -1124,8 +1151,8 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
     // Generating portfolio object array to be populated across the PR's & Local
     // Regions
 
-    final Portfolio[] portfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
-    final NewPortfolio[] newPortfolio = PRQHelp.createNewPortfoliosAndPositions(cntDest);
+    final Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
+    final NewPortfolio[] newPortfolio = createNewPortfoliosAndPositions(cntDest);
     
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName, portfolio,
         cnt, cntDest));
@@ -1229,11 +1256,12 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR's Test ENDED");
   }
 
+  @Test
   public void testPRRRLocalQueryingWithHetroIndexes() throws Exception {
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-
+    setCacheInVMs(vm0);
     LogWriterUtils.getLogWriter()
         .info(
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR Test with DACK Started");
@@ -1283,8 +1311,8 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
     // Generating portfolio object array to be populated across the PR's & Local
     // Regions
 
-    final Portfolio[] portfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
-    final NewPortfolio[] newPortfolio = PRQHelp.createNewPortfoliosAndPositions(cntDest);
+    final Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
+    final NewPortfolio[] newPortfolio = createNewPortfoliosAndPositions(cntDest);
     
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName, portfolio,
         cnt, cntDest));
@@ -1312,11 +1340,12 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
   }
 
 
+  @Test
   public void testRRPRLocalQueryingWithHetroIndexes() throws Exception {
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-
+    setCacheInVMs(vm0);
     LogWriterUtils.getLogWriter()
         .info(
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR Test with DACK Started");
@@ -1366,8 +1395,8 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
     // Generating portfolio object array to be populated across the PR's & Local
     // Regions
 
-    final Portfolio[] portfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
-    final NewPortfolio[] newPortfolio = PRQHelp.createNewPortfoliosAndPositions(cntDest);
+    final Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
+    final NewPortfolio[] newPortfolio = createNewPortfoliosAndPositions(cntDest);
     
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName, portfolio,
         cnt, cntDest));
@@ -1394,11 +1423,12 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR's Test ENDED");
   }
 
+  @Test
   public void testPRRRCompactRangeAndNestedRangeIndexQuerying() throws Exception {
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-
+    setCacheInVMs(vm0);
     LogWriterUtils.getLogWriter()
         .info(
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR Test with DACK Started");
@@ -1448,8 +1478,8 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
     // Generating portfolio object array to be populated across the PR's & Local
     // Regions
 
-    final Portfolio[] portfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
-    final Portfolio[] newPortfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
+    final Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
+    final Portfolio[] newPortfolio = createPortfoliosAndPositions(cntDest);
     
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName, portfolio,
         cnt, cntDest));
@@ -1476,11 +1506,12 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR's Test ENDED");
   }
 
+  @Test
   public void testPRRRIndexQueryWithSameTypeIndexQueryResults() throws Exception {
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-
+    setCacheInVMs(vm0);
     LogWriterUtils.getLogWriter()
         .info(
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR Test with DACK Started");
@@ -1533,8 +1564,8 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
     // Generating portfolio object array to be populated across the PR's & Local
     // Regions
 
-    final Portfolio[] portfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
-    final NewPortfolio[] newPortfolio = PRQHelp.createNewPortfoliosAndPositions(cntDest);
+    final Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
+    final NewPortfolio[] newPortfolio = createNewPortfoliosAndPositions(cntDest);
     
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName, portfolio,
         cnt, cntDest));
@@ -1571,13 +1602,14 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * 3. Fires a LOCAL query on one data store VM and verifies the result. 
    * @throws Exception
    */
+  @Test
   public void testPRRRNonLocalQueryingWithNoRROnOneNode() throws Exception
   {
     
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-
+    setCacheInVMs(vm0, vm1);
     LogWriterUtils.getLogWriter()
         .info(
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR Test with DACK Started");
@@ -1611,8 +1643,8 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
         .info(
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Successfully Created PR's across all VM's");
 
-    final Portfolio[] portfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
-    final NewPortfolio[] newPortfolio = PRQHelp.createNewPortfoliosAndPositions(cntDest);
+    final Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
+    final NewPortfolio[] newPortfolio = createNewPortfoliosAndPositions(cntDest);
     
     // Putting the data into the PR's created
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio,

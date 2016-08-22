@@ -24,7 +24,7 @@ import java.util.*;
 /**
  * Implementation of {@link ReliableMessageQueueFactory}
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class ReliableMessageQueueFactoryImpl implements ReliableMessageQueueFactory {
   private boolean closed;
@@ -128,7 +128,7 @@ public class ReliableMessageQueueFactoryImpl implements ReliableMessageQueueFact
 
   /**
    * Implements ReliableMessageQueue.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public class Queue implements ReliableMessageQueue {
     private final DistributedRegion r;

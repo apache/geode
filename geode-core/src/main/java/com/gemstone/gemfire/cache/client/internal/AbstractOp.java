@@ -42,7 +42,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 /**
  * Represents an operation that can be performed in a client by sending
  * a message to a server.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public abstract class AbstractOp implements Op {
   
@@ -382,8 +382,6 @@ public abstract class AbstractOp implements Op {
         this.failed = false;
         this.timedOut = true;
         throw ste;
-      } catch(Exception e) {
-        throw e;
       }
     } finally {
       endAttempt(cnx.getStats(), start);

@@ -16,11 +16,17 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.serial;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -28,15 +34,14 @@ import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
+import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 import com.gemstone.gemfire.cache30.MyGatewayEventFilter1;
 import com.gemstone.gemfire.cache30.MyGatewayTransportFilter1;
 import com.gemstone.gemfire.cache30.MyGatewayTransportFilter2;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
@@ -44,16 +49,12 @@ import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
+@Category(DistributedTest.class)
+public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
 
-public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
-
-  private static final long serialVersionUID = 1L;
-
-  public SerialGatewaySenderQueueDUnitTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testPrimarySecondaryQueueDrainInOrder_RR() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
@@ -67,8 +68,8 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
     vm3.invoke(() -> WANTestBase.createReplicatedRegion(
         getTestMethodName() + "_RR", null, isOffHeap() ));
 
-    vm2.invoke(() -> WANTestBase.createReceiver( nyPort ));
-    vm3.invoke(() -> WANTestBase.createReceiver( nyPort ));
+    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(() -> WANTestBase.createReceiver());
     
     vm4.invoke(() -> WANTestBase.createCache( lnPort ));
     vm5.invoke(() -> WANTestBase.createCache( lnPort ));
@@ -116,7 +117,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
     secondarySenderUpdates = (HashMap)vm5.invoke(() -> WANTestBase.checkQueue());
     
     checkPrimarySenderUpdatesOnVM5(primarySenderUpdates);
-//    assertEquals(primarySenderUpdates, secondarySenderUpdates);
+//    assertIndexDetailsEquals(primarySenderUpdates, secondarySenderUpdates);
     
     vm4.invoke(() -> WANTestBase.resumeSender( "ln"));
     Wait.pause(5000);
@@ -143,12 +144,13 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
     vm5.invoke(() -> WANTestBase.checkQueueOnSecondary( primarySenderUpdates ));
   }
   
+  @Test
   public void testPrimarySecondaryQueueDrainInOrder_PR() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
 
 
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(
@@ -207,6 +209,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
    * Test to validate that serial gateway sender queue diskSynchronous attribute
    * when persistence of sender is enabled. 
    */
+  @Test
   public void test_ValidateSerialGatewaySenderQueueAttributes_1() {
     Integer localLocPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 
@@ -214,8 +217,8 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
 
     WANTestBase test = new WANTestBase(getTestMethodName());
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost["
         + localLocPort + "]");
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
@@ -264,13 +267,13 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
     } finally {
       exTKSender.remove();
     }
-
   }
   
   /**
    * Test to validate that serial gateway sender queue diskSynchronous attribute
    * when persistence of sender is not enabled. 
    */
+  @Test
   public void test_ValidateSerialGatewaySenderQueueAttributes_2() {
     Integer localLocPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     
@@ -278,8 +281,8 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
     
     WANTestBase test = new WANTestBase(getTestMethodName());
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + localLocPort + "]");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + localLocPort + "]");
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);  
 

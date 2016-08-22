@@ -19,12 +19,10 @@
 
 package com.gemstone.gemfire.cache.lucene.internal.distributed;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -44,15 +42,18 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class TopEntriesFunctionCollectorJUnitTest {
-  EntryScore r1_1, r1_2, r2_1, r2_2;
+  EntryScore<String> r1_1;
+  EntryScore<String> r1_2;
+  EntryScore<String> r2_1;
+  EntryScore<String> r2_2;
   TopEntriesCollector result1, result2;
 
   @Before
   public void initializeCommonObjects() {
-    r1_1 = new EntryScore("3", .9f);
-    r1_2 = new EntryScore("1", .8f);
-    r2_1 = new EntryScore("2", 0.85f);
-    r2_2 = new EntryScore("4", 0.1f);
+    r1_1 = new EntryScore<String>("3", .9f);
+    r1_2 = new EntryScore<String>("1", .8f);
+    r2_1 = new EntryScore<String>("2", 0.85f);
+    r2_2 = new EntryScore<String>("4", 0.1f);
 
     result1 = new TopEntriesCollector(null);
     result1.collect(r1_1);
@@ -287,10 +288,10 @@ public class TopEntriesFunctionCollectorJUnitTest {
     TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r2_1, r2_2);
   }
 
-  @Test(expected = FunctionException.class)
+  @Test(expected = RuntimeException.class)
   public void testExceptionDuringMerge() throws Exception {
     TopEntriesCollectorManager mockManager = mock(TopEntriesCollectorManager.class);
-    Mockito.doThrow(new IOException()).when(mockManager).reduce(any(Collection.class));
+    Mockito.doThrow(new RuntimeException()).when(mockManager).reduce(any(Collection.class));
 
     LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(null, null, mockManager);
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);

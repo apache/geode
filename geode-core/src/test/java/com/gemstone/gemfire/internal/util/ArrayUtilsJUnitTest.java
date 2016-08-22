@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.util;
 
 import static org.junit.Assert.*;
@@ -25,9 +24,9 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * The ArrayUtilsJUnitTest class... </p>
+ * Unit tests for {@link ArrayUtils}.
  *
- * @since 7.x
+ * @since GemFire 7.x
  */
 @Category(UnitTest.class)
 public class ArrayUtilsJUnitTest {

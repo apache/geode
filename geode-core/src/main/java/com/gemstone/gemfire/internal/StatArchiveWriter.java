@@ -16,29 +16,10 @@
  */
 package com.gemstone.gemfire.internal;
 
-import java.io.BufferedOutputStream;
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.zip.GZIPOutputStream;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.StatisticDescriptor;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
@@ -46,6 +27,12 @@ import com.gemstone.gemfire.internal.statistics.ResourceInstance;
 import com.gemstone.gemfire.internal.statistics.ResourceType;
 import com.gemstone.gemfire.internal.statistics.SampleHandler;
 import com.gemstone.gemfire.internal.statistics.StatArchiveDescriptor;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * StatArchiveWriter provides APIs to write statistic snapshots to an archive
@@ -59,8 +46,8 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
   private static volatile String traceStatisticsName = null;
   private static volatile String traceStatisticsTypeName = null;
   private static volatile int traceResourceInstId = -1;
-  
-  private final boolean trace = Boolean.getBoolean("gemfire.stats.debug.traceStatArchiveWriter");
+
+  private final boolean trace = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "stats.debug.traceStatArchiveWriter");
   
   private final Set<ResourceInstance> sampleWrittenForResources = 
       new HashSet<ResourceInstance>();

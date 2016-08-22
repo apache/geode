@@ -16,14 +16,18 @@
  */
 package com.gemstone.gemfire.internal.compression;
 
+import static org.junit.Assert.*;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.compression.SnappyCompressor;
 import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
@@ -32,12 +36,14 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests basic region operations with compression enabled.
- * 
  */
-public class CompressionRegionOperationsDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
   /**
    * The name of our test region.
    */
@@ -119,27 +125,13 @@ public class CompressionRegionOperationsDUnitTest extends CacheTestCase {
     getAllCollection.add(KEY_3);
   }
   
-  /**
-   * Creates a new CompressionRegionOperationsDUnitTest.
-   * @param name a test name.
-   */
-  public CompressionRegionOperationsDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     createRegion();
   }
   
   protected void createRegion() {
-    Compressor compressor = null;
-    try {
-      compressor = SnappyCompressor.getDefaultInstance();;
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
+    Compressor compressor = new SnappyCompressor();
     createCompressedRegionOnVm(getVM(TEST_VM), REGION_NAME, compressor);
   }
   
@@ -155,13 +147,8 @@ public class CompressionRegionOperationsDUnitTest extends CacheTestCase {
     } catch (Exception e) {
       exception = e;
     }
-    
-    try {
-      SnappyCompressor.getDefaultInstance();
-      cleanup(getVM(TEST_VM));
-    } catch (Throwable t) {
-      // Not a supported OS
-    }
+
+    cleanup(getVM(TEST_VM));
     
     if (error != null) {
       throw error;
@@ -177,6 +164,7 @@ public class CompressionRegionOperationsDUnitTest extends CacheTestCase {
   /**
    * Invokes basic get/put operations tests on the test vm.
    */
+  @Test
   public void testGetPutOperations() {
     testGetPutOperationsOnVM(getVM(TEST_VM));
   }
@@ -195,12 +183,6 @@ public class CompressionRegionOperationsDUnitTest extends CacheTestCase {
    * @param vm a test virtual machine.
    */
   private void testGetPutOperationsOnVM(final VM vm) {
-    try {
-      SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
     vm.invoke(new SerializableRunnable() {
       @Override
       public void run() {
@@ -244,6 +226,7 @@ public class CompressionRegionOperationsDUnitTest extends CacheTestCase {
   /**
    * Invokes key, value operations using the test VM.
    */
+  @Test
   public void testKeysAndValuesOperations() {
     testKeysAndValuesOperationsOnVM(getVM(TEST_VM));
   }
@@ -267,12 +250,6 @@ public class CompressionRegionOperationsDUnitTest extends CacheTestCase {
    * @param vm a test virtual machine.
    */
   private void testKeysAndValuesOperationsOnVM(final VM vm) {
-    try {
-      SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
     vm.invoke(new SerializableRunnable() {        
       @Override
       public void run() {
@@ -334,6 +311,7 @@ public class CompressionRegionOperationsDUnitTest extends CacheTestCase {
    * Tests compressed put/get region operations using CachedDeserializable values.
    * @see CompressionRegionOperationsDUnitTest#testGetPutOperations()
    */
+  @Test
   public void testGetPutOperationsWithCachedDeserializable() {
     testGetPutOperationsWithCachedDeserializableOnVM(getVM(TEST_VM));
   }
@@ -353,12 +331,6 @@ public class CompressionRegionOperationsDUnitTest extends CacheTestCase {
    * @param vm a test virtual machine.
    */
   private void testGetPutOperationsWithCachedDeserializableOnVM(final VM vm) {
-    try {
-      SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
     vm.invoke(new SerializableRunnable() {
       @Override
       public void run() {
@@ -403,6 +375,7 @@ public class CompressionRegionOperationsDUnitTest extends CacheTestCase {
    * Tests compressed put/get region operations using byte[] values.
    * @see CompressionRegionOperationsDUnitTest#testGetPutOperations()
    */
+  @Test
   public void testGetPutOperationsWithByteArrays() {
     testGetPutOperationsWithByteArraysOnVM(getVM(TEST_VM));
   }
@@ -422,12 +395,6 @@ public class CompressionRegionOperationsDUnitTest extends CacheTestCase {
    * @param vm a test virtual machine.
    */
   private void testGetPutOperationsWithByteArraysOnVM(final VM vm) {
-    try {
-      SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
     vm.invoke(new SerializableRunnable() {
       @Override
       public void run() {

@@ -16,6 +16,14 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
@@ -25,36 +33,24 @@ import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Dunit class for testing gemfire function commands : export logs
- *
  */
-
+@Category(DistributedTest.class)
 public class MiscellaneousCommandsExportLogsPart2DUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public MiscellaneousCommandsExportLogsPart2DUnitTest(String name) {
-    super(name);
-  }
-
-  public static String getMemberId() {
-    Cache cache = new GemfireDataCommandsDUnitTest("test").getCache();
-    return cache.getDistributedSystem().getDistributedMember().getId();
-  }
-
   void setupForExportLogs() {
     final VM vm1 = Host.getHost(0).getVM(1);
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     vm1.invoke(new SerializableRunnable() {
       public void run() {
@@ -77,6 +73,7 @@ public class MiscellaneousCommandsExportLogsPart2DUnitTest extends CliCommandTes
     return ("_" + formattedStartDate);
   }
 
+  @Test
   public void testExportLogsForLogLevel() throws IOException {
     setupForExportLogs();
 
@@ -96,11 +93,11 @@ public class MiscellaneousCommandsExportLogsPart2DUnitTest extends CliCommandTes
     Result cmdResult = misc.exportLogsPreprocessing("./testExportLogsForLogLevel" + dir, null, null, logLevel, false,
         false, start, end, 1);
 
-    LogWriterUtils.getLogWriter().info("testExportLogsForLogLevel command=" + cmdResult);
+    getLogWriter().info("testExportLogsForLogLevel command=" + cmdResult);
 
     if (cmdResult != null) {
       String cmdStringRsult = commandResultToString((CommandResult) cmdResult);
-      LogWriterUtils.getLogWriter().info("testExportLogsForLogLevel cmdStringRsult=" + cmdStringRsult);
+      getLogWriter().info("testExportLogsForLogLevel cmdStringRsult=" + cmdStringRsult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testExportLogsForLogLevel failed as did not get CommandResult");
@@ -108,7 +105,7 @@ public class MiscellaneousCommandsExportLogsPart2DUnitTest extends CliCommandTes
     FileUtil.delete(new File("testExportLogsForLogLevel" + dir));
   }
 
-
+  @Test
   public void testExportLogsForLogLevelWithUPTOLOGLEVEL() throws IOException {
     setupForExportLogs();
 
@@ -128,11 +125,11 @@ public class MiscellaneousCommandsExportLogsPart2DUnitTest extends CliCommandTes
     Result cmdResult = misc.exportLogsPreprocessing("./testExportLogsForLogLevelWithUPTOLOGLEVEL" + dir, null, null,
         logLevel, true, false, start, end, 1);
 
-    LogWriterUtils.getLogWriter().info("testExportLogsForLogLevelWithUPTOLOGLEVEL command=" + cmdResult);
+    getLogWriter().info("testExportLogsForLogLevelWithUPTOLOGLEVEL command=" + cmdResult);
 
     if (cmdResult != null) {
       String cmdStringRsult = commandResultToString((CommandResult) cmdResult);
-      LogWriterUtils.getLogWriter().info("testExportLogsForLogLevelWithUPTOLOGLEVEL cmdStringRsult=" + cmdStringRsult);
+      getLogWriter().info("testExportLogsForLogLevelWithUPTOLOGLEVEL cmdStringRsult=" + cmdStringRsult);
 
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {

@@ -16,10 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -30,30 +28,16 @@ import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- *  * Tests if callbacks are getting invoked correctly 
- *   * for 'create', 'update' and 'destroy' of disk region entries
- *    * with concurrent 'clear' 
- *      *
+ * Tests if callbacks are getting invoked correctly
+ * for 'create', 'update' and 'destroy' of disk region entries
+ * with concurrent 'clear'
  */
 @Category(IntegrationTest.class)
-public class DiskRegCbkChkJUnitTest extends DiskRegionTestingBase 
-{
+public class DiskRegCbkChkJUnitTest extends DiskRegionTestingBase {
 
-  volatile static boolean intoCreateAfterCbk = false;
-  volatile static boolean intoUpdateAfterCbk = false;
-  volatile static boolean intoDestroyAfterCbk = false;
-  
-  @Before
-  public void setUp() throws Exception
-  {  
-    super.setUp();
-  }
-
-  @After
-  public void tearDown() throws Exception
-  {
-    super.tearDown();
-  }
+  private static volatile boolean intoCreateAfterCbk = false;
+  private static volatile boolean intoUpdateAfterCbk = false;
+  private static volatile boolean intoDestroyAfterCbk = false;
   
   private DiskRegionProperties getDiskRegionProperties(){
     DiskRegionProperties diskProperties = new DiskRegionProperties();
@@ -64,8 +48,7 @@ public class DiskRegCbkChkJUnitTest extends DiskRegionTestingBase
   }
     
   @Test
-  public void testAfterCallbacks()
-  {
+  public void testAfterCallbacks() {
     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache,
       getDiskRegionProperties(), Scope.LOCAL);
 
@@ -112,6 +95,5 @@ public class DiskRegCbkChkJUnitTest extends DiskRegionTestingBase
     region.create("key3", "createValue");
     region.destroy("key3");
     assertTrue("Destroy callback not called", intoDestroyAfterCbk);
-	
-  }  
+  }
 }

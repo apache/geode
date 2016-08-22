@@ -22,12 +22,7 @@
  */
 package com.gemstone.gemfire.cache.query.functional;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 
@@ -36,18 +31,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.query.CacheUtils;
+import com.gemstone.gemfire.cache.query.Query;
+import com.gemstone.gemfire.cache.query.data.Portfolio;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-import junit.framework.*;
-
-/**
- *
- */
 @Category(IntegrationTest.class)
 public class ConstantsJUnitTest {
-  
-  public ConstantsJUnitTest() {
-  }
   
   @Before
   public void setUp() throws java.lang.Exception {

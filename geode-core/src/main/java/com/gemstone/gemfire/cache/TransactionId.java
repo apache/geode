@@ -23,7 +23,7 @@ import java.io.Externalizable;
  * represents a unique GemFire transaction.
  *
  * 
- * @since 4.0
+ * @since GemFire 4.0
  * 
  * @see Cache#getCacheTransactionManager
  * @see CacheTransactionManager#getTransactionId

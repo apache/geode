@@ -23,7 +23,7 @@ import javax.management.modelmbean.ModelMBean;
  * Represents a component or resource that is managed by a 
  * {@link javax.management.modelmbean.ModelMBean}.
  *
- * @since     3.5
+ * @since GemFire     3.5
  *
  */
 public interface ManagedResource {

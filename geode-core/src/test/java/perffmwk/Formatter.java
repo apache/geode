@@ -17,11 +17,11 @@
 
 package perffmwk;
 
-import hydra.HydraRuntimeException;
-
-import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.io.PrintWriter;
+import java.text.DecimalFormat;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Vector;
 
 /**
  *  Contains common code used to format reports.
@@ -111,7 +111,7 @@ public class Formatter {
    */
   public static String padLeft( String s, int length ) {
     if ( s.length() > length ) {
-      throw new HydraRuntimeException( s + " cannot be padded to length " + length + ", it is too long" );
+      throw new RuntimeException( s + " cannot be padded to length " + length + ", it is too long" );
     }
     String t = "";
     for ( int i = 0; i < length - s.length(); i++ ) {
@@ -124,7 +124,7 @@ public class Formatter {
    */
   public static String padRight( String s, int length ) {
     if ( s.length() > length ) {
-      throw new HydraRuntimeException( s + " cannot be padded to length " + length + ", it is too long" );
+      throw new RuntimeException( s + " cannot be padded to length " + length + ", it is too long" );
     }
     String t = new String( s );
     for ( int i = 0; i < length - s.length(); i++ ) {

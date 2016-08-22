@@ -20,6 +20,7 @@
 package com.gemstone.gemfire.cache.lucene.internal.repository;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -28,6 +29,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.IntSupplier;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
@@ -37,13 +39,16 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
 import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
-import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogenousLuceneSerializer;
+import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
+import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.Type2;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
@@ -56,23 +61,27 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 public class IndexRepositoryImplJUnitTest {
 
   private IndexRepositoryImpl repo;
-  private HeterogenousLuceneSerializer mapper;
+  private HeterogeneousLuceneSerializer mapper;
   private StandardAnalyzer analyzer = new StandardAnalyzer();
   private IndexWriter writer;
   private Region region;
+  private LuceneIndexStats stats;
+  private FileSystemStats fileSystemStats;
 
   @Before
   public void setUp() throws IOException {
     ConcurrentHashMap<String, File> fileRegion = new ConcurrentHashMap<String, File>();
     ConcurrentHashMap<ChunkKey, byte[]> chunkRegion = new ConcurrentHashMap<ChunkKey, byte[]>();
-    RegionDirectory dir = new RegionDirectory(fileRegion, chunkRegion);
+    fileSystemStats = mock(FileSystemStats.class);
+    RegionDirectory dir = new RegionDirectory(fileRegion, chunkRegion, fileSystemStats);
     IndexWriterConfig config = new IndexWriterConfig(analyzer);
     writer = new IndexWriter(dir, config);
     String[] indexedFields= new String[] {"s", "i", "l", "d", "f", "s2", "missing"};
-    mapper = new HeterogenousLuceneSerializer(indexedFields);
+    mapper = new HeterogeneousLuceneSerializer(indexedFields);
     region = Mockito.mock(Region.class);
+    stats = Mockito.mock(LuceneIndexStats.class);
     Mockito.when(region.isDestroyed()).thenReturn(false);
-    repo = new IndexRepositoryImpl(region, writer, mapper);
+    repo = new IndexRepositoryImpl(region, writer, mapper, stats);
   }
   
   @Test
@@ -82,7 +91,7 @@ public class IndexRepositoryImplJUnitTest {
     repo.create("key3", new Type2("Voodoo Doll doughnut", 1, 2L, 3.0, 4.0f, "Toasted coconut doughnut"));
     repo.create("key4", new Type2("Portland Cream doughnut", 1, 2L, 3.0, 4.0f, "Captain my Captain doughnut"));
     repo.commit();
-    
+
     checkQuery("Cream", "s", "key2", "key4");
     checkQuery("NotARealWord", "s");
   }
@@ -106,6 +115,61 @@ public class IndexRepositoryImplJUnitTest {
     ByteWrapper key4 = randomKey();
     
     updateAndRemove(key1, key2, key3, key4);
+  }
+
+  @Test
+  public void createShouldUpdateStats() throws IOException {
+    repo.create("key1", new Type2("bar", 1, 2L, 3.0, 4.0f, "Grape Ape doughnut"));
+    verify(stats, times(1)).startUpdate();
+    verify(stats, times(1)).endUpdate(anyLong());
+  }
+
+  @Test
+  public void updateShouldUpdateStats() throws IOException {
+    repo.update("key1", new Type2("bacon maple bar", 1, 2L, 3.0, 4.0f, "Grape Ape doughnut"));
+    verify(stats, times(1)).startUpdate();
+    verify(stats, times(1)).endUpdate(anyLong());
+  }
+
+  @Test
+  public void deleteShouldUpdateStats() throws IOException {
+    repo.delete("key1");
+    verify(stats, times(1)).startUpdate();
+    verify(stats, times(1)).endUpdate(anyLong());
+  }
+
+  @Test
+  public void commitShouldUpdateStats() throws IOException {
+    repo.commit();
+    verify(stats, times(1)).startCommit();
+    verify(stats, times(1)).endCommit(anyLong());
+  }
+
+  @Test
+  public void queryShouldUpdateStats() throws IOException, ParseException {
+    repo.create("key2", new Type2("McMinnville Cream doughnut", 1, 2L, 3.0, 4.0f, "Captain my Captain doughnut"));
+    repo.create("key4", new Type2("Portland Cream doughnut", 1, 2L, 3.0, 4.0f, "Captain my Captain doughnut"));
+    repo.commit();
+    checkQuery("Cream", "s", "key2", "key4");
+    verify(stats, times(1)).startQuery();
+    verify(stats, times(1)).endQuery(anyLong(), eq(2));
+  }
+
+  @Test
+  public void addingDocumentsShouldUpdateDocumentsStat() throws IOException {
+    repo.create("key1", new Type2("bar", 1, 2L, 3.0, 4.0f, "Grape Ape doughnut"));
+    repo.commit();
+    ArgumentCaptor<IntSupplier> captor = ArgumentCaptor.forClass(IntSupplier.class);
+    verify(stats).addDocumentsSupplier(captor.capture());
+    IntSupplier supplier = captor.getValue();
+    assertEquals(1, supplier.getAsInt());
+  }
+
+  @Test
+  public void cleanupShouldCloseWriter() throws IOException {
+    repo.cleanup();
+    verify(stats).removeDocumentsSupplier(any());
+    assertFalse(writer.isOpen());
   }
 
   private void updateAndRemove(Object key1, Object key2, Object key3,

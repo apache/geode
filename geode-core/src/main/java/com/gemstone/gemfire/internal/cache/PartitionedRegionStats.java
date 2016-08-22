@@ -44,7 +44,7 @@ import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
  * To manipulate the statistic values, use (inc|dec|set|get)&lt;fieldName&gt;
  * methods.
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class PartitionedRegionStats {
 

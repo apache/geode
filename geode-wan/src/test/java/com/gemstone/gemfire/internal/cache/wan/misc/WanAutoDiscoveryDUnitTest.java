@@ -16,6 +16,16 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,17 +36,19 @@ import java.util.Set;
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.IncompatibleSystemException;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 
+@Category(DistributedTest.class)
 public class WanAutoDiscoveryDUnitTest extends WANTestBase {
 
   
-  public WanAutoDiscoveryDUnitTest(String name) {
-    super(name);
+  public WanAutoDiscoveryDUnitTest() {
+    super();
   }
 
   @Override
@@ -48,6 +60,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
    * Test to validate that sender can not be started without locator started.
    * else GemFireConfigException will be thrown.
    */
+  @Test
   public void test_GatewaySender_Started_Before_Locator() {
     try {
       int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
@@ -71,7 +84,9 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
    * 
    * @throws Exception
    */
-  public void __test_AllLocatorsinDSShouldHaveDistributedSystemId() throws Exception {
+  @Ignore
+  @Test
+  public void test_AllLocatorsinDSShouldHaveDistributedSystemId() throws Exception {
     try {
       Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
@@ -91,6 +106,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
    * locators on Ny site recognizes each other
    * @throws Exception 
    */
+  @Test
   public void test_NY_Recognises_ALL_LN_Locators() throws Exception {
     ArrayList<Integer> locatorPorts = new ArrayList<Integer>();
     Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
@@ -121,6 +137,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
    * Test to validate that TK site's locator is recognized by LN and NY. Test to
    * validate that HK site's locator is recognized by LN , NY, TK.
    */
+  @Test
   public void test_NY_Recognises_TK_AND_HK_Through_LN_Locator() {
 
     Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
@@ -152,6 +169,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
   }
 
+  @Test
   public void test_TK_Recognises_LN_AND_NY() {
 
     Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
@@ -178,6 +196,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
   }
   
+  @Test
   public void test_NY_Recognises_TK_AND_HK_Simeltenously() {
     Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
 
@@ -231,6 +250,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   }
   
   
+  @Test
   public void test_LN_Sender_recogises_ALL_NY_Locators() {
     
     Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -272,23 +292,22 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   }
   
   
+  @Test
   public void test_RingTopology() {
 
+    int [] ports = AvailablePortHelper.getRandomAvailableTCPPortsForDUnitSite(4);
+
     final Set<String> site1LocatorsPort = new HashSet<String>();
-    int site1Port1 = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    site1LocatorsPort.add("localhost["+site1Port1+"]");
+    site1LocatorsPort.add("localhost["+ports[0]+"]");
    
     final Set<String> site2LocatorsPort = new HashSet<String>();
-    int site2Port1 = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    site2LocatorsPort.add("localhost["+site2Port1+"]");
+    site2LocatorsPort.add("localhost["+ports[1]+"]");
    
     final Set<String> site3LocatorsPort = new HashSet<String>();
-    int site3Port1 = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    site3LocatorsPort.add("localhost["+site3Port1+"]");
+    site3LocatorsPort.add("localhost["+ports[2]+"]");
    
     final Set<String> site4LocatorsPort = new HashSet<String>();
-    int site4Port1 = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    site4LocatorsPort.add("localhost["+site4Port1+"]");
+    site4LocatorsPort.add("localhost["+ports[3]+"]");
    
     Map<Integer, Set<String>> dsVsPort = new HashMap<Integer, Set<String>>();
     dsVsPort.put(1, site1LocatorsPort);
@@ -299,13 +318,13 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     int AsyncInvocationArrSize = 9;
     AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
    
-    async[0] = vm0.invokeAsync(() -> WANTestBase.createLocator( 1, site1Port1, site1LocatorsPort, site2LocatorsPort));
+    async[0] = vm0.invokeAsync(() -> WANTestBase.createLocator( 1, ports[0], site1LocatorsPort, site2LocatorsPort));
    
-    async[1] = vm1.invokeAsync(() -> WANTestBase.createLocator( 2, site2Port1, site2LocatorsPort, site3LocatorsPort));
+    async[1] = vm1.invokeAsync(() -> WANTestBase.createLocator( 2, ports[1], site2LocatorsPort, site3LocatorsPort));
    
-    async[2] = vm2.invokeAsync(() -> WANTestBase.createLocator( 3, site3Port1, site3LocatorsPort, site4LocatorsPort));
+    async[2] = vm2.invokeAsync(() -> WANTestBase.createLocator( 3, ports[2], site3LocatorsPort, site4LocatorsPort));
    
-    async[3] = vm3.invokeAsync(() -> WANTestBase.createLocator( 4, site4Port1, site4LocatorsPort, site1LocatorsPort));
+    async[3] = vm3.invokeAsync(() -> WANTestBase.createLocator( 4, ports[3], site4LocatorsPort, site1LocatorsPort));
    
    // pause(5000);
     try {
@@ -323,8 +342,10 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites( dsVsPort ));
     vm3.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites( dsVsPort ));
   }
-  
-  public void ___test_3Sites3Locators() {
+
+  @Ignore
+  @Test
+  public void test_3Sites3Locators() {
     final Set<String> site1LocatorsPort = new HashSet<String>();
     int site1Port1 = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     site1LocatorsPort.add("localhost["+site1Port1+"]");
@@ -411,6 +432,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   }
   
   
+  @Test
   public void test_LN_Peer_Locators_Exchange_Information() {
     ArrayList<Integer> locatorPorts = new ArrayList<Integer>();
     Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
@@ -426,6 +448,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     vm1.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
   }
   
+  @Test
   public void test_LN_NY_TK_5_PeerLocators_1_ServerLocator() {
     Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
     
@@ -464,5 +487,45 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
         
   }
-  
+
+  @Test
+  public void testNoThreadLeftBehind() {
+    // Get active thread count before test
+    int activeThreadCountBefore = Thread.activeCount();
+
+    // Start / stop locator
+    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    WANTestBase.createFirstRemoteLocator( 2, port );
+    disconnectFromDS();
+
+    // Validate active thread count after test
+
+    // Wait up to 60 seconds for all threads started during the test
+    // (including the 'WAN Locator Discovery Thread') to stop
+    // Note: Awaitility is not being used since it adds threads
+    for (int i=0; i<60; i++) {
+      if (Thread.activeCount() > activeThreadCountBefore) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          fail("Caught the following exception waiting for threads to stop: " + e);
+        }
+      } else {
+        break;
+      }
+    }
+
+    // Fail if the active thread count after the test is greater than the active thread count before the test
+    if (Thread.activeCount() > activeThreadCountBefore) {
+      OSProcess.printStacks(0);
+      StringBuilder builder = new StringBuilder();
+      builder
+          .append("Expected ")
+          .append(activeThreadCountBefore)
+          .append(" threads but found ")
+          .append(Thread.activeCount())
+          .append(". Check log file for a thread dump.");
+      fail(builder.toString());
+    }
+  }
 }

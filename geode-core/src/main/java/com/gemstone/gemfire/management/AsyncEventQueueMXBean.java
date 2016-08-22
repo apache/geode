@@ -17,13 +17,17 @@
 package com.gemstone.gemfire.management;
 
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
 
 /**
  * MBean that provides access to an {@link AsyncEventQueue}.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
+@ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
 public interface AsyncEventQueueMXBean {
 
   /**

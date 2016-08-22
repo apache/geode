@@ -16,25 +16,24 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-/**
- * Created by sbawaskar on 1/15/16.
- */
 @Category(UnitTest.class)
 public class MemoryInspectorImplJUnitTest {
+
   private FreeListManager freeList;
   private MemoryInspector inspector;
+
   @Before
   public void setUp() {
     this.freeList = mock(FreeListManager.class);
@@ -55,6 +54,7 @@ public class MemoryInspectorImplJUnitTest {
   public void getAllocatedBlocksBeforeCreateSnapshotReturnsEmptyList() {
     assertTrue(inspector.getAllocatedBlocks().isEmpty());
   }
+
   @Test
   public void getFirstBlockBeforeCreateSnapshotReturnsNull() {
     assertNull(inspector.getFirstBlock());

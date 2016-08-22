@@ -25,7 +25,7 @@ import java.net.Socket;
  * Passed to {@link NativeCalls} API to set these options on the Java
  * {@link Socket} using native OS specific calls.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 public enum TCPSocketOptions {
 

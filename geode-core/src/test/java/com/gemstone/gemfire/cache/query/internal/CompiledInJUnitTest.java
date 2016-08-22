@@ -16,15 +16,13 @@
  */
 package com.gemstone.gemfire.cache.query.internal;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -56,7 +54,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
   
   @Test
@@ -67,7 +65,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertFalse((Boolean) result);
+    assertFalse((Boolean) result);
   }
   
   @Test
@@ -78,7 +76,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
   
   @Test
@@ -89,7 +87,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
   
   @Test
@@ -125,7 +123,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertFalse((Boolean) result);
+    assertFalse((Boolean) result);
   }
 
   @Test
@@ -136,7 +134,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
 
   @Test
@@ -147,7 +145,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
 
   @Test
@@ -158,7 +156,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
 
   @Test
@@ -169,7 +167,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertFalse((Boolean) result);
+    assertFalse((Boolean) result);
   }
 
   @Test
@@ -180,7 +178,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertFalse((Boolean) result);
+    assertFalse((Boolean) result);
   }
 
   @Test
@@ -191,7 +189,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
 
   @Test
@@ -202,7 +200,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
 
   @Test
@@ -213,7 +211,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
 
   @Test
@@ -224,7 +222,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertFalse((Boolean) result);
+    assertFalse((Boolean) result);
   }
 
   @Test
@@ -235,7 +233,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertFalse((Boolean) result);
+    assertFalse((Boolean) result);
   }
 
   @Test
@@ -246,7 +244,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertFalse((Boolean) result);
+    assertFalse((Boolean) result);
   }
 
   @Test
@@ -257,7 +255,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
 
   @Test
@@ -268,7 +266,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertFalse((Boolean) result);
+    assertFalse((Boolean) result);
   }
 
   @Test
@@ -279,7 +277,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
 
   @Test
@@ -290,7 +288,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertFalse((Boolean) result);
+    assertFalse((Boolean) result);
   }
 
   @Test
@@ -301,7 +299,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
 
   @Test
@@ -312,7 +310,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
 
   @Test
@@ -323,7 +321,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
 
   @Test
@@ -334,7 +332,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
 
   @Test
@@ -360,7 +358,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertFalse((Boolean) result);
+    assertFalse((Boolean) result);
   }
 
   @Test
@@ -373,7 +371,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
 
   @Test
@@ -385,7 +383,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
 
   // String form
@@ -399,7 +397,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertFalse((Boolean) result);
+    assertFalse((Boolean) result);
   }
 
   @Test
@@ -412,7 +410,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertFalse((Boolean) result);
+    assertFalse((Boolean) result);
   }
 
   @Test
@@ -425,7 +423,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
 
   @Test
@@ -437,7 +435,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertTrue((Boolean) result);
+    assertTrue((Boolean) result);
   }
 
   @Test
@@ -446,7 +444,7 @@ public class CompiledInJUnitTest {
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
-    Assert.assertNotNull(result);
+    assertNotNull(result);
   }
   
   private PdxInstanceEnumInfo createPdxInstanceEnumInfo(Enum<?> e, int enumId) {
@@ -455,6 +453,4 @@ public class CompiledInJUnitTest {
   }
   
   private enum EnumForTest {ONE, TWO, THREE};
-  
-
 }

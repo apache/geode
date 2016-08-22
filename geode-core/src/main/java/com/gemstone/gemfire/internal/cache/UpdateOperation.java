@@ -45,6 +45,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
@@ -99,11 +100,7 @@ public class UpdateOperation extends AbstractUpdateOperation
     m.event = ev;
     m.eventId = ev.getEventId();
     m.key = ev.getKey();
-    if (CachedDeserializableFactory.preferObject() || ev.hasDelta()) {
-      m.deserializationPolicy = DESERIALIZATION_POLICY_EAGER;
-    } else {
-      m.deserializationPolicy = DESERIALIZATION_POLICY_LAZY;
-    }
+    m.deserializationPolicy = DESERIALIZATION_POLICY_LAZY;
     ev.exportNewValue(m);
   }
 
@@ -198,6 +195,7 @@ public class UpdateOperation extends AbstractUpdateOperation
     }
 
     @Override
+    @Retained
     protected InternalCacheEvent createEvent(DistributedRegion rgn)
         throws EntryNotFoundException {
       EntryEventImpl ev = createEntryEvent(rgn);
@@ -295,8 +293,7 @@ public class UpdateOperation extends AbstractUpdateOperation
      */
     static void setNewValueInEvent(byte[] newValue, Object newValueObj,
         EntryEventImpl event, byte deserializationPolicy) {
-      if (newValue == null
-          && deserializationPolicy != DESERIALIZATION_POLICY_EAGER) {
+      if (newValue == null) {
         // in an UpdateMessage this results from a create(key, null) call,
         // set local invalid flag in event if this is a normal region. Otherwise
         // it should be a distributed invalid.
@@ -315,9 +312,6 @@ public class UpdateOperation extends AbstractUpdateOperation
         case DESERIALIZATION_POLICY_NONE:
           event.setNewValue(newValue);
           break;
-        case DESERIALIZATION_POLICY_EAGER:
-          event.setNewValue(newValueObj);
-          break;
         default:
           throw new InternalGemFireError(LocalizedStrings
               .UpdateOperation_UNKNOWN_DESERIALIZATION_POLICY_0
@@ -325,15 +319,12 @@ public class UpdateOperation extends AbstractUpdateOperation
       }
     }
 
+    @Retained
     protected EntryEventImpl createEntryEvent(DistributedRegion rgn)
     {
       Object argNewValue = null;
       final boolean originRemote = true, generateCallbacks = true;
-
-      if (rgn.keyRequiresRegionContext()) {
-        ((KeyWithRegionContext)this.key).setRegionContext(rgn);
-      }
-      EntryEventImpl result = EntryEventImpl.create(rgn, getOperation(), this.key,
+      @Retained EntryEventImpl result = EntryEventImpl.create(rgn, getOperation(), this.key,
           argNewValue, // oldValue,
           this.callbackArg, originRemote, getSender(), generateCallbacks);
       setOldValueInEvent(result);
@@ -410,13 +401,7 @@ public class UpdateOperation extends AbstractUpdateOperation
         this.deltaBytes = DataSerializer.readByteArray(in);
       }
       else {
-        if (this.deserializationPolicy
-            == DistributedCacheOperation.DESERIALIZATION_POLICY_EAGER) {
-          this.newValueObj = DataSerializer.readObject(in);
-        }
-        else {
-          this.newValue = DataSerializer.readByteArray(in);
-        }
+        this.newValue = DataSerializer.readByteArray(in);
         if ((extraFlags & HAS_DELTA_WITH_FULL_VALUE) != 0) {
           this.deltaBytes = DataSerializer.readByteArray(in);
         }
@@ -462,9 +447,6 @@ public class UpdateOperation extends AbstractUpdateOperation
         DataSerializer.writeByteArray(this.event.getDeltaBytes(), out);
         this.event.getRegion().getCachePerfStats().incDeltasSent();
       } else {
-          // TODO OFFHEAP MERGE: add a writeValue that will cache in the event like so:
-          //byte[] newValueBytes = BlobHelper.serializeToBlob(this.newValueObj);
-          //this.event.setCachedSerializedNewValue(newValueBytes);
         DistributedCacheOperation.writeValue(this.deserializationPolicy, this.newValueObj, this.newValue, out);
         if ((extraFlags & HAS_DELTA_WITH_FULL_VALUE) != 0) {
           DataSerializer.writeByteArray(this.event.getDeltaBytes(), out);
@@ -500,13 +482,7 @@ public class UpdateOperation extends AbstractUpdateOperation
       byte[] valueBytes = null;
       Object valueObj = null;
       if (this.newValueObj != null) {
-        if (this.deserializationPolicy ==
-          DistributedCacheOperation.DESERIALIZATION_POLICY_EAGER) {
-          valueObj = this.newValueObj;
-        }
-        else {
-          valueBytes = EntryEventImpl.serialize(this.newValueObj);
-        }
+        valueBytes = EntryEventImpl.serialize(this.newValueObj);
       }
       else {
         valueBytes = this.newValue;
@@ -568,6 +544,7 @@ public class UpdateOperation extends AbstractUpdateOperation
     protected transient ClientProxyMembershipID clientID;
 
     @Override
+    @Retained
     final public EntryEventImpl createEntryEvent(DistributedRegion rgn)
     {
       // Object oldValue = null;
@@ -575,11 +552,7 @@ public class UpdateOperation extends AbstractUpdateOperation
       // boolean localLoad = false, netLoad = false, netSearch = false,
       // distributed = true;
       final boolean originRemote = true, generateCallbacks = true;
-
-      if (rgn.keyRequiresRegionContext()) {
-        ((KeyWithRegionContext)this.key).setRegionContext(rgn);
-      }
-      EntryEventImpl ev = EntryEventImpl.create(rgn, getOperation(), this.key,
+      @Retained EntryEventImpl ev = EntryEventImpl.create(rgn, getOperation(), this.key,
           argNewValue, this.callbackArg, originRemote, getSender(),
           generateCallbacks);
       ev.setContext(this.clientID);

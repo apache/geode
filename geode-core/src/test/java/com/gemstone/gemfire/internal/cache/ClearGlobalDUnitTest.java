@@ -22,6 +22,13 @@
 
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -31,28 +38,20 @@ import com.gemstone.gemfire.cache.RegionEvent;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.cache.CacheObserverAdapter;
-import com.gemstone.gemfire.internal.cache.CacheObserverHolder;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
-
-import java.util.Properties;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * For the Global region subsequent puts should be blocked until the clear
  * operation is completely done
- *
  */
-public class ClearGlobalDUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class ClearGlobalDUnitTest extends JUnit4DistributedTestCase {
 
-  /** Creates a new instance of ClearGlobalDUnitTest */
-  public ClearGlobalDUnitTest(String name) {
-    super(name);
-  }
   static VM server1 = null;
   
   static Cache cache;
@@ -106,6 +105,7 @@ public class ClearGlobalDUnitTest extends DistributedTestCase
      }  
    }
 
+  @Test
   public void testClearGlobalMultiVM() throws Exception
   {
     Object[] objArr = new Object[1];
@@ -120,7 +120,7 @@ public class ClearGlobalDUnitTest extends DistributedTestCase
 
    public static void createCacheServer1() throws Exception
    {      
-      ds = (new ClearGlobalDUnitTest("temp")).getSystem(props);
+      ds = (new ClearGlobalDUnitTest()).getSystem(props);
       cache = CacheFactory.create(ds);
       AttributesFactory factory  = new AttributesFactory();
       factory.setScope(Scope.GLOBAL);
@@ -131,7 +131,7 @@ public class ClearGlobalDUnitTest extends DistributedTestCase
 
   public static void createCacheServer2() throws Exception
   { 
-    ds = (new ClearGlobalDUnitTest("temp")).getSystem(props);
+    ds = (new ClearGlobalDUnitTest()).getSystem(props);
     CacheObserverImpl observer = new CacheObserverImpl();
     origObserver = CacheObserverHolder.setInstance(observer);
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER=true;

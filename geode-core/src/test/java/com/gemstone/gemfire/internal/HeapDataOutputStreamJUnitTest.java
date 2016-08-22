@@ -16,13 +16,14 @@
  */
 package com.gemstone.gemfire.internal;
 
+import static org.junit.Assert.*;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import junit.framework.TestCase;
-
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializer;
@@ -35,11 +36,11 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * TODO right now this just tests the new
  * write(ByteBuffer) method. We might want
  * to add some unit tests for the existing methods.
- *
  */
 @Category(UnitTest.class)
-public class HeapDataOutputStreamJUnitTest extends TestCase {
-  
+public class HeapDataOutputStreamJUnitTest {
+
+  @Test
   public void testWriteByteBuffer() {
     HeapDataOutputStream out = new HeapDataOutputStream(64, Version.CURRENT);
     
@@ -56,8 +57,8 @@ public class HeapDataOutputStreamJUnitTest extends TestCase {
     
     assertEquals(new String(bytes) , new String(actual));
   }
-  
 
+  @Test
   public void testWriteByteBufferCopyUseBuffer() {
     ByteBuffer buf = ByteBuffer.allocate(32);
     HeapDataOutputStream out = new HeapDataOutputStream(buf, Version.CURRENT, true);
@@ -95,6 +96,7 @@ public class HeapDataOutputStreamJUnitTest extends TestCase {
     assertEquals(expected, tmp);
   }
 
+  @Test
   public void testWriteByteBufferNoCopyUseBuffer() {
     ByteBuffer buf = ByteBuffer.allocate(32);
     HeapDataOutputStream out = new HeapDataOutputStream(buf, Version.CURRENT, true);
@@ -135,7 +137,8 @@ public class HeapDataOutputStreamJUnitTest extends TestCase {
     ByteBuffer expected = ByteBuffer.wrap(expectedBytes);
     assertEquals(expected, tmp);
   }
-  
+
+  @Test
   public void testWriteJavaSerializeNoCopy() throws IOException, ClassNotFoundException {
     byte[] bytes = new byte[2000];
     for (int i = 0; i < bytes.length; i++) {

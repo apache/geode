@@ -29,7 +29,7 @@ import com.gemstone.gemfire.cache.query.types.StructType;
  *
  * @see SelectResults
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public interface Struct {
   

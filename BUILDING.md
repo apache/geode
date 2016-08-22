@@ -39,7 +39,7 @@ or the `gfsh` script can be found in
     ```
     $ set JAVA_HOME="C:\Program Files\Java\jdk1.8.0_60"
     ```
-2. Install Gradle, version 2.3 or a more recent version.
+2. Install Gradle, version 2.12 or a more recent version.
 3. Download the project source from the Releases page at [Apache Geode (incubating)] (http://geode.incubator.apache.org), and unpack the source code.
 4. Within the folder containing the unpacked source code, build without the tests:
 

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.Serializable;
 import java.sql.Date;
 import java.util.Arrays;
@@ -69,18 +78,20 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  *
  */
-public class PartitionedRegionQueryDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class PartitionedRegionQueryDUnitTest extends JUnit4CacheTestCase {
   
   /**
    * @param name
    */
-  public PartitionedRegionQueryDUnitTest(String name) {
-    super(name);
+  public PartitionedRegionQueryDUnitTest() {
+    super();
     // TODO Auto-generated constructor stub
   }
   
   private static final AtomicReference<RebalanceResults> rebalanceResults = new AtomicReference<RebalanceResults>();
 
+  @Test
   public void testReevaluationDueToUpdateInProgress() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -148,6 +159,7 @@ public class PartitionedRegionQueryDUnitTest extends CacheTestCase {
    * 3. While the query is executing, several buckets are
    * moved.
    */
+  @Test
   public void testRebalanceDuringQueryEvaluation() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -206,6 +218,7 @@ public class PartitionedRegionQueryDUnitTest extends CacheTestCase {
    * 2. Buckets are moved
    * 3. Check to make sure we don't have lingering bucket indexes with bucket regions already destroyed
    */
+  @Test
   public void testRebalanceWithIndex() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -256,6 +269,7 @@ public class PartitionedRegionQueryDUnitTest extends CacheTestCase {
   /**
    * tests trace for pr queries when <trace> is used and query verbose is set to true on local and remote servers
    */
+  @Test
   public void testPartitionRegionDebugMessageQueryTraceOnBothServers() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -329,6 +343,7 @@ public class PartitionedRegionQueryDUnitTest extends CacheTestCase {
    * tests trace for pr queries when <trace> is used and query verbose is set to true on local but false on remote servers
    * All flags should be true still as the <trace> is OR'd with query verbose flag
    */
+  @Test
   public void testPartitionRegionDebugMessageQueryTraceOnLocalServerOnly() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -400,6 +415,7 @@ public class PartitionedRegionQueryDUnitTest extends CacheTestCase {
    * tests trace for pr queries when <trace> is NOT used and query verbose is set to true on local but false on remote
    * The remote should not send a pr query trace info back because trace was not requested
    */
+  @Test
   public void testPartitionRegionDebugMessageQueryTraceOffLocalServerVerboseOn() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -472,6 +488,7 @@ public class PartitionedRegionQueryDUnitTest extends CacheTestCase {
    * We don't output the string or do anything on the local side, but we still pull off the object due to the remote server
    * generating and sending it over
    */
+  @Test
   public void testPartitionRegionDebugMessageQueryTraceOffRemoteServerOnly() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -544,6 +561,7 @@ public class PartitionedRegionQueryDUnitTest extends CacheTestCase {
    * tests trace for pr queries when <trace> is used and query verbose is set to false on local and remote servers
    * trace is OR'd so the entire trace process should be invoked
    */
+  @Test
   public void testPartitionRegionDebugMessageQueryTraceOnRemoteServerOnly() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -617,6 +635,7 @@ public class PartitionedRegionQueryDUnitTest extends CacheTestCase {
    * The local node still receives the pr trace info from the remote node due to query verbose being on
    * however nothing is used on the local side
    */
+  @Test
   public void testPartitionRegionDebugMessageQueryTraceOffRemoteServerOn() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -689,6 +708,7 @@ public class PartitionedRegionQueryDUnitTest extends CacheTestCase {
    * tests trace for pr queries when <trace> is NOT used and query verbose is set to false on local and remote servers
    * None of our hooks should have triggered
    */
+  @Test
   public void testPartitionRegionDebugMessageQueryTraceOffQueryVerboseOff() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -760,6 +780,7 @@ public class PartitionedRegionQueryDUnitTest extends CacheTestCase {
    * tests trace for pr queries when <trace> is used and query verbose is set to false on local and remote servers
    * All hooks should have triggered due to trace being used
    */
+  @Test
   public void testPartitionRegionDebugMessageQueryTraceOnQueryVerboseOff() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -827,6 +848,7 @@ public class PartitionedRegionQueryDUnitTest extends CacheTestCase {
   }
   
 
+  @Test
   public void testOrderByOnPRWithReservedKeywords() throws Exception {
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);

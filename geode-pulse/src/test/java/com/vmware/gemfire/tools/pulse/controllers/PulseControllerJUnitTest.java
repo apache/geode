@@ -16,13 +16,34 @@
  */
 package com.vmware.gemfire.tools.pulse.controllers;
 
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.powermock.api.mockito.PowerMockito.spy;
+import static org.powermock.api.mockito.PowerMockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.io.File;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.UUID;
+import javax.servlet.ServletContextListener;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vmware.gemfire.tools.pulse.internal.PulseAppListener;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import com.vmware.gemfire.tools.pulse.internal.PulseAppListener;
 import com.vmware.gemfire.tools.pulse.internal.controllers.PulseController;
 import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
 import com.vmware.gemfire.tools.pulse.internal.data.PulseConfig;
 import com.vmware.gemfire.tools.pulse.internal.data.Repository;
+
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,7 +58,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -45,46 +65,16 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.ServletContextListener;
-import java.io.File;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.UUID;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.powermock.api.mockito.PowerMockito.spy;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-/**
- */
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 @PrepareForTest(Repository.class)
 @RunWith(PowerMockRunner.class)
 @PowerMockRunnerDelegate(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration("classpath*:mvc-dispatcher-servlet.xml")
-@PowerMockIgnore("*.UnitTest")
+@PowerMockIgnore("*.IntegrationTest")
 public class PulseControllerJUnitTest {
-
-  @Autowired
-  private WebApplicationContext wac;
-
-  private MockMvc mockMvc;
-
-  private Cluster cluster;
-
-  @Rule
-  public TemporaryFolder tempFolder = new TemporaryFolder();
 
   private static final String PRINCIPAL_USER = "test-user";
 
@@ -105,11 +95,22 @@ public class PulseControllerJUnitTest {
     principal = () -> PRINCIPAL_USER;
   }
 
+  @Rule
+  public TemporaryFolder tempFolder = new TemporaryFolder();
+
+  @Autowired
+  private WebApplicationContext wac;
+
+  private MockMvc mockMvc;
+
+  private Cluster cluster;
+
   private final ObjectMapper mapper = new ObjectMapper();
 
   @Before
   public void setup() throws Exception {
     this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
+
 
     cluster = Mockito.spy(Cluster.class);
 
@@ -345,7 +346,6 @@ public class PulseControllerJUnitTest {
         .andExpect(jsonPath("$.ClusterRegion.region[0].getsRate").value(27.99D))
         .andExpect(jsonPath("$.ClusterRegion.region[0].wanEnabled").value(false))
         .andExpect(jsonPath("$.ClusterRegion.region[0].memberCount").value(1))
-        .andExpect(jsonPath("$.ClusterRegion.region[0].isHDFSWriteOnly").value("NA"))
         .andExpect(jsonPath("$.ClusterRegion.region[0].memberNames[0].name").value(MEMBER_NAME))
         .andExpect(jsonPath("$.ClusterRegion.region[0].memberNames[0].id").value(MEMBER_ID))
         .andExpect(jsonPath("$.ClusterRegion.region[0].emptyNodes").value(0))
@@ -379,7 +379,6 @@ public class PulseControllerJUnitTest {
         .andExpect(jsonPath("$.ClusterRegions.regions[0].getsRate").value(27.99D))
         .andExpect(jsonPath("$.ClusterRegions.regions[0].wanEnabled").value(false))
         .andExpect(jsonPath("$.ClusterRegions.regions[0].memberCount").value(1))
-        .andExpect(jsonPath("$.ClusterRegions.regions[0].isHDFSWriteOnly").value("NA"))
         .andExpect(jsonPath("$.ClusterRegions.regions[0].memberNames[0].name").value(MEMBER_NAME))
         .andExpect(jsonPath("$.ClusterRegions.regions[0].memberNames[0].id").value(MEMBER_ID))
         .andExpect(jsonPath("$.ClusterRegions.regions[0].emptyNodes").value(0))
@@ -430,7 +429,6 @@ public class PulseControllerJUnitTest {
         .andExpect(jsonPath("$.ClusterSelectedRegion.selectedRegion.memoryUsage").value("0.0000"))
         .andExpect(jsonPath("$.ClusterSelectedRegion.selectedRegion.wanEnabled").value(false))
         .andExpect(jsonPath("$.ClusterSelectedRegion.selectedRegion.memberCount").value(1))
-        .andExpect(jsonPath("$.ClusterSelectedRegion.selectedRegion.isHDFSWriteOnly").value("NA"))
         .andExpect(jsonPath("$.ClusterSelectedRegion.selectedRegion.putsRate").value(12.31D))
         .andExpect(jsonPath("$.ClusterSelectedRegion.selectedRegion.totalMemory").value(0))
         .andExpect(jsonPath("$.ClusterSelectedRegion.selectedRegion.entryCount").value(0))
@@ -704,24 +702,7 @@ public class PulseControllerJUnitTest {
   }
 
   @Test
-  public void clusterLogout() throws Exception {
-    MockHttpSession mockSession = new MockHttpSession(wac.getServletContext(), UUID.randomUUID().toString());
-    assertFalse(mockSession.isInvalid());
-
-    this.mockMvc.perform(get("/clusterLogout").principal(principal)
-        .session(mockSession)
-        .accept(MediaType.parseMediaType(MediaType.APPLICATION_JSON_UTF8_VALUE)))
-        .andExpect(status().is3xxRedirection())
-        .andExpect(redirectedUrl("../Login.html"));
-
-    assertTrue(mockSession.isInvalid());
-  }
-
-  @Test
   public void pulseVersion() throws Exception {
-    ServletContextListener listener = new PulseAppListener();
-    listener.contextInitialized(null);
-
     this.mockMvc.perform(get("/pulseVersion")
         .accept(MediaType.parseMediaType(MediaType.APPLICATION_JSON_UTF8_VALUE)))
         .andExpect(status().isOk())

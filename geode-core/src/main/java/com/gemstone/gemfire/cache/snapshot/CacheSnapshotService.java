@@ -65,7 +65,7 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @see Cache#getSnapshotService()
  * @see SnapshotOptions
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface CacheSnapshotService {
   /**

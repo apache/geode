@@ -16,20 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -39,12 +25,24 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.ha.HAContainerWrapper;
 import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * Test to verify that each bridge sever creates its own client_messages_region
  * at its start and destroys it when it stops.
  * 
- * @since 5.7
+ * @since GemFire 5.7
  */
 @Category(IntegrationTest.class)
 public class ClientMessagesRegionCreationAndDestroyJUnitTest {
@@ -165,7 +163,7 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
   private Cache createCache() throws CacheException
   {
     Properties p = new Properties();
-    p.put("mcast-port", "0");
+    p.put(MCAST_PORT, "0");
     return CacheFactory.create(DistributedSystem.connect(p));
   }
   

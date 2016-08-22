@@ -16,13 +16,17 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static org.junit.Assert.*;
+
 import java.util.Map;
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskWriteAttributesFactory;
 import com.gemstone.gemfire.cache.EvictionAction;
@@ -36,29 +40,29 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.util.ObjectSizerImpl;
-import com.gemstone.gemfire.internal.cache.DistributedRegion;
-import com.gemstone.gemfire.internal.cache.functions.*;
+import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.internal.cache.lru.MemLRUCapacityController;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.FunctionServiceCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.ResourceManagerCreation;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests 5.8 cache.xml features.
  * 
- * @since 5.8
+ * @since GemFire 5.8
  */
 
+@Category(DistributedTest.class)
 public class CacheXml58DUnitTest extends CacheXml57DUnitTest
 {
 
   // ////// Constructors
 
-  public CacheXml58DUnitTest(String name) {
-    super(name);
+  public CacheXml58DUnitTest() {
+    super();
   }
 
   // ////// Helper methods
@@ -74,6 +78,7 @@ public class CacheXml58DUnitTest extends CacheXml57DUnitTest
    * for partition-resolver has the correct attributes.
    * 
    */
+  @Test
   public void testPartitionedRegionAttributesForCustomPartitioning() throws CacheException
   {
     CacheCreation cache = new CacheCreation();
@@ -124,6 +129,7 @@ public class CacheXml58DUnitTest extends CacheXml57DUnitTest
    * has correct registered Function
    * 
    */
+  @Test
   public void testCacheCreationWithFuntionService() throws CacheException
   {
     CacheCreation cache = new CacheCreation();
@@ -152,6 +158,7 @@ public class CacheXml58DUnitTest extends CacheXml57DUnitTest
    * for ExpirationAttributes
    * 
    */
+  @Test
   public void testPartitionedRegionAttributesForExpiration() throws CacheException
   {
     CacheCreation cache = new CacheCreation();
@@ -218,6 +225,7 @@ public class CacheXml58DUnitTest extends CacheXml57DUnitTest
    * for ExpirationAttributes
    * 
    */
+  @Test
   public void testPartitionedRegionAttributesForEviction() throws CacheException
   {
     final int redundantCopies = 1;
@@ -304,13 +312,14 @@ public class CacheXml58DUnitTest extends CacheXml57DUnitTest
     assertEquals(regionAttrs.getEntryTimeToLive().getTimeout(), expiration.getTimeout());    
 //  TODO mthomas 01/20/09 Move test back to using LRUHeap when config issues have settled
 //    if (getGemFireVersion().equals(CacheXml.GEMFIRE_6_0)) {
-//      assertEquals(ea.getAlgorithm(),EvictionAlgorithm.LRU_HEAP);
+//      assertIndexDetailsEquals(ea.getAlgorithm(),EvictionAlgorithm.LRU_HEAP);
 //    } else {
     assertEquals(ea.getAlgorithm(),EvictionAlgorithm.LRU_MEMORY);
 //    }
     assertEquals(ea.getAction(), EvictionAction.OVERFLOW_TO_DISK);    
   }
 
+  @Test
   public void testPartitionedRegionAttributesForCoLocation(){
     closeCache();
     CacheCreation cache = new CacheCreation();
@@ -345,6 +354,7 @@ public class CacheXml58DUnitTest extends CacheXml57DUnitTest
     
   }
   
+  @Test
   public void testPartitionedRegionAttributesForCoLocation2(){
     closeCache();
     setXmlFile(findFile("coLocation.xml"));    
@@ -360,6 +370,7 @@ public class CacheXml58DUnitTest extends CacheXml57DUnitTest
     
   }
   
+  @Test
   public void testPartitionedRegionAttributesForMemLruWithoutMaxMem() throws CacheException
   {
     final int redundantCopies = 1;
@@ -401,6 +412,7 @@ public class CacheXml58DUnitTest extends CacheXml57DUnitTest
     assertEquals(ea.getMaximum(), pa.getLocalMaxMemory());
   }
   
+  @Test
   public void testPartitionedRegionAttributesForMemLruWithMaxMem() throws CacheException
   {
     final int redundantCopies = 1;
@@ -444,6 +456,7 @@ public class CacheXml58DUnitTest extends CacheXml57DUnitTest
     assertEquals(ea.getMaximum(), pa.getLocalMaxMemory());
   }
   
+  @Test
   public void testReplicatedRegionAttributesForMemLruWithoutMaxMem() throws CacheException
   {
     final int redundantCopies = 1;
@@ -472,6 +485,7 @@ public class CacheXml58DUnitTest extends CacheXml57DUnitTest
     assertEquals(ea.getMaximum(), MemLRUCapacityController.DEFAULT_MAXIMUM_MEGABYTES);
   }
   
+  @Test
   public void testReplicatedRegionAttributesForMemLruWithMaxMem() throws CacheException
   {
     final int redundantCopies = 1;

@@ -16,13 +16,26 @@
  */
 package com.gemstone.gemfire.internal.cache.snapshot;
 
-import static com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.getLoggerI18n;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.internal.ProxyRegion;
+import com.gemstone.gemfire.cache.execute.*;
+import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
+import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
+import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
+import com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.DSCODE;
+import com.gemstone.gemfire.internal.cache.*;
+import com.gemstone.gemfire.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
+import com.gemstone.gemfire.internal.cache.snapshot.GFSnapshot.SnapshotWriter;
+import com.gemstone.gemfire.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.io.Serializable;
+import java.io.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,35 +44,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.ProxyRegion;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.execute.FunctionException;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.cache.execute.ResultSender;
-import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
-import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
-import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
-import com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.DSCODE;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalDataSet;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.Token;
-import com.gemstone.gemfire.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
-import com.gemstone.gemfire.internal.cache.snapshot.GFSnapshot.SnapshotWriter;
-import com.gemstone.gemfire.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import static com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.getLoggerI18n;
 
 /**
  * Provides an implementation for region snapshots.
@@ -70,10 +55,10 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  */
 public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K, V> {
   // controls number of concurrent putAll ops during an import
-  private static final int IMPORT_CONCURRENCY = Integer.getInteger("gemfire.RegionSnapshotServiceImpl.IMPORT_CONCURRENCY", 10);
+  private static final int IMPORT_CONCURRENCY = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "RegionSnapshotServiceImpl.IMPORT_CONCURRENCY", 10);
   
   // controls the size (in bytes) of the r/w buffer during imoprt and export
-  static final int BUFFER_SIZE = Integer.getInteger("gemfire.RegionSnapshotServiceImpl.BUFFER_SIZE", 1024 * 1024);
+  static final int BUFFER_SIZE = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "RegionSnapshotServiceImpl.BUFFER_SIZE", 1024 * 1024);
   
   static final SnapshotFileMapper LOCAL_MAPPER = new SnapshotFileMapper() {
     private static final long serialVersionUID = 1L;

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.management;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -85,6 +94,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * 
  * 
  */
+@Category(DistributedTest.class)
 public class DistributedSystemDUnitTest extends ManagementTestBase {
 
   private static final Logger logger = LogService.getLogger();
@@ -105,8 +115,8 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
   static final String SEVERE_LEVEL_MESSAGE =  "Severelevel Alert Message";
 
   
-  public DistributedSystemDUnitTest(String name) {
-    super(name);
+  public DistributedSystemDUnitTest() {
+    super();
   }
 
   /**
@@ -114,6 +124,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
    * 
    * @throws Exception
    */
+  @Test
   public void testDistributedSystemAggregate() throws Exception {
     VM managingNode = getManagingNode();
     createManagementCache(managingNode);
@@ -138,6 +149,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
    * 
    * @throws Exception
    */
+  @Test
   public void testAlertManagedNodeFirst() throws Exception {
 
     for (VM vm : getManagedNodeList()) {
@@ -224,6 +236,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
    * 
    * @throws Exception
    */
+  @Test
   public void testShutdownAll() throws Exception {
     final Host host = Host.getHost(0);
     VM managedNode1 = host.getVM(0);
@@ -243,6 +256,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
     closeCache(managingNode);
   }
   
+  @Test
   public void testNavigationAPIS() throws Exception{
     
     final Host host = Host.getHost(0); 
@@ -257,6 +271,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
     checkNavigationAPIs(managingNode);    
   }
   
+  @Test
   public void testNotificationHub() throws Exception {
     this.initManagement(false);
 
@@ -485,6 +500,7 @@ public class DistributedSystemDUnitTest extends ManagementTestBase {
    * 
    * @throws Exception
    */
+  @Test
   public void testAlert() throws Exception {
     VM managingNode = getManagingNode();
    

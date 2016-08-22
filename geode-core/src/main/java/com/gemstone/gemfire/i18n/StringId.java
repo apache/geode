@@ -25,7 +25,7 @@ import java.util.Locale;
 /**
  * This class forms the basis of the i18n strategy. Its primary function is to
  * be used as a key to be passed to an instance of StringIdResourceBundle.
- * @since 6.0 
+ * @since GemFire 6.0
  */
 public class StringId {
   /** The root name of the ResourceBundle */

@@ -16,59 +16,6 @@
  */
 package com.gemstone.gemfire.internal;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.BindException;
-import java.net.Inet4Address;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.nio.channels.ServerSocketChannel;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.Vector;
-
-import javax.naming.Context;
-import javax.naming.NamingEnumeration;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.InitialDirContext;
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLPeerUnverifiedException;
-import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
-
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.SystemFailure;
@@ -86,12 +33,27 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.util.PasswordUtil;
-
-import java.util.*;
-
-import javax.net.ssl.*;
-
 import org.apache.logging.log4j.Logger;
+
+import javax.naming.Context;
+import javax.naming.NamingEnumeration;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
+import javax.net.ssl.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.*;
+import java.nio.channels.ServerSocketChannel;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.*;
 
 /**
  * Analyze configuration data (gemfire.properties) and configure sockets
@@ -119,8 +81,8 @@ public class SocketCreator {
   private static final Logger logger = LogService.getLogger();
   
   /** Optional system property to enable GemFire usage of link-local addresses */
-  public static final String USE_LINK_LOCAL_ADDRESSES_PROPERTY = 
-      "gemfire.net.useLinkLocalAddresses";
+  public static final String USE_LINK_LOCAL_ADDRESSES_PROPERTY =
+      DistributionConfig.GEMFIRE_PREFIX + "net.useLinkLocalAddresses";
   
   /** True if GemFire should use link-local addresses */
   private static final boolean useLinkLocalAddresses = 
@@ -136,7 +98,7 @@ public class SocketCreator {
   private static final Map<InetAddress, String> hostNames = new HashMap<>();
   
   /** flag to force always using DNS (regardless of the fact that these lookups can hang) */
-  public static final boolean FORCE_DNS_USE = Boolean.getBoolean("gemfire.forceDnsUse");
+  public static final boolean FORCE_DNS_USE = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "forceDnsUse");
   
   /** set this to false to inhibit host name lookup */
   public static volatile boolean resolve_dns = true;
@@ -243,9 +205,9 @@ public class SocketCreator {
     // bug #49484 - customers want tcp/ip keep-alive turned on by default
     // to avoid dropped connections.  It can be turned off by setting this
     // property to false
-    String str = System.getProperty("gemfire.setTcpKeepAlive");
+    String str = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "setTcpKeepAlive");
     if (str != null) {
-      ENABLE_TCP_KEEP_ALIVE = Boolean.getBoolean("gemfire.setTcpKeepAlive");
+      ENABLE_TCP_KEEP_ALIVE = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "setTcpKeepAlive");
     } else {
       ENABLE_TCP_KEEP_ALIVE = true;
     }
@@ -266,8 +228,8 @@ public class SocketCreator {
    * Returns the default instance for use in GemFire socket creation. 
    * <p>
    * If not already initialized, the default instance of SocketCreator will be 
-   * initialized using defaults in {@link 
-   * com.gemstone.gemfire.distributed.internal.DistributionConfig}. If any 
+   * initialized using defaults in {@link
+   * DistributionConfig}. If any
    * values are specified in System properties, those values will be used to 
    * override the defaults.
    * <p>
@@ -299,8 +261,8 @@ public class SocketCreator {
   
   /**
    * Returns the default instance for use in GemFire socket creation after
-   * initializing it using defaults in {@link 
-   * com.gemstone.gemfire.distributed.internal.DistributionConfig}. If any 
+   * initializing it using defaults in {@link
+   * DistributionConfig}. If any
    * values are specified in the provided properties or in System properties,
    * those values will be used to override the defaults.
    * <p>
@@ -722,8 +684,8 @@ public class SocketCreator {
   }
   
   /**
-   * Perform initialization using defaults in {@link 
-   * com.gemstone.gemfire.distributed.internal.DistributionConfig}.  If any
+   * Perform initialization using defaults in {@link
+   * DistributionConfig}.  If any
    * values are specified in System properties, those values will be used to 
    * override the defaults.
    * <p>
@@ -803,16 +765,22 @@ public class SocketCreator {
    *  SSL configuration is left up to JSSE properties in java.security file.
    */
   public ServerSocket createServerSocket( int nport, int backlog, InetAddress bindAddr ) throws IOException {
-    return createServerSocket( nport, backlog, bindAddr, -1 );
+    return createServerSocket( nport, backlog, bindAddr, -1, useSSL);
   }
 
   public ServerSocket createServerSocket(int nport, int backlog,
-      InetAddress bindAddr, int socketBufferSize)
+                                         InetAddress bindAddr, int socketBufferSize)
+    throws IOException {
+    return createServerSocket(nport, backlog, bindAddr, socketBufferSize, useSSL);
+  }
+  
+  private ServerSocket createServerSocket(int nport, int backlog,
+      InetAddress bindAddr, int socketBufferSize, boolean sslConnection)
       throws IOException {
     //       rw.readLock().lockInterruptibly();
 //       try {
         printConfig();
-        if ( this.useSSL ) {
+        if ( sslConnection ) {
           if (this.sslContext == null) {
             throw new GemFireConfigException("SSL not configured correctly, Please look at previous error");
           }
@@ -868,7 +836,23 @@ public class SocketCreator {
   public ServerSocket createServerSocketUsingPortRange(InetAddress ba, int backlog,
       boolean isBindAddress, boolean useNIO, int tcpBufferSize, int[] tcpPortRange)
       throws IOException {
-    
+    return createServerSocketUsingPortRange(ba, backlog, isBindAddress, useNIO, tcpBufferSize, tcpPortRange, this.useSSL);
+  }
+
+    /**
+     * Creates or bind server socket to a random port selected
+     * from tcp-port-range which is same as membership-port-range.
+     * @param ba
+     * @param backlog
+     * @param isBindAddress
+     * @param tcpBufferSize
+     * @param sslConnection whether to connect using SSL
+     * @return Returns the new server socket.
+     * @throws IOException
+     */
+    public ServerSocket createServerSocketUsingPortRange(InetAddress ba, int backlog,
+    boolean isBindAddress, boolean useNIO, int tcpBufferSize, int[] tcpPortRange, boolean sslConnection)
+    throws IOException {
     ServerSocket socket = null;
     int localPort = 0;
     int startingPort = 0;
@@ -900,7 +884,8 @@ public class SocketCreator {
           InetSocketAddress addr = new InetSocketAddress(isBindAddress ? ba : null, localPort);
           socket.bind(addr, backlog);
         } else {
-          socket = SocketCreator.getDefaultInstance().createServerSocket(localPort, backlog, isBindAddress? ba : null, tcpBufferSize);
+          socket = SocketCreator.getDefaultInstance()
+                                .createServerSocket(localPort, backlog, isBindAddress? ba : null, tcpBufferSize, sslConnection);
         }
         break;
       } catch (java.net.SocketException ex) {
@@ -995,13 +980,7 @@ public class SocketCreator {
           if (optionalWatcher != null) {
             optionalWatcher.beforeConnect(socket);
           }
-          if (timeout > 0) {
-            SocketUtils.connect(socket, sockaddr, timeout);
-          }
-          else {
-            SocketUtils.connect(socket, sockaddr, 0);
-
-          }
+          socket.connect(sockaddr, Math.max(timeout,0));
           configureClientSSLSocket( socket );
           return socket;
         } 
@@ -1024,12 +1003,7 @@ public class SocketCreator {
             if (optionalWatcher != null) {
               optionalWatcher.beforeConnect(socket);
             }
-          if (timeout > 0) {
-            SocketUtils.connect(socket, sockaddr, timeout);
-            }
-            else {
-              SocketUtils.connect(socket, sockaddr, 0);
-            }
+            socket.connect(sockaddr, Math.max(timeout,0));
           }
           return socket;
         }
@@ -1055,7 +1029,9 @@ public class SocketCreator {
             sslSocket.startHandshake();
             SSLSession session = sslSocket.getSession();
             Certificate[] peer = session.getPeerCertificates();
-            logger.info(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_CONNECTION_FROM_PEER_0, ((X509Certificate)peer[0]).getSubjectDN()));
+            if (logger.isDebugEnabled()) {
+              logger.debug(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_CONNECTION_FROM_PEER_0, ((X509Certificate)peer[0]).getSubjectDN()));
+            }
           }
           catch (SSLPeerUnverifiedException ex) {
             if (this.needClientAuth) {
@@ -1119,7 +1095,9 @@ public class SocketCreator {
         sslSocket.startHandshake();
         SSLSession session = sslSocket.getSession();
         Certificate[] peer = session.getPeerCertificates();
-        logger.info(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_CONNECTION_FROM_PEER_0, ((X509Certificate)peer[0]).getSubjectDN()));
+        if (logger.isDebugEnabled()) {
+          logger.debug(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_CONNECTION_FROM_PEER_0, ((X509Certificate)peer[0]).getSubjectDN()));
+        }
       }
       catch (SSLPeerUnverifiedException ex) {
         if (this.needClientAuth) {
@@ -1177,7 +1155,7 @@ public class SocketCreator {
   
   protected void initializeClientSocketFactory() {
     this.clientSocketFactory = null;
-    String className = System.getProperty("gemfire.clientSocketFactory");
+    String className = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "clientSocketFactory");
     if (className != null) {
       Object o;
       try {

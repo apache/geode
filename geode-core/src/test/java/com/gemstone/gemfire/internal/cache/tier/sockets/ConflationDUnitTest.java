@@ -16,9 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -28,28 +34,29 @@ import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.HARegion;
 import com.gemstone.gemfire.internal.cache.ha.HAHelper;
 import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.cache.client.*;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This test verifies the conflation functionality of the
@@ -62,24 +69,19 @@ import com.gemstone.gemfire.cache.client.internal.PoolImpl;
  * The test has two regions. In one scenario
  * they share a common bridgewriter and in the second
  * scenario, each has a unique bridgewriter.
- *
  */
-public class ConflationDUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class ConflationDUnitTest extends JUnit4DistributedTestCase {
+
   VM vm0 = null;
   VM vm2 = null;
   private static Cache cache = null;
   private int PORT ;
   private static final String REGION_NAME1 = "ConflationDUnitTest_region1" ;
   private static final String REGION_NAME2 = "ConflationDUnitTest_region2" ;
-  final static String MARKER = "markerKey";
+  static final String MARKER = "markerKey";
 
   private static HashMap statMap = new HashMap();
-
-  /** constructor */
-  public ConflationDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -135,6 +137,7 @@ public class ConflationDUnitTest extends DistributedTestCase
    * two regions, with two writers (each region will have a unique bridgwriter).
    *
    */
+  @Test
   public void testTwoRegionsTwoWriters()
   {
     try {
@@ -166,6 +169,7 @@ public class ConflationDUnitTest extends DistributedTestCase
    * two regions with a common bridgewriter
    *
    */
+  @Test
   public void testTwoRegionsOneWriter() throws Exception
   {
       vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart());
@@ -193,6 +197,7 @@ public class ConflationDUnitTest extends DistributedTestCase
    * test more messages are not sent to client from server
    *
    */
+  @Test
   public void testNotMoreMessagesSent() throws Exception
   {
       vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart());
@@ -222,8 +227,8 @@ public class ConflationDUnitTest extends DistributedTestCase
    */
   private static Properties createProperties1(){
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     return props;
   }
 
@@ -252,7 +257,7 @@ public class ConflationDUnitTest extends DistributedTestCase
 
   public static void createClientCache1CommonWriter(String host, Integer port) throws Exception
   {
-    ConflationDUnitTest test = new ConflationDUnitTest("temp");
+    ConflationDUnitTest test = new ConflationDUnitTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -270,7 +275,7 @@ public class ConflationDUnitTest extends DistributedTestCase
 
   public static void createClientCache1CommonWriterTest3(String host, Integer port) throws Exception
   {
-    ConflationDUnitTest test = new ConflationDUnitTest("temp");
+    ConflationDUnitTest test = new ConflationDUnitTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -287,7 +292,7 @@ public class ConflationDUnitTest extends DistributedTestCase
    */
   public static void createClientCache2CommonWriter(String host, Integer port) throws Exception
   {
-    ConflationDUnitTest test = new ConflationDUnitTest("temp");
+    ConflationDUnitTest test = new ConflationDUnitTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -334,7 +339,7 @@ public class ConflationDUnitTest extends DistributedTestCase
   public static void createClientCache2CommonWriterTest3(String host, Integer port)
       throws Exception
   {
-    ConflationDUnitTest test = new ConflationDUnitTest("temp");
+    ConflationDUnitTest test = new ConflationDUnitTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -386,7 +391,7 @@ public class ConflationDUnitTest extends DistributedTestCase
 
   public static void createClientCache1UniqueWriter(String host, Integer port) throws Exception
   {
-    ConflationDUnitTest test = new ConflationDUnitTest("temp");
+    ConflationDUnitTest test = new ConflationDUnitTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -405,7 +410,7 @@ public class ConflationDUnitTest extends DistributedTestCase
    */
   public static void createClientCache2UniqueWriter(String host, Integer port) throws Exception
   {
-    ConflationDUnitTest test = new ConflationDUnitTest("temp");
+    ConflationDUnitTest test = new ConflationDUnitTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -553,7 +558,7 @@ public class ConflationDUnitTest extends DistributedTestCase
       }
     };
     Wait.waitForCriterion(ev, 60 * 1000, 200, true);
-    // assertEquals("creates", 2, counterCreate);
+    // assertIndexDetailsEquals("creates", 2, counterCreate);
     
     ev = new WaitCriterion() {
       public boolean done() {
@@ -566,7 +571,7 @@ public class ConflationDUnitTest extends DistributedTestCase
     };
     Wait.waitForCriterion(ev, 60 * 1000, 200, true);
     
-    // assertEquals("destroys", 2, counterDestroy);
+    // assertIndexDetailsEquals("destroys", 2, counterDestroy);
     // assertTrue("updates", 20000 >= counterUpdate);
     ev = new WaitCriterion() {
       public boolean done() {
@@ -641,7 +646,7 @@ public class ConflationDUnitTest extends DistributedTestCase
    */
   public static Integer createServerCache() throws Exception
   {
-    ConflationDUnitTest test = new ConflationDUnitTest("temp");
+    ConflationDUnitTest test = new ConflationDUnitTest();
     cache = test.createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);

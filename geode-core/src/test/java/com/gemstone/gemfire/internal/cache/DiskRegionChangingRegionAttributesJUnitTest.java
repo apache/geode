@@ -16,11 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -32,47 +29,33 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * if the the region attributes are changed after starting it again.
  * 
  * The behaviour should be predictable
- * 
- *
  */
 @Category(IntegrationTest.class)
-public class DiskRegionChangingRegionAttributesJUnitTest extends
-    DiskRegionTestingBase
-{
-
-  @Before
-  public void setUp() throws Exception
-  {
-    super.setUp();
-    props = new DiskRegionProperties();
-    props.setDiskDirs(dirs);
-    
-  }
-
-  @After
-  public void tearDown() throws Exception
-  {
-    super.tearDown();
-  }
-  
+public class DiskRegionChangingRegionAttributesJUnitTest extends DiskRegionTestingBase {
 
   private DiskRegionProperties props;
-  
-  private void createOverflowOnly(){
+
+  @Override
+  protected final void postSetUp() throws Exception {
+    props = new DiskRegionProperties();
+    props.setDiskDirs(dirs);
+  }
+
+  private void createOverflowOnly() {
     props.setOverFlowCapacity(1);
     region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache,props);
   }
   
-  private void createPersistOnly(){
+  private void createPersistOnly() {
     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache,props, Scope.LOCAL);
   }
   
-  private void createPersistAndOverflow(){
+  private void createPersistAndOverflow() {
     region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,props); 
   }
   
   @Test
-  public void testOverflowOnlyAndThenPersistOnly(){
+  public void testOverflowOnlyAndThenPersistOnly() {
     createOverflowOnly();
     put100Int();
     region.close();
@@ -81,7 +64,7 @@ public class DiskRegionChangingRegionAttributesJUnitTest extends
   }
   
   @Test
-  public void testPersistOnlyAndThenOverflowOnly(){
+  public void testPersistOnlyAndThenOverflowOnly() {
     createPersistOnly();
     put100Int();
     region.close();
@@ -97,7 +80,7 @@ public class DiskRegionChangingRegionAttributesJUnitTest extends
   }
   
   @Test
-  public void testOverflowOnlyAndThenPeristAndOverflow(){
+  public void testOverflowOnlyAndThenPeristAndOverflow() {
     createOverflowOnly();
     put100Int();
     region.close();
@@ -106,7 +89,7 @@ public class DiskRegionChangingRegionAttributesJUnitTest extends
   }
   
   @Test
-  public void testPersistAndOverflowAndThenOverflowOnly(){
+  public void testPersistAndOverflowAndThenOverflowOnly() {
     createPersistAndOverflow();
     put100Int();
     region.close();
@@ -119,7 +102,7 @@ public class DiskRegionChangingRegionAttributesJUnitTest extends
   }
   
  @Test
-  public void testPersistOnlyAndThenPeristAndOverflow(){
+  public void testPersistOnlyAndThenPeristAndOverflow() {
    createPersistOnly();
    put100Int();
    region.close();
@@ -128,15 +111,11 @@ public class DiskRegionChangingRegionAttributesJUnitTest extends
   }
   
   @Test
-  public void testPersistAndOverflowAndThenPersistOnly(){
+  public void testPersistAndOverflowAndThenPersistOnly() {
     createPersistAndOverflow();
     put100Int();
     region.close();
     createPersistOnly();
     assertTrue(region.size()==100);
   }
-  
-  
-  
 }
-

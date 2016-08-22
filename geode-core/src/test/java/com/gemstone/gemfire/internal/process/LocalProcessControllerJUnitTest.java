@@ -31,39 +31,49 @@ import javax.management.Query;
 import javax.management.QueryExp;
 
 import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
 
+import com.gemstone.gemfire.internal.process.mbean.Process;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for LocalProcessController.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(UnitTest.class)
 public class LocalProcessControllerJUnitTest {
 
   private MBeanServer server;
-  private ObjectName objectName; 
-  
+  private ObjectName objectName;
+  private int pid;
+
+  @Rule
+  public TestName testName = new TestName();
+
+  @Before
+  public void setUp() throws Exception {
+    pid = ProcessUtils.identifyPid();
+    final Process process = new Process(pid, true);
+
+    this.objectName = ObjectName.getInstance(getClass().getSimpleName() + ":testName=" + testName.getMethodName());
+    this.server = ManagementFactory.getPlatformMBeanServer();
+
+    final ObjectInstance instance = this.server.registerMBean(process, objectName);
+    assertNotNull(instance);
+  }
+
   @After
-  public void unregisterMBean() throws Exception {
+  public void tearDown() throws Exception {
     this.server.unregisterMBean(objectName);
   }
   
   @Test
   public void testProcessMBean() throws Exception {
-    final String testName = "testProcessMBean";
-    final int pid = ProcessUtils.identifyPid();
-    final com.gemstone.gemfire.internal.process.mbean.Process process = new com.gemstone.gemfire.internal.process.mbean.Process(pid, true);
-    
-    this.objectName = ObjectName.getInstance(getClass().getSimpleName() + ":testName=" + testName);
-    this.server = ManagementFactory.getPlatformMBeanServer();
-    
-    final ObjectInstance instance = this.server.registerMBean(process, objectName);
-    assertNotNull(instance);
-
     // validate basics of the ProcessMBean
     Set<ObjectName> mbeanNames = this.server.queryNames(objectName, null);
     assertFalse("Zero matching mbeans", mbeanNames.isEmpty());

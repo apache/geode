@@ -16,12 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.DiskWriteAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
@@ -37,7 +33,7 @@ import java.util.Properties;
  * @see Region#writeToDisk
  * 
  * 
- * @since 5.1
+ * @since GemFire 5.1
  */
 @SuppressWarnings({"deprecation", "unused"})
 public final class DiskWriteAttributesImpl implements DiskWriteAttributes
@@ -66,7 +62,8 @@ public final class DiskWriteAttributesImpl implements DiskWriteAttributes
   private final long maxOplogSize;
 
   /** default max in bytes **/
-  private static final long DEFAULT_MAX_OPLOG_SIZE = Long.getLong("gemfire.DEFAULT_MAX_OPLOG_SIZE", 1024L).longValue() * (1024 * 1024); // 1 GB
+  private static final long DEFAULT_MAX_OPLOG_SIZE =
+      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE", 1024L).longValue() * (1024 * 1024); // 1 GB
 
   /** default max limit in bytes **/
   private static final long DEFAULT_MAX_OPLOG_SIZE_LIMIT = (long)Integer.MAX_VALUE * (1024*1024);
@@ -86,21 +83,9 @@ public final class DiskWriteAttributesImpl implements DiskWriteAttributes
   public static final String SYNCHRONOUS_PROPERTY = "synchronous";
 
   /**
-   * The property used to specify the base directory for Sql Fabric persistence
-   * of Gateway Queues, Tables, Data Dictionary etc.
-   */
-  public static final String SYS_PERSISTENT_DIR = "sys-disk-dir";
-
-  /**
-   * The system property for {@link #SYS_PERSISTENT_DIR}.
-   */
-  public static final String SYS_PERSISTENT_DIR_PROP = "sqlfabric."
-      + SYS_PERSISTENT_DIR;
-
-  /**
    * Default disk directory size in megabytes
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static final int DEFAULT_DISK_DIR_SIZE = DiskStoreFactory.DEFAULT_DISK_DIR_SIZE;
 
@@ -479,84 +464,5 @@ public final class DiskWriteAttributesImpl implements DiskWriteAttributes
   public static DiskWriteAttributes getDefaultSyncInstance()
   {
     return DEFAULT_SYNC_DWA;
-  }
-
-
-  // Asif: Sql Fabric related helper methods.
-  // These static functions need to be moved to a better place.
-  // preferably in sql Fabric source tree but since GatewayImpl is also
-  // utilizing it, we have no option but to keep it here.
-  public static String generateOverFlowDirName(String dirName) {
-    dirName = generatePersistentDirName(dirName);
-    final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-    if (cache == null) {
-      throw new CacheClosedException(
-          "DiskWriteAttributesImpl::generateOverFlowDirName: no cache found.");
-    }
-    /* [sumedh] no need of below since sys-disk-dir is VM specific anyways
-    char fileSeparator = System.getProperty("file.separator").charAt(0);
-    DistributedMember member = cache.getDistributedSystem()
-        .getDistributedMember();
-    String host = member.getHost();
-    int pid = member.getProcessId();
-    final StringBuilder temp = new StringBuilder(dirName);
-    temp.append(fileSeparator);
-    temp.append(host);
-    temp.append('-');
-    temp.append(pid);
-    return temp.toString();
-    */
-    return dirName;
-  }
-
-  public static String generatePersistentDirName(String dirPath) {
-    String baseDir = System.getProperty(SYS_PERSISTENT_DIR_PROP);
-    if (baseDir == null) {
-    //Kishor : TODO : Removing old wan related code
-      //baseDir = GatewayQueueAttributes.DEFAULT_OVERFLOW_DIRECTORY;
-      baseDir = ".";
-    }
-    if (dirPath != null) {
-      File dirProvided = new File(dirPath);
-      // Is the directory path absolute?
-      // For Windows this will check for drive letter. However, we want
-      // to allow for no drive letter so prepend the drive.
-      boolean isAbsolute = dirProvided.isAbsolute();
-      if (!isAbsolute) {
-        String driveName;
-        // get the current drive for Windows and prepend
-        if ((dirPath.charAt(0) == '/' || dirPath.charAt(0) == '\\')
-            && (driveName = getCurrentDriveName()) != null) {
-          isAbsolute = true;
-          dirPath = driveName + dirPath;
-        }
-      }
-      if (!isAbsolute) {
-        // relative path so resolve it relative to parent dir
-        dirPath = new File(baseDir, dirPath).getAbsolutePath();
-      }
-    }
-    else {
-      dirPath = baseDir;
-    }
-    return dirPath;
-  }
-
-  /**
-   * Get the drive name of current working directory for windows else return
-   * null for non-Windows platform (somewhat of a hack -- see if something
-   * cleaner can be done for this).
-   */
-  public static String getCurrentDriveName() {
-    if (System.getProperty("os.name").startsWith("Windows")) {
-      try {
-        // get the current drive
-        return new File(".").getCanonicalPath().substring(0, 2);
-      } catch (IOException ex) {
-        throw new IllegalArgumentException(
-            "Failed in setting the overflow directory", ex);
-      }
-    }
-    return null;
   }
 }

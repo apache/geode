@@ -29,7 +29,7 @@ import java.io.*;
  *
  * @deprecated as of GemFire 5.0, use {@link DataPolicy} instead.
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 @Deprecated
 public class MirrorType implements java.io.Serializable {
@@ -97,7 +97,7 @@ public class MirrorType implements java.io.Serializable {
 
     /**
      * Returns the {@link DataPolicy} that corresponds to this mirror type.
-     * @since 5.0
+     * @since GemFire 5.0
      */
     public DataPolicy getDataPolicy() {
       return this.dataPolicy;

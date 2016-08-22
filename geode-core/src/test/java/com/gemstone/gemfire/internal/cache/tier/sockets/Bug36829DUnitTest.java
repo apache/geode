@@ -16,47 +16,51 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolFactory;
+import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.client.*;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class Bug36829DUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class Bug36829DUnitTest extends JUnit4DistributedTestCase {
+
   private VM serverVM;
 
   private VM ClientVM;
 
-  private String regionName;
+  private static final String REGION_NAME = "Bug36829_region";
 
   private int PORT;
-
-  public Bug36829DUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     this.serverVM = host.getVM(0);
     this.ClientVM = host.getVM(1);
-    regionName = Bug36829DUnitTest.class.getName() + "_region";
+
     CacheServerTestUtil.disableShufflingOfEndpoints();
   }
 
+  @Test
   public void testBug36829() {
-
     // Step 1: Starting the servers
     final String durableClientId = getName() + "_client";
 
@@ -66,8 +70,7 @@ public class Bug36829DUnitTest extends DistributedTestCase {
           ))).intValue();
 
     this.ClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
-            getClientPool(NetworkUtils.getServerHostName(ClientVM.getHost()), PORT, true, 0),
-            regionName,
+            getClientPool(NetworkUtils.getServerHostName(ClientVM.getHost()), PORT, true, 0), REGION_NAME,
             getClientDistributedSystemProperties(durableClientId,
                 durableClientTimeout), Boolean.TRUE ));
 
@@ -82,64 +85,36 @@ public class Bug36829DUnitTest extends DistributedTestCase {
     // If exception is not thrown then the test fails.
     this.ClientVM.invoke(() -> Bug36829DUnitTest.registerKey( "Key1" ));
 
-
-    // creating REgion on the Server
-/*    this.serverVM.invoke(() -> CacheServerTestUtil.createRegion( regionName ));
+    // creating Region on the Server
+/*    this.serverVM.invoke(() -> CacheServerTestUtil.createRegion( REGION_NAME ));
      // should be successful.
     this.ClientVM.invoke(() -> Bug36829DUnitTest.registerKeyAfterRegionCreation( "Key1" ));*/
-
 
     // Stop the durable client
     this.ClientVM.invoke(() -> CacheServerTestUtil.closeCache());
 
     // Stop server 1
     this.serverVM.invoke(() -> CacheServerTestUtil.closeCache());
-
   }
 
-  
   private static void registerKey(String key) throws Exception {
+    // Get the region
+    Region region = CacheServerTestUtil.getCache().getRegion(REGION_NAME);
+    assertNotNull(region);
     try {
-      // Get the region
-      Region region = CacheServerTestUtil.getCache().getRegion(
-          Bug36829DUnitTest.class.getName() + "_region");
-      // Region region =
-      // CacheServerTestUtil.getCache().getRegion(regionName);
-      assertNotNull(region);
-      try {
-        region.registerInterest(key, InterestResultPolicy.NONE);
-        fail("expected ServerOperationException");
-      }
-      catch (ServerOperationException expected) {
-      }
+      region.registerInterest(key, InterestResultPolicy.NONE);
+      fail("expected ServerOperationException");
     }
-    catch (Exception ex) {
-      Assert.fail("failed while registering interest in registerKey function", ex);
+    catch (ServerOperationException expected) {
     }
   }
 
-  private static void registerKeyAfterRegionCreation(String key)
-      throws Exception {
-    try {
-      // Get the region
-      Region region = CacheServerTestUtil.getCache().getRegion(
-          Bug36829DUnitTest.class.getName() + "_region");
-      // Region region =
-      // CacheServerTestUtil.getCache().getRegion(regionName);
-      assertNotNull(region);
-      try {
-        region.registerInterest(key, InterestResultPolicy.NONE);
-      }
-      catch (Exception e) {
-        fail("unexpected Exception while registerInterest inspite of region present on the server."
-            + " Details of Exception:" + "\ne.getCause:" + e.getCause()
-            + "\ne.getMessage:" + e.getMessage());
-      }
-    }
+  private static void registerKeyAfterRegionCreation(String key) throws Exception {
+    // Get the region
+    Region region = CacheServerTestUtil.getCache().getRegion(REGION_NAME);
+    assertNotNull(region);
 
-    catch (Exception ex) {
-      Assert.fail("failed while registering interest in registerKey function", ex);
-    }
+    region.registerInterest(key, InterestResultPolicy.NONE);
   }
 
   private Pool getClientPool(String host, int server1Port,
@@ -154,11 +129,11 @@ public class Bug36829DUnitTest extends DistributedTestCase {
   private Properties getClientDistributedSystemProperties(
       String durableClientId, int durableClientTimeout) {
     Properties properties = new Properties();
-    properties.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    properties.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    properties.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME,
+    properties.setProperty(MCAST_PORT, "0");
+    properties.setProperty(LOCATORS, "");
+    properties.setProperty(DURABLE_CLIENT_ID,
         durableClientId);
-    properties.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME,
+    properties.setProperty(DURABLE_CLIENT_TIMEOUT,
         String.valueOf(durableClientTimeout));
     return properties;
   }

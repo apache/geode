@@ -17,35 +17,25 @@
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicIntegerArray;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.SystemTimer.SystemTimerTask;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.CacheClientStatus;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.IncomingGatewayStatus;
-import com.gemstone.gemfire.internal.cache.TXId;
-import com.gemstone.gemfire.internal.cache.TXManagerImpl;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.cache.tier.Acceptor;
+import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.logging.log4j.Logger;
+
+import java.net.InetAddress;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
  * Class <code>ClientHealthMonitor</code> is a server-side singleton that
@@ -54,7 +44,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * dead and interrupts its threads.
  * 
  * 
- * @since 4.2.3
+ * @since GemFire 4.2.3
  */
 public class ClientHealthMonitor {
   private static final Logger logger = LogService.getLogger();
@@ -279,9 +269,19 @@ public class ClientHealthMonitor {
     }
   }
 
+  private final Set<TXId> scheduledToBeRemovedTx = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "trackScheduledToBeRemovedTx") ?
+      new ConcurrentHashSet<TXId>() : null;
+
+  /**
+   * provide a test hook to track client transactions to be removed
+   */
+  public Set<TXId> getScheduledToBeRemovedTx() {
+    return scheduledToBeRemovedTx;
+  }
+
   /**
    * expire the transaction states for the given client.  This uses the
-   * transactionTimeToLive setting that is inherited from the CacheServer.
+   * transactionTimeToLive setting that is inherited from the TXManagerImpl.
    * If that setting is non-positive we expire the states immediately
    * @param proxyID
    */
@@ -289,22 +289,24 @@ public class ClientHealthMonitor {
     final TXManagerImpl txMgr = (TXManagerImpl)this._cache.getCacheTransactionManager(); 
     final Set<TXId> txids = txMgr.getTransactionsForClient(
           (InternalDistributedMember)proxyID.getDistributedMember());
-    CacheClientNotifier notifier = CacheClientNotifier.getInstance();
-    if (notifier == null || this._cache.isClosed()) {
-      return; // notifier is null when shutting down
+    if (this._cache.isClosed()) {
+      return; 
     }
-    long timeout = notifier.getTransactionTimeToLive() * 1000;
-    if (txids.size() > 0) {
+    long timeout = txMgr.getTransactionTimeToLive() * 1000;
+    if (!txids.isEmpty()) {
       if (logger.isDebugEnabled()) {
         logger.debug("expiring {} transaction contexts for {} timeout={}", txids.size(), proxyID, timeout/1000);
       }
+
       if (timeout <= 0) {
         txMgr.removeTransactions(txids, true);
       } else {
+        if (scheduledToBeRemovedTx != null) scheduledToBeRemovedTx.addAll(txids);       
         SystemTimerTask task = new SystemTimerTask() {
           @Override
           public void run2() {
             txMgr.removeTransactions(txids, true);
+            if (scheduledToBeRemovedTx != null) scheduledToBeRemovedTx.removeAll(txids);
           }
         };
         ((GemFireCacheImpl)this._cache).getCCPTimer().schedule(task, timeout);
@@ -772,7 +774,7 @@ public class ClientHealthMonitor {
   /**
    * Returns a brief description of this <code>ClientHealthMonitor</code>
    *
-   * @since 5.1
+   * @since GemFire 5.1
    */
   @Override
   public String toString()

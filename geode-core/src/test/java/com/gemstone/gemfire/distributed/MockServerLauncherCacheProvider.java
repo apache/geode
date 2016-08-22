@@ -20,11 +20,10 @@ import java.util.Properties;
 
 import com.gemstone.gemfire.cache.Cache;
 
-public class MockServerLauncherCacheProvider
-    implements ServerLauncherCacheProvider {
+public class MockServerLauncherCacheProvider implements ServerLauncherCacheProvider {
+
   private static Cache cache;
 
-  
   public static Cache getCache() {
     return cache;
   }
@@ -34,8 +33,7 @@ public class MockServerLauncherCacheProvider
   }
 
   @Override
-  public Cache createCache(Properties gemfireProperties,
-      ServerLauncher serverLauncher) {
+  public Cache createCache(Properties gemfireProperties, ServerLauncher serverLauncher) {
     return cache;
   }
 

@@ -48,6 +48,7 @@ XML schema for Lucene indexes in Geode.
     	  <xsd:element name="field" maxOccurs="unbounded">
 			<xsd:complexType>
 				<xsd:attribute name="name" type="xsd:string" />
+				<xsd:attribute name="analyzer" type="xsd:string" />
 			</xsd:complexType>
     	  </xsd:element>
     	</xsd:sequence>

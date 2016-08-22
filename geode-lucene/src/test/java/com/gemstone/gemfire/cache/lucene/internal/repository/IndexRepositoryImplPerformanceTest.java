@@ -19,17 +19,20 @@
 
 package com.gemstone.gemfire.cache.lucene.internal.repository;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-
+import com.gemstone.gemfire.DataSerializable;
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.cache.lucene.*;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
+import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
+import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntriesCollector;
+import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
+import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
+import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
+import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
+import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
@@ -46,28 +49,16 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.lucene.LuceneIndex;
-import com.gemstone.gemfire.cache.lucene.LuceneQuery;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
-import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
-import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
-import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntriesCollector;
-import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
-import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
-import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogenousLuceneSerializer;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 
 /**
  * Microbenchmark of the IndexRepository to compare an
@@ -84,7 +75,7 @@ public class IndexRepositoryImplPerformanceTest {
   private static int NUM_QUERIES = 500_000;
 
   private StandardAnalyzer analyzer = new StandardAnalyzer();
-  
+
   @Test
   public  void testIndexRepository() throws Exception {
     
@@ -107,20 +98,21 @@ public class IndexRepositoryImplPerformanceTest {
 
       @Override
       public void init() throws Exception {
-        cache = new CacheFactory().set("mcast-port", "0")
-            .set("log-level", "error")
+        cache = new CacheFactory().set(MCAST_PORT, "0")
+            .set(LOG_LEVEL, "error")
             .create();
         Region<String, File> fileRegion = cache.<String, File>createRegionFactory(RegionShortcut.REPLICATE).create("files");
         Region<ChunkKey, byte[]> chunkRegion = cache.<ChunkKey, byte[]>createRegionFactory(RegionShortcut.REPLICATE).create("chunks");
 
-        RegionDirectory dir = new RegionDirectory(fileRegion, chunkRegion);
+        RegionDirectory dir = new RegionDirectory(fileRegion, chunkRegion, new FileSystemStats(cache.getDistributedSystem(), "region-index"));
+        final LuceneIndexStats stats = new LuceneIndexStats(cache.getDistributedSystem(), "region-index");
         
         
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         writer = new IndexWriter(dir, config);
         String[] indexedFields= new String[] {"text"};
-        HeterogenousLuceneSerializer mapper = new HeterogenousLuceneSerializer(indexedFields);
-        repo = new IndexRepositoryImpl(fileRegion, writer, mapper);
+        HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(indexedFields);
+        repo = new IndexRepositoryImpl(fileRegion, writer, mapper, stats);
       }
 
       @Override
@@ -169,8 +161,8 @@ public class IndexRepositoryImplPerformanceTest {
 
       @Override
       public void init() throws Exception {
-        cache = new CacheFactory().set("mcast-port", "0")
-            .set("log-level", "warning")
+        cache = new CacheFactory().set(MCAST_PORT, "0")
+            .set(LOG_LEVEL, "warning")
             .create();
         service = LuceneServiceProvider.get(cache);
         service.createIndex("index", "/region", "text");
@@ -199,12 +191,12 @@ public class IndexRepositoryImplPerformanceTest {
         LuceneQuery<Object, Object> luceneQuery = service.createLuceneQueryFactory().create("index", "/region", new LuceneQueryProvider() {
           
           @Override
-          public Query getQuery(LuceneIndex index) throws QueryException {
+          public Query getQuery(LuceneIndex index) throws LuceneQueryException {
             return query;
           }
         });
         
-        LuceneQueryResults<Object, Object> results = luceneQuery.search();
+        PageableLuceneQueryResults<Object, Object> results = luceneQuery.findPages();
         return results.size();
       }
     });
@@ -214,15 +206,20 @@ public class IndexRepositoryImplPerformanceTest {
   public  void testLuceneWithRegionDirectory() throws Exception {
     doTest("RegionDirectory", new TestCallbacks() {
 
+      public Cache cache;
       private IndexWriter writer;
       private SearcherManager searcherManager;
 
       @Override
       public void init() throws Exception {
-        RegionDirectory dir = new RegionDirectory(new ConcurrentHashMap<String, File>(), new ConcurrentHashMap<ChunkKey, byte[]>());
+        cache = new CacheFactory().set(MCAST_PORT, "0")
+          .set(LOG_LEVEL, "warning")
+          .create();
+        final FileSystemStats stats = new FileSystemStats(cache.getDistributedSystem(), "stats");
+        RegionDirectory dir = new RegionDirectory(new ConcurrentHashMap<String, File>(), new ConcurrentHashMap<ChunkKey, byte[]>(), stats);
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         writer = new IndexWriter(dir, config);
-        searcherManager = new SearcherManager(writer, true, null);
+        searcherManager = new SearcherManager(writer, true, true, null);
       }
 
       @Override
@@ -242,6 +239,7 @@ public class IndexRepositoryImplPerformanceTest {
       @Override
       public void cleanup() throws Exception {
         writer.close();
+        cache.close();;
       }
       
       @Override
@@ -275,7 +273,7 @@ public class IndexRepositoryImplPerformanceTest {
         RAMDirectory dir = new RAMDirectory();
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         writer = new IndexWriter(dir, config);
-        searcherManager = new SearcherManager(writer, true, null);
+        searcherManager = new SearcherManager(writer, true, true, null);
       }
 
       @Override
@@ -381,7 +379,7 @@ public class IndexRepositoryImplPerformanceTest {
         int size  = callbacks.query(query);
 //        int size  = callbacks.query(parser.parse(word));
         //All of my tests sometimes seem to be missing a couple of words, including the stock lucene
-//        assertEquals("Error on query " + i + " word=" + word, counts[wordIndex], size);
+//        assertIndexDetailsEquals("Error on query " + i + " word=" + word, counts[wordIndex], size);
       }
       end = System.nanoTime();
       results.queryTime = end - start;

@@ -31,7 +31,7 @@ import java.io.*;
  * A message that is sent to a particular agent who was registered
  * a health listener on a GemFireVM. This message is only sent when
  * the health status changes.
- * @since 3.5
+ * @since GemFire 3.5
  */
 public final class HealthListenerMessage extends PooledDistributionMessage implements AdminMessageType {
   //instance variables

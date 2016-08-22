@@ -34,7 +34,7 @@ import com.vmware.gemfire.tools.pulse.internal.data.Repository;
  * 
  * PulseLogWriter is the implementation of LogWriter.
  * 
- * @since 7.0.1
+ * @since GemFire 7.0.1
  * 
  */
 public class PulseLogWriter implements LogWriter {
@@ -72,10 +72,6 @@ public class PulseLogWriter implements LogWriter {
         messageformatter = new MessageFormatter();
         fileHandler.setFormatter(messageformatter);
       }
-
-      // Remove any existing handlers
-      // e.g. consoleHandler
-      logger.setUseParentHandlers(false);
 
       // Add File Handler to logger object
       logger.addHandler(fileHandler);

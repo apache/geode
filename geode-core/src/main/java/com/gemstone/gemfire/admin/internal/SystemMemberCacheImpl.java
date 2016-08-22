@@ -28,7 +28,7 @@ import java.util.*;
 /**
  * View of a GemFire system member's cache.
  *
- * @since     3.5
+ * @since GemFire     3.5
  */
 public class SystemMemberCacheImpl implements SystemMemberCache {
   protected final GemFireVM vm;

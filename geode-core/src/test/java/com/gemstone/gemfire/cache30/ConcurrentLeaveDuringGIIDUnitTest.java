@@ -16,6 +16,16 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -35,12 +45,14 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.RegionMap;
 
-public class ConcurrentLeaveDuringGIIDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
 
-  public ConcurrentLeaveDuringGIIDUnitTest(String name) {
-    super(name);
+  public ConcurrentLeaveDuringGIIDUnitTest() {
+    super();
   }
   
+  @Test
   public void testRemoveWhenBug50988IsFixed() {
     // remove this placeholder
   }
@@ -62,7 +74,9 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends CacheTestCase {
    * A is then allowed to start its GII and pulls an image from B.
    * 
    */
-  public void bug50988_testBug48962() throws Exception {
+  @Ignore
+  @Test
+  public void testBug48962() throws Exception {
     VM X = Host.getHost(0).getVM(1);
     VM A = Host.getHost(0).getVM(2);
     VM B = Host.getHost(0).getVM(3);

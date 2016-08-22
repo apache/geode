@@ -17,25 +17,22 @@
 
 package com.gemstone.gemfire.internal.process;
 
-import java.io.BufferedOutputStream;
-import java.io.FileDescriptor;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.Properties;
-
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.io.TeeOutputStream;
 import com.gemstone.gemfire.internal.io.TeePrintStream;
+
+import java.io.*;
+import java.util.Properties;
 
 /**
  * Thread based context for launching a process. GemFire internals can acquire
  * optional configuration details from a process launcher via this context.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public final class ProcessLauncherContext {
 
-  public static final String OVERRIDDEN_DEFAULTS_PREFIX = "gemfire.default.";
+  public static final String OVERRIDDEN_DEFAULTS_PREFIX = DistributionConfig.GEMFIRE_PREFIX + "default.";
 
   /**
    * Default value for {@link #isRedirectingOutput()}

@@ -36,6 +36,7 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.management.internal.cli.CliUtil;
 
 /**
@@ -84,7 +85,7 @@ public class ClientStatsManager {
       ServerRegionProxy regionProxy = new ServerRegionProxy(ClientHealthMonitoringRegion.ADMIN_REGION_NAME, pool);
       
       EventID eventId = new EventID(ds);
-      EntryEventImpl event = new EntryEventImpl((Object)null);
+      @Released EntryEventImpl event = new EntryEventImpl((Object)null);
       try {
       event.setEventId(eventId);
       regionProxy.putForMetaRegion(ds.getMemberId(), stats, null, event, null, true);

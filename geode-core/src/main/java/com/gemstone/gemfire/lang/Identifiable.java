@@ -25,7 +25,7 @@ import java.io.Serializable;
  * <p/>
  * @param <T> the class type of the identifier.
  * @see java.lang.Comparable
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface Identifiable<T extends Comparable<T>> extends Serializable {
 

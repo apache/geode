@@ -16,19 +16,23 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
@@ -40,27 +44,22 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
- * 
  * This class tests that bucket regions can handle
  * a failure of the GII target during GII.
- *
  */
-public class Bug41091DUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class Bug41091DUnitTest extends JUnit4CacheTestCase {
 
-  /**
-   * @param name
-   */
-  public Bug41091DUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
   
+  @Test
   public void test() {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -86,9 +85,9 @@ public class Bug41091DUnitTest extends CacheTestCase {
               RequestImageMessage rim = (RequestImageMessage) message;
               Region region = getCache().getRegion(rim.regionPath);
               if(region instanceof BucketRegion) {
-//We can no longer do any puts until the bucket is completely created,
-//so this will hang
-//                getCache().getRegion("region").put(113, "b");
+                //We can no longer do any puts until the bucket is completely created,
+                //so this will hang
+                // getCache().getRegion("region").put(113, "b");
                 getCache().close();
               }
             }
@@ -96,8 +95,8 @@ public class Bug41091DUnitTest extends CacheTestCase {
         });
    
         Properties props = new Properties();
-        props.setProperty(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "true");
-        props.setProperty(DistributionConfig.LOCATORS_NAME, NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]");
+        props.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
+        props.setProperty(LOCATORS, NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]");
         getSystem(props);
         
         
@@ -116,8 +115,8 @@ public class Bug41091DUnitTest extends CacheTestCase {
       
       public void run() {
         Properties props = new Properties();
-        props.setProperty(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "true");
-        props.setProperty(DistributionConfig.LOCATORS_NAME, NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]");
+        props.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
+        props.setProperty(LOCATORS, NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]");
         getSystem(props);
         Cache cache = getCache();
         AttributesFactory af = new AttributesFactory();
@@ -139,7 +138,6 @@ public class Bug41091DUnitTest extends CacheTestCase {
             }
           };
       vm3.invoke(stopLocator);
-      
     }
   }
   
@@ -150,10 +148,10 @@ public class Bug41091DUnitTest extends CacheTestCase {
       public void run() {
         disconnectFromDS();
         Properties props = new Properties();
-        props.setProperty(DistributionConfig.MCAST_PORT_NAME, String.valueOf(0));
-        props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
-        props.setProperty(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "true");
-        props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+        props.setProperty(MCAST_PORT, String.valueOf(0));
+        props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+        props.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
+        props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
         try {
           File logFile = new File(testName + "-locator" + locatorPort
               + ".log");

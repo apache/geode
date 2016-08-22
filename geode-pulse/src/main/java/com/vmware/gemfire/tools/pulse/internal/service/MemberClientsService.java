@@ -38,7 +38,7 @@ import javax.servlet.http.HttpServletRequest;
  * 
  * This class contains implementations of getting Memeber's Clients.
  * 
- * @since version 7.5
+ * @since GemFire version 7.5
  */
 @Component
 @Service("MemberClients")

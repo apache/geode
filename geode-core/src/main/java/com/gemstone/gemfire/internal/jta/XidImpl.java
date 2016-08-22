@@ -21,7 +21,7 @@ package com.gemstone.gemfire.internal.jta;
  * XidImpl: A JTA compatible implementation of Xid
  * </p>
  * 
- * @since 4.0 
+ * @since GemFire 4.0
  */
 import javax.transaction.xa.*;
 

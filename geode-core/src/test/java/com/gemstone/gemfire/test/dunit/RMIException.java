@@ -30,7 +30,7 @@ import com.gemstone.gemfire.GemFireException;
  *       vm.invoke(() -> this.getUnknownObject());
  *
  *     } catch (RMIException ex) {
- *       assertEquals(ex.getCause() instanceof ObjectException);
+ *       assertIndexDetailsEquals(ex.getCause() instanceof ObjectException);
  *     }
  * </PRE>
  *

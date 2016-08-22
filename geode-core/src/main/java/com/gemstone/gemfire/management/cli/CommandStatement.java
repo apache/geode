@@ -24,7 +24,7 @@ import java.util.Map;
  * the same command string repeatedly.
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface CommandStatement {
   

@@ -30,7 +30,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionStats;
  * are related to cache server client notifications.
  *
  *
- * @since 4.1.2
+ * @since GemFire 4.1.2
  */
 public class CacheClientNotifierStats {
 

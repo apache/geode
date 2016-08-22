@@ -19,8 +19,6 @@
 package com.gemstone.gemfire.security;
 
 import static com.gemstone.gemfire.internal.AvailablePort.*;
-//import static com.gemstone.gemfire.security.ClientAuthenticationTestUtils.*;
-//import static com.gemstone.gemfire.security.ClientAuthorizationTestCase.*;
 import static com.gemstone.gemfire.security.SecurityTestUtils.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
@@ -31,6 +29,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.security.generator.AuthzCredentialGenerator;
 import com.gemstone.gemfire.security.generator.CredentialGenerator;
@@ -39,18 +41,17 @@ import com.gemstone.gemfire.security.generator.XmlAuthzCredentialGenerator;
 import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 /**
  * Tests for authorization from client to server. This tests for authorization
  * of all operations with both valid and invalid credentials/modules with
  * pre-operation callbacks. It also checks for authorization in case of
  * failover.
- * 
- * @since 5.5
+ *
+ * @since GemFire 5.5
  */
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
   @Override
@@ -355,8 +356,9 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestCase {
     Properties serverProps = buildProperties(authenticator, accessor, false, extraAuthProps, extraAuthzProps);
 
     // Get ports for the servers
-    int port1 = getRandomAvailablePort(SOCKET);
-    int port2 = getRandomAvailablePort(SOCKET);
+    int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int port1 = randomAvailableTCPPorts[0];
+    int port2 = randomAvailableTCPPorts[1];
 
     // Perform all the ops on the clients
     List opBlock = new ArrayList();
@@ -614,12 +616,11 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
       // Perform the operation from selected client
       if (useThisVM) {
-        doOp(new Byte(opCode.toOrdinal()), currentOp.getIndices(), opFlags, expectedResult);
+        doOp(opCode, currentOp.getIndices(), opFlags, expectedResult);
 
       } else {
-        byte ordinal = opCode.toOrdinal();
         int[] indices = currentOp.getIndices();
-        clientVM.invoke(() -> ClientAuthorizationTestCase.doOp(ordinal, indices, opFlags, expectedResult));
+        clientVM.invoke(() -> ClientAuthorizationTestCase.doOp(opCode, indices, opFlags, expectedResult));
       }
     }
   }

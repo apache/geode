@@ -31,7 +31,7 @@ import java.util.Set;
  * @see com.gemstone.gemfire.internal.process.signal.Signal
  * @see com.gemstone.gemfire.internal.process.signal.SignalEvent
  * @see com.gemstone.gemfire.internal.process.signal.SignalListener
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 public abstract class AbstractSignalNotificationHandler {

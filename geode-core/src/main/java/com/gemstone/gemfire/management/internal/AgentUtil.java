@@ -17,13 +17,13 @@
 
 package com.gemstone.gemfire.management.internal;
 
-import java.io.File;
-import java.net.URL;
-
-import org.apache.logging.log4j.Logger;
-
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.net.URL;
 
 /**
  * Hosts common utility methods needed by the management package
@@ -116,7 +116,7 @@ public class AgentUtil {
     // Check for empty variable. if empty, then log message and exit HTTP server
     // startup
     if (StringUtils.isBlank(gemFireHome)) {
-      gemFireHome = System.getProperty("gemfire.home");
+      gemFireHome = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "home");
       logger.info("Reading gemfire.home System Property -> {}", gemFireHome);
       if (StringUtils.isBlank(gemFireHome)) {
         logger.info("GEMFIRE environment variable not set; HTTP service will not start.");

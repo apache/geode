@@ -1,5 +1,6 @@
 activation
 antlr
+aopalliance
 classmate
 commons-beanutils
 commons-collections
@@ -33,6 +34,7 @@ jetty-xml
 jgroups
 jline
 jna
+jopt-simple
 json4s-ast
 json4s-core
 json4s-ext
@@ -55,8 +57,9 @@ paranamer
 ra.jar
 scala-library
 scala-reflect
+shiro-core
 slf4j-api
-snappy-java
+snappy
 spring-aop
 spring-aspects
 spring-beans

@@ -25,7 +25,7 @@ import com.gemstone.gemfire.cache.server.ServerLoadProbe;
  *
  * @see SystemMemberCache#addCacheServer
  *
- * @since 5.7
+ * @since GemFire 5.7
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface SystemMemberCacheServer {
@@ -75,7 +75,7 @@ public interface SystemMemberCacheServer {
    * Returns a string representing the ip address or host name that this server
    * will listen on.
    * @return the ip address or host name that this server is to listen on
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public String getBindAddress();
   /**
@@ -92,7 +92,7 @@ public interface SystemMemberCacheServer {
    * addresses then use this string <code>"0.0.0.0"</code>.
    * @param address the ip address or host name that this server is to listen on
    * @throws AdminException if this cache server is running
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setBindAddress(String address) throws AdminException;
   /**
@@ -100,7 +100,7 @@ public interface SystemMemberCacheServer {
    * will tell clients that this server is listening on.
    * @return the ip address or host name to give to clients so they can connect
    *         to this server
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public String getHostnameForClients();
   /**
@@ -113,7 +113,7 @@ public interface SystemMemberCacheServer {
    * @param name the ip address or host name that will be given to clients
    *   so they can connect to this server
    * @throws AdminException if this cache server is running
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setHostnameForClients(String name) throws AdminException;
   /**
@@ -132,14 +132,14 @@ public interface SystemMemberCacheServer {
    * pushed to the client. The client does not need to request the new value
    * from the cache server.
    * @throws AdminException if this cache server is running
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setNotifyBySubscription(boolean b) throws AdminException;
 
   /**
    * Answers whether or not this cache server should notify clients based on
    * key subscription.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public boolean getNotifyBySubscription();
 
@@ -149,7 +149,7 @@ public interface SystemMemberCacheServer {
    *
    * @param socketBufferSize The size in bytes of the socket buffer
    * @throws AdminException if this cache server is running
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setSocketBufferSize(int socketBufferSize) throws AdminException;
 
@@ -158,7 +158,7 @@ public interface SystemMemberCacheServer {
    * <code>CacheServer</code>. The default is 32768 bytes.
    * @return the configured buffer size of the socket connection for this
    * <code>CacheServer</code>
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public int getSocketBufferSize();
 
@@ -170,7 +170,7 @@ public interface SystemMemberCacheServer {
    * @param maximumTimeBetweenPings The maximum amount of time between client
    * pings
    * @throws AdminException if this cache server is running
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setMaximumTimeBetweenPings(int maximumTimeBetweenPings) throws AdminException;
 
@@ -179,13 +179,13 @@ public interface SystemMemberCacheServer {
    * used by the <code>ClientHealthMonitor</code> to determine the health
    * of this <code>CacheServer</code>'s clients. The default is 60000 ms.
    * @return the maximum amount of time between client pings.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public int getMaximumTimeBetweenPings();
 
   /** 
    *  Returns the maximum allowed client connections
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public int getMaxConnections();
 
@@ -194,7 +194,7 @@ public interface SystemMemberCacheServer {
    * When the maximum is reached the server will stop accepting
    * connections.
    * @throws AdminException if this cache server is running
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setMaxConnections(int maxCons) throws AdminException;
 
@@ -203,7 +203,7 @@ public interface SystemMemberCacheServer {
    * client requests.
    * The default of <code>0</code> causes the server to dedicate a thread for
    * every client connection.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public int getMaxThreads();
 
@@ -213,28 +213,28 @@ public interface SystemMemberCacheServer {
    * The default of <code>0</code> causes the server to dedicate a thread for
    * every client connection.
    * @throws AdminException if this cache server is running
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setMaxThreads(int maxThreads) throws AdminException;
 
   /**
    * Returns the maximum number of messages that can be enqueued in a
    * client-queue.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public int getMaximumMessageCount();
 
   /**
    * Sets maximum number of messages that can be enqueued in a client-queue.
    * @throws AdminException if this cache server is running
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setMaximumMessageCount(int maxMessageCount) throws AdminException;
   
   /**
    * Returns the time (in seconds ) after which a message in the client queue
    * will expire.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public int getMessageTimeToLive();
 
@@ -242,7 +242,7 @@ public interface SystemMemberCacheServer {
    * Sets the time (in seconds ) after which a message in the client queue
    * will expire.
    * @throws AdminException if this cache server is running
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setMessageTimeToLive(int messageTimeToLive) throws AdminException;
   /**
@@ -252,7 +252,7 @@ public interface SystemMemberCacheServer {
    * @param groups possibly empty array of <code>String</code> where each string
    * is a server groups that this cache server will be a member of.
    * @throws AdminException if this cache server is running
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setGroups(String[] groups) throws AdminException;
   /**
@@ -260,7 +260,7 @@ public interface SystemMemberCacheServer {
    * @return a possibly empty array of <code>String</code>s where
    * each string is a server group. Modifying this array will not change the
    * server groups that this cache server belongs to.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public String[] getGroups();
   
@@ -269,7 +269,7 @@ public interface SystemMemberCacheServer {
    * {@link ServerLoadProbe} for details on the load probe.
    * @return the load probe used by this cache
    * server.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public String getLoadProbe();
 
@@ -284,7 +284,7 @@ public interface SystemMemberCacheServer {
    * @param loadProbe the load probe to use for
    * this cache server.
    * @throws AdminException  if the cache server is running
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setLoadProbe(ServerLoadProbe loadProbe) throws AdminException;
 

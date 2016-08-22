@@ -11,7 +11,7 @@ val sqlContext = new org.apache.spark.sql.SQLContext(sc)
 
 Create a `DataFrame` using OQL:
 ```
-val dataFrame = sqlContext.gemfireOQL("SELECT * FROM /CustomerRegion WHERE status = 'active'")
+val dataFrame = sqlContext.geodeOQL("SELECT * FROM /CustomerRegion WHERE status = 'active'")
 ```
 
 You can repartition the `DataFrame` using `DataFrame.repartition()` if needed. 
@@ -33,9 +33,9 @@ If KryoSerializer is preferred, as described in [Spark Documentation]
 val conf = new SparkConf()
   .setAppName("MySparkApp")
   .setMaster("local[*]")
-  .set(GemFireLocatorPropKey, "localhost[55221]")
+  .set(GeodeLocatorPropKey, "localhost[55221]")
   .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-  .set("spark.kryo.registrator", "io.pivotal.gemfire.spark.connector.GemFireKryoRegistrator")
+  .set("spark.kryo.registrator", "io.pivotal.geode.spark.connector.GeodeKryoRegistrator")
 ```
 
 and register the classes (optional)
@@ -46,7 +46,7 @@ conf.registerKryoClasses(Array(classOf[MyClass1], classOf[MyClass2]))
 Use the following options to start Spark shell:
 ```
  --conf spark.serializer=org.apache.spark.serializer.KryoSerializer
- --conf spark.kryo.registrator=io.pivotal.gemfire.spark.connector.GemFireKryoRegistrator
+ --conf spark.kryo.registrator=io.pivotal.geode.spark.connector.GeodeKryoRegistrator
 ```
 
 ## References

@@ -15,43 +15,42 @@
  * limitations under the License.
  */
 package com.gemstone.gemfire.distributed.internal;
-	
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
-	
-import com.gemstone.gemfire.*;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.DataSerializable;
+import com.gemstone.gemfire.ToDataException;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.InterestPolicy;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.SubscriptionAttributes;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.internal.cache.lru.Sizeable;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 	
-public class Bug40751DUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class Bug40751DUnitTest extends JUnit4CacheTestCase {
 	 
-  public Bug40751DUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
 	 
+  @Test
   public void testRR() {
     System.setProperty("p2p.nodirectBuffers", "true");
     try {
@@ -111,8 +110,8 @@ public class Bug40751DUnitTest extends CacheTestCase {
     public Properties getDistributedSystemProperties() {
     Properties props = new Properties();
     System.setProperty("p2p.oldIO", "true");
-    props.setProperty("conserve-sockets", "true");
-    //    props.setProperty("mcast-port", "12333");
+    props.setProperty(CONSERVE_SOCKETS, "true");
+    //    props.setProperty(DistributionConfig.ConfigurationProperties.MCAST_PORT, "12333");
     //    props.setProperty(DistributionConfig.DISABLE_TCP_NAME, "true");
     return props;
   }

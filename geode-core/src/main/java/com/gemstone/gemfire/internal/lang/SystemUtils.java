@@ -27,7 +27,7 @@ import java.util.StringTokenizer;
  * of the Java System class.
  * 
  * @see java.lang.System
- * @since 6.8
+ * @since GemFire 6.8
  */
 @SuppressWarnings("unused")
 public class SystemUtils {
@@ -49,6 +49,7 @@ public class SystemUtils {
   public static final String LINUX_OS_NAME = "Linux";
   public static final String MAC_OSX_NAME = "Mac";
   public static final String WINDOWS_OS_NAME = "Windows";
+  public static final String SOLARIS_OS_NAME = "SunOS";
 
   /**
    * Utility method to determine whether the installed Java Runtime Environment (JRE) is minimally at the specified,
@@ -199,6 +200,16 @@ public class SystemUtils {
     return isOS(WINDOWS_OS_NAME);
   }
 
+  /**
+   * Utility method that determines whether the Java application process is executing in a Sun Solaris
+   * operating system environment.
+   *
+   * @return a boolean value indicating whether the Java application process is executing in Solaris.
+   * @see #isOS(String)
+   */
+  public static boolean isSolaris() {
+    return isOS(SOLARIS_OS_NAME);
+  }
 
   /**
    * Returns true if the specified location is in the JVM classpath. This may

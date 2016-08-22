@@ -152,7 +152,7 @@ public class XmlEntity implements DataSerializable {
    * {@link #XmlEntity(String, String, String)} and
    * {@link XmlEntityBuilder#build()}.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private final void init() {
     Assert.hasLength(type, "Type cannot be empty");
@@ -188,7 +188,7 @@ public class XmlEntity implements DataSerializable {
    * @param xmlDocument
    *          to extract XML from.
    * @return XML for {@link XmlEntity} if found, otherwise <code>null</code>.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private final String loadXmlDefinition(final String xmlDocument) {
     final Cache cache = CacheFactory.getAnyInstance();
@@ -209,7 +209,7 @@ public class XmlEntity implements DataSerializable {
    * @throws XPathExpressionException 
    * @throws TransformerException 
    * @throws TransformerFactoryConfigurationError 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private final String loadXmlDefinition(final Document document) throws XPathExpressionException, TransformerFactoryConfigurationError, TransformerException {
     final Cache cache = CacheFactory.getAnyInstance();
@@ -311,7 +311,7 @@ public class XmlEntity implements DataSerializable {
    * if not set.
    * 
    * @return XML element namespace
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public String getNamespace() {
     return namespace;
@@ -322,7 +322,7 @@ public class XmlEntity implements DataSerializable {
    * set.
    * 
    * @return XML element prefix
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public String getPrefix() {
     return prefix;
@@ -393,7 +393,7 @@ public class XmlEntity implements DataSerializable {
    * Produce a new {@link XmlEntityBuilder}.
    * 
    * @return new {@link XmlEntityBuilder}.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public static final XmlEntityBuilder builder() {
     return new XmlEntityBuilder();
@@ -404,7 +404,7 @@ public class XmlEntity implements DataSerializable {
    * {@link XmlEntity}.
    * 
    *
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public static final class XmlEntityBuilder {
     private XmlEntity xmlEntity;
@@ -412,7 +412,7 @@ public class XmlEntity implements DataSerializable {
     /**
      * Private contstructor.
      * 
-     * @since 8.1
+     * @since GemFire 8.1
      */
     private XmlEntityBuilder() {
       xmlEntity = new XmlEntity();
@@ -426,7 +426,7 @@ public class XmlEntity implements DataSerializable {
      * You are required to at least call {@link #withType(String)}.
      * 
      * @return {@link XmlEntity}
-     * @since 8.1
+     * @since GemFire 8.1
      */
     public XmlEntity build() {
         xmlEntity.init();
@@ -444,7 +444,7 @@ public class XmlEntity implements DataSerializable {
      * @param type
      *          Name of element type.
      * @return this {@link XmlEntityBuilder}
-     * @since 8.1
+     * @since GemFire 8.1
      */
     public XmlEntityBuilder withType(final String type) {
       xmlEntity.type = type;
@@ -463,7 +463,7 @@ public class XmlEntity implements DataSerializable {
      * @param namespace
      *          Namespace of element
      * @return this {@link XmlEntityBuilder}
-     * @since 8.1
+     * @since GemFire 8.1
      */
     public XmlEntityBuilder withNamespace(final String prefix, final String namespace) {
       xmlEntity.prefix = prefix;
@@ -482,7 +482,7 @@ public class XmlEntity implements DataSerializable {
      * @param value
      *          Value of attribute to set.
      * @return this {@link XmlEntityBuilder}
-     * @since 8.1
+     * @since GemFire 8.1
      */
     public XmlEntityBuilder withAttribute(final String name, final String value) {
       xmlEntity.attributes.put(name, value);
@@ -496,7 +496,7 @@ public class XmlEntity implements DataSerializable {
      * @param attributes
      *          {@link Map} to use.
      * @return this {@link XmlEntityBuilder}
-     * @since 8.1
+     * @since GemFire 8.1
      */
     public XmlEntityBuilder withAttributes(final Map<String, String> attributes) {
       xmlEntity.attributes = attributes;
@@ -514,7 +514,7 @@ public class XmlEntity implements DataSerializable {
      * @param xmlDocument
      *          Config XML document.
      * @return this {@link XmlEntityBuilder}
-     * @since 8.1
+     * @since GemFire 8.1
      */
     public XmlEntityBuilder withConfig(final String xmlDocument) {
       xmlEntity.xmlDefinition = xmlEntity.loadXmlDefinition(xmlDocument);
@@ -535,7 +535,7 @@ public class XmlEntity implements DataSerializable {
      * @throws TransformerException 
      * @throws TransformerFactoryConfigurationError 
      * @throws XPathExpressionException 
-     * @since 8.1
+     * @since GemFire 8.1
      */
     public XmlEntityBuilder withConfig(final Document document) throws XPathExpressionException, TransformerFactoryConfigurationError, TransformerException {
       xmlEntity.xmlDefinition = xmlEntity.loadXmlDefinition(document);

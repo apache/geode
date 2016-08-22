@@ -19,28 +19,20 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.locator;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.LocatorStats;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.MemberFactory;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
-
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -48,10 +40,11 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.util.Properties;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class GMSLocatorRecoveryJUnitTest {
 
   File tempStateFile = null;
@@ -148,12 +141,12 @@ public class GMSLocatorRecoveryJUnitTest {
       
       // create configuration objects
       Properties nonDefault = new Properties();
-      nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
-      nonDefault.put(DistributionConfig.MCAST_PORT_NAME, "0");
-      nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
-      nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
-      nonDefault.put(DistributionConfig.LOCATORS_NAME, localHost.getHostAddress()+'['+port+']');
-      nonDefault.put(DistributionConfig.BIND_ADDRESS_NAME, localHost.getHostAddress());
+      nonDefault.put(DISABLE_TCP, "true");
+      nonDefault.put(MCAST_PORT, "0");
+      nonDefault.put(LOG_FILE, "");
+      nonDefault.put(LOG_LEVEL, "fine");
+      nonDefault.put(LOCATORS, localHost.getHostAddress() + '[' + port + ']');
+      nonDefault.put(BIND_ADDRESS, localHost.getHostAddress());
       DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
       RemoteTransportConfig transport = new RemoteTransportConfig(config,
           DistributionManager.NORMAL_DM_TYPE);

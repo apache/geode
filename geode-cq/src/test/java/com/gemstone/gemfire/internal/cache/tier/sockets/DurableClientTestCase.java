@@ -16,11 +16,10 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +28,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Ignore;
-
-import junit.framework.Assert;
-import util.TestException;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
@@ -54,30 +52,33 @@ import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.ClientServerObserver;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InternalCache;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
 import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Class <code>DurableClientTestCase</code> tests durable client
  * functionality.
- * 
- * 
- * @since 5.2
- */ 
-public class DurableClientTestCase extends DistributedTestCase {
+ *
+ * @since GemFire 5.2
+ */
+@Category(DistributedTest.class)
+public class DurableClientTestCase extends JUnit4DistributedTestCase {
+
+  protected static volatile boolean isPrimaryRecovered = false;
 
   protected VM server1VM;
   protected VM server2VM;
@@ -85,12 +86,6 @@ public class DurableClientTestCase extends DistributedTestCase {
   protected VM publisherClientVM;
   protected String regionName;
   
-  protected static volatile boolean isPrimaryRecovered = false;
-
-  public DurableClientTestCase(String name) {
-    super(name);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
@@ -124,6 +119,7 @@ public class DurableClientTestCase extends DistributedTestCase {
   /**
    * Test that starting a durable client is correctly processed by the server.
    */
+  @Test
   public void testSimpleDurableClient() {    
     // Start a server
     int serverPort = ((Integer) this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true))))
@@ -153,7 +149,7 @@ public class DurableClientTestCase extends DistributedTestCase {
         assertTrue(proxy.isDurable());
         assertEquals(durableClientId, proxy.getDurableId());
         assertEquals(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, proxy.getDurableTimeout());
-        //assertEquals(DistributionConfig.DEFAULT_DURABLE_CLIENT_KEEP_ALIVE, proxy.getDurableKeepAlive());
+        //assertIndexDetailsEquals(DistributionConfig.DEFAULT_DURABLE_CLIENT_KEEP_ALIVE, proxy.getDurableKeepAlive());
       }
     });
     
@@ -175,9 +171,10 @@ public class DurableClientTestCase extends DistributedTestCase {
    * In this test we will set gemfire.SPECIAL_DURABLE property to true and will
    * see durableID appended by poolname or not
    */
+  @Test
   public void testSimpleDurableClient2() {
     final Properties jp = new Properties();
-    jp.setProperty("gemfire.SPECIAL_DURABLE", "true");
+    jp.setProperty(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE", "true");
 
     try {
       // Start a server
@@ -216,7 +213,7 @@ public class DurableClientTestCase extends DistributedTestCase {
 
           assertEquals(dId, proxy.getDurableId());
           assertEquals(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, proxy.getDurableTimeout());
-          // assertEquals(DistributionConfig.DEFAULT_DURABLE_CLIENT_KEEP_ALIVE, proxy.getDurableKeepAlive());
+          // assertIndexDetailsEquals(DistributionConfig.DEFAULT_DURABLE_CLIENT_KEEP_ALIVE, proxy.getDurableKeepAlive());
         }
       });
 
@@ -308,6 +305,7 @@ public class DurableClientTestCase extends DistributedTestCase {
    * Test that starting, stopping then restarting a durable client is correctly
    * processed by the server.
    */
+  @Test
   public void testStartStopStartDurableClient() {
     // Start a server
     int serverPort = ((Integer) this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true))))
@@ -339,7 +337,7 @@ public class DurableClientTestCase extends DistributedTestCase {
         assertTrue(proxy.isDurable());
         assertEquals(durableClientId, proxy.getDurableId());
         assertEquals(durableClientTimeout, proxy.getDurableTimeout());
-        //assertEquals(durableClientKeepAlive, proxy.getDurableKeepAlive());
+        //assertIndexDetailsEquals(durableClientKeepAlive, proxy.getDurableKeepAlive());
       }
     });
     
@@ -389,6 +387,7 @@ public class DurableClientTestCase extends DistributedTestCase {
    * processed by the server.
    * This is a test of bug 39630
    */
+  @Test
   public void test39630() {
     // Start a server
     int serverPort = ((Integer) this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true))))
@@ -420,7 +419,7 @@ public class DurableClientTestCase extends DistributedTestCase {
         assertTrue(proxy.isDurable());
         assertEquals(durableClientId, proxy.getDurableId());
         assertEquals(durableClientTimeout, proxy.getDurableTimeout());
-        //assertEquals(durableClientKeepAlive, proxy.getDurableKeepAlive());
+        //assertIndexDetailsEquals(durableClientKeepAlive, proxy.getDurableKeepAlive());
       }
     });
     
@@ -433,7 +432,7 @@ public class DurableClientTestCase extends DistributedTestCase {
         // Find the proxy
         CacheClientProxy proxy = getClientProxy();
         assertNotNull(proxy);
-        Assert.assertNotNull(proxy._socket);
+        assertNotNull(proxy._socket);
         long end = System.currentTimeMillis() + 60000;
         
         while(!proxy._socket.isClosed()) {
@@ -441,7 +440,7 @@ public class DurableClientTestCase extends DistributedTestCase {
             break;
           }
         }
-        Assert.assertTrue(proxy._socket.isClosed());
+        assertTrue(proxy._socket.isClosed());
       }
     });
     
@@ -476,6 +475,7 @@ public class DurableClientTestCase extends DistributedTestCase {
    * Test that disconnecting a durable client for longer than the timeout
    * period is correctly processed by the server.
    */
+  @Test
   public void testStartStopTimeoutDurableClient() {
     // Start a server
     int serverPort = ((Integer) this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true))))
@@ -557,6 +557,7 @@ public class DurableClientTestCase extends DistributedTestCase {
   /**
    * Test that a durable client correctly receives updates after it reconnects.
    */
+  @Test
   public void testDurableClientPrimaryUpdate() {
     // Start a server
     int serverPort = ((Integer) this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true))))
@@ -593,19 +594,7 @@ public class DurableClientTestCase extends DistributedTestCase {
 
     // Publish some entries
     final int numberOfEntries = 1;
-    this.publisherClientVM.invoke(new CacheSerializableRunnable("Publish entries") {
-      public void run2() throws CacheException {
-        // Get the region
-        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
-        assertNotNull(region);
-
-        // Publish some entries
-        for (int i=0; i<numberOfEntries; i++) {
-          String keyAndValue = String.valueOf(i);
-          region.put(keyAndValue, keyAndValue);
-        }
-      }
-    });
+    publishEntries(numberOfEntries);
     
     // Verify the durable client received the updates
     this.verifyListenerUpdates(numberOfEntries);
@@ -638,20 +627,8 @@ public class DurableClientTestCase extends DistributedTestCase {
     });
 
     // Publish some more entries
-    this.publisherClientVM.invoke(new CacheSerializableRunnable("Register interest") {
-      public void run2() throws CacheException {
-        // Get the region
-        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
-        assertNotNull(region);
+    publishEntries(numberOfEntries);
 
-        // Publish some entries
-        for (int i=0; i<numberOfEntries; i++) {
-          String keyAndValue = String.valueOf(i);
-          region.put(keyAndValue, keyAndValue);
-        }
-      }
-    });
-    
     try {
       Thread.sleep(1000);
     } catch (InterruptedException ex) {
@@ -721,10 +698,27 @@ public class DurableClientTestCase extends DistributedTestCase {
     // Stop the server
     this.server1VM.invoke(() -> CacheServerTestUtil.closeCache());
   }
-  
+
+  protected void publishEntries(final int numberOfEntries) {
+    this.publisherClientVM.invoke(new CacheSerializableRunnable("Publish entries") {
+      public void run2() throws CacheException {
+        // Get the region
+        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
+        assertNotNull(region);
+
+        // Publish some entries
+        for (int i=0; i<numberOfEntries; i++) {
+          String keyAndValue = String.valueOf(i);
+          region.put(keyAndValue, keyAndValue);
+        }
+      }
+    });
+  }
+
   /**
    * Test that a durable client correctly receives updates after it reconnects.
    */
+  @Test
   public void testStartStopStartDurableClientUpdate() {
     // Start a server
     int serverPort = ((Integer) this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true))))
@@ -761,19 +755,7 @@ public class DurableClientTestCase extends DistributedTestCase {
 
     // Publish some entries
     final int numberOfEntries = 1;
-    this.publisherClientVM.invoke(new CacheSerializableRunnable("Publish entries") {
-      public void run2() throws CacheException {
-        // Get the region
-        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
-        assertNotNull(region);
-
-        // Publish some entries
-        for (int i=0; i<numberOfEntries; i++) {
-          String keyAndValue = String.valueOf(i);
-          region.put(keyAndValue, keyAndValue);
-        }
-      }
-    });
+    publishEntries(numberOfEntries);
     
     // Verify the durable client received the updates
     this.verifyListenerUpdates(numberOfEntries);
@@ -938,6 +920,7 @@ public class DurableClientTestCase extends DistributedTestCase {
    * Test whether a durable client reconnects properly to a server that is
    * stopped and restarted.
    */
+  @Test
   public void testDurableClientConnectServerStopStart() {
     // Start a server
     // Start server 1
@@ -1031,19 +1014,7 @@ public class DurableClientTestCase extends DistributedTestCase {
     });
     
     // Verify the durable client received the updates
-    this.durableClientVM.invoke(new CacheSerializableRunnable("Verify updates") {
-      public void run2() throws CacheException {
-        // Get the region
-        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
-        assertNotNull(region);
-
-        // Get the listener and wait for the appropriate number of events
-        CacheServerTestUtil.ControlListener listener = (CacheServerTestUtil.ControlListener) region
-                .getAttributes().getCacheListeners()[0];
-        listener.waitWhileNotEnoughEvents(30000, numberOfEntries);
-        assertEquals(numberOfEntries, listener.events.size());
-      }
-    });
+    verifyDurableClientEvents(this.durableClientVM, numberOfEntries);
 
     // Stop the durable client
     this.durableClientVM.invoke(() -> CacheServerTestUtil.closeCache());
@@ -1055,16 +1026,44 @@ public class DurableClientTestCase extends DistributedTestCase {
     this.server1VM.invoke(() -> CacheServerTestUtil.closeCache());
   }
 
-  @Ignore("This test is failing inconsistently, see bug 51258")
-  public void DISABLED_testDurableNonHAFailover() throws InterruptedException
-  {
-      durableFailover(0);
-      durableFailoverAfterReconnect(0);   
+  protected void verifyDurableClientEvents(VM durableClientVm, final int numberOfEntries) {
+    verifyDurableClientEvents(durableClientVm, numberOfEntries, -1);
   }
 
-  @Ignore("This test is failing inconsistently, see bug 51258")
-  public void DISABLED_testDurableHAFailover() throws InterruptedException
-  {
+  protected void verifyDurableClientEvents(VM durableClientVm, final int numberOfEntries, final int eventType) {
+    verifyDurableClientEvents(durableClientVm, numberOfEntries, eventType, numberOfEntries);
+  }
+
+  protected void verifyNoDurableClientEvents(VM durableClientVm, final int numberOfEntries, final int eventType) {
+    verifyDurableClientEvents(durableClientVm, numberOfEntries, eventType, 0);
+  }
+
+  private void verifyDurableClientEvents(VM durableClientVm, final int numberOfEntries, final int eventType, final int expectedNumberOfEvents) {
+    durableClientVm.invoke(new CacheSerializableRunnable("Verify updates") {
+      public void run2() throws CacheException {
+        // Get the region
+        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
+        assertNotNull(region);
+
+        // Get the listener and wait for the appropriate number of events
+        CacheServerTestUtil.ControlListener listener = (CacheServerTestUtil.ControlListener) region
+            .getAttributes().getCacheListeners()[0];
+        listener.waitWhileNotEnoughEvents(30000, numberOfEntries, eventType);
+        assertEquals(expectedNumberOfEvents, listener.getEvents(eventType).size());
+      }
+    });
+  }
+
+  @Ignore("TODO: This test is failing inconsistently, see bug 51258")
+  @Test
+  public void testDurableNonHAFailover() throws InterruptedException {
+    durableFailover(0);
+    durableFailoverAfterReconnect(0);
+  }
+
+  @Ignore("TODO: This test is failing inconsistently, see bug 51258")
+  @Test
+  public void testDurableHAFailover() throws InterruptedException {
     //Clients see this when the servers disconnect
     IgnoredException.addIgnoredException("Could not find any server");
     durableFailover(1);
@@ -1132,19 +1131,7 @@ public class DurableClientTestCase extends DistributedTestCase {
 
     // Publish some entries
     final int numberOfEntries = 1;
-    this.publisherClientVM.invoke(new CacheSerializableRunnable("Publish entries") {
-      public void run2() throws CacheException {
-        // Get the region
-        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
-        assertNotNull(region);
-
-        // Publish some entries
-        for (int i=0; i<numberOfEntries; i++) {
-          String keyAndValue = String.valueOf(i);
-          region.put(keyAndValue, keyAndValue);
-        }
-      }
-    });
+    publishEntries(numberOfEntries);
 
     // Verify the durable client received the updates
     this.verifyListenerUpdates(numberOfEntries);
@@ -1161,19 +1148,7 @@ public class DurableClientTestCase extends DistributedTestCase {
     this.disconnectDurableClient(true);
     
     // Publish updates during client downtime
-    this.publisherClientVM.invoke(new CacheSerializableRunnable("Publish entries") {
-      public void run2() throws CacheException {
-        // Get the region
-        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
-        assertNotNull(region);
-
-        // Publish some entries
-        for (int i=0; i<numberOfEntries; i++) {
-          String keyAndValue = String.valueOf(i);
-          region.put(keyAndValue, keyAndValue);
-        }
-      }
-    });
+    publishEntries(numberOfEntries);
 
     
     // Re-start the durable client that is kept alive on the server
@@ -1319,19 +1294,7 @@ public class DurableClientTestCase extends DistributedTestCase {
 
     // Publish some entries
     final int numberOfEntries = 1;
-    this.publisherClientVM.invoke(new CacheSerializableRunnable("Publish entries") {
-      public void run2() throws CacheException {
-        // Get the region
-        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
-        assertNotNull(region);
-
-        // Publish some entries
-        for (int i=0; i<numberOfEntries; i++) {
-          String keyAndValue = String.valueOf(i);
-          region.put(keyAndValue, keyAndValue);
-        }
-      }
-    });
+    publishEntries(numberOfEntries);
 
     try {
       java.lang.Thread.sleep(10000);
@@ -1362,19 +1325,7 @@ public class DurableClientTestCase extends DistributedTestCase {
     this.server1VM.invoke(() -> CacheServerTestUtil.closeCache());
 
     // Publish updates during client downtime
-    this.publisherClientVM.invoke(new CacheSerializableRunnable("Publish entries") {
-      public void run2() throws CacheException {
-        // Get the region
-        Region region = CacheServerTestUtil.getCache().getRegion(regionName);
-        assertNotNull(region);
-
-        // Publish some entries
-        for (int i=0; i<numberOfEntries; i++) {
-          String keyAndValue = String.valueOf(i);
-          region.put(keyAndValue, keyAndValue);
-        }
-      }
-    });
+    publishEntries(numberOfEntries);
 
     // Re-start the durable client that is kept alive on the server
     this.restartDurableClient(new Object[] {
@@ -1475,11 +1426,10 @@ public class DurableClientTestCase extends DistributedTestCase {
       CountDownLatch clientConnected = new CountDownLatch(1);
       
       public void doTestHook(String spot) {
-        System.out.println("JASON " + spot);
         try {
           if (spot.equals("CLIENT_PRE_RECONNECT")) {
             if (!reconnectLatch.await(60, TimeUnit.SECONDS)) {
-              throw new TestException("reonnect latch was never released.");
+              fail("reonnect latch was never released.");
             }
           }
           else if (spot.equals("DRAIN_IN_PROGRESS_BEFORE_DRAIN_LOCK_CHECK")) {
@@ -1487,7 +1437,7 @@ public class DurableClientTestCase extends DistributedTestCase {
             reconnectLatch.countDown();
             //we wait until the client is rejected
             if (!continueDrain.await(120, TimeUnit.SECONDS)) {
-              throw new TestException("Latch was never released.");
+              fail("Latch was never released.");
             }
           }
           else if (spot.equals("CLIENT_REJECTED_DUE_TO_CQ_BEING_DRAINED")) {
@@ -1528,7 +1478,7 @@ public class DurableClientTestCase extends DistributedTestCase {
             unblockClient.countDown();
             //Wait until client is reconnecting
             if (!unblockDrain.await(120, TimeUnit.SECONDS)) {
-              throw new TestException("client never got far enough reconnected to unlatch lock.");
+              fail("client never got far enough reconnected to unlatch lock.");
             }
           }
           catch (InterruptedException e) {
@@ -1543,7 +1493,7 @@ public class DurableClientTestCase extends DistributedTestCase {
           //wait until the server has finished attempting to close the cq
           try {
             if (!finish.await(30, TimeUnit.SECONDS) ) {
-              throw new TestException("Test did not complete, server never finished attempting to close cq");
+              fail("Test did not complete, server never finished attempting to close cq");
             }
           }
           catch (InterruptedException e) {
@@ -1589,8 +1539,8 @@ public class DurableClientTestCase extends DistributedTestCase {
   
   protected Properties getClientDistributedSystemPropertiesNonDurable(String durableClientId) {
     Properties properties = new Properties();
-    properties.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    properties.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    properties.setProperty(MCAST_PORT, "0");
+    properties.setProperty(LOCATORS, "");
     return properties;
   }
   
@@ -1598,10 +1548,10 @@ public class DurableClientTestCase extends DistributedTestCase {
   protected Properties getClientDistributedSystemProperties(
       String durableClientId, int durableClientTimeout) {
     Properties properties = new Properties();
-    properties.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    properties.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    properties.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME, durableClientId);
-    properties.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, String.valueOf(durableClientTimeout));
+    properties.setProperty(MCAST_PORT, "0");
+    properties.setProperty(LOCATORS, "");
+    properties.setProperty(DURABLE_CLIENT_ID, durableClientId);
+    properties.setProperty(DURABLE_CLIENT_TIMEOUT, String.valueOf(durableClientTimeout));
     return properties;
   }
   

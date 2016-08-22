@@ -21,7 +21,7 @@ import com.gemstone.gemfire.cache.*;
 /**
  * com.company.app.OrdersCacheListener. Cache listener impl for CacheXmlxxTest
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class OrdersCacheListener implements CacheListener, Declarable {
 

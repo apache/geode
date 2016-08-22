@@ -31,7 +31,7 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
 
 /**
  * A message that is sent in response to a {@link CacheConfigRequest}.
- * @since 3.5
+ * @since GemFire 3.5
  */
 public final class CacheConfigResponse extends AdminResponse {
   // instance variables
@@ -39,7 +39,7 @@ public final class CacheConfigResponse extends AdminResponse {
   
   /** An exception thrown while configuring the cache
    *
-   * @since 4.0 */
+   * @since GemFire 4.0 */
   private Exception exception;
   
   /**

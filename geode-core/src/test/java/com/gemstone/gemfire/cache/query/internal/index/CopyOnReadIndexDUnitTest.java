@@ -16,9 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
@@ -37,8 +43,6 @@ import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.data.Position;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
@@ -52,15 +56,18 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class CopyOnReadIndexDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
 
   VM vm0;
   VM vm1;
   VM vm2;
 
-  public CopyOnReadIndexDUnitTest(String name) {
-    super(name);
+  public CopyOnReadIndexDUnitTest() {
+    super();
   }
 
   @Override
@@ -83,6 +90,7 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
   }
 
   //test different queries against partitioned region
+  @Test
   public void testPRQueryOnLocalNode() throws Exception {
     QueryTestUtils utils = new QueryTestUtils();
     configureServers();
@@ -100,6 +108,7 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
   }
   
   //tests different queries with a transaction for replicated region
+  @Test
   public void testTransactionsOnReplicatedRegion() throws Exception {
     QueryTestUtils utils = new QueryTestUtils();
     configureServers();
@@ -621,14 +630,14 @@ public class CopyOnReadIndexDUnitTest extends CacheTestCase {
  
   protected Properties getClientProps() {
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    p.setProperty(MCAST_PORT, "0");
+    p.setProperty(LOCATORS, "");
     return p;
   }
 
   protected Properties getServerProperties() {
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
+    p.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
     return p;
   }
 

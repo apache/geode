@@ -50,6 +50,7 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.CachedDeserializable;
 import com.gemstone.gemfire.internal.cache.Conflatable;
@@ -58,7 +59,6 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.RegionEventImpl;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
 import com.gemstone.gemfire.internal.cache.Token;
 import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
@@ -70,11 +70,10 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
-import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
 
 /**
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
 public class SerialGatewaySenderQueue implements RegionQueue {
@@ -164,7 +163,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    * Whether the <code>Gateway</code> queue should be no-ack instead of ack.
    */
   private static final boolean NO_ACK = Boolean
-      .getBoolean("gemfire.gateway-queue-no-ack");
+      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "gateway-queue-no-ack");
   
   private volatile long lastDispatchedKey = -1;
   
@@ -200,7 +199,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     } else {
       this.isDiskSynchronous = false;
     }
-    if (Boolean.getBoolean("gemfire.gateway-queue-sync")) {
+    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "gateway-queue-sync")) {
       this.keyPutNoSync = false;
       this.maxPendingPuts = 0;
       this.pendingPuts = null;
@@ -1010,15 +1009,14 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         SerialGatewaySenderQueueMetaRegion meta = new SerialGatewaySenderQueueMetaRegion(
             this.regionName, ra, null, gemCache, sender);
         try {
-          this.region = gemCache.createVMRegion(
-              this.regionName,
-              ra,
-              new InternalRegionArguments().setInternalMetaRegion(meta)
-                  .setDestroyLockFlag(true).setSnapshotInputStream(null)
-                  .setImageTarget(null)
-                  .setIsUsedForSerialGatewaySenderQueue(true)
-                  .setSerialGatewaySender(sender));
-          
+          this.region = gemCache.createVMRegion(this.regionName, ra, new InternalRegionArguments().setInternalMetaRegion(meta)
+                                                                                                  .setDestroyLockFlag(true)
+                                                                                                  .setSnapshotInputStream(null)
+                                                                                                  .setImageTarget(null)
+                                                                                                  .setIsUsedForSerialGatewaySenderQueue(true)
+                                                                                                  .setInternalRegion(true)
+                                                                                                  .setSerialGatewaySender(sender));
+
         } catch (IOException veryUnLikely) {
           logger.fatal(LocalizedMessage.create(LocalizedStrings.SingleWriteSingleReadRegionQueue_UNEXPECTED_EXCEPTION_DURING_INIT_OF_0,
                   this.getClass()), veryUnLikely);
@@ -1082,7 +1080,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       if (shutdown) {
         return true;
       }
-      if (cache.getCancelCriterion().cancelInProgress() != null) {
+      if (cache.getCancelCriterion().isCancelInProgress()) {
         return true;
       }
       return false;
@@ -1134,7 +1132,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
               }
               if (wasEmpty) continue;
             }
-            
+            // release not needed since disallowOffHeapValues called
             EntryEventImpl event = EntryEventImpl.create((LocalRegion)region,
                 Operation.DESTROY, (lastDestroyedKey + 1) , null/* newValue */, null, false,
                 cache.getMyId());

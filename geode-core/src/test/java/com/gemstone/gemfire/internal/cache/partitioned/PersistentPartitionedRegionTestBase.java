@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -44,8 +46,6 @@ import com.gemstone.gemfire.cache.control.RebalanceFactory;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.partition.PartitionRegionInfo;
 import com.gemstone.gemfire.cache.persistence.PersistentID;
-import com.gemstone.gemfire.cache.persistence.RevokeFailedException;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.cache.DiskRegion;
@@ -65,19 +65,16 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 
-/**
- *
- */
-public abstract class PersistentPartitionedRegionTestBase extends CacheTestCase {
+public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTestCase {
+
   public static String PR_REGION_NAME = "region";
 //This must be bigger than the dunit ack-wait-threshold for the revoke
   //tests. The command line is setting the ack-wait-threshold to be 
   //60 seconds.
   private static final int MAX_WAIT = 70 * 1000;
   
-  
-
   /* (non-Javadoc)
    * Set the region name for this test so that multiple subclasses of this
    * test base do not conflict with one another during parallel dunit runs
@@ -97,13 +94,6 @@ public abstract class PersistentPartitionedRegionTestBase extends CacheTestCase 
   
   public static void setRegionName(String testName) {
     PR_REGION_NAME = testName + "Region";
-  }
-
-  /**
-   * @param name
-   */
-  public PersistentPartitionedRegionTestBase(String name) {
-    super(name);
   }
 
   protected void checkRecoveredFromDisk(VM vm, final int bucketId, final boolean recoveredLocally) {

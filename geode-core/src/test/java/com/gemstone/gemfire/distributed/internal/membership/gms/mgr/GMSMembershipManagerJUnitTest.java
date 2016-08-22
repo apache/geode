@@ -16,46 +16,8 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.mgr;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.Timer;
-
-import org.jgroups.util.UUID;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.HighPriorityAckedMessage;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.MembershipListener;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.direct.DirectChannel;
 import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
@@ -74,9 +36,26 @@ import com.gemstone.gemfire.internal.admin.remote.AlertListenerMessage;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.tcp.ConnectExceptions;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.jgroups.util.UUID;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.*;
 
 @Category(UnitTest.class)
 public class GMSMembershipManagerJUnitTest {
+
+  private static final long WAIT_FOR_REPLIES_MILLIS = 2000;
+
   private Services services;
   private ServiceConfig mockConfig;
   private DistributionConfig distConfig;
@@ -88,7 +67,7 @@ public class GMSMembershipManagerJUnitTest {
   private Messenger messenger;
   private JoinLeave joinLeave;
   private Stopper stopper;
-  DistributedMembershipListener listener;
+  private DistributedMembershipListener listener;
   private GMSMembershipManager manager;
   private List<InternalDistributedMember> members;
   private DirectChannel dc;
@@ -96,21 +75,19 @@ public class GMSMembershipManagerJUnitTest {
   @Before
   public void initMocks() throws Exception {
     Properties nonDefault = new Properties();
-    nonDefault.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, "1");
-    nonDefault.put(DistributionConfig.ACK_SEVERE_ALERT_THRESHOLD_NAME, "10");
-    nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
-    nonDefault.put(DistributionConfig.MCAST_PORT_NAME, "0");
-    nonDefault.put(DistributionConfig.MCAST_TTL_NAME, "0");
-    nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
-    nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
-    nonDefault.put(DistributionConfig.MEMBER_TIMEOUT_NAME, "2000");
-    nonDefault.put(DistributionConfig.LOCATORS_NAME, "localhost[10344]");
+    nonDefault.put(ACK_WAIT_THRESHOLD, "1");
+    nonDefault.put(ACK_SEVERE_ALERT_THRESHOLD, "10");
+    nonDefault.put(DISABLE_TCP, "true");
+    nonDefault.put(MCAST_PORT, "0");
+    nonDefault.put(MCAST_TTL, "0");
+    nonDefault.put(LOG_FILE, "");
+    nonDefault.put(LOG_LEVEL, "fine");
+    nonDefault.put(MEMBER_TIMEOUT, "2000");
+    nonDefault.put(LOCATORS, "localhost[10344]");
     distConfig = new DistributionConfigImpl(nonDefault);
     distProperties = nonDefault;
-    RemoteTransportConfig tconfig = new RemoteTransportConfig(distConfig,
-        DistributionManager.NORMAL_DM_TYPE);
+    RemoteTransportConfig tconfig = new RemoteTransportConfig(distConfig, DistributionManager.NORMAL_DM_TYPE);
     
-
     mockConfig = mock(ServiceConfig.class);
     when(mockConfig.getDistributionConfig()).thenReturn(distConfig);
     when(mockConfig.getTransport()).thenReturn(tconfig);
@@ -257,7 +234,6 @@ public class GMSMembershipManagerJUnitTest {
     manager.handleOrDeferSurpriseConnect(surpriseMember);
     assertEquals(5, manager.getStartupEvents().size());
 
-    
     // process a new view after we finish joining but before event processing has started
     manager.isJoining = false;
     mockMembers[4].setVmViewId(4);
@@ -296,26 +272,6 @@ public class GMSMembershipManagerJUnitTest {
     verify(listener).memberSuspect(suspectMember, mockMembers[0], "testing");
   }
   
-  /**
-   * Some tests require a DirectChannel mock
-   */
-  private void setUpDirectChannelMock() throws Exception {
-    dc = mock(DirectChannel.class);
-    when(dc.send(any(GMSMembershipManager.class), any(mockMembers.getClass()), any(DistributionMessage.class), anyInt(), anyInt()))
-      .thenReturn(100);
-
-    manager.start();
-    manager.started();
-    
-    manager.setDirectChannel(dc);
-
-    NetView view = new NetView(myMemberId, 1, members);
-    manager.installView(view);
-    when(joinLeave.getView()).thenReturn(view);
-    
-    manager.startEventProcessing();
-  }
-
   @Test
   public void testDirectChannelSend() throws Exception {
     setUpDirectChannelMock();
@@ -354,12 +310,11 @@ public class GMSMembershipManagerJUnitTest {
     Set<InternalDistributedMember> failures = manager.directChannelSend(recipients, m, null);
     when(dc.send(any(GMSMembershipManager.class), any(mockMembers.getClass()), any(DistributionMessage.class), anyInt(), anyInt()))
       .thenReturn(0);
-    when(stopper.cancelInProgress()).thenReturn("stopping for test");
+    when(stopper.isCancelInProgress()).thenReturn(Boolean.TRUE);
     try {
       manager.directChannelSend(recipients, m, null);
-      throw new RuntimeException("expected directChannelSend to throw an exception");
-    } catch (DistributedSystemDisconnectedException e) {
-      // expected
+      fail("expected directChannelSend to throw an exception");
+    } catch (DistributedSystemDisconnectedException expected) {
     }
   }
   
@@ -427,10 +382,29 @@ public class GMSMembershipManagerJUnitTest {
     mbrs.add(mockMembers[0]);
     ReplyProcessor21 rp = new ReplyProcessor21(dm, mbrs);
     rp.enableSevereAlertProcessing();
-    boolean result = rp.waitForReplies(2000);
+    boolean result = rp.waitForReplies(WAIT_FOR_REPLIES_MILLIS);
     assertFalse(result);  // the wait should have timed out
     verify(healthMonitor, atLeastOnce()).checkIfAvailable(isA(InternalDistributedMember.class), isA(String.class), isA(Boolean.class));
   }
-  
-}
 
+  /**
+   * Some tests require a DirectChannel mock
+   */
+  private void setUpDirectChannelMock() throws Exception {
+    dc = mock(DirectChannel.class);
+    when(dc.send(any(GMSMembershipManager.class), any(mockMembers.getClass()), any(DistributionMessage.class), anyInt(), anyInt()))
+            .thenReturn(100);
+
+    manager.start();
+    manager.started();
+
+    manager.setDirectChannel(dc);
+
+    NetView view = new NetView(myMemberId, 1, members);
+    manager.installView(view);
+    when(joinLeave.getView()).thenReturn(view);
+
+    manager.startEventProcessing();
+  }
+
+}

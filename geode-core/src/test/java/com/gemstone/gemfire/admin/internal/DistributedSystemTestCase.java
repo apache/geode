@@ -16,17 +16,18 @@
  */
 package com.gemstone.gemfire.admin.internal;
 
-import java.util.Properties;
-
+import com.gemstone.gemfire.distributed.DistributedSystem;
 import org.junit.After;
 import org.junit.Before;
 
-import com.gemstone.gemfire.distributed.DistributedSystem;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Provides common setUp and tearDown for testing the Admin API.
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public abstract class DistributedSystemTestCase {
 
@@ -58,9 +59,9 @@ public abstract class DistributedSystemTestCase {
    */
   protected Properties defineProperties() {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.setProperty("conserve-sockets", "true");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(CONSERVE_SOCKETS, "true");
     return props;
   }
 }

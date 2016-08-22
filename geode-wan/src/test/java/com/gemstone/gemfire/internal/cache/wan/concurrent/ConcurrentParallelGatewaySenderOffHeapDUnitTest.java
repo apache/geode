@@ -16,12 +16,22 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.concurrent;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 @SuppressWarnings("serial")
+@Category(DistributedTest.class)
 public class ConcurrentParallelGatewaySenderOffHeapDUnitTest extends
     ConcurrentParallelGatewaySenderDUnitTest {
 
-  public ConcurrentParallelGatewaySenderOffHeapDUnitTest(String name) {
-    super(name);
+  public ConcurrentParallelGatewaySenderOffHeapDUnitTest() {
+    super();
   }
 
   @Override

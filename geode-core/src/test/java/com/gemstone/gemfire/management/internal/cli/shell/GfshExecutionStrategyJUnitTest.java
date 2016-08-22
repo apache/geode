@@ -20,6 +20,18 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 
+import com.gemstone.gemfire.management.cli.CliMetaData;
+import com.gemstone.gemfire.management.cli.ConverterHint;
+import com.gemstone.gemfire.management.cli.Result;
+import com.gemstone.gemfire.management.internal.cli.CommandManager;
+import com.gemstone.gemfire.management.internal.cli.GfshParser;
+import com.gemstone.gemfire.management.internal.cli.annotation.CliArgument;
+import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -28,24 +40,12 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.shell.event.ParseResult;
 
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.cli.CommandManager;
-import com.gemstone.gemfire.management.internal.cli.GfshParser;
-import com.gemstone.gemfire.management.internal.cli.annotation.CliArgument;
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.cli.ConverterHint;
-import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.management.internal.cli.shell.GfshConfig;
-import com.gemstone.gemfire.management.internal.cli.shell.GfshExecutionStrategy;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
 /**
  * GfshExecutionStrategyTest - Includes tests to for GfshExecutionStrategyTest
- * 
  */
 @Category(UnitTest.class)
 public class GfshExecutionStrategyJUnitTest {
+
   private static final String COMMAND1_NAME = "command1";
   private static final String COMMAND1_NAME_ALIAS = "command1_alias";
   private static final String COMMAND2_NAME = "command2";
@@ -58,15 +58,16 @@ public class GfshExecutionStrategyJUnitTest {
     CommandManager.clearInstance();
   }
   
-  //tests execute method by executing dummy method command1
+  /**
+   * tests execute method by executing dummy method command1
+   */
   @Test
   public void testGfshExecutionStartegyExecute() throws Exception {
     CommandManager commandManager = CommandManager.getInstance();
     assertNotNull("CommandManager should not be null.", commandManager);      
     commandManager.add(Commands.class.newInstance());
     GfshParser parser = new GfshParser(commandManager);
-    String[] command1Names = ((CliCommand) Commands.class.getMethod(
-        COMMAND1_NAME).getAnnotation(CliCommand.class)).value();
+    String[] command1Names = ((CliCommand) Commands.class.getMethod(COMMAND1_NAME).getAnnotation(CliCommand.class)).value();
     String input =command1Names[0];
     ParseResult parseResult = null;   
     parseResult = parser.parse(input);  
@@ -78,16 +79,17 @@ public class GfshExecutionStrategyJUnitTest {
     assertTrue(str.trim().equals(COMMAND1_SUCESS));      
   }
   
-  //tests isReadyForCommnads method by executing dummy method command1.
-  //TODO: this method is hard coded in source which may change in future. So this 
-  //test should also be accordingly changed
+  /**
+   * tests isReadyForCommnads method by executing dummy method command1.
+   * TODO: this method is hard coded in source which may change in future. So this
+   * test should also be accordingly changed
+   */
   @Test
   public void testGfshExecutionStartegyIsReadyForCommands() throws Exception {
     CommandManager commandManager = CommandManager.getInstance();
     assertNotNull("CommandManager should not be null.", commandManager);
     commandManager.add(Commands.class.newInstance());      
-    String[] command1Names = ((CliCommand) Commands.class.getMethod(
-        COMMAND1_NAME).getAnnotation(CliCommand.class)).value();       
+    String[] command1Names = ((CliCommand) Commands.class.getMethod(COMMAND1_NAME).getAnnotation(CliCommand.class)).value();
     String[] args = new String[] {command1Names[0]  };
     Gfsh gfsh = Gfsh.getInstance(false, args, new GfshConfig());      
     GfshExecutionStrategy gfshExecutionStrategy = new GfshExecutionStrategy(gfsh);
@@ -95,22 +97,27 @@ public class GfshExecutionStrategyJUnitTest {
     assertTrue(ready);      
   }
 
-  //represents class for dummy methods
+  /**
+   * represents class for dummy methods
+   */
   public static class Commands implements CommandMarker {
 
     @CliCommand(value = { COMMAND1_NAME, COMMAND1_NAME_ALIAS }, help = COMMAND1_HELP)
     @CliMetaData(shellOnly = true )
-    public static Result command1() {     
+    @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
+    public static Result command1() {
       return ResultBuilder.createInfoResult(COMMAND1_SUCESS);      
     }
 
     @CliCommand(value = { COMMAND2_NAME })
     @CliMetaData(shellOnly = false )
+    @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public static Result command2() {
       return ResultBuilder.createInfoResult(COMMAND2_SUCESS);      
     }
 
     @CliCommand(value = { "testParamConcat" })
+    @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public static Result testParamConcat(
         @CliOption(key = { "string" })
         String string,
@@ -127,6 +134,7 @@ public class GfshExecutionStrategyJUnitTest {
     }
 
     @CliCommand(value = { "testMultiWordArg" })
+    @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public static Result testMultiWordArg(@CliArgument(name = "arg1")
     String arg1, @CliArgument(name = "arg2")
     String arg2) {

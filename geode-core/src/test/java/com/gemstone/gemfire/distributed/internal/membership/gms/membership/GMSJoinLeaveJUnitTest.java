@@ -16,32 +16,6 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.membership;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.Timer;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
-import org.mockito.internal.verification.Times;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.mockito.verification.Timeout;
-
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
@@ -60,16 +34,28 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJo
 import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave.TcpClientWrapper;
 import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave.ViewCreator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave.ViewReplyProcessor;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.InstallViewMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRequestMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.LeaveRequestMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.NetworkPartitionMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.RemoveMemberMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.ViewAckMessage;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messages.*;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.internal.verification.Times;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.mockito.verification.Timeout;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.*;
+
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.*;
 
 @Category(IntegrationTest.class)
 public class GMSJoinLeaveJUnitTest {
@@ -81,7 +67,7 @@ public class GMSJoinLeaveJUnitTest {
   private InternalDistributedMember gmsJoinLeaveMemberId;
   private InternalDistributedMember[] mockMembers;
   private InternalDistributedMember mockOldMember;
-  private Object credentials = new Object();
+  private Properties credentials = new Properties();
   private Messenger messenger;
   private GMSJoinLeave gmsJoinLeave;
   private Manager manager;
@@ -1075,17 +1061,22 @@ public class GMSJoinLeaveJUnitTest {
       FindCoordinatorResponse fcr = new FindCoordinatorResponse(mockMembers[0], mockMembers[0], false, null, registrants, false, true);
       NetView view = createView();
       JoinResponseMessage jrm = new JoinResponseMessage(mockMembers[0], view);
-      gmsJoinLeave.setJoinResponseMessage(jrm);
       
       TcpClientWrapper tcpClientWrapper = mock(TcpClientWrapper.class);
       gmsJoinLeave.setTcpClientWrapper(tcpClientWrapper);
       FindCoordinatorRequest fcreq = new FindCoordinatorRequest(gmsJoinLeaveMemberId, new HashSet<>(), -1);
       int connectTimeout = (int)services.getConfig().getMemberTimeout() * 2;
       when(tcpClientWrapper.sendCoordinatorFindRequest(new InetSocketAddress("localhost", 12345), fcreq, connectTimeout)).thenReturn(fcr);
+      callAsnyc(()->{gmsJoinLeave.installView(view);});
       assertTrue("Should be able to join ", gmsJoinLeave.join());
     }finally{
       
     }   
+  }
+  
+  private void callAsnyc(Runnable run) {
+    Thread th = new Thread(run);
+    th.start();
   }
   
   @Test
@@ -1123,7 +1114,7 @@ public class GMSJoinLeaveJUnitTest {
       }
        
       Thread.sleep(1000);
-      System.out.println("Empty sleeps " + sleeps +  " stoppping: " + gmsJoinLeave.isStopping() );
+      System.out.println("Empty sleeps " + sleeps +  " stopping: " + gmsJoinLeave.isStopping() );
     }
   }
   

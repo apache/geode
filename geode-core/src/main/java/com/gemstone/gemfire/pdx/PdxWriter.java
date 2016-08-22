@@ -32,7 +32,7 @@ import com.gemstone.gemfire.cache.CacheFactory;
  * <p>All methods on this interface return itself to allow method calls to be
  * chained together.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 public interface PdxWriter {
   
@@ -219,7 +219,7 @@ public interface PdxWriter {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws NonPortableClassException if checkPortability is true and a non-portable object is serialized
    * @throws PdxSerializationException if serialization of the field fails.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public PdxWriter writeObject(String fieldName, Object value, boolean checkPortability);
 
@@ -350,7 +350,7 @@ public interface PdxWriter {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws NonPortableClassException if checkPortability is true and a non-portable element is serialized
    * @throws PdxSerializationException if serialization of the field fails.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public PdxWriter writeObjectArray(String fieldName, Object[] value, boolean checkPortability);
   /**
@@ -442,7 +442,7 @@ public interface PdxWriter {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws NonPortableClassException if checkPortability is true and a non-portable object is serialized
    * @throws PdxSerializationException if serialization of the field fails.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public <CT, VT extends CT> PdxWriter writeField(String fieldName, VT fieldValue, Class<CT> fieldType, boolean checkPortability);
   

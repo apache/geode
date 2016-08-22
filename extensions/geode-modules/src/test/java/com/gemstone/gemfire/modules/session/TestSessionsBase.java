@@ -16,10 +16,16 @@
 */
 package com.gemstone.gemfire.modules.session;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.modules.session.catalina.DeltaSessionManager;
-import com.gemstone.gemfire.modules.session.catalina.PeerToPeerCacheLifecycleListener;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.beans.PropertyChangeEvent;
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import com.meterware.httpunit.GetMethodWebRequest;
 import com.meterware.httpunit.WebConversation;
 import com.meterware.httpunit.WebRequest;
@@ -29,19 +35,13 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.beans.PropertyChangeEvent;
-import java.io.IOException;
-import java.io.PrintWriter;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.modules.session.catalina.DeltaSessionManager;
+import com.gemstone.gemfire.modules.session.catalina.PeerToPeerCacheLifecycleListener;
 
-import static junit.framework.Assert.*;
-
-/**
- *
- */
 public abstract class TestSessionsBase {
+
   private static EmbeddedTomcat server;
 
   private static Region<String, HttpSession> region;
@@ -58,8 +58,8 @@ public abstract class TestSessionsBase {
     server = new EmbeddedTomcat("/test", port, "JVM-1");
 
     PeerToPeerCacheLifecycleListener p2pListener = new PeerToPeerCacheLifecycleListener();
-    p2pListener.setProperty("mcast-port", "0");
-    p2pListener.setProperty("log-level", "config");
+    p2pListener.setProperty(MCAST_PORT, "0");
+    p2pListener.setProperty(LOG_LEVEL, "config");
     server.getEmbedded().addLifecycleListener(p2pListener);
     sessionManager = manager;
     sessionManager.setEnableCommitValve(true);
@@ -68,7 +68,7 @@ public abstract class TestSessionsBase {
     servlet = server.addServlet("/test/*", "default", CommandServlet.class.getName());
     server.startContainer();
 
-    /**
+    /*
      * Can only retrieve the region once the container has started up
      * (and the cache has started too).
      */
@@ -184,36 +184,6 @@ public abstract class TestSessionsBase {
 
     assertEquals(value, response.getText());
   }
-
-  /**
-   * Check that our session persists beyond the container restarting.
-   */
-//    public void testSessionPersists2() throws Exception {
-//        String key = "value_testSessionPersists2";
-//        String value = "Foo";
-//
-//        WebConversation wc = new WebConversation();
-//        WebRequest req = new GetMethodWebRequest("http://localhost:7890/test");
-//        req.setParameter("cmd", QueryCommand.SET.name());
-//        req.setParameter("param", key);
-//        req.setParameter("value", value);
-//        WebResponse response = wc.getResponse(req);
-//        String sessionId = response.getNewCookieValue("JSESSIONID");
-//
-//        assertNotNull("No apparent session cookie", sessionId);
-//
-//        // Restart the container
-//        AllTests.teardownClass();
-//        AllTests.setupClass();
-//
-//        // The request retains the cookie from the prior response...
-//        req.setParameter("cmd", QueryCommand.GET.name());
-//        req.setParameter("param", key);
-//        req.removeParameter("value");
-//        response = wc.getResponse(req);
-//
-//        assertEquals(value, response.getText());
-//    }
 
   /**
    * Test that invalidating a session makes it's attributes inaccessible.

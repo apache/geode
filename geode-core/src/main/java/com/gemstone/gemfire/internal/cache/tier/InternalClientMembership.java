@@ -56,7 +56,7 @@ import com.gemstone.gemfire.management.membership.ClientMembershipListener;
  * <code>ClientMembershipListener</code>s. The public counterpart for this
  * class is {@link com.gemstone.gemfire.management.membership.ClientMembership}.
  *
- * @since 4.2.1
+ * @since GemFire 4.2.1
  */
 public final class InternalClientMembership  {
 
@@ -93,7 +93,7 @@ public final class InternalClientMembership  {
   /**
    * True if class is monitoring systems
    * 
-   * @guarded.By InternalClientMembership.class
+   * guarded.By InternalClientMembership.class
    */
   private static boolean isMonitoring = false;
   
@@ -552,7 +552,7 @@ for (int i=0; i<queueElementsAfter.length; i++) {
   }
 
   /**
-   * @guarded.By {@link #systems}
+   * guarded.By {@link #systems}
    */
   private static void ensureExecutorIsRunning() {
     // protected by calling method synchronized on systems

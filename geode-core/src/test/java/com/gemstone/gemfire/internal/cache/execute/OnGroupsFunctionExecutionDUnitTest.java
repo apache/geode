@@ -16,21 +16,22 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Properties;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.FunctionAdapter;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
@@ -42,25 +43,19 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-/**
- * 
- */
-public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
-
-  public OnGroupsFunctionExecutionDUnitTest(String name) {
-    super(name);
-  }
+@Category(DistributedTest.class)
+public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void preTearDown() throws Exception {
@@ -112,7 +107,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
       @Override
       public Object call() throws Exception {
         Properties props = new Properties();
-        props.put("groups", groups);
+        props.put(GROUPS, groups);
         if (regionName != null) {
           Cache c = null;
           try {
@@ -184,8 +179,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         int count = 0;
         synchronized (OnGroupsFunction.class) {
         	count = f.invocationCount;
-        //    f.invocationCount = 0;
-		}
+		    }
         
         return count;
       }
@@ -199,16 +193,18 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         OnGroupsFunction f = (OnGroupsFunction) FunctionService.getFunction(OnGroupsFunction.Id);
         synchronized (OnGroupsFunction.class) {
         	f.invocationCount = 0;
-		}
+		    }
         return null;
       }
     });
   }
 
+  @Test
   public void testBasicP2PFunctionNoCache() {
     doBasicP2PFunctionNoCache(false);
   }
 
+  @Test
   public void testBasicP2pRegisteredFunctionNoCache() {
     doBasicP2PFunctionNoCache(true);
   }
@@ -318,6 +314,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
     verifyAndResetInvocationCount(vm2, 1);
   }
 
+  @Test
   public void testonMember() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -384,6 +381,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
     }
   }
 
+  @Test
   public void testBasicP2PFunction() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -487,6 +485,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
     }
   }
 
+  @Test
   public void testP2PException () {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -541,6 +540,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
     });
   }
 
+  @Test
   public void testP2PMemberFailure() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -571,6 +571,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
     });
   }
 
+  @Test
   public void testP2POneMemberFailure() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -602,6 +603,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
     });
   }
 
+  @Test
   public void testP2PIgnoreMemberFailure() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -637,18 +639,22 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
     });
   }
 
+  @Test
   public void testBasicClientServerFunction() {
     dotestBasicClientServerFunction(false, true);
   }
 
+  @Test
   public void testBasicClientServerRegisteredFunction() {
     dotestBasicClientServerFunction(true, true);
   }
 
+  @Test
   public void testBasicClientServerFunctionNoArgs() {
     dotestBasicClientServerFunction(false, false);
   }
 
+  @Test
   public void testBasicClientServerRegisteredFunctionNoArgs() {
     dotestBasicClientServerFunction(true, false);
   }
@@ -688,7 +694,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolLocator(hostName, locatorPort);
         ccf.setPoolServerGroup("mg");
-        ccf.set("log-level", LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache c = ccf.create();
 
         c.getLogger().info("SWAP:invoking function from client on g0");
@@ -757,6 +763,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
     verifyAndResetInvocationCount(server2, 1);
   }
 
+  @Test
   public void testStreamingClientServerFunction() {
     Host host = Host.getHost(0);
     VM server0 = host.getVM(0);
@@ -786,7 +793,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolLocator(hostName, locatorPort);
         ccf.setPoolServerGroup("mg");
-        ccf.set("log-level", LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache c = ccf.create();
 
         c.getLogger().info("SWAP:invoking function from client on g0");
@@ -834,6 +841,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
     });
   }
 
+  @Test
   public void testOnServer() {
     Host host = Host.getHost(0);
     VM server0 = host.getVM(0);
@@ -863,7 +871,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolLocator(hostName, locatorPort);
         ccf.setPoolServerGroup("mg");
-        ccf.set("log-level", LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache c = ccf.create();
 
         IgnoredException ex = IgnoredException.addIgnoredException("No member found");
@@ -914,6 +922,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
     assertEquals(2, c0 + c1 + c2);
   }
 
+  @Test
   public void testClientServerException() {
     Host host = Host.getHost(0);
     VM server0 = host.getVM(0);
@@ -943,7 +952,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolLocator(hostName, locatorPort);
         ccf.setPoolServerGroup("mg");
-        ccf.set("log-level", LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache c = ccf.create();
 
         IgnoredException expected = IgnoredException.addIgnoredException("No member found");
@@ -991,6 +1000,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
     });
   }
 
+  @Test
   public void testClientServerMemberFailure() {
     Host host = Host.getHost(0);
     VM server0 = host.getVM(0);
@@ -1020,7 +1030,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolLocator(hostName, locatorPort);
         ccf.setPoolServerGroup("mg");
-        ccf.set("log-level", LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache c = ccf.create();
 
         Execution e = InternalFunctionService.onServers(c, "g1");
@@ -1040,6 +1050,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
     });
   }
 
+  @Test
   public void testClientServerOneMemberFailure() {
     Host host = Host.getHost(0);
     VM server0 = host.getVM(0);
@@ -1069,7 +1080,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolLocator(hostName, locatorPort);
         ccf.setPoolServerGroup("mg");
-        ccf.set("log-level", LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache c = ccf.create();
 
         Execution e = InternalFunctionService.onServers(c, "g1");
@@ -1089,6 +1100,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
     });
   }
 
+  @Test
   public void testClientServerIgnoreMemberFailure() {
     Host host = Host.getHost(0);
     VM server0 = host.getVM(0);
@@ -1118,7 +1130,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolLocator(hostName, locatorPort);
         ccf.setPoolServerGroup("mg");
-        ccf.set("log-level", LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache c = ccf.create();
 
         Execution e = InternalFunctionService.onServers(c, "g1");
@@ -1153,6 +1165,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
     }
   }
 
+  @Test
   public void testNoAckGroupsFunction() {
     //Workaround for #52005. This is a product bug
     //that should be fixed
@@ -1185,7 +1198,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolLocator(hostName, locatorPort);
         ccf.setPoolServerGroup("mg");
-        ccf.set("log-level", LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache c = ccf.create();
 
         c.getLogger().info("SWAP:invoking function from client on g0");

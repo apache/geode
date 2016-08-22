@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.cq.dunit;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -44,9 +53,10 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * This class tests the ContinuousQuery mechanism in GemFire.
  *
  */
-public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
-  protected CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest("CqResultSetUsingPoolDUnitTest");
+  protected CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest();
   
   private final String selStr = "SELECT * FROM /root/regionA";
   
@@ -125,8 +135,8 @@ public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
   };
   
 
-  public CqResultSetUsingPoolDUnitTest(String name) {
-    super(name);
+  public CqResultSetUsingPoolDUnitTest() {
+    super();
   }
 
   @Override
@@ -150,6 +160,7 @@ public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testCqResults() throws Exception
   {
     final Host host = Host.getHost(0);
@@ -204,6 +215,7 @@ public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testCqResultsWithCompactRangeIndex() throws Exception
   {
     final Host host = Host.getHost(0);
@@ -247,6 +259,7 @@ public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testCqResultsWithRangeIndex() throws Exception
   {
     
@@ -304,6 +317,7 @@ public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testCqResultsOnPR() throws Exception
   {
     final Host host = Host.getHost(0);
@@ -360,6 +374,7 @@ public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testCqResultsWithCompactRangeIndexOnPR() throws Exception
   {
     final Host host = Host.getHost(0);
@@ -407,6 +422,7 @@ public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testCqResultsWithRangeIndexOnPR() throws Exception
   {
     
@@ -478,6 +494,7 @@ public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testCqResultsCaching() throws Exception
   {
     final Host host = Host.getHost(0);
@@ -600,6 +617,7 @@ public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testCqResultsCachingForMultipleCQs() throws Exception
   {
     final Host host = Host.getHost(0);
@@ -727,6 +745,7 @@ public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testCqResultsCachingForPR() throws Exception
   {
     final Host host = Host.getHost(0);
@@ -823,6 +842,7 @@ public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testCqResultsCachingForDestroyEventsOnPR() throws Exception
   {
     final Host host = Host.getHost(0);
@@ -941,6 +961,7 @@ public class CqResultSetUsingPoolDUnitTest extends CacheTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testCqResultsCachingWithFailOver() throws Exception
   {
     final Host host = Host.getHost(0);

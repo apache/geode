@@ -16,17 +16,17 @@
  */
 package com.gemstone.gemfire.management.internal.configuration.utils;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
+import org.apache.commons.io.FileUtils;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import org.apache.commons.io.FileUtils;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 
 /******
  * This class is used to resolve the location of DTD. 
@@ -43,7 +43,7 @@ public class DtdResolver implements EntityResolver{
   {
     if (!isHttpUrlOK(systemId)) {
       URL dtdURL = getClass().getResource(CacheXml.LATEST_DTD_LOCATION);
-      File dtd = new File("gemfire.dtd");
+      File dtd = new File(DistributionConfig.GEMFIRE_PREFIX + "dtd");
       FileUtils.copyURLToFile(dtdURL, dtd);
       InputSource inputSource = new InputSource(FileUtils.openInputStream(dtd));
       FileUtils.deleteQuietly(dtd);

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,15 +55,17 @@ import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 
 
+@Category(DistributedTest.class)
 public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
 
-  public PdxQueryCQDUnitTest(String name) {
-    super(name);
+  public PdxQueryCQDUnitTest() {
+    super();
   }
   
   /**
    * Tests client-server query on PdxInstance.
    */
+  @Test
   public void testCq() throws CacheException {
     
     final Host host = Host.getHost(0);
@@ -234,6 +245,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
    * Tests client-server query on PdxInstance.
    */
   
+  @Test
   public void testCqAndInterestRegistrations() throws CacheException {
     
     final Host host = Host.getHost(0);
@@ -429,6 +441,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
   /**
    * Tests client-server query on PdxInstance.
    */
+  @Test
   public void testCqAndInterestRegistrationsWithFailOver() throws CacheException {
     
     final Host host = Host.getHost(0);

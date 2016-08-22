@@ -16,15 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.IOException;
 import java.util.Properties;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsType;
@@ -33,9 +33,11 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.client.*;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
+import com.gemstone.gemfire.cache.client.NoAvailableServersException;
+import com.gemstone.gemfire.cache.client.PoolFactory;
+import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.Connection;
+import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
@@ -45,35 +47,31 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Make sure max-connections on cache server is enforced
- *
- *
  */
 @Category(IntegrationTest.class)
-public class CacheServerMaxConnectionsJUnitTest
+public class CacheServerMaxConnectionsJUnitTest {
 
-{
-
-  /** connection proxy object for the client */
-  PoolImpl proxy = null;
-
-  /** the distributed system instance for the test */
-  DistributedSystem system;
-
-  /** the cache instance for the test */
-  Cache cache;
-
-  /** name of the region created */
-  final String regionName = "region1";
+  private static final int MAX_CNXS = 100;
 
   private static int PORT;
+
+  /** name of the region created */
+  private final String regionName = "region1";
+
+  /** connection proxy object for the client */
+  private PoolImpl proxy = null;
+
+  /** the distributed system instance for the test */
+  private DistributedSystem system;
+
+  /** the cache instance for the test */
+  private Cache cache;
 
   /**
    * Close the cache and disconnects from the distributed system
    */
   @After
-  public void tearDown() throws Exception
-
-  {
+  public void tearDown() throws Exception {
     this.cache.close();
     this.system.disconnect();
   }
@@ -87,59 +85,41 @@ public class CacheServerMaxConnectionsJUnitTest
 
   /**
    * Initializes proxy object and creates region for client
-   *
    */
-  private void createProxyAndRegionForClient()
-  {
-    try {
-      //props.setProperty("retryAttempts", "0");
-      PoolFactory pf = PoolManager.createFactory();
-      pf.addServer("localhost", PORT);
-      pf.setMinConnections(0);
-      pf.setPingInterval(10000);
-      pf.setThreadLocalConnections(true);
-      pf.setReadTimeout(2000);
-      pf.setSocketBufferSize(32768);
-      proxy = (PoolImpl)pf.create("junitPool");
-      AttributesFactory factory = new AttributesFactory();
-      factory.setScope(Scope.DISTRIBUTED_ACK);
-      factory.setPoolName("junitPool");
-      RegionAttributes attrs = factory.createRegionAttributes();
-      cache.createVMRegion(regionName, attrs);
-    }
-    catch (Exception ex) {
-      ex.printStackTrace();
-      fail("Failed to initialize client");
-    }
+  private void createProxyAndRegionForClient() {
+    //props.setProperty("retryAttempts", "0");
+    PoolFactory pf = PoolManager.createFactory();
+    pf.addServer("localhost", PORT);
+    pf.setMinConnections(0);
+    pf.setPingInterval(10000);
+    pf.setThreadLocalConnections(true);
+    pf.setReadTimeout(2000);
+    pf.setSocketBufferSize(32768);
+    proxy = (PoolImpl)pf.create("junitPool");
+    AttributesFactory factory = new AttributesFactory();
+    factory.setScope(Scope.DISTRIBUTED_ACK);
+    factory.setPoolName("junitPool");
+    RegionAttributes attrs = factory.createRegionAttributes();
+    cache.createVMRegion(regionName, attrs);
   }
-
-  private final static int MAX_CNXS = 100;
 
   /**
    * Creates and starts the server instance
-   *
    */
-  private int createServer()
-  {
+  private int createServer() throws IOException {
     CacheServer server = null;
-    try {
-      Properties p = new Properties();
-      // make it a loner
-      p.put("mcast-port", "0");
-      p.put("locators", "");
-      this.system = DistributedSystem.connect(p);
-      this.cache = CacheFactory.create(system);
-      server = this.cache.addCacheServer();
-      int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-      server.setMaxConnections(MAX_CNXS);
-      server.setMaxThreads(getMaxThreads());
-      server.setPort(port);
-      server.start();
-    }
-    catch (Exception e) {
-      e.printStackTrace();
-      fail("Failed to create server");
-    }
+    Properties p = new Properties();
+    // make it a loner
+    p.put(MCAST_PORT, "0");
+    p.put(LOCATORS, "");
+    this.system = DistributedSystem.connect(p);
+    this.cache = CacheFactory.create(system);
+    server = this.cache.addCacheServer();
+    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    server.setMaxConnections(MAX_CNXS);
+    server.setMaxThreads(getMaxThreads());
+    server.setPort(port);
+    server.start();
     return server.getPort();
   }
 
@@ -155,8 +135,7 @@ public class CacheServerMaxConnectionsJUnitTest
    * the put that the Connection object used was new one.
    */
   @Test
-  public void testMaxCnxLimit() throws Exception
-  {
+  public void testMaxCnxLimit() throws Exception {
     PORT = createServer();
     createProxyAndRegionForClient();
     StatisticsType st = this.system.findType("CacheServerStats");

@@ -69,7 +69,7 @@ public interface GemFireVM {
   /**
    * Returns the directory in which the member runs
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public java.io.File getWorkingDirectory();
 
@@ -85,7 +85,7 @@ public interface GemFireVM {
 
   /**
    * Returns a String describing the vm's gemfire version info
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public String getVersionInfo();
 
@@ -122,20 +122,20 @@ public interface GemFireVM {
    * If a health listener has already been added it will be removed
    * and a new one added.
    * @param cfg determines how and when the health will be checked.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public void addHealthListener(HealthListener observer,
                                 GemFireHealthConfig cfg);
   
   /**
    * Removes an added health listener.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public void removeHealthListener();
 
   /**
    * Resets the current health status to "good".
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public void resetHealthStatus();
 
@@ -148,7 +148,7 @@ public interface GemFireVM {
    * @param healthCode
    *        The current health status
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public String[] getHealthDiagnosis(GemFireHealth.Health healthCode);
 
@@ -161,14 +161,14 @@ public interface GemFireVM {
    * Returns the runtime {@link com.gemstone.gemfire.admin.GemFireMemberStatus} from the vm
    * The idea is this snapshot is similar to stats that represent the current state of a 
    * running VM. However, this is a bit higher level than a stat 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public GemFireMemberStatus getSnapshot();
   
   /**
    * Returns the runtime {@link com.gemstone.gemfire.admin.RegionSubRegionSnapshot} from the vm
    * The idea is this snapshot is quickly salvageable to present a cache's region's info 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public RegionSubRegionSnapshot getRegionSnapshot();
   
@@ -218,7 +218,7 @@ public interface GemFireVM {
    * @param path the path to the region
    * @return the Region or null if not found
    * @throws IllegalArgumentException if path is null, the empty string, or "/"
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public Region getRegion(CacheInfo c, String path);
 
@@ -229,7 +229,7 @@ public interface GemFireVM {
    * @throws AdminException
    *         If an error occurs while creating the region
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public Region createVMRootRegion(CacheInfo c, String name,
                                    RegionAttributes attrs)
@@ -242,7 +242,7 @@ public interface GemFireVM {
    * @throws AdminException
    *         If an error occurs while creating the region
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public Region createSubregion(CacheInfo c, String parentPath,
                                 String name, RegionAttributes attrs)
@@ -319,7 +319,7 @@ public interface GemFireVM {
   /**
    * Adds a bridge server a cache in this VM
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public AdminBridgeServer addCacheServer(CacheInfo cache)
     throws AdminException;
@@ -338,7 +338,7 @@ public interface GemFireVM {
   /**
    * Starts a bridge server in this VM
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public AdminBridgeServer startBridgeServer(CacheInfo cache,
                                              AdminBridgeServer bridge)
@@ -347,7 +347,7 @@ public interface GemFireVM {
   /**
    * Stops a bridge server in this VM
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public AdminBridgeServer stopBridgeServer(CacheInfo cache,
                                             AdminBridgeServer bridge)
@@ -363,7 +363,7 @@ public interface GemFireVM {
    * @param refreshInterval refresh interval to be used by the Alerts Manager
    * @param setRemotely whether to be set on remote VM
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setAlertsManager(StatAlertDefinition[] alertDefs, long refreshInterval, boolean setRemotely);
   
@@ -374,7 +374,7 @@ public interface GemFireVM {
    * 
    * @param refreshInterval refresh interval to set (in milliseconds)
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setRefreshInterval(long refreshInterval);
   
@@ -388,7 +388,7 @@ public interface GemFireVM {
    *                   UpdateAlertDefinitionRequestUPDATE_ALERT_DEFINITION, 
    *                   UpdateAlertDefinitionRequest.REMOVE_ALERT_DEFINITION
    *                   
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void updateAlertDefinitions(StatAlertDefinition[] alertDefs, int actionCode);
 }

@@ -16,8 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.Iterator;
 import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -34,17 +41,16 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-/**
- *
- */
+@Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
+public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
 
   private static VM vm0 = null;
   private static VM vm1 = null;
@@ -59,20 +65,13 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
 
   private static final int EXCEPTION = -5;
 
-  public static final String REGION_NAME = "DurableClientQueueSizeDunitTest_region";
+  public static final String REGION_NAME = DurableClientQueueSizeDUnitTest.class.getSimpleName() + "_region";
 
-  public static final String NEW_REGION = "DurableClientQueueSizeDunitTest_region_2";
+  public static final String NEW_REGION = DurableClientQueueSizeDUnitTest.class.getSimpleName() + "_region_2";
 
   public static final String POOL_NAME = "my-pool";
 
   public static final String DEFAULT_POOL_NAME = "DEFAULT";
-
-  /**
-   * @param name
-   */
-  public DurableClientQueueSizeDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -98,8 +97,9 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
     vm1.invoke(() -> DurableClientQueueSizeDUnitTest.closeCache());
   }
 
+  @Test
   public void testNonDurableClientFails() throws Exception {
-    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "createClientCache",
+    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "createClientCache", // TODO: change to lambda
         new Object[] { vm2.getHost(), new Integer[] { port0, port1 }, false });
 
     vm2.invoke(() -> DurableClientQueueSizeDUnitTest.verifyQueueSize( EXCEPTION ));
@@ -108,7 +108,9 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
   // this test is disabled due to a high rate of failure.  It fails with
   // the queue size being 11 instead of 10 in the first verifyQueueSize check.
   // See internal ticket #52227.
-  public void disabledtestSinglePoolClientReconnectsBeforeTimeOut() throws Exception {
+  @Ignore("TODO: test is disabled due to #52227")
+  @Test
+  public void testSinglePoolClientReconnectsBeforeTimeOut() throws Exception {
     int num = 10;
     vm2.invoke(DurableClientQueueSizeDUnitTest.class, "createClientCache",
         new Object[] { vm2.getHost(), new Integer[] { port0, port1 }});
@@ -129,6 +131,7 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
 
   }
 
+  @Test
   public void testSinglePoolClientReconnectsAfterTimeOut() throws Exception {
     int num = 10;
     long timeoutSeconds = 10;
@@ -151,6 +154,7 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
     vm2.invoke(() -> DurableClientQueueSizeDUnitTest.verifyQueueSize( PoolImpl.PRIMARY_QUEUE_TIMED_OUT ));
   }
 
+  @Test
   public void testPrimaryServerRebootReturnsCorrectResponse() throws Exception {
     int num = 10;
     vm2.invoke(DurableClientQueueSizeDUnitTest.class, "createClientCache",
@@ -181,7 +185,9 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
     vm2.invoke(() -> DurableClientQueueSizeDUnitTest.verifyQueueSize( PoolImpl.PRIMARY_QUEUE_NOT_AVAILABLE ));
   }
 
-  public void bug51854_testMultiPoolClientReconnectsBeforeTimeOut() throws Exception {
+  @Ignore("TODO: test is disabled due to #51854")
+  @Test
+  public void testMultiPoolClientReconnectsBeforeTimeOut() throws Exception {
     int num = 10;
     vm2.invoke(DurableClientQueueSizeDUnitTest.class, "createClientCache",
         new Object[] { vm2.getHost(), new Integer[] { port0, port1 }, "300",
@@ -203,7 +209,9 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
     vm2.invoke(() -> DurableClientQueueSizeDUnitTest.verifyQueueSize( EXCEPTION, EXCEPTION ));
   }
 
-  public void bug51854_testMultiPoolClientReconnectsAfterTimeOut() throws Exception {
+  @Ignore("TODO: test is disabled due to #51854")
+  @Test
+  public void testMultiPoolClientReconnectsAfterTimeOut() throws Exception {
     int num = 10;
     long timeout = 10;
     vm2.invoke(
@@ -231,7 +239,9 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
     vm2.invoke(() -> DurableClientQueueSizeDUnitTest.verifyQueueSize( PoolImpl.PRIMARY_QUEUE_TIMED_OUT, PoolImpl.PRIMARY_QUEUE_TIMED_OUT));
   }
 
-  public void _testMultiPoolClientFailsOver() throws Exception {
+  @Ignore("TODO: test is not implemented")
+  @Test
+  public void testMultiPoolClientFailsOver() throws Exception {
   }
 
   public static void closeCache() throws Exception {
@@ -258,19 +268,11 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
   public static Integer createCacheServer(Integer serverPort)
       throws Exception {
     Properties props = new Properties();
-    props.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-//    props.setProperty("log-level", "fine");
-//    props.setProperty("log-file", "server_" + OSProcess.getId() + ".log");
-//    props.setProperty("statistic-archive-file", "server_" + OSProcess.getId()
-//        + ".gfs");
-//    props.setProperty("statistic-sampling-enabled", "true");
-
-    DurableClientQueueSizeDUnitTest test = new DurableClientQueueSizeDUnitTest(
-        "DurableClientQueueSizeDUnitTest");
+    props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+    DurableClientQueueSizeDUnitTest test = new DurableClientQueueSizeDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     ds.disconnect();
     cache = (GemFireCacheImpl)CacheFactory.create(test.getSystem());
-//    cache = (GemFireCacheImpl) new CacheFactory(props).create();
 
     RegionFactory<String, String> rf = cache
         .createRegionFactory(RegionShortcut.REPLICATE);
@@ -300,30 +302,24 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
   }
 
   public static void setSpecialDurable(Boolean bool) {
-    System.setProperty("gemfire.SPECIAL_DURABLE", bool.toString());
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE", bool.toString());
   }
 
   @SuppressWarnings("deprecation")
   public static void createClientCache(Host host, Integer[] ports,
       String timeoutSeconds, Boolean durable, Boolean multiPool) throws Exception {
     if (multiPool) {
-      System.setProperty("gemfire.SPECIAL_DURABLE", "true");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE", "true");
     }
     Properties props = new Properties();
     if (durable) {
-      props.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME,
+      props.setProperty(DURABLE_CLIENT_ID,
           "my-durable-client");
-      props.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME,
+      props.setProperty(DURABLE_CLIENT_TIMEOUT,
           timeoutSeconds);
     }
-    //    props.setProperty("log-file", "client_" + OSProcess.getId() + ".log");
-//    props.setProperty("log-level", "fine");
-//    props.setProperty("statistic-archive-file", "client_" + OSProcess.getId()
-//        + ".gfs");
-//    props.setProperty("statistic-sampling-enabled", "true");
 
-    DistributedSystem ds = new DurableClientQueueSizeDUnitTest(
-        "DurableClientQueueSizeDUnitTest").getSystem(props);
+    DistributedSystem ds = new DurableClientQueueSizeDUnitTest().getSystem(props);
     ds.disconnect();
     ClientCacheFactory ccf = new ClientCacheFactory(props);
     ccf.setPoolSubscriptionEnabled(true);

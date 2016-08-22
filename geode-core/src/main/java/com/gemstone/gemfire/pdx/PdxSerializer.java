@@ -66,7 +66,7 @@ public class MyPdxSerializer implements PdxSerializer {
 }
  * </PRE>
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 public interface PdxSerializer {
   /**

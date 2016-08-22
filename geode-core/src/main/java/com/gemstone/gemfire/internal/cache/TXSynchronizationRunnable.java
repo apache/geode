@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * must invoke runSecondRunnable() with another Runnable that invokes
  * afterCompletion behavior. 
  * 
- * @since 6.6
+ * @since GemFire 6.6
  *
  */
 public class TXSynchronizationRunnable implements Runnable {
@@ -76,7 +76,7 @@ public class TXSynchronizationRunnable implements Runnable {
         }
         if (this.secondRunnable == null) {
           GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-          if (cache == null || cache.getCancelCriterion().cancelInProgress() != null) {
+          if (cache == null || cache.getCancelCriterion().isCancelInProgress()) {
             return;
           }
         }

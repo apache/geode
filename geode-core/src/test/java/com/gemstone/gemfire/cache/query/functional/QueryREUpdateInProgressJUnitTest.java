@@ -19,6 +19,7 @@
  */
 package com.gemstone.gemfire.cache.query.functional;
 
+import static com.gemstone.gemfire.cache.query.Utils.createPortfoliosAndPositions;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -39,11 +40,11 @@ import com.gemstone.gemfire.cache.query.CacheUtils;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.cache.query.partitioned.PRQueryDUnitHelper;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion.NonTXEntry;
 import com.gemstone.gemfire.internal.cache.RegionEntry;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -55,7 +56,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  *
  *
  */
-@Category(IntegrationTest.class)
+@Category({ IntegrationTest.class, FlakyTest.class }) // GEODE-1059: uses PRQueryHelper which launches dunit vms in IntegrationTest
 public class QueryREUpdateInProgressJUnitTest {
 
   private static final String exampleRegionName = "exampleRegion2";
@@ -367,21 +368,21 @@ public class QueryREUpdateInProgressJUnitTest {
       if ((r[j][0] != null) && (r[j][1] != null)) {
         type1 = ((SelectResults) r[j][0]).getCollectionType().getElementType();
         assertNotNull(
-            "PRQueryDUnitHelper#compareTwoQueryResults: Type 1 is NULL "
+            "#compareTwoQueryResults: Type 1 is NULL "
                 + type1, type1);
         type2 = ((SelectResults) r[j][1]).getCollectionType().getElementType();
         assertNotNull(
-            "PRQueryDUnitHelper#compareTwoQueryResults: Type 2 is NULL "
+            "#compareTwoQueryResults: Type 2 is NULL "
                 + type2, type2);
         if ( !(type1.getClass().getName()).equals(type2.getClass().getName()) ) {
-          fail("PRQueryDUnitHelper#compareTwoQueryResults: FAILED:Search result Type is different in both the cases: " 
+          fail("#compareTwoQueryResults: FAILED:Search result Type is different in both the cases: "
               + type1.getClass().getName() + " "
               + type2.getClass().getName());
         }
         int size0 = ((SelectResults) r[j][0]).size();
         int size1 = ((SelectResults) r[j][1]).size();
         if (size0 != size1) {
-          fail("PRQueryDUnitHelper#compareTwoQueryResults: FAILED:Search resultSet size are different in both cases; size0="
+          fail("#compareTwoQueryResults: FAILED:Search resultSet size are different in both cases; size0="
               + size0 + ";size1=" + size1 + ";j=" + j);
         }
       }
@@ -400,7 +401,7 @@ public class QueryREUpdateInProgressJUnitTest {
 
   private void putREWithUpdateInProgressTrue(String region) {
     Region reg = CacheUtils.getRegion(region);
-    Portfolio[] values = new PRQueryDUnitHelper("").createPortfoliosAndPositions(numOfEntries);
+    Portfolio[] values = createPortfoliosAndPositions(numOfEntries);
 
     int i=0;
     for (Object val: values) {

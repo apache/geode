@@ -116,7 +116,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
   /**
    * Application execution implementation
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   @Override
   public void execute(FunctionContext context) {
@@ -1094,7 +1094,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
    * Get the function identifier, used by clients to invoke this function
    * 
    * @return an object identifying this function
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   @Override
   public String getId() {

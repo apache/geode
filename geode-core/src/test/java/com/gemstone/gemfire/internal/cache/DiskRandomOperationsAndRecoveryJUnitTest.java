@@ -38,37 +38,27 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-/**
- * 
- *
- */
-@Category(IntegrationTest.class)
-public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingBase
-{
-  DiskRegionProperties diskProps = new DiskRegionProperties();
-  private static int ENTRY_SIZE = 1024;
-  final static byte[] valueBytes = new byte[ENTRY_SIZE];
+@
+  Category(IntegrationTest.class)
+public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingBase {
+
+  private static final int ENTRY_SIZE = 1024;
+
+  private static final byte[] valueBytes = new byte[ENTRY_SIZE];
   static {
     Arrays.fill(valueBytes, (byte)32);
   }
-  final static private Object value = new String(valueBytes);
 
-  // private static final boolean debug = false;
+  private static final Object value = new String(valueBytes);
 
-  private static int testId=0;
-  
-  @Before
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  private static int testId = 0;
+
+  private DiskRegionProperties diskProps = new DiskRegionProperties();
+
+  @Override
+  protected final void postSetUp() throws Exception {
     diskProps.setDiskDirs(dirs);
     testId++;
-  }
-
-  @After
-  public void tearDown() throws Exception
-  {
-    super.tearDown();
   }
 
   private final static int ITERATIONS = 4;

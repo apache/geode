@@ -35,14 +35,10 @@ import com.gemstone.gemfire.cache.client.internal.ExecuteFunctionOp.ExecuteFunct
 import com.gemstone.gemfire.cache.client.internal.ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl;
 import com.gemstone.gemfire.cache.client.internal.ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.tier.Acceptor;
 import com.gemstone.gemfire.internal.cache.tier.sockets.HandShake;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerQueueStatus;
@@ -56,7 +52,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * The execute  method of this class is synchronized to
  * prevent two ops from using the client to server connection
  *  at the same time.
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 public class ConnectionImpl implements Connection {
@@ -109,8 +105,8 @@ public class ConnectionImpl implements Connection {
     verifySocketBufferSize(socketBufferSize, theSocket.getSendBufferSize(), "send");
     
     theSocket.setSoTimeout(handShakeTimeout);
-    out = SocketUtils.getOutputStream(theSocket);//theSocket.getOutputStream();
-    in = SocketUtils.getInputStream(theSocket);//theSocket.getInputStream();
+    out = theSocket.getOutputStream();
+    in = theSocket.getInputStream();
     this.status = handShake.greet(this, location, communicationMode);
     commBuffer = ServerConnection.allocateCommBuffer(socketBufferSize, theSocket);
     if (sender != null) {
@@ -269,8 +265,11 @@ public class ConnectionImpl implements Connection {
           || op instanceof ExecuteRegionFunctionSingleHopOpImpl) {
         int earliertimeout = this.getSocket().getSoTimeout();
         this.getSocket().setSoTimeout(GemFireCacheImpl.getClientFunctionTimeout());
-        result = op.attempt(this);
-        this.getSocket().setSoTimeout(earliertimeout);
+        try {
+          result = op.attempt(this);
+        } finally {
+          this.getSocket().setSoTimeout(earliertimeout);
+        }
       } else {
         result = op.attempt(this);
       }

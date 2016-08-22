@@ -59,7 +59,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 /**
  * A connection source which uses locators to find
  * the least loaded server.
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 public class AutoConnectionSourceImpl implements ConnectionSource {
@@ -370,7 +370,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   protected class UpdateLocatorListTask extends PoolTask {
     @Override
     public void run2() {
-      if(pool.getCancelCriterion().cancelInProgress() != null) {
+      if(pool.getCancelCriterion().isCancelInProgress()) {
         return;
       }
       LocatorListResponse response = (LocatorListResponse) queryLocators(LOCATOR_LIST_REQUEST);

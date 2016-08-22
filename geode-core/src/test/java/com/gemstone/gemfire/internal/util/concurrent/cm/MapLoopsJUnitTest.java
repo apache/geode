@@ -28,7 +28,6 @@
  * Expert Group and released to the public domain. Use, modify, and
  * redistribute this code in any way without acknowledgement.
  */
-
 package com.gemstone.gemfire.internal.util.concurrent.cm;
 
 import java.util.Map;
@@ -37,13 +36,15 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.util.JSR166TestCase;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.JSR166TestCase;
 
 @Category(IntegrationTest.class)
-public class MapLoopsJUnitTest extends JSR166TestCase {
+public class MapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
+
     static int nkeys       = 1000;
     static int pinsert     = 60;
     static int premove     = 2;
@@ -54,10 +55,7 @@ public class MapLoopsJUnitTest extends JSR166TestCase {
 
     static final ExecutorService pool = Executors.newCachedThreadPool();
 
-    public MapLoopsJUnitTest(String name) {
-      super(name);
-    }
-
+  @Test
     public void testMapLoops() throws Exception {
       main(new String[0]);
     }

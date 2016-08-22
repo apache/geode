@@ -23,7 +23,7 @@ import com.gemstone.gemfire.management.internal.cli.GfshParser;
 /**
  * Used by {@link GfshParser} to store details of a command
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
 public class CommandTarget {

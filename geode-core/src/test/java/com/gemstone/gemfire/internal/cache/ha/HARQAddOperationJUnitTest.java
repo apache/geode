@@ -16,22 +16,20 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
-
-import junit.framework.Assert;
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -43,7 +41,6 @@ import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.Conflatable;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -52,12 +49,9 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Test to verify Add operation to HARegion Queue with and without conflation.
- * 
  */
-
 @Category(IntegrationTest.class)
-public class HARQAddOperationJUnitTest
-{
+public class HARQAddOperationJUnitTest {
   private static final Logger logger = LogService.getLogger();
 
   /** The cache instance */
@@ -85,78 +79,40 @@ public class HARQAddOperationJUnitTest
   
   volatile static int expiryCount = 0;
   
-  /**
-   * Create the cache in setup
-   * 
-   * @throws Exception -
-   *           thrown if any exception occurs in setUp
-   */
   @Before
-  public void setUp() throws Exception
-  {
+  public void setUp() throws Exception {
     this.cache = createCache();
     this.logWriter = cache.getLogger();
   }
 
-  /**
-   * Close the cache in tear down *
-   * 
-   * @throws Exception -
-   *           thrown if any exception occurs in tearDown
-   */
   @After
-  public void tearDown() throws Exception
-  {
+  public void tearDown() throws Exception {
     this.cache.close();
   }
 
   /**
    * Creates the cache instance for the test
-   * 
-   * @return the cache instance
-   * @throws CacheException -
-   *           thrown if any exception occurs in cache creation
    */
-  private Cache createCache() throws CacheException
-  {
-    return new CacheFactory().set("mcast-port", "0").create();
+  private Cache createCache() throws CacheException {
+    return new CacheFactory().set(MCAST_PORT, "0").create();
   }
 
   /**
    * Creates HA region-queue object
-   * 
-   * @return HA region-queue object
-   * @throws IOException
-   * @throws ClassNotFoundException
-   * @throws CacheException
-   * @throws InterruptedException
    */
-  protected HARegionQueue createHARegionQueue(String name)
-      throws IOException, ClassNotFoundException, CacheException, InterruptedException
-  {
+  protected HARegionQueue createHARegionQueue(String name) throws IOException, ClassNotFoundException, CacheException, InterruptedException {
     AttributesFactory factory = new AttributesFactory();
     factory.setDataPolicy(DataPolicy.REPLICATE);
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    HARegionQueue regionqueue = HARegionQueue.getHARegionQueueInstance(name,
-        cache, HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
+    HARegionQueue regionqueue = HARegionQueue.getHARegionQueueInstance(name, cache, HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
     return regionqueue;
   }
 
   /**
    * Creates HA region-queue object
-   * 
-   * @return HA region-queue object
-   * @throws IOException
-   * @throws ClassNotFoundException
-   * @throws CacheException
-   * @throws InterruptedException
    */
-  protected HARegionQueue createHARegionQueue(String name,
-      HARegionQueueAttributes attrs) throws IOException, ClassNotFoundException, CacheException, InterruptedException
-  {
-
-    HARegionQueue regionqueue = HARegionQueue.getHARegionQueueInstance(name,
-        cache, attrs, HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
+  protected HARegionQueue createHARegionQueue(String name, HARegionQueueAttributes attrs) throws IOException, ClassNotFoundException, CacheException, InterruptedException {
+    HARegionQueue regionqueue = HARegionQueue.getHARegionQueueInstance(name, cache, attrs, HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
     return regionqueue;
   }
 
@@ -166,11 +122,9 @@ public class HARQAddOperationJUnitTest
    * to value 2 3) Available IDs , Last DispatchedWrapper Set & Conflation Map
    * should have size 1. 4) Conflation Map , LastDispatchedWrapper Set &
    * Available IDs should have counter corresponding to second operation
-   * 
    */
   @Test
-  public void testQueueAddOperationWithConflation() throws Exception
-  {
+  public void testQueueAddOperationWithConflation() throws Exception {
     this.logWriter
         .info("HARegionQueueJUnitTest : testQueueAddOperationWithConflation BEGIN");
     this.rq = createHARegionQueue("testQueueAddOperationWithConflation");
@@ -202,11 +156,9 @@ public class HARQAddOperationJUnitTest
    * 3) This wrapper should have a set with size 1. 4) The available IDs set
    * shoudl have size 1. 5) Put another object by same thread. 6) The wrapper
    * set & availableIs List should have size 2 .
-   * 
    */
   @Test
-  public void testQueueAddOperationWithoutConflation() throws Exception
-  {
+  public void testQueueAddOperationWithoutConflation() throws Exception {
     this.logWriter
         .info("HARegionQueueJUnitTest : testQueueAddOperationWithoutConflation BEGIN");
     this.rq = createHARegionQueue("testQueueAddOperationWithConflation");
@@ -250,12 +202,9 @@ public class HARQAddOperationJUnitTest
    * available IDs , LastDispatchedWrapper's Set should have size 0. Events map
    * containg should have size 1 ( corresponding to the
    * lastDispatchedAndCurrentEvent Wrapper objcet)
-   * 
-   * @throws Exception
    */
   @Test
-  public void testQueueAddTakeOperationWithoutConflation() throws Exception
-  {
+  public void testQueueAddTakeOperationWithoutConflation() throws Exception {
     this.logWriter
         .info("HARegionQueueJUnitTest : testQueueAddTakeOperationWithoutConflation BEGIN");
 
@@ -280,12 +229,9 @@ public class HARQAddOperationJUnitTest
    * with Threaddentifer as key & sequence as the value for Expiry. Perform a
    * take operation. Validate that expiry on ThreadIdentifier removes itself
    * from Events Map
-   * 
-   * 
    */
   @Test
-  public void testExpiryOnThreadIdentifier()
-  {
+  public void testExpiryOnThreadIdentifier() {
     try {
       HARegionQueueAttributes attrs = new HARegionQueueAttributes();
       attrs.setExpiryTime(2);
@@ -323,12 +269,9 @@ public class HARQAddOperationJUnitTest
    * expiry. Validate the data present in Queue experiences expiry. After the
    * expiry of the data , AvaialbleIds size should be 0, entry removed from
    * Region, LastDispatchedWrapperSet should have size 0.
-   * 
-   * 
    */
   @Test
-  public void testNoExpiryOnThreadIdentifier()
-  {
+  public void testNoExpiryOnThreadIdentifier() {
     try {
       HARegionQueueAttributes hqa = new HARegionQueueAttributes();
       hqa.setExpiryTime(8);
@@ -381,11 +324,9 @@ public class HARQAddOperationJUnitTest
    * queue contains objects from 1- 10. QRM with sequenceID 5 arrives It should
    * remove only remove objects for 1- 5. Then sequenceID 10 come which should
    * remove 5-10.
-   * 
    */
   @Test
-  public void testMultipleQRMArrival() throws Exception
-  {
+  public void testMultipleQRMArrival() throws Exception {
     HARegionQueue regionqueue = createHARegionQueue("testNoExpiryOnThreadIdentifier");
 
     EventID[] ids = new EventID[10];
@@ -415,7 +356,6 @@ public class HARQAddOperationJUnitTest
 
     regionqueue.removeDispatchedEvents(ids[9]);
     assertEquals(0, regionqueue.getAvalaibleIds().size());
-
   }
 
   /**
@@ -425,11 +365,9 @@ public class HARQAddOperationJUnitTest
    * before QRM thread acts , the object should be present in the
    * lastDispatchedSet & AvailableID. Then the QRM thread gets unblocked , it
    * should remove from the available ID.
-   * 
    */
   @Test
-  public void testConcurrentPutAndQRM() throws Exception
-  {
+  public void testConcurrentPutAndQRM() throws Exception {
     testFailed = false;
     message = new StringBuffer();
     final HARegionQueue regionqueue = createHARegionQueue("testConcurrentPutAndQRM");
@@ -486,8 +424,7 @@ public class HARQAddOperationJUnitTest
    * put operation shud remove from region without adding the ID anywhere.
    */
   @Test
-  public void testConcurrentQRMAndPut() throws Exception
-  {
+  public void testConcurrentQRMAndPut() throws Exception {
     testFailed = false;
     final HARegionQueue regionqueue = createHARegionQueue("testConcurrentQRMAndPut");
     final EventID id1 = new EventID(new byte[] { 1 }, 1, 1);
@@ -534,20 +471,15 @@ public class HARQAddOperationJUnitTest
 
     assertEquals(0, regionqueue.getAvalaibleIds().size());
     assertEquals(2, regionqueue.getLastDispatchedSequenceId(id2));
-
   }
 
   /**
    * Two QRMs arriving such that higer sequence number arriving before lower
    * sequence number. The lower squnce number should not set itself & also not
    * do any checking on the IDs of the LinkedHashSet
-   * 
-   * @throws Exception
    */
-
   @Test
-  public void testEventMapPopulationForQRM() throws Exception
-  {
+  public void testEventMapPopulationForQRM() throws Exception {
     HARegionQueue regionqueue = createHARegionQueue("testEventMapPopulationForQRM");
     EventID id1 = new EventID(new byte[] { 1 }, 1, 1);
     EventID id2 = new EventID(new byte[] { 1 }, 1, 2);
@@ -577,13 +509,9 @@ public class HARQAddOperationJUnitTest
    * for that ThreadIdentifier. The ID which gets conflated should not be
    * present in the availableID, Region & that ThreadIdentifier's HashSet . The
    * conflation map should contain the Old IDs position.
-   * 
-   * @throws Exception
    */
-
   @Test
-  public void testCleanUpForConflation() throws Exception
-  {
+  public void testCleanUpForConflation() throws Exception {
     this.logWriter
         .info("HARQAddOperationJUnitTest : testCleanUpForConflation BEGIN");
     testFailed = false;
@@ -672,10 +600,8 @@ public class HARQAddOperationJUnitTest
    * are deleted from the available IDs & the Counters set contained in DACE.
    * Conflation is disabled.
    */
-
   @Test
-  public void testPeekAndRemoveWithoutConflation() throws Exception
-  {
+  public void testPeekAndRemoveWithoutConflation() throws Exception {
     testFailed = false;
     message = null;
     final int numOfThreads = 5;
@@ -730,7 +656,6 @@ public class HARQAddOperationJUnitTest
 
     this.logWriter
         .info("testPeekAndRemoveWithoutConflation() completed successfully");
-
   }
 
   /**
@@ -739,10 +664,8 @@ public class HARQAddOperationJUnitTest
    * are deleted from the available IDs & the Counters set contained in DACE.
    * Conflation is enabled
    */
-
   @Test
-  public void testPeekAndRemoveWithConflation() throws Exception
-  {
+  public void testPeekAndRemoveWithConflation() throws Exception {
     testFailed = false;
     message = null;
     final int numOfThreads = 5;
@@ -788,7 +711,7 @@ public class HARQAddOperationJUnitTest
     regionqueue.remove();
 
     for (int i = 0; i < numOfThreads; i++) {
-      // assertEquals(numOfPuts,
+      // assertIndexDetailsEquals(numOfPuts,
       // regionqueue.getLastDispatchedSequenceId(new EventID(
       // new byte[] { (byte)i }, i, 1)));
       assertEquals(0, regionqueue.getCurrentCounterSet(
@@ -802,7 +725,6 @@ public class HARQAddOperationJUnitTest
 
     this.logWriter
         .info("testPeekAndRemoveWithConflation() completed successfully");
-
   }
 
   /**
@@ -810,13 +732,9 @@ public class HARQAddOperationJUnitTest
    * do a peek of batch size 5, 10 , 15 & 20 respectively. And all of them
    * concurrently cal remove. The remove should ensure that the entries are
    * deleted from the available IDs & the Counters set contained in DACE.
-   * 
-   * @throws Exception
    */
-
   @Test
-  public void testPeekForDiffBatchSizeAndRemoveAll() throws Exception
-  {
+  public void testPeekForDiffBatchSizeAndRemoveAll() throws Exception {
     testFailed = false;
     message = null;
     barrierCount = 0;
@@ -924,12 +842,9 @@ public class HARQAddOperationJUnitTest
    * do a peek of batch size 5, 10 and 15 respectively. And all of them
    * concurrently call remove. The remove should ensure that the entries are
    * deleted from the available IDs & the Counters set contained in DACE.
-   * 
-   * @throws Exception
    */
   @Test
-  public void testPeekForDiffBatchSizeAndRemoveSome() throws Exception
-  {
+  public void testPeekForDiffBatchSizeAndRemoveSome() throws Exception {
     testFailed = false;
     barrierCount = 0;
     message = null;
@@ -1021,7 +936,6 @@ public class HARQAddOperationJUnitTest
 
     this.logWriter
         .info("testPeekForDiffBatchSizeAndRemoveSome() completed successfully");
-
   }
 
   /**
@@ -1034,9 +948,8 @@ public class HARQAddOperationJUnitTest
    * next expiry should remove the LastDisptachedWrapper
    */
   @Test
-  public void testAddWithQRMAndExpiry() throws Exception
-  {
-	try{  
+  public void testAddWithQRMAndExpiry() throws Exception {
+	  try {
       HARegionQueueAttributes attrs = new HARegionQueueAttributes();
       attrs.setExpiryTime(10);
       final HARegionQueue regionqueue = new HARegionQueue.TestOnlyHARegionQueue("testing", cache, attrs) {
@@ -1078,11 +991,11 @@ public class HARQAddOperationJUnitTest
       assertEquals(4, regionqueue.getLastDispatchedSequenceId(new EventID(new byte[] { 1 }, 1, 1)));
       // verify 1-5 not in region
       for (long i = 1; i < 6; i++) {
-        Assert.assertTrue(!regionqueue.getRegion().containsKey(new Long(i)));
+        assertTrue(!regionqueue.getRegion().containsKey(new Long(i)));
       }
       // verify 6-10 still in region queue
       for (long i = 6; i < 11; i++) {
-        Assert.assertTrue(regionqueue.getRegion().containsKey(new Long(i)));
+        assertTrue(regionqueue.getRegion().containsKey(new Long(i)));
       }
 
       // Perform 5 take operations to remove next 5-9 sequence ids
@@ -1094,7 +1007,7 @@ public class HARQAddOperationJUnitTest
       assertEquals(9, regionqueue.getLastDispatchedSequenceId(new EventID(new byte[] { 1 }, 1, 1)));
       // verify that sequence ids 1-10 all are removed from the RQ
       for (long i = 1; i < 11; i++) {
-        Assert.assertTrue(!regionqueue.getRegion().containsKey(new Long(i)));
+        assertTrue(!regionqueue.getRegion().containsKey(new Long(i)));
       }
 
       // wait until expiry thread has run once
@@ -1120,11 +1033,11 @@ public class HARQAddOperationJUnitTest
       assertNull(regionqueue.getRegion().get(tID));
     }
     catch (Exception e) {
-      fail("Exception occured in test due to " + e);
+      throw new AssertionError("Exception occurred in test due to", e);
     }
   }
 
-  /**
+  /*
    * This test does the following:<br>
    * 1)Create a blocking HARegionQueue<br>
    * 2)Add some events to the queue with same ThreadIdentifier<br>
@@ -1136,18 +1049,15 @@ public class HARQAddOperationJUnitTest
    * 7)Verify that the size of wrapper-map is 1 as all events had same ThreadId<br>
    * 8)Verify that the sequenceId against the ThreadId in the wrapper-map is
    * same as that of the last event taken<br>
-   * 
-   * @throws Exception -
-   *           thrown if any exception occurs in test execution
    */
   
   /**
    * Behaviour of take() has been changed for relaible messaging feature. Region queue take()
    * operation will no longer add to the Dispatch Message Map. Hence disabling the test - SUYOG
-  */
- 
-  public void _testDispatchedMsgsMapUpdateOnTakes() throws Exception
-  {
+   */
+  @Ignore
+  @Test
+  public void testDispatchedMsgsMapUpdateOnTakes() throws Exception {
     this.logWriter
         .info("HARQAddOperationJUnitTest : testDispatchedEventsMapUpdateOnTakes BEGIN");
 

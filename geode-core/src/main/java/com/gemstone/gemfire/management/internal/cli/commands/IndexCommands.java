@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,10 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -37,10 +32,10 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.cache.query.internal.index.IndexCreationData;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
 import com.gemstone.gemfire.internal.lang.StringUtils;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.management.cli.CliMetaData;
 import com.gemstone.gemfire.management.cli.ConverterHint;
 import com.gemstone.gemfire.management.cli.Result;
@@ -61,6 +56,13 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.security.GeodePermission.Operation;
+import org.apache.geode.security.GeodePermission.Resource;
+
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
 
 /**
  * The IndexCommands class encapsulates all GemFire shell (Gfsh) commands related to indexes defined in GemFire.
@@ -68,7 +70,7 @@ import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
  * @see com.gemstone.gemfire.management.internal.cli.commands.AbstractCommandsSupport
  * @see com.gemstone.gemfire.management.internal.cli.domain.IndexDetails
  * @see com.gemstone.gemfire.management.internal.cli.functions.ListIndexFunction
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 public class IndexCommands extends AbstractCommandsSupport {
@@ -85,7 +87,8 @@ public class IndexCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = CliStrings.LIST_INDEX, help = CliStrings.LIST_INDEX__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEMFIRE_REGION, CliStrings.TOPIC_GEMFIRE_DATA})
+  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listIndex(@CliOption(key = CliStrings.LIST_INDEX__STATS,
                                      mandatory = false,
                                      specifiedDefaultValue = "true",
@@ -168,7 +171,7 @@ public class IndexCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = CliStrings.CREATE_INDEX, help = CliStrings.CREATE_INDEX__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEMFIRE_REGION, CliStrings.TOPIC_GEMFIRE_DATA}, writesToSharedConfiguration=true)
+  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA }, writesToSharedConfiguration=true)
   //TODO : Add optionContext for indexName
   public Result createIndex(
       @CliOption (key = CliStrings.CREATE_INDEX__NAME,
@@ -202,7 +205,8 @@ public class IndexCommands extends AbstractCommandsSupport {
 
     Result result = null;
     XmlEntity xmlEntity = null;
-    
+
+    GeodeSecurityUtil.authorizeRegionManage(regionPath);
     try {
       final Cache cache = CacheFactory.getAnyInstance();
 
@@ -317,8 +321,7 @@ public class IndexCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = CliStrings.DESTROY_INDEX, help = CliStrings.DESTROY_INDEX__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEMFIRE_REGION, CliStrings.TOPIC_GEMFIRE_DATA}, writesToSharedConfiguration=true)
-  //TODO : Add optioncontext for the index name. 
+  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA }, writesToSharedConfiguration=true)
   public Result destroyIndex(
       @CliOption(
       key = CliStrings.DESTROY_INDEX__NAME,
@@ -344,107 +347,114 @@ public class IndexCommands extends AbstractCommandsSupport {
     Result result = null;
     XmlEntity xmlEntity = null;
 
-    try {
-
-      if (StringUtils.isBlank(indexName)
-          && StringUtils.isBlank(regionPath)
-          && StringUtils.isBlank(memberNameOrID)
-          && StringUtils.isBlank(group)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.format(CliStrings.PROVIDE_ATLEAST_ONE_OPTION, CliStrings.DESTROY_INDEX));
-      }
-      String regionName = null;
-      final Cache cache = CacheFactory.getAnyInstance();
-      
-      if (!StringUtils.isBlank(regionPath)) {
-        regionName = regionPath.startsWith("/") ? regionPath.substring(1) : regionPath;
-      }
-      IndexInfo indexInfo = new IndexInfo(indexName, regionName);
-
-      Set<DistributedMember> targetMembers = CliUtil.findAllMatchingMembers(group, memberNameOrID);
-
-      ResultCollector rc = CliUtil.executeFunction(destroyIndexFunction, indexInfo, targetMembers);
-      List<Object> funcResults = (List<Object>) rc.getResult();
-
-      Set<String> successfulMembers = new TreeSet<String>();
-      Map<String, Set<String>> indexOpFailMap = new HashMap<String, Set<String>>();
-
-      for (Object funcResult : funcResults){
-
-        if (funcResult instanceof CliFunctionResult) {
-          CliFunctionResult cliFunctionResult = (CliFunctionResult) funcResult;
-
-          if (cliFunctionResult.isSuccessful()) {
-            successfulMembers.add(cliFunctionResult.getMemberIdOrName());
-            
-            if (xmlEntity == null) {
-              xmlEntity = cliFunctionResult.getXmlEntity();
-            }
-          } else {
-            String exceptionMessage  = cliFunctionResult.getMessage();
-            Set<String> failedMembers = indexOpFailMap.get(exceptionMessage);
-
-            if (failedMembers == null) {
-              failedMembers = new TreeSet<String>();
-            }
-            failedMembers.add(cliFunctionResult.getMemberIdOrName());
-            indexOpFailMap.put(exceptionMessage, failedMembers);
-          }
-        }
-      }
-
-      if (!successfulMembers.isEmpty()) {
-        InfoResultData infoResult = ResultBuilder.createInfoResultData();
-
-        if (!StringUtils.isBlank(indexName)) {
-          if (!StringUtils.isBlank(regionPath)) {
-            infoResult.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__ON__REGION__SUCCESS__MSG, indexName, regionPath));
-          } else {
-            infoResult.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__SUCCESS__MSG, indexName));
-          }
-        } else {
-           if (!StringUtils.isBlank(regionPath)) {
-             infoResult.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__ON__REGION__ONLY__SUCCESS__MSG, regionPath));
-           } else {
-             infoResult.addLine(CliStrings.DESTROY_INDEX__ON__MEMBERS__ONLY__SUCCESS__MSG);
-           }
-        }
-
-        int num = 0;
-        for (String memberId : successfulMembers) {
-          infoResult.addLine(CliStrings.format(CliStrings.format(CliStrings.DESTROY_INDEX__NUMBER__AND__MEMBER, ++num, memberId)));;
-        }
-        result = ResultBuilder.buildResult(infoResult);
-
-      } else {
-
-        ErrorResultData erd = ResultBuilder.createErrorResultData();
-        if (!StringUtils.isBlank(indexName)) {
-          erd.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__FAILURE__MSG, indexName));
-        } else {
-          erd.addLine("Indexes could not be destroyed for following reasons");
-        }
-
-        Set<String> exceptionMessages = indexOpFailMap.keySet();
-
-        for (String exceptionMessage : exceptionMessages) {
-          erd.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__REASON_MESSAGE, exceptionMessage));
-          erd.addLine(CliStrings.DESTROY_INDEX__EXCEPTION__OCCURRED__ON);
-
-          Set<String> memberIds = indexOpFailMap.get(exceptionMessage);
-          int num = 0;
-
-          for (String memberId : memberIds) {
-            erd.addLine(CliStrings.format(CliStrings.format(CliStrings.DESTROY_INDEX__NUMBER__AND__MEMBER, ++num, memberId)));
-          }
-          erd.addLine("");
-        }
-        result = ResultBuilder.buildResult(erd);
-      }
-    } catch (CommandResultException crex) {
-      result = crex.getResult();
-    } catch (Exception e) {
-      result = ResultBuilder.createGemFireErrorResult(e.getMessage());
+    if (StringUtils.isBlank(indexName)
+        && StringUtils.isBlank(regionPath)
+        && StringUtils.isBlank(memberNameOrID)
+        && StringUtils.isBlank(group)) {
+      return ResultBuilder.createUserErrorResult(CliStrings.format(CliStrings.PROVIDE_ATLEAST_ONE_OPTION, CliStrings.DESTROY_INDEX));
     }
+
+    String regionName = null;
+    final Cache cache = CacheFactory.getAnyInstance();
+
+    // If a regionName is specified, then authorize data manage on the regionName, otherwise, it requires data manage permission on all regions
+    if (!StringUtils.isBlank(regionPath)) {
+      regionName = regionPath.startsWith("/") ? regionPath.substring(1) : regionPath;
+      GeodeSecurityUtil.authorizeRegionManage(regionName);
+    }
+    else{
+      GeodeSecurityUtil.authorizeDataManage();
+    }
+
+    IndexInfo indexInfo = new IndexInfo(indexName, regionName);
+    Set<DistributedMember> targetMembers = null;
+
+    try {
+      targetMembers = CliUtil.findAllMatchingMembers(group, memberNameOrID);
+    }
+    catch (CommandResultException e) {
+      return e.getResult();
+    }
+
+    ResultCollector rc = CliUtil.executeFunction(destroyIndexFunction, indexInfo, targetMembers);
+    List<Object> funcResults = (List<Object>) rc.getResult();
+
+    Set<String> successfulMembers = new TreeSet<String>();
+    Map<String, Set<String>> indexOpFailMap = new HashMap<String, Set<String>>();
+
+    for (Object funcResult : funcResults){
+      if(!(funcResult instanceof CliFunctionResult)){
+        continue;
+      }
+
+      CliFunctionResult cliFunctionResult = (CliFunctionResult) funcResult;
+      if (cliFunctionResult.isSuccessful()) {
+        successfulMembers.add(cliFunctionResult.getMemberIdOrName());
+
+        if (xmlEntity == null) {
+          xmlEntity = cliFunctionResult.getXmlEntity();
+        }
+      } else {
+        String exceptionMessage  = cliFunctionResult.getMessage();
+        Set<String> failedMembers = indexOpFailMap.get(exceptionMessage);
+
+        if (failedMembers == null) {
+          failedMembers = new TreeSet<String>();
+        }
+        failedMembers.add(cliFunctionResult.getMemberIdOrName());
+        indexOpFailMap.put(exceptionMessage, failedMembers);
+      }
+    }
+
+    if (!successfulMembers.isEmpty()) {
+      InfoResultData infoResult = ResultBuilder.createInfoResultData();
+
+      if (!StringUtils.isBlank(indexName)) {
+        if (!StringUtils.isBlank(regionPath)) {
+          infoResult.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__ON__REGION__SUCCESS__MSG, indexName, regionPath));
+        } else {
+          infoResult.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__SUCCESS__MSG, indexName));
+        }
+      } else {
+         if (!StringUtils.isBlank(regionPath)) {
+           infoResult.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__ON__REGION__ONLY__SUCCESS__MSG, regionPath));
+         } else {
+           infoResult.addLine(CliStrings.DESTROY_INDEX__ON__MEMBERS__ONLY__SUCCESS__MSG);
+         }
+      }
+
+      int num = 0;
+      for (String memberId : successfulMembers) {
+        infoResult.addLine(CliStrings.format(CliStrings.format(CliStrings.DESTROY_INDEX__NUMBER__AND__MEMBER, ++num, memberId)));;
+      }
+      result = ResultBuilder.buildResult(infoResult);
+
+    } else {
+
+      ErrorResultData erd = ResultBuilder.createErrorResultData();
+      if (!StringUtils.isBlank(indexName)) {
+        erd.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__FAILURE__MSG, indexName));
+      } else {
+        erd.addLine("Indexes could not be destroyed for following reasons");
+      }
+
+      Set<String> exceptionMessages = indexOpFailMap.keySet();
+
+      for (String exceptionMessage : exceptionMessages) {
+        erd.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__REASON_MESSAGE, exceptionMessage));
+        erd.addLine(CliStrings.DESTROY_INDEX__EXCEPTION__OCCURRED__ON);
+
+        Set<String> memberIds = indexOpFailMap.get(exceptionMessage);
+        int num = 0;
+
+        for (String memberId : memberIds) {
+          erd.addLine(CliStrings.format(CliStrings.format(CliStrings.DESTROY_INDEX__NUMBER__AND__MEMBER, ++num, memberId)));
+        }
+        erd.addLine("");
+      }
+      result = ResultBuilder.buildResult(erd);
+    }
+
     
     if (xmlEntity != null) {
       result.setCommandPersisted((new SharedConfigurationWriter()).deleteXmlEntity(xmlEntity, group !=null ? group.split(",") : null));
@@ -453,7 +463,7 @@ public class IndexCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = CliStrings.DEFINE_INDEX, help = CliStrings.DEFINE_INDEX__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEMFIRE_REGION, CliStrings.TOPIC_GEMFIRE_DATA}, writesToSharedConfiguration=true)
+  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA }, writesToSharedConfiguration=true)
   //TODO : Add optionContext for indexName
   public Result defineIndex(
       @CliOption (key = CliStrings.DEFINE_INDEX_NAME,
@@ -477,6 +487,8 @@ public class IndexCommands extends AbstractCommandsSupport {
 
     Result result = null;
     XmlEntity xmlEntity = null;
+
+    GeodeSecurityUtil.authorizeRegionManage(regionPath);
     
     int idxType = IndexInfo.RANGE_INDEX;
 
@@ -521,7 +533,8 @@ public class IndexCommands extends AbstractCommandsSupport {
   }
   
   @CliCommand(value = CliStrings.CREATE_DEFINED_INDEXES, help = CliStrings.CREATE_DEFINED__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEMFIRE_REGION, CliStrings.TOPIC_GEMFIRE_DATA}, writesToSharedConfiguration=true)
+  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA}, writesToSharedConfiguration=true)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   //TODO : Add optionContext for indexName
   public Result createDefinedIndexes(
 
@@ -621,7 +634,8 @@ public class IndexCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = CliStrings.CLEAR_DEFINED_INDEXES, help = CliStrings.CLEAR_DEFINED__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEMFIRE_REGION, CliStrings.TOPIC_GEMFIRE_DATA}, writesToSharedConfiguration=true)
+  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA}, writesToSharedConfiguration=true)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   //TODO : Add optionContext for indexName
   public Result clearDefinedIndexes() {
     indexDefinitions.clear();

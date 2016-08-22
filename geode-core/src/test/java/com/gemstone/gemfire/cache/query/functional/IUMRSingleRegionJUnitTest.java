@@ -21,42 +21,24 @@
  */
 package com.gemstone.gemfire.cache.query.functional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.data.City;
-import com.gemstone.gemfire.cache.query.data.Country;
-import com.gemstone.gemfire.cache.query.data.District;
-import com.gemstone.gemfire.cache.query.data.State;
-import com.gemstone.gemfire.cache.query.data.Village;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.query.*;
+import com.gemstone.gemfire.cache.query.data.*;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
 import com.gemstone.gemfire.cache.query.types.StructType;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  */
@@ -128,7 +110,7 @@ public class IUMRSingleRegionJUnitTest {
   @Before
   public void setUp() throws Exception {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
+    props.setProperty(MCAST_PORT, "0");
     ds = DistributedSystem.connect(props);
     cache = CacheFactory.create(ds);
     /* create region containing Country objects */

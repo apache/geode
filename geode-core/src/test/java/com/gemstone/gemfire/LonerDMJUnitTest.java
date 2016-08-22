@@ -16,22 +16,23 @@
  */
 package com.gemstone.gemfire;
 
-import static org.junit.Assert.*;
-
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.LonerDistributionManager;
-import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.distributed.*;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.internal.OSProcess;
+import com.gemstone.gemfire.internal.PureJavaMode;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import java.util.Properties;
-import java.net.*;
-
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 /**
  * This class makes sure an isolated "loner" distribution manager
@@ -56,9 +57,9 @@ public class LonerDMJUnitTest {
     DistributedSystem ds = null;
     Cache c = null;
     Properties cfg = new Properties();
-    cfg.setProperty("mcast-port", "0");
-    cfg.setProperty("locators", "");
-    cfg.setProperty("statistic-sampling-enabled", "false");
+    cfg.setProperty(MCAST_PORT, "0");
+    cfg.setProperty(LOCATORS, "");
+    cfg.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
 
     for (int i=0; i < 2; i++) {
       start = System.currentTimeMillis();
@@ -109,10 +110,10 @@ public class LonerDMJUnitTest {
     DistributedSystem ds = null;
     Cache c = null;
     Properties cfg = new Properties();
-    cfg.setProperty("mcast-port", "0");
-    cfg.setProperty("locators", "");
-    cfg.setProperty("statistic-sampling-enabled", "true");
-    cfg.setProperty("statistic-archive-file", "lonerStats.gfs");
+    cfg.setProperty(MCAST_PORT, "0");
+    cfg.setProperty(LOCATORS, "");
+    cfg.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+    cfg.setProperty(STATISTIC_ARCHIVE_FILE, "lonerStats.gfs");
 
     for (int i=0; i < 1; i++) {
       start = System.currentTimeMillis();
@@ -162,10 +163,10 @@ public class LonerDMJUnitTest {
     String name = "Foo";
 
     Properties cfg = new Properties();
-    cfg.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    cfg.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    cfg.setProperty(DistributionConfig.ROLES_NAME, "lonelyOne");
-    cfg.setProperty(DistributionConfig.NAME_NAME, name);
+    cfg.setProperty(MCAST_PORT, "0");
+    cfg.setProperty(LOCATORS, "");
+    cfg.setProperty(ROLES, "lonelyOne");
+    cfg.setProperty(NAME, name);
     DistributedSystem ds = DistributedSystem.connect(cfg);
     System.out.println("MemberId = " + ds.getMemberId());
     assertEquals(host.toString(), ds.getDistributedMember().getHost());

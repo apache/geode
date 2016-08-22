@@ -24,7 +24,7 @@ import com.gemstone.gemfire.cache.Region;
  * Takes delta to be evicted and tries to evict the least no of LRU entry which
  * would make evictedBytes more than or equal to the delta
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * 
  */
 public class BucketRegionEvictior implements Callable<Object> {

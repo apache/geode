@@ -16,6 +16,11 @@
  */
 package com.gemstone.gemfire.management;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.jayway.awaitility.Awaitility.*;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,14 +28,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-
 import javax.management.InstanceNotFoundException;
 import javax.management.JMException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.FixedPartitionAttributes;
@@ -43,17 +49,15 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.management.internal.ManagementConstants;
-import com.gemstone.gemfire.management.internal.SystemManagementService;
 import com.gemstone.gemfire.management.internal.NotificationHub.NotificationHubListener;
+import com.gemstone.gemfire.management.internal.SystemManagementService;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-
-import static com.jayway.awaitility.Awaitility.*;
-import static org.hamcrest.Matchers.*;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This class checks and verifies various data and operations exposed through
@@ -62,12 +66,9 @@ import static org.hamcrest.Matchers.*;
  * Goal of the Test : MemberMBean gets created once cache is created. Data like
  * config data and stats are of proper value To check proper federation of
  * MemberMBean including remote ops and remote data access
- * 
- * 
  */
+@Category(DistributedTest.class)
 public class CacheManagementDUnitTest extends ManagementTestBase {
-
-  private static final long serialVersionUID = 1L;
 
   private final String VERIFY_CONFIG_METHOD = "verifyConfigData";
 
@@ -81,7 +82,6 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
 
   static List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
 
-
   static final List<Notification> notifList = new ArrayList<Notification>();
   
   // This must be bigger than the dunit ack-wait-threshold for the revoke
@@ -89,12 +89,7 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
   // 60 seconds.
   private static final int MAX_WAIT = 70 * 1000;
 
-
-
-  public CacheManagementDUnitTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testGemFireConfigData() throws Exception {
      initManagement(false);
    
@@ -109,16 +104,13 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
     args[0] = configMap;
     getManagingNode().invoke(
         CacheManagementDUnitTest.class, VERIFY_REMOTE_CONFIG_METHOD, args);
- 
   }
 
   /**
    * Tests each and every operations that is defined on the MemberMXBean
-   * 
-   * @throws Exception
    */
+  @Test
   public void testMemberMBeanOperations() throws Exception {
-    
     initManagement(false);
     
     for (VM vm : managedNodeList) {
@@ -127,22 +119,17 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
       
       createLocalRegion(vm,"testRegion");
 
-
-
       String log = (String) vm.invoke(() -> CacheManagementDUnitTest.fetchLog());
       assertNotNull(log);
       LogWriterUtils.getLogWriter().info(
           "<ExpectedString> Log Of Member is " + log.toString()
               + "</ExpectedString> ");
 
-     
-
       vm.invoke(() -> CacheManagementDUnitTest.fetchJVMMetrics());
 
       vm.invoke(() -> CacheManagementDUnitTest.fetchOSMetrics());
 
       vm.invoke(() -> CacheManagementDUnitTest.shutDownMember());
-
     }
     
     VM managingNode = getManagingNode();
@@ -150,13 +137,12 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
     args[0] = 1;// Only locator member wont be shutdown
     managingNode.invoke(CacheManagementDUnitTest.class,
         "assertExpectedMembers", args);
-    
   }
 
   /**
    * Invoke remote operations on MemberMBean
-   * @throws Exception
    */
+  @Test
   public void testMemberMBeanOpsRemote() throws Exception {
     initManagement(false);
     getManagingNode().invoke(() -> CacheManagementDUnitTest.invokeRemoteOps());
@@ -165,9 +151,8 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
   /**
    * Creates and starts a manager.
    * Multiple Managers
-   * 
-   * @throws Exception
    */
+  @Test
   public void testManager() throws Exception {
     List<VM> managedNodeList = getManagedNodeList();
     VM node1 = managedNodeList.get(0);
@@ -191,15 +176,13 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
     startManagingNode(managingNode);
     checkManagerView(managingNode, member);
     stopManagingNode(managingNode);
-
   }
   
   /**
    * Creates and starts a manager.
    * Multiple Managers
-   * 
-   * @throws Exception
    */
+  @Test
   public void testManagerShutdown() throws Exception {
     List<VM> managedNodeList = getManagedNodeList();
     VM node1 = managedNodeList.get(0);
@@ -222,6 +205,7 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
     checkNonManagerView(managingNode);
   }
   
+  @Test
   public void testServiceCloseManagedNode() throws Exception{
     List<VM> managedNodeList = getManagedNodeList();
     VM node1 = managedNodeList.get(0);
@@ -241,9 +225,9 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
     
     closeCache(node3);
     validateServiceResource(node3);
-
   }
   
+  @Test
   public void testGetMBean() throws Exception{
     List<VM> managedNodeList = getManagedNodeList();
     VM node1 = managedNodeList.get(0);
@@ -260,9 +244,9 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
     startManagingNode(managingNode);
 
     checkGetMBean(managingNode);
-
   }
   
+  @Test
   public void testQueryMBeans() throws Exception{
     List<VM> managedNodeList = getManagedNodeList();
     VM node1 = managedNodeList.get(0);
@@ -279,7 +263,6 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
     startManagingNode(managingNode);
 
     checkQueryMBeans(managingNode);
-
   }
 
   protected void checkQueryMBeans(final VM vm) {
@@ -304,13 +287,10 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
           assertTrue(names.contains(memberMBeanName));
 
         }
-        
-        
+
         Set<ObjectName> names = managementService.queryMBeanNames(cache
             .getDistributedSystem().getDistributedMember());
         assertTrue(!superSet.contains(names));
-         
-
       }
     };
     vm.invoke(validateServiceResource);
@@ -348,7 +328,6 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
       }
     };
     vm.invoke(validateServiceResource);
-
   }
 
   protected void validateServiceResource(final VM vm) {
@@ -362,19 +341,13 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
         
         SystemManagementService service = (SystemManagementService)managementService;
         assertNull(service.getLocalManager());
-        
-        
-
       }
     };
     vm.invoke(validateServiceResource);
-
   }
   
   /**
    * Creates a Distributed Region
-   * 
-   * @param vm
    */
   protected AsyncInvocation checkManagerView(final VM vm,
       final DistributedMember oneManager) {
@@ -405,10 +378,7 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
   
   /**
    * Add any Manager clean up asserts here
-   * 
-   * @param vm
    */
-
   protected void checkNonManagerView(final VM vm) {
     SerializableRunnable checkNonManagerView = new SerializableRunnable(
         "Check Non Manager View") {
@@ -438,10 +408,8 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
       }
     };
     vm.invoke(checkNonManagerView);
-
   }
   
-
   public static Map<DistributedMember, DistributionConfig> verifyConfigData() {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     ManagementService service = getManagementService();
@@ -449,7 +417,7 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
         .getDistributedSystem()).getConfig();
     MemberMXBean bean = service.getMemberMXBean();
     GemFireProperties data = bean.listGemFireProperties();
-    assertEquals(config, data);
+    assertConfigEquals(config, data);
     Map<DistributedMember, DistributionConfig> configMap = new HashMap<DistributedMember, DistributionConfig>();
     configMap.put(cache.getMyId(), config);
     return configMap;
@@ -469,21 +437,19 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
       MemberMXBean bean = MBeanUtil.getMemberMbeanProxy(member);
       GemFireProperties data = bean.listGemFireProperties();
       DistributionConfig config = configMap.get(member);
-      assertEquals(config, data);
-
+      assertConfigEquals(config, data);
     }
-
   }
 
   /**
    * Asserts that distribution config and gemfireProperty composite types hold
    * the same values
    */
-  public static void assertEquals(DistributionConfig config,
+  public static void assertConfigEquals(DistributionConfig config,
       GemFireProperties data) {
 
     assertEquals(data.getMemberName(), config.getName());
-    // **TODO **/
+    // **TODO **
     String memberGroups = null;
 
     assertEquals(data.getMcastPort(), config.getMcastPort());
@@ -493,7 +459,7 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
     assertEquals(data.getTcpPort(), config.getTcpPort());
     assertEquals(removeVMDir(data.getCacheXMLFile()), removeVMDir(config.getCacheXmlFile()
         .getAbsolutePath()));
-    // **TODO **/
+    // **TODO **
     String configFile = null;
     String configFile1 = null;
     assertEquals(data.getMcastTTL(), config.getMcastTtl());
@@ -507,7 +473,7 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
         .getStatisticSamplingEnabled());
     assertEquals(removeVMDir(data.getStatisticArchiveFile()), removeVMDir(config
         .getStatisticArchiveFile().getAbsolutePath()));
-    // ** TODO **//
+    // ** TODO **
     String includeFile = null;
     assertEquals(data.getAckWaitThreshold(), config.getAckWaitThreshold());
     assertEquals(data.getAckSevereAlertThreshold(), config
@@ -530,7 +496,7 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
     assertEquals(data.getMcastByteAllowance(), config.getMcastFlowControl()
         .getByteAllowance());
     assertEquals(data.getMcastRechargeThreshold(), config.getMcastFlowControl()
-        .getRechargeThreshold());
+        .getRechargeThreshold(), 0);
     assertEquals(data.getMcastRechargeBlockMs(), config.getMcastFlowControl()
         .getRechargeBlockMs());
     assertEquals(data.getUdpFragmentSize(), config.getUdpFragmentSize());
@@ -591,7 +557,6 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
     assertEquals(data.getStatisticSampleRate(), config.getStatisticSampleRate());
   }
 
-  
   private static String removeVMDir(String string) {
     return string.replaceAll("vm.", "");
   }
@@ -649,7 +614,6 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
     LogWriterUtils.getLogWriter().info(
         "<ExpectedString> JVMMetrics is " + metrics.toString()
             + "</ExpectedString> ");
-
   }
 
   public static void fetchOSMetrics() {
@@ -660,14 +624,12 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
     LogWriterUtils.getLogWriter().info(
         "<ExpectedString> OSMetrics is " + metrics.toString()
             + "</ExpectedString> ");
-
   }
 
   public static void shutDownMember() {
     MemberMXBean bean = getManagementService()
         .getMemberMXBean();
     bean.shutDownMember();
-
   }
 
   public static void assertExpectedMembers(int expectedMemberCount) {
@@ -685,9 +647,7 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
       }
 
     }, MAX_WAIT, 500, true);
-
   }
-
 
   public static void invokeRemoteOps() throws Exception {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
@@ -708,21 +668,11 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
       LogWriterUtils.getLogWriter().info(
           "<ExpectedString> Boolean Data Check " +bean.isManager()
               + "</ExpectedString> ");
-      
     }
   }
 
-  public void verifyStatistics() {
-
-  }
-
-  public void invokeOperations() {
-
-  }
-  
-  
+  @Test
   public void testNotification() throws Exception {
-
     List<VM> managedNodeList = getManagedNodeList();
     VM node1 = managedNodeList.get(0);
     VM node2 = managedNodeList.get(1);
@@ -742,11 +692,10 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
 
     // Step : 3 : Verify Notification count, notification region sizes
     countNotificationsAndCheckRegionSize(node1, node2, node3, managingNode);
-
   }
 
+  @Test
   public void testNotificationManagingNodeFirst() throws Exception {
-
     List<VM> managedNodeList = getManagedNodeList();
     VM node1 = managedNodeList.get(0);
     VM node2 = managedNodeList.get(1);
@@ -766,34 +715,27 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
 
     // Step : 3 : Verify Notification count, notification region sizes
     countNotificationsAndCheckRegionSize(node1, node2, node3, managingNode);
-
   }
   
+  @Test
   public void testRedundancyZone() throws Exception {
-
     List<VM> managedNodeList = getManagedNodeList();
     VM node1 = managedNodeList.get(0);
     VM node2 = managedNodeList.get(1);
     VM node3 = managedNodeList.get(2);
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.REDUNDANCY_ZONE_NAME, "ARMY_ZONE");
+    props.setProperty(REDUNDANCY_ZONE, "ARMY_ZONE");
     
     createCache(node1,props);
     
     node1.invoke(new SerializableRunnable("Assert Redundancy Zone") {
 
       public void run() {
-
         ManagementService service = ManagementService.getExistingManagementService(getCache());
         MemberMXBean bean = service.getMemberMXBean();
         assertEquals("ARMY_ZONE", bean.getRedundancyZone());
-
-        
-
       }
     });
-
-
   }
 
   protected void attchListenerToDSMBean(final VM vm) {
@@ -817,7 +759,7 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
         try {
           mbeanServer.addNotificationListener(MBeanJMXAdapter.getDistributedSystemName(), nt, null, null);
         } catch (InstanceNotFoundException e) {
-          fail("Failed With Exception "  + e);
+          throw new AssertionError("Failed With Exception ", e);
         }
 
       }

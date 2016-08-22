@@ -34,7 +34,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
    * A Region.Entry implementation for remote entries and all PR entries
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public class EntrySnapshot implements Region.Entry, DataSerializable {
 private static final long serialVersionUID = -2139749921655693280L;
@@ -78,7 +78,7 @@ private static final long serialVersionUID = -2139749921655693280L;
      * Used by unit tests. Only available on PR.
      * If, at the time this entry was created, it was initialized from a local data store
      * then this method returns true.
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public boolean wasInitiallyLocal() {
       return this.startedLocal;
@@ -131,7 +131,7 @@ private static final long serialVersionUID = -2139749921655693280L;
     /**
      * Makes a copy, if copy-on-get is enabled, of the specified object.
      * 
-     * @since 4.0
+     * @since GemFire 4.0
      */
     private Object conditionalCopy(Object o) {
       return o;

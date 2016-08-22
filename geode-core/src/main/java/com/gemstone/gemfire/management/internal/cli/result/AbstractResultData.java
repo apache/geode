@@ -37,7 +37,7 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 /**
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public abstract class AbstractResultData implements ResultData {
   public static final String SECTION_DATA_ACCESSOR = "__sections__";

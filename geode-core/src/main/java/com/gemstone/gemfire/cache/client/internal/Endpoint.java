@@ -25,7 +25,7 @@ import com.gemstone.gemfire.distributed.internal.ServerLocation;
 
 /**
  * Represents a server. Keeps track of information about the specific server
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 public class Endpoint {

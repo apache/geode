@@ -35,7 +35,7 @@ import com.gemstone.gemfire.internal.logging.log4j.ConfigLocator;
 import com.gemstone.gemfire.internal.logging.log4j.Configurator;
 import com.gemstone.gemfire.internal.logging.log4j.FastLogger;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
-import com.gemstone.org.apache.logging.log4j.message.GemFireParameterizedMessageFactory;
+import com.gemstone.gemfire.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
 
 /**
  * Centralizes log configuration and initialization.

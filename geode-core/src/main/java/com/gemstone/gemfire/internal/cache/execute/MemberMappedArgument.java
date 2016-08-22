@@ -37,7 +37,7 @@ import java.util.Map;
  * map, it will include the query string as an argument. When it is sent to a
  * member that is in the map, will not include the query string as an argument.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * 
  */
 public class MemberMappedArgument implements Serializable{

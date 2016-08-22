@@ -24,7 +24,7 @@ import com.gemstone.gemfire.cache.query.internal.cq.ClientCQ;
 
 /**
  * Used to send CQ operations from a client to a server
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class ServerCQProxyImpl extends ServerProxy {
   /**

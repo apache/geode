@@ -16,34 +16,50 @@
  */
 package com.gemstone.gemfire.test.dunit.tests;
 
-import static com.gemstone.gemfire.test.dunit.Invoke.invokeInEveryVM;
+import static com.gemstone.gemfire.test.dunit.Invoke.*;
+import static com.googlecode.catchexception.CatchException.*;
+import static com.googlecode.catchexception.throwable.CatchThrowable.*;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.test.dunit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.DUnitEnv;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.RMIException;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the basic functionality of the distributed unit
  * test framework.
  */
-public class BasicDUnitTest extends DistributedTestCase {
+@SuppressWarnings("unused")
+@Category(DistributedTest.class)
+public class BasicDUnitTest extends JUnit4DistributedTestCase {
+
+  private static final String MESSAGE_FOR_remoteThrowException = "Test exception.  Please ignore.";
 
   private static Properties bindings;
 
-  public BasicDUnitTest(String name) {
-    super(name);
+  private VM vm0;
+  private VM vm1;
+
+  public BasicDUnitTest() {
+    super();
   }
 
   @Override
   public final void postSetUp() throws Exception {
     bindings = new Properties();
     invokeInEveryVM(() -> bindings = new Properties());
+    this.vm0 = Host.getHost(0).getVM(0);
+    this.vm1 = Host.getHost(0).getVM(1);
   }
 
   @Override
@@ -52,117 +68,139 @@ public class BasicDUnitTest extends DistributedTestCase {
     invokeInEveryVM(() -> bindings = null);
   }
 
-  public void testPreconditions() {
-    invokeInEveryVM(() -> assertNotNull("getUniqueName() must not return null", getUniqueName()));
-    invokeInEveryVM(() -> assertNotNull("bindings must not be null", bindings));
+  @Test
+  public void testPreconditions() throws Exception {
+    invokeInEveryVM(() -> assertThat("getUniqueName() must not return null", getUniqueName(), notNullValue()));
+    invokeInEveryVM(() -> assertThat("bindings must not be null", bindings, notNullValue()));
   }
 
-  /**
-   * Tests how the Hydra framework handles an error
-   */
-  public void ignore_testDontCatchRemoteException() throws Exception {
-    Host host = Host.getHost(0);
-    VM vm = host.getVM(0);
-    vm.invoke(() -> remoteThrowException());
+  @Test
+  public void testInvokeOnClassTargetWithEmptyArgs() throws Exception {
+    assertThat(this.vm0.invoke(BasicDUnitTest.class, "booleanValue", new Object[] {}), is(true));
+  }
+  @Test
+  public void testInvokeOnObjectTargetWithEmptyArgs() throws Exception {
+    assertThat(this.vm0.invoke(new BasicDUnitTest(), "booleanValue", new Object[] {}), is(true));
+  }
+  @Test
+  public void testInvokeAsyncOnClassTargetWithEmptyArgs() throws Exception {
+    AsyncInvocation<?> async = this.vm0.invokeAsync(BasicDUnitTest.class, "booleanValue", new Object[] {}).join();
+    assertThat(async.getResult(), is(true));
+  }
+  @Test
+  public void testInvokeAsyncOnObjectTargetWithEmptyArgs() throws Exception {
+    AsyncInvocation<?> async = this.vm0.invokeAsync(new BasicDUnitTest(), "booleanValue", new Object[] {}).join();
+    assertThat(async.getResult(), is(true));
   }
 
+  @Test
+  public void testInvokeOnClassTargetWithNullArgs() throws Exception {
+    assertThat(this.vm0.invoke(BasicDUnitTest.class, "booleanValue", null), is(true));
+  }
+  @Test
+  public void testInvokeOnObjectTargetWithNullArgs() throws Exception {
+    assertThat(this.vm0.invoke(new BasicDUnitTest(), "booleanValue", null), is(true));
+  }
+  @Test
+  public void testInvokeAsyncOnClassTargetWithNullArgs() throws Exception {
+    AsyncInvocation<?> async = this.vm0.invokeAsync(BasicDUnitTest.class, "booleanValue", null).join();
+    assertThat(async.getResult(), is(true));
+  }
+  @Test
+  public void testInvokeAsyncOnObjectTargetWithNullArgs() throws Exception {
+    AsyncInvocation<?> async = this.vm0.invokeAsync(new BasicDUnitTest(), "booleanValue", null).join();
+    assertThat(async.getResult(), is(true));
+  }
+
+  @Test
   public void testRemoteInvocationWithException() throws Exception {
-    Host host = Host.getHost(0);
-    VM vm = host.getVM(0);
-    try {
-      vm.invoke(() -> remoteThrowException());
-      fail("Should have thrown a BasicTestException");
+    catchException(this.vm0).invoke(() -> remoteThrowException());
 
-    } catch (RMIException ex) {
-      assertTrue(ex.getCause() instanceof BasicTestException);
-    }
+    assertThat(caughtException(), instanceOf(RMIException.class));
+    assertThat(caughtException().getCause(), notNullValue());
+    assertThat(caughtException().getCause(), instanceOf(BasicTestException.class));
+    assertThat(caughtException().getCause().getMessage(), is(MESSAGE_FOR_remoteThrowException));
   }
 
+  @Test
   public void testInvokeWithLambda() throws Exception {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-
-    int vm0Num = vm0.invoke(() -> DUnitEnv.get().getVMID());
-    int vm1Num = vm1.invoke(() -> DUnitEnv.get().getVMID());
-
-    assertEquals(0, vm0Num);
-    assertEquals(1, vm1Num);
+    assertThat(this.vm0.invoke(() -> DUnitEnv.get().getVMID()), is(0));
+    assertThat(this.vm1.invoke(() -> DUnitEnv.get().getVMID()), is(1));
   }
 
+  @Test
   public void testInvokeLambdaAsync() throws Throwable {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-
-    AsyncInvocation<Integer> async0 = vm0.invokeAsync(() -> DUnitEnv.get().getVMID());
-    int vm0num = async0.getResult();
-
-    assertEquals(0, vm0num);
+    assertThat(this.vm0.invokeAsync(() -> DUnitEnv.get().getVMID()).getResult(), is(0));
   }
 
+  @Test
   public void testInvokeWithNamedLambda() {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-
-    int vm0Num = vm0.invoke("getVMID", () -> DUnitEnv.get().getVMID());
-    int vm1Num = vm1.invoke("getVMID", () -> DUnitEnv.get().getVMID());
-
-    assertEquals(0, vm0Num);
-    assertEquals(1, vm1Num);
+    assertThat(this.vm0.invoke("getVMID", () -> DUnitEnv.get().getVMID()), is(0));
+    assertThat(this.vm1.invoke("getVMID", () -> DUnitEnv.get().getVMID()), is(1));
   }
 
+  @Test
   public void testInvokeNamedLambdaAsync() throws Throwable {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-
-    AsyncInvocation<Integer> async0 = vm0.invokeAsync("getVMID", () -> DUnitEnv.get().getVMID());
-    int vm0num = async0.getResult();
-
-    assertEquals(0, vm0num);
+    assertThat(this.vm0.invokeAsync("getVMID", () -> DUnitEnv.get().getVMID()).getResult(), is(0));
   }
 
-  // Test was never implemented
-  public void ignore_testRemoteInvocationBoolean() {
-  }
-
+  @Test
   public void testRemoteInvokeAsync() throws Exception {
-    Host host = Host.getHost(0);
-    VM vm = host.getVM(0);
     String name = getUniqueName();
     String value = "Hello";
 
-    AsyncInvocation ai = vm.invokeAsync(() -> remoteBind(name, value));
-    ai.join();
-    // TODO shouldn't we call fail() here?
-    if (ai.exceptionOccurred()) {
-      Assert.fail("remoteBind failed", ai.getException());
-    }
-
-    ai = vm.invokeAsync(() -> remoteValidateBind(name, value ));
-    ai.join();
-    if (ai.exceptionOccurred()) {
-      Assert.fail("remoteValidateBind failed", ai.getException());
-    }
+    this.vm0.invokeAsync(() -> remoteBind(name, value)).join().checkException();
+    this.vm0.invokeAsync(() -> remoteValidateBind(name, value )).join().checkException();
   }
 
+  @Test
   public void testRemoteInvokeAsyncWithException() throws Exception {
-    Host host = Host.getHost(0);
-    VM vm = host.getVM(0);
+    AsyncInvocation<?> async = this.vm0.invokeAsync(() -> remoteThrowException()).join();
 
-    AsyncInvocation ai = vm.invokeAsync(() -> remoteThrowException());
-    ai.join();
-    assertTrue(ai.exceptionOccurred());
-    Throwable ex = ai.getException();
-    assertTrue(ex instanceof BasicTestException);
+    assertThat(async.exceptionOccurred(), is(true));
+    assertThat(async.getException(), instanceOf(BasicTestException.class));
+
+    catchThrowable(async).checkException();
+
+    assertThat(caughtThrowable(), instanceOf(AssertionError.class));
+    assertThat(caughtThrowable().getCause(), notNullValue());
+    assertThat(caughtThrowable().getCause(), instanceOf(BasicTestException.class));
+    assertThat(caughtThrowable().getCause().getMessage(), is(MESSAGE_FOR_remoteThrowException));
   }
 
-  /**
-   * Accessed via reflection.  DO NOT REMOVE
-   */
+  @Test
+  public void testInvokeNamedRunnableLambdaAsync() throws Exception {
+    catchThrowable(this.vm0.invokeAsync("throwSomething", () -> throwException()).join()).checkException();
+
+    assertThat(caughtThrowable(), notNullValue());
+    assertThat(caughtThrowable().getCause(), notNullValue());
+    assertThat(caughtThrowable().getCause(), instanceOf(BasicDUnitException.class));
+  }
+
+  @Test
+  public void testInvokeNamedRunnableLambda() throws Exception {
+    catchException(this.vm0).invoke("throwSomething", () -> throwException());
+
+    assertThat(caughtException(), notNullValue());
+    assertThat(caughtException().getCause(), notNullValue());
+    assertThat(caughtException().getCause(), instanceOf(BasicDUnitException.class));
+    assertThat(caughtException().getCause().getMessage(), nullValue());
+  }
+
+  private static boolean booleanValue() { // invoked by reflection
+    return true;
+  }
+
+  private static boolean booleanValue(final boolean value) { // invoked by reflection
+    return value;
+  }
+
   private static void remoteThrowException() {
-    String s = "Test exception.  Please ignore.";
-    throw new BasicTestException(s);
+    throw new BasicTestException(MESSAGE_FOR_remoteThrowException);
+  }
+
+  private static void throwException() throws BasicDUnitException {
+    throw new BasicDUnitException();
   }
 
   private static void remoteBind(String name, String value) {
@@ -170,7 +208,7 @@ public class BasicDUnitTest extends DistributedTestCase {
     assertNotNull("value must not be null", value);
     assertNotNull("bindings must not be null", bindings);
 
-    new BasicDUnitTest("").getSystem(); // forces connection
+    new BasicDUnitTest().getSystem(); // forces connection
     bindings.setProperty(name, value);
   }
 
@@ -187,45 +225,8 @@ public class BasicDUnitTest extends DistributedTestCase {
     }
   }
 
-  static class BasicDUnitException extends RuntimeException {
+  private static class BasicDUnitException extends RuntimeException {
     public BasicDUnitException() {
-    }
-  }
-
-  public static void throwException() throws BasicDUnitException {
-    throw new BasicDUnitException();
-  }
-
-  public void testInvokeNamedRunnableLambdaAsync() throws Throwable {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-
-    AsyncInvocation<Integer> async0 = vm0.invokeAsync("throwSomething", () -> BasicDUnitTest.throwException());
-    try {
-      async0.getResult();
-      throw new Error("expected an exception to be thrown");
-    } catch (Exception e) {
-      Throwable cause = e.getCause();
-      if (cause == null) {
-        throw new Error("expected an exception with a cause to be thrown", e);
-      }
-      if ( !(cause.getCause() instanceof BasicDUnitException) ) {
-        throw new Error("expected a BasicDUnitException to be thrown", e.getCause());
-      }
-    }
-  }
-
-  public void testInvokeNamedRunnableLambda() throws Throwable {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-
-    try {
-      vm0.invoke("throwSomething", () -> BasicDUnitTest.throwException());
-      throw new Error("expected an exception to be thrown");
-    } catch (Exception e) {
-      if ( !(e.getCause() instanceof BasicDUnitException) ) {
-        throw new Error("expected a BasicDUnitException to be thrown", e.getCause());
-      }
     }
   }
 }

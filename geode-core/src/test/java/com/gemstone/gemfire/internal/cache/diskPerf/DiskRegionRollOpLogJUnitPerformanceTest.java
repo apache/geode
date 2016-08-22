@@ -16,66 +16,52 @@
  */
 package com.gemstone.gemfire.internal.cache.diskPerf;
 
-import java.util.*;
-import java.io.File;
+import static org.junit.Assert.*;
 
-import org.junit.After;
-import org.junit.Before;
+import java.io.File;
+import java.util.Arrays;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
-
-import com.gemstone.gemfire.*;
+import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.internal.cache.*;
+import com.gemstone.gemfire.internal.cache.DiskRegionHelperFactory;
+import com.gemstone.gemfire.internal.cache.DiskRegionProperties;
+import com.gemstone.gemfire.internal.cache.DiskRegionTestingBase;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Consolidated Disk Region Perftest. Overflow, Persist, OverflowWithPersist
  * modes are tested for Sync, AsyncWithBuffer and AsyncWithoutBufer writes.
  * Roling oplog is set to true with maxOplogSize = 20 mb
- *  
  */
 @Category(IntegrationTest.class)
-public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBase
-{
+public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBase {
 
-  DiskRegionProperties diskProps = new DiskRegionProperties();
+  private DiskRegionProperties diskProps = new DiskRegionProperties();
 
-  LogWriter log = null;
+  private LogWriter log = null;
 
-  String stats = null;
+  private String stats = null;
 
-  String stats_ForSameKeyputs = null;
+  private String stats_ForSameKeyputs = null;
 
   /**
    * To run DiskRegionRollOpLogPerfJUnitTest to produce the Perf numbers set
    * runPerfTest to true. Also ,one needs to set the VM heap size accordingly.
    * (For example:Default setting in build.xml is <jvmarg value="-Xmx256M"/>
    */
-  boolean runPerfTest = false;
+  private boolean runPerfTest = false;
 
-  @Before
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  protected final void postSetUp() throws Exception {
     diskProps.setDiskDirs(dirs);
     log = ds.getLogWriter();
   }
 
-  @After
-  public void tearDown() throws Exception
-  {
-    super.tearDown();
-
-  }
-
-  //*********Test Cases **************
-  //********Overflowonly tests *********
   @Test
-  public void testOverflowSyncRollOlg1()
-  {
+  public void testOverflowSyncRollOlg1() {
     try {
       //Create four Dirs for Disk Dirs
       File file1 = new File("testOverflowSyncRollOlg1Dir1");
@@ -124,8 +110,7 @@ public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBa
   } //end of testOverflowSync1
 
   @Test
-  public void testOverflowASyncWithBufferRollOlg2()
-  {
+  public void testOverflowASyncWithBufferRollOlg2() {
     try {
       //    Create four Dirs for Disk Dirs
       File file1 = new File("testOverflowASyncWithBufferRollOlg2Dir1");
@@ -177,8 +162,7 @@ public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBa
   } //end of testOverflowASyncWithBuffer2
 
   @Test
-  public void testOverflowASyncWithoutBufferRollOlg3()
-  {
+  public void testOverflowASyncWithoutBufferRollOlg3() {
     try {
       //    Create four Dirs for Disk Dirs
       File file1 = new File("testOverflowASyncWithoutBufferRollOlg3Dir1");
@@ -229,10 +213,8 @@ public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBa
     deleteFiles();
   } //end of testOverflowASyncWithoutBuffer3
 
-  //******** PersistOnly Tests ****************
   @Test
-  public void testpersistSyncRollOlg4()
-  {
+  public void testpersistSyncRollOlg4() {
     try {
       //    Create four Dirs for Disk Dirs
       File file1 = new File("testpersistSyncRollOlg4Dir1");
@@ -281,8 +263,7 @@ public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBa
   } //end of testPersistSync4
 
   @Test
-  public void testpersistASyncWithBufferRollOlg5()
-  {
+  public void testpersistASyncWithBufferRollOlg5() {
     try {
       //    Create four Dirs for Disk Dirs
       File file1 = new File("testpersistASyncWithBufferRollOlg5Dir1");
@@ -334,8 +315,7 @@ public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBa
   } //end of testPersistASyncWithBuffer5
 
   @Test
-  public void testPersistASyncWithoutBufferRollOlg6()
-  {
+  public void testPersistASyncWithoutBufferRollOlg6() {
     try {
       //    Create four Dirs for Disk Dirs
       File file1 = new File("testPersistASyncWithoutBufferRollOlg6Dir1");
@@ -386,10 +366,8 @@ public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBa
     closeDown();
   } //end of testPersistASyncWithoutBuffer
 
-  //*************Persist with Overflow tests ****************
   @Test
-  public void testPersistOverflowSyncRollOlg7()
-  {
+  public void testPersistOverflowSyncRollOlg7() {
     try {
       //    Create four Dirs for Disk Dirs
       File file1 = new File("testPersistOverflowSyncRollOlg7Dir1");
@@ -440,8 +418,7 @@ public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBa
   } //end of testPersistOverflowSync
 
   @Test
-  public void testPersistOverflowASyncWithBufferRollOlg8()
-  {
+  public void testPersistOverflowASyncWithBufferRollOlg8() {
     try {
       //    Create four Dirs for Disk Dirs
       File file1 = new File("testPersistOverflowASyncWithBufferRollOlg8Dir1");
@@ -494,8 +471,7 @@ public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBa
   } //end of testpersistOverflowASyncWithBuffer8
 
   @Test
-  public void testPersistOverflowASyncWithoutBufferRollOlg9()
-  {
+  public void testPersistOverflowASyncWithoutBufferRollOlg9() {
     try {
       //    Create four Dirs for Disk Dirs
       File file1 = new File("testPersistOverflowASyncWithoutBufferRollOlg9Dir1");
@@ -547,7 +523,6 @@ public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBa
     closeDown();
   } //end of testPersistOverflowASyncWithoutBuffer9
 
-  //************** test data population *******************
   public static int ENTRY_SIZE = 1024;
 
   /**
@@ -555,15 +530,12 @@ public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBa
    * be set as higher value such as 1000000, one needs to set the VM heap size
    * accordingly. (For example:Default setting in build.xml is <jvmarg
    * value="-Xmx256M"/>
-   *  
    */
-
   public static int OP_COUNT = 1000;
 
   public static boolean UNIQUE_KEYS = Boolean.getBoolean("DRP.UNIQUE_KEYS");
 
-  public void populateData0to60k()
-  {
+  public void populateData0to60k() {
     final byte[] value = new byte[ENTRY_SIZE];
     Arrays.fill(value, (byte)77);
     for (int i = 0; i < 60000; i++) {
@@ -571,11 +543,9 @@ public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBa
       // System.out.println(i);
     }
     System.out.println(" done with putting first 60k entries");
-
   }
 
-  public void populateData60kto100k()
-  {
+  public void populateData60kto100k() {
     //  Put for validation.
     putForValidation(region);
     final byte[] value = new byte[ENTRY_SIZE];
@@ -599,8 +569,7 @@ public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBa
     log.info(stats);
   }
 
-  public void populateDataPutOnSameKey()
-  {
+  public void populateDataPutOnSameKey() {
     //  Put for validation.
     putForValidation(region);
     final byte[] value = new byte[ENTRY_SIZE];
@@ -624,15 +593,12 @@ public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBa
     log.info(stats_ForSameKeyputs);
   }
 
-  protected static void deleteFiles()
-  {
+  protected static void deleteFiles() {
     for (int i = 0; i < 4; i++) {
       File[] files = dirs[i].listFiles();
       for (int j = 0; j < files.length; j++) {
         files[j].delete();
       }
     }
-
   }
-
 }// end of DiskRegionRollOpLogPerfJUnitTest

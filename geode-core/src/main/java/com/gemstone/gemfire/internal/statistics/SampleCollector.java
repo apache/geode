@@ -50,7 +50,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * <p/>
  * Extracted from StatArchiveWriter.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class SampleCollector {
 
@@ -286,7 +286,9 @@ public class SampleCollector {
           handler.close();
         }
       }
-      instance = null;
+      if(instance == this) {
+        instance = null;
+      }
     }
   }
   
@@ -569,7 +571,7 @@ public class SampleCollector {
   }
   
   /**
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public class MarkableSampleHandler implements SampleHandler {
 
@@ -649,7 +651,7 @@ public class SampleCollector {
   }
   
   /**
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public class SampleHandlers implements Iterable<MarkableSampleHandler> {
 

@@ -23,7 +23,7 @@ package com.gemstone.gemfire.pdx.internal;
  * Note that instances of the class are only kept locally so I didn't add code
  * to serialize unreadFieldIndexes.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 public class UnreadPdxType extends PdxType {
 

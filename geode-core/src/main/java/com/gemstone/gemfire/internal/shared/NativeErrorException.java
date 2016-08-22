@@ -23,7 +23,7 @@ package com.gemstone.gemfire.internal.shared;
  * <code>LastErrorException</code> class, and also for ODBC/.NET drivers that
  * don't use JNA.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 public class NativeErrorException extends Exception {
 

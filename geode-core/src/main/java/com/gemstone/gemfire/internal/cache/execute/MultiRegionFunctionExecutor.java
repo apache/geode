@@ -182,13 +182,6 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  public AbstractExecution withRoutingObjects(Set<Object> routingObjects) {
-    throw new FunctionException(
-        LocalizedStrings.ExecuteFunction_CANNOT_SPECIFY_0_FOR_ONREGIONS_FUNCTION
-            .toLocalizedString("routing objects"));
-  }
-
-  @Override
   protected ResultCollector executeFunction(Function function) {
     if (function.hasResult()) {
       ResultCollector rc = this.rc;

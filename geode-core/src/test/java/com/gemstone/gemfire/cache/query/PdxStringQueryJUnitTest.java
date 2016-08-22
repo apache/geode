@@ -16,21 +16,6 @@
  */
 package com.gemstone.gemfire.cache.query;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -49,6 +34,15 @@ import com.gemstone.gemfire.pdx.internal.PdxInstanceFactoryImpl;
 import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
 import com.gemstone.gemfire.pdx.internal.PdxString;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * 
@@ -69,7 +63,7 @@ public class PdxStringQueryJUnitTest {
 
   @Before
   public void setUp() {
-    this.c = new CacheFactory().set("mcast-port", "0").create();
+    this.c = new CacheFactory().set(MCAST_PORT, "0").create();
     r = c.createRegionFactory().create(regName);
     qs = c.getQueryService();
   }

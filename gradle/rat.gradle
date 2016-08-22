@@ -37,14 +37,21 @@ rat {
     'native/**',
     'wrapper/**',
     '**/build/**',
+    '.buildinfo',
 
     // SBT
     'geode-spark-connector/**/target/**',
     'geode-spark-connector/sbt',
 
+    // Geode examples
+    'geode-examples/.idea/**',
+    'geode-examples/gradlew*/**',
+    'geode-examples/gradle/wrapper/**',
+
     // IDE
     'etc/eclipseFormatterProfile.xml',
     'etc/intellijIdeaCodeStyle.xml',
+    'etc/eclipseOrganizeImports.importorder', 
     '**/.project',
     '**/.classpath',
     '**/.settings/**',
@@ -116,6 +123,7 @@ rat {
     'geode-site/website/content/css/font-awesome.min.css',
     'geode-site/website/lib/pandoc.template',
     'geode-site/website/content/font/**',
+    'geode-site/content/**',
     // compiled logs and locks
     'geode-site/website/tmp/**',
     'geode-site/website/layouts/**',

@@ -42,24 +42,20 @@ import com.gemstone.gemfire.codeAnalysis.decode.CompiledMethod;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 
-/**
- * 
- */
 @Category(IntegrationTest.class)
 public class AnalyzeSerializablesJUnitTest {
+
   /** all loaded classes */
   protected static Map<String, CompiledClass> classes = new HashMap<String, CompiledClass>();
+
   private static boolean ClassesNotFound;
-  
-  public AnalyzeSerializablesJUnitTest() {
-  }
   
   @Before
   public void loadClasses() throws Exception {
     String version = System.getProperty("java.runtime.version");
-    boolean jdk17 = version != null && version.startsWith("1.8");
+    boolean jdk18 = version != null && version.startsWith("1.8");
       // sanctioned info is based on a 1.7 compiler
-    Assume.assumeTrue("AnalyzeSerializables requires a Java 7 but tests are running with v"+version, jdk17);
+    Assume.assumeTrue("AnalyzeSerializables requires a Java 8 but tests are running with v"+version, jdk18);
     if (classes.size() > 0) {
       return;
     }
@@ -155,8 +151,7 @@ public class AnalyzeSerializablesJUnitTest {
       classes.remove(exclusion);
     }
   }
-  
-  
+
   @Test
   public void testDataSerializables() throws Exception {
     System.out.println("testDataSerializables starting");
@@ -250,8 +245,7 @@ public class AnalyzeSerializablesJUnitTest {
     removeExclusions(newClasses, excludedClasses);
     classes.putAll(newClasses);
   }
-  
-  
+
   public static void loadClassesFromBuild(File buildDir, List<String> excludedClasses) {
     Map<String, CompiledClass> newClasses = CompiledClassUtils.parseClassFilesInDir(buildDir);
     removeExclusions(newClasses, excludedClasses);
@@ -298,8 +292,7 @@ public class AnalyzeSerializablesJUnitTest {
     Collections.sort(result);
     return result;
   }
-  
-  
+
   public List<ClassAndVariables> findSerializables() {
     List<ClassAndVariables> result = new ArrayList<ClassAndVariables>(2000);
     for (Map.Entry<String, CompiledClass> entry: classes.entrySet()) {

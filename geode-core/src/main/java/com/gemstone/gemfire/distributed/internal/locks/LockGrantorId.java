@@ -17,18 +17,19 @@
 package com.gemstone.gemfire.distributed.internal.locks;
 
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * Identifies specific lock grantor member and version.
  * 
- * @since 5.1
+ * @since GemFire 5.1
  */
 public class LockGrantorId {
 
   public static final int ROLLOVER_MARGIN = Integer.getInteger(
-      "gemfire.DLockService.LockGrantorId.rolloverMargin", 10000).intValue();
+      DistributionConfig.GEMFIRE_PREFIX + "DLockService.LockGrantorId.rolloverMargin", 10000).intValue();
   
   private final DM dm;
   private final InternalDistributedMember lockGrantorMember;

@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.cache;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 
 import java.io.File;
 
@@ -27,7 +28,7 @@ import java.io.File;
  * To use this factory configure it with the <code>set</code> methods and then
  * call {@link #create} to produce a disk store instance.
  * 
- * @since 6.5
+ * @since GemFire 6.5
  */
 public interface DiskStoreFactory
 {
@@ -60,7 +61,8 @@ public interface DiskStoreFactory
    * The default maximum oplog file size in megabytes.
    * <p>Current value: <code>1024</code> which is one gigabyte.
    */
-  public static final long DEFAULT_MAX_OPLOG_SIZE = Long.getLong("gemfire.DEFAULT_MAX_OPLOG_SIZE", 1024L).longValue(); // 1024 == 1 GB; // sys prop used by dunit and junit
+  public static final long DEFAULT_MAX_OPLOG_SIZE = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE", 1024L)
+      .longValue(); // 1024 == 1 GB; // sys prop used by dunit and junit
 
   /**
    * The default time interval in milliseconds.
@@ -215,7 +217,7 @@ public interface DiskStoreFactory
    * 
    * @param warningPercent warning percent of disk usage
    * @return a reference to <code>this</code>
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public DiskStoreFactory setDiskUsageWarningPercentage(float warningPercent);
 
@@ -225,7 +227,7 @@ public interface DiskStoreFactory
    * 
    * @param criticalPercent critical percent of disk usage
    * @return a reference to <code>this</code>
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public DiskStoreFactory setDiskUsageCriticalPercentage(float criticalPercent);
 

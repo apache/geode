@@ -29,6 +29,7 @@ import java.util.Collection;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -161,8 +162,10 @@ public class QueryServiceJUnitTest {
       //CacheUtils.log("");
     }
   }
-  
-  public void atestGetIndex() throws Exception{
+
+  @Ignore
+  @Test
+  public void testGetIndex() throws Exception{
     CacheUtils.log("testGetIndex");
     QueryService qs = CacheUtils.getQueryService();
     Object testData[][] ={

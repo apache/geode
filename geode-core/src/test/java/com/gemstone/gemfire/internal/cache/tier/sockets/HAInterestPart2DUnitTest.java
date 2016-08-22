@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.EntryDestroyedException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
@@ -26,16 +35,18 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 @SuppressWarnings({"rawtypes", "serial"})
+@Category(DistributedTest.class)
 public class HAInterestPart2DUnitTest extends HAInterestTestCase {
 
-  public HAInterestPart2DUnitTest(String name) {
-    super(name);
+  public HAInterestPart2DUnitTest() {
+    super();
   }
 
   /**
    * Tests if Primary fails during interest un registration should initiate
    * failover should pick new primary
    */
+  @Test
   public void testPrimaryFailureInUNregisterInterest() throws Exception {
     createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
@@ -62,6 +73,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    * Tests if Secondary fails during interest un registration should add to dead
    * Ep list
    */
+  @Test
   public void testSecondaryFailureInUNRegisterInterest() throws Exception {
     createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
@@ -84,6 +96,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    * before interest registration then interest should be registered on the newly
    * detected live server as well
    */
+  @Test
   public void testDSMDetectsServerLiveJustBeforeInterestRegistration() throws Exception {
     createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
@@ -110,6 +123,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    * After interest registration then interest should be registered on the newly
    * detected live server as well
    */
+  @Test
   public void testDSMDetectsServerLiveJustAfterInterestRegistration() throws Exception {
     createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
 
@@ -142,6 +156,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    * part of recovery it refreshes registered entries from the server, because it
    * is primary
    */
+  @Test
   public void testRefreshEntriesFromPrimaryWhenDSMDetectsServerLive() throws Exception {
     IgnoredException.addIgnoredException(ServerConnectivityException.class.getName());
     
@@ -214,6 +229,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    * this live server and verify that as a part of recovery it does not
    * refreshes registered entries from the server, because it is secondary
    */
+  @Test
   public void testGIIFromSecondaryWhenDSMDetectsServerLive() throws Exception {
     server1.invoke(() -> HAInterestTestCase.closeCache());
     server2.invoke(() -> HAInterestTestCase.closeCache());
@@ -249,6 +265,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    *
    * @throws Exception
    */
+  @Test
   public void testBug35945() throws Exception {
     PORT1 = ((Integer) server1.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
     server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
@@ -315,6 +332,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    * Tests if failure occurred in Interest recovery thread, then it should select
    * new endpoint to register interest
    */
+  @Test
   public void testInterestRecoveryFailure() throws Exception {
     IgnoredException.addIgnoredException("Server unreachable");
     

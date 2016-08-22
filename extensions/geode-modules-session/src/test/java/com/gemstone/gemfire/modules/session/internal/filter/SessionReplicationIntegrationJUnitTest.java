@@ -14,18 +14,26 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
 package com.gemstone.gemfire.modules.session.internal.filter;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.StringTokenizer;
-import java.util.concurrent.TimeUnit;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.modules.session.filter.SessionCachingFilter;
+import com.gemstone.gemfire.modules.session.junit.PerTestClassLoaderRunner;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.jasper.servlet.JspServlet;
+import org.eclipse.jetty.http.HttpTester;
+import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+
 import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -33,20 +41,11 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.modules.session.junit.PerTestClassLoaderRunner;
-import com.gemstone.gemfire.modules.session.filter.SessionCachingFilter;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import org.apache.jasper.servlet.JspServlet;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.eclipse.jetty.servlet.FilterHolder;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.http.HttpTester;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -56,6 +55,7 @@ import static org.junit.Assert.*;
  */
 @Category(IntegrationTest.class)
 @RunWith(PerTestClassLoaderRunner.class)
+@SuppressWarnings("unchecked")
 public class SessionReplicationIntegrationJUnitTest {
 
   private MyServletTester tester;
@@ -68,31 +68,21 @@ public class SessionReplicationIntegrationJUnitTest {
 
   private FilterHolder filterHolder;
 
-  private static final File tmpdir;
-
-  private static final String gemfire_log;
-
-  static {
-    // Create a per-user scratch directory
-    tmpdir = new File(System.getProperty("java.io.tmpdir"),
-        "gemfire_modules-" + System.getProperty("user.name"));
-    tmpdir.mkdirs();
-    tmpdir.deleteOnExit();
-
-    gemfire_log = tmpdir.getPath() +
-        System.getProperty("file.separator") + "gemfire_modules.log";
-  }
+  @Rule
+  public TemporaryFolder tmpdir = new TemporaryFolder();
 
   @Before
   public void setUp() throws Exception {
+    File gemfireLogFile = new File(tmpdir.newFolder(), "gemfire_modules.log");
+
     request = HttpTester.newRequest();
 
     tester = new MyServletTester();
     tester.setContextPath("/test");
 
     filterHolder = tester.addFilter(SessionCachingFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
-    filterHolder.setInitParameter("gemfire.property.mcast-port", "0");
-    filterHolder.setInitParameter("gemfire.property.log-file", gemfire_log);
+    filterHolder.setInitParameter(DistributionConfig.GEMFIRE_PREFIX + "property.mcast-port", "0");
+    filterHolder.setInitParameter(DistributionConfig.GEMFIRE_PREFIX + "property.log-file", gemfireLogFile.getAbsolutePath());
     filterHolder.setInitParameter("cache-type", "peer-to-peer");
 
     servletHolder = tester.addServlet(BasicServlet.class, "/hello");
@@ -107,10 +97,6 @@ public class SessionReplicationIntegrationJUnitTest {
 
   @After
   public void tearDown() throws Exception {
-//    if (tester.isStarted()) {
-//      ContextManager.getInstance().removeContext(
-//          servletHolder.getServlet().getServletConfig().getServletContext());
-//    }
     tester.stop();
   }
 
@@ -355,7 +341,8 @@ public class SessionReplicationIntegrationJUnitTest {
 
   /**
    * Test setting an attribute to null deletes it
-   */
+  */
+  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class loader isolation, TODO: rewrite test with JUnit 4 rules including TemporaryFolder
   @Test
   public void testSetAttributeNullDeletesIt() throws Exception {
     Callback c_1 = new Callback() {
@@ -475,7 +462,7 @@ public class SessionReplicationIntegrationJUnitTest {
 //        request.setURI("/test/request2");
 //        response.parse(tester.getResponses(request.generate()));
 //
-//        assertEquals("null", response.getContent());
+//        assertIndexDetailsEquals("null", response.getContent());
 //
 //        Region r = getRegion();
 //        assertNull("Region should not contain session", r.get(id));
@@ -485,6 +472,7 @@ public class SessionReplicationIntegrationJUnitTest {
    * Test that invalidating a session destroys it as well as the backend
    * object.
    */
+  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class loader isolation, TODO: rewrite test with JUnit 4 rules including TemporaryFolder
   @Test
   public void testInvalidateSession1() throws Exception {
     Callback c_1 = new Callback() {
@@ -575,6 +563,7 @@ public class SessionReplicationIntegrationJUnitTest {
   /**
    * Test that invalidating a session throws an exception on subsequent access.
    */
+  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class loader isolation, TODO: rewrite test with JUnit 4 rules including TemporaryFolder
   @Test
   public void testInvalidateSession3() throws Exception {
     Callback c_1 = new Callback() {
@@ -1206,6 +1195,7 @@ public class SessionReplicationIntegrationJUnitTest {
   /**
    * Test that request forward dispatching works
    */
+  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class loader isolation, TODO: rewrite test with JUnit 4 rules including TemporaryFolder
   @Test
   public void testDispatchingForward1() throws Exception {
     Callback c_1 = new Callback() {
@@ -1463,7 +1453,7 @@ public class SessionReplicationIntegrationJUnitTest {
     ServletHolder jspHolder = tester.addServlet(JspServlet.class, "/test/*");
     jspHolder.setInitOrder(1);
 
-    jspHolder.setInitParameter("scratchdir", tmpdir.getPath());
+    jspHolder.setInitParameter("scratchdir", tmpdir.toString());
 
     Callback c_1 = new Callback() {
       @Override

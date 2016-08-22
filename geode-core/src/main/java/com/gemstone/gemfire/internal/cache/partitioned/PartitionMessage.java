@@ -58,6 +58,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionException;
 import com.gemstone.gemfire.internal.cache.PrimaryBucketException;
+import com.gemstone.gemfire.internal.cache.TXId;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.TXStateProxy;
 import com.gemstone.gemfire.internal.cache.TransactionMessage;
@@ -71,7 +72,7 @@ import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
  * The base PartitionedRegion message type upon which other messages should be
  * based.
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 public abstract class PartitionMessage extends DistributionMessage implements 
     MessageWithReply, TransactionMessage
@@ -185,7 +186,7 @@ public abstract class PartitionMessage extends DistributionMessage implements
    * (non-Javadoc)
    * @see com.gemstone.gemfire.internal.cache.TransactionMessage#getTXOriginatorClient()
    */
-  public final InternalDistributedMember getTXOriginatorClient() {
+  public InternalDistributedMember getTXOriginatorClient() {
     return txMemberId;
   }
 
@@ -262,8 +263,8 @@ public abstract class PartitionMessage extends DistributionMessage implements
   /**
    * check to see if the cache is closing
    */
-  final public boolean checkCacheClosing(DistributionManager dm) {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+  public boolean checkCacheClosing(DistributionManager dm) {
+    GemFireCacheImpl cache = getGemFireCacheImpl();
     // return (cache != null && cache.isClosed());
     return cache == null || cache.isClosed();
   }
@@ -272,10 +273,27 @@ public abstract class PartitionMessage extends DistributionMessage implements
    * check to see if the distributed system is closing
    * @return true if the distributed system is closing
    */
-  final public boolean checkDSClosing(DistributionManager dm) {
+  public boolean checkDSClosing(DistributionManager dm) {
     InternalDistributedSystem ds = dm.getSystem();
     return (ds == null || ds.isDisconnecting());
   }
+  
+  PartitionedRegion getPartitionedRegion() throws PRLocallyDestroyedException {
+    return PartitionedRegion.getPRFromId(this.regionId);
+  }
+  
+  GemFireCacheImpl getGemFireCacheImpl() {
+    return GemFireCacheImpl.getInstance();
+  }
+
+  TXManagerImpl getTXManagerImpl(GemFireCacheImpl cache) {
+    return cache.getTxManager();
+  }
+  
+  long getStartPartitionMessageProcessingTime(PartitionedRegion pr) {
+    return pr.getPrStats().startPartitionMessageProcessing();
+  }
+
   
   /**
    * Upon receipt of the message, both process the message and send an
@@ -298,7 +316,7 @@ public abstract class PartitionMessage extends DistributionMessage implements
         thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0.toLocalizedString(dm.getId()));
         return;
       }
-      pr = PartitionedRegion.getPRFromId(this.regionId);
+      pr = getPartitionedRegion();
       if (pr == null && failIfRegionMissing()) {
         // if the distributed system is disconnecting, don't send a reply saying
         // the partitioned region can't be found (bug 36585)
@@ -307,21 +325,30 @@ public abstract class PartitionMessage extends DistributionMessage implements
       }
 
       if (pr != null) {
-        startTime = pr.getPrStats().startPartitionMessageProcessing();
+        startTime = getStartPartitionMessageProcessingTime(pr);
       }
       thr = UNHANDLED_EXCEPTION;
       
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      GemFireCacheImpl cache = getGemFireCacheImpl();
       if(cache==null) {
         throw new ForceReattemptException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0.toLocalizedString());
       }
-      TXManagerImpl txMgr = cache.getTxManager();
-      TXStateProxy tx = null;
-      try {
-        tx = txMgr.masqueradeAs(this);
-        sendReply = operateOnPartitionedRegion(dm, pr, startTime);
-      } finally {
-        txMgr.unmasquerade(tx);
+      TXManagerImpl txMgr = getTXManagerImpl(cache);
+      TXStateProxy tx = txMgr.masqueradeAs(this);
+      if (tx == null) {
+        sendReply = operateOnPartitionedRegion(dm, pr, startTime);        
+      } else {
+        try {
+          if (txMgr.isClosed()) {
+            // NO DISTRIBUTED MESSAGING CAN BE DONE HERE!
+            sendReply = false;
+          } else if (tx.isInProgress()) {
+            sendReply = operateOnPartitionedRegion(dm, pr, startTime); 
+            tx.updateProxyServer(this.getSender());
+          }  
+        } finally {
+          txMgr.unmasquerade(tx);
+        }
       }
       thr = null;
           
@@ -440,10 +467,6 @@ public abstract class PartitionMessage extends DistributionMessage implements
     this.processorId = processor == null? 0 : processor.getProcessorId();
     this.notificationOnly = true;
         
-    //Set sqlfAsyncListenerRecepients = r.getRegionAdvisor().adviseSqlfAsyncEventListenerHub();
-    //sqlfAsyncListenerRecepients.retainAll(adjunctRecipients);
-    //Now remove those adjunct recepients which are present in SqlfAsyncListenerRecepients
-    //adjunctRecipients.removeAll(sqlfAsyncListenerRecepients);
     this.setFilterInfo(filterRoutingInfo);
     Set failures1= null;
     if(!adjunctRecipients.isEmpty()) {
@@ -454,20 +477,6 @@ public abstract class PartitionMessage extends DistributionMessage implements
       setRecipients(adjunctRecipients);
       failures1 = r.getDistributionManager().putOutgoing(this);
     }
-    /*
-    //Now distribute message with old value to Sqlf Hub nodes
-    if(!sqlfAsyncListenerRecepients.isEmpty()) {
-      //System.out.println("Asif1: sqlf hub  recepients ="+sqlfHubRecepients);
-      resetRecipients();
-      setRecipients(sqlfAsyncListenerRecepients);
-      event.applyDelta(true);
-      Set failures2 = r.getDistributionManager().putOutgoing(this);
-      if(failures1 == null) {
-        failures1 = failures2;
-      }else if(failures2 != null) {
-        failures1.addAll(failures2);
-      }
-    }*/
     
     return failures1;
   }
@@ -644,7 +653,7 @@ public abstract class PartitionMessage extends DistributionMessage implements
   /**
    * added to support old value to be written on wire.
    * @param value true or false
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public void setHasOldValue(boolean value) {
     // override in subclasses which need old value to be serialized.
@@ -700,7 +709,7 @@ public abstract class PartitionMessage extends DistributionMessage implements
    * recipient, capturing any CacheException thrown by the recipient and handle
    * it as an expected exception.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    * @see #waitForCacheException()
    */
   public static class PartitionResponse extends DirectReplyProcessor {

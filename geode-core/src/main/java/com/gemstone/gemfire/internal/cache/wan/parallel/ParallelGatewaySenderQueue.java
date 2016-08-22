@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,6 +36,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.CancelException;
@@ -492,7 +491,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       if (this.userRegionNameToshadowPRMap.containsKey(regionName))
         return;
       
-      if(!isUsedForHDFS() && userPR.getDataPolicy().withPersistence() && !sender.isPersistenceEnabled()){
+      if(userPR.getDataPolicy().withPersistence() && !sender.isPersistenceEnabled()){
         throw new GatewaySenderException(
             LocalizedStrings.ParallelGatewaySenderQueue_NON_PERSISTENT_GATEWAY_SENDER_0_CAN_NOT_BE_ATTACHED_TO_PERSISTENT_REGION_1
                 .toLocalizedString(new Object[] { this.sender.getId(),
@@ -552,12 +551,12 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         }
 
         ParallelGatewaySenderQueueMetaRegion meta = metaRegionFactory.newMetataRegion(cache,
-            prQName, ra, sender, isUsedForHDFS());
+            prQName, ra, sender);
 
         try {
           prQ = (PartitionedRegion)cache
               .createVMRegion(prQName, ra, new InternalRegionArguments()
-                  .setInternalMetaRegion(meta).setDestroyLockFlag(true)
+                  .setInternalMetaRegion(meta).setDestroyLockFlag(true).setInternalRegion(true)
                   .setSnapshotInputStream(null).setImageTarget(null));
           // at this point we should be able to assert prQ == meta; 
           
@@ -567,20 +566,12 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           if (isAccessor)
             return; // return from here if accessor node
 
-          // if the current node is marked uninitialized (SQLF DDL replay in
-          // progress) then we cannot wait for buckets to recover, because
-          // bucket creation has been disabled until DDL replay is complete.
-          if(!prQ.getCache().isUnInitializedMember(prQ.getDistributionManager().getId())) {
-            //Wait for buckets to be recovered.
-            prQ.shadowPRWaitForBucketRecovery();
-          }
+          //Wait for buckets to be recovered.
+          prQ.shadowPRWaitForBucketRecovery();
 
-        } catch (IOException veryUnLikely) {
+        } catch (IOException | ClassNotFoundException veryUnLikely) {
           logger.fatal(LocalizedMessage.create(LocalizedStrings.SingleWriteSingleReadRegionQueue_UNEXPECTED_EXCEPTION_DURING_INIT_OF_0,
                   this.getClass()), veryUnLikely);
-        } catch (ClassNotFoundException alsoUnlikely) {
-          logger.fatal(LocalizedMessage.create(LocalizedStrings.SingleWriteSingleReadRegionQueue_UNEXPECTED_EXCEPTION_DURING_INIT_OF_0,
-                  this.getClass()), alsoUnlikely);
         }
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, prQ);
@@ -629,10 +620,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     for (BucketRegion bucketRegion : localBucketRegions) {
       bucketRegion.clear();
     }
-  }
-  protected boolean isUsedForHDFS()
-  {
-    return false;
   }
   protected void afterRegionAdd (PartitionedRegion userPR) {
 
@@ -826,7 +813,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
                   // this.bucketToTempQueueMap.put(bucketId, tempQueue);
                   // }
                   tempQueue.add(value);
-                  // TODO OFFHEAP is value refCount ok here?
                   // For debugging purpose.
                   if (isDebugEnabled) {
                     logger.debug("The value {} is enqueued to the tempQueue for the BucketRegionQueue.", value);
@@ -1287,7 +1273,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     
     PartitionedRegion prQ = getRandomShadowPR();
-    List batch = new ArrayList();
+    List<GatewaySenderEventImpl> batch = new ArrayList<>();
     if (prQ == null || prQ.getLocalMaxMemory() == 0) {
       try {
         Thread.sleep(50);
@@ -1380,8 +1366,20 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return batch;
   }
 
-  private void addPeekedEvents(List batch, int batchSize) {
+  private void addPeekedEvents(List<GatewaySenderEventImpl> batch, int batchSize) {
     if (this.resetLastPeeked) {
+
+      //Remove all entries from peekedEvents for buckets that are not longer primary
+      //This will prevent repeatedly trying to dispatch non-primary events
+      for(Iterator<GatewaySenderEventImpl> iterator = peekedEvents.iterator(); iterator.hasNext(); ) {
+        GatewaySenderEventImpl event = iterator.next();
+        final int bucketId = event.getBucketId();
+        final PartitionedRegion region = (PartitionedRegion) event.getRegion();
+        if(!region.getRegionAdvisor().isPrimaryForBucket(bucketId)) {
+          iterator.remove();
+        }
+      }
+
       if (this.peekedEventsProcessingInProgress) {
         // Peeked event processing is in progress. This means that the original peekedEvents
         // contained > batch size events due to a reduction in the batch size. Create a batch
@@ -1410,7 +1408,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
   }
 
-  private void addPreviouslyPeekedEvents(List batch, int batchSize) {
+  private void addPreviouslyPeekedEvents(List<GatewaySenderEventImpl> batch, int batchSize) {
     for (int i=0; i<batchSize; i++) {
       batch.add(this.peekedEventsProcessing.remove());
       if (this.peekedEventsProcessing.isEmpty()) {
@@ -1671,7 +1669,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       if (shutdown) {
         return true;
       }
-      if (cache.getCancelCriterion().cancelInProgress() != null) {
+      if (cache.getCancelCriterion().isCancelInProgress()) {
         return true;
       }
       return false;
@@ -1858,18 +1856,12 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     public ParallelGatewaySenderQueueMetaRegion(String regionName,
         RegionAttributes attrs, LocalRegion parentRegion,
         GemFireCacheImpl cache, AbstractGatewaySender pgSender) {
-      this( regionName, attrs, parentRegion, cache, pgSender, false);
-    }
-    public ParallelGatewaySenderQueueMetaRegion(String regionName,
-        RegionAttributes attrs, LocalRegion parentRegion,
-        GemFireCacheImpl cache, AbstractGatewaySender pgSender, boolean isUsedForHDFS) {
       super(regionName, attrs, parentRegion, cache,
           new InternalRegionArguments().setDestroyLockFlag(true)
               .setRecreateFlag(false).setSnapshotInputStream(null)
               .setImageTarget(null)
               .setIsUsedForParallelGatewaySenderQueue(true)
-              .setParallelGatewaySender((AbstractGatewaySender)pgSender)
-              .setIsUsedForHDFSParallelGatewaySenderQueue(isUsedForHDFS));
+              .setParallelGatewaySender((AbstractGatewaySender)pgSender));
       this.sender = (AbstractGatewaySender)pgSender;
       
     }
@@ -1926,9 +1918,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   
   static class MetaRegionFactory {
     ParallelGatewaySenderQueueMetaRegion newMetataRegion(
-        GemFireCacheImpl cache, final String prQName, final RegionAttributes ra, AbstractGatewaySender sender, boolean isUsedForHDFS) {
+        GemFireCacheImpl cache, final String prQName, final RegionAttributes ra, AbstractGatewaySender sender) {
       ParallelGatewaySenderQueueMetaRegion meta = new ParallelGatewaySenderQueueMetaRegion(
-          prQName, ra, null, cache, sender, isUsedForHDFS);
+          prQName, ra, null, cache, sender);
       return meta;
     }
   }

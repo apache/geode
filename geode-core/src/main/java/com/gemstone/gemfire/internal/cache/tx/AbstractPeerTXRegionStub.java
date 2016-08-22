@@ -18,7 +18,9 @@ package com.gemstone.gemfire.internal.cache.tx;
 
 import java.util.Set;
 
+import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
+import com.gemstone.gemfire.cache.TransactionDataNodeHasDepartedException;
 import com.gemstone.gemfire.cache.TransactionDataNotColocatedException;
 import com.gemstone.gemfire.cache.TransactionException;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
@@ -36,16 +38,16 @@ public abstract class AbstractPeerTXRegionStub implements TXRegionStub {
     this.region = r;
   }
 
+  @Override
   public Set getRegionKeysForIteration(LocalRegion currRegion) {
-    /*
-     * txtodo: not sure about c/s for this?
-     */
     try {
       RemoteFetchKeysMessage.FetchKeysResponse response = RemoteFetchKeysMessage.send(currRegion, state.getTarget());
       return response.waitForKeys();
     } catch (RegionDestroyedException e) {
       throw new TransactionDataNotColocatedException(LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
               .toLocalizedString(e.getRegionFullPath()), e);
+    } catch(CacheClosedException e) {
+      throw new TransactionDataNodeHasDepartedException("Cache was closed while fetching keys");
     } catch (Exception e) {
       throw new TransactionException(e);
     }

@@ -22,6 +22,8 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 /**
  * This is a member representing site 2 who wants to receive data from site 1
  * 
@@ -52,18 +54,18 @@ public class WANBootStrapping_Site2_Add {
 
   public static void main(String[] args) {
 
-    System.setProperty("gemfire.DistributedSystemListener",
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener",
         "com.main.MyDistributedSystemListener");
     
     //create a locator and a cache
     System.out.println("Creating cache ...It will take some time..");
     Cache cache = new CacheFactory()
-    .set(DistributionConfig.MCAST_PORT_NAME,"0")
-    .set(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+2)
-    .set(DistributionConfig.LOCATORS_NAME, "localhost[" + 20202 + "]")
-    .set(DistributionConfig.START_LOCATOR_NAME, "localhost[" + 20202 + "],server=true,peer=true,hostname-for-clients=localhost")
-    .set(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + 10101 + "]")
-    .set(DistributionConfig.LOG_LEVEL_NAME, "warning")
+        .set(MCAST_PORT, "0")
+    .set(DISTRIBUTED_SYSTEM_ID, ""+2)
+        .set(LOCATORS, "localhost[" + 20202 + "]")
+        .set(START_LOCATOR, "localhost[" + 20202 + "],server=true,peer=true,hostname-for-clients=localhost")
+    .set(REMOTE_LOCATORS, "localhost[" + 10101 + "]")
+    .set(LOG_LEVEL, "warning")
     .create();
     System.out.println("Cache Created");
     

@@ -16,11 +16,12 @@
  */
 package com.gemstone.gemfire.internal.util.concurrent;
 
+import com.gemstone.gemfire.CancelCriterion;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.Assert;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.internal.Assert;
 
 /**
  * This class is a "stoppable" cover for {@link CountDownLatch}.
@@ -30,7 +31,7 @@ public class StoppableCountDownLatch {
   /**
    * This is how often waiters will wake up to check for cancellation
    */
-  static final long RETRY_TIME = Long.getLong("gemfire.stoppable-retry-interval", 2000).longValue();
+  static final long RETRY_TIME = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "stoppable-retry-interval", 2000).longValue();
 
   
   /**

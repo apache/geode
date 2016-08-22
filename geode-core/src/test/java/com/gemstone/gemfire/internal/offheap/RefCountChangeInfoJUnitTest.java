@@ -18,8 +18,6 @@ package com.gemstone.gemfire.internal.offheap;
 
 import static org.junit.Assert.*;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -27,14 +25,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class RefCountChangeInfoJUnitTest {
-
-  @Before
-  public void setUp() throws Exception {
-  }
-
-  @After
-  public void tearDown() throws Exception {
-  }
 
   @Test
   public void testGetOwner() {
@@ -192,7 +182,7 @@ public class RefCountChangeInfoJUnitTest {
 
   }
 
-  class SameHashDifferentTrace {
+  private static class SameHashDifferentTrace {
 
     public int hashCode() { 
       return 1; 
@@ -202,6 +192,4 @@ public class RefCountChangeInfoJUnitTest {
       return false; 
     }
   }
-  
-
 }

@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned.fixed;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -25,9 +27,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -43,20 +46,12 @@ import com.gemstone.gemfire.cache.control.RebalanceOperation;
 import com.gemstone.gemfire.cache.control.RebalanceResults;
 import com.gemstone.gemfire.cache.control.ResourceManager;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.internal.cache.ClientServerObserver;
-import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
-import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.FixedPartitionAttributesImpl;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.HARegion;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.Node;
-import com.gemstone.gemfire.internal.cache.PRHARedundancyProvider;
 import com.gemstone.gemfire.internal.cache.PartitionRegionConfig;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionHelper;
@@ -69,24 +64,21 @@ import com.gemstone.gemfire.internal.cache.execute.data.ShipmentId;
 import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserver;
 import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserverAdapter;
 import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserverHolder;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This is the base class to do operations
  */
+@Category(DistributedTest.class)
+public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
 
-public class FixedPartitioningTestBase extends DistributedTestCase {
-
-  private static final long serialVersionUID = 1L;
-  
-  protected static String Quarter1 = "Q1";  
+  protected static String Quarter1 = "Q1";
   protected static String Quarter2 = "Q2";
   protected static String Quarter3 = "Q3";
   protected static String Quarter4 = "Q4";
@@ -131,17 +123,17 @@ public class FixedPartitioningTestBase extends DistributedTestCase {
     OCT, NOV, DEC
   };
 
-  public FixedPartitioningTestBase(String name) {
-    super(name);
+  public FixedPartitioningTestBase() {
+    super();
   }
 
   public static void createCacheOnMember() {
-    new FixedPartitioningTestBase("Temp").createCache();
+    new FixedPartitioningTestBase().createCache();
   }
 
   public static void createCacheOnMember_DisableMovePrimary() {
-    System.setProperty("gemfire.DISABLE_MOVE_PRIMARIES_ON_STARTUP", "true");
-    new FixedPartitioningTestBase("Temp").createCache();
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_MOVE_PRIMARIES_ON_STARTUP", "true");
+    new FixedPartitioningTestBase().createCache();
   }
   
   private void createCache() {
@@ -1395,7 +1387,7 @@ public class FixedPartitioningTestBase extends DistributedTestCase {
   }
   
   public static void closeCache() {
-    System.clearProperty("gemfire.DISABLE_MOVE_PRIMARIES_ON_STARTUP");
+    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_MOVE_PRIMARIES_ON_STARTUP");
     //System.setProperty("gemfire.DISABLE_MOVE_PRIMARIES_ON_STARTUP", "false");
     if (cache != null && !cache.isClosed()) {
       cache.close();

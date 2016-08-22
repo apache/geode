@@ -42,6 +42,7 @@ import com.gemstone.gemfire.internal.cache.ClientServerObserver;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.EventIDHolder;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.TXCommitMessage;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
@@ -58,7 +59,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Used to send region operations from a client to a server
- * @since 5.7
+ * @since GemFire 5.7
  */
 @SuppressWarnings("deprecation")
 public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAccess {
@@ -192,7 +193,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
                     EventID eventId,
                     Object callbackArg)
   {
-    EntryEventImpl event = new EntryEventImpl(eventId);
+    EventIDHolder event = new EventIDHolder(eventId);
     PutOp.execute(con, this.pool, this.regionName, key, value, event, callbackArg, this.pool.getPRSingleHopEnabled());
   }
   

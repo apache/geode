@@ -21,12 +21,13 @@ import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.internal.admin.GemFireVM;
 import com.gemstone.gemfire.internal.admin.remote.RemoteApplicationVM;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Implements the administrative interface to a cache server.
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public class CacheServerImpl extends ManagedSystemMemberImpl
   implements CacheVm, CacheServer {
@@ -142,7 +143,7 @@ public class CacheServerImpl extends ManagedSystemMemberImpl
     String file = this.getConfig().getCacheXMLFile();
     if (file != null && file.length() > 0) {
       sb.append(" ");
-      sb.append(com.gemstone.gemfire.distributed.internal.DistributionConfig.CACHE_XML_FILE_NAME);
+      sb.append(CACHE_XML_FILE);
       sb.append("=");
       sb.append(file);
     }
@@ -183,7 +184,7 @@ public class CacheServerImpl extends ManagedSystemMemberImpl
    *                durable-id of the client
    * @return true if the server is primary for given client
    * 
-   * @since 5.6
+   * @since GemFire 5.6
    */
   public boolean isPrimaryForDurableClient(String durableClientId)
   {

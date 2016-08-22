@@ -16,42 +16,12 @@
  */
 package com.gemstone.gemfire.internal.tcp;
 
-import java.io.IOException;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
-import java.nio.channels.ClosedByInterruptException;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.SSLException;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.LonerDistributionManager;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.direct.DirectChannel;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
@@ -62,6 +32,18 @@ import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import org.apache.logging.log4j.Logger;
+
+import javax.net.ssl.SSLException;
+import java.io.IOException;
+import java.net.*;
+import java.nio.channels.ClosedByInterruptException;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.*;
 
 /** <p>TCPConduit manages a server socket and a collection of connections to
     other systems.  Connections are identified by DistributedMember IDs.
@@ -76,7 +58,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
     If the ServerDelegate is null, DistributionMessages are ignored by
     the TCPConduit.</p>
 
-    @since 2.0
+    @since GemFire 2.0
    
 */
 
@@ -169,7 +151,7 @@ public class TCPConduit implements Runnable {
 
   /**
    * Config from the delegate
-   * @since 4.2.1
+   * @since GemFire 4.2.1
    */
   DistributionConfig config;
   
@@ -553,7 +535,7 @@ public class TCPConduit implements Runnable {
   /**
    * Returns whether or not this conduit is stopped
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public boolean isStopped() {
     return this.stopped;
@@ -588,7 +570,7 @@ public class TCPConduit implements Runnable {
     }
     for(;;) {
       SystemFailure.checkFailure();
-      if (stopper.cancelInProgress() != null) {
+      if (stopper.isCancelInProgress()) {
         break;
       }
       if (stopped) {
@@ -597,7 +579,7 @@ public class TCPConduit implements Runnable {
       if (Thread.currentThread().isInterrupted()) {
         break;
       }
-      if (stopper.cancelInProgress() != null) {
+      if (stopper.isCancelInProgress()) {
         break; // part of bug 37271
       }
 
@@ -792,7 +774,7 @@ public class TCPConduit implements Runnable {
   /**
    * records the current outgoing message count on all thread-owned
    * ordered connections
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public void getThreadOwnedOrderedConnectionState(
     DistributedMember member,
@@ -805,7 +787,7 @@ public class TCPConduit implements Runnable {
    * wait for the incoming connections identified by the keys in the
    * argument to receive and dispatch the number of messages associated
    * with the key
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public void waitForThreadOwnedOrderedConnectionState(DistributedMember member, Map channelState)
     throws InterruptedException

@@ -16,25 +16,20 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.io.IOException;
-
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.internal.cache.Conflatable;
+import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.internal.cache.Conflatable;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.io.IOException;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * JUnit test for verifying the proper functioning of HARegionQueue related
@@ -83,7 +78,7 @@ public class HARegionQueueStatsJUnitTest
    */
   private Cache createCache() throws CacheException
   {
-    return new CacheFactory().set("mcast-port", "0").create();
+    return new CacheFactory().set(MCAST_PORT, "0").create();
   }
 
   /**

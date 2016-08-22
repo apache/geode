@@ -20,7 +20,7 @@ package com.gemstone.gemfire.management.internal.cli.shell;
  * RuntimeException to wrap all the exception that could occur for JMX
  * operations/attributes.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class JMXInvocationException extends RuntimeException {
   

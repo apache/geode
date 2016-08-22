@@ -16,25 +16,11 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.Serializable;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
@@ -46,6 +32,12 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This class uniquely identifies any Region Operation like create, update
@@ -61,7 +53,7 @@ public final class EventID
   private static final Logger logger = LogService.getLogger();
   
   /** turns on very verbose logging ove membership id bytes */
-  private static boolean LOG_ID_BYTES = Boolean.getBoolean("gemfire.log-event-member-id-bytes");
+  private static boolean LOG_ID_BYTES = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "log-event-member-id-bytes");
   
   /**
    * Uniquely identifies the distributed member VM in which the Event is
@@ -184,7 +176,7 @@ public final class EventID
 
   /**
    * Returns the thread id used by the calling thread for its event ids
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static long getThreadId() {
     ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper)threadIDLocal.get();
@@ -193,7 +185,7 @@ public final class EventID
   /**
    * Returns the next reservable sequence id used by the calling thread for its event ids.
    * Note that the returned id is not yet reserved by the calling thread.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static long getSequenceId() {
     ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper)threadIDLocal.get();
@@ -202,7 +194,7 @@ public final class EventID
   /**
    * Reserves and returns a sequence id for the calling thread to be used
    * for an event id.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static long reserveSequenceId() {
     ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper)threadIDLocal.get();
@@ -321,7 +313,7 @@ public final class EventID
   /**
    * Returns a byte[] whose contents are calculated by
    * calling {@link #getOptimizedByteArrayForEventID}
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public byte[] calcBytes() {
     return getOptimizedByteArrayForEventID(getThreadID(), getSequenceID());

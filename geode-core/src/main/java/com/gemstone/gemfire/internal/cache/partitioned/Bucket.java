@@ -64,7 +64,7 @@ public interface Bucket extends CacheDistributionAdvisee {
   /**
    * Report members that are currently hosting the bucket 
    * @return set of members 
-   * @since gemfire59poc
+   * @since GemFire 5.9
    */
   public Set/*InternalDistributedMembers*/ getBucketOwners();
 

@@ -16,10 +16,21 @@
  */
 package com.gemstone.gemfire.management;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Map;
 import java.util.Set;
 
 import javax.management.ObjectName;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.distributed.DistributedLockService;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -29,16 +40,18 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.management.internal.SystemManagementService;
+import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
+@Category(DistributedTest.class)
 public class DLockManagementDUnitTest extends ManagementTestBase {
 
   private static final long serialVersionUID = 1L;
-
 
   private static final String LOCK_SERVICE_NAME = "testLockService";
   
@@ -47,9 +60,8 @@ public class DLockManagementDUnitTest extends ManagementTestBase {
   // 60 seconds.
   private static final int MAX_WAIT = 70 * 1000;
 
- 
-  public DLockManagementDUnitTest(String name) {
-    super(name);
+  public DLockManagementDUnitTest() {
+    super();
 
   }
 
@@ -58,7 +70,8 @@ public class DLockManagementDUnitTest extends ManagementTestBase {
    * 
    * @throws Exception
    */
-
+  @Category(FlakyTest.class) // GEODE-173: eats exceptions, HeadlessGFSH, time sensitive, waitForCriterions
+  @Test
   public void testDLockMBean() throws Throwable {
     
     initManagement(false);
@@ -90,7 +103,8 @@ public class DLockManagementDUnitTest extends ManagementTestBase {
    * 
    * @throws Exception
    */
-
+  @Category(FlakyTest.class) // GEODE-553: waitForCriterion, eats exceptions, HeadlessGFSH
+  @Test
   public void testDLockAggregate() throws Throwable {
     initManagement(false);
     VM[] managedNodes = new VM[getManagedNodeList()
@@ -156,7 +170,7 @@ public class DLockManagementDUnitTest extends ManagementTestBase {
             }, MAX_WAIT, 500, true);
 
           } catch (Exception e) {
-            fail("could not remove proxies in required time");
+            throw new AssertionError("could not remove proxies in required time", e);
 
           }
           assertNull(bean);
@@ -360,7 +374,7 @@ public class DLockManagementDUnitTest extends ManagementTestBase {
             bean = MBeanUtil.getLockServiceMbeanProxy(member, LOCK_SERVICE_NAME);
           } catch (Exception e) {
             InternalDistributedSystem.getLoggerI18n().fine(
-                "Undesired Result , LockServiceMBean Should not be null" + e);
+                "Undesired Result , LockServiceMBean Should not be null", e);
 
           }
           assertNotNull(bean);
@@ -394,7 +408,7 @@ public class DLockManagementDUnitTest extends ManagementTestBase {
               .fetchDistributedLockServiceObjectName(LOCK_SERVICE_NAME);
           assertEquals(expected, actual);
         } catch (Exception e) {
-          fail("Lock Service Navigation Failed " + e);
+          throw new AssertionError("Lock Service Navigation Failed ", e);
         }
 
         try {
@@ -404,7 +418,7 @@ public class DLockManagementDUnitTest extends ManagementTestBase {
               lockServiceMember.getId(), LOCK_SERVICE_NAME);
           assertEquals(expected, actual);
         } catch (Exception e) {
-          fail("Lock Service Navigation Failed " + e);
+          throw new AssertionError("Lock Service Navigation Failed ", e);
         }
 
       }
@@ -444,7 +458,7 @@ public class DLockManagementDUnitTest extends ManagementTestBase {
             }, MAX_WAIT, 500, true);
 
           } catch (Exception e) {
-            fail("could not remove Aggregate Bean in required time");
+            throw new AssertionError("could not remove Aggregate Bean in required time", e);
 
           }
           return;
@@ -455,7 +469,7 @@ public class DLockManagementDUnitTest extends ManagementTestBase {
             bean = MBeanUtil.getDistributedLockMbean(LOCK_SERVICE_NAME, expectedMembers);
           } catch (Exception e) {
             InternalDistributedSystem.getLoggerI18n().fine(
-                "Undesired Result , LockServiceMBean Should not be null" + e);
+                "Undesired Result , LockServiceMBean Should not be null", e);
 
           }
           assertNotNull(bean);

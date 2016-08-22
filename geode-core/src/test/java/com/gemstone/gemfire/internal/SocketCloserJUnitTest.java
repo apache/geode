@@ -16,14 +16,12 @@
  */
 package com.gemstone.gemfire.internal;
 
+import static org.junit.Assert.*;
 
-import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.Assert.*;
 
 import org.junit.After;
 import org.junit.Before;
@@ -150,7 +148,7 @@ public class SocketCloserJUnitTest {
    * closed socket is a noop.
    */
   @Test
-  public void testClosedSocket() throws IOException {
+  public void testClosedSocket() throws Exception {
     final AtomicBoolean runnableCalled = new AtomicBoolean();
     Runnable r = new Runnable() {
       @Override

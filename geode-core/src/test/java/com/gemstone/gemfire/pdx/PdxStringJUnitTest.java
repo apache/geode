@@ -16,16 +16,14 @@
  */
 package com.gemstone.gemfire.pdx;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,17 +36,16 @@ import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
 import com.gemstone.gemfire.pdx.internal.PdxString;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-import junit.framework.TestCase;
-
 @Category(IntegrationTest.class)
 public class PdxStringJUnitTest {
+
   private GemFireCacheImpl c;
 
   @Before
   public void setUp() {
     // make it a loner
     this.c = (GemFireCacheImpl) new CacheFactory()
-        .set("mcast-port", "0")
+        .set(MCAST_PORT, "0")
         .setPdxReadSerialized(true)
         .create();
   }

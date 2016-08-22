@@ -20,23 +20,17 @@
  */
 package com.gemstone.gemfire.internal.jta;
 
-import static org.junit.Assert.assertTrue;
-
-import java.util.Properties;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.*;
+import org.junit.experimental.categories.Category;
 
 import javax.transaction.Synchronization;
 import javax.transaction.UserTransaction;
+import java.util.Properties;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertTrue;
 
 /**
  */
@@ -51,7 +45,7 @@ public class TransactionImplJUnitTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.setProperty(MCAST_PORT, "0");
     ds = DistributedSystem.connect(props);
     tm = TransactionManagerImpl.getTransactionManager();
   }

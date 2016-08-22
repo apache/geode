@@ -27,7 +27,7 @@ import java.io.IOException;
  * operation that is sent from a server to an interested client. 
  *
  *
- * @since 5.5
+ * @since GemFire 5.5
  */
 public interface ClientMessage extends Conflatable, DataSerializableFixedID {
 

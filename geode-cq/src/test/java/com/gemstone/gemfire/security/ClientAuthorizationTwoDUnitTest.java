@@ -19,10 +19,12 @@ package com.gemstone.gemfire.security;
 import static com.gemstone.gemfire.security.SecurityTestUtils.*;
 import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
 
-import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 /**
  * Tests for authorization from client to server. This tests for authorization
@@ -33,9 +35,9 @@ import org.junit.experimental.categories.Category;
  * This is the second part of the test which had become long enough to
  * occasionally go beyond the 10min limit.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class ClientAuthorizationTwoDUnitTest extends ClientAuthorizationTestCase {
 
   @Override

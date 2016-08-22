@@ -16,25 +16,22 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
+import com.gemstone.gemfire.*;
+import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
+
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.StatisticsTypeFactory;
-import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
 
 /**
  * This class maintains statistics for the locator
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class LocatorStats {
   private static StatisticsType type;
-  
-  
-  private static final String KNOWN_LOCATORS = "locators"; // gauge
+
+  private static final String KNOWN_LOCATORS = LOCATORS; // gauge
   private static final String REQUESTS_TO_LOCATOR = "locatorRequests"; // counter
   private static final String RESPONSES_FROM_LOCATOR = "locatorResponses"; // counter
   private static final String ENDPOINTS_KNOWN = "servers"; // gauge
@@ -74,7 +71,7 @@ public class LocatorStats {
         statName, 
         statDescription,
         new StatisticDescriptor[] {
-            f.createIntGauge(KNOWN_LOCATORS, "Number of locators known to this locator", "locators"),
+            f.createIntGauge(KNOWN_LOCATORS, "Number of locators known to this locator", LOCATORS),
             f.createLongCounter(REQUESTS_TO_LOCATOR, "Number of requests this locator has received from clients", "requests"),
             f.createLongCounter(RESPONSES_FROM_LOCATOR, "Number of responses this locator has sent to clients", "responses"),
             f.createIntGauge(ENDPOINTS_KNOWN, "Number of servers this locator knows about", "servers"),
@@ -117,13 +114,6 @@ public class LocatorStats {
   }
   
   
-  /**
-   * Used by tests to create an instance given its already existings stats.
-   */
-  public LocatorStats(Statistics stats) {
-    this._stats = stats;
-  }
-
   public final void setServerCount(int sc) {
     if(this._stats==null) {
       this.endpoints_known.set(sc);
@@ -139,14 +129,6 @@ public class LocatorStats {
       this._stats.setInt(_KNOWN_LOCATORS, lc);
     }
   }
-  
-  public final void incLocatorRequests() {
-    if(this._stats==null) {
-      this.requests_to_locator.incrementAndGet();
-    } else {
-      this._stats.incLong(_REQUESTS_TO_LOCATOR, 1);
-    }
-  }  
   
   public final void endLocatorRequest(long startTime) {
     long took = DistributionStats.getStatTime()-startTime;
@@ -180,14 +162,6 @@ public class LocatorStats {
   
   
   
-  public final void incLocatorResponses() {
-    if(this._stats==null) {
-      this.responses_from_locator.incrementAndGet();
-    } else {
-      this._stats.incLong(_RESPONSES_FROM_LOCATOR, 1);
-    }
-  }  
-  
   public final void setLocatorRequests(long rl) {
     if(this._stats==null) {
       this.requests_to_locator.set(rl);
@@ -217,14 +191,6 @@ public class LocatorStats {
       this.serverLoadUpdates.incrementAndGet();
     } else {
       this._stats.incLong(_SERVER_LOAD_UPDATES, 1);
-    }
-  }  
-  
-  public void setRequestInProgress(int threads) {
-    if(this._stats!=null) {
-      this._stats.setInt(_REQUESTS_IN_PROGRESS, threads);
-    } else {
-      requestsInProgress.set(threads);
     }
   }
   

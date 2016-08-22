@@ -21,7 +21,7 @@ package com.gemstone.gemfire.security;
  * Thrown if the distributed system is in secure mode and this client/peer has
  * not set the security credentials.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class AuthenticationRequiredException extends GemFireSecurityException {
 private static final long serialVersionUID = 4675976651103154919L;

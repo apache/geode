@@ -59,12 +59,13 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
 
 /**
  * A Replicate Region removeAll message.  Meant to be sent only to
  * the peer who hosts transactional data.
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectReply
   {
@@ -266,10 +267,6 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
       EntryVersionsList versionTags = new EntryVersionsList(removeAllDataCount);
 
       boolean hasTags = false;
-      // get the "keyRequiresRegionContext" flag from first element assuming
-      // all key objects to be uniform
-      final boolean requiresRegionContext =
-        (this.removeAllData[0].key instanceof KeyWithRegionContext);
       for (int i = 0; i < this.removeAllDataCount; i++) {
         if (!hasTags && removeAllData[i].versionTag != null) {
           hasTags = true;
@@ -277,7 +274,7 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
         VersionTag<?> tag = removeAllData[i].versionTag;
         versionTags.add(tag);
         removeAllData[i].versionTag = null;
-        this.removeAllData[i].toData(out, requiresRegionContext);
+        this.removeAllData[i].toData(out);
         this.removeAllData[i].versionTag = tag;
       }
 
@@ -340,7 +337,7 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
     final DistributedRegion dr = (DistributedRegion)r;
     
     // create a base event and a op for RemoveAllMessage distributed btw redundant buckets
-    EntryEventImpl baseEvent = EntryEventImpl.create(
+    @Released EntryEventImpl baseEvent = EntryEventImpl.create(
         r, Operation.REMOVEALL_DESTROY,
         null, null, this.callbackArg, false, eventSender, true);
     try {
@@ -365,7 +362,7 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
       public void run() {
         InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
         for (int i = 0; i < removeAllDataCount; ++i) {
-          EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(r, myId, eventSender, i, removeAllData, false, bridgeContext, posDup, false);
+          @Released EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(r, myId, eventSender, i, removeAllData, false, bridgeContext, posDup, false);
           try {
           ev.setRemoveAllOperation(op);
           if (logger.isDebugEnabled()) {

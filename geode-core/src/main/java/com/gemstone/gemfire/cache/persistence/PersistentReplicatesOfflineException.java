@@ -25,7 +25,7 @@ import com.gemstone.gemfire.GemFireException;
  * If you see this exception you should restart members that are
  * configured for hosting persistent replicates.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class PersistentReplicatesOfflineException extends GemFireException {
   private static final long serialVersionUID = 6209644027346609970L;

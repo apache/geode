@@ -37,6 +37,7 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -87,7 +88,6 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreCreation;
 import com.gemstone.gemfire.cache.partition.PartitionListener;
 import com.gemstone.gemfire.cache.query.IndexType;
 import com.gemstone.gemfire.cache.query.internal.index.IndexCreationData;
@@ -131,7 +131,7 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * the {@link Cache}/{@link ClientCache},{@link Region}s, etc.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 @SuppressWarnings("deprecation")
 public class CacheXmlParser extends CacheXml implements ContentHandler {
@@ -139,17 +139,17 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
   private static final Logger logger = LogService.getLogger();
   
   /**
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private static final String BUFFER_SIZE = "http://apache.org/xml/properties/input-buffer-size";
 
   /**
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private static final String DISALLOW_DOCTYPE_DECL_FEATURE = "http://apache.org/xml/features/disallow-doctype-decl";
 
   /**
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
 
@@ -161,14 +161,14 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
   /**
    * Delegate {@link XmlParser}s mapped by namespace URI.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private HashMap<String, XmlParser> delegates = new HashMap<>();
 
   /**
    * Document {@link Locator} used for {@link SAXParseException}.
    * 
-   * @since 8.2
+   * @since GemFire 8.2
    */
   protected Locator documentLocator;
 
@@ -185,7 +185,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    *
    * @throws CacheXmlException Something went wrong while parsing the XML
    *
-   * @since 4.0
+   * @since GemFire 4.0
    *
    */
   public static CacheXmlParser parse(InputStream is) {
@@ -407,7 +407,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     stack.push(this.cache);
   }
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void startPool(Attributes atts) {
     PoolFactory f = this.cache.createPoolFactory();
@@ -489,7 +489,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     }
   }
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void endPool() {
     PoolFactory f = (PoolFactory)stack.pop();
@@ -497,7 +497,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     f.create(name);
   }
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void doLocator(Attributes atts) {
     PoolFactory f = (PoolFactory)stack.peek();
@@ -506,7 +506,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     f.addLocator(host, port);
   }
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void doServer(Attributes atts) {
     PoolFactory f = (PoolFactory)stack.peek();
@@ -519,7 +519,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * When a <code>cache-server</code> element is first encountered, we create
    * a new {@link CacheCreation#addCacheServer() CacheServer} in the cache.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   private void startCacheServer(Attributes atts) {
     CacheServer bridge = this.cache.addCacheServer();
@@ -810,7 +810,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * When a <code>load-probe</code> element is encountered,
    * create a new probe for the current <code>CacheServer</code>.
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void endLoadProbe() {
     Declarable d = createDeclarable();
@@ -887,6 +887,19 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
             !Boolean.valueOf(disableRegisterInterest).booleanValue());
     CacheCreation cache = (CacheCreation)stack.peek();
     cache.setDynamicRegionFactoryConfig(cfg);
+  }
+
+  /**
+   * When a <code>gateway-conflict-resolver</code> element is encountered,
+   * create a new listener for the <code>Cache</code>.
+   */
+  private void endGatewayConflictResolver() {
+    Declarable d = createDeclarable();
+    if (!(d instanceof GatewayConflictResolver)) {
+      throw new CacheXmlException(LocalizedStrings.CacheXmlParser_A_0_IS_NOT_AN_INSTANCE_OF_A_GATEWAYCONFLICTRESOLVER.toLocalizedString(d.getClass().getName()));
+    }
+    CacheCreation c = (CacheCreation)stack.peek();
+    c.setGatewayConflictResolver((GatewayConflictResolver)d);
   }
 
   /**
@@ -1020,161 +1033,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
     stack.push(attrs);
   }
-  /**
-   * When a <code>hdfs-store</code> element is first encountered, we
-   * create a {@link HDFSStoreCreation}, populate it accordingly, and
-   * push it on the stack.
-   * <pre>
-   * {@code
-   * <hdfs-store name="" gemfire-home-dir="" namenode-url="" hdfs-client-config-file="">
-   * ...
-   * </hdfs-store>
-   * }
-   * 
-   */
-  private void startHDFSStore(Attributes atts) {
-    // this is the only place to create DSAC objects
-    HDFSStoreCreation attrs = new HDFSStoreCreation();
-    String name = atts.getValue(NAME);
-    if (name == null) {
-      throw new InternalGemFireException(
-          LocalizedStrings.CacheXmlParser_NULL_DiskStoreName.toLocalizedString());
-    } else {
-      attrs.setName(name);
-    }
 
-    String namenode = atts.getValue(HDFS_NAMENODE_URL);
-    if (namenode == null) {
-      throw new InternalGemFireException(
-          LocalizedStrings.CacheXmlParser_NULL_DiskStoreName.toLocalizedString());
-    } else {
-      attrs.setNameNodeURL(namenode);
-    }
-
-    String clientConfig = atts.getValue(HDFS_CLIENT_CONFIG_FILE);
-    if (clientConfig != null) {
-      attrs.setHDFSClientConfigFile(clientConfig);
-    }
-    
-    String folderPath = atts.getValue(HDFS_HOME_DIR);
-    if (folderPath != null) {
-      attrs.setHomeDir(folderPath);
-    }
-   
-    String readCacheSize = atts.getValue(HDFS_READ_CACHE_SIZE);
-    if (readCacheSize != null) {
-      try {
-        attrs.setBlockCacheSize(Float.valueOf(readCacheSize));
-      } catch (NumberFormatException e) {
-        throw new CacheXmlException(
-            LocalizedStrings.DistributedSystemConfigImpl_0_IS_NOT_A_VALID_INTEGER_1
-            .toLocalizedString(new Object[] { readCacheSize, HDFS_READ_CACHE_SIZE }),
-            e);
-      }
-    }
-    
-    Integer maxMemory = getIntValue(atts, HDFS_MAX_MEMORY);
-    if (maxMemory != null) {
-      attrs.setMaxMemory(maxMemory);
-    }
-    
-    Integer batchSize = getIntValue(atts, HDFS_BATCH_SIZE);
-    if (batchSize != null) {
-      attrs.setBatchSize(batchSize);
-    }
-    
-    Integer batchInterval = getIntValue(atts, HDFS_BATCH_INTERVAL);
-    if (batchInterval != null) {
-      attrs.setBatchInterval(batchInterval);
-    }
-    
-    Integer dispatcherThreads = getIntValue(atts, HDFS_DISPATCHER_THREADS);
-    if (dispatcherThreads != null) {
-      attrs.setDispatcherThreads(dispatcherThreads);
-    }
-    
-    Boolean bufferPersistent = getBoolean(atts, HDFS_BUFFER_PERSISTENT);
-    if (bufferPersistent != null) {
-      attrs.setBufferPersistent(bufferPersistent);
-    }
-    
-    Boolean synchronousDiskWrite = getBoolean(atts, HDFS_SYNCHRONOUS_DISK_WRITE);
-    if (synchronousDiskWrite != null) {
-      attrs.setSynchronousDiskWrite(synchronousDiskWrite);
-    }
-    
-    String diskstoreName = atts.getValue(HDFS_DISK_STORE);
-    if (diskstoreName != null) {
-      attrs.setDiskStoreName(diskstoreName);
-    }
-    
-    Integer purgeInterval = getInteger(atts, HDFS_PURGE_INTERVAL);
-    if (purgeInterval != null) {
-      attrs.setPurgeInterval(purgeInterval);
-    }
-    Boolean majorCompaction = getBoolean(atts, HDFS_MAJOR_COMPACTION);
-    if (majorCompaction != null) {
-      attrs.setMajorCompaction(Boolean.valueOf(majorCompaction));
-    }
-    
-    // configure major compaction interval
-    Integer majorCompactionInterval = getIntValue(atts, HDFS_MAJOR_COMPACTION_INTERVAL);
-    if (majorCompactionInterval != null) {
-      attrs.setMajorCompactionInterval(majorCompactionInterval);
-    }
-    
-    // configure compaction concurrency
-    Integer value = getIntValue(atts, HDFS_MAJOR_COMPACTION_THREADS);
-    if (value != null)
-      attrs.setMajorCompactionThreads(value);
-    
-    Boolean minorCompaction = getBoolean(atts, HDFS_MINOR_COMPACTION);
-    if (minorCompaction != null) {
-      attrs.setMinorCompaction(Boolean.valueOf(minorCompaction));
-    }
-    
-    // configure compaction concurrency
-    value = getIntValue(atts, HDFS_MINOR_COMPACTION_THREADS);
-    if (value != null)
-      attrs.setMinorCompactionThreads(value);
-    
-    String maxFileSize = atts.getValue(HDFS_MAX_WRITE_ONLY_FILE_SIZE);
-    if (maxFileSize != null) {
-      attrs.setWriteOnlyFileRolloverSize(parseInt(maxFileSize));
-    }
-    
-    String fileRolloverInterval = atts.getValue(HDFS_WRITE_ONLY_FILE_ROLLOVER_INTERVAL);
-    if (fileRolloverInterval != null) {
-      attrs.setWriteOnlyFileRolloverInterval(parseInt(fileRolloverInterval));
-    }
-    stack.push(name);
-    stack.push(attrs);
-  }
-  
-  /**
-   * After popping the current <code>HDFSStoreCreation</code> off the
-   * stack, we add it to the <code>HDFSStoreCreation</code> that should be on the
-   * top of the stack.
-   */
-  private void endHDFSStore() {
-    HDFSStoreCreation hsc = (HDFSStoreCreation) stack.pop();
-    String name = (String) stack.pop();
-    CacheCreation cache;
-    Object top = stack.peek();
-    if (top instanceof CacheCreation) {
-      cache = (CacheCreation) top;
-    }
-    else {
-      String s = "Did not expect a " + top.getClass().getName()
-          + " on top of the stack.";
-      Assert.assertTrue(false, s);
-      cache = null; // Dead code
-    }
-    if (name != null) {
-      cache.addHDFSStore(name, hsc);
-    }
-  }
-	
   private Integer getIntValue(Attributes atts, String param) {
     String maxInputFileSizeMB = atts.getValue(param);
     if (maxInputFileSizeMB != null) {
@@ -1389,16 +1248,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     if(offHeapStr != null) {
       attrs.setOffHeap(Boolean.valueOf(offHeapStr).booleanValue());
     }
-    String hdfsStoreName = atts.getValue(HDFS_STORE_NAME);
-    if (hdfsStoreName != null) {
-      attrs.setHDFSStoreName(hdfsStoreName);
-    }
-    String hdfsWriteOnly= atts.getValue(HDFS_WRITE_ONLY);
-    if (hdfsWriteOnly != null) {
-      attrs.setHDFSWriteOnly(Boolean.valueOf(hdfsWriteOnly).booleanValue());
-    }
 
-    
     stack.push(attrs);
   }
   
@@ -1484,7 +1334,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
   /**
    * finish parsing a "group" element which is just a string
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void endGroup() {
     StringBuffer str = (StringBuffer) stack.pop();
@@ -2476,10 +2326,16 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
                 .toLocalizedString(new Object[] { id, orderPolicy }));
       }
     }
-    
+
+    // forward expiration destroy events.
+    String forward = atts.getValue(FORWARD_EXPIRATION_DESTROY);
+    if (forward != null) {
+      asyncEventQueueCreation.setForwardExpirationDestroy(Boolean.parseBoolean(forward));
+    }
+
     stack.push(asyncEventQueueCreation);
   }
-  
+
   private void endAsyncEventListener() {
     Declarable d = createDeclarable();
     if (!(d instanceof AsyncEventListener)) {
@@ -2510,6 +2366,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     factory.setMaximumQueueMemory(asyncEventChannelCreation.getMaximumQueueMemory());
     factory.setDispatcherThreads(asyncEventChannelCreation.getDispatcherThreads());
     factory.setOrderPolicy(asyncEventChannelCreation.getOrderPolicy());
+    factory.setForwardExpirationDestroy(asyncEventChannelCreation.isForwardExpirationDestroy());
     List<GatewayEventFilter> gatewayEventFilters = asyncEventChannelCreation.getGatewayEventFilters();
     for (GatewayEventFilter gatewayEventFilter : gatewayEventFilters) {
       factory.addGatewayEventFilter(gatewayEventFilter);
@@ -3000,9 +2857,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     } else if(qName.equals(PDX_SERIALIZER)) {
       //do nothing
     }
-	else if (qName.equals(HDFS_STORE)) {
-        startHDFSStore(atts);
-    }
     else if (qName.equals(COMPRESSOR)) {
     }
     else {
@@ -3021,7 +2875,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * @param namespaceUri
    *          to find {@link XmlParser} for.
    * @return {@link XmlParser} if found, otherwise null.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   // UnitTest CacheXmlParser.testGetDelegate()
   private XmlParser getDelegate(final String namespaceUri) {
@@ -3071,7 +2925,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * <code>capacity</code> and
    * <code>overflow-directory</code>, then pass these values to Bridge Server
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void startClientHaQueue(Attributes atts) {
     ClientHaQueueCreation clientHaQueue = new ClientHaQueueCreation();
@@ -3182,6 +3036,9 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       }
       else if (qName.equals(REGION)) {
         endRegion();
+      }
+      else if (qName.equals(GATEWAY_CONFLICT_RESOLVER)) {
+        endGatewayConflictResolver();
       }
       else if (qName.equals(VM_ROOT_REGION)) {
         endRegion();
@@ -3411,9 +3268,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       else if (qName.equals(PDX_SERIALIZER)) {
         endPdxSerializer();
       }
-      else if (qName.equals(HDFS_STORE)) {
-          endHDFSStore();
-      }
       else if (qName.equals(COMPRESSOR)) {
         endCompressor();
       }
@@ -3548,7 +3402,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
   /**
    * Do nothing
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void endClientHaQueue() {
   }

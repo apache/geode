@@ -42,7 +42,7 @@ import java.util.Set;
  * <p>
  * This class used to be in package <code>com.gemstone.gemfire.util</code>.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public final class GatewaySenderEventCallbackArgument extends
 WrappedCallbackArgument implements DataSerializableFixedID {
@@ -96,14 +96,10 @@ WrappedCallbackArgument implements DataSerializableFixedID {
    * @param originalReceivers
    *          The list of <code>Gateway</code> s to which the event has been
    *          originally sent
-   * @param serializeCBArg
-   *          boolean indicating whether to serialize callback argument
-   * 
    */
   public GatewaySenderEventCallbackArgument(Object originalCallbackArg,
-      int originatingDSId, List<Integer> originalReceivers,
-      boolean serializeCBArg) {
-    super(originalCallbackArg, serializeCBArg);
+      int originatingDSId, List<Integer> originalReceivers) {
+    super(originalCallbackArg);
     this.originatingDSId = originatingDSId;
     initializeReceipientDSIds(originalReceivers);
   }

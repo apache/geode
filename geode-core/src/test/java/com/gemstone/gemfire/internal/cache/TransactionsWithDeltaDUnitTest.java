@@ -19,25 +19,22 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.Delta;
 import com.gemstone.gemfire.InvalidDeltaException;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.InterestPolicy;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.SubscriptionAttributes;
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.execute.CustomerIDPartitionResolver;
 import com.gemstone.gemfire.internal.cache.execute.data.CustId;
@@ -54,10 +51,13 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Iterator;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 /**
  *
  */
-public class TransactionsWithDeltaDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
 
   private static final String D_REFERENCE = "ref";
   private static final String CUSTOMER = "Customer";
@@ -66,8 +66,8 @@ public class TransactionsWithDeltaDUnitTest extends CacheTestCase {
   /**
    * @param name
    */
-  public TransactionsWithDeltaDUnitTest(String name) {
-    super(name);
+  public TransactionsWithDeltaDUnitTest() {
+    super();
   }
 
   private Integer createRegionOnServer(VM vm, final boolean startServer, final boolean accessor) {
@@ -114,7 +114,7 @@ public class TransactionsWithDeltaDUnitTest extends CacheTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port);
         ccf.setPoolSubscriptionEnabled(false);
-        ccf.set("log-level", LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<Integer, String> crf = cCache
             .createClientRegionFactory(isEmpty ? ClientRegionShortcut.PROXY
@@ -212,6 +212,7 @@ public class TransactionsWithDeltaDUnitTest extends CacheTestCase {
     }
   }
   
+  @Test
   public void testTxWithCloning() {
     AttributesFactory af = new AttributesFactory();
     af.setDataPolicy(DataPolicy.REPLICATE);
@@ -220,6 +221,7 @@ public class TransactionsWithDeltaDUnitTest extends CacheTestCase {
     basicTest(af.create());
   }
   
+  @Test
   public void testExceptionThrown() {
     AttributesFactory af = new AttributesFactory();
     af.setDataPolicy(DataPolicy.REPLICATE);
@@ -316,6 +318,7 @@ public class TransactionsWithDeltaDUnitTest extends CacheTestCase {
     });
   }
   
+  @Test
   public void testClientServerDelta() {
     Host host = Host.getHost(0);
     VM server = host.getVM(0);

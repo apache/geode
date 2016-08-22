@@ -34,7 +34,7 @@ import com.gemstone.gemfire.internal.admin.StatAlertDefinition;
  * @see StatAlert raised and also Gemfire member id which raised the alert
  * 
  * 
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class StatAlertNotification extends StatAlert implements Serializable, DataSerializable, DataSerializableFixedID {
   private static final long serialVersionUID = -1634729103430107871L;

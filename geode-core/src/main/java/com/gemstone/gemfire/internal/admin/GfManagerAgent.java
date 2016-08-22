@@ -45,7 +45,7 @@ public interface GfManagerAgent {
    * Returns whether or not this manager agent has created admin
    * objects for the initial members of the distributed system.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public boolean isInitialized();
 
@@ -92,7 +92,7 @@ public interface GfManagerAgent {
   /**
    * Returns the distribution manager used by this manager agent.
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public DM getDM();
 
@@ -105,7 +105,7 @@ public interface GfManagerAgent {
    * Returns the distributed system that is administered by this
    * agent.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public InternalDistributedSystem getDSConnection();
 

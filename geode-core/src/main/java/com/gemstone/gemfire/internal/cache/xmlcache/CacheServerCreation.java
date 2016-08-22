@@ -32,7 +32,7 @@ import java.util.Set;
 /**
  * Represents a {@link CacheServer} that is created declaratively.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class CacheServerCreation extends AbstractCacheServer {
 
@@ -71,7 +71,6 @@ public class CacheServerCreation extends AbstractCacheServer {
     setMaximumTimeBetweenPings(other.getMaximumTimeBetweenPings());
     setMaximumMessageCount(other.getMaximumMessageCount());
     setMessageTimeToLive(other.getMessageTimeToLive());
-    //      setTransactionTimeToLive(other.getTransactionTimeToLive());  not implemented in CacheServer for v6.6
     setGroups(other.getGroups());
     setLoadProbe(other.getLoadProbe());
     setLoadPollInterval(other.getLoadPollInterval());

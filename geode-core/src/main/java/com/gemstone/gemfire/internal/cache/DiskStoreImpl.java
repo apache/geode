@@ -16,68 +16,17 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.InetAddress;
-import java.nio.channels.ClosedByInterruptException;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.DiskAccessException;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.persistence.PersistentID;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.ByteArrayDataInput;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.ValueWrapper;
@@ -85,18 +34,7 @@ import com.gemstone.gemfire.internal.cache.DiskEntry.RecoveredEntry;
 import com.gemstone.gemfire.internal.cache.ExportDiskRegion.ExportWriter;
 import com.gemstone.gemfire.internal.cache.lru.LRUAlgorithm;
 import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
-import com.gemstone.gemfire.internal.cache.persistence.BackupInspector;
-import com.gemstone.gemfire.internal.cache.persistence.BackupManager;
-import com.gemstone.gemfire.internal.cache.persistence.BytesAndBits;
-import com.gemstone.gemfire.internal.cache.persistence.DiskRecoveryStore;
-import com.gemstone.gemfire.internal.cache.persistence.DiskRegionView;
-import com.gemstone.gemfire.internal.cache.persistence.DiskStoreFilter;
-import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
-import com.gemstone.gemfire.internal.cache.persistence.OplogType;
-import com.gemstone.gemfire.internal.cache.persistence.PRPersistentConfig;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberPattern;
-import com.gemstone.gemfire.internal.cache.persistence.RestoreScript;
+import com.gemstone.gemfire.internal.cache.persistence.*;
 import com.gemstone.gemfire.internal.cache.snapshot.GFSnapshot;
 import com.gemstone.gemfire.internal.cache.snapshot.GFSnapshot.SnapshotWriter;
 import com.gemstone.gemfire.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
@@ -109,20 +47,39 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 import com.gemstone.gemfire.pdx.internal.EnumInfo;
 import com.gemstone.gemfire.pdx.internal.PdxField;
 import com.gemstone.gemfire.pdx.internal.PdxType;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
-import com.gemstone.gemfire.i18n.StringId;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.net.InetAddress;
+import java.nio.channels.ClosedByInterruptException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Represents a (disk-based) persistent store for region data. Used for both
  * persistent recoverable regions and overflow-only regions.
  * 
  * 
- * @since 3.2
+ * @since GemFire 3.2
  */
 @SuppressWarnings("synthetic-access")
 public class DiskStoreImpl implements DiskStore {
@@ -132,7 +89,7 @@ public class DiskStoreImpl implements DiskStore {
   public static final boolean KRF_DEBUG = Boolean.getBoolean("disk.KRF_DEBUG");
   
   public static final int MAX_OPEN_INACTIVE_OPLOGS = Integer.getInteger(
-      "gemfire.MAX_OPEN_INACTIVE_OPLOGS", 7).intValue();
+      DistributionConfig.GEMFIRE_PREFIX + "MAX_OPEN_INACTIVE_OPLOGS", 7).intValue();
 
   /* 
    * If less than 20MB (default - configurable through this property) of the
@@ -140,12 +97,13 @@ public class DiskStoreImpl implements DiskStore {
    * is better to bail out.
    */
   public static final int MIN_DISK_SPACE_FOR_LOGS = Integer.getInteger(
-      "gemfire.MIN_DISK_SPACE_FOR_LOGS", 20).intValue();
+      DistributionConfig.GEMFIRE_PREFIX + "MIN_DISK_SPACE_FOR_LOGS", 20).intValue();
   
   /** Represents an invalid id of a key/value on disk */
   public static final long INVALID_ID = 0L; // must be zero
-  
-  public static final String COMPLETE_COMPACTION_BEFORE_TERMINATION_PROPERTY_NAME = "gemfire.disk.completeCompactionBeforeTermination";
+
+  public static final String COMPLETE_COMPACTION_BEFORE_TERMINATION_PROPERTY_NAME =
+      DistributionConfig.GEMFIRE_PREFIX + "disk.completeCompactionBeforeTermination";
   
   static final int MINIMUM_DIR_SIZE = 1024;
   
@@ -165,16 +123,16 @@ public class DiskStoreImpl implements DiskStore {
    * Kept for backwards compat. Should use allowForceCompaction api/dtd instead.
    */
   private final static boolean ENABLE_NOTIFY_TO_ROLL = Boolean
-      .getBoolean("gemfire.ENABLE_NOTIFY_TO_ROLL");
+      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ENABLE_NOTIFY_TO_ROLL");
 
-  public static final String RECOVER_VALUE_PROPERTY_NAME = "gemfire.disk.recoverValues";
-  public static final String RECOVER_VALUES_SYNC_PROPERTY_NAME = "gemfire.disk.recoverValuesSync";
+  public static final String RECOVER_VALUE_PROPERTY_NAME = DistributionConfig.GEMFIRE_PREFIX + "disk.recoverValues";
+  public static final String RECOVER_VALUES_SYNC_PROPERTY_NAME = DistributionConfig.GEMFIRE_PREFIX + "disk.recoverValuesSync";
   boolean RECOVER_VALUES = getBoolean(
       DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, true);
   boolean RECOVER_VALUES_SYNC = getBoolean(
       DiskStoreImpl.RECOVER_VALUES_SYNC_PROPERTY_NAME, false);
   boolean FORCE_KRF_RECOVERY = getBoolean(
-      "gemfire.disk.FORCE_KRF_RECOVERY", false);
+      DistributionConfig.GEMFIRE_PREFIX + "disk.FORCE_KRF_RECOVERY", false);
   
   public static boolean getBoolean(String sysProp, boolean def) {
     return Boolean.valueOf(System.getProperty(sysProp, Boolean.valueOf(def)
@@ -198,15 +156,15 @@ public class DiskStoreImpl implements DiskStore {
    * set it.
    */
   private final int MAX_OPLOGS_PER_COMPACTION = Integer.getInteger(
-      "gemfire.MAX_OPLOGS_PER_COMPACTION",
-      Integer.getInteger("gemfire.MAX_OPLOGS_PER_ROLL", 1).intValue())
+      DistributionConfig.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_COMPACTION",
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_ROLL", 1).intValue())
       .intValue();
   /**
    *
    */
   public static final int MAX_CONCURRENT_COMPACTIONS = Integer.getInteger(
-      "gemfire.MAX_CONCURRENT_COMPACTIONS",
-      Integer.getInteger("gemfire.MAX_CONCURRENT_ROLLS", 1).intValue())
+      DistributionConfig.GEMFIRE_PREFIX + "MAX_CONCURRENT_COMPACTIONS",
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_CONCURRENT_ROLLS", 1).intValue())
       .intValue();
   
   /**
@@ -214,20 +172,20 @@ public class DiskStoreImpl implements DiskStore {
    * tasks that can be pending before submitting the tasks start blocking. 
    * These tasks are things like unpreblow oplogs, delete oplogs, etc. 
    */
-  public static final int MAX_PENDING_TASKS = Integer.getInteger("gemfire.disk.MAX_PENDING_TASKS", 6);
+  public static final int MAX_PENDING_TASKS = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "disk.MAX_PENDING_TASKS", 6);
   /**
    * This system property indicates that IF should also be preallocated. This property 
    * will be used in conjunction with the PREALLOCATE_OPLOGS property. If PREALLOCATE_OPLOGS
    * is ON the below will by default be ON but in order to switch it off you need to explicitly
    */
   static final boolean PREALLOCATE_IF = !System.getProperty(
-      "gemfire.preAllocateIF", "true").equalsIgnoreCase("false");
+      DistributionConfig.GEMFIRE_PREFIX + "preAllocateIF", "true").equalsIgnoreCase("false");
   /**
    * This system property indicates that Oplogs should be preallocated till the
    * maxOplogSize as specified for the disk store.
    */
   static final boolean PREALLOCATE_OPLOGS = !System.getProperty(
-      "gemfire.preAllocateDisk", "true").equalsIgnoreCase("false");
+      DistributionConfig.GEMFIRE_PREFIX + "preAllocateDisk", "true").equalsIgnoreCase("false");
 
   /**
    * For some testing purposes we would not consider top property if this flag
@@ -239,7 +197,7 @@ public class DiskStoreImpl implements DiskStore {
    * This system property turns on synchronous writes just the the init file.
    */
   static final boolean SYNC_IF_WRITES = Boolean
-      .getBoolean("gemfire.syncMetaDataWrites");
+      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "syncMetaDataWrites");
 
   /**
    * For testing - to keep track of files for which fallocate happened
@@ -372,9 +330,9 @@ public class DiskStoreImpl implements DiskStore {
   private static int calcCompactionThreshold(int ct) {
     if (ct == DiskStoreFactory.DEFAULT_COMPACTION_THRESHOLD) {
       // allow the old sys prop for backwards compat.
-      if (System.getProperty("gemfire.OVERFLOW_ROLL_PERCENTAGE") != null) {
+      if (System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "OVERFLOW_ROLL_PERCENTAGE") != null) {
         ct = (int) (Double.parseDouble(System.getProperty(
-            "gemfire.OVERFLOW_ROLL_PERCENTAGE", "0.50")) * 100.0);
+            DistributionConfig.GEMFIRE_PREFIX + "OVERFLOW_ROLL_PERCENTAGE", "0.50")) * 100.0);
       }
     }
     return ct;
@@ -992,7 +950,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   /**
-   * @since 3.2.1
+   * @since GemFire 3.2.1
    */
   final byte getBits(DiskRegion dr, DiskId id) {
     acquireReadLock(dr);
@@ -1151,7 +1109,7 @@ public class DiskStoreImpl implements DiskStore {
    * Note that this is no longer implemented by getting a write lock but instead
    * locks the same lock that acquireReadLock does.
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    */
   private void acquireWriteLock(DiskRegion dr) {
     // @todo darrel: this is no longer a write lock need to change method name
@@ -1163,7 +1121,7 @@ public class DiskStoreImpl implements DiskStore {
    * This function is having a default visiblity as it is used in the
    * OplogJUnitTest for a bug verification of Bug # 35012
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    */
 
   private void releaseWriteLock(DiskRegion dr) {
@@ -1176,7 +1134,7 @@ public class DiskStoreImpl implements DiskStore {
    * finally block. Note that this is no longer implemented by getting a read
    * lock but instead locks the same lock that acquireWriteLock does.
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    */
   void acquireReadLock(DiskRegion dr) {
     dr.basicAcquireReadLock();
@@ -1191,7 +1149,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   /**
-   * @since 5.1
+   * @since GemFire 5.1
    */
 
   void releaseReadLock(DiskRegion dr) {
@@ -1212,7 +1170,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   /**
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public void forceRolling(DiskRegion dr) {
     if (!dr.isBackup())
@@ -1248,7 +1206,7 @@ public class DiskStoreImpl implements DiskStore {
    * Get serialized form of data off the disk
    * 
    * @param id
-   * @since gemfire5.7_hotfix
+   * @since GemFire 5.7
    */
   public Object getSerializedData(DiskRegion dr, DiskId id) {
     return convertBytesAndBitsToSerializedForm(getBytesAndBits(dr, id, true));
@@ -1367,7 +1325,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   /**
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public void scheduleAsyncWrite(AsyncDiskEntry ade) {
     DiskRegion dr = ade.region.getDiskRegion();
@@ -1388,7 +1346,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   /**
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public void unscheduleAsyncWrite(DiskId did) {
     if (did != null) {
@@ -2869,7 +2827,7 @@ public class DiskStoreImpl implements DiskStore {
   /**
    * Compacts oplogs
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    * 
    */
   class OplogCompactor implements Runnable {
@@ -2991,7 +2949,7 @@ public class DiskStoreImpl implements DiskStore {
         return true;
       }
       CancelCriterion stopper = getCache().getCancelCriterion();
-      if (stopper.cancelInProgress() != null) {
+      if (stopper.isCancelInProgress()) {
         return true;
       }
       return false;
@@ -4397,9 +4355,9 @@ public class DiskStoreImpl implements DiskStore {
     }
     // need a cache so create a loner ds
     Properties props = new Properties();
-    props.setProperty("locators", "");
-    props.setProperty("mcast-port", "0");
-    props.setProperty("cache-xml-file", "");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(CACHE_XML_FILE, "");
     DistributedSystem ds = DistributedSystem.connect(props);
     offlineDS = ds;
     Cache c = com.gemstone.gemfire.cache.CacheFactory.create(ds);

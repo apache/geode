@@ -17,22 +17,6 @@
 
 package com.gemstone.gemfire.internal.cache.control;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.SystemFailure;
@@ -40,11 +24,19 @@ import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.control.RebalanceOperation;
 import com.gemstone.gemfire.cache.control.RebalanceResults;
 import com.gemstone.gemfire.cache.partition.PartitionRebalanceInfo;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionRebalanceOp;
 import com.gemstone.gemfire.internal.cache.partitioned.rebalance.CompositeDirector;
 import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Implements <code>RebalanceOperation</code> for rebalancing Cache resources.
@@ -92,7 +84,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
           if (region.getColocatedWith() == null && filter.include(region)) {
             
             if (region.isFixedPartitionedRegion()) {
-              if (Boolean.getBoolean("gemfire.DISABLE_MOVE_PRIMARIES_ON_STARTUP")) {
+              if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_MOVE_PRIMARIES_ON_STARTUP")) {
                 PartitionedRegionRebalanceOp prOp = new PartitionedRegionRebalanceOp(
                     region, simulation, new CompositeDirector(false, false, false, true), true, true, cancelled,
                     stats);

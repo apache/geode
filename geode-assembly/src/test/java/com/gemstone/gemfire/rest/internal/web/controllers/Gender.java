@@ -19,7 +19,7 @@ package com.gemstone.gemfire.rest.internal.web.controllers;
 /**
  * The Gender enum is a enumeration of genders (sexes).
  * <p/>
- * @since 8.0
+ * @since GemFire 8.0
  */
 
 @SuppressWarnings("unused")

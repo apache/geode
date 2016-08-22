@@ -17,6 +17,8 @@
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
@@ -30,6 +32,7 @@ import java.security.Principal;
 import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.IncompatibleVersionException;
@@ -37,10 +40,8 @@ import com.gemstone.gemfire.cache.UnsupportedVersionException;
 import com.gemstone.gemfire.cache.VersionException;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.SocketUtils;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedDataStream;
 import com.gemstone.gemfire.internal.cache.tier.Acceptor;
@@ -56,7 +57,7 @@ import com.gemstone.gemfire.security.AuthenticationRequiredException;
 /**
  * A <code>ServerHandShakeProcessor</code> verifies the client's version compatibility with server.
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
 
 
@@ -72,7 +73,7 @@ public class ServerHandShakeProcessor {
   /**
    * Test hook for server version support
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static void setSeverVersionForTesting(short ver) {
     currentServerVersion = Version.fromOrdinalOrCurrent(ver);
@@ -224,55 +225,11 @@ public class ServerHandShakeProcessor {
       ClientProxyMembershipID proxyId = handshake.getMembership();
       connection.setProxyId(proxyId);
       //hitesh: it gets principals
-      //Hitesh:for older version we should set this 
+      //Hitesh:for older version we should set this
       if (clientVersion.compareTo(Version.GFE_65) < 0
           || connection.getCommunicationMode() == Acceptor.GATEWAY_TO_GATEWAY) {
-       /* Principal principal = handshake.verifyCredentials();
-        connection.setPrincipal(principal);
-         if (principal != null) {
-          if (connection.getSecurityLogger().fineEnabled())
-            securityLogger.fine(connection.getName()
-                + ": successfully verified credentials for proxyID [" + proxyId
-                + "] having principal: " + principal.getName());
-        } else if (socket instanceof SSLSocket) {
-          // Test whether we are using SSL connection in mutual authentication
-          // mode and use its principal.
-          SSLSocket sslSocket = (SSLSocket) socket;
-          SSLSession sslSession = sslSocket.getSession();
-          if (!sslSession.getCipherSuite().equals("SSL_NULL_WITH_NULL_NULL")
-              && sslSocket.getNeedClientAuth()) {
-            try {
-              Certificate[] certs = sslSession.getPeerCertificates();
-              if (certs[0] instanceof X509Certificate) {
-                principal = ((X509Certificate) certs[0])
-                    .getSubjectX500Principal();
-                if (securityLogger.fineEnabled())
-                  securityLogger.fine(connection.getName()
-                      + ": successfully verified credentials for proxyID ["
-                      + proxyId
-                      + "] using SSL mutual authentication with principal: "
-                      + principal.getName());
-              } else {
-                if (securityLogger.warningEnabled())
-                  securityLogger.warning(
-                      LocalizedStrings.ServerHandShakeProcessor_0_UNEXPECTED_CERTIFICATE_TYPE_1_FOR_PROXYID_2,
-                      new Object[] {connection.getName(), certs[0].getType(), proxyId});
-              }
-            } catch (SSLPeerUnverifiedException ex) {
-              // this is the case where client has not verified itself
-              // i.e. not in mutual authentication mode
-              if (securityLogger.errorEnabled())
-                securityLogger.error(
-                    LocalizedStrings.ServerHandShakeProcessor_SSL_EXCEPTION_SHOULD_NOT_HAVE_HAPPENED,
-                    ex);
-              connection.setPrincipal(null);//TODO:hitesh ??
-            }
-          }
-        }
-        */
          long uniqueId = setAuthAttributes(connection);
          connection.setUserAuthId(uniqueId);//for older clients < 6.5
-
       }
     }
     catch (SocketTimeoutException timeout) {
@@ -352,9 +309,18 @@ public class ServerHandShakeProcessor {
     throws Exception{
     try {
       logger.debug("setAttributes()");
-      Principal principal = ((HandShake)connection.getHandshake()).verifyCredentials();
-      connection.setPrincipal(principal);//TODO:hitesh is this require now ???
-      return getUniqueId(connection, principal);
+      Object principal = ((HandShake)connection.getHandshake()).verifyCredentials();
+
+      long uniqueId;
+      if(principal instanceof Subject){
+        uniqueId = connection.getClientUserAuths(connection.getProxyID()).putSubject((Subject)principal);
+      }
+      else {
+        //this sets principal in map as well....
+        uniqueId = getUniqueId(connection, (Principal)principal);
+        connection.setPrincipal((Principal)principal);//TODO:hitesh is this require now ???
+      }
+      return uniqueId;
     }catch(Exception ex) {
       throw ex;
     }
@@ -368,9 +334,9 @@ public class ServerHandShakeProcessor {
       Properties systemProperties = system.getProperties();
       //hitesh:auth callbacks
       String authzFactoryName = systemProperties
-          .getProperty(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME);
+          .getProperty(SECURITY_CLIENT_ACCESSOR);
       String postAuthzFactoryName = systemProperties
-          .getProperty(DistributionConfig.SECURITY_CLIENT_ACCESSOR_PP_NAME);
+          .getProperty(SECURITY_CLIENT_ACCESSOR_PP);
       AuthorizeRequest authzRequest = null;
       AuthorizeRequestPP postAuthzRequest = null;
       
@@ -383,7 +349,7 @@ public class ServerHandShakeProcessor {
           if (securityLogWriter.warningEnabled()) {
             securityLogWriter.warning(
                 LocalizedStrings.ServerHandShakeProcessor_0_AUTHORIZATION_ENABLED_BUT_AUTHENTICATION_CALLBACK_1_RETURNED_WITH_NULL_CREDENTIALS_FOR_PROXYID_2,
-                new Object[] {connection.getName(), DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, connection.getProxyID()});
+                new Object[] {connection.getName(), SECURITY_CLIENT_AUTHENTICATOR, connection.getProxyID()});
           }
         }
         authzRequest = new AuthorizeRequest(authzFactoryName,
@@ -399,7 +365,7 @@ public class ServerHandShakeProcessor {
           if (securityLogWriter.warningEnabled()) {
             securityLogWriter.warning(
               LocalizedStrings.ServerHandShakeProcessor_0_POSTPROCESS_AUTHORIZATION_ENABLED_BUT_NO_AUTHENTICATION_CALLBACK_2_IS_CONFIGURED,
-              new Object[] {connection.getName(), DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME});
+              new Object[] {connection.getName(), SECURITY_CLIENT_AUTHENTICATOR});
           }      
         }
         postAuthzRequest = new AuthorizeRequestPP(
@@ -422,7 +388,7 @@ public class ServerHandShakeProcessor {
     try {
       soTimeout = socket.getSoTimeout();
       socket.setSoTimeout(timeout);
-      InputStream is = SocketUtils.getInputStream(socket);//socket.getInputStream();
+      InputStream is = socket.getInputStream();
       short clientVersionOrdinal = Version.readOrdinalFromInputStream(is);
       if (clientVersionOrdinal == -1) {
         throw new EOFException(

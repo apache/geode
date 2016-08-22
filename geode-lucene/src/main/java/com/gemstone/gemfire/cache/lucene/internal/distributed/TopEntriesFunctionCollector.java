@@ -123,13 +123,8 @@ public class TopEntriesFunctionCollector implements ResultCollector<TopEntriesCo
         return mergedResults.getEntries();
       }
       
-      try {
-        mergedResults = manager.reduce(subResults);
-        return mergedResults.getEntries();
-      } catch (IOException e) {
-        logger.debug("Error while merging function execution results", e);
-        throw new FunctionException(e);
-      }
+      mergedResults = manager.reduce(subResults);
+      return mergedResults.getEntries();
     }
   }
 

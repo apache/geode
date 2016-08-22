@@ -28,7 +28,7 @@ import com.gemstone.gemfire.pdx.PdxWriter;
 /**
 * The Order class is an abstraction modeling a order.
 * <p/>
-* @since 8.0
+* @since GemFire 8.0
 */
 
 public class Order implements PdxSerializable {

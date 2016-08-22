@@ -48,7 +48,6 @@ import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
-import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionHelper;
@@ -59,6 +58,8 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 
 /**
  * A class that specifies a destroy operation.
@@ -69,7 +70,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * frequently, if they are not then it makes sense to fold the destroy and the
  * invalidate into the same message and use an extra bit to differentiate
  * 
- * @since 5.0
+ * @since GemFire 5.0
  *  
  */
 public class DestroyMessage extends PartitionMessageWithDirectReply {
@@ -95,7 +96,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   InternalDistributedMember originalSender;
   
   /** expectedOldValue used for PartitionedRegion#remove(key, value) */
-  private Object expectedOldValue; // TODO OFFHEAP make it a cd
+  private Object expectedOldValue;
   
   /** client routing information for notificationOnly=true messages */
   protected FilterRoutingInfo filterInfo;
@@ -249,11 +250,8 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     if (eventSender == null) {
        eventSender = getSender();
     }
-    EntryEventImpl event = null;
+    @Released EntryEventImpl event = null;
     try {
-    if (r.keyRequiresRegionContext()) {
-      ((KeyWithRegionContext)this.key).setRegionContext(r);
-    }
     if (this.bridgeContext != null) {
       event = EntryEventImpl.create(r, getOperation(), this.key, null/*newValue*/,
           getCallbackArg(), false/*originRemote*/, eventSender, 
@@ -323,7 +321,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
       }
     }
     else {
-      EntryEventImpl e2 = createListenerEvent(event, r, dm.getDistributionManagerId());
+      @Released EntryEventImpl e2 = createListenerEvent(event, r, dm.getDistributionManagerId());
       try {
       r.invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, e2, r.isInitialized(), true);
       } finally {
@@ -411,7 +409,10 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     return this.eventId;
   }
 
-  /** create a new EntryEvent to be used in notifying listeners, bridge servers, etc. */
+  /** create a new EntryEvent to be used in notifying listeners, bridge servers, etc.
+   * Caller must release result if it is != to sourceEvent
+   */
+  @Retained
   EntryEventImpl createListenerEvent(EntryEventImpl sourceEvent, PartitionedRegion r,
       InternalDistributedMember member) {
     final EntryEventImpl e2;

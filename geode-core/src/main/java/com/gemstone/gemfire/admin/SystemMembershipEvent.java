@@ -22,7 +22,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * Instances of this are delivered to a {@link SystemMembershipListener} when a
  * member has joined or left the distributed system.
  *
- * @since 3.5
+ * @since GemFire 3.5
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface SystemMembershipEvent {
@@ -34,7 +34,7 @@ public interface SystemMembershipEvent {
   /**
    * Returns the {@link DistributedMember} that this event originated in.
    * @return the member that performed the operation that originated this event.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public DistributedMember getDistributedMember();
 }

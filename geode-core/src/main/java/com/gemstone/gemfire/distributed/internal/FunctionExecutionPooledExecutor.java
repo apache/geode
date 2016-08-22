@@ -17,21 +17,11 @@
 
 package com.gemstone.gemfire.distributed.internal;
 
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ThreadFactory;
-
 import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LocalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 
 import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * A ThreadPoolExecutor with stat support.  This executor also has a
@@ -146,7 +136,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
  
   public FunctionExecutionPooledExecutor(BlockingQueue<Runnable> q, int maxPoolSize, PoolStatHelper stats, ThreadFactory tf, int msTimeout, final boolean forFnExec) {
     this(initQ(q), maxPoolSize, stats, tf, msTimeout, initREH(q,forFnExec));
-    final int retryFor = Integer.getInteger("gemfire.RETRY_INTERVAL", 5000).intValue(); 
+    final int retryFor = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "RETRY_INTERVAL", 5000).intValue();
     if (!(q instanceof SynchronousQueue)) {
       this.bufferQueue = q;
       // create a thread that takes from bufferQueue and puts into result
@@ -216,7 +206,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
    * from its thread pool. Default is (30000 * 60) ms (30 minutes).
    * It is not static so it can be set at runtime and pick up different values.
    */
-    this(q, poolSize, stats, tf, Integer.getInteger("gemfire.IDLE_THREAD_TIMEOUT", 30000*60), false /* not for fn exec*/);
+    this(q, poolSize, stats, tf, Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "IDLE_THREAD_TIMEOUT", 30000 * 60), false /* not for fn exec*/);
   }
   
   public FunctionExecutionPooledExecutor(BlockingQueue<Runnable> q, int poolSize, PoolStatHelper stats, ThreadFactory tf, boolean forFnExec) {
@@ -225,7 +215,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
      * from its thread pool. Default is (30000 * 60) ms (30 minutes).
      * It is not static so it can be set at runtime and pick up different values.
      */
-      this(q, poolSize, stats, tf, Integer.getInteger("gemfire.IDLE_THREAD_TIMEOUT", 30000*60), forFnExec);
+    this(q, poolSize, stats, tf, Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "IDLE_THREAD_TIMEOUT", 30000 * 60), forFnExec);
     }
   /**
    * Default timeout with no stats.

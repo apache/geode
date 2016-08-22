@@ -16,47 +16,42 @@
  */
 package com.gemstone.gemfire.management.internal.cli.shell;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicBoolean;
-import javax.management.AttributeNotFoundException;
-import javax.management.InstanceNotFoundException;
-import javax.management.JMX;
-import javax.management.MBeanException;
-import javax.management.MBeanServerConnection;
-import javax.management.MalformedObjectNameException;
-import javax.management.Notification;
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
-import javax.management.QueryExp;
-import javax.management.ReflectionException;
+import com.gemstone.gemfire.internal.lang.StringUtils;
+import com.gemstone.gemfire.internal.util.ArrayUtils;
+import com.gemstone.gemfire.internal.util.IOUtils;
+import com.gemstone.gemfire.management.DistributedSystemMXBean;
+import com.gemstone.gemfire.management.MemberMXBean;
+import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
+import com.gemstone.gemfire.management.internal.ManagementConstants;
+import com.gemstone.gemfire.management.internal.cli.CliUtil;
+import com.gemstone.gemfire.management.internal.cli.CommandRequest;
+import com.gemstone.gemfire.management.internal.cli.LogWrapper;
+import com.gemstone.gemfire.management.internal.cli.commands.ShellCommands;
+import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+
+import javax.management.*;
 import javax.management.remote.JMXConnectionNotification;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.gemstone.gemfire.internal.util.ArrayUtils;
-import com.gemstone.gemfire.management.DistributedSystemMXBean;
-import com.gemstone.gemfire.management.MemberMXBean;
-import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
-import com.gemstone.gemfire.management.internal.ManagementConstants;
-import com.gemstone.gemfire.management.internal.cli.CommandRequest;
-import com.gemstone.gemfire.management.internal.cli.LogWrapper;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * OperationInvoker JMX Implementation
  *
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class JmxOperationInvoker implements OperationInvoker {
 
@@ -93,7 +88,7 @@ public class JmxOperationInvoker implements OperationInvoker {
                              final int port,
                              final String userName,
                              final String password,
-                             final Map<String, String> sslConfigProps)
+                             final Map<String, String> sslConfigProps, String gfSecurityPropertiesPath)
     throws Exception
   {
     final Set<String> propsToClear = new TreeSet<String>();
@@ -115,7 +110,7 @@ public class JmxOperationInvoker implements OperationInvoker {
         Entry<String, String> entry = it.next();
         String key = entry.getKey();
         String value = entry.getValue();
-        if (key.startsWith("javax.") || key.startsWith("cluster-ssl") || key.startsWith("jmx-manager-ssl") ) {
+        if (key.startsWith("javax.") || key.startsWith("cluster-ssl") || key.startsWith(JMX_MANAGER_SSL)) {
           key =  checkforSystemPropertyPrefix(entry.getKey());
           if((key.equals(Gfsh.SSL_ENABLED_CIPHERS) || key.equals(Gfsh.SSL_ENABLED_PROTOCOLS)) && "any".equals(value)){
             continue;
@@ -132,24 +127,26 @@ public class JmxOperationInvoker implements OperationInvoker {
         }
       }
 
+      //Check for JMX Credentials if empty put properties instance directly so that
+      //jmx management interceptor can read it for custom security properties
+      if(!env.containsKey(JMXConnector.CREDENTIALS)) {
+        env.put(JMXConnector.CREDENTIALS, readProperties(gfSecurityPropertiesPath));
+      }
 
       this.url = new JMXServiceURL(MessageFormat.format(JMX_URL_FORMAT, checkAndConvertToCompatibleIPv6Syntax(host), String.valueOf(port)));      
       this.connector = JMXConnectorFactory.connect(url, env);
       this.mbsc = connector.getMBeanServerConnection();
       this.connector.addConnectionNotificationListener(new JMXConnectionListener(this), null, null);
-      this.connector.connect(); // TODO this call to connect is not needed
       this.distributedSystemMXBeanProxy = JMX.newMXBeanProxy(mbsc, MBeanJMXAdapter.getDistributedSystemName(), DistributedSystemMXBean.class);
 
-      if (this.distributedSystemMXBeanProxy == null || !JMX.isMXBeanInterface(DistributedSystemMXBean.class)) {
+      if (this.distributedSystemMXBeanProxy == null ) {
         LogWrapper.getInstance().info("DistributedSystemMXBean is not present on member with endpoints : "+this.endpoints);
-        connector.close();
         throw new JMXConnectionException(JMXConnectionException.MANAGER_NOT_FOUND_EXCEPTION);
       }
       else {
         this.managerMemberObjectName = this.distributedSystemMXBeanProxy.getMemberObjectName();
         if (this.managerMemberObjectName == null || !JMX.isMXBeanInterface(MemberMXBean.class)) {
           LogWrapper.getInstance().info("MemberMXBean with ObjectName "+this.managerMemberObjectName+" is not present on member with endpoints : "+endpoints);
-          this.connector.close();
           throw new JMXConnectionException(JMXConnectionException.MANAGER_NOT_FOUND_EXCEPTION);
         }
         else {
@@ -176,12 +173,59 @@ public class JmxOperationInvoker implements OperationInvoker {
     }
   }
 
-  
+  //Copied from ShellCommands.java
+  private Properties readProperties(String gfSecurityPropertiesPath) throws MalformedURLException {
+    Gfsh gfshInstance = Gfsh.getCurrentInstance();
+    // reference to hold resolved gfSecurityPropertiesPath
+    String gfSecurityPropertiesPathToUse = CliUtil.resolvePathname(gfSecurityPropertiesPath);
+    URL gfSecurityPropertiesUrl = null;
+
+    // Case 1: User has specified gfSecurity properties file
+    if (!StringUtils.isBlank(gfSecurityPropertiesPathToUse)) {
+      // User specified gfSecurity properties doesn't exist
+      if (!IOUtils.isExistingPathname(gfSecurityPropertiesPathToUse)) {
+        gfshInstance.printAsSevere(CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "Security ", gfSecurityPropertiesPathToUse));
+      } else {
+        gfSecurityPropertiesUrl = new File(gfSecurityPropertiesPathToUse).toURI().toURL();
+      }
+    } else if (gfSecurityPropertiesPath == null) {
+      // Use default "gfsecurity.properties"
+      // in current dir, user's home or classpath
+      gfSecurityPropertiesUrl = ShellCommands.getFileUrl("gfsecurity.properties");
+    }
+    // if 'gfSecurityPropertiesPath' OR gfsecurity.properties has resolvable path
+    if (gfSecurityPropertiesUrl != null) {
+      gfshInstance.logToFile("Using security properties file : "
+              + CliUtil.decodeWithDefaultCharSet(gfSecurityPropertiesUrl.getPath()), null);
+      return loadPropertiesFromURL(gfSecurityPropertiesUrl);
+    }
+    return null;
+  }
+
+  static Properties loadPropertiesFromURL(URL gfSecurityPropertiesUrl) {
+    Properties props = new Properties();
+    if (gfSecurityPropertiesUrl != null) {
+      InputStream inputStream = null;
+      try {
+
+        inputStream = gfSecurityPropertiesUrl.openStream();
+        props.load(inputStream);
+      } catch (IOException io) {
+        throw new RuntimeException(CliStrings.format(
+            CliStrings.CONNECT__MSG__COULD_NOT_READ_CONFIG_FROM_0,
+                CliUtil.decodeWithDefaultCharSet(gfSecurityPropertiesUrl.getPath())), io);
+      } finally {
+        IOUtils.close(inputStream);
+      }
+    }
+    return props;
+  }
+
   private String checkforSystemPropertyPrefix(String key) {
     String returnKey = key;
     if (key.startsWith("javax."))
       returnKey = key;
-    if (key.startsWith("cluster-ssl") || key.startsWith("jmx-manager-ssl")) {
+    if (key.startsWith("cluster-ssl") || key.startsWith(JMX_MANAGER_SSL)) {
       if (key.endsWith("keystore")) {
         returnKey = Gfsh.SSL_KEYSTORE;
       } else if (key.endsWith("keystore-password")) {
@@ -386,7 +430,7 @@ public class JmxOperationInvoker implements OperationInvoker {
  * A Connection Notification Listener. Notifies Gfsh when a connection gets
  * terminated abruptly.
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 class JMXConnectionListener implements NotificationListener {
   public static final String CHECK_PERIOD_PROP = "jmx.remote.x.client.connection.check.period";

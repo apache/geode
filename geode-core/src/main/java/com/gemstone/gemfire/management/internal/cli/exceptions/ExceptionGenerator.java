@@ -16,30 +16,34 @@
  */
 package com.gemstone.gemfire.management.internal.cli.exceptions;
 
-import joptsimple.MissingRequiredOptionException;
-import joptsimple.MultipleArgumentsForOptionException;
 import joptsimple.OptionException;
-import joptsimple.OptionMissingRequiredArgumentException;
-import joptsimple.UnrecognizedOptionException;
+
+import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
+import com.gemstone.gemfire.management.internal.cli.parser.Option;
+import com.gemstone.gemfire.management.internal.cli.parser.OptionSet;
 
 /**
- * 
- *         Converts joptsimple exceptions into corresponding exceptions for cli
- * 
+ * Converts joptsimple exceptions into corresponding exceptions for cli
+ *
+ * TODO: delete this class
  */
 public class ExceptionGenerator {
 
-  public static CliException generate(OptionException oe) {
-    if (oe instanceof MissingRequiredOptionException) {
-      return new CliCommandOptionMissingException(null, null, null);
-    } else if (oe instanceof OptionMissingRequiredArgumentException) {
-      return new CliCommandOptionValueMissingException(null, null, null, null);
-    } else if (oe instanceof UnrecognizedOptionException) {
-      return new CliCommandOptionNotApplicableException(null, null, null);
-    } else if (oe instanceof MultipleArgumentsForOptionException) {
-      return new CliCommandOptionHasMultipleValuesException(null, null, null);
+  public static CliCommandOptionException generate(Option option, OptionException cause) {
+    if (cause.getClass().getSimpleName().contains("MissingRequiredOptionException")) {
+      return new CliCommandOptionMissingException(option, cause);
+
+    } else if (cause.getClass().getSimpleName().contains("OptionMissingRequiredArgumentException")) {
+      return new CliCommandOptionValueMissingException(option, cause);
+
+    } else if (cause.getClass().getSimpleName().contains("UnrecognizedOptionException")) {
+      return new CliCommandOptionNotApplicableException(option, cause);
+
+    } else if (cause.getClass().getSimpleName().contains("MultipleArgumentsForOptionException")) {
+      return new CliCommandOptionHasMultipleValuesException(option, cause);
+
     } else {
-      return null;
+      return new CliCommandOptionException(cause);
     }
   }
 }

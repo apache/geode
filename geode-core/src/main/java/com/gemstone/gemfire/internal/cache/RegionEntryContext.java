@@ -21,7 +21,7 @@ import com.gemstone.gemfire.compression.Compressor;
 
 /**
  * Provides important contextual information that allows a {@link RegionEntry} to manage its state.
- * @since 8.0
+ * @since GemFire 8.0
  */
 public interface RegionEntryContext extends HasCachePerfStats {
   public static final String DEFAULT_COMPRESSION_PROVIDER="com.gemstone.gemfire.compression.SnappyCompressor";

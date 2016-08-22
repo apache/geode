@@ -16,21 +16,22 @@
  */
 package com.gemstone.gemfire.management.internal.cli.functions;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.InternalEntity;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -57,7 +58,7 @@ public class ChangeLogLevelFunction implements Function, InternalEntity {
       final String logLevel = (String) args[0];
       Level log4jLevel = LogWriterLogger.logWriterNametoLog4jLevel(logLevel);
       logwriterLogger.setLevel(log4jLevel);
-      System.setProperty("gemfire.log-level", logLevel);
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_LEVEL, logLevel);
       // LOG:CONFIG:
       logger.info(LogMarker.CONFIG, "GFSH Changed log level to {}", log4jLevel);
       result.put(cache.getDistributedSystem().getDistributedMember().getId(), "New log level is " + log4jLevel);

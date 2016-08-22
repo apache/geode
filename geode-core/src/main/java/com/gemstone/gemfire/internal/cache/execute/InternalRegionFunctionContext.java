@@ -30,11 +30,6 @@ import com.gemstone.gemfire.internal.cache.LocalDataSet;
 /**
  * Internal interface used to provide for some essential functionality for
  * {@link RegionFunctionContext} invoked by {@link PartitionRegionHelper}.
- * SQLFabric provides its own implementation when using function messages
- * instead of {@link Function}s so {@link PartitionRegionHelper} should not
- * depend on casting to {@link RegionFunctionContextImpl} directly rather should
- * use this interface.
- * 
  */
 public interface InternalRegionFunctionContext extends RegionFunctionContext {
 

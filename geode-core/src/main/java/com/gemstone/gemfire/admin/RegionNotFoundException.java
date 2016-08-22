@@ -26,7 +26,7 @@ import com.gemstone.gemfire.cache.CacheRuntimeException;
  * <P>Also thrown by {@link com.gemstone.gemfire.DataSerializer#readRegion(java.io.DataInput)}
  * if the named region no longer exists.
  *
- * @since 3.5
+ * @since GemFire 3.5
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public class RegionNotFoundException extends CacheRuntimeException {

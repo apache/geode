@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.management;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -29,10 +38,11 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
+@Category(DistributedTest.class)
 public class CompositeTypeTestDUnitTest extends ManagementTestBase {
 
-  public CompositeTypeTestDUnitTest(String name) {
-    super(name);
+  public CompositeTypeTestDUnitTest() {
+    super();
     // TODO Auto-generated constructor stub
   }
 
@@ -43,6 +53,7 @@ public class CompositeTypeTestDUnitTest extends ManagementTestBase {
   
   private static ObjectName objectName;
 
+  @Test
   public void testCompositeTypeGetters() throws Exception{
     
     initManagement(false);

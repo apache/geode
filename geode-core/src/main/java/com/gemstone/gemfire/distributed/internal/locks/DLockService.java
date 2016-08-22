@@ -17,33 +17,10 @@
 
 package com.gemstone.gemfire.distributed.internal.locks;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.distributed.DistributedLockService;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.LeaseExpiredException;
-import com.gemstone.gemfire.distributed.LockNotHeldException;
-import com.gemstone.gemfire.distributed.LockServiceDestroyedException;
+import com.gemstone.gemfire.*;
+import com.gemstone.gemfire.distributed.*;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ResourceEvent;
 import com.gemstone.gemfire.distributed.internal.deadlock.UnsafeThreadLocal;
@@ -60,6 +37,13 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.util.StopWatch;
 import com.gemstone.gemfire.internal.util.concurrent.FutureResult;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.util.*;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implements the distributed locking service with distributed lock grantors.
@@ -70,28 +54,28 @@ public class DLockService extends DistributedLockService {
   private static final Logger logger = LogService.getLogger();
 
   public static final long NOT_GRANTOR_SLEEP = Long.getLong(
-      "gemfire.DLockService.notGrantorSleep", 100).longValue();
+      DistributionConfig.GEMFIRE_PREFIX + "DLockService.notGrantorSleep", 100).longValue();
   
   public static final boolean DEBUG_DISALLOW_NOT_HOLDER = Boolean.getBoolean(
-      "gemfire.DLockService.debug.disallowNotHolder");
+      DistributionConfig.GEMFIRE_PREFIX + "DLockService.debug.disallowNotHolder");
 
   public static final boolean DEBUG_LOCK_REQUEST_LOOP = Boolean.getBoolean(
-      "gemfire.DLockService.debug.disallowLockRequestLoop");
+      DistributionConfig.GEMFIRE_PREFIX + "DLockService.debug.disallowLockRequestLoop");
 
   public static final int DEBUG_LOCK_REQUEST_LOOP_COUNT = Integer.getInteger(
-      "gemfire.DLockService.debug.disallowLockRequestLoopCount", 20).intValue();
+      DistributionConfig.GEMFIRE_PREFIX + "DLockService.debug.disallowLockRequestLoopCount", 20).intValue();
 
   public static final boolean DEBUG_NONGRANTOR_DESTROY_LOOP = Boolean.getBoolean(
-      "gemfire.DLockService.debug.nonGrantorDestroyLoop");
+      DistributionConfig.GEMFIRE_PREFIX + "DLockService.debug.nonGrantorDestroyLoop");
 
   public static final int DEBUG_NONGRANTOR_DESTROY_LOOP_COUNT = Integer.getInteger(
-      "gemfire.DLockService.debug.nonGrantorDestroyLoopCount", 20).intValue();
+      DistributionConfig.GEMFIRE_PREFIX + "DLockService.debug.nonGrantorDestroyLoopCount", 20).intValue();
 
   public static final boolean DEBUG_ENFORCE_SAFE_EXIT = Boolean.getBoolean(
-      "gemfire.DLockService.debug.enforceSafeExit");
+      DistributionConfig.GEMFIRE_PREFIX + "DLockService.debug.enforceSafeExit");
   
   public static final boolean AUTOMATE_FREE_RESOURCES = Boolean.getBoolean(
-      "gemfire.DLockService.automateFreeResources");
+      DistributionConfig.GEMFIRE_PREFIX + "DLockService.automateFreeResources");
   
   public static final int INVALID_LEASE_ID = -1;
   
@@ -133,7 +117,7 @@ public class DLockService extends DistributedLockService {
   private DLockRecoverGrantorProcessor.MessageProcessor recoverGrantorProcessor;
   
   /** Thread-safe reference to DistributedLockStats */
-  private final DistributedLockStats dlockStats = getOrCreateStats();
+  private final DistributedLockStats dlockStats;
   
   /** 
    * Protects {@link #lockGrantorId}, {@link #grantor} and 
@@ -544,11 +528,11 @@ public class DLockService extends DistributedLockService {
         // assertion: grantor should now be either ready or destroyed!
       
         if (myGrantor.isInitializing() && 
-            dm.getCancelCriterion().cancelInProgress() == null) {
+            !dm.getCancelCriterion().isCancelInProgress()) {
           logger.error(LogMarker.DLS, LocalizedMessage.create(LocalizedStrings.DLockService_GRANTOR_IS_STILL_INITIALIZING));
         }
         if (!success && !myGrantor.isDestroyed() && 
-            dm.getCancelCriterion().cancelInProgress() == null) {
+            !dm.getCancelCriterion().isCancelInProgress()) {
           logger.error(LogMarker.DLS, LocalizedMessage.create(
               LocalizedStrings.DLockService_GRANTOR_CREATION_WAS_ABORTED_BUT_GRANTOR_WAS_NOT_DESTROYED));
         }
@@ -1056,7 +1040,7 @@ public class DLockService extends DistributedLockService {
       finally {
         Assert.assertTrue(myGrantor == null 
             || !myGrantor.isInitializing()
-            || this.dm.getCancelCriterion().cancelInProgress() != null
+            || this.dm.getCancelCriterion().isCancelInProgress()
             || isDestroyed(),
             "BecomeLockGrantor failed and left grantor non-ready");
       }
@@ -2145,6 +2129,7 @@ public class DLockService extends DistributedLockService {
                          boolean destroyOnDisconnect,
                          boolean automateFreeResources) {
     super();
+    this.dlockStats = getOrCreateStats(ds);
     this.serialNumber = createSerialNumber();
     this.serviceName = serviceName;
     this.ds = (InternalDistributedSystem) ds;
@@ -2495,7 +2480,7 @@ public class DLockService extends DistributedLockService {
     
   /**
    * Destroys an existing service and removes it from the map
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public void destroyAndRemove() {
     // isLockGrantor determines if we need to tell elder of destroy
@@ -2605,7 +2590,7 @@ public class DLockService extends DistributedLockService {
       if (isCurrentlyLockGrantor || isMakingLockGrantor) {
         // If forcedDisconnect is in progress, the membership view will not
         // change and no-one else can contact this member, so don't wait for a grantor
-        if (this.ds.getCancelCriterion().cancelInProgress() != null) {
+        if (this.ds.getCancelCriterion().isCancelInProgress()) {
           // KIRK: probably don't need to waitForGrantor
           try {
             DLockGrantor.waitForGrantor(this);
@@ -2903,7 +2888,7 @@ public class DLockService extends DistributedLockService {
    * Specifies the starting serial number for the serialNumberSequencer
    */
   public static final int START_SERIAL_NUMBER = Integer.getInteger(
-      "gemfire.DistributedLockService.startSerialNumber", 1).intValue();
+      DistributionConfig.GEMFIRE_PREFIX + "DistributedLockService.startSerialNumber", 1).intValue();
   
   /**
    * Incrementing serial number used to identify order of DLS creation
@@ -3178,19 +3163,17 @@ public class DLockService extends DistributedLockService {
   
   /**
    * Return a timestamp that represents the current time for locking purposes.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   static long getLockTimeStamp(DM dm) {
     return dm.cacheTimeMillis();
   }
   
   /** Get or create static dlock stats */
-  protected static synchronized DistributedLockStats getOrCreateStats() {
+  protected static synchronized DistributedLockStats getOrCreateStats(DistributedSystem ds) {
     if (stats == DUMMY_STATS) {
-      InternalDistributedSystem ds =
-          InternalDistributedSystem.getAnyInstance();
       Assert.assertTrue(ds != null, 
-          "Cannot find any instance of InternalDistributedSystem");
+          "Need an instance of InternalDistributedSystem");
       StatisticsFactory statFactory = ds;
       long statId = OSProcess.getId();
       stats = new DLockStats(statFactory, statId);

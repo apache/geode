@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.internal;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -23,14 +26,15 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.PdxReader;
@@ -43,14 +47,15 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class PdxRenameDUnitTest  extends CacheTestCase{
+@Category(DistributedTest.class)
+public class PdxRenameDUnitTest  extends JUnit4CacheTestCase{
+
   final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
   
-  public PdxRenameDUnitTest(String name) {
-    super(name);
-  }
-  
+  @Test
   public void testPdxRenameVersioning() throws Exception {
     final String DS_NAME = "PdxRenameDUnitTestDiskStore";
     final String DS_NAME2 = "PdxRenameDUnitTestDiskStore2";
@@ -63,9 +68,9 @@ public class PdxRenameDUnitTest  extends CacheTestCase{
     this.filesToBeDeleted.add(DS_NAME2);
     
     final Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+locatorPorts[0]+"],localhost["+locatorPorts[1]+"]");
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + locatorPorts[0] + "],localhost[" + locatorPorts[1] + "]");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);
@@ -74,7 +79,7 @@ public class PdxRenameDUnitTest  extends CacheTestCase{
     vm1.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         disconnectFromDS();
-        props.setProperty(DistributionConfig.START_LOCATOR_NAME, "localhost["+locatorPorts[0]+"]");
+        props.setProperty(START_LOCATOR, "localhost[" + locatorPorts[0] + "]");
         final Cache cache = (new CacheFactory(props)).setPdxPersistent(true).setPdxDiskStore(DS_NAME).create();
         DiskStoreFactory dsf = cache.createDiskStoreFactory();
         dsf.setDiskDirs(new File[]{f});
@@ -90,7 +95,7 @@ public class PdxRenameDUnitTest  extends CacheTestCase{
     vm2.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         disconnectFromDS();
-        props.setProperty(DistributionConfig.START_LOCATOR_NAME, "localhost["+locatorPorts[1]+"]");
+        props.setProperty(START_LOCATOR, "localhost[" + locatorPorts[1] + "]");
         final Cache cache = (new CacheFactory(props)).setPdxReadSerialized(true).setPdxPersistent(true).setPdxDiskStore(DS_NAME2).create();
         DiskStoreFactory dsf = cache.createDiskStoreFactory();
         dsf.setDiskDirs(new File[]{f2});
@@ -135,7 +140,7 @@ public class PdxRenameDUnitTest  extends CacheTestCase{
     
     vm1.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        props.setProperty(DistributionConfig.START_LOCATOR_NAME, "localhost["+locatorPorts[0]+"]");
+        props.setProperty(START_LOCATOR, "localhost[" + locatorPorts[0] + "]");
         final Cache cache = (new CacheFactory(props)).setPdxPersistent(true).setPdxDiskStore(DS_NAME).create();
         DiskStoreFactory dsf = cache.createDiskStoreFactory();
         dsf.setDiskDirs(new File[]{f});
@@ -150,7 +155,7 @@ public class PdxRenameDUnitTest  extends CacheTestCase{
     vm2.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         disconnectFromDS();
-        props.setProperty(DistributionConfig.START_LOCATOR_NAME, "localhost["+locatorPorts[1]+"]");
+        props.setProperty(START_LOCATOR, "localhost[" + locatorPorts[1] + "]");
         final Cache cache = (new CacheFactory(props)).setPdxReadSerialized(true).setPdxPersistent(true).setPdxDiskStore(DS_NAME2).create();
         
         DiskStoreFactory dsf = cache.createDiskStoreFactory();

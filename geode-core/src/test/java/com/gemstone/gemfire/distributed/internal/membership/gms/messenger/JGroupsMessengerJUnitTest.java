@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
@@ -25,19 +26,16 @@ import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.lang.SerializationException;
 import org.jgroups.Address;
 import org.jgroups.Event;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
-import org.jgroups.Message.Flag;
 import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.protocols.UNICAST3;
 import org.jgroups.protocols.pbcast.NAKACK2;
@@ -51,8 +49,6 @@ import com.gemstone.gemfire.ForcedDisconnectException;
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
@@ -83,10 +79,9 @@ import com.gemstone.gemfire.internal.cache.DistributedCacheOperation;
 import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-import junit.framework.Assert;
-
 @Category(IntegrationTest.class)
 public class JGroupsMessengerJUnitTest {
+
   private Services services;
   private JGroupsMessenger messenger;
   private JoinLeave joinLeave;
@@ -105,13 +100,13 @@ public class JGroupsMessengerJUnitTest {
       messenger = null;
     }
     Properties nonDefault = new Properties();
-    nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
-    nonDefault.put(DistributionConfig.MCAST_PORT_NAME, enableMcast? ""+AvailablePortHelper.getRandomAvailableUDPPort() : "0");
-    nonDefault.put(DistributionConfig.MCAST_TTL_NAME, "0");
-    nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
-    nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
-    nonDefault.put(DistributionConfig.LOCATORS_NAME, "localhost[10344]");
-    nonDefault.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, "1");
+    nonDefault.put(DISABLE_TCP, "true");
+    nonDefault.put(MCAST_PORT, enableMcast ? "" + AvailablePortHelper.getRandomAvailableUDPPort() : "0");
+    nonDefault.put(MCAST_TTL, "0");
+    nonDefault.put(LOG_FILE, "");
+    nonDefault.put(LOG_LEVEL, "fine");
+    nonDefault.put(LOCATORS, "localhost[10344]");
+    nonDefault.put(ACK_WAIT_THRESHOLD, "1");
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     RemoteTransportConfig tconfig = new RemoteTransportConfig(config,
         DistributionManager.NORMAL_DM_TYPE);

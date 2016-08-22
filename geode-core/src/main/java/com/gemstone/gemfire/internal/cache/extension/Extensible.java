@@ -27,7 +27,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
  * Used in {@link CacheXml} to read and write cache xml configurations.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public interface Extensible<T> {
 
@@ -35,7 +35,7 @@ public interface Extensible<T> {
    * Get {@link ExtensionPoint} for this object.
    * 
    * @return {@link ExtensionPoint} for this object.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public ExtensionPoint<T> getExtensionPoint();
 

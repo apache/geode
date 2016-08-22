@@ -16,12 +16,14 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.interfaces;
 
+import java.util.Properties;
+
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 
 public interface Authenticator extends Service {
 
-  String authenticate(InternalDistributedMember m, Object credentials) throws AuthenticationFailedException;
+  String authenticate(InternalDistributedMember m, Properties credentials) throws AuthenticationFailedException;
 
-  Object getCredentials(InternalDistributedMember m);
+  Properties getCredentials(InternalDistributedMember m);
 }

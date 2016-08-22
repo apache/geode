@@ -26,7 +26,7 @@ import java.util.logging.Level;
  * 
  * PulseConfig is used for configuring Pulse application.
  * 
- * @since 7.0.1
+ * @since GemFire 7.0.1
  * 
  */
 public class PulseConfig {

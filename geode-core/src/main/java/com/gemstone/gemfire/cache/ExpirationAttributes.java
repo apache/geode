@@ -35,7 +35,7 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
  * @see AttributesFactory
  * @see RegionAttributes
  * @see AttributesMutator
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class ExpirationAttributes implements DataSerializable { 
   private static final long serialVersionUID = 5956885652945706394L;

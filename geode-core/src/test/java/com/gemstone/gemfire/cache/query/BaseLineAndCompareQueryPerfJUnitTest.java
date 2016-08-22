@@ -233,7 +233,6 @@ public class BaseLineAndCompareQueryPerfJUnitTest {
         printSummary();
         
     }//end of testPerf
-    //public void testPerfWithIndex(){}//end of testPerfWithIndex
     
  /**
   * Get the performance of Range query in an AND junction.

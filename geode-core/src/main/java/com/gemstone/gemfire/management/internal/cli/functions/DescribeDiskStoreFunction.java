@@ -55,7 +55,7 @@ import org.apache.logging.log4j.Logger;
  * @see com.gemstone.gemfire.cache.execute.FunctionContext
  * @see com.gemstone.gemfire.internal.InternalEntity
  * @see com.gemstone.gemfire.management.internal.cli.domain.DiskStoreDetails
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class DescribeDiskStoreFunction extends FunctionAdapter implements InternalEntity {
 

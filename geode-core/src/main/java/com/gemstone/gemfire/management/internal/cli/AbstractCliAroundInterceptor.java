@@ -24,7 +24,7 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
  * Semi-complete implementation of {@link CliAroundInterceptor} for convenience for implementors.
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public abstract class AbstractCliAroundInterceptor implements CliAroundInterceptor {
   protected enum Response {

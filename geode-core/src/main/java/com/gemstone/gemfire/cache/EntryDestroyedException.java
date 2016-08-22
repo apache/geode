@@ -21,7 +21,7 @@ package com.gemstone.gemfire.cache;
  *
  * 
  * @see Region.Entry
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class EntryDestroyedException extends CacheRuntimeException
 {

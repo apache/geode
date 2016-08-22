@@ -16,7 +16,13 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DeltaTestImpl;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -32,20 +38,18 @@ import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
- * 
  * Tests the P2P delta propagation functionality.
- * 
  */
-public class P2PDeltaPropagationDUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   static VM server1 = null;
 
@@ -79,17 +83,12 @@ public class P2PDeltaPropagationDUnitTest extends DistributedTestCase
   private static boolean check = false;
 
   protected static Object waitLock = new Object();
-  /**
-   * Constructor
-   */
-  public P2PDeltaPropagationDUnitTest(String name) {
-    super(name);
-  }
-  
+
   /*
    * Delta gets distributed in P2P D-ACK.
    */
     
+  @Test
   public void testP2PDeltaPropagationEnableScopeDAck() throws Exception
   {
     Object args[] = new Object[] { Boolean.TRUE, DataPolicy.REPLICATE,
@@ -109,6 +108,7 @@ public class P2PDeltaPropagationDUnitTest extends DistributedTestCase
    * Delta gets distributed in P2P GLOBAL.
    */
     
+  @Test
   public void testP2PDeltaPropagationEnableScopeGlobal() throws Exception
   {
     Object args[] = new Object[] { Boolean.TRUE, DataPolicy.REPLICATE,
@@ -125,6 +125,7 @@ public class P2PDeltaPropagationDUnitTest extends DistributedTestCase
   /*
    * Full object gets resend in P2P D-ACK if delta can not be applied.
    */
+  @Test
   public void testP2PDACKInvalidDeltaException() throws Exception
   {
     server1.invoke(() -> P2PDeltaPropagationDUnitTest.createServerCache(Boolean.TRUE));
@@ -143,6 +144,7 @@ public class P2PDeltaPropagationDUnitTest extends DistributedTestCase
   /*
    *  Full object will be send in case of P2P D-ACK(direct-ack = true). 
    */
+  @Test
   public void testP2PDeltaPropagationEnableDirectAckTrue() throws Exception
   {
     
@@ -161,6 +163,7 @@ public class P2PDeltaPropagationDUnitTest extends DistributedTestCase
   /*
    * Full object will be send in case of P2P D-NO-ACK 
    */
+  @Test
   public void testP2PDeltaPropagationEnableScopeDNoAck()throws Exception
   {
     Object args[] = new Object[] { Boolean.TRUE, DataPolicy.NORMAL,
@@ -176,6 +179,7 @@ public class P2PDeltaPropagationDUnitTest extends DistributedTestCase
   /*
    * Check for full object gets distributed when DS level delta property is OFF.
    */
+  @Test
   public void testP2PDeltaPropagationDisable() throws Exception
   {
     server1.invoke(() -> P2PDeltaPropagationDUnitTest.createServerCache(Boolean.FALSE));
@@ -187,6 +191,7 @@ public class P2PDeltaPropagationDUnitTest extends DistributedTestCase
   /*
    * Delta gets distributed in P2P D-ACK with data policy empty on feeder.
    */
+  @Test
   public void testP2PDeltaPropagationEnableScopeDAckDataPolicyEmpty()
       throws Exception {
     Object args[] = new Object[] { Boolean.TRUE, DataPolicy.REPLICATE,
@@ -209,6 +214,7 @@ public class P2PDeltaPropagationDUnitTest extends DistributedTestCase
   /*
    * Full Onject is gets distributed in P2P D-ACK with data policy empty on feeder when its uses regions create API.
    */
+  @Test
   public void testP2PDeltaPropagationEnableScopeDAckDataPolicyEmptyWithRegionsCreateApi()
       throws Exception {
     Object args[] = new Object[] { Boolean.TRUE, DataPolicy.REPLICATE,
@@ -233,6 +239,7 @@ public class P2PDeltaPropagationDUnitTest extends DistributedTestCase
     server3.invoke(() -> P2PDeltaPropagationDUnitTest.verifyNoFailurePeer());
   }
 
+  @Test
   public void testPeerWithEmptyRegionIterestPolicyALLReceivesNoDelta() throws Exception {
     // 1. Setup three peers, one with a region data policy set to EMPTY.
     // 2. Do delta feeds on any one of the two peers with non-EMPTY region data policy.
@@ -257,6 +264,7 @@ public class P2PDeltaPropagationDUnitTest extends DistributedTestCase
     server3.invoke(() -> P2PDeltaPropagationDUnitTest.verifyNoDeltaReceived( Integer.valueOf(3) ));
   }
 
+  @Test
   public void testPeerWithEmptyRegionDefaultIterestPolicyReceivesNoEvents() throws Exception {
     // 1. Setup three peers, one with a region data policy set to EMPTY.
     // 2. Do delta feeds on any one of the two peers with non-EMPTY region data policy.
@@ -281,6 +289,7 @@ public class P2PDeltaPropagationDUnitTest extends DistributedTestCase
     server3.invoke(() -> P2PDeltaPropagationDUnitTest.verifyNoDeltaReceived( Integer.valueOf(0/* no events */) ));
   }
 
+  @Test
   public void testPeerWithEmptyRegionAndNoCacheServerReceivesOnlyFullValue() throws Exception {
     // 1. Setup three peers, two with region data policy set to EMPTY.
     // 2. Of these two EMPTY peers, only one has a cache server.
@@ -443,10 +452,10 @@ public class P2PDeltaPropagationDUnitTest extends DistributedTestCase
   public static void createServerCache(Boolean flag, DataPolicy policy,
       Scope scope, Boolean listener, Boolean interestPolicyAll,
       Integer port) throws Exception {
-    P2PDeltaPropagationDUnitTest test = new P2PDeltaPropagationDUnitTest("temp");
+    P2PDeltaPropagationDUnitTest test = new P2PDeltaPropagationDUnitTest();
     Properties props = new Properties();
     if (!flag) {
-      props.setProperty(DistributionConfig.DELTA_PROPAGATION_PROP_NAME, "false");
+      props.setProperty(DELTA_PROPAGATION, "false");
     }    
     cache = test.createCache(props);
     AttributesFactory factory = new AttributesFactory();

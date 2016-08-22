@@ -16,47 +16,31 @@
  */
 package com.gemstone.gemfire.internal.cache.lru;
 
-import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.OverflowQueueWithDMStats;
-import com.gemstone.gemfire.internal.cache.BucketRegion;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.RegionEvictorTask;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.cache.control.HeapMemoryMonitor;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
 import com.gemstone.gemfire.internal.cache.control.MemoryEvent;
 import com.gemstone.gemfire.internal.cache.control.ResourceListener;
-import com.gemstone.gemfire.internal.lang.ThreadUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Triggers centralized eviction(asynchronously) when the ResourceManager sends
  * an eviction event for on-heap regions. This is registered with the ResourceManager.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * 
  */
 public class HeapEvictor implements ResourceListener<MemoryEvent> {
@@ -65,23 +49,23 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
 
   // Add 1 for the management task that's putting more eviction tasks on the queue
   public static final int MAX_EVICTOR_THREADS = Integer.getInteger(
-      "gemfire.HeapLRUCapacityController.MAX_EVICTOR_THREADS", (Runtime.getRuntime().availableProcessors()*4)) + 1;
+      DistributionConfig.GEMFIRE_PREFIX + "HeapLRUCapacityController.MAX_EVICTOR_THREADS", (Runtime.getRuntime().availableProcessors() * 4)) + 1;
 
   public static final boolean DISABLE_HEAP_EVICTIOR_THREAD_POOL = Boolean
-      .getBoolean("gemfire.HeapLRUCapacityController.DISABLE_HEAP_EVICTIOR_THREAD_POOL");
+      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "HeapLRUCapacityController.DISABLE_HEAP_EVICTIOR_THREAD_POOL");
 
   public static final boolean EVICT_HIGH_ENTRY_COUNT_BUCKETS_FIRST = Boolean.valueOf(
       System.getProperty(
-          "gemfire.HeapLRUCapacityController.evictHighEntryCountBucketsFirst",
+          DistributionConfig.GEMFIRE_PREFIX + "HeapLRUCapacityController.evictHighEntryCountBucketsFirst",
           "true")).booleanValue(); 
 
   public static final int MINIMUM_ENTRIES_PER_BUCKET = Integer
-  .getInteger("gemfire.HeapLRUCapacityController.inlineEvictionThreshold",0);
+      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "HeapLRUCapacityController.inlineEvictionThreshold", 0);
   
   public static final long TOTAL_BYTES_TO_EVICT_FROM_HEAP; 
   
   public static final int BUCKET_SORTING_INTERVAL = Integer.getInteger(
-      "gemfire.HeapLRUCapacityController.higherEntryCountBucketCalculationInterval",
+      DistributionConfig.GEMFIRE_PREFIX + "HeapLRUCapacityController.higherEntryCountBucketCalculationInterval",
       100).intValue();
   
   private static final String EVICTOR_THREAD_GROUP_NAME = "EvictorThreadGroup";
@@ -90,7 +74,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
 
   static {
     float evictionBurstPercentage = Float.parseFloat(System.getProperty(
-        "gemfire.HeapLRUCapacityController.evictionBurstPercentage", "0.4"));
+        DistributionConfig.GEMFIRE_PREFIX + "HeapLRUCapacityController.evictionBurstPercentage", "0.4"));
     long maxTenuredBytes = HeapMemoryMonitor.getTenuredPoolMaxMemory();
     TOTAL_BYTES_TO_EVICT_FROM_HEAP = (long)(maxTenuredBytes * 0.01 * evictionBurstPercentage);
   }

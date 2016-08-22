@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.compression;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache30.CacheTestCase;
@@ -29,7 +38,8 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Tests that the compressor region attribute is properly set or rejected by a RegionFactory.
  */
-public class CompressionRegionFactoryDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class CompressionRegionFactoryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Compressed region name.
    */
@@ -38,7 +48,7 @@ public class CompressionRegionFactoryDUnitTest extends CacheTestCase {
   /**
    * A valid compressor.
    */
-  protected static final Compressor compressor = SnappyCompressor.getDefaultInstance();
+  protected static final Compressor compressor = new SnappyCompressor();
   
   /**
    * Our test vm.
@@ -49,22 +59,16 @@ public class CompressionRegionFactoryDUnitTest extends CacheTestCase {
    * Creates a new CompressionRegionFactoryDUnitTest.
    * @param name test name.
    */
-  public CompressionRegionFactoryDUnitTest(String name) {
-    super(name);
+  public CompressionRegionFactoryDUnitTest() {
+    super();
   }
   
   /**
    * Asserts that a region is created when a valid compressor is used.
    * Asserts that the region attributes contain the correct compressor value. 
    */
+  @Test
   public void testRegionFactoryCompressor() {
-    Compressor compressor = null;
-    try {
-      compressor = SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
     assertTrue(createCompressedRegionOnVm(getVM(TEST_VM), COMPRESSED_REGION_NAME, compressor));
     assertCompressor(getVM(TEST_VM), COMPRESSED_REGION_NAME, compressor);
     cleanup(getVM(TEST_VM));

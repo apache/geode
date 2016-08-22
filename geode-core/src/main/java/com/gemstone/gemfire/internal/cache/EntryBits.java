@@ -30,16 +30,6 @@ public abstract class EntryBits {
   private static final byte TOMBSTONE = 0x40;
   private static final byte WITH_VERSIONS = (byte)0x80; // oplog entry contains versions 
 
-  /**
-   * Currently for SQLFabric to deserialize byte[][] eagerly in
-   * InitialImageOperation. Can be made a general flag later for all kinds of
-   * objects in CachedDeserializable whose serialization is not expensive but
-   * that are pretty heavy so creating an intermediate byte[] is expensive.
-   * 
-   * This is a transient bit that clashes with on-disk persisted bits.
-   */
-  private static final byte EAGER_DESERIALIZE = 0x20;
-
   public static boolean isSerialized(byte b) {
     return (b & SERIALIZED) != 0;
   }
@@ -79,10 +69,6 @@ public abstract class EntryBits {
     return (b & (INVALID|LOCAL_INVALID|TOMBSTONE)) == 0;
   }
 
-  public static boolean isEagerDeserialize(byte b) {
-    return (b & EntryBits.EAGER_DESERIALIZE) != 0;
-  }
-
   public static byte setSerialized(byte b, boolean isSerialized) {
     return isSerialized ? (byte)(b | SERIALIZED) : (byte)(b & ~SERIALIZED);
   }
@@ -115,13 +101,5 @@ public abstract class EntryBits {
    */
   public static byte getPersistentBits(byte b) {
     return (byte)(b & (SERIALIZED|INVALID|LOCAL_INVALID|TOMBSTONE|WITH_VERSIONS));
-  }
-
-  public static byte setEagerDeserialize(byte b) {
-    return (byte)(b | EntryBits.EAGER_DESERIALIZE);
-  }
-
-  public static byte clearEagerDeserialize(byte b) {
-    return (byte)(b & ~EntryBits.EAGER_DESERIALIZE);
   }
 }

@@ -16,16 +16,19 @@
  */
 package com.gemstone.gemfire.cache.util;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.util.PasswordUtil;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+@Category({ UnitTest.class, SecurityTest.class })
+public class PasswordUtilJUnitTest {
 
-@Category(UnitTest.class)
-public class PasswordUtilJUnitTest extends TestCase {
+  @Test
   public void testPasswordUtil() {
     String x = "password";
     String z = null;
