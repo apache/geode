@@ -18,6 +18,7 @@ package com.gemstone.gemfire.internal.cache.ha;
 
 import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.cache.query.internal.CqQueryVsdStats;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
@@ -48,11 +49,10 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.*;
 
 /**
  * An implementation of Queue using Gemfire Region as the underlying
@@ -2539,7 +2539,7 @@ public class HARegionQueue implements RegionQueue
         region.getCache().getCancelCriterion().checkCancelInProgress(null);
         boolean interrupted = Thread.currentThread().isInterrupted();
         try {
-           blockCond.await();
+          blockCond.await(StoppableCondition.TIME_TO_WAIT);
         }
         catch (InterruptedException ie) {
           interrupted = true;

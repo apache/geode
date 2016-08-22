@@ -291,10 +291,9 @@ public class PutAll80 extends BaseCommand {
       
       if (region instanceof PartitionedRegion) {
         PartitionedRegion pr = (PartitionedRegion)region;
-        if (pr.isNetworkHop().byteValue() != 0) {
-          writeReplyWithRefreshMetadata(msg, response, servConn, pr, pr.isNetworkHop());
-          pr.setIsNetworkHop(Byte.valueOf((byte)0));
-          pr.setMetadataVersion(Byte.valueOf((byte)0));
+        if (pr.getNetworkHopType() != PartitionedRegion.NETWORK_HOP_NONE) {
+          writeReplyWithRefreshMetadata(msg, response, servConn, pr, pr.getNetworkHopType());
+          pr.clearNetworkHopData();
           replyWithMetaData = true;
         }
       }
@@ -417,7 +416,7 @@ public class PutAll80 extends BaseCommand {
     }
     replyMsg.setNumberOfParts(1);
     replyMsg.setTransactionId(origMsg.getTransactionId());
-    replyMsg.addBytesPart(new byte[]{pr.getMetadataVersion().byteValue(), nwHop});
+    replyMsg.addBytesPart(new byte[]{pr.getMetadataVersion(), nwHop});
     if (listSize > 0) {
       replyMsg.setLastChunk(false);
       replyMsg.sendChunk(servConn);

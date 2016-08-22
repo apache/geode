@@ -49,6 +49,7 @@ public class SingleHopOperationCallable implements Callable {
     Object result = null;
     boolean onlyUseExistingCnx = ((pool.getMaxConnections() != -1 && pool
         .getConnectionCount() >= pool.getMaxConnections()) ? true : false);
+    op.setAllowDuplicateMetadataRefresh(! onlyUseExistingCnx);
     try {
       UserAttributes.userAttributes.set(securityAttributes);
       result = this.pool.executeOn(server, op, true, onlyUseExistingCnx);

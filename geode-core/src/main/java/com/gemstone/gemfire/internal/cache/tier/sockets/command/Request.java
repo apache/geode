@@ -189,11 +189,10 @@ public class Request extends BaseCommand {
         
         if (region instanceof PartitionedRegion) {
           PartitionedRegion pr = (PartitionedRegion)region;
-          if (pr.isNetworkHop() != (byte)0) {
+          if (pr.getNetworkHopType() != PartitionedRegion.NETWORK_HOP_NONE) {
             writeResponseWithRefreshMetadata(data, callbackArg, msg, isObject,
-                servConn, pr,pr.isNetworkHop());
-            pr.setIsNetworkHop((byte)0);
-            pr.setMetadataVersion(Byte.valueOf((byte)0));
+                servConn, pr,pr.getNetworkHopType());
+            pr.clearNetworkHopData();
           }
           else {
             writeResponse(data, callbackArg, msg, isObject, servConn);

@@ -27,6 +27,8 @@
 
 package com.gemstone.gemfire.internal.util.concurrent;
 
+import static com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch.RETRY_TIME;
+
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -36,25 +38,19 @@ import com.gemstone.gemfire.internal.Assert;
 
 /**
  * This class is functionally equivalent to {@link java.util.concurrent.locks.Condition};
- * however, it does not implement the interface, in an attempt to encourage
- * GemFire API writers to refer to this "stoppable" version instead.
- * <p>
- * It is implemented as a strict "cover" for a genuine {@link java.util.concurrent.locks.Condition}.
- * 
+ * however it only implements the acquire(long) method.  Its purpose is to perform a
+ * cancellation check
  */
-public class StoppableCondition implements /* Condition, */ java.io.Serializable {
-    private static final long serialVersionUID = -7091681525970431937L;
+public class StoppableCondition implements java.io.Serializable {
+  private static final long serialVersionUID = -7091681525970431937L;
 
-    /** The underlying condition **/
-    private final Condition condition;
-    
-    /** The cancellation object */
-    private final CancelCriterion stopper;
+  /** The underlying condition **/
+  private final Condition condition;
 
-  /**
-   * This is how often waiters will wake up to check for cancellation
-   */
-  private static final long RETRY_TIME = 15 * 1000; // milliseconds
+  /** The cancellation object */
+  private final CancelCriterion stopper;
+
+  public static final long TIME_TO_WAIT = 15000;
 
     /**
      * Create a new StoppableCondition based on given condition and
@@ -67,39 +63,9 @@ public class StoppableCondition implements /* Condition, */ java.io.Serializable
         this.stopper = stopper;
     }
 
-    public void awaitUninterruptibly() {
-      for (;;) {
-        boolean interrupted = Thread.interrupted();
-        try {
-          await();
-          break;
-        }
-        catch (InterruptedException e) {
-          interrupted = true;
-        }
-        finally {
-          if (interrupted) Thread.currentThread().interrupt();
-        }
-      }
-    }
-
-    public void await() throws InterruptedException {
-      if (Thread.interrupted()) throw new InterruptedException();
-      for (;;) {
-        stopper.checkCancelInProgress(null);
-        if (await(RETRY_TIME))
-          break;
-      }
-    }
-
     public boolean await(long timeoutMs) throws InterruptedException {
         stopper.checkCancelInProgress(null);
         return condition.await(timeoutMs, TimeUnit.MILLISECONDS);
-    }
-
-    public boolean awaitUntil(Date deadline) throws InterruptedException {
-      stopper.checkCancelInProgress(null);
-      return condition.awaitUntil(deadline);
     }
 
     public synchronized void signal() {

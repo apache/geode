@@ -62,7 +62,7 @@ public class GetOp {
       Object key, Object callbackArg, boolean prSingleHopEnabled, EntryEventImpl clientEvent) {
     ClientMetadataService cms = ((GemFireCacheImpl)region.getCache())
         .getClientMetadataService();
-    AbstractOp op = new GetOpImpl(region, key, callbackArg,
+    GetOpImpl op = new GetOpImpl(region, key, callbackArg,
         prSingleHopEnabled, clientEvent);
 
     if (logger.isDebugEnabled()) {
@@ -77,6 +77,7 @@ public class GetOp {
             boolean onlyUseExistingCnx = ((poolImpl.getMaxConnections() != -1 && poolImpl
                 .getConnectionCount() >= poolImpl.getMaxConnections()) ? true
                 : false);
+            op.setAllowDuplicateMetadataRefresh(! onlyUseExistingCnx);
             return pool.executeOn(new ServerLocation(server.getHostName(),
                 server.getPort()), op, true, onlyUseExistingCnx);
           }
@@ -113,7 +114,7 @@ public class GetOp {
     private Object callbackArg;
 
     private EntryEventImpl clientEvent;
-    
+
     public String toString() {
       return "GetOpImpl(key="+key+")";
     }
@@ -182,17 +183,16 @@ public class GetOp {
               byte[] bytesReceived = part.getSerializedForm();
               if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION
                   && bytesReceived.length == ClientMetadataService.SIZE_BYTES_ARRAY_RECEIVED) {
-                ClientMetadataService cms;
                 try {
-                  cms = region.getCache().getClientMetadataService();
-                  version = cms.getMetaDataVersion(region, Operation.UPDATE, key,
-                      null, callbackArg);
+                  ClientMetadataService cms = region.getCache().getClientMetadataService();
+                  int myVersion = cms.getMetaDataVersion(region, Operation.UPDATE,
+                    key, null, callbackArg);
+                  if (myVersion != bytesReceived[0] || isAllowDuplicateMetadataRefresh()) {
+                    cms.scheduleGetPRMetaData(region, false, bytesReceived[1]);
+                  }
                 }
                 catch (CacheClosedException e) {
                   return null;
-                }
-                if (bytesReceived[0] != version) {
-                  cms.scheduleGetPRMetaData(region, false,bytesReceived[1]);
                 }
               }
             }

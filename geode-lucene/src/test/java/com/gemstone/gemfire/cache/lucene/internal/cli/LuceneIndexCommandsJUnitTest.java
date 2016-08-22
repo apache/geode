@@ -324,6 +324,46 @@ public class LuceneIndexCommandsJUnitTest {
     assertEquals(Arrays.asList("C","B","A"), data.retrieveAllValues("key"));
   }
 
+  @Test
+  public void testSearchIndexWhenSearchResultsHaveSameScore() throws Exception {
+
+    final Cache mockCache = mock(Cache.class, "Cache");
+    final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
+    final LuceneIndexCommands commands=spy(createIndexCommands(mockCache,null));
+
+    final List<Set<LuceneSearchResults>> queryResultsList = new ArrayList<>();
+    HashSet<LuceneSearchResults> queryResults = new HashSet<>();
+    queryResults.add(createQueryResults("A","Result1",1));
+    queryResults.add(createQueryResults("B","Result1",1));
+    queryResults.add(createQueryResults("C","Result1",1));
+    queryResults.add(createQueryResults("D","Result1",1));
+    queryResults.add(createQueryResults("E","Result1",1));
+    queryResults.add(createQueryResults("F","Result1",1));
+    queryResults.add(createQueryResults("G","Result1",1));
+    queryResults.add(createQueryResults("H","Result1",1));
+    queryResults.add(createQueryResults("I","Result1",1));
+    queryResults.add(createQueryResults("J","Result1",1));
+    queryResults.add(createQueryResults("K","Result1",1));
+    queryResults.add(createQueryResults("L","Result1",1));
+    queryResults.add(createQueryResults("M","Result1",1));
+    queryResults.add(createQueryResults("N","Result1",1));
+    queryResults.add(createQueryResults("P","Result1",1));
+    queryResults.add(createQueryResults("Q","Result1",1));
+    queryResults.add(createQueryResults("R","Result1",1));
+    queryResults.add(createQueryResults("S","Result1",1));
+    queryResults.add(createQueryResults("T","Result1",1));
+    queryResultsList.add(queryResults);
+
+    doReturn(mockResultCollector).when(commands).executeSearch(isA(LuceneQueryInfo.class));
+    doReturn(queryResultsList).when(mockResultCollector).getResult();
+
+    CommandResult result = (CommandResult) commands.searchIndex("index","region","Result1","field1",-1,-1, true);
+
+    TabularResultData data = (TabularResultData) result.getResultData();
+
+    assertEquals(queryResults.size(), data.retrieveAllValues("key").size());
+  }
+
   private String getPage(final LuceneSearchResults[] expectedResults, int[] indexList) {
     final TabularResultData data = ResultBuilder.createTabularResultData();
     for (int i:indexList) {

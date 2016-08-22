@@ -234,7 +234,7 @@ public class CachePerfStats {
     final String reliableRegionsMissingNoAccessDesc = "Current number of regions configured for reliablity that are missing required roles with No access";
     final String clearsDesc = "The total number of times a clear has been done on this cache.";
     final String nonSingleHopsDesc = "Total number of times client request observed more than one hop during operation.";
-    final String metaDataRefreshCountDesc = "Total number of times the meta data is refreshed due to hopping obsevred.";
+    final String metaDataRefreshCountDesc = "Total number of times the meta data is refreshed due to hopping observed.";
     final String conflatedEventsDesc = "Number of events not delivered due to conflation.  Typically this means that the event arrived after a later event was already applied to the cache.";
     final String tombstoneCountDesc = "Number of destroyed entries that are retained for concurrent modification detection";
     final String tombstoneGCCountDesc = "Number of garbage-collections performed on destroyed entries";

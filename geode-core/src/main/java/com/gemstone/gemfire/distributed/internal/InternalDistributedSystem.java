@@ -471,9 +471,6 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
     this.startTime = System.currentTimeMillis();
     this.grc = new GrantorRequestProcessor.GrantorRequestContext(stopper);
 
-    elderLock = new StoppableReentrantLock(stopper);
-    elderLockCondition = elderLock.newCondition();
-
     this.creationStack = TEST_CREATION_STACK_GENERATOR.get().generateCreationStack(this.originalConfig);
 
     //    if (DistributionConfigImpl.multicastTest) {
@@ -1499,17 +1496,6 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
       }
     }
     return sb.toString();
-  }
-
-  private final StoppableReentrantLock elderLock;
-  private final StoppableCondition elderLockCondition;
-
-  public StoppableReentrantLock getElderLock() {
-    return elderLock;
-  }
-
-  public StoppableCondition getElderLockCondition() {
-    return elderLockCondition;
   }
 
   /**

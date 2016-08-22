@@ -3742,6 +3742,9 @@ public class LocalizedStrings {
 
   public static final StringId AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET = new StringId(6639, "When using ssl-enabled-components one cannot use any other SSL properties other than cluster-ssl-* or the corresponding aliases");
 
+  public static final StringId ColocationHelper_REGION_SPECIFIED_IN_COLOCATEDWITH_DOES_NOT_EXIST = new StringId(6640, "Region specified in ''colocated-with'' ({0}) for region {1} does not exist. It should be created before setting ''colocated-with'' attribute for this region.");
+  public static final StringId ColocationLogger_PERSISTENT_DATA_RECOVERY_OF_REGION_PREVENTED_BY_OFFLINE_COLOCATED_CHILDREN = new StringId(6641, "Persistent data recovery for region {0} is prevented by offline colocated region{1}");
+
   /** Testing strings, messageId 90000-99999 **/
 
   /**

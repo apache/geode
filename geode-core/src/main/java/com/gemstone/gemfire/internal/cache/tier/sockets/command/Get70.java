@@ -201,11 +201,10 @@ public class Get70 extends BaseCommand {
 
       if (region instanceof PartitionedRegion) {
         PartitionedRegion pr = (PartitionedRegion) region;
-        if (pr.isNetworkHop() != (byte) 0) {
+        if (pr.getNetworkHopType() != PartitionedRegion.NETWORK_HOP_NONE) {
           writeResponseWithRefreshMetadata(data, callbackArg, msg, isObject,
-            servConn, pr, pr.isNetworkHop(), versionTag, keyNotPresent);
-          pr.setIsNetworkHop((byte) 0);
-          pr.setMetadataVersion(Byte.valueOf((byte) 0));
+            servConn, pr, pr.getNetworkHopType(), versionTag, keyNotPresent);
+          pr.clearNetworkHopData();
         }
         else {
           writeResponse(data, callbackArg, msg, isObject, versionTag, keyNotPresent, servConn);
@@ -490,7 +489,7 @@ public class Get70 extends BaseCommand {
       responseMsg.addObjPart(versionTag);
     }
 
-    responseMsg.addBytesPart(new byte[]{pr.getMetadataVersion().byteValue(),nwHop});
+    responseMsg.addBytesPart(new byte[]{pr.getMetadataVersion(),nwHop});
     servConn.getCache().getCancelCriterion().checkCancelInProgress(null);
     responseMsg.send(servConn);
     origMsg.clearParts();

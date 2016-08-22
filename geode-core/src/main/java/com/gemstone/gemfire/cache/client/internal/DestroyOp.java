@@ -64,7 +64,7 @@ public class DestroyOp {
     if (logger.isDebugEnabled()) {
       logger.debug("Preparing DestroyOp for {} operation={}", key, operation);
     }
-    AbstractOp op = new DestroyOpImpl(region, key, expectedOldValue,
+    DestroyOpImpl op = new DestroyOpImpl(region, key, expectedOldValue,
         operation, event, callbackArg, prSingleHopEnabled);
     if (prSingleHopEnabled) {
       ClientMetadataService cms = region.getCache()
@@ -77,6 +77,7 @@ public class DestroyOp {
           boolean onlyUseExistingCnx = ((poolImpl.getMaxConnections() != -1 && poolImpl
               .getConnectionCount() >= poolImpl.getMaxConnections()) ? true
               : false);
+          op.setAllowDuplicateMetadataRefresh(! onlyUseExistingCnx);
           return pool.executeOn(server, op, true, onlyUseExistingCnx);
         }
         catch (AllConnectionsInUseException e) {
@@ -140,10 +141,10 @@ public class DestroyOp {
 
     private boolean prSingleHopEnabled = false;
     
-    private Object callbackArg;
-    
     private EntryEventImpl event;
     
+    private Object callbackArg;
+
     /**
      * @throws com.gemstone.gemfire.SerializationException if serialization fails
      */
@@ -178,6 +179,7 @@ public class DestroyOp {
       super(MessageType.DESTROY, callbackArg != null ? 6 : 5);
       this.key = key;
       this.event = event;
+      this.callbackArg = callbackArg;
       getMessage().addStringPart(region);
       getMessage().addStringOrObjPart(key);
       getMessage().addObjPart(expectedOldValue);
@@ -215,7 +217,6 @@ public class DestroyOp {
         }
       }
       if (prSingleHopEnabled) {
-        byte version = 0 ;
 //        if (log.fineEnabled()) {
 //          log.fine("reading prSingleHop part #" + (partIdx+1));
 //        }
@@ -224,17 +225,16 @@ public class DestroyOp {
         if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION
             && bytesReceived.length == ClientMetadataService.SIZE_BYTES_ARRAY_RECEIVED) {
           if (this.region != null) {
-            ClientMetadataService cms = null;
             try {
-              cms = region.getCache().getClientMetadataService();
-              version = cms.getMetaDataVersion(region, Operation.UPDATE,
-                  key, null, callbackArg);
+              ClientMetadataService cms = region.getCache().getClientMetadataService();
+              int myVersion = cms.getMetaDataVersion(region, Operation.UPDATE,
+                key, null, callbackArg);
+              if (myVersion != bytesReceived[0] || isAllowDuplicateMetadataRefresh()) {
+                cms.scheduleGetPRMetaData(region, false, bytesReceived[1]);
+              }
             }
             catch (CacheClosedException e) {
               return null;
-            }
-            if (bytesReceived[0] != version) {
-              cms.scheduleGetPRMetaData(region, false,bytesReceived[1]);
             }
           }
         }

@@ -105,7 +105,7 @@ public class Put70 extends Put65 {
     }
     replyMsg.setNumberOfParts(parts);
     replyMsg.setTransactionId(origMsg.getTransactionId());
-    replyMsg.addBytesPart(new byte[]{pr.getMetadataVersion().byteValue(), nwHopType});
+    replyMsg.addBytesPart(new byte[]{pr.getMetadataVersion(), nwHopType});
     replyMsg.addIntPart(flags);
     if (sendOldValue) {
 //      if (logger.fineEnabled()) {

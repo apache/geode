@@ -20,10 +20,7 @@ import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.cache.BucketServerLocation66;
-import com.gemstone.gemfire.internal.cache.EntryOperationImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionHelper;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
@@ -62,7 +59,9 @@ public final class ClientMetadataService {
 
   private boolean isMetadataRefreshed_TEST_ONLY = false;
   
-  private int fetchTaskCount = 0;
+  private int refreshTaskCount = 0;
+  
+  private Set<String> regionsBeingRefreshed = new HashSet<>();
   
   private final Object fetchTaskCountLock = new Object();
   
@@ -521,7 +520,7 @@ public final class ClientMetadataService {
     }
     else {
       synchronized (fetchTaskCountLock){
-        fetchTaskCount++;
+        refreshTaskCount++;
       }
       Runnable fetchTask = new Runnable() {
         @SuppressWarnings("synthetic-access")
@@ -541,7 +540,7 @@ public final class ClientMetadataService {
           }
           finally {
             synchronized (fetchTaskCountLock){
-              fetchTaskCount--;
+              refreshTaskCount--;
             }
           }
         }
@@ -610,14 +609,19 @@ public final class ClientMetadataService {
     ClientPartitionAdvisor advisor = this.getClientPartitionAdvisor(region.getFullPath());
     if(advisor!= null && advisor.getServerGroup().length()!= 0 && HONOUR_SERVER_GROUP_IN_PR_SINGLE_HOP){
       if (logger.isDebugEnabled()) {
-        logger.debug("Scheduling metadata refresh : {}", nwHopType);
+        logger.debug("Scheduling metadata refresh: {} region: {}", nwHopType, region.getName());
       }
-      if(nwHopType == (byte)2){
+      if( nwHopType == PartitionedRegion.NETWORK_HOP_TO_DIFFERENT_GROUP){
         return;
       }
     }
-    region.getCachePerfStats().incNonSingleHopsCount();
+    synchronized (fetchTaskCountLock) {
+      if (regionsBeingRefreshed.contains(region.getFullPath())) {
+        return;
+      }
+    }
     if (isRecursive) {
+      region.getCachePerfStats().incNonSingleHopsCount();
       try {
         getClientPRMetadata(region);
       } catch (VirtualMachineError e) {
@@ -630,8 +634,13 @@ public final class ClientMetadataService {
         }
       }
     } else {
-      synchronized (fetchTaskCountLock){
-        fetchTaskCount++;
+      synchronized (fetchTaskCountLock) {
+        if (regionsBeingRefreshed.contains(region.getFullPath())) {
+          return;
+        }
+        region.getCachePerfStats().incNonSingleHopsCount();
+        regionsBeingRefreshed.add(region.getFullPath());
+        refreshTaskCount++;
       }
       Runnable fetchTask = new Runnable() {
         @SuppressWarnings("synthetic-access")
@@ -649,7 +658,8 @@ public final class ClientMetadataService {
           }
           finally {
             synchronized (fetchTaskCountLock){
-              fetchTaskCount--;
+              regionsBeingRefreshed.remove(region.getFullPath());
+              refreshTaskCount--;
             }
           }
         }
@@ -849,9 +859,9 @@ public final class ClientMetadataService {
     this.isMetadataStable = isMetadataStable;
   }
 
-  public int getFetchTaskCount() {
+  public int getRefreshTaskCount() {
     synchronized(fetchTaskCountLock) {
-      return fetchTaskCount;
+      return refreshTaskCount;
     }
   }
 }

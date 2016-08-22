@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import static com.sun.tools.doclint.Entity.part;
-
 import com.gemstone.gemfire.SerializationException;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.Assert;

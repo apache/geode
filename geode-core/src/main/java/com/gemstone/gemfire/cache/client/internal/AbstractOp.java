@@ -50,6 +50,8 @@ public abstract class AbstractOp implements Op {
   
   private final Message msg;
 
+  private boolean allowDuplicateMetadataRefresh;
+
   protected AbstractOp(int msgType, int msgParts) {
     this.msg = new Message(msgParts, Version.CURRENT);
     getMessage().setMessageType(msgType);
@@ -301,6 +303,15 @@ public abstract class AbstractOp implements Op {
       }
     }
   }
+
+  public boolean isAllowDuplicateMetadataRefresh() {
+    return allowDuplicateMetadataRefresh;
+  }
+
+  public void setAllowDuplicateMetadataRefresh(final boolean allowDuplicateMetadataRefresh) {
+    this.allowDuplicateMetadataRefresh = allowDuplicateMetadataRefresh;
+  }
+
   /**
    * Used by subclasses who get chunked responses.
    */

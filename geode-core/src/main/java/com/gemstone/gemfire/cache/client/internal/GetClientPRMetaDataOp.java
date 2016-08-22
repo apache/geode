@@ -104,21 +104,21 @@ public class GetClientPRMetaDataOp {
           for (int i = 0; i < numParts; i++) {
             Object result = msg.getPart(i).getObject();
             List<BucketServerLocation66> locations = (List<BucketServerLocation66>)result;
-          if (!locations.isEmpty()) {
-            int bucketId = locations.get(0).getBucketId();
-            if (isDebugEnabled) {
-              logger.debug("GetClientPRMetaDataOpImpl#processResponse: for bucketId : {} locations are {}", bucketId, locations);
-            }
-            advisor.updateBucketServerLocations(bucketId, locations, cms);
-            
-            Set<ClientPartitionAdvisor> cpas = cms
+            if (!locations.isEmpty()) {
+              int bucketId = locations.get(0).getBucketId();
+              if (isDebugEnabled) {
+                logger.debug("GetClientPRMetaDataOpImpl#processResponse: for bucketId : {} locations are {}", bucketId, locations);
+              }
+              advisor.updateBucketServerLocations(bucketId, locations, cms);
+
+              Set<ClientPartitionAdvisor> cpas = cms
                 .getColocatedClientPartitionAdvisor(regionFullPath);
-            if (cpas != null && !cpas.isEmpty()) {
-              for (ClientPartitionAdvisor colCPA : cpas) {
-                colCPA.updateBucketServerLocations(bucketId, locations, cms);
+              if (cpas != null && !cpas.isEmpty()) {
+                for (ClientPartitionAdvisor colCPA : cpas) {
+                  colCPA.updateBucketServerLocations(bucketId, locations, cms);
+                }
               }
             }
-          }
           }
           if (isDebugEnabled) {
             logger.debug("GetClientPRMetaDataOpImpl#processResponse: received ClientPRMetadata from server successfully.");

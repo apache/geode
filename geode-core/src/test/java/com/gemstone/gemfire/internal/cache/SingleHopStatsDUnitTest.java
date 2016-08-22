@@ -124,16 +124,19 @@ public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
     Integer port1 = (Integer) member1.invoke(() -> createServerForStats(0, 113, "No_Colocation"));
     Integer port2 = (Integer) member2.invoke(() -> createServerForStats(0, 113, "No_Colocation"));
 
-    member3.invoke(() -> createClient(port0, port1, port2, "No_Colocation"));
+    member3.invoke("createClient", () -> createClient(port0, port1, port2, "No_Colocation"));
+    System.out.println("createClient");
     createClient(port0, port1, port2, "No_Colocation");
 
-    member3.invoke(() -> createPR("FirstClient", "No_Colocation"));
+    member3.invoke("createPR", () -> createPR("FirstClient", "No_Colocation"));
+    System.out.println("createPR");
     createPR("SecondClient", "No_Colocation");
 
-    member3.invoke(() -> getPR("FirstClient", "No_Colocation"));
+    member3.invoke("getPR", () -> getPR("FirstClient", "No_Colocation"));
+    System.out.println("getPR");
     getPR("SecondClient", "No_Colocation");
 
-    member3.invoke(() -> updatePR("FirstClient", "No_Colocation"));
+    member3.invoke("updatePR", () -> updatePR("FirstClient", "No_Colocation"));
   }
 
   @Test
@@ -163,7 +166,7 @@ public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
           .addServer("localhost", port1).addServer("localhost", port2)
           .setRetryAttempts(5)
           .setMinConnections(1)
-          .setMaxConnections(1)
+          .setMaxConnections(-1)
           .setSubscriptionEnabled(false)
           .create(Region_Name);
     } finally {
@@ -325,7 +328,10 @@ public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
         nonSingleHopsCount = ((LocalRegion) region).getCachePerfStats().getNonSingleHopsCount();
         assertTrue(metaDataRefreshCount != 0); // hops are not predictable
         assertTrue(nonSingleHopsCount != 0);
+        
+        System.out.println("metadata refresh count after second pass is " + metaDataRefreshCount);
       } else {
+        System.out.println("creating keys in second client");
         for (int i = 0; i < 226; i++) {
           region.create(new Integer(i), "create" + i);
         }
@@ -341,6 +347,7 @@ public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
         nonSingleHopsCount = ((LocalRegion) region).getCachePerfStats().getNonSingleHopsCount();
         assertTrue(metaDataRefreshCount != 0); // hops are not predictable
         assertTrue(nonSingleHopsCount != 0);
+        System.out.println("metadata refresh count in second client is " + metaDataRefreshCount);
       }
     } else {
       createdColocatedPRData(cache);
