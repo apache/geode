@@ -164,7 +164,6 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
    * Test validates whether the listener attached receives all the events. 
    * When there are 2 listeners attached to the GatewaySender.
    */
-  @Category(FlakyTest.class) // GEODE-1066: random ports, waitForCriterion, time sensitive
   @Test
   public void testGatewaySender2EventListenerInvocation() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
