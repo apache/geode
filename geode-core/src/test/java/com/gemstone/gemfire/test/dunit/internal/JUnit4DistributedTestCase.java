@@ -165,7 +165,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     }
     if (system == null || !system.isConnected()) {
       // Figure out our distributed system properties
-      SocketCreatorFactory.close();
       Properties p = DistributedTestUtils.getAllDistributedSystemProperties(props);
       lastSystemCreatedInTest = getTestClass(); // used to be getDeclaringClass()
       if (logPerTest) {
@@ -567,6 +566,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     RegionTestCase.preSnapshotRegion = null;
     SocketCreator.resetHostNameCache();
     SocketCreator.resolve_dns = true;
+    SocketCreatorFactory.close();
     Message.MAX_MESSAGE_SIZE = Message.DEFAULT_MAX_MESSAGE_SIZE;
 
     // clear system properties -- keep alphabetized

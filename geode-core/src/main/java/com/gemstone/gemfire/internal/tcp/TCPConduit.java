@@ -114,9 +114,11 @@ public class TCPConduit implements Runnable {
    */
   static boolean useDirectBuffers;
 
-  private volatile boolean inhibitNewConnections;
+  /**
+   * The socket producer used by the cluster
+   */
+  private final SocketCreator socketCreator;
 
-  //  private transient DistributedMembershipListener messageReceiver;
 
   private MembershipManager membershipManager;
 
@@ -280,6 +282,8 @@ public class TCPConduit implements Runnable {
         }
       }
     }
+    
+    this.socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER);
 
     startAcceptor();
   }
@@ -429,7 +433,7 @@ public class TCPConduit implements Runnable {
       if (this.useNIO) {
         if (p <= 0) {
 
-          socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).createServerSocketUsingPortRange(bindAddress, b, isBindAddress, this.useNIO, 0, tcpPortRange);
+          socket = socketCreator.createServerSocketUsingPortRange(bindAddress, b, isBindAddress, this.useNIO, 0, tcpPortRange);
         } else {
           ServerSocketChannel channel = ServerSocketChannel.open();
           socket = channel.socket();
@@ -459,10 +463,9 @@ public class TCPConduit implements Runnable {
       } else {
         try {
           if (p <= 0) {
-            socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER)
-                                         .createServerSocketUsingPortRange(bindAddress, b, isBindAddress, this.useNIO, this.tcpBufferSize, tcpPortRange);
+            socket = socketCreator.createServerSocketUsingPortRange(bindAddress, b, isBindAddress, this.useNIO, this.tcpBufferSize, tcpPortRange);
           } else {
-            socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).createServerSocket(p, b, isBindAddress ? bindAddress : null, this.tcpBufferSize);
+            socket = socketCreator.createServerSocket(p, b, isBindAddress ? bindAddress : null, this.tcpBufferSize);
           }
           int newSize = socket.getReceiveBufferSize();
           if (newSize != this.tcpBufferSize) {
@@ -656,7 +659,7 @@ public class TCPConduit implements Runnable {
             logger.warn(LocalizedMessage.create(LocalizedStrings.TCPConduit_STOPPING_P2P_LISTENER_DUE_TO_SSL_CONFIGURATION_PROBLEM), ex);
             break;
           }
-          SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).configureServerSSLSocket(othersock);
+          socketCreator.configureServerSSLSocket(othersock);
         }
         if (stopped) {
           try {
@@ -667,30 +670,9 @@ public class TCPConduit implements Runnable {
           }
           continue;
         }
-        if (inhibitNewConnections) {
-          //          if (logger.isTraceEnabled(LogMarker.QA)) {
-          logger.info("Test hook: inhibiting acceptance of connection {}", othersock);
-          //          }
-          othersock.close();
-          while (inhibitNewConnections && !stopped) {
-            this.stopper.checkCancelInProgress(null);
-            boolean interrupted = Thread.interrupted();
-            try {
-              Thread.sleep(2000);
-            } catch (InterruptedException e) {
-              interrupted = true;
-            } finally {
-              if (interrupted) {
-                Thread.currentThread().interrupt();
-              }
-            }
-          } // while
-          if (logger.isTraceEnabled(LogMarker.QA)) {
-            logger.trace(LogMarker.QA, "Test hook: finished inhibiting acceptance of connections");
-          }
-        } else {
-          acceptConnection(othersock);
-        }
+
+        acceptConnection(othersock);
+        
       } catch (ClosedByInterruptException cbie) {
         //safe to ignore
       } catch (ClosedChannelException e) {
@@ -1194,6 +1176,14 @@ public class TCPConduit implements Runnable {
     return this.shutdownCause;
   }
 
+  /**
+   * returns the SocketCreator that should be used to produce
+   * sockets for TCPConduit connections.
+   * @return
+   */
+  protected SocketCreator getSocketCreator() {
+    return socketCreator;
+  }
   /**
    * ARB: Called by Connection before handshake reply is sent.
    * Returns true if member is part of view, false if membership is not confirmed before timeout.

@@ -68,8 +68,7 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import com.gemstone.gemfire.test.junit.categories.*;
 import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
@@ -130,7 +129,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       system.disconnect();
       system = null;
     }
-    SocketCreatorFactory.close();
   }
 
   ////////  Test Methods
@@ -436,7 +434,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  @Category(FlakyTest.class)
   public void testStartTwoLocatorsOneWithSSLAndTheOtherNonSSL() throws Exception {
     IgnoredException expectedException = IgnoredException.addIgnoredException("Unrecognized SSL message, plaintext connection");
     disconnectAllFromDS();
@@ -495,7 +492,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  @Category(FlakyTest.class)
   public void testStartTwoLocatorsOneWithNonSSLAndTheOtherSSL() throws Exception {
     IgnoredException expectedException = IgnoredException.addIgnoredException("Remote host closed connection during handshake");
 
@@ -551,7 +547,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  @Category(FlakyTest.class)
   public void testStartTwoLocatorsWithDifferentSSLCertificates() throws Exception {
     IgnoredException expectedException = IgnoredException.addIgnoredException("Remote host closed connection during handshake");
     IgnoredException expectedException2 = IgnoredException.addIgnoredException("unable to find valid certification path to requested target");
