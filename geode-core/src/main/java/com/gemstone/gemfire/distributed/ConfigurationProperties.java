@@ -463,8 +463,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>any</code></p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_CIPHERS}
+   * @deprecated Since Geode 1.0 use {@link #SSL_CIPHERS}
    */
+  @Deprecated
   String GATEWAY_SSL_CIPHERS = "gateway-ssl-ciphers";
   /**
    * The static String definition of the <i>"gateway-ssl-enabled"</i> property
@@ -477,6 +478,7 @@ public interface ConfigurationProperties {
    * <U>Since</U>: GemFire 8.0
    * @deprecated Since Geode 1.0 use {@link #SSL_ENABLED_COMPONENTS} with the optional {@link #SSL_GATEWAY_ALIAS}
    */
+  @Deprecated
   String GATEWAY_SSL_ENABLED = "gateway-ssl-enabled";
   /**
    * The static String definition of the <i>"gateway-ssl-keystore"</i> property
@@ -486,8 +488,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE}
+   * @deprecated Since Geode 1.0 use {@link #SSL_KEYSTORE}
    */
+  @Deprecated
   String GATEWAY_SSL_KEYSTORE = "gateway-ssl-keystore";
   /**
    * The static String definition of the <i>"gateway-ssl-keystore-password"</i> property
@@ -497,8 +500,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE_PASSWORD}
+   * @deprecated Since Geode 1.0 use {@link #SSL_KEYSTORE_PASSWORD}
    */
+  @Deprecated
   String GATEWAY_SSL_KEYSTORE_PASSWORD = "gateway-ssl-keystore-password";
   /**
    * The static String definition of the <i>"gateway-ssl-keystore-type"</i> property
@@ -508,8 +512,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE_TYPE}
+   * @deprecated Since Geode 1.0 use {@link #SSL_KEYSTORE_TYPE}
    */
+  @Deprecated
   String GATEWAY_SSL_KEYSTORE_TYPE = "gateway-ssl-keystore-type";
   /**
    * The static String definition of the <i>"gateway-ssl-protocols"</i> property
@@ -519,8 +524,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>any</code></p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_PROTOCOLS}
+   * @deprecated Since Geode 1.0 use {@link #SSL_PROTOCOLS}
    */
+  @Deprecated
   String GATEWAY_SSL_PROTOCOLS = "gateway-ssl-protocols";
   /**
    * The static String definition of the <i>"gateway-ssl-require-authentication"</i> property
@@ -530,8 +536,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>any</code></p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+   * @deprecated Since Geode 1.0 use {@link #SSL_REQUIRE_AUTHENTICATION}
    */
+  @Deprecated
   String GATEWAY_SSL_REQUIRE_AUTHENTICATION = "gateway-ssl-require-authentication";
   /**
    * The static String definition of the <i>"gateway-ssl-truststore"</i> property
@@ -541,8 +548,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_TRUSTSTORE}
+   * @deprecated Since Geode 1.0 use {@link #SSL_TRUSTSTORE}
    */
+  @Deprecated
   String GATEWAY_SSL_TRUSTSTORE = "gateway-ssl-truststore";
   /**
    * The static String definition of the <i>"gateway-ssl-truststore-password"</i> property
@@ -552,8 +560,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+   * @deprecated Since Geode 1.0 use {@link #SSL_TRUSTSTORE_PASSWORD}
    */
+  @Deprecated
   String GATEWAY_SSL_TRUSTSTORE_PASSWORD = "gateway-ssl-truststore-password";
   /**
    * The static String definition of the <i>"groups"</i> property.
@@ -609,8 +618,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>any</code></p>
    * <U>Since</U>: GemFire 8.1
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_CIPHERS}
+   * @deprecated Since Geode 1.0 use {@link #SSL_CIPHERS}
    */
+  @Deprecated
   String HTTP_SERVICE_SSL_CIPHERS = "http-service-ssl-ciphers";
   /**
    * The static String definition of the <i>"http-service-ssl-enabled"</i> property
@@ -624,6 +634,7 @@ public interface ConfigurationProperties {
    * <U>Since</U>: GemFire 8.1
    * @deprecated Since Geode 1.0 use {@link #SSL_ENABLED_COMPONENTS} with optional {@link #SSL_HTTP_SERVICE_ALIAS}
    */
+  @Deprecated
   String HTTP_SERVICE_SSL_ENABLED = "http-service-ssl-enabled";
   /**
    * The static String definition of the <i>"http-service-ssl-keystore"</i> property
@@ -633,8 +644,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.1
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE}
+   * @deprecated Since Geode 1.0 use {@link #SSL_KEYSTORE}
    */
+  @Deprecated
   String HTTP_SERVICE_SSL_KEYSTORE = "http-service-ssl-keystore";
   /**
    * The static String definition of the <i>"http-service-ssl-keystore-password"</i> property
@@ -644,8 +656,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.1
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE_PASSWORD}
+   * @deprecated Since Geode 1.0 use {@link #SSL_KEYSTORE_PASSWORD}
    */
+  @Deprecated
   String HTTP_SERVICE_SSL_KEYSTORE_PASSWORD = "http-service-ssl-keystore-password";
   /**
    * The static String definition of the <i>"http-service-ssl-keystore-type"</i> property
@@ -655,8 +668,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.1
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE_TYPE}
+   * @deprecated Since Geode 1.0 use {@link #SSL_KEYSTORE_TYPE}
    */
+  @Deprecated
   String HTTP_SERVICE_SSL_KEYSTORE_TYPE = "http-service-ssl-keystore-type";
   /**
    * The static String definition of the <i>"http-service-ssl-protocols"</i> property
@@ -666,8 +680,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>any</code></p>
    * <U>Since</U>: GemFire 8.1
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_PROTOCOLS}
+   * @deprecated Since Geode 1.0 use {@link #SSL_PROTOCOLS}
    */
+  @Deprecated
   String HTTP_SERVICE_SSL_PROTOCOLS = "http-service-ssl-protocols";
   /**
    * The static String definition of the <i>"http-service-ssl-require-authentication"</i> property
@@ -677,8 +692,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>false</code></p>
    * <U>Since</U>: GemFire 8.1
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+   * @deprecated Since Geode 1.0 use {@link #SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION}
    */
+  @Deprecated
   String HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION = "http-service-ssl-require-authentication";
   /**
    * The static String definition of the <i>"http-service-ssl-truststore"</i> property
@@ -688,8 +704,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.1
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_TRUSTSTORE}
+   * @deprecated Since Geode 1.0 use {@link #SSL_TRUSTSTORE}
    */
+  @Deprecated
   String HTTP_SERVICE_SSL_TRUSTSTORE = "http-service-ssl-truststore";
   /**
    * The static String definition of the <i>"http-service-ssl-truststore-password"</i> property
@@ -699,8 +716,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.1
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+   * @deprecated Since Geode 1.0 use {@link #SSL_TRUSTSTORE_PASSWORD}
    */
+  @Deprecated
   String HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD = "http-service-ssl-truststore-password";
   /**
    * The static String definition of the jmx-manager-ssl prefix "jmx-manager-ssl-" used in conjunction with other jmx-manager-ssl-* properties</i> property
@@ -839,8 +857,9 @@ public interface ConfigurationProperties {
    * Those listed must be supported by the available providers.
    * </p>
    * <U>Default</U>: "any"
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_CIPHERS}
+   * @deprecated Since Geode 1.0 use {@link #SSL_CIPHERS}
    */
+  @Deprecated
   String JMX_MANAGER_SSL_CIPHERS = "jmx-manager-ssl-ciphers";
   /**
    * The static String definition of the <i>"jmx-manager-ssl-enabled"</i> property
@@ -854,6 +873,7 @@ public interface ConfigurationProperties {
    * <U>Default</U>: "false"
    * @deprecated Since Geode 1.0 use {@link #SSL_ENABLED_COMPONENTS} with optional {@link #SSL_JMX_MANAGER_ALIAS}
    */
+  @Deprecated
   String JMX_MANAGER_SSL_ENABLED = "jmx-manager-ssl-enabled";
   /**
    * The static String definition of the <i>"jmx-manager-ssl-keystore"</i> property
@@ -863,8 +883,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE}
+   * @deprecated Since Geode 1.0 use {@link #SSL_KEYSTORE}
    */
+  @Deprecated
   String JMX_MANAGER_SSL_KEYSTORE = "jmx-manager-ssl-keystore";
   /**
    * The static String definition of the <i>"jmx-manager-ssl-keystore-password"</i> property
@@ -874,8 +895,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE_PASSWORD}
+   * @deprecated Since Geode 1.0 use {@link #SSL_KEYSTORE_PASSWORD}
    */
+  @Deprecated
   String JMX_MANAGER_SSL_KEYSTORE_PASSWORD = "jmx-manager-ssl-keystore-password";
   /**
    * The static String definition of the <i>"jmx-manager-ssl-keystore-type"</i> property
@@ -885,8 +907,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE_TYPE}
+   * @deprecated Since Geode 1.0 use {@link #SSL_KEYSTORE_TYPE}
    */
+  @Deprecated
   String JMX_MANAGER_SSL_KEYSTORE_TYPE = "jmx-manager-ssl-keystore-type";
   /**
    * The static String definition of the <i>"jmx-manager-ssl-protocols"</i> property
@@ -895,8 +918,9 @@ public interface ConfigurationProperties {
    * Those listed must be supported by the available providers.
    * </p>
    * <U>Default</U>: "any"
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_PROTOCOLS}
+   * @deprecated Since Geode 1.0 use {@link #SSL_PROTOCOLS}
    */
+  @Deprecated
   String JMX_MANAGER_SSL_PROTOCOLS = "jmx-manager-ssl-protocols";
   /**
    * The static String definition of the <i>"jmx-manager-ssl-require-authentication"</i> property
@@ -905,8 +929,9 @@ public interface ConfigurationProperties {
    * side of the connection to be authenticated.
    * </p>
    * <U>Default</U>: "true"
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+   * @deprecated Since Geode 1.0 use {@link #SSL_REQUIRE_AUTHENTICATION}
    */
+  @Deprecated
   String JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION = "jmx-manager-ssl-require-authentication";
   /**
    * The static String definition of the <i>"jmx-manager-ssl-truststore"</i> property
@@ -916,8 +941,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_TRUSTSTORE}
+   * @deprecated Since Geode 1.0 use {@link #SSL_TRUSTSTORE}
    */
+  @Deprecated
   String JMX_MANAGER_SSL_TRUSTSTORE = "jmx-manager-ssl-truststore";
   /**
    * The static String definition of the <i>"jmx-manager-ssl-truststore-password"</i> property
@@ -927,8 +953,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+   * @deprecated Since Geode 1.0 use {@link #SSL_TRUSTSTORE_PASSWORD}
    */
+  @Deprecated
   String JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD = "jmx-manager-ssl-truststore-password";
   /**
    * The static String definition of the <i>"load-cluster-configuration-from-dir"</i> property
@@ -1356,8 +1383,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>any</code></p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_CIPHERS}
+   * @deprecated Since Geode 1.0 use {@link #SSL_CIPHERS}
    */
+  @Deprecated
   String SERVER_SSL_CIPHERS = "server-ssl-ciphers";
   /**
    * The static String definition of the <i>"server-ssl-enabled"</i> property
@@ -1380,8 +1408,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE}
+   * @deprecated Since Geode 1.0 use {@link #SSL_KEYSTORE}
    */
+  @Deprecated
   String SERVER_SSL_KEYSTORE = "server-ssl-keystore";
   /**
    * The static String definition of the <i>"server-ssl-keystore-password"</i> property
@@ -1391,8 +1420,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE_PASSWORD}
+   * @deprecated Since Geode 1.0 use {@link #SSL_KEYSTORE_PASSWORD}
    */
+  @Deprecated
   String SERVER_SSL_KEYSTORE_PASSWORD = "server-ssl-keystore-password";
   /**
    * The static String definition of the <i>"server-ssl-keystore-type"</i> property
@@ -1402,8 +1432,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE_TYPE}
+   * @deprecated Since Geode 1.0 use {@link #SSL_KEYSTORE_TYPE}
    */
+  @Deprecated
   String SERVER_SSL_KEYSTORE_TYPE = "server-ssl-keystore-type";
   /**
    * The static String definition of the <i>"server-ssl-protocols"</i> property
@@ -1413,8 +1444,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>any</code></p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_PROTOCOLS}
+   * @deprecated Since Geode 1.0 use {@link #SSL_PROTOCOLS}
    */
+  @Deprecated
   String SERVER_SSL_PROTOCOLS = "server-ssl-protocols";
   /**
    * The static String definition of the <i>"server-ssl-require-authentication"</i> property
@@ -1424,8 +1456,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>any</code></p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+   * @deprecated Since Geode 1.0 use {@link #SSL_REQUIRE_AUTHENTICATION}
    */
+  @Deprecated
   String SERVER_SSL_REQUIRE_AUTHENTICATION = "server-ssl-require-authentication";
   /**
    * The static String definition of the <i>"server-ssl-truststore"</i> property
@@ -1435,8 +1468,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_TRUSTSTORE}
+   * @deprecated Since Geode 1.0 use {@link #SSL_TRUSTSTORE}
    */
+  @Deprecated
   String SERVER_SSL_TRUSTSTORE = "server-ssl-truststore";
   /**
    * The static String definition of the <i>"server-ssl-truststore-password"</i> property
@@ -1446,8 +1480,9 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
-   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+   * @deprecated Since Geode 1.0 use {@link #SSL_TRUSTSTORE_PASSWORD}
    */
+  @Deprecated
   String SERVER_SSL_TRUSTSTORE_PASSWORD = "server-ssl-truststore-password";
   /**
    * The static String definition of the <i>"socket-buffer-size"</i> property
