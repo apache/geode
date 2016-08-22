@@ -42,7 +42,10 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer{
   }
   
   @Override
-  public void discover(int port, DistributionConfigImpl config, LocatorMembershipListener locatorListener) {
+  public void discover(int port,
+                       DistributionConfigImpl config,
+                       LocatorMembershipListener locatorListener,
+                       final String hostnameForClients) {
     final LoggingThreadGroup loggingThreadGroup = LoggingThreadGroup
         .createThreadGroup("WAN Locator Discovery Logger Group", logger);
 
@@ -56,8 +59,8 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer{
     };
 
     this._executor = Executors.newCachedThreadPool(threadFactory);
-    exchangeLocalLocators(port, config, locatorListener);
-    exchangeRemoteLocators(port, config, locatorListener);
+    exchangeLocalLocators(port, config, locatorListener, hostnameForClients);
+    exchangeRemoteLocators(port, config, locatorListener, hostnameForClients);
     this._executor.shutdown();
   }
 
@@ -73,21 +76,25 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer{
 
   /**
    * For WAN 70 Exchange the locator information within the distributed system
-   * 
+   *
    * @param config
+   * @param hostnameForClients
    */
-  private void exchangeLocalLocators(int port, DistributionConfigImpl config, LocatorMembershipListener locatorListener) {
+  private void exchangeLocalLocators(int port,
+                                     DistributionConfigImpl config,
+                                     LocatorMembershipListener locatorListener,
+                                     final String hostnameForClients) {
     String localLocator = config.getStartLocator();
     DistributionLocatorId locatorId = null;
     if (localLocator.equals(DistributionConfig.DEFAULT_START_LOCATOR)) {
-      locatorId = new DistributionLocatorId(port, config.getBindAddress());
+      locatorId = new DistributionLocatorId(port, config.getBindAddress(), hostnameForClients);
     }
     else {
       locatorId = new DistributionLocatorId(localLocator);
     }
     LocatorHelper.addLocator(config.getDistributedSystemId(), locatorId, locatorListener, null);
 
-    RemoteLocatorJoinRequest request = buildRemoteDSJoinRequest(port, config);
+    RemoteLocatorJoinRequest request = buildRemoteDSJoinRequest(port, config, hostnameForClients);
     StringTokenizer locatorsOnThisVM = new StringTokenizer(
         config.getLocators(), ",");
     while (locatorsOnThisVM.hasMoreTokens()) {
@@ -104,11 +111,15 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer{
   /**
    * For WAN 70 Exchange the locator information across the distributed systems
    * (sites)
-   * 
+   *
    * @param config
+   * @param hostnameForClients
    */
-  private void exchangeRemoteLocators(int port, DistributionConfigImpl config, LocatorMembershipListener locatorListener) {
-    RemoteLocatorJoinRequest request = buildRemoteDSJoinRequest(port, config);
+  private void exchangeRemoteLocators(int port,
+                                      DistributionConfigImpl config,
+                                      LocatorMembershipListener locatorListener,
+                                      final String hostnameForClients) {
+    RemoteLocatorJoinRequest request = buildRemoteDSJoinRequest(port, config, hostnameForClients);
     String remoteDistributedSystems = config.getRemoteLocators();
     if (remoteDistributedSystems.length() > 0) {
       StringTokenizer remoteLocators = new StringTokenizer(
@@ -125,11 +136,12 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer{
   }
   
   private RemoteLocatorJoinRequest buildRemoteDSJoinRequest(int port,
-      DistributionConfigImpl config) {
+                                                            DistributionConfigImpl config,
+                                                            final String hostnameForClients) {
     String localLocator = config.getStartLocator();
     DistributionLocatorId locatorId = null;
     if (localLocator.equals(DistributionConfig.DEFAULT_START_LOCATOR)) {
-      locatorId = new DistributionLocatorId(port, config.getBindAddress());
+      locatorId = new DistributionLocatorId(port, config.getBindAddress(), hostnameForClients);
     }
     else {
       locatorId = new DistributionLocatorId(localLocator);
