@@ -40,9 +40,9 @@ import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
-import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
 
 /**
@@ -57,7 +57,7 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
 @SuppressWarnings("deprecation")
 public abstract class AbstractDistributionConfig extends AbstractConfig implements DistributionConfig {
 
-  protected void checkAttribute(String attName, Object value) {
+  protected Object checkAttribute(String attName, Object value) {
     // first check to see if this attribute is modifiable, this also checks if the attribute is a valid one.
     if (!isAttributeModifiable(attName)) {
       throw new UnmodifiableException(_getUnmodifiableMsg(attName));
@@ -67,7 +67,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     if (attribute == null) {
       // isAttributeModifiable already checks the validity of the attName, if reached here, then they
       // must be those special attributes that starts with ssl_system_props or sys_props, no further checking needed
-      return;
+      return value;
     }
     // for integer attribute, do the range check.
     if (attribute.type().equals(Integer.class)) {
@@ -77,12 +77,12 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
     Method checker = checkers.get(attName);
     if (checker == null) {
-      return;
+      return value;
     }
 
     // if specific checker exists for this attribute, call that with the value
     try {
-      checker.invoke(this, value);
+      return checker.invoke(this, value);
     } catch (Exception e) {
       if (e instanceof RuntimeException) {
         throw (RuntimeException) e;
@@ -496,13 +496,11 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     return value;
   }
 
-
-
   /**
    * First check if sslComponents are in the list of valid components. If so, check that no other *-ssl-* properties other than cluster-ssl-* are set.
    * This would mean one is mixing the "old" with the "new"
    */
-  @ConfigAttributeChecker(name=SECURITY_ENABLED_COMPONENTS)
+  @ConfigAttributeChecker(name = SECURITY_ENABLED_COMPONENTS)
   protected String checkSecurityEnabledComponents(String value) {
     // value with no commas
     // empty value
@@ -515,7 +513,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
       return value;
     }
     StringTokenizer stringTokenizer = new StringTokenizer(value, ",");
-    while (stringTokenizer.hasMoreTokens()){
+    while (stringTokenizer.hasMoreTokens()) {
       SecurableComponent.getEnum(stringTokenizer.nextToken());
     }
     return value;
