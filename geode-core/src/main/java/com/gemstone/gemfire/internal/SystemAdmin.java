@@ -2080,16 +2080,8 @@ public class SystemAdmin {
           LocalizedStrings.SystemAdmin_GEMFIRE_PRODUCT_DIRECTORY_0
             .toLocalizedString(getProductDir()));
 
-        if (cmdLine.size() == 1 && "CREATE".equals(cmdLine.get(0))) {
-          GemFireVersion.createVersionFile();
+        GemFireVersion.print(System.out);
 
-        } else if (cmdLine.size() == 1 &&
-                   "FULL".equalsIgnoreCase(String.valueOf(cmdLine.get(0)))) {
-          GemFireVersion.print(System.out, true);
-
-        } else {
-          GemFireVersion.print(System.out, false);
-        }
       } else if (cmd.equalsIgnoreCase("help")) {
         if (cmdLine.size() > 1) {
           System.err.println( LocalizedStrings.SystemAdmin_ERROR_UNEXPECTED_COMMAND_LINE_ARGUMENTS_0.toLocalizedString(join(cmdLine)));
