@@ -71,7 +71,7 @@ public class CustomAuthRealm extends AuthorizingRealm {
     credentialProps.put(ResourceConstants.USER_NAME, username);
     credentialProps.put(ResourceConstants.PASSWORD, password);
 
-    Serializable principal  = securityManager.authenticate(credentialProps);
+    Object principal  = securityManager.authenticate(credentialProps);
 
     try {
       return new SimpleAuthenticationInfo(principal, authToken.getPassword(), REALM_NAME);
