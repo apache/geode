@@ -68,7 +68,7 @@ store, but can be designated by separate aliases that incorporate the component 
 where _component_ is the name of a component. When a component-specific alias is specified, it
 overrides the ssl-default-alias for the _component_ specified.
 
-For example, ssl-locator-certificate-alias would specify a name for the locator component's certificate in the system key store.</dd>
+For example, ssl-locator-alias would specify a name for the locator component's certificate in the system key store.</dd>
 
 <dt>**ssl-ciphers**</dt>
 <dd>A comma-separated list of the valid SSL ciphers for SSL-enabled component connections. A setting of 'any'
@@ -87,7 +87,7 @@ any protocol that is enabled by default in the configured JSSE provider.</dd>
 ### Example: secure communications throughout
 
 To implement secure SSL communications throughout an entire distributed system, each process should
-enable SSL for all components. 
+enable SSL for all components.
  
 ``` pre
 ssl-enabled-components=all
@@ -97,8 +97,7 @@ ssl-truststore=secure/truststore.dat
 ssl-truststore-password=changeit
 ```
  
-If the key store has multiple certificates you may want to specify the alias of the one you wish to use for each process.  For instance,
-`ssl-default-alias=Hiroki`.
+If the key store has multiple certificates you may want to specify the alias of the one you wish to use for each process.  For instance, `ssl-default-alias=Hiroki`.
 
 
 ### Example: non-secure cluster communications, secure client/server
@@ -116,6 +115,7 @@ ssl-keystore=secure/keystore.dat
 ssl-keystore-password=changeit
 ssl-truststore=secure/truststore.dat
 ssl-truststore-password=changeit
+ssl-default-alias=Server-Cert
 ```
 
 **Locator properties**
@@ -129,6 +129,7 @@ ssl-keystore=secure/keystore.dat
 ssl-keystore-password=changeit
 ssl-truststore=secure/truststore.dat
 ssl-truststore-password=changeit
+ssl-default-alias=Locator-Cert
 ```
  
 **Client properties**
@@ -210,7 +211,7 @@ use. For information, see the [Oracle JSSE website](http://www.oracle.com/techne
         ``` pre
         ssl-enabled-components=server
         ssl-protocols=any
-        ciphers=SSL_RSA_WITH_NULL_MD5, SSL_RSA_WITH_NULL_SHA
+        ssl-ciphers=SSL_RSA_WITH_NULL_MD5, SSL_RSA_WITH_NULL_SHA
         ssl-keystore=/path/to/trusted.keystore
         ssl-keystore-password=password
         ssl-truststore=/path/to/trusted.keystore
