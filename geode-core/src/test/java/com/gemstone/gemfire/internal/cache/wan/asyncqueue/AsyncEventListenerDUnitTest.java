@@ -20,6 +20,7 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -133,6 +134,34 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     int vm2size = (Integer)vm2.invoke(() -> AsyncEventQueueTestBase.getAsyncEventQueueSize( "ln" ));
     assertEquals("Size of AsyncEventQueue is incorrect", 1000, vm1size);
     assertEquals("Size of AsyncEventQueue is incorrect", 1000, vm2size);
+  }
+
+  @Test
+  public void testParallelAsyncEventQueueWithFixedPartition() {
+    Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
+
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.createAsyncEventQueue( "ln",
+      true, 100, 100, false, false, null, false ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.createAsyncEventQueue( "ln",
+      true, 100, 100, false, false, null, false ));
+
+    List<String> allPartitions = Arrays.asList("part1", "part2");
+    vm1.invoke(() -> AsyncEventQueueTestBase.createFixedPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR", "ln", "part1", allPartitions, isOffHeap()));
+    vm2.invoke(() -> AsyncEventQueueTestBase.createFixedPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR", "ln", "part2", allPartitions, isOffHeap()));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.doPuts( getTestMethodName() + "_PR",
+      256 ));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
+
+    int vm1size = (Integer)vm1.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize( "ln"));
+    int vm2size = (Integer)vm2.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize( "ln"));
+
+    assertEquals(vm1size + vm2size, 256);
   }
 
   protected SerializableRunnableIF pauseAsyncEventQueueRunnable() {

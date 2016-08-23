@@ -660,18 +660,23 @@ public class PartitionedRegion extends LocalRegion implements
     this.partitionListeners = this.partitionAttributes.getPartitionListeners(); 
 
     this.colocatedWithRegion = ColocationHelper.getColocatedRegion(this);
-    if (colocatedWithRegion != null) {
-      //In colocation chain, child region inherita the fixed partitin attributes from parent region.
-      this.fixedPAttrs = colocatedWithRegion.getFixedPartitionAttributesImpl();
-      this.fixedPASet = colocatedWithRegion.fixedPASet;
+
+    if(colocatedWithRegion != null) {
       synchronized (colocatedWithRegion.colocatedByList) {
         colocatedWithRegion.colocatedByList.add(this);
       }
+    }
+
+    if (colocatedWithRegion != null && !internalRegionArgs.isUsedForParallelGatewaySenderQueue()) {
+      //In a colocation chain, the child region inherits the fixed partition attributes from parent region.
+      this.fixedPAttrs = colocatedWithRegion.getFixedPartitionAttributesImpl();
+      this.fixedPASet = colocatedWithRegion.fixedPASet;
     }
     else {
       this.fixedPAttrs = this.partitionAttributes.getFixedPartitionAttributes();
       this.fixedPASet = 0;
     }
+
     if (logger.isDebugEnabled()) {
       logger.debug("Partitioned Region {} constructed {}", regionname, (this.haveCacheLoader ? "with a cache loader" : ""));
     }

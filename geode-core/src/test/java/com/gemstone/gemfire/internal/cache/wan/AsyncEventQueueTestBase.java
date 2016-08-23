@@ -53,6 +53,9 @@ import com.gemstone.gemfire.cache.Declarable;
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
 import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.EntryOperation;
+import com.gemstone.gemfire.cache.FixedPartitionAttributes;
+import com.gemstone.gemfire.cache.FixedPartitionResolver;
 import com.gemstone.gemfire.cache.LoaderHelper;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -620,6 +623,31 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
       fact.setOffHeap(offHeap);
       Region r = cache.createRegionFactory(fact.create())
           .addAsyncEventQueueId(asyncEventQueueId).create(regionName);
+      assertNotNull(r);
+    }
+    finally {
+      exp.remove();
+      exp1.remove();
+    }
+  }
+
+  public static void createFixedPartitionedRegionWithAsyncEventQueue(
+    String regionName, String asyncEventQueueId, String partitionName, final List<String> allPartitions, boolean offHeap) {
+    IgnoredException exp = IgnoredException.addIgnoredException(ForceReattemptException.class
+      .getName());
+    IgnoredException exp1 = IgnoredException.addIgnoredException(PartitionOfflineException.class
+      .getName());
+    try {
+      AttributesFactory fact = new AttributesFactory();
+
+      PartitionAttributesFactory pfact = new PartitionAttributesFactory();
+      pfact.setTotalNumBuckets(16);
+      pfact.addFixedPartitionAttributes(FixedPartitionAttributes.createFixedPartition(partitionName,true));
+      pfact.setPartitionResolver(new MyFixedPartitionResolver(allPartitions));
+      fact.setPartitionAttributes(pfact.create());
+      fact.setOffHeap(offHeap);
+      Region r = cache.createRegionFactory(fact.create())
+        .addAsyncEventQueueId(asyncEventQueueId).create(regionName);
       assertNotNull(r);
     }
     finally {
@@ -1615,6 +1643,33 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
    */
   public boolean isOffHeap() {
     return false;
+  }
+
+  private static class MyFixedPartitionResolver implements FixedPartitionResolver {
+
+    private final List<String> allPartitions;
+
+    public MyFixedPartitionResolver(final List<String> allPartitions) {
+      this.allPartitions = allPartitions;
+    }
+
+    @Override
+    public String getPartitionName(final EntryOperation opDetails, @Deprecated final Set targetPartitions) {
+      int hash =  Math.abs(opDetails.getKey().hashCode() % allPartitions.size());
+      return allPartitions.get(hash);
+    }
+
+    @Override public Object getRoutingObject(final EntryOperation opDetails) {
+      return opDetails.getKey();
+    }
+
+    @Override public String getName() {
+      return getClass().getName();
+    }
+
+    @Override public void close() {
+
+    }
   }
 }
 
