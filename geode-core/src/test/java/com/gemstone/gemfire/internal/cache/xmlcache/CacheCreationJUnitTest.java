@@ -23,9 +23,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.gemstone.gemfire.cache.GemFireCache;
+import com.gemstone.gemfire.cache.wan.GatewayReceiver;
+import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -200,5 +204,24 @@ public class CacheCreationJUnitTest {
     cacheCreation.getCacheServers().add(new CacheServerCreation(cacheCreation, false));
 
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), cache, configuredServerPort, configuredServerBindAddress, disableDefaultCacheServer);
+  }
+
+  @Test
+  public void shouldCreateGatewaySenderAfterRegions() {
+    CacheCreation cacheCreation = new CacheCreation();
+    GatewayReceiver receiver = mock(GatewayReceiver.class);
+    cacheCreation.addGatewayReceiver(receiver);
+    cacheCreation.addRootRegion(new RegionCreation(cacheCreation, "region"));
+    GemFireCacheImpl cache = mock(GemFireCacheImpl.class);
+    GatewayReceiverFactory receiverFactory = mock(GatewayReceiverFactory.class);
+    when(cache.createGatewayReceiverFactory()).thenReturn(receiverFactory);
+    when(receiverFactory.create()).thenReturn(receiver);
+
+    InOrder inOrder = inOrder(cache, receiverFactory);
+    cacheCreation.create(cache);
+
+    inOrder.verify(cache).basicCreateRegion(eq("region"),any());
+    inOrder.verify(cache).createGatewayReceiverFactory();
+    inOrder.verify(receiverFactory).create();
   }
 }
