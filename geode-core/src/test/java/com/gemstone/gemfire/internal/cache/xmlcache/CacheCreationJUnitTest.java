@@ -35,6 +35,7 @@ import org.mockito.MockitoAnnotations;
 
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerLauncher;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
@@ -47,6 +48,7 @@ public class CacheCreationJUnitTest {
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
+    CacheServerLauncher.clearStatics();
   }
 
   @Test
