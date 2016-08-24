@@ -453,17 +453,16 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
 
     // Try to connect client1 with no credentials
     // Verify that the creation of region throws security exception
-    server1.invoke(() -> createCacheServer(locPort1, locString, port1, authenticator, extraProps, javaProps));
-
+    final int p = server1.invoke(() -> createCacheServer(locPort1, locString, 0, authenticator, extraProps, javaProps));
     if (gen.classCode().equals(CredentialGenerator.ClassCode.SSL)) {
       // For SSL the exception may not come since the server can close socket
       // before handshake message is sent from client. However exception
       // should come in any region operations.
-      client1.invoke(() -> createCacheClient(null, null, null, port1, port2, zeroConns, multiUser, NOFORCE_AUTHREQ_EXCEPTION));
+      client1.invoke(() -> createCacheClient(null, null, null, p, port2, zeroConns, multiUser, NOFORCE_AUTHREQ_EXCEPTION));
       client1.invoke(() -> doPuts(2, OTHER_EXCEPTION));
 
     } else {
-      client1.invoke(() -> createCacheClient(null, null, null, port1, port2, zeroConns, multiUser, AUTHREQ_EXCEPTION));
+      client1.invoke(() -> createCacheClient(null, null, null, p, port2, zeroConns, multiUser, AUTHREQ_EXCEPTION));
     }
 
     // Now try to connect client2 with invalid credentials
@@ -472,23 +471,23 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     javaProps2 = gen.getJavaProperties();
     getLogWriter().info("testCredentialsForNotifications: For second client invalid credentials: " + credentials2 + " : " + javaProps2);
 
-    createClient2WithException(multiUser, authInit, port1, port2, credentials2, javaProps2, zeroConns);
+    createClient2WithException(multiUser, authInit, p, port2, credentials2, javaProps2, zeroConns);
 
     // Now try to connect client2 with invalid auth-init method
     // Trying to create the region on client with valid credentials should
     // throw a security exception
-    client2.invoke(() -> createCacheClient("com.gemstone.none", credentials1, javaProps1, port1, port2, zeroConns, multiUser, SECURITY_EXCEPTION));
+    client2.invoke(() -> createCacheClient("com.gemstone.none", credentials1, javaProps1, p, port2, zeroConns, multiUser, SECURITY_EXCEPTION));
 
     // Try connection with null auth-init on clients.
     // Skip this test for a scheme which does not have an authInit in the
     // first place (e.g. SSL).
     if (authInit != null && authInit.length() > 0) {
-      server1.invoke(() -> createCacheServer(locPort1, locString, port1, authenticator, extraProps, javaProps));
-      server2.invoke(() -> createCacheServer(locPort2, locString, port2, authenticator, extraProps, javaProps));
-      client1.invoke(() -> createCacheClient(null, credentials1, javaProps1, port1, port2, 0, multiUser, AUTHREQ_EXCEPTION));
+      final int p1 = server1.invoke(() -> createCacheServer(locPort1, locString, 0, authenticator, extraProps, javaProps));
+      final int p2 = server2.invoke(() -> createCacheServer(locPort2, locString, 0, authenticator, extraProps, javaProps));
+      client1.invoke(() -> createCacheClient(null, credentials1, javaProps1, p1, p2, 0, multiUser, AUTHREQ_EXCEPTION));
 
-      createClient2AuthReqException(multiUser, port1, port2, credentials2, javaProps2, zeroConns);
-      createClient2AuthReqException(multiUser, port1, port2, credentials2, javaProps2, zeroConns);
+      createClient2AuthReqException(multiUser, p1, p2, credentials2, javaProps2, zeroConns);
+      createClient2AuthReqException(multiUser, p1, p2, credentials2, javaProps2, zeroConns);
 
     } else {
       getLogWriter().info("testCredentialsForNotifications: Skipping null authInit for scheme [" + gen.classCode() + "] which has no authInit");
@@ -499,11 +498,11 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     // If the scheme does not have an authenticator in the first place (e.g.
     // SSL) then skip it since this test is useless.
     if (authenticator != null && authenticator.length() > 0) {
-      server1.invoke(() -> createCacheServer(locPort1, locString, port1, null, extraProps, javaProps));
-      server2.invoke(() -> createCacheServer(locPort2, locString, port2, null, extraProps, javaProps));
+      final int p1 = server1.invoke(() -> createCacheServer(locPort1, locString, 0, null, extraProps, javaProps));
+      final int p2 = server2.invoke(() -> createCacheServer(locPort2, locString, 0, null, extraProps, javaProps));
 
-      createClient1NoException(multiUser, authInit, port1, port2, credentials1, javaProps1);
-      createClient2NoException(multiUser, authInit, port1, port2, credentials2, javaProps2, zeroConns);
+      createClient1NoException(multiUser, authInit, p1, p2, credentials1, javaProps1);
+      createClient2NoException(multiUser, authInit, p1, p2, credentials2, javaProps2, zeroConns);
 
       // Register interest on all keys on second client
       client2.invoke(() -> registerAllInterest());
@@ -515,8 +514,8 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
       client2.invoke(() -> doLocalGets(4));
 
       // Now also try with valid credentials on client2
-      createClient1NoException(multiUser, authInit, port1, port2, credentials2, javaProps2);
-      createClient2NoException(multiUser, authInit, port1, port2, credentials1, javaProps1, zeroConns);
+      createClient1NoException(multiUser, authInit, p1, p2, credentials2, javaProps2);
+      createClient2NoException(multiUser, authInit, p1, p2, credentials1, javaProps1, zeroConns);
 
       // Register interest on all keys on second client
       client2.invoke(() -> registerAllInterest());
