@@ -937,7 +937,7 @@ public class InternalDistributedMember
   
   
   public void toDataPre_GFE_9_0_0_0(DataOutput out) throws IOException {
-    Assert.assertTrue(vmKind > 0);
+    //Assert.assertTrue(vmKind > 0);
     // NOTE: If you change the serialized format of this class
     //       then bump Connection.HANDSHAKE_VERSION since an
     //       instance of this class is sent during Connection handshake.
