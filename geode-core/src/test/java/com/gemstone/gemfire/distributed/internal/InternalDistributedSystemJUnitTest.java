@@ -58,7 +58,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  */
 @Category(IntegrationTest.class)
 public class InternalDistributedSystemJUnitTest
-  //implements DistributionConfig
 {
 
   /**
@@ -721,13 +720,13 @@ public class InternalDistributedSystemJUnitTest
   @Rule
   public ExpectedException illegalArgumentException = ExpectedException.none();
 
-  @Test(expected = GemFireConfigException.class)
+  @Test(expected = IllegalArgumentException.class)
   public void testSSLEnabledComponentsWrongComponentName() {
     Properties props = getCommonProperties();
     props.setProperty(SSL_ENABLED_COMPONENTS, "testing");
     new DistributionConfigImpl(props, false);
     illegalArgumentException.expect(IllegalArgumentException.class);
-    illegalArgumentException.expectMessage("\"testing\" is not in the valid set of options \"all,cluster,server,gateway,jmx,http\"");
+    illegalArgumentException.expectMessage("There is no registered component for the name: testing");
   }
 
 

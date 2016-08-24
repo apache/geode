@@ -327,7 +327,7 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
       return;
     }
 
-    this.socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(this.locatorPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(this.locatorPort, 50, null, -1);
     assertTrue(this.socket.isBound());
     assertFalse(this.socket.isClosed());
     assertFalse(AvailablePort.isPortAvailable(this.locatorPort, AvailablePort.SOCKET));
@@ -544,7 +544,7 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
     }
 
     // generate one free port and then use it instead of default
-    this.socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(this.locatorPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(this.locatorPort, 50, null, -1);
     
     this.launcher = new Builder()
         .setMemberName(getUniqueName())

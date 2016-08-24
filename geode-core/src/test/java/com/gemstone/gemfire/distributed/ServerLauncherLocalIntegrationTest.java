@@ -350,7 +350,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
     String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
 
     // generate one free port and then use TEST_OVERRIDE_DEFAULT_PORT_PROPERTY
-    this.socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(this.serverPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.createNonDefaultInstance(false,false,null,null,System.getProperties()).createServerSocket(this.serverPort, 50, null, -1);
     assertFalse(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
     
     // build and start the server
@@ -609,7 +609,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
     String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
 
     // generate one free port and then use TEST_OVERRIDE_DEFAULT_PORT_PROPERTY
-    this.socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(this.serverPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(this.serverPort, 50, null, -1);
     assertFalse(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
     
     // build and start the server
@@ -770,7 +770,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
 
     // generate one free port and then use TEST_OVERRIDE_DEFAULT_PORT_PROPERTY
     final int freeTCPPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    this.socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(freeTCPPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(freeTCPPort, 50, null, -1);
     
     // build and start the server
     final Builder builder = new Builder()

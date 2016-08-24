@@ -50,7 +50,6 @@ import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
@@ -399,7 +398,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
 
   @Test
   public void testStartUsingPortInUseFails() throws Throwable {
-    this.socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(this.locatorPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.createNonDefaultInstance(false,false,null,null,System.getProperties()).createServerSocket(this.locatorPort, 50, null, -1);
     this.locatorPort = this.socket.getLocalPort();
 
     final List<String> jvmArguments = getJvmArguments();
@@ -471,7 +470,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
     String expectedString = "java.net.BindException";
     AtomicBoolean outputContainedExpectedString = new AtomicBoolean();
 
-    this.socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(this.locatorPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.createNonDefaultInstance(false,false,null,null,System.getProperties()).createServerSocket(this.locatorPort, 50, null, -1);
     this.locatorPort = this.socket.getLocalPort();
 
     assertFalse(AvailablePort.isPortAvailable(this.locatorPort, AvailablePort.SOCKET));

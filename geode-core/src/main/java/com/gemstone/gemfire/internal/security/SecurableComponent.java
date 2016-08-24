@@ -51,4 +51,9 @@ public enum SecurableComponent {
   public String getConstant() {
     return constant;
   }
+
+  @Override
+  public String toString() {
+    return constant;
+  }
 }

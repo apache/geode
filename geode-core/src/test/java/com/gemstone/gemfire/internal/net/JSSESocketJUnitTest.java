@@ -127,13 +127,13 @@ public class JSSESocketJUnitTest {
       DistributionConfigImpl distributionConfig = new DistributionConfigImpl(new Properties());
 
       SocketCreatorFactory.setDistributionConfig(distributionConfig);
-      assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).useSSL());
+      assertTrue(SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.CLUSTER).useSSL());
 
-      final ServerSocket serverSocket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(randport, 0, InetAddress.getByName("localhost"));
+      final ServerSocket serverSocket = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(randport, 0, InetAddress.getByName("localhost"));
 
       Thread serverThread = startServer(serverSocket, receiver);
 
-      Socket client = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).connectForServer(InetAddress.getByName("localhost"), randport);
+      Socket client = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.CLUSTER).connectForServer(InetAddress.getByName("localhost"), randport);
 
       ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
       String expected = new String("testing " + name.getMethodName());
@@ -186,7 +186,7 @@ public class JSSESocketJUnitTest {
     factoryInvoked = false;
     try {
       try {
-        Socket sock = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).connectForClient("localhost", 12345, 0);
+        Socket sock = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.CLUSTER).connectForClient("localhost", 12345, 0);
         sock.close();
         fail("socket factory was invoked");
       } catch (IOException e) {
@@ -194,7 +194,7 @@ public class JSSESocketJUnitTest {
       }
     } finally {
       System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + "clientSocketFactory");
-      SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).initializeClientSocketFactory();
+      SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.CLUSTER).initializeClientSocketFactory();
     }
   }
 
@@ -222,7 +222,7 @@ public class JSSESocketJUnitTest {
       public void run() {
         try {
           Socket s = serverSocket.accept();
-          SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).configureServerSSLSocket(s);
+          SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.CLUSTER).configureServerSSLSocket(s);
           ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
           receiver[0] = ois.readObject();
           server = s;

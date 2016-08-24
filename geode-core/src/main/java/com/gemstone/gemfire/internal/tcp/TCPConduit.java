@@ -49,7 +49,6 @@ import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.LonerDistributionManager;
 import com.gemstone.gemfire.distributed.internal.direct.DirectChannel;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
@@ -282,8 +281,8 @@ public class TCPConduit implements Runnable {
         }
       }
     }
-    
-    this.socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER);
+
+    this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.CLUSTER);
 
     startAcceptor();
   }
@@ -450,9 +449,7 @@ public class TCPConduit implements Runnable {
             int newSize = socket.getReceiveBufferSize();
             if (newSize != tcpBufferSize) {
               logger.info(LocalizedMessage.create(LocalizedStrings.TCPConduit_0_IS_1_INSTEAD_OF_THE_REQUESTED_2, new Object[] {
-                "Listener receiverBufferSize",
-                Integer.valueOf(newSize),
-                Integer.valueOf(tcpBufferSize)
+                "Listener receiverBufferSize", Integer.valueOf(newSize), Integer.valueOf(tcpBufferSize)
               }));
             }
           } catch (SocketException ex) {
@@ -470,9 +467,7 @@ public class TCPConduit implements Runnable {
           int newSize = socket.getReceiveBufferSize();
           if (newSize != this.tcpBufferSize) {
             logger.info(LocalizedMessage.create(LocalizedStrings.TCPConduit_0_IS_1_INSTEAD_OF_THE_REQUESTED_2, new Object[] {
-              "Listener receiverBufferSize",
-              Integer.valueOf(newSize),
-              Integer.valueOf(this.tcpBufferSize)
+              "Listener receiverBufferSize", Integer.valueOf(newSize), Integer.valueOf(this.tcpBufferSize)
             }));
           }
         } catch (SocketException ex) {
@@ -482,7 +477,10 @@ public class TCPConduit implements Runnable {
       }
       port = socket.getLocalPort();
     } catch (IOException io) {
-      throw new ConnectionException(LocalizedStrings.TCPConduit_EXCEPTION_CREATING_SERVERSOCKET.toLocalizedString(new Object[] { Integer.valueOf(p), bindAddress }), io);
+      throw new ConnectionException(LocalizedStrings.TCPConduit_EXCEPTION_CREATING_SERVERSOCKET.toLocalizedString(new Object[] {
+        Integer.valueOf(p),
+        bindAddress
+      }), io);
     }
   }
 
@@ -672,7 +670,7 @@ public class TCPConduit implements Runnable {
         }
 
         acceptConnection(othersock);
-        
+
       } catch (ClosedByInterruptException cbie) {
         //safe to ignore
       } catch (ClosedChannelException e) {
@@ -776,8 +774,7 @@ public class TCPConduit implements Runnable {
         {
           this.stats.incFailedAccept();
           logger.warn(LocalizedMessage.create(LocalizedStrings.TCPConduit_FAILED_TO_ACCEPT_CONNECTION_FROM_0_BECAUSE_1, new Object[] {
-            othersock.getInetAddress(),
-            e
+            othersock.getInetAddress(), e
           }), e);
         }
       }
@@ -1027,8 +1024,7 @@ public class TCPConduit implements Runnable {
           // to have m defined for a nice message...
           if (memberInTrouble == null) {
             logger.warn(LocalizedMessage.create(LocalizedStrings.TCPConduit_ERROR_SENDING_MESSAGE_TO_0_WILL_REATTEMPT_1, new Object[] {
-              memberAddress,
-              problem
+              memberAddress, problem
             }));
             memberInTrouble = memberAddress;
           } else {
@@ -1184,6 +1180,7 @@ public class TCPConduit implements Runnable {
   protected SocketCreator getSocketCreator() {
     return socketCreator;
   }
+
   /**
    * ARB: Called by Connection before handshake reply is sent.
    * Returns true if member is part of view, false if membership is not confirmed before timeout.

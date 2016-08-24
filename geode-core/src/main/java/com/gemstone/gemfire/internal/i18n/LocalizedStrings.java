@@ -3745,6 +3745,10 @@ public class LocalizedStrings {
   public static final StringId ColocationHelper_REGION_SPECIFIED_IN_COLOCATEDWITH_DOES_NOT_EXIST = new StringId(6640, "Region specified in ''colocated-with'' ({0}) for region {1} does not exist. It should be created before setting ''colocated-with'' attribute for this region.");
   public static final StringId ColocationLogger_PERSISTENT_DATA_RECOVERY_OF_REGION_PREVENTED_BY_OFFLINE_COLOCATED_CHILDREN = new StringId(6641, "Persistent data recovery for region {0} is prevented by offline colocated region{1}");
 
+  public static StringId AbstractDistributionConfig_LOCATOR_SSL_ALIAS_0 = new StringId(6642, "SSL locator communications uses this alias when determining the " + "key to use from the keystore for SSL. Defaults to \"{0}\".");
+
+  public static StringId AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_INVALID_ALIAS_OPTIONS = new StringId(6643, "The alias options for the SSL options provided seem to be invalid. Please check that all required aliases are set");
+
   /** Testing strings, messageId 90000-99999 **/
 
   /**
@@ -3758,7 +3762,5 @@ public class LocalizedStrings {
 
   public static final StringId DistributedRegion_INITIALIZING_REGION_COMPLETED_0 = new StringId(90005, "Initialization of region {0} completed");
 
-  public static StringId AbstractDistributionConfig_LOCATOR_SSL_ALIAS_0 = new StringId(6640, "SSL locator communications uses this alias when determining the " + "key to use from the keystore for SSL. Defaults to \"{0}\".");
 
-  public static StringId AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_INVALID_ALIAS_OPTIONS = new StringId(6641, "The alias options for the SSL options provided seem to be invalid. Please check that all required aliases are set");
 }

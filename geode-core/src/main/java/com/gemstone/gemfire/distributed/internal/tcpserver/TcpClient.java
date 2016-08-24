@@ -61,7 +61,7 @@ public class TcpClient {
    * SocketCreatorFactory should be initialized before invoking this method.
    */
   public TcpClient() {
-    this(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.LOCATOR));
+    this(SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.LOCATOR));
   }
 
   /**

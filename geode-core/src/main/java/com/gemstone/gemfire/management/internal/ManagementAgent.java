@@ -24,7 +24,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
-import java.rmi.Remote;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.RMIClientSocketFactory;
@@ -357,7 +356,7 @@ public class ManagementAgent {
       bindAddr = InetAddress.getByName(hostname);
     }
 
-    final SocketCreator socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.JMX);
+    final SocketCreator socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.JMX);
 
     final boolean ssl = socketCreator.useSSL();
 

@@ -494,7 +494,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     if (!getDistributedSystemProperties().isEmpty()) {
       disconnectAllFromDS();
     }
-    Invoke.invokeInEveryVM("SocketCreateFactory.reset", () -> SocketCreatorFactory.close());
+
   }
 
   /**
@@ -578,6 +578,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     }
 
     IgnoredException.removeAllExpectedExceptions();
+    SocketCreatorFactory.close();
   }
 
   private static final void closeCache() { // TODO: this should move to CacheTestCase

@@ -562,6 +562,8 @@ public class InternalLocator extends Locator implements ConnectListener {
       securityLogWriter.fine("SecurityLogWriter for locator is created.");
     }
 
+    SocketCreatorFactory.setDistributionConfig(this.config);
+
     this.locatorListener = WANServiceProvider.createLocatorMembershipListener();
     if (locatorListener != null) {
       // We defer setting the port until the handler is init'd - that way we'll have an actual port in the
@@ -573,7 +575,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     ThreadGroup group = LoggingThreadGroup.createThreadGroup("Distribution locators", logger);
     stats = new LocatorStats();
 
-    SocketCreatorFactory.setDistributionConfig(this.config);
+
     server = new TcpServer(port, this.bindAddress, null, this.config, this.handler, new DelayedPoolStatHelper(), group, this.toString());
   }
 

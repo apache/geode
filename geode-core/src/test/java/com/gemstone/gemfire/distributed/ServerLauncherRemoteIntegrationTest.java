@@ -428,7 +428,7 @@ public class ServerLauncherRemoteIntegrationTest extends AbstractServerLauncherR
   @Test
   public void testStartUsingDisableDefaultServerSkipsPortCheck() throws Throwable {
     // make serverPort in use
-    this.socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(this.serverPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.createNonDefaultInstance(false,false,null,null,System.getProperties()).createServerSocket(this.serverPort, 50, null, -1);
     assertFalse(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
     
     // build and start the server
@@ -552,7 +552,7 @@ public class ServerLauncherRemoteIntegrationTest extends AbstractServerLauncherR
   @Test
   public void testStartUsingServerPortInUseFails() throws Throwable {
     // make serverPort in use
-    this.socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(this.serverPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.createNonDefaultInstance(false,false,null,null,System.getProperties()).createServerSocket(this.serverPort, 50, null, -1);
     assertFalse(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
     
     final List<String> jvmArguments = getJvmArguments();
@@ -799,7 +799,7 @@ public class ServerLauncherRemoteIntegrationTest extends AbstractServerLauncherR
     AtomicBoolean outputContainedExpectedString = new AtomicBoolean();
 
     // make serverPort in use
-    this.socket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(this.serverPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.createNonDefaultInstance(false,false,null,null,System.getProperties()).createServerSocket(this.serverPort, 50, null, -1);
     assertFalse(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
     
     // launch server

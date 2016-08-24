@@ -29,15 +29,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.PoolStatHelper;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
 import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -47,6 +51,18 @@ public class TcpServerJUnitTest {
   private/*GemStoneAddition*/ int port;
   private SimpleStats stats;
   private TcpServer server;
+
+  @Before
+  public void setup()
+  {
+    SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
+  }
+
+  @After
+  public void teardown()
+  {
+    SocketCreatorFactory.close();
+  }
 
   private void start(TcpHandler handler) throws IOException {
     localhost = InetAddress.getLocalHost();

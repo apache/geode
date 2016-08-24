@@ -33,6 +33,7 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.Suspect
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.SuspectRequest;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.jgroups.util.UUID;
 import org.junit.After;
@@ -96,7 +97,8 @@ public class GMSHealthMonitorJUnitTest {
     nonDefault.put(LOG_LEVEL, "fine");
     nonDefault.put(MEMBER_TIMEOUT, "2000");
     nonDefault.put(LOCATORS, "localhost[10344]");
-    DM dm = mock(DM.class);    
+    DM dm = mock(DM.class);
+    SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
     InternalDistributedSystem system = InternalDistributedSystem.newInstanceForTesting(dm, nonDefault);
 
     when(mockConfig.getDistributionConfig()).thenReturn(mockDistConfig);
@@ -132,6 +134,7 @@ public class GMSHealthMonitorJUnitTest {
   @After
   public void tearDown() {
     gmsHealthMonitor.stop();
+    SocketCreatorFactory.close();
     //System.getProperties().remove("gemfire.bind-address");
   }
 

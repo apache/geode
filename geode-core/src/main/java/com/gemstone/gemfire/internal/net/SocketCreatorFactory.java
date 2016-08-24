@@ -65,7 +65,7 @@ public class SocketCreatorFactory {
     return getInstance(false);
   }
 
-  public static SocketCreator getSSLSocketCreatorForComponent(SecurableComponent sslEnabledComponent) {
+  public static SocketCreator getSocketCreatorForComponent(SecurableComponent sslEnabledComponent) {
     SSLConfig sslConfigForComponent = SSLConfigurationFactory.getSSLConfigForComponent(sslEnabledComponent);
     return getInstance().getOrCreateSocketCreatorForSSLEnabledComponent(sslEnabledComponent, sslConfigForComponent);
   }
@@ -83,7 +83,7 @@ public class SocketCreatorFactory {
 
 
   private SocketCreator getOrCreateSocketCreatorForSSLEnabledComponent(final SecurableComponent sslEnabledComponent, final SSLConfig sslConfig) {
-    SocketCreator socketCreator = getSocketCreatorForComponent(sslEnabledComponent);
+    SocketCreator socketCreator = getRegisteredSocketCreatorForComponent(sslEnabledComponent);
     if (socketCreator == null) {
       return getSSLSocketCreator(sslEnabledComponent, sslConfig);
     } else {
@@ -95,39 +95,23 @@ public class SocketCreatorFactory {
     SocketCreator socketCreator = null;
     if (sslConfig.isEnabled()) {
       socketCreator = new SocketCreator(sslConfig);
-      addSocketCreatorForComponent(sslEnableComponent, socketCreator);
+      registerSocketCreatorForComponent(sslEnableComponent, socketCreator);
     } else {
-      socketCreator = getSocketCreatorForComponent(SecurableComponent.NONE);
+      socketCreator = getRegisteredSocketCreatorForComponent(SecurableComponent.NONE);
       if (socketCreator == null) {
         socketCreator = new SocketCreator(sslConfig);
-        addSocketCreatorForComponent(SecurableComponent.NONE, socketCreator);
+        registerSocketCreatorForComponent(SecurableComponent.NONE, socketCreator);
       }
     }
     return socketCreator;
   }
 
-  private synchronized void addSocketCreatorForComponent(SecurableComponent sslEnabledComponent, SocketCreator socketCreator) {
+  private synchronized void registerSocketCreatorForComponent(SecurableComponent sslEnabledComponent, SocketCreator socketCreator) {
     socketCreators.put(sslEnabledComponent, socketCreator);
   }
 
-  private synchronized SocketCreator getSocketCreatorForComponent(SecurableComponent sslEnabledComponent) {
+  private synchronized SocketCreator getRegisteredSocketCreatorForComponent(SecurableComponent sslEnabledComponent) {
     return socketCreators.get(sslEnabledComponent);
-  }
-
-  /**
-   * Read an array of values from a string, whitespace separated.
-   */
-  private static String[] createStringArrayFromString(final String text) {
-    if (text == null || text.trim().equals("")) {
-      return null;
-    }
-
-    StringTokenizer st = new StringTokenizer(text);
-    Vector v = new Vector();
-    while (st.hasMoreTokens()) {
-      v.add(st.nextToken());
-    }
-    return (String[]) v.toArray(new String[v.size()]);
   }
 
   /**

@@ -167,7 +167,7 @@ public class TcpServer {
     }
 
     if (this.socketCreator == null) {
-      this.socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.LOCATOR);
+      this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.LOCATOR);
     } else {
       throw new RuntimeException("The socket Creator already exists");
     }

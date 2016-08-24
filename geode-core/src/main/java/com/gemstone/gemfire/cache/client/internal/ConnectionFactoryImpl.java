@@ -96,13 +96,13 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     this.cancelCriterion = cancelCriterion;
     this.pool = pool;
     if (this.usedByGateway || (this.gatewaySender != null)) {
-      this.socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.GATEWAY);
+      this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.GATEWAY);
       if (sender!= null && !sender.getGatewayTransportFilters().isEmpty()) {
         this.socketCreator.initializeTransportFilterClientSocketFactory(sender);
       }
     } else {
       //If configured use SSL properties for cache-server
-      this.socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.SERVER);
+      this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.SERVER);
     }
   }
   
