@@ -39,9 +39,9 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.distributed.LocatorLauncher;
-import com.gemstone.gemfire.distributed.ServerLauncher;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.security.SecurableComponent;
@@ -51,6 +51,7 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.rules.DistributedRestoreSystemProperties;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.rules.serializable.SerializableTemporaryFolder;
 import com.gemstone.gemfire.util.test.TestUtil;
 
@@ -127,12 +128,14 @@ public class JMXMBeanDUnitTest extends DistributedTestCase {
   }
 
   @Test
+  @Category(FlakyTest.class)
+  //  To be fixed in GEODE-1716
   public void testJMXOverLegacySSL() throws Exception {
     Properties properties = configureLocatorProperties(new Properties(), jmxPort, serverHostName, true, true, false);
-//    locator.invoke("Configure and start Locator", () -> {
+    locator.invoke("Configure and start Locator", () -> {
       System.setProperty("javax.ssl.debug", "true");
       configureAndStartLocator(locatorPort, jmxPort, serverHostName, properties);
-//    });
+    });
 
     jmxClient.invoke("Configure and start JMX Client", () -> {
       System.setProperty("javax.ssl.debug", "true");
@@ -141,8 +144,6 @@ public class JMXMBeanDUnitTest extends DistributedTestCase {
   }
 
   @Test
-  //  @Category(FlakyTest.class)
-  //To be fixed in GEODE-1716
   public void testJMXOverNonSSL() throws Exception {
     Properties properties = configureLocatorProperties(new Properties(), jmxPort, serverHostName, false, false, false);
     locator.invoke("Configure and start Locator", () -> configureAndStartLocator(locatorPort, jmxPort, serverHostName, properties));

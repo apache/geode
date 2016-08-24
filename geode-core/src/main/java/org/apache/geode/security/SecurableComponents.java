@@ -45,7 +45,7 @@ public interface SecurableComponents {
    */
   String JMX = "jmx";
   /**
-   * This determines that the http service communcation will be secured.
+   * This determines that the http service communication will be secured.
    * <U>Since</U>: Geode 1.0
    */
   String HTTP_SERVICE = "http";

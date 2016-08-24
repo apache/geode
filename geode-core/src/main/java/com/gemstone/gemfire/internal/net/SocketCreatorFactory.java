@@ -26,7 +26,6 @@ import org.apache.commons.lang.ArrayUtils;
 
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.internal.admin.SSLConfig;
 import com.gemstone.gemfire.internal.security.SecurableComponent;
 
@@ -48,6 +47,13 @@ public class SocketCreatorFactory {
     SSLConfigurationFactory.setDistributionConfig(this.distributionConfig);
   }
 
+  private DistributionConfig getDistributionConfig() {
+    if (distributionConfig == null) {
+      throw new GemFireConfigException("SocketCreatorFactory requires a valid distribution config.");
+    }
+    return distributionConfig;
+  }
+
   private synchronized static SocketCreatorFactory getInstance(boolean closing) {
     if (instance == null && !closing) {
       instance = new SocketCreatorFactory();
@@ -64,11 +70,11 @@ public class SocketCreatorFactory {
     return getInstance().getOrCreateSocketCreatorForSSLEnabledComponent(sslEnabledComponent, sslConfigForComponent);
   }
 
-  private SocketCreator getSSLSocketCreator(final SecurableComponent sslComponent, final DistributionConfig distributionConfig, final SSLConfig sslConfig) {
+  private SocketCreator getSSLSocketCreator(final SecurableComponent sslComponent, final SSLConfig sslConfig) {
     if (sslConfig.isEnabled()) {
-      if (ArrayUtils.contains(distributionConfig.getSSLEnabledComponents(), SecurableComponent.ALL)) {
+      if (ArrayUtils.contains(getDistributionConfig().getSSLEnabledComponents(), SecurableComponent.ALL)) {
         return createSSLSocketCreator(SecurableComponent.ALL, sslConfig);
-      } else if (ArrayUtils.contains(distributionConfig.getSSLEnabledComponents(), sslComponent)) {
+      } else if (ArrayUtils.contains(getDistributionConfig().getSSLEnabledComponents(), sslComponent)) {
         return createSSLSocketCreator(sslComponent, sslConfig);
       }
     }
@@ -79,7 +85,7 @@ public class SocketCreatorFactory {
   private SocketCreator getOrCreateSocketCreatorForSSLEnabledComponent(final SecurableComponent sslEnabledComponent, final SSLConfig sslConfig) {
     SocketCreator socketCreator = getSocketCreatorForComponent(sslEnabledComponent);
     if (socketCreator == null) {
-      return getSSLSocketCreator(sslEnabledComponent, distributionConfig, sslConfig);
+      return getSSLSocketCreator(sslEnabledComponent, sslConfig);
     } else {
       return socketCreator;
     }

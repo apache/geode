@@ -1716,7 +1716,7 @@ public interface ConfigurationProperties {
    * <a name="ssl-enabled-components"/a></p>
    * <U>Description</U>: This setting is a comma delimited fields which works in conjunction with the {@link #CLUSTER_SSL_PREFIX} properties.
    * This property will determine which components will use SSL for their communications.</p>
-   * <U>Options</U>: "all","server","cluster","gateway","http","jmx","none"  -- As described {@link SSLEnabledComponents}
+   * <U>Options</U>: "all","server","cluster","gateway","http","jmx","none"  -- As described {@link SecurableComponents}
    * <U>Since</U>: Geode 1.0
    */
   String SSL_ENABLED_COMPONENTS = "ssl-enabled-components";
