@@ -36,7 +36,7 @@ import com.gemstone.gemfire.internal.Config;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogConfig;
-import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.internal.tcp.Connection;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
 
@@ -4337,7 +4337,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * @since Geode 1.0
    */
   @ConfigAttributeGetter(name = SSL_ENABLED_COMPONENTS)
-  SSLEnabledComponent[] getSSLEnabledComponents();
+  SecurableComponent[] getSSLEnabledComponents();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS}
@@ -4345,20 +4345,20 @@ public interface DistributionConfig extends Config, LogConfig {
    * @since Geode 1.0
    */
   @ConfigAttributeSetter(name = SSL_ENABLED_COMPONENTS)
-  void setSSLEnabledComponents(SSLEnabledComponent[] sslEnabledComponents);
+  void setSSLEnabledComponents(SecurableComponent[] sslEnabledComponents);
 
   /**
    * The name of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS} property
    * @since Geode 1.0
    */
-  @ConfigAttribute(type = SSLEnabledComponent[].class)
+  @ConfigAttribute(type = SecurableComponent[].class)
   String SSL_ENABLED_COMPONENTS_NAME = SSL_ENABLED_COMPONENTS;
 
   /**
    * The default ssl enabled components
    * @since Geode 1.0
    */
-  SSLEnabledComponent[] DEFAULT_SSL_ENABLED_COMPONENTS = new SSLEnabledComponent[] {};
+  SecurableComponent[] DEFAULT_SSL_ENABLED_COMPONENTS = new SecurableComponent[] {};
 
   /**
    * Returns the value of the {@link ConfigurationProperties#SSL_PROTOCOLS}

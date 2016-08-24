@@ -60,9 +60,9 @@ import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 
 /**
  * <p>TCPConduit manages a server socket and a collection of connections to
@@ -283,7 +283,7 @@ public class TCPConduit implements Runnable {
       }
     }
     
-    this.socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER);
+    this.socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER);
 
     startAcceptor();
   }

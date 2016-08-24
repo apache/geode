@@ -40,7 +40,6 @@ import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
-import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
@@ -463,8 +462,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
    * This would mean one is mixing the "old" with the "new"
    */
   @ConfigAttributeChecker(name = SSL_ENABLED_COMPONENTS)
-  protected SSLEnabledComponent[] checkLegacySSLWhenSSLEnabledComponentsSet(SSLEnabledComponent[] value) {
-    for (SSLEnabledComponent component : value) {
+  protected SecurableComponent[] checkLegacySSLWhenSSLEnabledComponentsSet(SecurableComponent[] value) {
+    for (SecurableComponent component : value) {
       switch (component) {
         case ALL:
         case CLUSTER:
@@ -477,13 +476,13 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
         default:
           throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_0_INVALID_TRY_1.toLocalizedString(new Object[] {
             value, StringUtils.join(new String[] {
-            SSLEnabledComponent.ALL.getConstant(),
-            SSLEnabledComponent.CLUSTER.getConstant(),
-            SSLEnabledComponent.SERVER.getConstant(),
-            SSLEnabledComponent.GATEWAY.getConstant(),
-            SSLEnabledComponent.JMX.getConstant(),
-            SSLEnabledComponent.HTTP_SERVICE.getConstant(),
-            SSLEnabledComponent.LOCATOR.getConstant()
+            SecurableComponent.ALL.getConstant(),
+            SecurableComponent.CLUSTER.getConstant(),
+            SecurableComponent.SERVER.getConstant(),
+            SecurableComponent.GATEWAY.getConstant(),
+            SecurableComponent.JMX.getConstant(),
+            SecurableComponent.HTTP_SERVICE.getConstant(),
+            SecurableComponent.LOCATOR.getConstant()
           }, ",")
           }));
       }

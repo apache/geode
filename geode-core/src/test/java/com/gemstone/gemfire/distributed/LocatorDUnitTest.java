@@ -55,8 +55,8 @@ import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
-import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.internal.tcp.Connection;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
@@ -366,7 +366,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(SSL_KEYSTORE_TYPE, "JKS");
     properties.put(SSL_TRUSTSTORE, getSingleKeyKeystore());
     properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
-    properties.put(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.LOCATOR.getConstant());
+    properties.put(SSL_ENABLED_COMPONENTS, SecurableComponent.LOCATOR.getConstant());
 
     try {
       loc2.invoke("startLocator2", () -> startLocatorWithPortAndProperties(port2, properties));
@@ -415,7 +415,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(SSL_TRUSTSTORE, getMultiKeyTruststore());
     properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
     properties.put(SSL_LOCATOR_ALIAS, "locatorkey");
-    properties.put(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.LOCATOR.getConstant());
+    properties.put(SSL_ENABLED_COMPONENTS, SecurableComponent.LOCATOR.getConstant());
 
 
     try {
@@ -466,7 +466,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(SSL_TRUSTSTORE, getSingleKeyKeystore());
     properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
     properties.put(SSL_REQUIRE_AUTHENTICATION, "true");
-    properties.put(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.LOCATOR.getConstant());
+    properties.put(SSL_ENABLED_COMPONENTS, SecurableComponent.LOCATOR.getConstant());
 
     try {
       loc1.invoke("start Locator1", () -> startLocator(port1, properties));
@@ -532,7 +532,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       properties.put(SSL_TRUSTSTORE, getSingleKeyKeystore());
       properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
       properties.put(SSL_REQUIRE_AUTHENTICATION, "true");
-      properties.put(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.LOCATOR.getConstant());
+      properties.put(SSL_ENABLED_COMPONENTS, SecurableComponent.LOCATOR.getConstant());
 
       loc2.invoke("start Locator2", () -> startLocator(port2, properties));
     } finally {
@@ -583,7 +583,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(SSL_TRUSTSTORE, getSingleKeyKeystore());
     properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
     properties.put(SSL_REQUIRE_AUTHENTICATION, "true");
-    properties.put(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.LOCATOR.getConstant());
+    properties.put(SSL_ENABLED_COMPONENTS, SecurableComponent.LOCATOR.getConstant());
 
     try {
       loc1.invoke("start Locator1", () -> startLocator(port1, properties));

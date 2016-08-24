@@ -494,6 +494,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     if (!getDistributedSystemProperties().isEmpty()) {
       disconnectAllFromDS();
     }
+    Invoke.invokeInEveryVM("SocketCreateFactory.reset", () -> SocketCreatorFactory.close());
   }
 
   /**
@@ -566,7 +567,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     RegionTestCase.preSnapshotRegion = null;
     SocketCreator.resetHostNameCache();
     SocketCreator.resolve_dns = true;
-    SocketCreatorFactory.close();
     Message.MAX_MESSAGE_SIZE = Message.DEFAULT_MAX_MESSAGE_SIZE;
 
     // clear system properties -- keep alphabetized

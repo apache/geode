@@ -58,10 +58,10 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.net.SSLConfigurationFactory;
-import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.internal.security.shiro.JMXShiroAuthenticator;
 import com.gemstone.gemfire.internal.tcp.TCPConduit;
 import com.gemstone.gemfire.management.ManagementException;
@@ -228,7 +228,7 @@ public class ManagementAgent {
 
           boolean isRestWebAppAdded = false;
 
-          this.httpServer = JettyHelper.initJetty(bindAddress, port, SSLConfigurationFactory.getSSLConfigForComponent(SSLEnabledComponent.HTTP_SERVICE));
+          this.httpServer = JettyHelper.initJetty(bindAddress, port, SSLConfigurationFactory.getSSLConfigForComponent(SecurableComponent.HTTP_SERVICE));
 
           if (agentUtil.isWebApplicationAvailable(gemfireWar)) {
             this.httpServer = JettyHelper
@@ -337,10 +337,8 @@ public class ManagementAgent {
   /**
    * http://docs.oracle.com/javase/6/docs/technotes/guides/management/agent.html
    * #gdfvq https://blogs.oracle.com/jmxetc/entry/java_5_premain_rmi_connectors
-   * https
-   * ://blogs.oracle.com/jmxetc/entry/building_a_remotely_stoppable_connector
-   * https
-   * ://blogs.oracle.com/jmxetc/entry/jmx_connecting_through_firewalls_using
+   * https://blogs.oracle.com/jmxetc/entry/building_a_remotely_stoppable_connector
+   * https://blogs.oracle.com/jmxetc/entry/jmx_connecting_through_firewalls_using
    */
   private void configureAndStart() throws IOException {
     // KIRK: I copied this from
@@ -359,7 +357,7 @@ public class ManagementAgent {
       bindAddr = InetAddress.getByName(hostname);
     }
 
-    final SocketCreator socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.JMX);
+    final SocketCreator socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.JMX);
 
     final boolean ssl = socketCreator.useSSL();
 

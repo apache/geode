@@ -58,9 +58,9 @@ import com.gemstone.gemfire.internal.VersionedDataInputStream;
 import com.gemstone.gemfire.internal.VersionedDataOutputStream;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 
 /**
  * TCP server which listens on a port and delegates requests to a request
@@ -166,10 +166,8 @@ public class TcpServer {
       cfg = new DistributionConfigImpl(sslConfig);
     }
 
-    //TODO Udo: How would I handle this case where the cfg is empty???
-
     if (this.socketCreator == null) {
-      this.socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.LOCATOR);
+      this.socketCreator = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.LOCATOR);
     } else {
       throw new RuntimeException("The socket Creator already exists");
     }

@@ -37,8 +37,8 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
@@ -111,7 +111,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     String cacheServerSslciphers = "any";
     boolean cacheServerSslRequireAuth = true;
     if (!legacy) {
-      gemFireProps.put(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.CLUSTER+","+SSLEnabledComponent.SERVER);
+      gemFireProps.put(SSL_ENABLED_COMPONENTS, SecurableComponent.CLUSTER + "," + SecurableComponent.SERVER);
       gemFireProps.put(SSL_PROTOCOLS, cacheServerSslprotocols);
       gemFireProps.put(SSL_CIPHERS, cacheServerSslciphers);
       gemFireProps.put(SSL_REQUIRE_AUTHENTICATION, String.valueOf(cacheServerSslRequireAuth));
@@ -248,14 +248,12 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
   public static void closeCacheTask() {
     if (instance != null && instance.cache != null) {
       instance.cache.close();
-      SocketCreatorFactory.close();
     }
   }
 
   public static void closeClientCacheTask() {
     if (instance != null && instance.clientCache != null) {
       instance.clientCache.close();
-      SocketCreatorFactory.close();
     }
   }
 

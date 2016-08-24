@@ -26,8 +26,8 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.distributed.SSLEnabledComponents;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import com.gemstone.gemfire.util.test.TestUtil;
@@ -35,150 +35,145 @@ import com.gemstone.gemfire.util.test.TestUtil;
 @Category(UnitTest.class)
 public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
 
-  @After
-  public void tearDown() {
-    SocketCreatorFactory.close();
-  }
-
   @Test
   public void testNewSSLConfigSSLComponentLocator() {
-    Properties properties = configureSSLProperties(SSLEnabledComponents.LOCATOR);
+    Properties properties = configureSSLProperties(SecurableComponent.LOCATOR.getConstant());
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.LOCATOR).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.GATEWAY).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.JMX).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.SERVER).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.HTTP_SERVICE).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.LOCATOR).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.GATEWAY).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.JMX).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.SERVER).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.HTTP_SERVICE).useSSL());
   }
 
   @Test
   public void testNewSSLConfigSSLComponentALL() {
-    Properties properties = configureSSLProperties(SSLEnabledComponents.ALL);
+    Properties properties = configureSSLProperties(SecurableComponent.ALL.getConstant());
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.LOCATOR).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.GATEWAY).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.JMX).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.SERVER).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.HTTP_SERVICE).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.LOCATOR).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.GATEWAY).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.JMX).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.SERVER).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.HTTP_SERVICE).useSSL());
   }
 
   @Test
   public void testNewSSLConfigSSLComponentCLUSTER() {
-    Properties properties = configureSSLProperties(SSLEnabledComponents.CLUSTER);
+    Properties properties = configureSSLProperties(SecurableComponent.CLUSTER.getConstant());
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.GATEWAY).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.JMX).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.SERVER).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.HTTP_SERVICE).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.LOCATOR).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.GATEWAY).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.JMX).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.SERVER).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.HTTP_SERVICE).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.LOCATOR).useSSL());
   }
 
   @Test
   public void testNewSSLConfigSSLComponentGATEWAY() {
-    Properties properties = configureSSLProperties(SSLEnabledComponents.GATEWAY);
+    Properties properties = configureSSLProperties(SecurableComponent.GATEWAY.getConstant());
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.GATEWAY).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.JMX).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.SERVER).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.HTTP_SERVICE).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.LOCATOR).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.GATEWAY).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.JMX).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.SERVER).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.HTTP_SERVICE).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.LOCATOR).useSSL());
   }
 
   @Test
   public void testNewSSLConfigSSLComponentHTTP_SERVICE() {
-    Properties properties = configureSSLProperties(SSLEnabledComponents.HTTP_SERVICE);
+    Properties properties = configureSSLProperties(SecurableComponent.HTTP_SERVICE.getConstant());
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.GATEWAY).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.JMX).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.SERVER).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.HTTP_SERVICE).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.LOCATOR).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.GATEWAY).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.JMX).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.SERVER).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.HTTP_SERVICE).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.LOCATOR).useSSL());
   }
 
   @Test
   public void testNewSSLConfigSSLComponentJMX() {
-    Properties properties = configureSSLProperties(SSLEnabledComponents.JMX);
+    Properties properties = configureSSLProperties(SecurableComponent.JMX.getConstant());
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.GATEWAY).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.JMX).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.SERVER).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.HTTP_SERVICE).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.LOCATOR).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.GATEWAY).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.JMX).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.SERVER).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.HTTP_SERVICE).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.LOCATOR).useSSL());
   }
 
   @Test
   public void testNewSSLConfigSSLComponentSERVER() {
-    Properties properties = configureSSLProperties(SSLEnabledComponents.SERVER);
+    Properties properties = configureSSLProperties(SecurableComponent.SERVER.getConstant());
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
 
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.GATEWAY).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.JMX).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.SERVER).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.HTTP_SERVICE).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.LOCATOR).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.GATEWAY).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.JMX).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.SERVER).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.HTTP_SERVICE).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.LOCATOR).useSSL());
   }
 
   @Test
   public void testNewSSLConfigSSLComponentCombinations1() {
-    Properties properties = configureSSLProperties(commaDelimitedString(SSLEnabledComponents.CLUSTER, SSLEnabledComponents.SERVER));
+    Properties properties = configureSSLProperties(commaDelimitedString(SecurableComponent.CLUSTER.getConstant(), SecurableComponent.SERVER.getConstant()));
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.GATEWAY).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.JMX).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.SERVER).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.HTTP_SERVICE).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.LOCATOR).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.GATEWAY).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.JMX).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.SERVER).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.HTTP_SERVICE).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.LOCATOR).useSSL());
   }
 
   @Test
   public void testNewSSLConfigSSLComponentCombinations2() {
-    Properties properties = configureSSLProperties(commaDelimitedString(SSLEnabledComponents.CLUSTER, SSLEnabledComponents.SERVER, SSLEnabledComponents.HTTP_SERVICE, SSLEnabledComponents.JMX));
+    Properties properties = configureSSLProperties(commaDelimitedString(SecurableComponent.CLUSTER.getConstant(), SecurableComponent.SERVER.getConstant(), SecurableComponent.HTTP_SERVICE.getConstant(), SecurableComponent.JMX.getConstant()));
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.GATEWAY).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.JMX).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.SERVER).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.HTTP_SERVICE).useSSL());
-    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.LOCATOR).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.GATEWAY).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.JMX).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.SERVER).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.HTTP_SERVICE).useSSL());
+    Assert.assertFalse(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.LOCATOR).useSSL());
   }
 
   @Test
   public void testNewSSLConfigSSLComponentAliasWithMultiKeyStore() {
-    Properties properties = configureSSLProperties(SSLEnabledComponent.ALL.getConstant());
+    Properties properties = configureSSLProperties(SecurableComponent.ALL.getConstant());
 
     properties.setProperty(SSL_KEYSTORE, TestUtil.getResourcePath(getClass(), "/com/gemstone/gemfire/internal/net/multiKey.jks"));
     properties.setProperty(SSL_TRUSTSTORE, TestUtil.getResourcePath(getClass(), "/com/gemstone/gemfire/internal/net/multiKeyTrust.jks"));
@@ -189,17 +184,17 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.GATEWAY).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.JMX).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.SERVER).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.HTTP_SERVICE).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.LOCATOR).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.GATEWAY).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.JMX).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.SERVER).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.HTTP_SERVICE).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.LOCATOR).useSSL());
   }
 
   @Test
   public void testNewSSLConfigSSLComponentWithoutAliasWithMultiKeyStore() {
-    Properties properties = configureSSLProperties(SSLEnabledComponent.ALL.getConstant());
+    Properties properties = configureSSLProperties(SecurableComponent.ALL.getConstant());
 
     properties.setProperty(SSL_KEYSTORE, TestUtil.getResourcePath(getClass(), "/com/gemstone/gemfire/internal/net/multiKey.jks"));
     properties.setProperty(SSL_TRUSTSTORE, TestUtil.getResourcePath(getClass(), "/com/gemstone/gemfire/internal/net/multiKeyTrust.jks"));
@@ -207,12 +202,12 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.GATEWAY).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.JMX).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.SERVER).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.HTTP_SERVICE).useSSL());
-    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.LOCATOR).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.GATEWAY).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.JMX).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.SERVER).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.HTTP_SERVICE).useSSL());
+    Assert.assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.LOCATOR).useSSL());
   }
 
   private Properties configureSSLProperties(String sslComponents) {

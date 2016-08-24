@@ -37,7 +37,7 @@ import com.gemstone.gemfire.internal.admin.SSLConfig;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.net.SSLConfigurationFactory;
-import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 
 /**
  * @since GemFire 8.1
@@ -197,7 +197,7 @@ public class JettyHelper {
     if (args.length > 1) {
       System.out.printf("Temporary Directory @ ($1%s)%n", USER_DIR);
 
-      final Server jetty = JettyHelper.initJetty(null, 8090, SSLConfigurationFactory.getSSLConfigForComponent(SSLEnabledComponent.HTTP_SERVICE));
+      final Server jetty = JettyHelper.initJetty(null, 8090, SSLConfigurationFactory.getSSLConfigForComponent(SecurableComponent.HTTP_SERVICE));
 
       for (int index = 0; index < args.length; index += 2) {
         final String webAppContext = args[index];

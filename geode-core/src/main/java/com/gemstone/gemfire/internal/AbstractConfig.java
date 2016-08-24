@@ -43,8 +43,8 @@ import com.gemstone.gemfire.UnmodifiableException;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.FlowControlParams;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 
 /**
  * Provides an implementation of the {@link Config} interface
@@ -405,8 +405,8 @@ public abstract class AbstractConfig implements Config {
           }));
         }
         attObjectValue = new FlowControlParams(credits, thresh, waittime);
-      } else if (valueType.isArray() && SSLEnabledComponent.class.equals(valueType.getComponentType())) {
-        attObjectValue = commaDelimitedStringToSSLEnabledComponents(attValue);
+      } else if (valueType.isArray() && SecurableComponent.class.equals(valueType.getComponentType())) {
+        attObjectValue = commaDelimitedStringToSecurableComponents(attValue);
       }else {
         throw new InternalGemFireException(LocalizedStrings.AbstractConfig_UNHANDLED_ATTRIBUTE_TYPE_0_FOR_1.toLocalizedString(new Object[] {
           valueType, attName
@@ -431,12 +431,16 @@ public abstract class AbstractConfig implements Config {
     return strings;
   }
 
-  private SSLEnabledComponent[] commaDelimitedStringToSSLEnabledComponents(final String tokenizeString) {
+  private SecurableComponent[] commaDelimitedStringToSecurableComponents(final String tokenizeString) {
     StringTokenizer stringTokenizer = new StringTokenizer(tokenizeString, ",");
-    SSLEnabledComponent[] returnArray = new SSLEnabledComponent[stringTokenizer.countTokens()];
+    SecurableComponent[] returnArray = new SecurableComponent[stringTokenizer.countTokens()];
     for (int i = 0; i < returnArray.length; i++) {
       String name = stringTokenizer.nextToken();
-      returnArray[i] = SSLEnabledComponent.getEnum(name);
+      try {
+        returnArray[i] = SecurableComponent.getEnum(name);
+      } catch (Exception e) {
+        throw new IllegalArgumentException(e);
+      }
     }
     return returnArray;
   }

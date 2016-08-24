@@ -28,6 +28,7 @@ public enum SecurableComponent {
   JMX(SecurableComponents.JMX),
   HTTP_SERVICE(SecurableComponents.HTTP_SERVICE),
   GATEWAY(SecurableComponents.GATEWAY),
+  LOCATOR(SecurableComponents.LOCATOR),
   NONE("NO_COMPONENT");
 
   private final String constant;
@@ -39,7 +40,7 @@ public enum SecurableComponent {
   public static SecurableComponent getEnum(String enumString) {
     for (SecurableComponent securableComponent : SecurableComponent.values()) {
       if (!StringUtils.isEmpty(enumString)) {
-        if (securableComponent.constant.equals(enumString)) {
+        if (securableComponent.constant.equalsIgnoreCase(enumString)) {
           return securableComponent;
         }
       }

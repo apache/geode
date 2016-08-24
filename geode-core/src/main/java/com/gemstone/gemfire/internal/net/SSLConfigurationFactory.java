@@ -24,15 +24,17 @@ import java.util.Properties;
 import org.apache.commons.lang.ArrayUtils;
 import org.springframework.util.StringUtils;
 
+import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.internal.admin.SSLConfig;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 
 public class SSLConfigurationFactory {
 
   private static SSLConfigurationFactory instance = new SSLConfigurationFactory();
   private DistributionConfig distributionConfig = new DistributionConfigImpl(new Properties());
-  private Map<SSLEnabledComponent, SSLConfig> registeredSSLConfig = new HashMap<>();
+  private Map<SecurableComponent, SSLConfig> registeredSSLConfig = new HashMap<>();
 
   private SSLConfigurationFactory() {
   }
@@ -45,10 +47,14 @@ public class SSLConfigurationFactory {
   }
 
   public static void setDistributionConfig(final DistributionConfig distributionConfig) {
+    if(distributionConfig == null)
+    {
+      throw new GemFireConfigException("SSL Configuration requires a valid distribution config.");
+    }
     getInstance().distributionConfig = distributionConfig;
   }
 
-  public static SSLConfig getSSLConfigForComponent(SSLEnabledComponent sslEnabledComponent) {
+  public static SSLConfig getSSLConfigForComponent(SecurableComponent sslEnabledComponent) {
     SSLConfig sslConfig = getInstance().getRegisteredSSLConfigForComponent(sslEnabledComponent);
     if (sslConfig == null) {
       sslConfig = getInstance().createSSLConfigForComponent(sslEnabledComponent);
@@ -57,13 +63,13 @@ public class SSLConfigurationFactory {
     return sslConfig;
   }
 
-  private synchronized void registeredSSLConfigForComponent(final SSLEnabledComponent sslEnabledComponent, final SSLConfig sslConfig) {
+  private synchronized void registeredSSLConfigForComponent(final SecurableComponent sslEnabledComponent, final SSLConfig sslConfig) {
     registeredSSLConfig.put(sslEnabledComponent, sslConfig);
   }
 
-  private SSLConfig createSSLConfigForComponent(final SSLEnabledComponent sslEnabledComponent) {
+  private SSLConfig createSSLConfigForComponent(final SecurableComponent sslEnabledComponent) {
     SSLConfig sslConfig = createSSLConfig(sslEnabledComponent);
-    SSLEnabledComponent[] sslEnabledComponents = distributionConfig.getSSLEnabledComponents();
+    SecurableComponent[] sslEnabledComponents = distributionConfig.getSSLEnabledComponents();
     if (sslEnabledComponents.length == 0) {
       sslConfig = configureLegacyClusterSSL(sslConfig);
     }
@@ -71,12 +77,14 @@ public class SSLConfigurationFactory {
     switch (sslEnabledComponent) {
       case ALL: {
         //Create a SSLConfig separate for HTTP Service. As the require-authentication might differ
-        createSSLConfigForComponent(SSLEnabledComponent.HTTP_SERVICE);
+        createSSLConfigForComponent(SecurableComponent.HTTP_SERVICE);
         break;
       }
       case CLUSTER: {
         if (sslEnabledComponents.length > 0) {
           sslConfig = setAliasForComponent(sslConfig, distributionConfig.getClusterSSLAlias());
+        }else {
+          sslConfig = configureLegacyClusterSSL(sslConfig);
         }
         break;
       }
@@ -131,7 +139,7 @@ public class SSLConfigurationFactory {
     return sslConfig;
   }
 
-  private SSLConfig createSSLConfig(final SSLEnabledComponent sslEnabledComponent) {
+  private SSLConfig createSSLConfig(final SecurableComponent sslEnabledComponent) {
     SSLConfig sslConfig = new SSLConfig();
     sslConfig.setCiphers(distributionConfig.getSSLCiphers());
     sslConfig.setEnabled(determineIfSSLEnabledForSSLComponent(sslEnabledComponent));
@@ -146,11 +154,11 @@ public class SSLConfigurationFactory {
     return sslConfig;
   }
 
-  private boolean determineIfSSLEnabledForSSLComponent(final SSLEnabledComponent sslEnabledComponent) {
-    if (ArrayUtils.contains(distributionConfig.getSSLEnabledComponents(), SSLEnabledComponent.NONE)) {
+  private boolean determineIfSSLEnabledForSSLComponent(final SecurableComponent sslEnabledComponent) {
+    if (ArrayUtils.contains(distributionConfig.getSSLEnabledComponents(), SecurableComponent.NONE)) {
       return false;
     }
-    if (ArrayUtils.contains(distributionConfig.getSSLEnabledComponents(), SSLEnabledComponent.ALL)) {
+    if (ArrayUtils.contains(distributionConfig.getSSLEnabledComponents(), SecurableComponent.ALL)) {
       return true;
     }
     return ArrayUtils.contains(distributionConfig.getSSLEnabledComponents(), sslEnabledComponent) ? true : false;
@@ -293,14 +301,13 @@ public class SSLConfigurationFactory {
     return propertyValue;
   }
 
-  private SSLConfig getRegisteredSSLConfigForComponent(final SSLEnabledComponent sslEnabledComponent) {
+  private SSLConfig getRegisteredSSLConfigForComponent(final SecurableComponent sslEnabledComponent) {
     return registeredSSLConfig.get(sslEnabledComponent);
   }
 
   public static void close() {
     getInstance().clearSSLConfigForAllComponents();
     getInstance().distributionConfig = null;
-    instance = null;
   }
 
   private void clearSSLConfigForAllComponents() {

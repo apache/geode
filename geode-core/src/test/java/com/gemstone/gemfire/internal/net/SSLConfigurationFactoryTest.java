@@ -29,6 +29,7 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.internal.admin.SSLConfig;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
@@ -54,15 +55,15 @@ public class SSLConfigurationFactoryTest extends JUnit4DistributedTestCase {
     properties.setProperty(SSL_PROTOCOLS, "any");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SSLConfigurationFactory.setDistributionConfig(distributionConfig);
-    for (SSLEnabledComponent sslEnabledComponent : SSLEnabledComponent.values()) {
-      assertSSLConfig(properties, SSLConfigurationFactory.getSSLConfigForComponent(sslEnabledComponent), sslEnabledComponent, distributionConfig);
+    for (SecurableComponent securableComponent : SecurableComponent.values()) {
+      assertSSLConfig(properties, SSLConfigurationFactory.getSSLConfigForComponent(securableComponent), securableComponent, distributionConfig);
     }
   }
 
   @Test
   public void getSSLConfigForComponentHTTPService() throws Exception {
     Properties properties = new Properties();
-    properties.setProperty(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.HTTP_SERVICE.getConstant());
+    properties.setProperty(SSL_ENABLED_COMPONENTS, SecurableComponent.HTTP_SERVICE.getConstant());
     properties.setProperty(SSL_KEYSTORE, "someKeyStore");
     properties.setProperty(SSL_KEYSTORE_PASSWORD, "keystorePassword");
     properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
@@ -73,15 +74,15 @@ public class SSLConfigurationFactoryTest extends JUnit4DistributedTestCase {
     properties.setProperty(SSL_PROTOCOLS, "any");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SSLConfigurationFactory.setDistributionConfig(distributionConfig);
-    for (SSLEnabledComponent sslEnabledComponent : SSLEnabledComponent.values()) {
-      assertSSLConfig(properties, SSLConfigurationFactory.getSSLConfigForComponent(sslEnabledComponent), sslEnabledComponent, distributionConfig);
+    for (SecurableComponent securableComponent : SecurableComponent.values()) {
+      assertSSLConfig(properties, SSLConfigurationFactory.getSSLConfigForComponent(securableComponent), securableComponent, distributionConfig);
     }
   }
 
   @Test
   public void getSSLConfigForComponentHTTPServiceWithAlias() throws Exception {
     Properties properties = new Properties();
-    properties.setProperty(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.HTTP_SERVICE.getConstant());
+    properties.setProperty(SSL_ENABLED_COMPONENTS, SecurableComponent.HTTP_SERVICE.getConstant());
     properties.setProperty(SSL_KEYSTORE, "someKeyStore");
     properties.setProperty(SSL_KEYSTORE_PASSWORD, "keystorePassword");
     properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
@@ -93,15 +94,15 @@ public class SSLConfigurationFactoryTest extends JUnit4DistributedTestCase {
     properties.setProperty(SSL_PROTOCOLS, "any");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SSLConfigurationFactory.setDistributionConfig(distributionConfig);
-    for (SSLEnabledComponent sslEnabledComponent : SSLEnabledComponent.values()) {
-      assertSSLConfig(properties, SSLConfigurationFactory.getSSLConfigForComponent(sslEnabledComponent), sslEnabledComponent, distributionConfig);
+    for (SecurableComponent securableComponent : SecurableComponent.values()) {
+      assertSSLConfig(properties, SSLConfigurationFactory.getSSLConfigForComponent(securableComponent), securableComponent, distributionConfig);
     }
   }
 
   @Test
   public void getSSLConfigForComponentHTTPServiceWithMutualAuth() throws Exception {
     Properties properties = new Properties();
-    properties.setProperty(SSL_ENABLED_COMPONENTS, SSLEnabledComponent.HTTP_SERVICE.getConstant());
+    properties.setProperty(SSL_ENABLED_COMPONENTS, SecurableComponent.HTTP_SERVICE.getConstant());
     properties.setProperty(SSL_KEYSTORE, "someKeyStore");
     properties.setProperty(SSL_KEYSTORE_PASSWORD, "keystorePassword");
     properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
@@ -114,16 +115,16 @@ public class SSLConfigurationFactoryTest extends JUnit4DistributedTestCase {
     properties.setProperty(SSL_PROTOCOLS, "any");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SSLConfigurationFactory.setDistributionConfig(distributionConfig);
-    for (SSLEnabledComponent sslEnabledComponent : SSLEnabledComponent.values()) {
-      assertSSLConfig(properties, SSLConfigurationFactory.getSSLConfigForComponent(sslEnabledComponent), sslEnabledComponent, distributionConfig);
+    for (SecurableComponent securableComponent : SecurableComponent.values()) {
+      assertSSLConfig(properties, SSLConfigurationFactory.getSSLConfigForComponent(securableComponent), securableComponent, distributionConfig);
     }
   }
 
   private void assertSSLConfig(final Properties properties,
                                final SSLConfig sslConfig,
-                               final SSLEnabledComponent expectedSSLEnabledComponent,
+                               final SecurableComponent expectedSecurableComponent,
                                final DistributionConfigImpl distributionConfig) {
-    assertEquals(isSSLComponentEnabled(expectedSSLEnabledComponent, distributionConfig.getSSLEnabledComponents()), sslConfig.isEnabled());
+    assertEquals(isSSLComponentEnabled(expectedSecurableComponent, distributionConfig.getSSLEnabledComponents()), sslConfig.isEnabled());
     assertEquals(properties.getProperty(SSL_KEYSTORE), sslConfig.getKeystore());
     assertEquals(properties.getProperty(SSL_KEYSTORE_PASSWORD), sslConfig.getKeystorePassword());
     assertEquals(properties.getProperty(SSL_KEYSTORE_TYPE), sslConfig.getKeystoreType());
@@ -131,20 +132,20 @@ public class SSLConfigurationFactoryTest extends JUnit4DistributedTestCase {
     assertEquals(properties.getProperty(SSL_TRUSTSTORE_PASSWORD), sslConfig.getTruststorePassword());
     assertEquals(properties.getProperty(SSL_CIPHERS), sslConfig.getCiphers());
     assertEquals(properties.getProperty(SSL_PROTOCOLS), sslConfig.getProtocols());
-    assertEquals(getCorrectAlias(expectedSSLEnabledComponent, properties), sslConfig.getAlias());
-    assertEquals(requiresAuthentication(properties, expectedSSLEnabledComponent), sslConfig.isRequireAuth());
-    assertEquals(expectedSSLEnabledComponent, sslConfig.getSslEnabledComponent());
+    assertEquals(getCorrectAlias(expectedSecurableComponent, properties), sslConfig.getAlias());
+    assertEquals(requiresAuthentication(properties, expectedSecurableComponent), sslConfig.isRequireAuth());
+    assertEquals(expectedSecurableComponent, sslConfig.getSecuredComponent());
   }
 
-  private boolean requiresAuthentication(final Properties properties, final SSLEnabledComponent expectedSSLEnabledComponent) {
-    boolean defaultAuthentication = expectedSSLEnabledComponent.equals(SSLEnabledComponent.HTTP_SERVICE) ? DistributionConfig.DEFAULT_SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION : DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
+  private boolean requiresAuthentication(final Properties properties, final SecurableComponent expectedSecurableComponent) {
+    boolean defaultAuthentication = expectedSecurableComponent.equals(SecurableComponent.HTTP_SERVICE) ? DistributionConfig.DEFAULT_SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION : DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
     String httpRequiresAuthentication = properties.getProperty(SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION);
 
     return httpRequiresAuthentication == null ? defaultAuthentication : Boolean.parseBoolean(httpRequiresAuthentication);
   }
 
-  private String getCorrectAlias(final SSLEnabledComponent expectedSSLEnabledComponent, final Properties properties) {
-    switch (expectedSSLEnabledComponent) {
+  private String getCorrectAlias(final SecurableComponent expectedSecurableComponent, final Properties properties) {
+    switch (expectedSecurableComponent) {
       case ALL:
         return properties.getProperty(SSL_DEFAULT_ALIAS);
       case CLUSTER:
@@ -169,9 +170,9 @@ public class SSLConfigurationFactoryTest extends JUnit4DistributedTestCase {
     return !StringUtils.isEmpty(aliasProperty) ? aliasProperty : properties.getProperty(SSL_DEFAULT_ALIAS);
   }
 
-  private boolean isSSLComponentEnabled(final SSLEnabledComponent expectedSSLEnabledComponent, final SSLEnabledComponent[] sslEnabledComponents) {
-    for (SSLEnabledComponent sslEnabledComponent : sslEnabledComponents) {
-      if (SSLEnabledComponent.ALL.equals(sslEnabledComponent) || sslEnabledComponent.equals(expectedSSLEnabledComponent)) {
+  private boolean isSSLComponentEnabled(final SecurableComponent expectedSecurableComponent, final SecurableComponent[] SecurableComponents) {
+    for (SecurableComponent SecurableComponent : SecurableComponents) {
+      if (SecurableComponent.ALL.equals(SecurableComponent) || SecurableComponent.equals(expectedSecurableComponent)) {
         return true;
       }
     }

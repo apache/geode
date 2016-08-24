@@ -49,9 +49,9 @@ import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
 
 /**
@@ -550,7 +550,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private String httpServiceSSLAlias = DEFAULT_SSL_ALIAS;
 
-  private SSLEnabledComponent[] sslEnabledComponents = DEFAULT_SSL_ENABLED_COMPONENTS;
+  private SecurableComponent[] sslEnabledComponents = DEFAULT_SSL_ENABLED_COMPONENTS;
 
   private String sslProtocols = DEFAULT_SSL_PROTOCOLS;
   private String sslCiphers = DEFAULT_SSL_CIPHERS;
@@ -955,8 +955,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         throw new InternalGemFireException("error invoking getter for property" + ConfigurationProperties.SSL_ENABLED_COMPONENTS);
       }
     }
-    SSLEnabledComponent[] sslEnabledComponents = (SSLEnabledComponent[]) value;
-    for (SSLEnabledComponent sslEnabledComponent : sslEnabledComponents) {
+    SecurableComponent[] sslEnabledComponents = (SecurableComponent[]) value;
+    for (SecurableComponent sslEnabledComponent : sslEnabledComponents) {
       if (!isAliasCorrectlyConfiguredForComponents(sslEnabledComponent)) {
         throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_INVALID_ALIAS_OPTIONS.toLocalizedString());
       }
@@ -964,18 +964,18 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   }
 
-  private boolean isAliasCorrectlyConfiguredForComponents(final SSLEnabledComponent component) {
+  private boolean isAliasCorrectlyConfiguredForComponents(final SecurableComponent component) {
     switch (component) {
       case ALL: {
         //If the default alias is not set, then check that all the other component aliases are set
         if (StringUtils.isEmpty(getSSLDefaultAlias())) {
           boolean correctAlias = true;
-          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.CLUSTER);
-          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.GATEWAY);
-          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.HTTP_SERVICE);
-          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.JMX);
-          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.LOCATOR);
-          correctAlias &= isAliasCorrectlyConfiguredForComponents(SSLEnabledComponent.SERVER);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SecurableComponent.CLUSTER);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SecurableComponent.GATEWAY);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SecurableComponent.HTTP_SERVICE);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SecurableComponent.JMX);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SecurableComponent.LOCATOR);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SecurableComponent.SERVER);
           return correctAlias;
         }
       }
@@ -2567,12 +2567,12 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public SSLEnabledComponent[] getSSLEnabledComponents() {
+  public SecurableComponent[] getSSLEnabledComponents() {
     return sslEnabledComponents;
   }
 
   @Override
-  public void setSSLEnabledComponents(final SSLEnabledComponent[] sslEnabledComponents) {
+  public void setSSLEnabledComponents(final SecurableComponent[] sslEnabledComponents) {
     this.sslEnabledComponents = sslEnabledComponents;
   }
 

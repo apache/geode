@@ -54,4 +54,9 @@ public interface SecurableComponents {
    * <U>Since</U>: Geode 1.0
    */
   String GATEWAY = "gateway";
+  /**
+   * This determines that the locator communication will be secured.
+   * <U>Since</U>: Geode 1.0
+   */
+  String LOCATOR = "locator";
 }

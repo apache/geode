@@ -50,6 +50,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.util.test.TestUtil;
@@ -93,6 +94,7 @@ public class JSSESocketJUnitTest {
       acceptor.close();
     }
     System.out.println(baos.toString());
+    SocketCreatorFactory.close();
   }
 
   //----- test methods ------
@@ -125,13 +127,13 @@ public class JSSESocketJUnitTest {
       DistributionConfigImpl distributionConfig = new DistributionConfigImpl(new Properties());
 
       SocketCreatorFactory.setDistributionConfig(distributionConfig);
-      assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).useSSL());
+      assertTrue(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).useSSL());
 
-      final ServerSocket serverSocket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).createServerSocket(randport, 0, InetAddress.getByName("localhost"));
+      final ServerSocket serverSocket = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(randport, 0, InetAddress.getByName("localhost"));
 
       Thread serverThread = startServer(serverSocket, receiver);
 
-      Socket client = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).connectForServer(InetAddress.getByName("localhost"), randport);
+      Socket client = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).connectForServer(InetAddress.getByName("localhost"), randport);
 
       ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
       String expected = new String("testing " + name.getMethodName());
@@ -166,7 +168,6 @@ public class JSSESocketJUnitTest {
     } finally {
       // Reset original base log level
       LogService.setBaseLogLevel(originalBaseLevel);
-      SocketCreatorFactory.close();
     }
   }
 
@@ -185,7 +186,7 @@ public class JSSESocketJUnitTest {
     factoryInvoked = false;
     try {
       try {
-        Socket sock = SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).connectForClient("localhost", 12345, 0);
+        Socket sock = SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).connectForClient("localhost", 12345, 0);
         sock.close();
         fail("socket factory was invoked");
       } catch (IOException e) {
@@ -193,7 +194,7 @@ public class JSSESocketJUnitTest {
       }
     } finally {
       System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + "clientSocketFactory");
-      SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).initializeClientSocketFactory();
+      SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).initializeClientSocketFactory();
     }
   }
 
@@ -221,7 +222,7 @@ public class JSSESocketJUnitTest {
       public void run() {
         try {
           Socket s = serverSocket.accept();
-          SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.CLUSTER).configureServerSSLSocket(s);
+          SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.CLUSTER).configureServerSSLSocket(s);
           ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
           receiver[0] = ois.readObject();
           server = s;

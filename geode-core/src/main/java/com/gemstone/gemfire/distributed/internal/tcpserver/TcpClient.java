@@ -37,9 +37,9 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedDataInputStream;
 import com.gemstone.gemfire.internal.VersionedDataOutputStream;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 
 /**
  * <p>Client for the TcpServer component of the Locator.
@@ -61,7 +61,7 @@ public class TcpClient {
    * SocketCreatorFactory should be initialized before invoking this method.
    */
   public TcpClient() {
-    this(SocketCreatorFactory.getSSLSocketCreatorForComponent(SSLEnabledComponent.LOCATOR));
+    this(SocketCreatorFactory.getSSLSocketCreatorForComponent(SecurableComponent.LOCATOR));
   }
 
   /**

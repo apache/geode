@@ -23,10 +23,8 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.admin.SSLConfig;
 import com.gemstone.gemfire.internal.net.SSLConfigurationFactory;
-import com.gemstone.gemfire.internal.net.SSLEnabledComponent;
-import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
@@ -44,7 +42,7 @@ public class JettyHelperJUnitTest {
   @Test
   public void testSetPortNoBindAddress() throws Exception {
 
-    final Server jetty = JettyHelper.initJetty(null, 8090, SSLConfigurationFactory.getSSLConfigForComponent(SSLEnabledComponent.HTTP_SERVICE));
+    final Server jetty = JettyHelper.initJetty(null, 8090, SSLConfigurationFactory.getSSLConfigForComponent(SecurableComponent.HTTP_SERVICE));
 
     assertNotNull(jetty);
     assertNotNull(jetty.getConnectors()[0]);
@@ -54,7 +52,7 @@ public class JettyHelperJUnitTest {
   @Test
   public void testSetPortWithBindAddress() throws Exception {
 
-    final Server jetty = JettyHelper.initJetty("10.123.50.1", 10480, SSLConfigurationFactory.getSSLConfigForComponent(SSLEnabledComponent.HTTP_SERVICE));
+    final Server jetty = JettyHelper.initJetty("10.123.50.1", 10480, SSLConfigurationFactory.getSSLConfigForComponent(SecurableComponent.HTTP_SERVICE));
 
     assertNotNull(jetty);
     assertNotNull(jetty.getConnectors()[0]);

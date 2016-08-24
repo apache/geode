@@ -96,6 +96,7 @@ import com.gemstone.gemfire.internal.cache.wan.TransportFilterSocketFactory;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.internal.util.PasswordUtil;
 
 /**
@@ -330,7 +331,7 @@ public class SocketCreator {
   private void initialize() {
     try {
       // set p2p values...
-      if (SSLEnabledComponent.CLUSTER.equals(sslConfig.getSslEnabledComponent())) {
+      if (SecurableComponent.CLUSTER.equals(sslConfig.getSecuredComponent())) {
         if (this.sslConfig.isEnabled()) {
           System.setProperty("p2p.useSSL", "true");
           System.setProperty("p2p.oldIO", "true");
