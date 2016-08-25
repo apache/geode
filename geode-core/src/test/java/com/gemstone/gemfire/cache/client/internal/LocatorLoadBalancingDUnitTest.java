@@ -21,6 +21,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
+import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
@@ -59,6 +61,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -141,6 +144,7 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
     Map expected = new HashMap();
     expected.put(expectedLocation, expectedLoad);
 
+    SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
     ClientConnectionResponse response;
     response = (ClientConnectionResponse) new TcpClient().requestToServer(InetAddress
             .getByName(NetworkUtils.getServerHostName(host)), locatorPort,

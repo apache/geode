@@ -74,7 +74,8 @@ public class SocketCreatorFactory {
     if (sslConfig.isEnabled()) {
       if (ArrayUtils.contains(getDistributionConfig().getSSLEnabledComponents(), SecurableComponent.ALL)) {
         return createSSLSocketCreator(SecurableComponent.ALL, sslConfig);
-      } else if (ArrayUtils.contains(getDistributionConfig().getSSLEnabledComponents(), sslComponent)) {
+//      } else if (ArrayUtils.contains(getDistributionConfig().getSSLEnabledComponents(), sslComponent)) {
+      } else {
         return createSSLSocketCreator(sslComponent, sslConfig);
       }
     }
