@@ -133,39 +133,6 @@ sourceSets {
   }
 }
 
-ext.readScmInfo = {
-  try {
-    def git = org.ajoberstar.grgit.Grgit.open(currentDir: projectDir)
-    try {
-      return [
-        'Source-Repository': git.branch.getCurrent().name,
-        'Source-Revision'  : git.head().id,
-        'Source-Date'      : git.head().getDate().format('yyyy-MM-dd HH:mm:ss Z')
-      ] as Properties
-    } finally {
-      git.close()
-    }
-  } catch (IllegalArgumentException e) {
-    // if we're building from the source distribution, we don't have git so
-    // use cached info written during the assembly process
-    def buildInfo = file "$rootDir/.buildinfo"
-    if (buildInfo.exists()) {
-      def props = new Properties()
-      new FileInputStream(buildInfo).withStream { fis ->
-        props.load(fis)
-      }
-      return props
-    }
-
-    logger.warn( '***** Unable to find Git workspace. Using default version information *****' )
-    return [
-      'Source-Repository': 'UNKNOWN',
-      'Source-Revision'  : 'UNKNOWN',
-      'Source-Date'      : new Date().format('yyyy-MM-dd HH:mm:ss Z')
-    ] as Properties
-  }
-}
-
 // Creates the version properties file and writes it to the classes dir
 task createVersionPropertiesFile {
   def propertiesFile = file(generatedResources + "/com/gemstone/gemfire/internal/GemFireVersion.properties");
