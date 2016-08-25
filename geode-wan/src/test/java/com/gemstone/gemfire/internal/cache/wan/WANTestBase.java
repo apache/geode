@@ -22,7 +22,9 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,6 +46,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import com.jayway.awaitility.Awaitility;
 import org.junit.experimental.categories.Category;
@@ -352,6 +355,22 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
     test.getSystem(props);
     return port;
+  }
+
+  public static Integer createSecondRemoteLocatorWithAPI(int dsId, int localPort,
+                                                  int remoteLocPort, String hostnameForClients)
+    throws IOException
+  {
+    stopOldLocator();
+    WANTestBase test = new WANTestBase();
+    int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+    Properties props = test.getDistributedSystemProperties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, ""+dsId);
+    props.setProperty(LOCATORS, "localhost[" + localPort + "]");
+    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
+    Locator locator = Locator.startLocatorAndDS(0, null, InetAddress.getByName("localhost"), props, true, true, hostnameForClients);
+    return locator.getPort();
   }
 
   public static Integer createSecondRemotePeerLocator(int dsId, int localPort,
@@ -2972,27 +2991,22 @@ public class WANTestBase extends JUnit4DistributedTestCase {
   }
 
   public static void checkAllSiteMetaData(
-      Map<Integer, ArrayList<Integer>> dsVsPorts) {
-    Awaitility.await().atMost(10,TimeUnit.SECONDS).until(() -> assertNotNull(getSystemStatic()));
+      Map<Integer, Set<InetSocketAddress>> dsIdToLocatorAddresses) {
     List<Locator> locatorsConfigured = Locator.getLocators();
     Locator locator = locatorsConfigured.get(0);
-    Map<Integer,Set<DistributionLocatorId>> allSiteMetaData = ((InternalLocator)locator).getlocatorMembershipListener().getAllLocatorsInfo();
-    System.out.println("allSiteMetaData : " + allSiteMetaData);
-    System.out.println("dsVsPorts : " + dsVsPorts);
-    System.out.println("Server allSiteMetaData : " + ((InternalLocator)locator).getlocatorMembershipListener().getAllServerLocatorsInfo());
-    for (Map.Entry<Integer, ArrayList<Integer>> entry : dsVsPorts.entrySet()) {
-      Set<DistributionLocatorId> locators = allSiteMetaData.get(entry.getKey());
-      assertNotNull(locators);
-      for (Integer port : entry.getValue()) {
-        boolean portAvailable = false;
-        for(DistributionLocatorId locId : locators){
-          if(locId.getPort() == port){
-            portAvailable = true;
-          }
-        }
-        assertTrue(portAvailable);
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until( () -> {
+      Map<Integer, Set<DistributionLocatorId>> allSiteMetaData = ((InternalLocator) locator)
+        .getlocatorMembershipListener().getAllLocatorsInfo();
+      for (Map.Entry<Integer, Set<InetSocketAddress>> entry : dsIdToLocatorAddresses.entrySet()) {
+        Set<DistributionLocatorId> foundLocatorIds = allSiteMetaData.get(entry.getKey());
+        Set<InetSocketAddress> expectedLocators = entry.getValue();
+        final Set<InetSocketAddress> foundLocators = foundLocatorIds.stream()
+          .map(distributionLocatorId -> new InetSocketAddress(distributionLocatorId.getHostnameForClients(),
+            distributionLocatorId.getPort()))
+          .collect(Collectors.toSet());
+        assertEquals(expectedLocators, foundLocators);
       }
-    }
+    });
   }
 
   public static Long checkAllSiteMetaDataFor3Sites(final Map<Integer, Set<String>> dsVsPort) {

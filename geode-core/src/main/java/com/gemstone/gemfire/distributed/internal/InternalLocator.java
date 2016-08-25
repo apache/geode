@@ -800,8 +800,8 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
 
     this.locatorDiscoverer = WANServiceProvider.createLocatorDiscoverer();
-    if (this.locatorDiscoverer != null) {
-      this.locatorDiscoverer.discover(getPort(), config, locatorListener);
+    if(this.locatorDiscoverer != null) {
+      this.locatorDiscoverer.discover(getPort(), config, locatorListener, hostnameForClients);
     }
   }
 

@@ -23,14 +23,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.gemstone.gemfire.cache.GemFireCache;
+import com.gemstone.gemfire.cache.wan.GatewayReceiver;
+import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
+import com.gemstone.gemfire.internal.cache.CacheServerLauncher;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
@@ -43,6 +48,7 @@ public class CacheCreationJUnitTest {
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
+    CacheServerLauncher.clearStatics();
   }
 
   @Test
@@ -200,5 +206,24 @@ public class CacheCreationJUnitTest {
     cacheCreation.getCacheServers().add(new CacheServerCreation(cacheCreation, false));
 
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), cache, configuredServerPort, configuredServerBindAddress, disableDefaultCacheServer);
+  }
+
+  @Test
+  public void shouldCreateGatewaySenderAfterRegions() {
+    CacheCreation cacheCreation = new CacheCreation();
+    GatewayReceiver receiver = mock(GatewayReceiver.class);
+    cacheCreation.addGatewayReceiver(receiver);
+    cacheCreation.addRootRegion(new RegionCreation(cacheCreation, "region"));
+    GemFireCacheImpl cache = mock(GemFireCacheImpl.class);
+    GatewayReceiverFactory receiverFactory = mock(GatewayReceiverFactory.class);
+    when(cache.createGatewayReceiverFactory()).thenReturn(receiverFactory);
+    when(receiverFactory.create()).thenReturn(receiver);
+
+    InOrder inOrder = inOrder(cache, receiverFactory);
+    cacheCreation.create(cache);
+
+    inOrder.verify(cache).basicCreateRegion(eq("region"),any());
+    inOrder.verify(cache).createGatewayReceiverFactory();
+    inOrder.verify(receiverFactory).create();
   }
 }

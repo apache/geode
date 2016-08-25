@@ -824,7 +824,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
           region.put("key" + (i % 3), i);
           Thread.sleep(2);
         }
-      } catch(CacheClosedException expected) {
+      } catch(CacheClosedException | DiskAccessException expected) {
         //do nothing
       }
 

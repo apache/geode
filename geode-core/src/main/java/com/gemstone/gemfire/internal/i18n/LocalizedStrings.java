@@ -3409,7 +3409,7 @@ public class LocalizedStrings {
   public static final StringId GatewaySenderImpl_GATEWAY_0_CANNOT_BE_CREATED_WITH_REMOTE_SITE_ID_LESS_THAN_ZERO = new StringId(5200, "GatewaySender {0} cannot be created with remote DS Id less than 0. ");
   public static final StringId CacheXmlParser_A_0_MUST_BE_DEFINED_IN_THE_CONTEXT_OF_GATEWAYSENDER_OR_GATEWAYRECEIVER = new StringId(5201, "A  {0}  must be defined in the context of gateway-sender or gateway-receiver.");
   public static final StringId Sender_COULD_NOT_START_GATEWAYSENDER_0_BECAUSE_OF_EXCEPTION_1 = new StringId(5202, "Could not start a gateway sender {0} because of exception {1}");
-  public static final StringId LOCATOR_DISCOVERY_TASK_EXCHANGED_LOCATOR_INFORMATION_0_WITH_1 = new StringId(5203, "Locator discovery task exchanged locator information {0} with {1}.");
+  public static final StringId LOCATOR_DISCOVERY_TASK_EXCHANGED_LOCATOR_INFORMATION_0_WITH_1 = new StringId(5203, "Locator discovery task exchanged locator information {0} with {1}: {2}.");
 
   public static final StringId DistributionManager_RECEIVED_NO_STARTUP_RESPONSES_BUT_OTHER_MEMBERS_EXIST_MULTICAST_IS_NOT_RESPONSIVE = new StringId(5205, "Did not receive a startup response but other members exist.  Multicast does not seem to be working.");
 

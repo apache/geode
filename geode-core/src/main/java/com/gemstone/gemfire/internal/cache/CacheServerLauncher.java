@@ -615,6 +615,13 @@ public class CacheServerLauncher  {
     return disableDefaultServer.get();
   }
 
+  public static void clearStatics() {
+    disableDefaultServer.set(null);
+    serverPort.set(null);
+    serverBindAddress.set(null);
+  }
+
+
   /**
    * The method that does the work of being a cache server.  It is
    * invoked in the VM spawned by the {@link #start} method.

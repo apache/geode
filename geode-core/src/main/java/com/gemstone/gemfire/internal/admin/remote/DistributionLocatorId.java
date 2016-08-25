@@ -67,6 +67,10 @@ public class DistributionLocatorId implements java.io.Serializable {
    * set to the local host.
    */
   public DistributionLocatorId(int port, String bindAddress) {
+    this(port, bindAddress, null);
+  }
+  
+  public DistributionLocatorId(int port, String bindAddress, String hostnameForClients) {
     try {
       this.host = SocketCreator.getLocalHost();
     } catch (UnknownHostException ex) {
@@ -75,6 +79,7 @@ public class DistributionLocatorId implements java.io.Serializable {
     this.port = port;
     this.bindAddress = validateBindAddress(bindAddress);
     this.sslConfig = validateSSLConfig(null);
+    this.hostnameForClients = hostnameForClients;
   }
   
   public DistributionLocatorId(InetAddress host, 
@@ -283,8 +288,11 @@ public class DistributionLocatorId implements java.io.Serializable {
 	public String toString() {
           StringBuffer sb = new StringBuffer();
   
-          // if bindAddress then use that instead of host...
-          if (this.bindAddress != null && this.bindAddress.length() > 0) {
+          // If hostnameForClients is set, use that
+          if (this.hostnameForClients != null && this.hostnameForClients.length() > 0) {
+            sb.append(this.hostnameForClients);
+          } else if (this.bindAddress != null && this.bindAddress.length() > 0) {
+            // if bindAddress then use that instead of host...
             sb.append(this.bindAddress);
           }
           else {

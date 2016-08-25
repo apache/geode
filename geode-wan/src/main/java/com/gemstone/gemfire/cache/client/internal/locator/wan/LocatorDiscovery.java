@@ -140,7 +140,7 @@ public class LocatorDiscovery{
           LocatorHelper.addExchangedLocators(response.getLocators(),
               this.locatorListener);
           logger.info(LocalizedMessage.create(LocalizedStrings.LOCATOR_DISCOVERY_TASK_EXCHANGED_LOCATOR_INFORMATION_0_WITH_1,
-              new Object[] { request.getLocator(), locatorId }));
+              new Object[] { request.getLocator(), locatorId, response.getLocators() }));
           break;
         }
       }
@@ -186,7 +186,7 @@ public class LocatorDiscovery{
         if (response != null) {
           LocatorHelper.addExchangedLocators(response.getLocators(), this.locatorListener);
           logger.info(LocalizedMessage.create(LocalizedStrings.LOCATOR_DISCOVERY_TASK_EXCHANGED_LOCATOR_INFORMATION_0_WITH_1,
-              new Object[] { request.getLocator(), locatorId }));
+              new Object[] { request.getLocator(), locatorId, response.getLocators() }));
           RemoteLocatorPingRequest pingRequest = new RemoteLocatorPingRequest(
               "");
           while (true) {
