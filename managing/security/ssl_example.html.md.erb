@@ -74,3 +74,15 @@ gfsh>start server --name=my_server \
 --security-properties-file=/path/to/your/gfsecurity.properties
 ```
 
+## <a id="ssl_example__section_connect_cluster" class="no-quick-link"></a>Connecting to a Running Cluster
+
+You can use `gfsh` to connect to an SSL-enabled cluster that is already running by specifying the
+`use-ssl` command-line option and providing a path to the security configuration file:
+
+``` pre
+gfsh>connect --locator=localhost[10334] --use-ssl \
+--security-properties-file=/path/to/your/gfsecurity.properties
+```
+
+Once connected, you can then issue `gfsh` commands to perform a variety of operations, including
+listing members and displaying region characteristics.

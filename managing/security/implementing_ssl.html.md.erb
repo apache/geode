@@ -185,19 +185,7 @@ The following table lists the properties you can use to configure SSL on your Ge
 1.  Make sure your Java installation includes the JSSE API and familiarize yourself with its
 use. For information, see the [Oracle JSSE website](http://www.oracle.com/technetwork/java/javase/tech/index-jsp-136007.html).
 
-2.  Configure your security provider:
-
-    1.  Specify the SSL provider in the `lib/security/java.security` file under your JRE home
-    directory. Indicate the providers you are using for your certificate, protocol, and cipher
-    suites. Your Java installation should include information on how to modify this file. The
-    security file is usually self-documenting.
-
-    2.  Specify provider-required configuration settings. These are usually key store and trust store
-    configuration parameters, such as the `keystore` and `truststore` properties described above. Your
-    provider documentation should describe specific configuration requirements. You can add these
-    configurations in a separate, restricted-access `gfsecurity.properties` file.
-
-3.  Configure SSL as needed for each connection type:
+2.  Configure SSL as needed for each connection type:
 
     1.  Use locators for member discovery within the distributed systems and for client discovery of
     servers. See [Configuring Peer-to-Peer Discovery](../../topologies_and_comm/p2p_configuration/setting_up_a_p2p_system.html) and
