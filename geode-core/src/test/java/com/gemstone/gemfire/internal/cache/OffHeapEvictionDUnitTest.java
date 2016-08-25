@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.CacheException;
@@ -137,5 +138,11 @@ public class OffHeapEvictionDUnitTest extends EvictionDUnitTest {
   @Override
   public ResourceType getResourceType() {
     return ResourceType.OFFHEAP_MEMORY;
+  }
+
+  @Category(FlakyTest.class) // GEODE-1770
+  @Override
+  public void testDummyInlineNCentralizedEviction() {
+    super.testDummyInlineNCentralizedEviction();
   }
 }
