@@ -37,7 +37,6 @@ import javax.management.remote.JMXServiceURL;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -133,10 +132,10 @@ public class JMXMBeanDUnitTest extends DistributedTestCase {
   //  To be fixed in GEODE-1716
   public void testJMXOverLegacySSL() throws Exception {
     Properties properties = configureLocatorProperties(new Properties(), jmxPort, serverHostName, true, true, false);
-//    locator.invoke("Configure and start Locator", () -> {
+    locator.invoke("Configure and start Locator", () -> {
       System.setProperty("javax.ssl.debug", "true");
       configureAndStartLocator(locatorPort, jmxPort, serverHostName, properties);
-//    });
+    });
 
     jmxClient.invoke("Configure and start JMX Client", () -> {
       System.setProperty("javax.ssl.debug", "true");
@@ -177,6 +176,9 @@ public class JMXMBeanDUnitTest extends DistributedTestCase {
       System.setProperty("javax.net.ssl.trustStore", useMulti ? getMultiKeyTruststore() : getSimpleSingleKeyKeystore());
       System.setProperty("javax.net.ssl.trustStoreType", "JKS");
       System.setProperty("javax.net.ssl.trustStorePassword", "password");
+//      System.setProperty("com.sun.management.jmxremote.ssl.need.client.auth", "true");
+//      System.setProperty("com.sun.management.jmxremote.ssl", "true");
+//      System.setProperty("com.sun.management.jmxremote.registry.ssl", "true");
       environment.put("com.sun.jndi.rmi.factory.socket", new SslRMIClientSocketFactory());
     }
 

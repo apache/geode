@@ -17,15 +17,11 @@
 
 package com.gemstone.gemfire.test.dunit.rules;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
-import static com.gemstone.gemfire.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static com.gemstone.gemfire.test.dunit.Host.getHost;
-import static com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase.disconnectAllFromDS;
-import static com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase.disconnectFromDS;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.internal.AvailablePortHelper.*;
+import static com.gemstone.gemfire.test.dunit.Host.*;
+import static com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase.*;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -34,6 +30,7 @@ import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import com.jayway.awaitility.Awaitility;
 import org.junit.rules.ExternalResource;
 
 import com.gemstone.gemfire.distributed.Locator;
@@ -41,16 +38,14 @@ import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.jayway.awaitility.Awaitility;
 
 
-public class LocatorServerConfigurationRule extends ExternalResource implements
-    Serializable {
+public class LocatorServerConfigurationRule extends ExternalResource implements Serializable {
 
   private int locatorPort = 0;
-  
+
   private boolean locatorInitialized = false;
-  
+
   private JUnit4CacheTestCase testCase;
 
   public LocatorServerConfigurationRule(JUnit4CacheTestCase testCase) {
@@ -75,9 +70,10 @@ public class LocatorServerConfigurationRule extends ExternalResource implements
   /**
    * Returns getHost(0).getVM(0) as a locator instance with the given
    * configuration properties.
-   * 
    * @param locatorProperties
+   *
    * @return VM locator vm
+   *
    * @throws IOException
    */
   public VM getLocatorVM(Properties locatorProperties) throws IOException {
@@ -88,10 +84,9 @@ public class LocatorServerConfigurationRule extends ExternalResource implements
 
   /**
    * Returns a node VM with given configuration properties.
-   * 
-   * @param index
-   *          valid 1 to 3 (returns getHist(0).getVM(index)
+   * @param index valid 1 to 3 (returns getHist(0).getVM(index)
    * @param nodeProperties
+   *
    * @return VM node vm
    */
   public VM getNodeVM(int index, Properties nodeProperties) {
@@ -111,14 +106,12 @@ public class LocatorServerConfigurationRule extends ExternalResource implements
     }
 
     locatorPort = locator.invoke(() -> {
-      InternalLocator locator = (InternalLocator)Locator.startLocatorAndDS(0,
-          null, locatorProperties);
+      InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(0, null, locatorProperties);
       locatorPort = locator.getPort();
       locator.resetInternalLocatorFileNamesWithCorrectPortNumber(locatorPort);
 
       if (locatorProperties.containsKey(ENABLE_CLUSTER_CONFIGURATION)) {
-        Awaitility.await().atMost(65, TimeUnit.SECONDS)
-            .until(() -> assertTrue(locator.isSharedConfigurationRunning()));
+        Awaitility.await().atMost(65, TimeUnit.SECONDS).until(() -> assertTrue(locator.isSharedConfigurationRunning()));
       }
       return locatorPort;
     });
@@ -129,7 +122,7 @@ public class LocatorServerConfigurationRule extends ExternalResource implements
       props.setProperty(MCAST_PORT, "0");
     }
 
-    props.setProperty(LOCATORS, getHostName() + ":" + locatorPort);
+    props.setProperty(LOCATORS, getHostName() + "[" + locatorPort + "]");
 
     nodeVM.invoke(() -> {
       testCase.getSystem(props);
@@ -140,8 +133,7 @@ public class LocatorServerConfigurationRule extends ExternalResource implements
   private String getHostName() {
     try {
       return InetAddress.getLocalHost().getHostName();
-    }
-    catch (UnknownHostException ignore) {
+    } catch (UnknownHostException ignore) {
       return "localhost";
     }
   }
