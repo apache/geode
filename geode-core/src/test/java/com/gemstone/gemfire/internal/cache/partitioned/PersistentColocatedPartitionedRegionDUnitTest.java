@@ -706,8 +706,10 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     closeCache(vm0);
     closeCache(vm1);
 
+    // The following should fail immediately with ISE on vm0, it's not necessary to also try the operation on vm1.
     Object remoteException = null;
     remoteException = vm0.invoke(createPRsMissingParentRegionThread);
+
     assertEquals("Expected IllegalState Exception for missing colocated parent region", IllegalStateException.class, remoteException.getClass());
     assertTrue("Expected IllegalState Exception for missing colocated parent region", remoteException.toString().matches(
         "java.lang.IllegalStateException: Region specified in 'colocated-with'.*"));
@@ -737,15 +739,32 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     closeCache(vm0);
     closeCache(vm1);
 
-    AsyncInvocation async0 = vm0.invokeAsync(createPRsColocatedPairThread);
+    AsyncInvocation async0 = null;
+    AsyncInvocation async1a = null;
+    AsyncInvocation async1b = null;
+    try {
+      async0 = vm0.invokeAsync(createPRsColocatedPairThread);
 
-    Object logMsg = "";
-    Object remoteException = null;
-    AsyncInvocation async1 = vm1.invokeAsync(delayedCreatePRsMissingParentRegionThread);
-    remoteException = async1.get(MAX_WAIT, TimeUnit.MILLISECONDS);
-    assertEquals("Expected IllegalState Exception for missing colocated parent region", IllegalStateException.class, remoteException.getClass());
-    assertTrue("Expected IllegalState Exception for missing colocated parent region", remoteException.toString().matches(
-        "java.lang.IllegalStateException: Region specified in 'colocated-with'.*"));
+      Object logMsg = "";
+      Object remoteException = null;
+      async1a = vm1.invokeAsync(delayedCreatePRsMissingParentRegionThread);
+      remoteException = async1a.get(MAX_WAIT, TimeUnit.MILLISECONDS);
+
+      assertEquals("Expected IllegalState Exception for missing colocated parent region", IllegalStateException.class, remoteException.getClass());
+      assertTrue("Expected IllegalState Exception for missing colocated parent region", remoteException.toString().matches(
+          "java.lang.IllegalStateException: Region specified in 'colocated-with'.*"));
+    } finally {
+      // The real test is done now (either passing or failing) but there's some cleanup in this test that needs to be done.
+      //
+      // The vm0 invokeAsync thread is still alive after the expected exception on vm1. Cleanup by first re-creating both regions
+      // on vm1, vm0 thread should now complete. Then wait (i.e. join() on the thread) for the new vm1 thread and the vm0 thread to
+      // verify they terminated without timing out, and close the caches.
+      async1b = vm1.invokeAsync(createPRsColocatedPairThread);
+      async1b.join(MAX_WAIT);
+      async0.join(MAX_WAIT);
+      closeCache(vm1);
+      closeCache(vm0);
+    }
   }
 
   /**
@@ -782,10 +801,12 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     AsyncInvocation async0 = vm0.invokeAsync(createPRsMissingChildRegionDelayedStartThread);
     AsyncInvocation async1 = vm1.invokeAsync(createPRsMissingChildRegionDelayedStartThread);
     logMsg = async1.get(MAX_WAIT, TimeUnit.MILLISECONDS);
+    async0.get(MAX_WAIT, TimeUnit.MILLISECONDS);
     vm0.invoke(new ExpectedNumLogMessageResetter());
     vm1.invoke(new ExpectedNumLogMessageResetter());
     vm0.invoke(new ColocationLoggerIntervalResetter());
     vm1.invoke(new ColocationLoggerIntervalResetter());
+
     assertTrue("Expected missing colocated region warning on remote. Got message \"" + logMsg + "\"",
         logMsg.toString().matches(PATTERN_FOR_MISSING_CHILD_LOG));
   }
@@ -829,6 +850,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     vm1.invoke(new ExpectedNumLogMessageResetter());
     vm0.invoke(new ColocationLoggerIntervalResetter());
     vm1.invoke(new ColocationLoggerIntervalResetter());
+
     assertTrue("Expected missing colocated region warning on remote. Got message \"" + logMsg + "\"",
         logMsg.toString().matches(PATTERN_FOR_MISSING_CHILD_LOG));
   }
@@ -881,6 +903,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     vm1.invoke(new ExpectedNumLogMessageResetter());
     vm0.invoke(new ColocationLoggerIntervalResetter());
     vm1.invoke(new ColocationLoggerIntervalResetter());
+
     assertTrue("Expected missing colocated region warning on remote. Got message \"" + logMsg + "\"",
         logMsg.toString().matches(PATTERN_FOR_MISSING_CHILD_LOG));
   }
@@ -935,6 +958,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     vm1.invoke(new ExpectedNumLogMessageResetter());
     vm0.invoke(new ColocationLoggerIntervalResetter());
     vm1.invoke(new ColocationLoggerIntervalResetter());
+
     assertTrue("Expected missing colocated region warning on remote. Got message \"" + logMsg + "\"",
         logMsg.toString().matches(PATTERN_FOR_MISSING_CHILD_LOG));
   }
@@ -987,6 +1011,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     vm1.invoke(new ExpectedNumLogMessageResetter());
     vm0.invoke(new ColocationLoggerIntervalResetter());
     vm1.invoke(new ColocationLoggerIntervalResetter());
+
     assertTrue("Expected missing colocated region warning on remote. Got message \"" + logMsg + "\"",
         logMsg.toString().matches(PATTERN_FOR_MISSING_CHILD_LOG));
   }
@@ -1041,7 +1066,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     vm1.invoke(new ExpectedNumLogMessageResetter());
     vm0.invoke(new ColocationLoggerIntervalResetter());
     vm1.invoke(new ColocationLoggerIntervalResetter());
-    System.out.println(logMsg);
+
     assertTrue("Expected missing colocated region warning on remote. Got message \"" + logMsg + "\"",
         logMsg.toString().matches(PATTERN_FOR_MISSING_CHILD_LOG));
   }
@@ -1198,6 +1223,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     async0.get(MAX_WAIT, TimeUnit.MILLISECONDS);
     vm0.invoke(new ColocationLoggerIntervalResetter());
     vm1.invoke(new ColocationLoggerIntervalResetter());
+
     // Expected warning logs only on the child region, because without the child there's nothing known about the remaining hierarchy
     assertTrue("Expected missing colocated region warning on remote. Got message \"" + logMsg + "\"",
         logMsg.toString().matches(PATTERN_FOR_MISSING_CHILD_LOG));
