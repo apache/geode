@@ -2,7 +2,7 @@
 title:  Executing a Query from the Native Client
 ---
 
-C\#/.NET and C++ examples show how to execute a query from the native client.
+C\# .NET and C++ examples show how to execute a query from the native client.
 
 **Note:**
 In all queries that use the example data, it is assumed that the `portfolios` region has `javaobject.Portfolio` objects on the cache server.
@@ -12,7 +12,7 @@ In all queries that use the example data, it is assumed that the `portfolios` re
 3.  Use the `execute` method for the `Query` interface to submit the query string to the cache server. The server remotely evaluates the query string and returns the results to the client.
 4.  You can iterate through the returned objects as part of the query process.
 
-## <a id="security__section_15C6689C363B469B947B177E1DE73208" class="no-quick-link"></a>C\#/.NET Example
+## <a id="security__section_15C6689C363B469B947B177E1DE73208" class="no-quick-link"></a>C\# .NET Example
 
 ``` pre
 Query<Portfolio> qry = qrySvc.NewQuery("SELECT DISTINCT * FROM /portfolios");

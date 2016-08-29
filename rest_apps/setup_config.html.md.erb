@@ -17,21 +17,11 @@ The REST API service for application development can only be started on servers;
 
 You can have multiple REST enabled data nodes in a single distributed system. Each data node should have a separate host name and unique end point. To ensure that the data node is reachable on a machine with multiple NIC addresses, you can use `http-service-bind-address` to bind an address to the REST API service (as well as the other embedded web services such as Pulse.)
 
-You can also configure the Developer REST API service to run over HTTPS by configuring the following Geode properties in `gemfire.properties` or `gfsecurity.properties` or on server startup:
-
--   http-service-ssl-enabled
--   http-service-ssl-require-authentication
--   http-service-ssl-protocols
--   http-service-ssl-ciphers
--   http-service-ssl-keystore
--   http-service-ssl-keystore-password
--   http-service-ssl-keystore-type
--   http-service-ssl-truststore
--   http-service-ssl-truststore-password
-
-See [SSL](../managing/security/ssl_overview.html) for details on configuring these parameters.
-
-The above parameters apply to all HTTP services hosted on the configured server, which can include the following:
+You can also configure the Developer REST API service to run over
+HTTPS by enabling ssl for the `http` component in `gemfire.properties`
+or `gfsecurity.properties` or on server startup:
+See [SSL](../managing/security/ssl_overview.html) for details on configuring SSL parameters.
+These SSL parameters apply to all HTTP services hosted on the configured server, which can include the following:
 
 -   Developer REST API service
 -   Management REST API service (for remote cluster management)

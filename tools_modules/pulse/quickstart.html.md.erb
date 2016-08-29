@@ -357,27 +357,22 @@ You can configure Pulse to use HTTPS in either embedded or non-embedded mode.
 
 In non-embedded mode where you are running Pulse on a standalone Web application server, you must use the Web server's SSL configuration to make the HTTP requests secure.
 
-In embedded mode, the Geode uses an embedded Jetty server to host the Pulse Web application. To make the embedded server use HTTPS, you must configure the following Geode configuration parameters in `gemfire.properties` or `gfsecurity-properties`:
-
--   http-service-ssl-enabled
--   http-service-ssl-require-authentication
--   http-service-ssl-protocols
--   http-service-ssl-ciphers
--   http-service-ssl-keystore
--   http-service-ssl-keystore-password
--   http-service-ssl-keystore-type
--   http-service-ssl-truststore
--   http-service-ssl-truststore-password
-
+In embedded mode, Geode uses an embedded Jetty server to host the
+Pulse Web application. To make the embedded server use HTTPS, you must
+enable the `http` SSL component in
+`gemfire.properties` or `gfsecurity-properties`.
 See [SSL](../../managing/security/ssl_overview.html) for details on configuring these parameters.
 
-The above parameters apply to all HTTP services hosted on the JMX Manager, which includes the following:
+These SSL parameters apply to all HTTP services hosted on the JMX Manager, which includes the following:
 
 -   Developer REST API service
 -   Management REST API service (for remote cluster management)
 -   Pulse monitoring tool
 
-When the above properties are configured, all HTTP services become SSL-enabled and you must configure your client applications accordingly. For SSL-enabled Pulse, you will need to configure your browsers with proper certificates.
+When the `http` SSL component is enabled, all HTTP services become
+SSL-enabled and you must configure your client applications
+accordingly. For SSL-enabled Pulse, you will need to configure your
+browsers with proper certificates.
 
 ## <a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404" class="no-quick-link"></a>Using Pulse Views
 
