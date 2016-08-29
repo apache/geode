@@ -936,7 +936,7 @@ public class JGroupsMessengerJUnitTest {
     messenger.setPublicKey(otherMbrEncrptor.getPublicKeyBytes(), otherMbr);
     messenger.initClusterKey();
     
-    FindCoordinatorRequest gfmsg = new FindCoordinatorRequest(messenger.getMemberID(), new ArrayList<InternalDistributedMember>(2), 1, messenger.getPublickey(messenger.getMemberID()), 1, "");
+    FindCoordinatorRequest gfmsg = new FindCoordinatorRequest(messenger.getMemberID(), new ArrayList<InternalDistributedMember>(2), 1, messenger.getPublicKey(messenger.getMemberID()), 1, "");
     Set<InternalDistributedMember> recipients = new HashSet<>();
     recipients.add(otherMbr);
     gfmsg.setRecipients(recipients);
@@ -967,7 +967,7 @@ public class JGroupsMessengerJUnitTest {
     NetView v = createView(otherMbr);
     
     GMSEncrypt otherMbrEncrptor = new GMSEncrypt(services);
-    otherMbrEncrptor.setPublicKey(messenger.getPublickey(messenger.getMemberID()), messenger.getMemberID());
+    otherMbrEncrptor.setPublicKey(messenger.getPublicKey(messenger.getMemberID()), messenger.getMemberID());
     
     messenger.setPublicKey(otherMbrEncrptor.getPublicKeyBytes(), otherMbr);
     messenger.initClusterKey();
@@ -1037,7 +1037,7 @@ public class JGroupsMessengerJUnitTest {
     NetView v = createView(otherMbr);
     
     GMSEncrypt otherMbrEncrptor = new GMSEncrypt(services);
-    otherMbrEncrptor.setPublicKey(messenger.getPublickey(messenger.getMemberID()), messenger.getMemberID());
+    otherMbrEncrptor.setPublicKey(messenger.getPublicKey(messenger.getMemberID()), messenger.getMemberID());
     
     messenger.setPublicKey(otherMbrEncrptor.getPublicKeyBytes(), otherMbr);
     messenger.initClusterKey();

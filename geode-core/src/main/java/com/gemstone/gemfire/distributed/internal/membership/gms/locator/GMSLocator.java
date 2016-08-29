@@ -30,7 +30,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.gemstone.gemfire.InternalGemFireException;
 
@@ -45,11 +47,11 @@ import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember.InternalDistributedMemberWrapper;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil;
 import com.gemstone.gemfire.distributed.internal.membership.gms.NetLocator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Locator;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.GMSEncrypt;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpServer;
@@ -75,6 +77,7 @@ public class GMSLocator implements Locator, NetLocator {
   private InternalDistributedMember localAddress;
   
   private final Set<InternalDistributedMember> registrants = new HashSet<>();
+  public Map<InternalDistributedMemberWrapper, byte[]> registerMbrVsPK = new ConcurrentHashMap<>();
 
   /**
    * The current membership view, or one recovered from disk.
@@ -91,7 +94,7 @@ public class GMSLocator implements Locator, NetLocator {
    * @param usePreferredCoordinators    true if the membership coordinator should be a Locator
    * @param networkPartitionDetectionEnabled true if network partition detection is enabled
    * @param stats the locator statistics object
-   * @param securityUDPDHAlgo TODO
+   * @param securityUDPDHAlgo DF algorithm 
    */
   public GMSLocator(  InetAddress bindAddress,
                       File stateFile,
@@ -185,7 +188,8 @@ public class GMSLocator implements Locator, NetLocator {
       if(services != null) {
         services.getMessenger().setPublicKey(findRequest.getMyPublicKey(), findRequest.getMemberID());
       } else {
-        GMSEncrypt.registerMember(findRequest.getMyPublicKey(), findRequest.getMemberID());
+        //GMSEncrypt.registerMember(findRequest.getMyPublicKey(), findRequest.getMemberID());
+        registerMbrVsPK.put(new InternalDistributedMemberWrapper(findRequest.getMemberID()), findRequest.getMyPublicKey());
       }
       if (findRequest.getMemberID() != null) {
         InternalDistributedMember coord = null;
@@ -252,9 +256,10 @@ public class GMSLocator implements Locator, NetLocator {
           }
           if (coordPk == null) {
             if(services != null){
-              coordPk = services.getMessenger().getPublickey(coord);
+              coordPk = services.getMessenger().getPublicKey(coord);
             } else {
-              coordPk = GMSEncrypt.getRegisteredPublicKey(coord);
+              //coordPk = GMSEncrypt.getRegisteredPublicKey(coord);
+              coordPk = registerMbrVsPK.get(new InternalDistributedMemberWrapper(coord));
             }
           }
           response = new FindCoordinatorResponse(coord, localAddress,
@@ -308,10 +313,14 @@ public class GMSLocator implements Locator, NetLocator {
     stats.endLocatorResponse(startTime);
   }
 
+  public byte[] getPublicKey(InternalDistributedMember mbr) {
+    return registerMbrVsPK.get(new InternalDistributedMemberWrapper(mbr));
+  }
+  
   @Override
   public void shutDown() {
     // nothing to do for GMSLocator
-    GMSEncrypt.clear();
+    registerMbrVsPK.clear();
   }
   
   

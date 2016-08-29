@@ -87,15 +87,41 @@ public interface Messenger extends Service {
    */
   void waitForMessageState(InternalDistributedMember member, Map state) throws InterruptedException;
   
-  byte[] getPublickey(InternalDistributedMember mbr);
+  /**
+   * Get the public key of member. 
+   * @param mbr
+   * @return
+   */
+  byte[] getPublicKey(InternalDistributedMember mbr);
+  
+  /**
+   * Set public key of member.
+   * @param publickey
+   * @param mbr
+   */
   
   void setPublicKey(byte[] publickey, InternalDistributedMember mbr);
   
+  /**
+   * Set cluster key in local member.Memebr calls when it gets cluster key in join response
+   * @param clusterSecretKey
+   */
   void setClusterSecretKey(byte[] clusterSecretKey);
   
+  /** 
+   * To retrieve the cluster key. This needs to send cluster key to new memebr.
+   * @return
+   */
   byte[] getClusterSecretKey();
   
+  /**
+   * To set requestId in request. This requestId comes back in response to match the request.
+   * @return
+   */
   int getRequestId();
   
+  /**
+   * Initialize the cluster key, this happens when member becomes coordinator.
+   */
   void initClusterKey();
 }

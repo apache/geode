@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 
-import com.gemstone.gemfire.*;
 import static com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil.replaceStrings;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_REQUEST;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_RESPONSE;
@@ -26,7 +25,6 @@ import static com.gemstone.gemfire.internal.DataSerializableFixedID.FIND_COORDIN
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -39,15 +37,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.jgroups.Address;
@@ -103,30 +101,6 @@ import com.gemstone.gemfire.internal.tcp.MemberShunnedException;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
-import org.apache.logging.log4j.Logger;
-import org.jgroups.*;
-import org.jgroups.Message.Flag;
-import org.jgroups.Message.TransientFlag;
-import org.jgroups.conf.ClassConfigurator;
-import org.jgroups.protocols.UDP;
-import org.jgroups.protocols.pbcast.NAKACK2;
-import org.jgroups.stack.IpAddress;
-import org.jgroups.util.Digest;
-import org.jgroups.util.UUID;
-
-import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.UnknownHostException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.*;
-
-import static com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil.replaceStrings;
-import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_REQUEST;
-import static com.gemstone.gemfire.internal.DataSerializableFixedID.JOIN_RESPONSE;
 
 @SuppressWarnings("StatementWithEmptyBody")
 public class JGroupsMessenger implements Messenger {
@@ -747,8 +721,7 @@ public class JGroupsMessenger implements Messenger {
       Int2ObjectOpenHashMap<Message> messages = new Int2ObjectOpenHashMap<>();
       long startSer = theStats.startMsgSerialization();
       boolean firstMessage = true;
-      for (Iterator<GMSMember> it=calculatedMembers.iterator(); it.hasNext(); ) {
-        GMSMember mbr = it.next();
+      for (GMSMember mbr : calculatedMembers ) {
         short version = mbr.getVersionOrdinal();
         if ( !messages.containsKey(version) ) {
           Message jmsg = createJGMessage(msg, local, version);
@@ -765,7 +738,7 @@ public class JGroupsMessenger implements Messenger {
       for (GMSMember mbr: calculatedMembers) {
         JGAddress to = new JGAddress(mbr);
         short version = mbr.getVersionOrdinal();
-        Message jmsg = (Message)messages.get(version);
+        Message jmsg = messages.get(version);
         Exception problem = null;
         try {
           Message tmp = (i < (calculatedLen-1)) ? jmsg.copy(true) : jmsg;
@@ -841,7 +814,6 @@ public class JGroupsMessenger implements Messenger {
     setMessageFlags(gfmsg, msg);
     try {
       long start = services.getStatistics().startMsgSerialization();
-      byte[] messageBytes = null;
       HeapDataOutputStream out_stream = new HeapDataOutputStream(Version.fromOrdinalOrCurrent(version));
       Version.CURRENT.writeOrdinal(out_stream, true);
       if(encrypt != null) {
@@ -940,9 +912,8 @@ public class JGroupsMessenger implements Messenger {
   }
   
   byte[] serializeMessage(DistributionMessage gfmsg, HeapDataOutputStream out_stream) throws IOException {
-    
-    //DataSerializer.writeObject(this.localAddress.getShallowNetMember(), out_stream);
-    GMSMember.writeShallowNetMember((GMSMember)this.localAddress.getNetMember(), out_stream);
+    GMSMember m = (GMSMember)this.localAddress.getNetMember();
+    m.writeEssentialData(out_stream);
     DataSerializer.writeObject(gfmsg, out_stream);
     
     return out_stream.toByteArray();
@@ -1054,8 +1025,6 @@ public class JGroupsMessenger implements Messenger {
     int requestId = dis.readInt();
     long start = services.getStatistics().startUDPMsgDecryption();
     try {
-      // TODO seems like we don't need this, just set bit that PK is appended
-
       logger.debug("readEncryptedMessage Reading Request id " + dfsid + " and requestid is " + requestId + " myid " + this.localAddress);
       InternalDistributedMember pkMbr = null;
       boolean readPK = false;
@@ -1104,13 +1073,6 @@ public class JGroupsMessenger implements Messenger {
         DistributionMessage result = deserializeMessage(in, ordinal);
         
         if (pk != null) {
-          
-          /*InternalDistributedMember mbr = null;
-          if (result instanceof JoinRequestMessage) {
-            mbr = ((JoinRequestMessage)result).getMemberID();
-          } else {
-            mbr = ((FindCoordinatorRequest)result).getMemberID();
-          }*/
           logger.info("Setting public key for " + result.getSender() +  " len " + pk.length);
           setPublicKey(pk, result.getSender());
         }
@@ -1126,8 +1088,8 @@ public class JGroupsMessenger implements Messenger {
   }
   
   DistributionMessage deserializeMessage(DataInputStream in, short ordinal) throws ClassNotFoundException, IOException {
-    GMSMember m = GMSMember.readShallowNetMember(in);
-
+    GMSMember m = new GMSMember();
+    m.readEssentialData(in);
     DistributionMessage result = (DistributionMessage) DataSerializer.readObject(in);
 
     setSender(result, m, ordinal);
@@ -1352,7 +1314,7 @@ public class JGroupsMessenger implements Messenger {
   }
 
   @Override
-  public byte[] getPublickey(InternalDistributedMember mbr) {
+  public byte[] getPublicKey(InternalDistributedMember mbr) {
     if (encrypt != null) {
       return encrypt.getPublicKey(mbr);
     }
@@ -1362,7 +1324,7 @@ public class JGroupsMessenger implements Messenger {
   @Override
   public void setPublicKey(byte[] publickey, InternalDistributedMember mbr) {
     if (encrypt != null) {
-      logger.debug("Setting pK for member " + mbr);
+      logger.debug("Setting PK for member " + mbr);
       encrypt.setPublicKey(publickey, mbr);
     }
   }
@@ -1383,11 +1345,10 @@ public class JGroupsMessenger implements Messenger {
     return null;
   }
 
-  private Random randomId = new Random();
+  private AtomicInteger requestId = new AtomicInteger((new Random().nextInt()));
   private HashMap<Integer, InternalDistributedMember> requestIdVsRecipients = new HashMap<>();
   
   InternalDistributedMember getRequestedMember(int requestId) {
-    //TODO: what if we don't get response, need to remove this otherwise it will be leak
     return requestIdVsRecipients.remove(requestId);
   }
   
@@ -1397,7 +1358,7 @@ public class JGroupsMessenger implements Messenger {
   
   @Override
   public int getRequestId() {
-    return randomId.nextInt();
+    return requestId.incrementAndGet();
   }
 
   @Override

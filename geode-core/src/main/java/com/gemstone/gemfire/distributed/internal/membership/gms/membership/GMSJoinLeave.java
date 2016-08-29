@@ -847,7 +847,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     pendingRemovals.removeAll(view.getCrashedMembers());
     viewReplyProcessor.initialize(id, responders);
     viewReplyProcessor.processPendingRequests(pendingLeaves, pendingRemovals);
-    addPublickeysToView(view);
+    addPublicKeysToView(view);
     services.getMessenger().send(msg);
 
     // only wait for responses during preparation
@@ -875,8 +875,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     return true;
   }
 
-  private void addPublickeysToView(NetView view) {
-    //TODO: is this check is correct
+  private void addPublicKeysToView(NetView view) {
     String sDHAlgo = services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo();
     if (sDHAlgo != null && !sDHAlgo.isEmpty()) {
       List<InternalDistributedMember> mbrs = view.getMembers();
@@ -884,7 +883,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
       while (itr.hasNext()) {
         InternalDistributedMember mbr = itr.next();
-        byte[] pk = services.getMessenger().getPublickey(mbr);
+        byte[] pk = services.getMessenger().getPublicKey(mbr);
         view.setPublicKey(mbr, pk);
       }
     }
@@ -893,7 +892,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     NetView view = m.getView();
     
+    //If our current view doesn't contaion sender then we wanrt to ignore that view.
     if(currentView != null && !currentView.contains(m.getSender())) {
+      //but if preparedView contains sender then we don't want to ignore that view.
+      //this may happen when we locator re-join and it take over coordinator's responsibility.
       if(this.preparedView == null || !this.preparedView.contains(m.getSender())) 
       { 
         logger.info("Ignoring the view {} from member {}, which is not in my current view {} ", view, m.getSender(), currentView);
@@ -994,7 +996,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     String dhalgo = services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo();
     FindCoordinatorRequest request = new FindCoordinatorRequest(this.localAddress, state.alreadyTried, state.viewId, 
-        services.getMessenger().getPublickey(localAddress), services.getMessenger().getRequestId(), dhalgo);
+        services.getMessenger().getPublicKey(localAddress), services.getMessenger().getRequestId(), dhalgo);
     Set<InternalDistributedMember> possibleCoordinators = new HashSet<InternalDistributedMember>();
     Set<InternalDistributedMember> coordinatorsWithView = new HashSet<InternalDistributedMember>();
 
@@ -1128,17 +1130,19 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       
       String dhalgo = services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo(); 
       if (!dhalgo.isEmpty()) {
+        //Here we are sending message one-by-one to all recipients as we don't have cluster secret key yet.
+        //Usually this happens when locator re-joins the cluster and it has saved view.
         for (InternalDistributedMember mbr : v.getMembers()) {
           Set<InternalDistributedMember> r = new HashSet<>();
           r.add(mbr);
-          FindCoordinatorRequest req = new FindCoordinatorRequest(localAddress, state.alreadyTried, state.viewId, services.getMessenger().getPublickey(
+          FindCoordinatorRequest req = new FindCoordinatorRequest(localAddress, state.alreadyTried, state.viewId, services.getMessenger().getPublicKey(
               localAddress), services.getMessenger().getRequestId(), dhalgo);
           req.setRecipients(r);
 
           services.getMessenger().send(req, v);
         }
       } else {
-        FindCoordinatorRequest req = new FindCoordinatorRequest(localAddress, state.alreadyTried, state.viewId, services.getMessenger().getPublickey(
+        FindCoordinatorRequest req = new FindCoordinatorRequest(localAddress, state.alreadyTried, state.viewId, services.getMessenger().getPublicKey(
             localAddress), services.getMessenger().getRequestId(), dhalgo);
         req.setRecipients(v.getMembers());
 
@@ -1229,10 +1233,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     if (this.isJoined) {
       NetView v = currentView;
       resp = new FindCoordinatorResponse(v.getCoordinator(), localAddress, 
-          services.getMessenger().getPublickey(v.getCoordinator()), req.getRequestId());
+          services.getMessenger().getPublicKey(v.getCoordinator()), req.getRequestId());
     } else {
       resp = new FindCoordinatorResponse(localAddress, localAddress, 
-          services.getMessenger().getPublickey(localAddress), req.getRequestId());
+          services.getMessenger().getPublicKey(localAddress), req.getRequestId());
     }
     resp.setRecipient(req.getMemberID());
     services.getMessenger().send(resp);
@@ -2074,13 +2078,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         viewRequests.clear();
       }
 
-      
+      NetView v = currentView;
       for (DistributionMessage msg : requests) {
         switch (msg.getDSFID()) {
-        case JOIN_REQUEST:
-      
-          NetView v = currentView;
-          logger.info("Informing to pending join requests {} myid {} coord {}", msg, localAddress, v.getCoordinator());
+        case JOIN_REQUEST:               
+          logger.debug("Informing to pending join requests {} myid {} coord {}", msg, localAddress, v.getCoordinator());
           if (!v.getCoordinator().equals(localAddress)) {
             joinResponseSent = true;
             //lets inform that coordinator has been changed
@@ -2226,9 +2228,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         return;
       }
 
-      //we already sent whrn we got join request
-      //sendJoinResponses(newView, joinReqs);
-
       // send removal messages before installing the view so we stop
       // getting messages from members that have been kicked out
       sendRemoveMessages(removalReqs, removalReasons, oldIDs);
@@ -2355,8 +2354,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
       // we also send a join response so that information like the multicast message digest
       // can be transmitted to the new members w/o including it in the view message
-      //we already sent whrn we got join request
-      //sendJoinResponses(newView, joinReqs);
 
       if (markViewCreatorForShutdown && getViewCreator() != null) {
         shutdown = true;

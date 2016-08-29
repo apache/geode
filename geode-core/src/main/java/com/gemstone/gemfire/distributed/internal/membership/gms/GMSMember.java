@@ -407,7 +407,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   
   @Override
   public void toData(DataOutput out) throws IOException {
-    writeShallowData(out);
+    writeEssentialData(out);
     out.writeInt(directPort);
     out.writeByte(memberWeight);
     out.writeByte(vmKind);
@@ -417,7 +417,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     DataSerializer.writeStringArray(groups, out);
 }
   
-  public void writeShallowData(DataOutput out) throws IOException {
+  public void writeEssentialData(DataOutput out) throws IOException {
     Version.writeOrdinal(out, this.versionOrdinal, true);
     
     int flags = 0;
@@ -435,7 +435,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    readShallowData(in);
+    readEssentialData(in);
     this.directPort = in.readInt();
     this.memberWeight = in.readByte();
     this.vmKind = in.readByte();
@@ -445,7 +445,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     this.groups = DataSerializer.readStringArray(in);
   } 
   
-  public void readShallowData(DataInput in) throws IOException, ClassNotFoundException {
+  public void readEssentialData(DataInput in) throws IOException, ClassNotFoundException {
     this.versionOrdinal = Version.readOrdinal(in);
     
     int flags = in.readShort();
@@ -472,16 +472,5 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     this.uuidMSBs = in.readLong();
     this.uuidLSBs = in.readLong();
     memberWeight = (byte)(in.readByte() & 0xFF);
-  }
-  
-  public static void writeShallowNetMember(GMSMember mbr, DataOutput out) throws IOException {
-    mbr.writeShallowData(out);
-  }
-  
-  public static GMSMember readShallowNetMember(DataInput in) throws ClassNotFoundException, IOException {
-    GMSMember mbr = new GMSMember();
-    mbr.readShallowData(in);
-    
-    return mbr;
   }
 }

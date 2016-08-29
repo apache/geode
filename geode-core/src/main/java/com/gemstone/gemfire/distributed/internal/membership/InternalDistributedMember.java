@@ -1293,4 +1293,32 @@ public class InternalDistributedMember
     
     return size;
   }
+  
+  public static class InternalDistributedMemberWrapper {
+    InternalDistributedMember mbr;
+    
+    public InternalDistributedMemberWrapper(InternalDistributedMember m) {
+      this.mbr = m;
+    }
+
+    public InternalDistributedMember getMbr() {
+      return mbr;
+    }
+
+    @Override
+    public int hashCode() {
+      return mbr.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      InternalDistributedMember other = ((InternalDistributedMemberWrapper)obj).mbr;
+      return mbr.compareTo(other, false, false) == 0;
+    }
+
+    @Override
+    public String toString() {
+      return "InternalDistrubtedMemberWrapper [mbr=" + mbr + "]";
+    }        
+  }
 }

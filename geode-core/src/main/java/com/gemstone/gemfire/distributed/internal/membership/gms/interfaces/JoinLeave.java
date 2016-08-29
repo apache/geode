@@ -20,7 +20,6 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
-import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
 
 public interface JoinLeave extends Service {
 
@@ -53,7 +52,6 @@ public interface JoinLeave extends Service {
   
   /**
    * Get "InternalDistributedMember" from current view or prepared view.
-   * 
    */
   InternalDistributedMember getMemberID(NetMember m);
   
