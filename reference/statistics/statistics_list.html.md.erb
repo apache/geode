@@ -1016,9 +1016,11 @@ These statistics quantify the use of off-heap memory. The primary statistics are
 
 ## <a id="section_923B28F01BC3416786D3AFBD87F22A5E" class="no-quick-link"></a>Operating System Statistics - Linux
 
+Operating system statistics are available only for Linux operating systems.
+
 ## Linux Process Performance (LinuxProcessStats)
 
-Operating system statistics on the member’s process. These can be used to determine the member’s CPU, memory, and disk usage. Operating system statistics are not available in pure Java mode, where Geode runs without the use of the Geode native library. These are the equivalent of `SolarisProcessStats` when we're running on Linux. The primary statistics are:
+Operating system statistics on the member’s process. The primary statistics are:
 
 | Statistic   | Description                                         |
 |-------------|-----------------------------------------------------|
@@ -1027,7 +1029,8 @@ Operating system statistics on the member’s process. These can be used to dete
 
 ## Linux Operating System (LinuxSystemStats)
 
-Operating system statistics on the member’s machine. These can be used to determine total cpu, memory, and disk usage on the machine. Operating system statistics are not available in pure Java mode. These are the equivalent of SolarisSystemStats when running on Linux. The primary statistics are:
+Operating system statistics on the member’s machine. These can be used to determine total cpu,
+memory, and disk usage on the machine. The primary statistics are:
 
 | Statistic         | Description                                                                                                                                                                                                                                                                                                                               |
 |-------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
