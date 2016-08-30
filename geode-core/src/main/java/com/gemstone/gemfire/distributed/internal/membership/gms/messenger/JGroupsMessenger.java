@@ -88,7 +88,7 @@ import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedDataInputStream;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
@@ -97,7 +97,6 @@ import com.gemstone.gemfire.internal.cache.DistributedCacheOperation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.tcp.MemberShunnedException;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
