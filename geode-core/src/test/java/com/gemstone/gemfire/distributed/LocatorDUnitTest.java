@@ -1556,6 +1556,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     dsProps.setProperty(LOCATORS, locators);
     dsProps.setProperty(MCAST_PORT, "0");
     dsProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    addDSProps(dsProps);
 
     vm0.invoke("start Locator1", () -> startLocator(port1, dsProps));
     try {
