@@ -79,7 +79,7 @@ public class SocketCreatorFactory {
         return createSSLSocketCreator(sslComponent, sslConfig);
       }
     }
-    return createSSLSocketCreator(SecurableComponent.NONE, sslConfig);
+    return createSSLSocketCreator(sslComponent, sslConfig);
   }
 
 
@@ -98,10 +98,10 @@ public class SocketCreatorFactory {
       socketCreator = new SocketCreator(sslConfig);
       registerSocketCreatorForComponent(sslEnableComponent, socketCreator);
     } else {
-      socketCreator = getRegisteredSocketCreatorForComponent(SecurableComponent.NONE);
+      socketCreator = getRegisteredSocketCreatorForComponent(sslEnableComponent);
       if (socketCreator == null) {
         socketCreator = new SocketCreator(sslConfig);
-        registerSocketCreatorForComponent(SecurableComponent.NONE, socketCreator);
+        registerSocketCreatorForComponent(sslEnableComponent, socketCreator);
       }
     }
     return socketCreator;

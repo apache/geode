@@ -21,6 +21,7 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import com.gemstone.gemfire.cache.client.internal.locator.*;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.tcpserver.*;
 import com.gemstone.gemfire.internal.DistributionLocator;
@@ -249,7 +250,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
     final int timeout = Integer.MAX_VALUE; // 2 minutes
 
     try {
-      TcpClient client = new TcpClient();
+      TcpClient client = new TcpClient(new DistributionConfigImpl(new Properties()));
       return (LocatorStatusResponse) client.requestToServer(bindAddress, port,
         new LocatorStatusRequest(), timeout, true);
     }

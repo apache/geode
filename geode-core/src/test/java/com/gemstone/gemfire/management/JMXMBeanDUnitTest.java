@@ -176,9 +176,6 @@ public class JMXMBeanDUnitTest extends DistributedTestCase {
       System.setProperty("javax.net.ssl.trustStore", useMulti ? getMultiKeyTruststore() : getSimpleSingleKeyKeystore());
       System.setProperty("javax.net.ssl.trustStoreType", "JKS");
       System.setProperty("javax.net.ssl.trustStorePassword", "password");
-//      System.setProperty("com.sun.management.jmxremote.ssl.need.client.auth", "true");
-//      System.setProperty("com.sun.management.jmxremote.ssl", "true");
-//      System.setProperty("com.sun.management.jmxremote.registry.ssl", "true");
       environment.put("com.sun.jndi.rmi.factory.socket", new SslRMIClientSocketFactory());
     }
 
@@ -225,12 +222,6 @@ public class JMXMBeanDUnitTest extends DistributedTestCase {
                              .build();
     locatorLauncher.start();
 
-  }
-
-  private Properties configureServerProperties(final Properties properties, final String locators) {
-    configureCommonProperties(properties);
-    properties.setProperty(LOCATORS, locators);
-    return properties;
   }
 
   private Properties configureJMXSSLProperties(final Properties properties, final boolean isLegacy, final boolean useMultiKey) {
@@ -298,21 +289,5 @@ public class JMXMBeanDUnitTest extends DistributedTestCase {
     properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
     return properties;
-  }
-
-  private static class GemFireRMIClientSocketFactory implements RMIClientSocketFactory, Serializable {
-
-    private static final long serialVersionUID = -7604285019188827617L;
-
-    private/* final hack to prevent serialization */ transient SocketCreator sc;
-
-    public GemFireRMIClientSocketFactory(SocketCreator sc) {
-      this.sc = sc;
-    }
-
-    @Override
-    public Socket createSocket(String host, int port) throws IOException {
-      return this.sc.connectForClient(host, port, 0/* no timeout */);
-    }
   }
 }

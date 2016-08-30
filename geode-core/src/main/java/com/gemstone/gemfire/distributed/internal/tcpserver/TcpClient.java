@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.UnsupportedVersionException;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.VersionedDataInputStream;
 import com.gemstone.gemfire.internal.VersionedDataOutputStream;
@@ -55,6 +56,10 @@ public class TcpClient {
   private static Map<InetSocketAddress, Short> serverVersions = new HashMap<InetSocketAddress, Short>();
 
   private final SocketCreator socketCreator;
+
+  public TcpClient(DistributionConfig distributionConfig) {
+    this(SocketCreatorFactory.setDistributionConfig(distributionConfig).getSocketCreatorForComponent(SecurableComponent.LOCATOR));
+  }
 
   /**
    * Constructs a new TcpClient using the default (Locator) SocketCreator.
