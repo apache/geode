@@ -20,6 +20,44 @@ All client operations that return a result (like `get` and `query`) and all noti
 
 ## Enable Authorization with Property Definitions
 
+The callbacks that implement the authorization of an application
+are specified with the `security-manager` property.
+When this property is defined, authorization is enabled.
+The definition of the `security-manager` property is the
+path to the implementation of the `SecurityManager` interface.
+For example:
+
+``` pre
+security-manager = com.example.security.MySecurityManager
+```
+
+All components of the system invoke the same callback.
+Authorization may be enabled on a component basis with
+the definition of the `security-enabled-components` property.
+Its definition restricts which system components invoke
+the authorization callback.
+
+- `all`.  All components invoke the `authorize` callback.
+- `server`.
+- `cluster`.
+- `jmx`. Invokes the `authorize` callback for all components
+that ?
+- `http`.
+- `gateway`.
+
+The `security-enabled-components` property defines 
+a comma-separated list of components that will
+invoke the `authorize` callback.
+For example,
+
+``` pre
+security-enabled-components = server, cluster jmx
+```
+``` pre
+security-post-processor = com.example.security.MySecurityPostProcessing
+```
+
+
 ## Resource Permissions
 
 ## Implement SecurityManager Interface
