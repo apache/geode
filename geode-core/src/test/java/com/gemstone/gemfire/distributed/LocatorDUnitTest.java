@@ -1568,7 +1568,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
             Properties props = new Properties();
             props.setProperty(MCAST_PORT, "0");
             props.setProperty(LOCATORS, locators);
-            addDSProps(properties);
+            addDSProps(props);
             DistributedSystem.connect(props);
           }
         };
@@ -1907,7 +1907,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         props.setProperty(MCAST_TTL, "0");
         props.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
-        addDSProps(properties);
+        addDSProps(props);
         DistributedSystem.connect(props);
       }
     };
