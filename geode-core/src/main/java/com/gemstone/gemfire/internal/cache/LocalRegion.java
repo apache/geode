@@ -6091,7 +6091,8 @@ public class LocalRegion extends AbstractRegion
       boolean clearConflict)
   {
     final boolean isNewKey = event.getOperation().isCreate();
-    final boolean invokeCallbacks = !entry.isTombstone(); // put() is creating a tombstone
+    //Invoke callbacks only if we are not creating a tombstone
+    final boolean invokeCallbacks = event.basicGetNewValue() != Token.TOMBSTONE;
 
     if (isNewKey) {
       updateStatsForCreate();
