@@ -121,9 +121,9 @@ public class GMSMemberFactory implements MemberServices {
       File stateFile,
       String locatorString,
       boolean usePreferredCoordinators,
-      boolean networkPartitionDetectionEnabled, LocatorStats stats) {
+      boolean networkPartitionDetectionEnabled, LocatorStats stats, String securityUDPDHAlgo) {
     
-    return new GMSLocator(bindAddress, stateFile, locatorString, usePreferredCoordinators, networkPartitionDetectionEnabled, stats);
+    return new GMSLocator(bindAddress, stateFile, locatorString, usePreferredCoordinators, networkPartitionDetectionEnabled, stats, securityUDPDHAlgo);
   }
 
 }

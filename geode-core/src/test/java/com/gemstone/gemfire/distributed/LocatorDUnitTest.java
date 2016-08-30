@@ -79,7 +79,7 @@ import com.gemstone.gemfire.util.test.TestUtil;
 @Category(DistributedTest.class)
 public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
-  private static volatile InternalDistributedSystem system = null;
+  static volatile InternalDistributedSystem system = null;
 
   static TestHook hook;
 
@@ -94,7 +94,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   private static final int WAIT2_MS_DEFAULT = 5000; // 2000 -- see bug 36470
   private static final int WAIT2_MS = Integer.getInteger(WAIT2_MS_NAME, WAIT2_MS_DEFAULT).intValue();
 
-  private int port1;
+  protected int port1;
   private int port2;
 
   @Override
@@ -131,6 +131,11 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
+  //for child classes
+  protected void addDSProps(Properties p) {
+
+  }
+
   ////////  Test Methods
 
   /**
@@ -161,6 +166,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(SECURITY_PEER_AUTHENTICATOR, "com.gemstone.gemfire.distributed.MyAuthenticator.create");
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     properties.put(USE_CLUSTER_CONFIGURATION, "false");
+    addDSProps(properties);
     system = (InternalDistributedSystem) DistributedSystem.connect(properties);
     InternalDistributedMember mbr = system.getDistributedMember();
     assertEquals("expected the VM to have NORMAL vmKind", DistributionManager.NORMAL_DM_TYPE, system.getDistributedMember().getVmKind());
@@ -292,7 +298,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-
+    addDSProps(properties);
     try {
       loc2.invoke("startLocator2", () -> startLocatorWithPortAndProperties(port2, properties));
       loc1.invoke("startLocator1", () -> startLocatorWithPortAndProperties(port1, properties));
@@ -645,6 +651,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
     properties.put(DISABLE_AUTO_RECONNECT, "true");
 
+    addDSProps(properties);
     File logFile = new File("");
     if (logFile.exists()) {
       logFile.delete();
@@ -760,6 +767,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     //    properties.put("log-level", "fine");
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
 
+    addDSProps(properties);
     try {
       final String uname = getUniqueName();
       File logFile = new File("");
@@ -886,6 +894,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
 
+    addDSProps(properties);
     SerializableRunnable stopLocator = getStopLocatorRunnable();
 
     try {
@@ -1023,6 +1032,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
 
+    addDSProps(properties);
     SerializableRunnable stopLocator = getStopLocatorRunnable();
 
     try {
@@ -1151,6 +1161,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
 
+    addDSProps(properties);
     SerializableRunnable disconnect = new SerializableRunnable("Disconnect from " + locators) {
       public void run() {
         DistributedSystem sys = InternalDistributedSystem.getAnyInstance();
@@ -1253,6 +1264,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, locators);
 
+    addDSProps(props);
     final String expected = "java.net.ConnectException";
     final String addExpected = "<ExpectedException action=add>" + expected + "</ExpectedException>";
     final String removeExpected = "<ExpectedException action=remove>" + expected + "</ExpectedException>";
@@ -1321,6 +1333,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           locProps.setProperty(MEMBER_TIMEOUT, "1000");
           locProps.put(ENABLE_CLUSTER_CONFIGURATION, "false");
 
+          addDSProps(locProps);
           Locator.startLocatorAndDS(port, logFile, locProps);
         } catch (IOException ex) {
           com.gemstone.gemfire.test.dunit.Assert.fail("While starting locator on port " + port, ex);
@@ -1329,16 +1342,18 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     });
     try {
 
-      SerializableRunnable connect = new SerializableRunnable("Connect to " + locators) {
-        public void run() {
-          //System.setProperty("p2p.joinTimeout", "5000");
-          Properties props = new Properties();
-          props.setProperty(MCAST_PORT, "0");
-          props.setProperty(LOCATORS, locators);
-          props.setProperty(MEMBER_TIMEOUT, "1000");
-          DistributedSystem.connect(props);
-        }
-      };
+      SerializableRunnable connect =
+          new SerializableRunnable("Connect to " + locators) {
+            public void run() {
+              //System.setProperty("p2p.joinTimeout", "5000");
+              Properties props = new Properties();
+              props.setProperty(MCAST_PORT, "0");
+              props.setProperty(LOCATORS, locators);
+              props.setProperty(MEMBER_TIMEOUT, "1000");
+              addDSProps(props);
+              DistributedSystem.connect(props);
+            }
+          };
       vm1.invoke(connect);
       vm2.invoke(connect);
 
@@ -1347,6 +1362,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       props.setProperty(LOCATORS, locators);
       props.setProperty(MEMBER_TIMEOUT, "1000");
 
+      addDSProps(props);
       system = (InternalDistributedSystem) DistributedSystem.connect(props);
 
       final DistributedMember coord = MembershipManagerHelper.getCoordinator(system);
@@ -1412,13 +1428,15 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       props.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
       props.put(ENABLE_CLUSTER_CONFIGURATION, "false");
 
-      SerializableRunnable connect = new SerializableRunnable("Connect to " + locators) {
-        public void run() {
-          //System.setProperty("p2p.joinTimeout", "5000");
-          DistributedSystem sys = getSystem(props);
-          sys.getLogWriter().info(addExpected);
-        }
-      };
+      addDSProps(props);
+      SerializableRunnable connect =
+          new SerializableRunnable("Connect to " + locators) {
+            public void run() {
+              //System.setProperty("p2p.joinTimeout", "5000");
+              DistributedSystem sys = getSystem(props);
+              sys.getLogWriter().info(addExpected);
+            }
+          };
       vm1.invoke(connect);
       vm2.invoke(connect);
 
@@ -1550,6 +1568,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
             Properties props = new Properties();
             props.setProperty(MCAST_PORT, "0");
             props.setProperty(LOCATORS, locators);
+            addDSProps(properties);
             DistributedSystem.connect(props);
           }
         };
@@ -1560,6 +1579,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         props.setProperty(MCAST_PORT, "0");
         props.setProperty(LOCATORS, locators);
 
+        addDSProps(props);
         system = (InternalDistributedSystem) DistributedSystem.connect(props);
 
         WaitCriterion ev = new WaitCriterion() {
@@ -1595,7 +1615,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private SerializableRunnable getDisconnectRunnable(final String locators) {
+  SerializableRunnable getDisconnectRunnable(final String locators) {
     return new SerializableRunnable("Disconnect from " + locators) {
       public void run() {
         DistributedSystem sys = InternalDistributedSystem.getAnyInstance();
@@ -1606,6 +1626,13 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     };
   }
 
+  public void testLoop() throws Exception {
+    for(int i=0; i < 200; i++) {
+      testMultipleLocatorsRestartingAtSameTime();
+      tearDown();
+      setUp();
+    }
+  }
   /**
    * Tests starting multiple locators at the same time and ensuring that the locators
    * end up only have 1 master.
@@ -1636,6 +1663,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     dsProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     dsProps.setProperty(MCAST_PORT, "0");
 
+    addDSProps(dsProps);
     startLocatorSync(vm0, new Object[] { port1, dsProps });
     startLocatorSync(vm1, new Object[] { port2, dsProps });
     startLocatorSync(vm2, new Object[] { port3, dsProps });
@@ -1845,6 +1873,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           props.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
           props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
 
+          addDSProps(props);
           Locator.startLocatorAndDS(port1, logFile, null, props);
         } catch (IOException ex) {
           com.gemstone.gemfire.test.dunit.Assert.fail("While starting locator on port " + port1, ex);
@@ -1862,6 +1891,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           props.setProperty(MCAST_TTL, "0");
           props.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
           props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+          addDSProps(props);
           Locator.startLocatorAndDS(port2, logFile, null, props);
         } catch (IOException ex) {
           com.gemstone.gemfire.test.dunit.Assert.fail("While starting locator on port " + port2, ex);
@@ -1877,6 +1907,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         props.setProperty(MCAST_TTL, "0");
         props.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
+        addDSProps(properties);
         DistributedSystem.connect(props);
       }
     };
@@ -1891,6 +1922,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       props.setProperty(MCAST_TTL, "0");
       props.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
 
+      addDSProps(props);
       system = (InternalDistributedSystem) DistributedSystem.connect(props);
       WaitCriterion ev = new WaitCriterion() {
         public boolean done() {
@@ -2019,6 +2051,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     p.setProperty(LOCATORS, Host.getHost(0).getHostName() + "[" + port1 + "]");
     p.setProperty(MCAST_PORT, "0");
     p.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    addDSProps(p);
     if (stateFile.exists()) {
       stateFile.delete();
     }
@@ -2079,7 +2112,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     return MembershipManagerHelper.getLeadMember(sys);
   }
 
-  private SerializableRunnable getStopLocatorRunnable() {
+  SerializableRunnable getStopLocatorRunnable() {
     return new SerializableRunnable("stop locator") {
       public void run() {
         MembershipManagerHelper.inhibitForcedDisconnectLogging(false);
@@ -2102,6 +2135,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           Properties locProps = new Properties();
           locProps.put(MCAST_PORT, "0");
           locProps.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+          addDSProps(locProps);
           Locator.startLocatorAndDS(port, logFile, locProps);
         } catch (IOException ex) {
           com.gemstone.gemfire.test.dunit.Assert.fail("While starting locator on port " + port, ex);

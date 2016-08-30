@@ -30,20 +30,25 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   private InternalDistributedMember memberID;
   private Object credentials;
   private int failureDetectionPort = -1;
-  
+  private int requestId;
+    
   public JoinRequestMessage(InternalDistributedMember coord,
-      InternalDistributedMember id, Object credentials, int fdPort) {
+                            InternalDistributedMember id, Object credentials, int fdPort, int requestId) {
     super();
     setRecipient(coord);
     this.memberID = id;
     this.credentials = credentials;
     this.failureDetectionPort = fdPort;
+    this.requestId = requestId;
   }
-  
   public JoinRequestMessage() {
     // no-arg constructor for serialization
   }
 
+  public int getRequestId() {
+    return requestId;
+  }
+  
   @Override
   public int getDSFID() {
     return JOIN_REQUEST;
@@ -61,7 +66,7 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   public Object getCredentials() {
     return credentials;
   }
-  
+
   @Override
   public String toString() {
     return getShortClassName() + "(" + memberID + (credentials==null? ")" : "; with credentials)") + " failureDetectionPort:" + failureDetectionPort;
@@ -80,6 +85,7 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
     // preserve the multicast setting so the receiver can tell
     // if this is a mcast join request
     out.writeBoolean(getMulticast());
+    out.writeInt(requestId);
   }
 
   @Override
@@ -88,10 +94,36 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
     credentials = DataSerializer.readObject(in);
     failureDetectionPort = DataSerializer.readPrimitiveInt(in);
     setMulticast(in.readBoolean());
+    requestId = in.readInt();
   }
 
   public int getFailureDetectionPort() {
     return failureDetectionPort;
   }
-
+  
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    JoinRequestMessage other = (JoinRequestMessage) obj;
+    if (credentials == null) {
+      if (other.credentials != null)
+        return false;
+    } else if (!credentials.equals(other.credentials))
+      return false;
+    if (failureDetectionPort != other.failureDetectionPort)
+      return false;
+    if (memberID == null) {
+      if (other.memberID != null)
+        return false;
+    } else if (!memberID.equals(other.memberID))
+      return false;
+    if (requestId != other.requestId)
+      return false;
+    return true;
+  }  
 }

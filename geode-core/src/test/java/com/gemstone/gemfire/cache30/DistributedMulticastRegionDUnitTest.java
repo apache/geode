@@ -33,6 +33,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
@@ -215,17 +216,32 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
     Properties p = new Properties();
     p.put(STATISTIC_SAMPLING_ENABLED, "true");
     p.put(STATISTIC_ARCHIVE_FILE, "multicast");
+    p.put(ENABLE_TIME_STATISTICS, "true");
     p.put(MCAST_PORT, mcastport);
     p.put(MCAST_TTL, mcastttl);
     p.put(LOCATORS, "localhost[" + locatorPort + "]");
     p.put(LOG_LEVEL, "info");
+    addDSProps(p);
     return p;
+  } 
+  
+  protected void addDSProps(Properties p) {
   }
 
-  private void validateMulticastOpsAfterRegionOps() {
+  protected void validateMulticastOpsAfterRegionOps() {
     int writes = getGemfireCache().getDistributionManager().getStats().getMcastWrites();
     int reads = getGemfireCache().getDistributionManager().getStats().getMcastReads();
-    assertTrue("Should have multicast writes or reads. Writes=  " + writes + " ,read= " + reads, writes > 0 || reads > 0);
+    assertTrue("Should have multicast writes or reads. Writes=  " + writes +  " ,read= " + reads, 
+        writes > 0 || reads > 0);
+
+    validateUDPEncryptionStats();
+  }
+
+  protected void validateUDPEncryptionStats() {
+    long encrptTime = getGemfireCache().getDistributionManager().getStats().getUDPMsgEncryptionTiime();
+    long decryptTime = getGemfireCache().getDistributionManager().getStats().getUDPMsgDecryptionTime();
+    assertTrue("Should have multicast writes or reads. encrptTime=  " + encrptTime +  " ,decryptTime= " + decryptTime,
+        encrptTime == 0 && decryptTime == 0);
   }
 
   private void validateMulticastOpsBeforeRegionOps() {
@@ -236,10 +252,10 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
   }
 
   private int startLocator() {
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    final int locatorPort = ports[0];
+  final int [] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+  final int locatorPort = ports[0];
 
-    VM locator1Vm = Host.getHost(0).getVM(locatorVM);
+  VM locator1Vm = Host.getHost(0).getVM(locatorVM);;
     locator1Vm.invoke(new SerializableCallable() {
       @Override
       public Object call() {
@@ -249,14 +265,15 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
         locatorProps.setProperty(MCAST_PORT, mcastport);
         locatorProps.setProperty(MCAST_TTL, mcastttl);
         locatorProps.setProperty(LOG_LEVEL, "info");
+        addDSProps(locatorProps);
         //locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
         try {
-          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, null, null, locatorProps);
+          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, null, null,
+              locatorProps);
           System.out.println("test Locator started " + locatorPort);
-        } catch (IOException ioex) {
+           } catch (IOException ioex) {
           fail("Unable to create a locator with a shared configuration");
         }
-
         return null;
       }
     });

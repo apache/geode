@@ -140,6 +140,9 @@ public class DistributionStats implements DMStats {
 
   private final static int msgSerializationTimeId;
   private final static int msgDeserializationTimeId;
+  
+  private final static int udpMsgEncryptionTimeId;
+  private final static int udpMsgDecryptionTimeId;
 
   private final static int batchSendTimeId;
   private final static int batchCopyTimeId;
@@ -458,6 +461,8 @@ public class DistributionStats implements DMStats {
         f.createLongCounter("pdxDeserializedBytes", "Total number of bytes read by pdx deserialization.", "bytes"),
         f.createLongCounter("msgSerializationTime", "Total amount of time, in nanoseconds, spent serializing messages.", "nanoseconds"),
         f.createLongCounter("msgDeserializationTime", "Total amount of time, in nanoseconds, spent deserializing messages.", "nanoseconds"),
+        f.createLongCounter("udpMsgEncryptionTime", "Total amount of time, in nanoseconds, spent encrypting udp messages.", "nanoseconds"),
+        f.createLongCounter("udpMsgDecryptionTime", "Total amount of time, in nanoseconds, spent decrypting udp messages.", "nanoseconds"),
         f.createIntCounter("pdxInstanceDeserializations", "Total number of times getObject has been called on a PdxInstance.", "ops"),
         f.createLongCounter("pdxInstanceDeserializationTime", "Total amount of time, in nanoseconds, spent deserializing PdxInstances by calling getObject.", "nanoseconds"),
         f.createIntCounter("pdxInstanceCreations", "Total number of times a deserialization created a PdxInstance.", "ops"),
@@ -650,6 +655,9 @@ public class DistributionStats implements DMStats {
 
     msgSerializationTimeId = type.nameToId("msgSerializationTime");
     msgDeserializationTimeId = type.nameToId("msgDeserializationTime");
+    
+    udpMsgEncryptionTimeId = type.nameToId("udpMsgEncryptionTime");
+    udpMsgDecryptionTimeId = type.nameToId("udpMsgDecryptionTime");
 
     batchSendTimeId = type.nameToId("batchSendTime");
     batchCopyTimeId = type.nameToId("batchCopyTime");
@@ -1196,6 +1204,17 @@ public class DistributionStats implements DMStats {
   public int getMcastReads() {
     return stats.getInt(mcastReadsId);
   }
+  
+  @Override
+  public long getUDPMsgDecryptionTime() {
+    return stats.getLong(udpMsgDecryptionTimeId);
+  }
+  
+  @Override
+  public long getUDPMsgEncryptionTiime() {
+    return stats.getLong(udpMsgEncryptionTimeId);
+  }
+  
   public void incMcastReadBytes(int amount) {
     stats.incInt(mcastReadsId, 1);
     stats.incLong(mcastReadBytesId, amount);
@@ -1252,12 +1271,34 @@ public class DistributionStats implements DMStats {
       stats.incLong(msgSerializationTimeId, getStatTime()-start);
     }
   }
+
+  public long startUDPMsgEncryption() {
+    return getStatTime();
+  }
+
+  public void endUDPMsgEncryption(long start) {
+    if (enableClockStats) {
+      stats.incLong(udpMsgEncryptionTimeId, getStatTime() - start);
+    }
+  }
+  
   public long startMsgDeserialization() {
     return getStatTime();
   }
+
   public void endMsgDeserialization(long start) {
     if (enableClockStats) {
-      stats.incLong(msgDeserializationTimeId, getStatTime()-start);
+      stats.incLong(msgDeserializationTimeId, getStatTime() - start);
+    }
+  }
+  
+  public long startUDPMsgDecryption() {
+    return getStatTime();
+  }
+
+  public void endUDPMsgDecryption(long start) {
+    if (enableClockStats) {
+      stats.incLong(udpMsgDecryptionTimeId, getStatTime() - start);
     }
   }
   /**

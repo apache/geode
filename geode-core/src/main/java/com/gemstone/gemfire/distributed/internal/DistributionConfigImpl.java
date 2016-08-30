@@ -305,6 +305,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    * The client Diffie-Hellman method name
    */
   private String securityClientDHAlgo = DEFAULT_SECURITY_CLIENT_DHALGO;
+  
+  /** The udp Diffie-Hellman method name*/
+  private String securityUDPDHAlgo = DEFAULT_SECURITY_UDP_DHALGO;
 
   /**
    * The peer authentication initialization method name
@@ -657,6 +660,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.securityClientAuthInit = other.getSecurityClientAuthInit();
     this.securityClientAuthenticator = other.getSecurityClientAuthenticator();
     this.securityClientDHAlgo = other.getSecurityClientDHAlgo();
+    this.securityUDPDHAlgo = other.getSecurityUDPDHAlgo();
     this.securityPeerAuthInit = other.getSecurityPeerAuthInit();
     this.securityPeerAuthenticator = other.getSecurityPeerAuthenticator();
     this.securityClientAccessor = other.getSecurityClientAccessor();
@@ -2114,9 +2118,17 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   public String getSecurityClientDHAlgo() {
     return securityClientDHAlgo;
   }
-
+  
   public void setSecurityClientDHAlgo(String value) {
     securityClientDHAlgo = (String) value;
+  }
+  
+  public String getSecurityUDPDHAlgo() {
+    return securityUDPDHAlgo;
+  }
+
+  public void setSecurityUDPDHAlgo(String value) {
+    securityUDPDHAlgo = (String)checkAttribute(SECURITY_UDP_DHALGO, value);
   }
 
   public String getSecurityPeerAuthInit() {

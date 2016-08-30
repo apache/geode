@@ -26,20 +26,18 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.logging.log4j.Logger;
+
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.cache.FixedPartitionAttributes;
-import com.gemstone.gemfire.internal.cache.BucketServerLocation66;
 import com.gemstone.gemfire.cache.PartitionResolver;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.cache.BucketServerLocation;
-import com.gemstone.gemfire.internal.cache.FixedPartitionAttributesImpl;
 import com.gemstone.gemfire.internal.cache.BucketServerLocation66;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.FixedPartitionAttributesImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Stores the information such as partition attributes and meta data details
@@ -66,6 +64,8 @@ public class ClientPartitionAdvisor {
   private Map<String, List<Integer>> fixedPAMap = null;
 
   private boolean fpaAttrsCompletes = false;
+  
+  private Random random = new Random();
 
   @SuppressWarnings("unchecked")
   public ClientPartitionAdvisor(int totalNumBuckets, String colocatedWith,
@@ -115,21 +115,18 @@ public class ClientPartitionAdvisor {
       if (locationsCopy.size() == 1) {
         return locationsCopy.get(0);
       }
-      int index = new Random().nextInt(locationsCopy.size() - 1);
+      int index = random.nextInt(locationsCopy.size());
       return locationsCopy.get(index);
     }
     return null;
   }
 
   public ServerLocation adviseRandomServerLocation() {
-    ArrayList<Integer> bucketList = new ArrayList<Integer>(
-        this.bucketServerLocationsMap.keySet());
-
-    if (bucketList.size() > 0) {
-      Collections.shuffle(bucketList);
+    ArrayList<Integer> bucketList = new ArrayList<Integer>(this.bucketServerLocationsMap.keySet());
+    int size = bucketList.size();
+    if (size > 0) {
       List<BucketServerLocation66> locations = this.bucketServerLocationsMap
-          .get(bucketList.get(0));
-
+          .get(bucketList.get(random.nextInt(size)));
       if (locations != null) {
         List<BucketServerLocation66> serverList = new ArrayList<BucketServerLocation66>(
             locations);

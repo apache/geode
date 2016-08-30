@@ -29,6 +29,7 @@ import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.auth.GMSAuthenticator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.*;
+import com.gemstone.gemfire.distributed.internal.membership.gms.locator.GMSLocator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
@@ -357,6 +358,13 @@ public class Services {
     return !getConfig().getDistributionConfig().getDisableAutoReconnect();
   }
 
+  public byte[] getPublicKey(InternalDistributedMember mbr) {
+    if(locator != null) {
+      return ((GMSLocator)locator).getPublicKey(mbr);
+    } 
+    return null;
+  }
+  
   public class Stopper extends CancelCriterion {
     volatile String reasonForStopping = null;
 

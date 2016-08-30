@@ -56,7 +56,7 @@ public class GMSLocatorRecoveryJUnitTest {
     if (tempStateFile.exists()) {
       tempStateFile.delete();
     }
-    locator = new GMSLocator(null, tempStateFile, null, false, false, new LocatorStats());
+    locator = new GMSLocator(null, tempStateFile, null, false, false, new LocatorStats(), "");
     // System.out.println("temp state file: " + tempStateFile);
   }
 
@@ -160,7 +160,7 @@ public class GMSLocatorRecoveryJUnitTest {
       ((InternalLocator)l).getLocatorHandler().setMembershipManager(m1);
       
       GMSLocator l2 = new GMSLocator(SocketCreator.getLocalHost(), new File("l2.dat"),
-          m1.getLocalMember().getHost()+"["+port+"]", true, true, new LocatorStats());
+          m1.getLocalMember().getHost()+"["+port+"]", true, true, new LocatorStats(), "");
       l2.init(null);
       
       assertTrue("expected view to contain "
