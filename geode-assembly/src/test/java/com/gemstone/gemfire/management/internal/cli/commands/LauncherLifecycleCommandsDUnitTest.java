@@ -47,7 +47,6 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -563,7 +562,6 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
       assertTrue(serviceStateStatusStringNormalized(toString(result)).contains(serviceStateStatusStringNormalized(expectedLocatorState)));
     } finally {
       stopLocator(workingDirectory);
-      FileUtils.copyDirectory(workingDirectory.getCanonicalFile(), new File("/tmp"));
     }
   }
 
@@ -621,7 +619,6 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
       assertTrue(serviceStateStatusStringNormalized(toString(result)).contains(serviceStateStatusStringNormalized(expectedLocatorState)));
     } finally {
       stopLocator(workingDirectory);
-      FileUtils.copyDirectory(workingDirectory.getCanonicalFile(), new File("/tmp"));
     }
   }
 
@@ -722,7 +719,6 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
       assertNotNull(locatorStatus);
       assertEquals(Status.NOT_RESPONDING, locatorStatus.getStatus());
     } finally {
-      FileUtils.copyDirectory(workingDirectory.getCanonicalFile(), new File("/tmp"));
     }
 
   }
@@ -807,7 +803,6 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
       assertNotNull(locatorState);
       assertEquals(Status.NOT_RESPONDING, locatorState.getStatus());
     } finally {
-      FileUtils.copyDirectory(workingDirectory.getCanonicalFile(),new File("/tmp"));
     }
   }
 
