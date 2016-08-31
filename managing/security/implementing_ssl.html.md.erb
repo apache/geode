@@ -6,66 +6,7 @@ You can configure SSL for authentication between members and to protect your dat
 distribution. You can use SSL alone or in conjunction with the other Geode security options.
 Geode SSL connections use the Java Secure Sockets Extension (JSSE) package.
 
-## Gateway SSL Configuration
-
-The following table lists the SSL configuration property names used to configure SSL for peer-to-peer and WAN gateway connections. Remember that if you do not define a client/server, JMX, or WAN property, then Geode uses the property value defined for peer-to-peer communication (cluster-ssl\*) or the default peer-to-peer property value if unspecified.
-
-<a id="concept_65874F58A47C4D10B29248BBF0635BFC__table_jpw_wqr_n4"></a>
-
-<table>
-<caption><span class="tablecap">Table 2. SSL Configuration Property Names by Connection Type</span></caption>
-<colgroup>
-<col width="50%" />
-<col width="50%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Peer-to-Peer Connection Property
-<p>(provides default value for all other connection types)</p></th>
-<th>WAN Gateway Connection Property</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>cluster-ssl-enabled</td>
-<td>gateway-ssl-enabled</td>
-</tr>
-<tr class="even">
-<td>cluster-ssl-ciphers</td>
-<td>gateway-ssl-ciphers</td>
-</tr>
-<tr class="odd">
-<td>cluster-ssl-protocols</td>
-<td>gateway-ssl-protocols</td>
-</tr>
-<tr class="even">
-<td>cluster-ssl-require-authentication</td>
-<td>gateway-ssl-require-authentication</td>
-</tr>
-<tr class="odd">
-<td>cluster-ssl-keystore-type</td>
-<td>gateway-ssl-keystore-type</td>
-</tr>
-<tr class="even">
-<td>cluster-ssl-keystore</td>
-<td>gateway-ssl-keystore</td>
-</tr>
-<tr class="odd">
-<td>cluster-ssl-keystore-password</td>
-<td>gateway-ssl-keystore-password</td>
-</tr>
-<tr class="even">
-<td>cluster-ssl-truststore</td>
-<td>gateway-ssl-truststore</td>
-</tr>
-<tr class="odd">
-<td>cluster-ssl-keystore-password</td>
-<td>gateway-ssl-keystore-password</td>
-</tr>
-</tbody>
-</table>
-
-If you configure the above peer-to-peer SSL properties, then by default Geode uses the same SSL property values for all stream-socket communication. This includes communication between cache servers and clients, between the JMX manager and JMX clients, and between two Geode distributed systems connected by a WAN gateway.
+## <a id="ssl_configurable_components" class="no-quick-link"></a>SSL-Configurable Components
 
 You can specify that SSL be used system-wide, or you can independently configure SSL for specific
 system components.  The following list shows the system components that can be separately configured
