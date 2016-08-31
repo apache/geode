@@ -97,8 +97,6 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase
 
   /**
    * This method is used to create Cache in VM0
-   * 
-   * @return CacheSerializableRunnable
    */
 
   @SuppressWarnings("deprecation")
@@ -129,8 +127,6 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase
 
   /**
    * This method is used to create Cache in VM1
-   * 
-   * @return CacheSerializableRunnable
    */
   @SuppressWarnings("deprecation")
   private void createCacheForVM1() {
@@ -176,8 +172,6 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase
 
   /**
    * This method puts in maxEntries in the Region
-   * 
-   * @return CacheSerializableRunnable
    */
   private void putSomeEntries() {
     assertTrue("Cache is found as null ", cache != null);
@@ -191,7 +185,6 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase
    * This method clears the region and 
    * notifies the other member when complete
    * 
-   * @return CacheSerializableRunnable
    * @throws InterruptedException 
    */
   private static void invokeRemoteClearAndWait(VM remoteVM, VM thisVM) {
