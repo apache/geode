@@ -30,6 +30,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -42,13 +43,10 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.internal.util.ArrayUtils;
 import com.gemstone.gemfire.rest.internal.web.controllers.support.RestServersResultCollector;
 import com.gemstone.gemfire.rest.internal.web.exception.GemfireRestException;
 import com.gemstone.gemfire.rest.internal.web.util.JSONUtils;
-import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.security.NotAuthorizedException;
 
 /**
  * The CommonCrudController serves REST Requests related to listing regions, 
@@ -76,30 +74,18 @@ public abstract class CommonCrudController extends AbstractBaseController {
     @ApiResponse( code = 200, message = "OK." ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception." )   
   } )
-//  @PreAuthorize("hasRole('DATA:READ')")
-//  @PreAuthorize("hasRole('data-read')")
+  @PreAuthorize("hasRole('DATA:READ')")
   public ResponseEntity<?> regions() {
 
-    final HttpHeaders headers = new HttpHeaders();
-    headers.setLocation(toUri());
-    try {
-      GeodeSecurityUtil.authorizeDataRead();
-    }
-    catch (NotAuthorizedException nae)
-    {
-      return new ResponseEntity<Object>(null, headers, HttpStatus.FORBIDDEN);
-    }
-    catch (GemFireSecurityException foo)
-    {
-      return new ResponseEntity<Object>(null, headers, HttpStatus.UNAUTHORIZED);
-    }
     if(logger.isDebugEnabled()){
       logger.debug("Listing all resources (Regions) in GemFire...");
     }
-    
+
+    final HttpHeaders headers = new HttpHeaders();
+    headers.setLocation(toUri());
     final Set<Region<?, ?>> regions = getCache().rootRegions();
     String listRegionsAsJson =  JSONUtils.formulateJsonForListRegions(regions, "regions");
-    return new ResponseEntity<String>(listRegionsAsJson, headers, HttpStatus.OK);
+    return new ResponseEntity<>(listRegionsAsJson, headers, HttpStatus.OK);
   }
   
   /**
@@ -132,7 +118,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
     String listKeysAsJson =  JSONUtils.formulateJsonForListKeys(keys, "keys");
     final HttpHeaders headers = new HttpHeaders();  
     headers.setLocation(toUri(region, "keys"));
-    return new ResponseEntity<String>(listKeysAsJson, headers, HttpStatus.OK);
+    return new ResponseEntity<>(listKeysAsJson, headers, HttpStatus.OK);
   }
   
   /**
@@ -153,7 +139,6 @@ public abstract class CommonCrudController extends AbstractBaseController {
     @ApiResponse( code = 404, message = "Region or key(s) does not exist" ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception" )      
   } )
-//  @Secured("REGION:WRITE")
   public ResponseEntity<?> delete(@PathVariable("region") String region,
                                   @PathVariable("keys") final String[] keys){     
     if(logger.isDebugEnabled()){
@@ -163,7 +148,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
     region = decode(region);
     
     deleteValues(region, (Object[])keys);
-    return new ResponseEntity<Object>(HttpStatus.OK);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
   /**
@@ -182,20 +167,8 @@ public abstract class CommonCrudController extends AbstractBaseController {
     @ApiResponse( code = 404, message = "Region does not exist" ),
     @ApiResponse( code = 500, message = "if GemFire throws an error or exception" )   
   } )
-//  @Secured("REGION:WRITE")
+  @PreAuthorize("hasRole('DATA:WRITE')")
   public ResponseEntity<?> delete(@PathVariable("region") String region) {
-
-    try {
-      GeodeSecurityUtil.authorizeRegionWrite(region);
-    }
-    catch (NotAuthorizedException nae)
-    {
-      return new ResponseEntity<Object>(HttpStatus.FORBIDDEN);
-    }
-    catch (GemFireSecurityException foo)
-    {
-      return new ResponseEntity<Object>(HttpStatus.UNAUTHORIZED);
-    }
 
     if(logger.isDebugEnabled()){
       logger.debug("Deleting all data in Region ({})...", region);
@@ -204,9 +177,13 @@ public abstract class CommonCrudController extends AbstractBaseController {
     region = decode(region);
     
     deleteValues(region);
-    return new ResponseEntity<Object>(HttpStatus.OK);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
-  
+
+  /**
+   * Ping is not secured so that it may not be used to determine a valid username/password
+   * @return
+   */
   @RequestMapping(method = { RequestMethod.GET, RequestMethod.HEAD }, value = "/ping")
   @ApiOperation(
     value = "Check Rest service status ",
@@ -217,9 +194,9 @@ public abstract class CommonCrudController extends AbstractBaseController {
     @ApiResponse( code = 200, message = "OK" ),
     @ApiResponse( code = 500, message = "if GemFire throws an error or exception" )   
   } )
-//  @Secured("USER")
+  @PreAuthorize("permitAll()")
   public ResponseEntity<?> ping() {
-    return new ResponseEntity<Object>(HttpStatus.OK);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
   
   @RequestMapping(method = { RequestMethod.GET }, value = "/servers")
@@ -254,7 +231,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
         headers.setLocation(toUri("servers"));
         try {    
           String functionResultAsJson = JSONUtils.convertCollectionToJson((ArrayList<Object>)functionResult);
-          return new ResponseEntity<String>(functionResultAsJson, headers, HttpStatus.OK);  
+          return new ResponseEntity<>(functionResultAsJson, headers, HttpStatus.OK);
         } catch (JSONException e) {
           throw new GemfireRestException("Could not convert function results into Restful (JSON) format!", e);
         }

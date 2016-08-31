@@ -16,11 +16,6 @@
  */
 package com.gemstone.gemfire.rest.internal.web.security.template;
 
-import java.io.IOException;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.geode.security.templates.CustomAuthenticationProvider;
 import org.apache.geode.security.templates.SampleAccessDeniedHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,14 +28,13 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.config.http.SessionCreationPolicy;
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-//@EnableGlobalMethodSecurity(securedEnabled = true)
-@ComponentScan("org.apache.geode.security.templates")
+@ComponentScan( basePackages = { "com.gemstone.gemfire.rest.internal.web",
+                                  "org.apache.geode.security"})
 public class SampleRESTSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
   @Autowired
@@ -58,27 +52,17 @@ public class SampleRESTSecurityConfiguration extends WebSecurityConfigurerAdapte
   }
 
   protected void configure(HttpSecurity http) throws Exception {
-    http.authorizeRequests()
-        .antMatchers("/ping", "/login", "/logout")
-        .permitAll()
-        .anyRequest()
-        .authenticated()
+    http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         .and()
-        .formLogin();
-    http.exceptionHandling().authenticationEntryPoint(new AlwaysSendUnauthorized401AuthenticationEntryPoint());
+        .authorizeRequests()
+        .antMatchers("/ping", "/login", "/logout").permitAll()
+        .anyRequest().authenticated()
+        .and()
+        .formLogin()
+        .and()
+        .csrf().disable();
     http.exceptionHandling().accessDeniedHandler(new SampleAccessDeniedHandler());
-    http.csrf().disable();
     // TODO - figure out how to override this for other types of authentication
     http.httpBasic();
-  }
-
-  public class AlwaysSendUnauthorized401AuthenticationEntryPoint implements AuthenticationEntryPoint {
-
-    @Override
-    public final void commence(HttpServletRequest request,
-                               HttpServletResponse response,
-                               AuthenticationException authException) throws IOException {
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-    }
   }
 }

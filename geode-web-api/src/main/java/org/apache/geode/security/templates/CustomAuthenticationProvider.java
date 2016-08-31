@@ -21,10 +21,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
 
+import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.templates.SampleSecurityManager.Role;
 import org.apache.geode.security.templates.SampleSecurityManager.User;
 import org.apache.shiro.subject.Subject;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -41,7 +43,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
   private static Collection<GrantedAuthority> populateAuthorities(User user) {
     Collection<GrantedAuthority> authorities = new ArrayList<>();
     for (Role role : user.getRoles()) {
-      authorities.add(new SampleAuthority(role.getName()));
+      for (ResourcePermission permission : role.getPermissions())
+        authorities.add(new SampleAuthority(permission.toString()));
     }
     return authorities;
   }
@@ -49,11 +52,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
     String username = authentication.getName();
-    String password = null;
-    //    Object creds = authentication.getCredentials();
-    //    if (creds == null)
-    //      return authentication;
-    password = authentication.getCredentials().toString();
+    String password = authentication.getCredentials().toString();
 
     Properties credentials = new Properties();
     credentials.put(ResourceConstants.USER_NAME, username);
@@ -66,10 +65,9 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
       Subject subject = GeodeSecurityUtil.login(username, password);
       if (subject != null) {
         return new SampleAuthentication(subject.getPrincipal(), authentication.getCredentials(), populateAuthorities(user));
-        //      return new SampleAuthentication(subject.getPrincipal(), authentication.getCredentials(), null);
       }
     } catch (AuthenticationFailedException authFailedEx) {
-      return new SampleAuthentication(null, null, null);
+      throw new BadCredentialsException("Invalid username or password");
     }
     return authentication;
   }

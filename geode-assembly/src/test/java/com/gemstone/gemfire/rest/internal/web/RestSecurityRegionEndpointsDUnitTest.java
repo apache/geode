@@ -48,24 +48,26 @@ public class RestSecurityRegionEndpointsDUnitTest extends RestSecurityDUnitTest 
   @Test
   public void testPing() {
     client1.invoke(() -> {
-      HttpResponse response = doGet("/ping", "unknown-user", "badpassword");
+      HttpResponse response = doGet("/ping", "stranger", "1234567");
       assertTrue(isOK(response));
       response = doGet("/ping", "super-user", "1234567");
       assertTrue(isOK(response));
-      // TODO - credentials are currently required and shouldn't be
-//      response = doGet("/ping", null, null);
-//      assertTrue(isOK(response));
+      response = doGet("/ping", "unknown-user", "badpassword");
+      assertTrue(isOK(response));
+      // TODO - credentials are currently required and shouldn't be for this endpoint
+      response = doGet("/ping", null, null);
+      assertTrue(isOK(response));
     });
   }
 
   /**
-   * Send in a request with a valid user/password combination, but without privliges to access the method.
+   * Send in a request with a valid user/password combination, but without privileges to access the method.
    */
   @Test
-  public void listRegionsValidUser() {
+  public void listRegionsInsufficientRights() {
     client1.invoke(() -> {
       HttpResponse response = doGet("", "authRegionReader", "1234567");
-      assertEquals("A '403 - Forbidden' was expected", 403, getCode(response));
+      assertEquals(403, getCode(response));
     });
   }
 
@@ -94,17 +96,27 @@ public class RestSecurityRegionEndpointsDUnitTest extends RestSecurityDUnitTest 
   public void listRegionsUnknownUser() {
     client1.invoke(() -> {
       HttpResponse response = doGet("", "unknown-user", "badpassword");
-      assertEquals("A '401 - Unauthorized' was expected", 401, getCode(response));
+      assertEquals(401, getCode(response));
       assertTrue(isUnauthorized(response));
     });
   }
 
 
   @Test
-  public void deleteRegionDataUnauthorized() {
+  public void deleteRegionUnknownUser() {
     client1.invoke(() -> {
       HttpResponse response = doDelete("/" + REGION_NAME, "unknown-user", "1234567");
-      assertEquals("A '401 - Unauthorized' was expected", 401, getCode(response));
+      assertEquals(401, getCode(response));
+      assertTrue(isUnauthorized(response));
+
+    });
+  }
+
+  @Test
+  public void deleteRegionInsufficientRights() {
+    client1.invoke(() -> {
+      HttpResponse response = doDelete("/" + REGION_NAME, "dataReader", "1234567");
+      assertEquals(403, getCode(response));
       assertTrue(isUnauthorized(response));
 
     });
