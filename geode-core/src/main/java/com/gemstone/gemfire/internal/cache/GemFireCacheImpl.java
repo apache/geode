@@ -757,12 +757,14 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   RegionExistsException 
   {
     try {
-      GemFireCacheImpl instance = checkExistingCache(existingOk, cacheConfig);
-      if (instance == null) {
-        instance = new GemFireCacheImpl(isClient, pf, system, cacheConfig, asyncEventListeners, typeRegistry);
-        instance.initialize();
+      synchronized (GemFireCacheImpl.class) {
+        GemFireCacheImpl instance = checkExistingCache(existingOk, cacheConfig);
+        if (instance == null) {
+          instance = new GemFireCacheImpl(isClient, pf, system, cacheConfig, asyncEventListeners, typeRegistry);
+          instance.initialize();
+        }
+        return instance;
       }
-      return instance;
     } catch (CacheXmlException | IllegalArgumentException e) {
       logger.error(e.getLocalizedMessage());
       throw e;
@@ -779,13 +781,13 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
       if (existingOk) {
         // Check if cache configuration matches.
         cacheConfig.validateCacheConfig(instance);
-
+        return instance;
       } else {
         // instance.creationStack argument is for debugging...
         throw new CacheExistsException(instance, LocalizedStrings.CacheFactory_0_AN_OPEN_CACHE_ALREADY_EXISTS.toLocalizedString(instance), instance.creationStack);
       }
     }
-    return instance;
+    return null;
   }
 
   /**
