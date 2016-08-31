@@ -90,7 +90,7 @@ public interface Messenger extends Service {
   /**
    * Get the public key of member. 
    * @param mbr
-   * @return
+   * @return byte[] public key for member
    */
   byte[] getPublicKey(InternalDistributedMember mbr);
   
@@ -110,13 +110,13 @@ public interface Messenger extends Service {
   
   /** 
    * To retrieve the cluster key. This needs to send cluster key to new memebr.
-   * @return
+   * @return byte[] cluster key
    */
   byte[] getClusterSecretKey();
   
   /**
    * To set requestId in request. This requestId comes back in response to match the request.
-   * @return
+   * @return int request id
    */
   int getRequestId();
   
