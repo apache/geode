@@ -25,6 +25,7 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -268,6 +269,9 @@ public class TXExpiryJUnitTest {
     public ExpirationDetector(ExpiryTask et) {
       assertNotNull(et);
       this.et = et;
+    }
+    @Override
+    public void afterSchedule(ExpiryTask et) {
     }
     @Override
     public void afterReschedule(ExpiryTask et) {

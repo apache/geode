@@ -511,6 +511,10 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
    */
   public interface ExpiryTaskListener {
     /**
+     * Called after entry is schedule for expiration. 
+     */
+    public void afterSchedule(ExpiryTask et);
+    /**
      * Called after the given expiry task has run.
      * This means that the time it was originally
      * scheduled to run has elapsed and the scheduler
