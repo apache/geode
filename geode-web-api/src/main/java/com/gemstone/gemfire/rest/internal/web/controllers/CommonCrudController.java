@@ -184,11 +184,23 @@ public abstract class CommonCrudController extends AbstractBaseController {
   } )
 //  @Secured("REGION:WRITE")
   public ResponseEntity<?> delete(@PathVariable("region") String region) {
-    
+
+    try {
+      GeodeSecurityUtil.authorizeRegionWrite(region);
+    }
+    catch (NotAuthorizedException nae)
+    {
+      return new ResponseEntity<Object>(HttpStatus.FORBIDDEN);
+    }
+    catch (GemFireSecurityException foo)
+    {
+      return new ResponseEntity<Object>(HttpStatus.UNAUTHORIZED);
+    }
+
     if(logger.isDebugEnabled()){
       logger.debug("Deleting all data in Region ({})...", region);
     }
-    
+
     region = decode(region);
     
     deleteValues(region);

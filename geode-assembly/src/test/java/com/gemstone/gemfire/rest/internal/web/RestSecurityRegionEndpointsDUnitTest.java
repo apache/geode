@@ -23,7 +23,6 @@ import java.net.MalformedURLException;
 import org.apache.http.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
@@ -101,9 +100,7 @@ public class RestSecurityRegionEndpointsDUnitTest extends RestSecurityDUnitTest 
   }
 
 
-  //TODO: Jetty returns a 403 on Delete.  This has to be fixed.
   @Test
-  @Ignore
   public void deleteRegionDataUnauthorized() {
     client1.invoke(() -> {
       HttpResponse response = doDelete("/" + REGION_NAME, "unknown-user", "1234567");
@@ -113,9 +110,7 @@ public class RestSecurityRegionEndpointsDUnitTest extends RestSecurityDUnitTest 
     });
   }
 
-  //TODO: Jetty returns a 403 on Delete.  This has to be fixed.
   @Test
-  @Ignore
   public void deleteRegionDataAuthorized() {
     client1.invoke(() -> {
       HttpResponse response = doDelete("/" + REGION_NAME, "super-user", "1234567");
