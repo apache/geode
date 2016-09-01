@@ -17,6 +17,20 @@
 
 apply plugin: 'war'
 
+def generatedResources = "$buildDir/generated-resources/main"
+
+sourceSets {
+  main {
+    output.dir(generatedResources, builtBy: 'copyGemFireVersionFile')
+  }
+
+  test {
+    resources {
+      srcDir 'src/main/webapp/WEB-INF'
+    }
+  }
+}
+
 dependencies {
   runtime ('org.springframework:spring-aspects:' + project.'springframework.version') {
     exclude module: 'aspectjweaver'
@@ -78,6 +92,11 @@ distributedTest {
 
 integrationTest {
   dependsOn war
+}
+
+task copyGemFireVersionFile(type: Copy) {
+  from project(':geode-core').createVersionPropertiesFile
+  into generatedResources
 }
 
 war {

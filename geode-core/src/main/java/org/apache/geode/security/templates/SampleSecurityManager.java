@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,15 +45,15 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
 /**
  * This class provides a sample implementation of {@link SecurityManager} for
  * authentication and authorization initialized from data provided as JSON.
- *
+ * <p>
  * <p>A Geode member must be configured with the following:
- *
+ * <p>
  * <p>{@code security-manager = com.gemstone.gemfire.security.examples.SampleSecurityManager}
- *
+ * <p>
  * <p>The class can be initialized with from a JSON resource called
  * {@code security.json}. This file must exist on the classpath, so members
  * should be started with an appropriate {@code --classpath} option.
- *
+ * <p>
  * <p>The format of the JSON for configuration is as follows:
  * <pre><code>
  * {
@@ -100,7 +101,9 @@ public class SampleSecurityManager implements SecurityManager {
     if (principal == null) return false;
 
     User user = this.userNameToUser.get(principal.toString());
-    if (user == null) return false; // this user is not authorized to do anything
+    if (user == null) {
+      return false; // this user is not authorized to do anything
+    }
 
     // check if the user has this permission defined in the context
     for (Role role : this.userNameToUser.get(user.name).roles) {
@@ -168,7 +171,7 @@ public class SampleSecurityManager implements SecurityManager {
     return false;
   }
 
-  User getUser(final String user) {
+  public User getUser(final String user) {
     return this.userNameToUser.get(user);
   }
 
@@ -224,15 +227,15 @@ public class SampleSecurityManager implements SecurityManager {
         String resourcePart = (parts.length > 0) ? parts[0] : null;
         String operationPart = (parts.length > 1) ? parts[1] : null;
 
-        if (parts.length>2){
+        if (parts.length > 2) {
           regionNames = parts[2];
         }
-        if (parts.length>3){
+        if (parts.length > 3) {
           keys = parts[3];
         }
 
         String regionPart = (regionNames != null) ? regionNames : "*";
-        String keyPart = (keys !=null) ? keys : "*";
+        String keyPart = (keys != null) ? keys : "*";
 
         role.permissions.add(new ResourcePermission(resourcePart, operationPart, regionPart, keyPart));
       }
@@ -247,16 +250,70 @@ public class SampleSecurityManager implements SecurityManager {
     return roleMap;
   }
 
-  static class Role {
-    List<ResourcePermission> permissions = new ArrayList<>();
-    String name;
-    String serverGroup;
+  Collection<String> getUsers() {
+    return userNameToUser.keySet();
   }
 
-  static class User {
-    String name;
-    Set<Role> roles = new HashSet<>();
-    String password;
+  public class Role {
+
+    private List<ResourcePermission> permissions = new ArrayList<>();
+    private String name;
+    private String serverGroup;
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(final String name) {
+      this.name = name;
+    }
+
+    public String getServerGroup() {
+      return serverGroup;
+    }
+
+    public void setServerGroup(final String serverGroup) {
+      this.serverGroup = serverGroup;
+    }
+
+    public List<ResourcePermission> getPermissions() {
+      return permissions;
+    }
+
+    public void setPermissions(final List<ResourcePermission> permissions) {
+      this.permissions = permissions;
+    }
+  }
+
+  public class User {
+
+    private String name;
+    private Set<Role> roles = new HashSet<>();
+    private String password;
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(final String name) {
+      this.name = name;
+    }
+
+    public Set<Role> getRoles() {
+      return roles;
+    }
+
+    public void setRoles(final Set<Role> roles) {
+      this.roles = roles;
+    }
+
+    public String getPassword() {
+      return password;
+    }
+
+    public void setPassword(final String password) {
+      this.password = password;
+    }
   }
 
 }

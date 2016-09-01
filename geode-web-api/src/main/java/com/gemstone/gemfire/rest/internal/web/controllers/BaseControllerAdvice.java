@@ -22,6 +22,7 @@ import java.io.StringWriter;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -121,6 +122,19 @@ public class BaseControllerAdvice extends AbstractBaseController{
   }
  
   /**
+   * Handles an AccessDenied Exception thrown by a REST API web service endpoint, HTTP request handler method.
+   * <p/>
+   * @param cause the Exception causing the error.
+   * @return a ResponseEntity with an appropriate HTTP status code (403 - Forbidden)
+   */
+  @ExceptionHandler(AccessDeniedException.class)
+  @ResponseBody
+  @ResponseStatus(HttpStatus.FORBIDDEN)
+  public String handleException(final AccessDeniedException cause) {
+    return convertErrorAsJson(cause.getMessage());
+  }
+
+  /**
    * Handles any Exception thrown by a REST API web service endpoint, HTTP request handler method.
    * <p/>
    * @param cause the Exception causing the error.
@@ -134,13 +148,13 @@ public class BaseControllerAdvice extends AbstractBaseController{
     final StringWriter stackTraceWriter = new StringWriter();
     cause.printStackTrace(new PrintWriter(stackTraceWriter));
     final String stackTrace = stackTraceWriter.toString();
-    
+
     if(logger.isDebugEnabled()){
-      logger.debug(stackTrace);  
+      logger.debug(stackTrace);
     }
-    
+
     return convertErrorAsJson(cause.getMessage());
   }
-  
+
 }
 

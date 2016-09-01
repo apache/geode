@@ -25,16 +25,15 @@ import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.geode.security.templates.SampleSecurityManager.User;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import org.apache.geode.security.templates.SampleSecurityManager.Role;
-import org.apache.geode.security.templates.SampleSecurityManager.User;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 @Category({ IntegrationTest.class, SecurityTest.class })
 public class SampleSecurityManagerTest {
@@ -93,15 +92,15 @@ public class SampleSecurityManagerTest {
   private void verifySecurityManagerState() {
     User adminUser = this.sampleSecurityManager.getUser("admin");
     assertThat(adminUser).isNotNull();
-    assertThat(adminUser.name).isEqualTo("admin");
-    assertThat(adminUser.password).isEqualTo("secret");
-    assertThat(adminUser.roles).hasSize(1);
+    assertThat(adminUser.getName()).isEqualTo("admin");
+    assertThat(adminUser.getPassword()).isEqualTo("secret");
+    assertThat(adminUser.getRoles()).hasSize(1);
 
     User guestUser = this.sampleSecurityManager.getUser("guest");
     assertThat(guestUser).isNotNull();
-    assertThat(guestUser.name).isEqualTo("guest");
-    assertThat(guestUser.password).isEqualTo("guest");
-    assertThat(guestUser.roles).hasSize(1);
+    assertThat(guestUser.getName()).isEqualTo("guest");
+    assertThat(guestUser.getPassword()).isEqualTo("guest");
+    assertThat(guestUser.getRoles()).hasSize(1);
     // TODO: need to do more verification
   }
 }
