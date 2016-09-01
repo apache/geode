@@ -17,6 +17,8 @@
 
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -38,10 +40,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
+
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.ExitShellRequest;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.ClassPathLoader;
@@ -78,14 +87,6 @@ import com.gemstone.gemfire.management.internal.web.http.support.SimpleHttpReque
 import com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker;
 import com.gemstone.gemfire.management.internal.web.shell.RestHttpOperationInvoker;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
-
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.ExitShellRequest;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  *
@@ -308,10 +309,6 @@ public class ShellCommands implements CommandMarker {
         // Props required to configure a SocketCreator with SSL.
         // Used for gfsh->locator connection & not needed for gfsh->manager connection
         if (useSsl || !sslConfigProps.isEmpty()) {
-          //Fix for 51266 : Added an check for cluster-ssl-enabled proeprty
-          if (!sslConfigProps.containsKey(DistributionConfig.CLUSTER_SSL_ENABLED_NAME)) {
-            sslConfigProps.put(DistributionConfig.SSL_ENABLED_NAME, String.valueOf(true));
-          }
           sslConfigProps.put(MCAST_PORT, String.valueOf(0));
           sslConfigProps.put(LOCATORS, "");
 
