@@ -97,7 +97,6 @@ public class RestSecurityRegionEndpointsDUnitTest extends RestSecurityDUnitTest 
     client1.invoke(() -> {
       HttpResponse response = doGet("", "unknown-user", "badpassword");
       assertEquals(401, getCode(response));
-      assertTrue(isUnauthorized(response));
     });
   }
 
@@ -107,8 +106,6 @@ public class RestSecurityRegionEndpointsDUnitTest extends RestSecurityDUnitTest 
     client1.invoke(() -> {
       HttpResponse response = doDelete("/" + REGION_NAME, "unknown-user", "1234567");
       assertEquals(401, getCode(response));
-      assertTrue(isUnauthorized(response));
-
     });
   }
 
@@ -117,8 +114,6 @@ public class RestSecurityRegionEndpointsDUnitTest extends RestSecurityDUnitTest 
     client1.invoke(() -> {
       HttpResponse response = doDelete("/" + REGION_NAME, "dataReader", "1234567");
       assertEquals(403, getCode(response));
-      assertTrue(isUnauthorized(response));
-
     });
   }
 
