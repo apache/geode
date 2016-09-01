@@ -3,9 +3,12 @@ title:  Enable Security with Property Definitions
 ---
 
 
-The callbacks that implement the authorization of an application
+## security-manager Property
+
+The callbacks that implement the authentication and authorization 
+of the various components of the system
 are specified with the `security-manager` property.
-When this property is defined, authorization is enabled.
+When this property is defined, authentication and authorization are enabled.
 The definition of the `security-manager` property is the
 path to the implementation of the `SecurityManager` interface.
 For example:
@@ -14,19 +17,27 @@ For example:
 security-manager = com.example.security.MySecurityManager
 ```
 
-All components of the system invoke the same callback.
-Authorization may be enabled on a component basis with
+## security-enabled-components Property
+
+All components of the system invoke the same callbacks.
+Security may be enabled on a component basis with
 the definition of the `security-enabled-components` property.
 Its definition restricts which system components invoke
-the authorization callback.
+the authentication and authorization callbacks.
+The defined values for system components:
 
-- `all`.  All components invoke the `authorize` callback.
-- `server`.
-- `cluster`.
-- `jmx`. Invokes the `authorize` callback for all components
-that ?
-- `http`.
-- `gateway`.
+- `all`.  All components invoke the security callbacks.
+- `server`. Invokes security callbacks upon connection and operation
+requests that a client makes of a server.
+- `cluster`.  Invokes security callbacks upon connection and operation
+requests that a server makes as the peer of a locator.
+- `jmx`.  Invokes security callbacks upon connection and operation
+requests that components communicating with a JMX manager make of a locator.
+Both `gfsh` and `Pulse` use this form of communication.
+- `http`.  Invokes security callbacks upon connection and operation
+requests that applications communicating via the REST API make of a server.
+- `gateway`.  Invokes security callbacks upon connection and operation
+requests that a gateway sender makes of a locator.
 
 The `security-enabled-components` property defines 
 a comma-separated list of components that will
@@ -36,6 +47,28 @@ For example,
 ``` pre
 security-enabled-components = server, cluster jmx
 ```
+
+The `all` component value is used by itself, as in the example
+
+``` pre
+security-enabled-components = all
+```
+
+## security-post-processor Property
+
+The  `PostProcessor` interface allows the definition of a set of callbacks
+that are invoked after operations that get data,
+but before the data is returned.
+This permits the callback to intervene and modify of the data
+that is to be returned.
+The callbacks do not modify the region data,
+only the data to be returned.
+
+Enable the post processing of data by defining the
+`security-post-processor` property
+with the path to the definition of the interface.
+For example,
+
 ``` pre
 security-post-processor = com.example.security.MySecurityPostProcessing
 ```
