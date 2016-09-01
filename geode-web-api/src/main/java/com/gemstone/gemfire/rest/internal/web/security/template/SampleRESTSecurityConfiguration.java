@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.rest.internal.web.security.template;
 
 import org.apache.geode.security.templates.CustomAuthenticationProvider;
-import org.apache.geode.security.templates.SampleAccessDeniedHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -29,6 +28,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.access.AccessDeniedHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -39,6 +39,8 @@ public class SampleRESTSecurityConfiguration extends WebSecurityConfigurerAdapte
 
   @Autowired
   private CustomAuthenticationProvider authProvider;
+  @Autowired
+  private AccessDeniedHandler accessDeniedHandler;
 
   @Override
   protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -61,7 +63,7 @@ public class SampleRESTSecurityConfiguration extends WebSecurityConfigurerAdapte
         .formLogin()
         .and()
         .csrf().disable();
-    http.exceptionHandling().accessDeniedHandler(new SampleAccessDeniedHandler());
+    http.exceptionHandling().accessDeniedHandler(accessDeniedHandler);
     // TODO - figure out how to override this for other types of authentication
     http.httpBasic();
   }
