@@ -971,6 +971,10 @@ public abstract class AbstractDistributionConfig
     m.put(SECURITY_CLIENT_DHALGO,
       LocalizedStrings.AbstractDistributionConfig_SECURITY_CLIENT_DHALGO_NAME_0
         .toLocalizedString(DEFAULT_SECURITY_CLIENT_DHALGO));
+    
+    m.put(SECURITY_UDP_DHALGO,
+        LocalizedStrings.AbstractDistributionConfig_SECURITY_UDP_DHALGO_NAME_0
+          .toLocalizedString(DEFAULT_SECURITY_UDP_DHALGO));
 
     m.put(SECURITY_PEER_AUTH_INIT,
       LocalizedStrings.AbstractDistributionConfig_SECURITY_PEER_AUTH_INIT_NAME_0

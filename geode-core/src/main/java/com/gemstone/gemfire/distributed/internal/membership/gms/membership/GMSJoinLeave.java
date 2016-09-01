@@ -25,6 +25,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.distributed.internal.membership.NetMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil;
@@ -38,6 +39,7 @@ import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
+
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
@@ -140,7 +142,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   /**
    * a new view being installed
    */
-  private NetView preparedView;
+  private volatile NetView preparedView;
 
   /**
    * the last view that conflicted with view preparation
@@ -362,7 +364,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     } else {
       logger.info("Attempting to join the distributed system through coordinator " + coord + " using address " + this.localAddress);
       int port = services.getHealthMonitor().getFailureDetectionPort();
-      JoinRequestMessage req = new JoinRequestMessage(coord, this.localAddress, services.getAuthenticator().getCredentials(coord), port);
+      JoinRequestMessage req = new JoinRequestMessage(coord, this.localAddress, services.getAuthenticator().getCredentials(coord), port, 
+          services.getMessenger().getRequestId());
+      //services.getMessenger().send(req, state.view);
       services.getMessenger().send(req);
     }
 
@@ -415,6 +419,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         NetView v = response.getCurrentView();
         InternalDistributedMember coord = v.getCoordinator();
         if (searchState.alreadyTried.contains(coord)) {
+          searchState.view = response.getCurrentView();
           // we already sent join request to it..so lets wait some more time here
           // assuming we got this response immediately, so wait for same timeout here..
           long timeout = Math.max(services.getConfig().getMemberTimeout(), services.getConfig().getJoinTimeout() / 5);
@@ -422,7 +427,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           response = joinResponse[0];
         } else {
           // try on this coordinator
-          searchState.possibleCoordinator = coord;
+          searchState.view = response.getCurrentView();
           response = null;
         }
         searchState.view = v;
@@ -468,7 +473,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     if (incomingRequest.getMemberID().getVersionObject().compareTo(Version.CURRENT) < 0) {
       logger.warn("detected an attempt to start a peer using an older version of the product {}", incomingRequest.getMemberID());
-      JoinResponseMessage m = new JoinResponseMessage("Rejecting the attempt of a member using an older version");
+      JoinResponseMessage m = new JoinResponseMessage("Rejecting the attempt of a member using an older version", incomingRequest.getRequestId());
       m.setRecipient(incomingRequest.getMemberID());
       services.getMessenger().send(m);
       return;
@@ -481,7 +486,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       rejection = e.getMessage();
     }
     if (rejection != null && rejection.length() > 0) {
-      JoinResponseMessage m = new JoinResponseMessage(rejection);
+      JoinResponseMessage m = new JoinResponseMessage(rejection, 0);
       m.setRecipient(incomingRequest.getMemberID());
       services.getMessenger().send(m);
       return;
@@ -633,13 +638,21 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     logger.debug("Recording the request to be processed in the next membership view");
     synchronized (viewRequests) {
       viewRequests.add(request);
+      if (viewCreator != null) {
+        boolean joinResponseSent = viewCreator.informToPendingJoinRequests();
+
+        if (!joinResponseSent && request instanceof JoinRequestMessage) {
+          JoinRequestMessage jreq = (JoinRequestMessage) request;
+          // this will inform about cluster-secret key, as we have authenticated at this point
+          JoinResponseMessage response = new JoinResponseMessage(jreq.getSender(), services.getMessenger().getClusterSecretKey(), jreq.getRequestId());
+          services.getMessenger().send(response);
+        }
+      }
       viewRequests.notifyAll();
     }
-    if (viewCreator != null) {
-      viewCreator.informToPendingJoinRequests();
-    }
+    
   }
-
+  
   // for testing purposes, returns a copy of the view requests for verification
   List<DistributionMessage> getViewRequests() {
     synchronized (viewRequests) {
@@ -711,6 +724,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       if (newView != null) {
         viewCreator.setInitialView(newView, newView.getNewMembers(), newView.getShutdownMembers(), newView.getCrashedMembers());
       }
+      services.getMessenger().initClusterKey();
       viewCreator.setDaemon(true);
       logger.info("ViewCreator starting on:" + localAddress);
       viewCreator.start();
@@ -753,7 +767,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
   private void sendJoinResponses(NetView newView, List<InternalDistributedMember> newMbrs) {
     for (InternalDistributedMember mbr : newMbrs) {
-      JoinResponseMessage response = new JoinResponseMessage(mbr, newView);
+      JoinResponseMessage response = new JoinResponseMessage(mbr, newView, 0);
       services.getMessenger().send(response);
     }
   }
@@ -833,6 +847,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     pendingRemovals.removeAll(view.getCrashedMembers());
     viewReplyProcessor.initialize(id, responders);
     viewReplyProcessor.processPendingRequests(pendingLeaves, pendingRemovals);
+    addPublicKeysToView(view);
     services.getMessenger().send(msg);
 
     // only wait for responses during preparation
@@ -860,13 +875,32 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     return true;
   }
 
+  private void addPublicKeysToView(NetView view) {
+    String sDHAlgo = services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo();
+    if (sDHAlgo != null && !sDHAlgo.isEmpty()) {
+      List<InternalDistributedMember> mbrs = view.getMembers();
+      Iterator<InternalDistributedMember> itr = mbrs.iterator();
+
+      while (itr.hasNext()) {
+        InternalDistributedMember mbr = itr.next();
+        byte[] pk = services.getMessenger().getPublicKey(mbr);
+        view.setPublicKey(mbr, pk);
+      }
+    }
+  }
   private void processViewMessage(final InstallViewMessage m) {
 
     NetView view = m.getView();
     
+    //If our current view doesn't contaion sender then we wanrt to ignore that view.
     if(currentView != null && !currentView.contains(m.getSender())) {
-      logger.info("Ignoring the view {} from member {}, which is not in my current view {} ", view, m.getSender(), currentView);
-      return;
+      //but if preparedView contains sender then we don't want to ignore that view.
+      //this may happen when we locator re-join and it take over coordinator's responsibility.
+      if(this.preparedView == null || !this.preparedView.contains(m.getSender())) 
+      { 
+        logger.info("Ignoring the view {} from member {}, which is not in my current view {} ", view, m.getSender(), currentView);
+        return;
+      }
     }
 
     if (currentView != null && view.getViewId() < currentView.getViewId()) {
@@ -892,21 +926,21 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         services.getMessenger().send(new ViewAckMessage(m.getSender(), this.preparedView));
       } else {
         this.preparedView = view;
-        ackView(m);
         if (viewContainsMyUnjoinedAddress) {
           installView(view); // this will notifyAll the joinResponse
         }
+        ackView(m);
       }
     } else { // !preparing
       if (isJoined && currentView != null && !view.contains(this.localAddress)) {
         logger.fatal("This member is no longer in the membership view.  My ID is {} and the new view is {}", localAddress, view);
         forceDisconnect("This node is no longer in the membership view");
       } else {
-        if (!m.isRebroadcast()) { // no need to ack a rebroadcast view
-          ackView(m);
-        }
         if (isJoined || viewContainsMyUnjoinedAddress) {
           installView(view);
+        }
+        if (!m.isRebroadcast()) { // no need to ack a rebroadcast view
+          ackView(m);
         }
       }
     }
@@ -960,7 +994,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       return findCoordinatorFromView();
     }
 
-    FindCoordinatorRequest request = new FindCoordinatorRequest(this.localAddress, state.alreadyTried, state.viewId);
+    String dhalgo = services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo();
+    FindCoordinatorRequest request = new FindCoordinatorRequest(this.localAddress, state.alreadyTried, state.viewId, 
+        services.getMessenger().getPublicKey(localAddress), services.getMessenger().getRequestId(), dhalgo);
     Set<InternalDistributedMember> possibleCoordinators = new HashSet<InternalDistributedMember>();
     Set<InternalDistributedMember> coordinatorsWithView = new HashSet<InternalDistributedMember>();
 
@@ -980,6 +1016,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           Object o = tcpClientWrapper.sendCoordinatorFindRequest(addr, request, connectTimeout);
           FindCoordinatorResponse response = (o instanceof FindCoordinatorResponse) ? (FindCoordinatorResponse) o : null;
           if (response != null) {
+            if(response.getRejectionMessage() != null ) {
+              throw new GemFireConfigException(response.getRejectionMessage());
+            }
+            setCoordinatorPublicKey(response);
             state.locatorsContacted++;
             if (!state.hasContactedAJoinedLocator &&
                 response.getSenderId() != null && response.getSenderId().getVmViewId() >= 0) {
@@ -1076,16 +1116,38 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     if (state.registrants != null) {
       recipients.addAll(state.registrants);
     }
-    recipients.remove(localAddress);
-    FindCoordinatorRequest req = new FindCoordinatorRequest(localAddress, state.alreadyTried, state.viewId);
-    req.setRecipients(v.getMembers());
+    recipients.remove(localAddress);    
 
+   // FindCoordinatorRequest req = new FindCoordinatorRequest(localAddress, state.alreadyTried, state.viewId, services.getMessenger().getPublickey(
+     //   localAddress), services.getMessenger().getRequestId());
+    //req.setRecipients(v.getMembers());
+    
     boolean testing = unitTesting.contains("findCoordinatorFromView");
     synchronized (state.responses) {
       if (!testing) {
         state.responses.clear();
       }
-      services.getMessenger().send(req);
+      
+      String dhalgo = services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo(); 
+      if (!dhalgo.isEmpty()) {
+        //Here we are sending message one-by-one to all recipients as we don't have cluster secret key yet.
+        //Usually this happens when locator re-joins the cluster and it has saved view.
+        for (InternalDistributedMember mbr : v.getMembers()) {
+          Set<InternalDistributedMember> r = new HashSet<>();
+          r.add(mbr);
+          FindCoordinatorRequest req = new FindCoordinatorRequest(localAddress, state.alreadyTried, state.viewId, services.getMessenger().getPublicKey(
+              localAddress), services.getMessenger().getRequestId(), dhalgo);
+          req.setRecipients(r);
+
+          services.getMessenger().send(req, v);
+        }
+      } else {
+        FindCoordinatorRequest req = new FindCoordinatorRequest(localAddress, state.alreadyTried, state.viewId, services.getMessenger().getPublicKey(
+            localAddress), services.getMessenger().getRequestId(), dhalgo);
+        req.setRecipients(v.getMembers());
+
+        services.getMessenger().send(req, v);
+      }
       try {
         if (!testing) {
           state.responses.wait(DISCOVERY_TIMEOUT);
@@ -1136,8 +1198,16 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   private void processJoinResponse(JoinResponseMessage rsp) {
     synchronized (joinResponse) {
       if (!this.isJoined) {
-        joinResponse[0] = rsp;
-        joinResponse.notifyAll();
+        //1. our joinRequest rejected.
+        //2. Member which was coordinator but just now some other member became coordinator
+        //3. we got message with secret key, but still view is coming and that will inform the joining thread
+        if (rsp.getRejectionMessage() != null || rsp.getCurrentView() != null) {
+          joinResponse[0] = rsp;
+          joinResponse.notifyAll();
+        } else {
+          //we got secret key lets add it
+          services.getMessenger().setClusterSecretKey(rsp.getSecretPk());
+        }
       }
     }
   }
@@ -1162,9 +1232,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     FindCoordinatorResponse resp;
     if (this.isJoined) {
       NetView v = currentView;
-      resp = new FindCoordinatorResponse(v.getCoordinator(), localAddress);
+      resp = new FindCoordinatorResponse(v.getCoordinator(), localAddress, 
+          services.getMessenger().getPublicKey(v.getCoordinator()), req.getRequestId());
     } else {
-      resp = new FindCoordinatorResponse(localAddress, localAddress);
+      resp = new FindCoordinatorResponse(localAddress, localAddress, 
+          services.getMessenger().getPublicKey(localAddress), req.getRequestId());
     }
     resp.setRecipient(req.getMemberID());
     services.getMessenger().send(resp);
@@ -1175,6 +1247,12 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       searchState.responses.add(resp);
       searchState.responses.notifyAll();
     }
+    setCoordinatorPublicKey(resp);
+  }
+  
+  private void setCoordinatorPublicKey(FindCoordinatorResponse response) {
+    if (response.getCoordinator() != null && response.getCoordinatorPublicKey() != null)
+      services.getMessenger().setPublicKey(response.getCoordinatorPublicKey(), response.getCoordinator());
   }
 
   private void processNetworkPartitionMessage(NetworkPartitionMessage msg) {
@@ -1901,6 +1979,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         for (InternalDistributedMember newMember : newMembers) {
           newView.add(newMember);
           newView.setFailureDetectionPort(newMember, v.getFailureDetectionPort(newMember));
+          newView.setPublicKey(newMember, v.getPublicKey(newMember));
         }
 
         // use the new view as the initial view
@@ -1984,36 +2063,38 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       }
     }
     
-    synchronized void informToPendingJoinRequests() {
+    synchronized boolean informToPendingJoinRequests() {
+      boolean joinResponseSent = false;
       if (!shutdown) {
-        return;
+        return joinResponseSent;
       }
-
       ArrayList<DistributionMessage> requests = new ArrayList<>();
       synchronized (viewRequests) {
         if (viewRequests.size() > 0) {
           requests.addAll(viewRequests);
         } else {
-          return;
+          return joinResponseSent;
         }
         viewRequests.clear();
       }
 
+      NetView v = currentView;
       for (DistributionMessage msg : requests) {
         switch (msg.getDSFID()) {
-        case JOIN_REQUEST:
-          logger.info("Informing to pending join requests {}", msg);
-
-          NetView v = currentView;
+        case JOIN_REQUEST:               
+          logger.debug("Informing to pending join requests {} myid {} coord {}", msg, localAddress, v.getCoordinator());
           if (!v.getCoordinator().equals(localAddress)) {
+            joinResponseSent = true;
             //lets inform that coordinator has been changed
-            JoinResponseMessage jrm = new JoinResponseMessage(((JoinRequestMessage) msg).getMemberID(), v);
+            JoinResponseMessage jrm = new JoinResponseMessage(((JoinRequestMessage) msg).getMemberID(), v, ((JoinRequestMessage) msg).getRequestId());
             services.getMessenger().send(jrm);
           }
         default:
           break;
         }
       }
+      
+      return joinResponseSent;
     }
 
     /**
@@ -2128,6 +2209,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         }
         if (currentView != null) {
           newView.setFailureDetectionPorts(currentView);
+          newView.setPublicKeys(currentView);
         }
       }
 
@@ -2145,6 +2227,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       if (isShutdown()) {
         return;
       }
+
       // send removal messages before installing the view so we stop
       // getting messages from members that have been kicked out
       sendRemoveMessages(removalReqs, removalReasons, oldIDs);
@@ -2271,7 +2354,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
       // we also send a join response so that information like the multicast message digest
       // can be transmitted to the new members w/o including it in the view message
-      sendJoinResponses(newView, joinReqs);
 
       if (markViewCreatorForShutdown && getViewCreator() != null) {
         shutdown = true;
@@ -2420,5 +2502,36 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
     logger.info("member " + fmbr + " failed availability check");
     return false;
+  }
+  
+  private InternalDistributedMember getMemId(NetMember jgId, List<InternalDistributedMember> members) {
+    for (InternalDistributedMember m : members) {
+      if (((GMSMember) m.getNetMember()).equals(jgId)) {
+        return m;
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public InternalDistributedMember getMemberID(NetMember jgId) {
+    NetView v = currentView;
+    InternalDistributedMember ret = null;
+    if (v != null) {
+      ret = getMemId(jgId, v.getMembers());
+    }
+
+    if (ret == null) {
+      v = preparedView;
+      if (v != null) {
+        ret = getMemId(jgId, v.getMembers());
+      }
+    }
+
+    if (ret == null) {
+      return new InternalDistributedMember(jgId);
+    }
+    
+    return ret;
   }
 }

@@ -65,6 +65,7 @@ public class IndexRepositoryImplJUnitTest {
   private StandardAnalyzer analyzer = new StandardAnalyzer();
   private IndexWriter writer;
   private Region region;
+  private Region userRegion;
   private LuceneIndexStats stats;
   private FileSystemStats fileSystemStats;
 
@@ -79,9 +80,10 @@ public class IndexRepositoryImplJUnitTest {
     String[] indexedFields= new String[] {"s", "i", "l", "d", "f", "s2", "missing"};
     mapper = new HeterogeneousLuceneSerializer(indexedFields);
     region = Mockito.mock(Region.class);
+    userRegion = Mockito.mock(Region.class);
     stats = Mockito.mock(LuceneIndexStats.class);
-    Mockito.when(region.isDestroyed()).thenReturn(false);
-    repo = new IndexRepositoryImpl(region, writer, mapper, stats);
+    Mockito.when(userRegion.isDestroyed()).thenReturn(false);
+    repo = new IndexRepositoryImpl(region, writer, mapper, stats, userRegion);
   }
   
   @Test

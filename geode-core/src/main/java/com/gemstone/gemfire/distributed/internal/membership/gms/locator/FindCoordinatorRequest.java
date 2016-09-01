@@ -27,6 +27,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.HighPriorityDistributionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
 
 public class FindCoordinatorRequest extends HighPriorityDistributionMessage
@@ -35,15 +36,23 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
   private InternalDistributedMember memberID;
   private Collection<InternalDistributedMember> rejectedCoordinators;
   private int lastViewId;
-  
+  private byte[] myPublicKey;
+  private int requestId;   
+  private String dhalgo;
+
   public FindCoordinatorRequest(InternalDistributedMember myId) {
     this.memberID = myId;
+    this.dhalgo = "";
   }
   
-  public FindCoordinatorRequest(InternalDistributedMember myId, Collection<InternalDistributedMember> rejectedCoordinators, int lastViewId) {
+  public FindCoordinatorRequest(InternalDistributedMember myId, Collection<InternalDistributedMember> rejectedCoordinators, 
+      int lastViewId, byte[] pk, int requestId, String dhalgo) {
     this.memberID = myId;
     this.rejectedCoordinators = rejectedCoordinators;
     this.lastViewId = lastViewId;
+    this.myPublicKey = pk;
+    this.requestId = requestId;
+    this.dhalgo = dhalgo;
   }
   
   public FindCoordinatorRequest() {
@@ -54,6 +63,14 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     return memberID;
   }
   
+  public byte[] getMyPublicKey() {
+    return myPublicKey;
+  }
+  
+  public String getDHAlgo() {
+    return dhalgo;
+  }
+
   public Collection<InternalDistributedMember> getRejectedCoordinators() {
     return rejectedCoordinators;
   }
@@ -81,6 +98,10 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
   public int getDSFID() {
     return FIND_COORDINATOR_REQ;
   }
+  
+  public int getRequestId() {
+    return requestId;
+  }
 
   @Override
   public void toData(DataOutput out) throws IOException {
@@ -94,6 +115,9 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
       out.writeInt(0);
     }
     out.writeInt(lastViewId);
+    out.writeInt(requestId);
+    InternalDataSerializer.writeString(dhalgo, out);
+    InternalDataSerializer.writeByteArray(this.myPublicKey, out);
   }
 
   @Override
@@ -105,6 +129,9 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
       this.rejectedCoordinators.add((InternalDistributedMember)DataSerializer.readObject(in));
     }
     this.lastViewId = in.readInt();
+    this.requestId = in.readInt();
+    this.dhalgo = InternalDataSerializer.readString(in);
+    this.myPublicKey = InternalDataSerializer.readByteArray(in);
   }
 
   @Override
@@ -117,6 +144,7 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     final int prime = 31;
     int result = 1;
     result = prime * result + lastViewId;
+    result = prime * result + ((dhalgo == null) ? 0 : dhalgo.hashCode());
     result = prime * result + ((memberID == null) ? 0 : memberID.hashCode());
     result = prime * result + ((rejectedCoordinators == null) ? 0 : rejectedCoordinators.hashCode());
     return result;
@@ -133,6 +161,9 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     FindCoordinatorRequest other = (FindCoordinatorRequest) obj;
     if (lastViewId != other.lastViewId)
       return false;
+    if(!dhalgo.equals(other.dhalgo)) {
+      return false;
+    }
     if (memberID == null) {
       if (other.memberID != null)
         return false;

@@ -361,10 +361,10 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   public void testConflictingUDPPort() throws Exception {
     final Properties config = new Properties();
     final int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.MULTICAST);
-    final int[] socketPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2, true);
-    final int unicastPort = socketPorts[0];
+    final int[] socketPorts = AvailablePortHelper.getRandomAvailableTCPPorts(1, true);
+    final int unicastPort = getPortRange(3);
     config.setProperty(MCAST_PORT, String.valueOf(mcastPort));
-    config.setProperty(START_LOCATOR, "localhost[" + socketPorts[1] + "]");
+    config.setProperty(START_LOCATOR, "localhost[" + socketPorts[0] + "]");
     config.setProperty(MEMBERSHIP_PORT_RANGE,
         ""+unicastPort+"-"+(unicastPort+2));
     InternalDistributedSystem system = (InternalDistributedSystem)DistributedSystem.connect(config);

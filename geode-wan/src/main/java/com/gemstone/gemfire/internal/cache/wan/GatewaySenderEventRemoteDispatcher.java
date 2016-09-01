@@ -398,12 +398,12 @@ public class GatewaySenderEventRemoteDispatcher implements
         } else {
           synchronized (this.sender
               .getLockForConcurrentDispatcher()) {
-            if (this.sender.getServerLocation() != null) {
+            ServerLocation server = this.sender.getServerLocation();
+            if (server != null) {
               if (logger.isDebugEnabled()) {
-                logger.debug("ServerLocation is: {}. Connecting to this serverLocation...", sender.getServerLocation());
+                logger.debug("ServerLocation is: {}. Connecting to this serverLocation...", server);
               }
-              con = this.sender.getProxy().acquireConnection(
-                  this.sender.getServerLocation());
+              con = this.sender.getProxy().acquireConnection(server);
             } else {
               if (logger.isDebugEnabled()) {
                 logger.debug("ServerLocation is null. Creating new connection. ");

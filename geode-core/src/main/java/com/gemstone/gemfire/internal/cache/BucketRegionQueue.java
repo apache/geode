@@ -95,26 +95,18 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     indexes = new ConcurrentHashMap<Object, Long>();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.gemstone.gemfire.internal.cache.BucketRegion#initialize(java.io.InputStream
-   * ,
-   * com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember
-   * , com.gemstone.gemfire.internal.cache.InternalRegionArguments)
-   */
-  @Override
-  protected void initialize(InputStream snapshotInputStream,
-      InternalDistributedMember imageTarget,
-      InternalRegionArguments internalRegionArgs) throws TimeoutException,
-      IOException, ClassNotFoundException {
-
-    super.initialize(snapshotInputStream, imageTarget, internalRegionArgs);
-
-    //take initialization writeLock inside the method after synchronizing on tempQueue
+  protected void cleanUpDestroyedTokensAndMarkGIIComplete(InitialImageOperation.GIIStatus giiStatus) {
+    // Load events from temp queued events
     loadEventsFromTempQueue();
-    
+
+    // Initialize the eventSeqNumQueue
+    initializeEventSeqNumQueue();
+
+    // Clean up destroyed tokens
+    super.cleanUpDestroyedTokensAndMarkGIIComplete(giiStatus);
+  }
+
+  private void initializeEventSeqNumQueue() {
     getInitializationLock().writeLock().lock();
     try {
       if (!this.keySet().isEmpty()) {

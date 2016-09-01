@@ -26,15 +26,19 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
+import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.MembershipAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributes;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
@@ -158,19 +162,29 @@ public class LuceneIndexForPartitionedRegionTest {
     return initializeScenario(withPersistence, regionPath, cache, defaultLocalMemory);
   }
 
+  private RegionAttributes createRegionAttributes(final boolean withPersistence, PartitionAttributes  partitionAttributes) {
+    AttributesFactory factory = new AttributesFactory();
+    if (withPersistence) {
+      factory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+    } else {
+      factory.setDataPolicy(DataPolicy.PARTITION);
+    }
+    factory.setPartitionAttributes(partitionAttributes);
+    RegionAttributes ra = factory.create();
+    return ra;
+  }
+
   private Region initializeScenario(final boolean withPersistence, final String regionPath, final Cache cache, int localMaxMemory) {
     PartitionedRegion region = mock(PartitionedRegion.class);
-    RegionAttributes regionAttributes = mock(RegionAttributes.class);
-    PartitionAttributes partitionAttributes = mock(PartitionAttributes.class);
-    DataPolicy dataPolicy = mock(DataPolicy.class);
+    PartitionAttributes partitionAttributes = new PartitionAttributesFactory().
+        setLocalMaxMemory(localMaxMemory).setTotalNumBuckets(103).create();
+    RegionAttributes regionAttributes = spy(createRegionAttributes(withPersistence, partitionAttributes));
     ExtensionPoint extensionPoint = mock(ExtensionPoint.class);
     when(cache.getRegion(regionPath)).thenReturn(region);
+    when(cache.getRegionAttributes(any())).thenReturn(regionAttributes);
     when(region.getAttributes()).thenReturn(regionAttributes);
     when(regionAttributes.getPartitionAttributes()).thenReturn(partitionAttributes);
-    when(regionAttributes.getDataPolicy()).thenReturn(dataPolicy);
-    when(partitionAttributes.getLocalMaxMemory()).thenReturn(localMaxMemory);
-    when(partitionAttributes.getTotalNumBuckets()).thenReturn(113);
-    when(dataPolicy.withPersistence()).thenReturn(withPersistence);
+    when(region.getPartitionAttributes()).thenReturn(partitionAttributes);
     when(region.getExtensionPoint()).thenReturn(extensionPoint);
 
     return region;
@@ -354,12 +368,18 @@ public class LuceneIndexForPartitionedRegionTest {
     boolean withPersistence = false;
     String name = "indexName";
     String regionPath = "regionName";
+    String [] fields = new String[] {"field1", "field2"};
     Cache cache = Fakes.cache();
     initializeScenario(withPersistence, regionPath, cache);
 
+    AsyncEventQueue aeq = mock(AsyncEventQueue.class);
     DumpDirectoryFiles function = new DumpDirectoryFiles();
     FunctionService.registerFunction(function);
     LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    index = spy(index);
+    when(index.getFieldNames()).thenReturn(fields);
+    doReturn(aeq).when(index).createAEQ(any());
+    index.initialize();
     PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionPath);
     ResultCollector collector = mock(ResultCollector.class);
     when(region.executeFunction(eq(function), any(), any(), anyBoolean())).thenReturn(collector);

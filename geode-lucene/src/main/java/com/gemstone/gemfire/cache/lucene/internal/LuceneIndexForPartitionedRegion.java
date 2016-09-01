@@ -35,109 +35,77 @@ import com.gemstone.gemfire.cache.lucene.internal.directory.DumpDirectoryFiles;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
+import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 
 /* wrapper of IndexWriter */
 public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
+  protected Region<String, File> fileRegion;
+  protected Region<ChunkKey, byte[]> chunkRegion;
+  protected final FileSystemStats fileSystemStats;
 
   public LuceneIndexForPartitionedRegion(String indexName, String regionPath, Cache cache) {
     super(indexName, regionPath, cache);
+
+    final String statsName = indexName + "-" + regionPath;
+    this.fileSystemStats = new FileSystemStats(cache.getDistributedSystem(), statsName);
   }
 
-  @Override
-  public void initialize() {
-    if (!hasInitialized) {
-      /* create index region */
-      PartitionedRegion dataRegion = getDataRegion();
-      //assert dataRegion != null;
-      RegionAttributes regionAttributes = dataRegion.getAttributes();
-      DataPolicy dp = regionAttributes.getDataPolicy();
-      final boolean withPersistence = dp.withPersistence();
-      final boolean withStorage = regionAttributes.getPartitionAttributes().getLocalMaxMemory()>0;
-      RegionShortcut regionShortCut;
-      if (withPersistence) {
-        // TODO: add PartitionedRegionAttributes instead
-        regionShortCut = RegionShortcut.PARTITION_PERSISTENT;
-      } else {
-        regionShortCut = RegionShortcut.PARTITION;
-      }
+  protected RepositoryManager createRepositoryManager() {
+    RegionShortcut regionShortCut;
+    final boolean withPersistence = withPersistence(); 
+    RegionAttributes regionAttributes = dataRegion.getAttributes();
+    final boolean withStorage = regionAttributes.getPartitionAttributes().getLocalMaxMemory()>0;
 
-      // TODO: 1) dataRegion should be withStorage
-      //       2) Persistence to Persistence
-      //       3) Replicate to Replicate, Partition To Partition
-      //       4) Offheap to Offheap
-      if (!withStorage) {
-        throw new IllegalStateException("The data region to create lucene index should be with storage");
-      }
-
-      // create PR fileRegion, but not to create its buckets for now
-      final String fileRegionName = createFileRegionName();
-      PartitionAttributes partitionAttributes = dataRegion.getPartitionAttributes();
-      if (!fileRegionExists(fileRegionName)) {
-        fileRegion = createFileRegion(regionShortCut, fileRegionName, partitionAttributes, regionAttributes);
-      }
-
-      // create PR chunkRegion, but not to create its buckets for now
-      final String chunkRegionName = createChunkRegionName();
-      if (!chunkRegionExists(chunkRegionName)) {
-        chunkRegion = createChunkRegion(regionShortCut, fileRegionName, partitionAttributes, chunkRegionName, regionAttributes);
-      }
-      fileSystemStats.setFileSupplier(() -> (int) getFileRegion().getLocalSize());
-      fileSystemStats.setChunkSupplier(() -> (int) getChunkRegion().getLocalSize());
-      fileSystemStats.setBytesSupplier(() -> getChunkRegion().getPrStats().getDataStoreBytesInUse());
-
-      // we will create RegionDirectories on the fly when data comes in
-      HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(getFieldNames());
-      repositoryManager = new PartitionedRepositoryManager(dataRegion, (PartitionedRegion) fileRegion,
-        (PartitionedRegion) chunkRegion, mapper, analyzer, this.indexStats, this.fileSystemStats);
-      
-      // create AEQ, AEQ listener and specify the listener to repositoryManager
-      createAEQ(dataRegion);
-
-      addExtension(dataRegion);
-      hasInitialized = true;
+    // TODO: 1) dataRegion should be withStorage
+    //       2) Persistence to Persistence
+    //       3) Replicate to Replicate, Partition To Partition
+    //       4) Offheap to Offheap
+    if (!withStorage) {
+      throw new IllegalStateException("The data region to create lucene index should be with storage");
     }
-  }
+    if (withPersistence) {
+      // TODO: add PartitionedRegionAttributes instead
+      regionShortCut = RegionShortcut.PARTITION_PERSISTENT;
+    } else {
+      regionShortCut = RegionShortcut.PARTITION;
+    }
+    
+    // create PR fileRegion, but not to create its buckets for now
+    final String fileRegionName = createFileRegionName();
+    PartitionAttributes partitionAttributes = dataRegion.getPartitionAttributes();
+    if (!fileRegionExists(fileRegionName)) {
+      fileRegion = createFileRegion(regionShortCut, fileRegionName, partitionAttributes, regionAttributes);
+    }
 
-  private PartitionedRegion getDataRegion() {
-    return (PartitionedRegion) cache.getRegion(regionPath);
-  }
+    // create PR chunkRegion, but not to create its buckets for now
+    final String chunkRegionName = createChunkRegionName();
+    if (!chunkRegionExists(chunkRegionName)) {
+      chunkRegion = createChunkRegion(regionShortCut, fileRegionName, partitionAttributes, chunkRegionName, regionAttributes);
+    }
+    fileSystemStats.setFileSupplier(() -> (int) getFileRegion().getLocalSize());
+    fileSystemStats.setChunkSupplier(() -> (int) getChunkRegion().getLocalSize());
+    fileSystemStats.setBytesSupplier(() -> getChunkRegion().getPrStats().getDataStoreBytesInUse());
 
-  private PartitionedRegion getFileRegion() {
+    // we will create RegionDirectories on the fly when data comes in
+    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(getFieldNames());
+    return new PartitionedRepositoryManager(this, mapper);
+  }
+  
+  public PartitionedRegion getFileRegion() {
     return (PartitionedRegion) fileRegion;
   }
 
-  private PartitionedRegion getChunkRegion() {
+  public PartitionedRegion getChunkRegion() {
     return (PartitionedRegion) chunkRegion;
   }
 
-  private AsyncEventQueueFactoryImpl createAEQFactory(final Region dataRegion) {
-    AsyncEventQueueFactoryImpl factory = (AsyncEventQueueFactoryImpl) cache.createAsyncEventQueueFactory();
-    factory.setParallel(true); // parallel AEQ for PR
-    factory.setMaximumQueueMemory(1000);
-    factory.setDispatcherThreads(1);
-    factory.setIsMetaQueue(true);
-    if(dataRegion.getAttributes().getDataPolicy().withPersistence()) {
-      factory.setPersistent(true);
-    }
-    factory.setDiskStoreName(dataRegion.getAttributes().getDiskStoreName());
-    factory.setDiskSynchronous(dataRegion.getAttributes().isDiskSynchronous());
-    factory.setForwardExpirationDestroy(true);
-    return factory;
+  public FileSystemStats getFileSystemStats() {
+    return fileSystemStats;
   }
-
-  AsyncEventQueue createAEQ(Region dataRegion) {
-    return createAEQ(createAEQFactory(dataRegion));
-  }
-
-  private AsyncEventQueue createAEQ(AsyncEventQueueFactoryImpl factory) {
-    LuceneEventListener listener = new LuceneEventListener(repositoryManager);
-    String aeqId = LuceneServiceImpl.getUniqueIndexName(getName(), regionPath);
-    AsyncEventQueue indexQueue = factory.create(aeqId, listener);
-    return indexQueue;
-  }
-
+  
   boolean fileRegionExists(String fileRegionName) {
     return cache.<String, File> getRegion(fileRegionName) != null;
   }

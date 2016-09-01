@@ -53,11 +53,6 @@ public class EmbeddedTomcat8 {
   private Log logger = LogFactory.getLog(getClass());
 
   /**
-   * The directory to create the Tomcat server configuration under.
-   */
-  private String catalinaHome = "doh";
-
-  /**
    * The port to run the Tomcat server on.
    */
   private int port = 8089;
@@ -90,6 +85,7 @@ public class EmbeddedTomcat8 {
 
     try {
       new File(localHost.getAppBaseFile().getAbsolutePath()).mkdir();
+      new File(localHost.getCatalinaBase().getAbsolutePath(), "logs").mkdir();
       rootContext = container.addContext("", localHost.getAppBaseFile().getAbsolutePath());
     }
     catch (Exception e) {

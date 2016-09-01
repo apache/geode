@@ -1635,7 +1635,7 @@ public class DistributedRegion extends LocalRegion implements
   // release afterGetInitialImageInitializationLatch before unlocking
   // cleanUpLock
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="UL_UNRELEASED_LOCK")
-  private void cleanUpDestroyedTokensAndMarkGIIComplete(GIIStatus giiStatus)
+  protected void cleanUpDestroyedTokensAndMarkGIIComplete(GIIStatus giiStatus)
   {
     //We need to clean up the disk before we release the after get initial image latch
     DiskRegion dskRgn = getDiskRegion();

@@ -16,7 +16,6 @@
  */
 package org.apache.geode.security;
 
-import java.io.Serializable;
 import java.util.Properties;
 
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -49,7 +48,7 @@ public interface SecurityManager {
    *        a serializable principal object
    * @throws AuthenticationFailedException
    */
-  Serializable authenticate(Properties credentials) throws AuthenticationFailedException;
+  Object authenticate(Properties credentials) throws AuthenticationFailedException;
 
   /**
    * Authorize the ResourcePermission for a given Principal
@@ -60,7 +59,7 @@ public interface SecurityManager {
    * @return
    *        true if authorized, false if not
    */
-  default boolean authorize(Serializable principal, ResourcePermission permission) {
+  default boolean authorize(Object principal, ResourcePermission permission) {
     return true;
   }
 

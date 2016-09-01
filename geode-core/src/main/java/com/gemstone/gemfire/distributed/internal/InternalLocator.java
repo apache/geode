@@ -643,6 +643,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     // coordinator - e.g., security and network-partition detection
     boolean locatorsAreCoordinators = false;
     boolean networkPartitionDetectionEnabled = this.config.getEnableNetworkPartitionDetection();
+    String securityUDPDHAlgo = this.config.getSecurityUDPDHAlgo();
     if (networkPartitionDetectionEnabled) {
       locatorsAreCoordinators = true;
     }
@@ -656,7 +657,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
 
     this.locatorImpl = MemberFactory.newLocatorHandler(this.bindAddress, this.stateFile,
-        locatorsProp, locatorsAreCoordinators, networkPartitionDetectionEnabled, stats);
+        locatorsProp, locatorsAreCoordinators, networkPartitionDetectionEnabled, stats, securityUDPDHAlgo);
     this.handler.addHandler(PeerLocatorRequest.class, this.locatorImpl);
     peerLocator = true;
     if(!server.isAlive()) {
@@ -833,7 +834,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     
     this.locatorDiscoverer = WANServiceProvider.createLocatorDiscoverer();
     if(this.locatorDiscoverer != null) {
-      this.locatorDiscoverer.discover(getPort(), config, locatorListener);
+      this.locatorDiscoverer.discover(getPort(), config, locatorListener, hostnameForClients);
     }
   }
   

@@ -27,7 +27,7 @@ public interface WanLocatorDiscoverer {
    * For WAN 70 Exchange the locator information within the distributed system
    */
   void discover(int port, DistributionConfigImpl config,
-      LocatorMembershipListener locatorListener);
+                LocatorMembershipListener locatorListener, final String hostnameForClients);
 
   void stop();
 

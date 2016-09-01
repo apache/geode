@@ -14,6 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+buildscript {
+  repositories {
+    maven { url "https://plugins.gradle.org/m2/" }
+  }
+
+  dependencies {
+    classpath "org.ajoberstar:gradle-git:1.3.2"
+  }
+}
+
 allprojects {
   //These methods will be added to each individual project.
   //Use this for methods that access project variables (like project.name)
@@ -39,6 +49,39 @@ allprojects {
       // Use this closure when a project should not publish anything to maven.
       afterEvaluate {
         signArchives.enabled = false
+      }
+    }
+
+    readScmInfo = {
+      try {
+        def git = org.ajoberstar.grgit.Grgit.open(currentDir: projectDir)
+        try {
+          return [
+            'Source-Repository': git.branch.getCurrent().name,
+            'Source-Revision'  : git.head().id,
+            'Source-Date'      : git.head().getDate().format('yyyy-MM-dd HH:mm:ss Z')
+          ] as Properties
+        } finally {
+          git.close()
+        }
+      } catch (IllegalArgumentException e) {
+        // if we're building from the source distribution, we don't have git so
+        // use cached info written during the assembly process
+        def buildInfo = file "$rootDir/.buildinfo"
+        if (buildInfo.exists()) {
+          def props = new Properties()
+          new FileInputStream(buildInfo).withStream { fis ->
+            props.load(fis)
+          }
+          return props
+        }
+
+        logger.warn( '***** Unable to find Git workspace. Using default version information *****' )
+        return [
+          'Source-Repository': 'UNKNOWN',
+          'Source-Revision'  : 'UNKNOWN',
+          'Source-Date'      : new Date().format('yyyy-MM-dd HH:mm:ss Z')
+        ] as Properties
       }
     }
   }

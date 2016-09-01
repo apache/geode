@@ -20,8 +20,7 @@ import com.gemstone.gemfire.cache.Declarable;
 import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.modules.session.catalina.DeltaSession;
-import com.gemstone.gemfire.modules.session.catalina.DeltaSessionManager;
+import com.gemstone.gemfire.modules.session.catalina.DeltaSessionInterface;
 import com.gemstone.gemfire.modules.util.ContextMapper;
 
 import javax.servlet.http.HttpSession;
@@ -35,9 +34,9 @@ public class SessionExpirationCacheListener extends CacheListenerAdapter<String,
     // A Session expired. If it was destroyed by GemFire expiration, process it.
     // If it was destroyed via Session.invalidate, ignore it since it has
     // already been processed.
-    DeltaSession session = null;
+    DeltaSessionInterface session = null;
     if (event.getOperation() == Operation.EXPIRE_DESTROY) {
-      session = (DeltaSession) event.getOldValue();
+      session = (DeltaSessionInterface) event.getOldValue();
     } else {
       /*
        * This comes into play when we're dealing with an empty client proxy. We
@@ -47,8 +46,8 @@ public class SessionExpirationCacheListener extends CacheListenerAdapter<String,
        * gemfire.EXPIRE_SENDS_ENTRY_AS_CALLBACK.
        */
       Object callback = event.getCallbackArgument();
-      if (callback != null && callback instanceof DeltaSession) {
-        session = (DeltaSession) callback;
+      if (callback != null && callback instanceof DeltaSessionInterface) {
+        session = (DeltaSessionInterface) callback;
         ManagerBase m = ContextMapper.getContext(session.getContextName());
         if (m != null) {
           session.setOwner(m);

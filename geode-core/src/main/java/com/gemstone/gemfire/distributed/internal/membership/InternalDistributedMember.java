@@ -581,6 +581,10 @@ public class InternalDistributedMember
   }
   
   public int compareTo(DistributedMember o, boolean checkNetMembersIfEqual) {
+    return compareTo(o, checkNetMembersIfEqual, true);
+  }
+  
+  public int compareTo(DistributedMember o, boolean checkNetMembersIfEqual, boolean verifyViewId) {
     if (this == o) {
       return 0;
     }
@@ -647,13 +651,15 @@ public class InternalDistributedMember
     }
 
     if (this.uniqueTag == null && other.uniqueTag == null) {
-      // not loners, so look at P2P view ID
-      if (this.vmViewId >= 0 && other.vmViewId >= 0) {
-        if (this.vmViewId < other.vmViewId) {
-          return -1;
-        } else if (this.vmViewId > other.vmViewId) {
-          return 1;
-        } // else they're the same, so continue
+      if (verifyViewId) {
+        // not loners, so look at P2P view ID
+        if (this.vmViewId >= 0 && other.vmViewId >= 0) {
+          if (this.vmViewId < other.vmViewId) {
+            return -1;
+          } else if (this.vmViewId > other.vmViewId) {
+            return 1;
+          } // else they're the same, so continue
+        }
       }
     } else if (this.uniqueTag == null) {
       return -1;
@@ -931,7 +937,7 @@ public class InternalDistributedMember
   
   
   public void toDataPre_GFE_9_0_0_0(DataOutput out) throws IOException {
-    Assert.assertTrue(vmKind > 0);
+    //Assert.assertTrue(vmKind > 0);
     // NOTE: If you change the serialized format of this class
     //       then bump Connection.HANDSHAKE_VERSION since an
     //       instance of this class is sent during Connection handshake.
@@ -1286,5 +1292,33 @@ public class InternalDistributedMember
     size += 2;
     
     return size;
+  }
+  
+  public static class InternalDistributedMemberWrapper {
+    InternalDistributedMember mbr;
+    
+    public InternalDistributedMemberWrapper(InternalDistributedMember m) {
+      this.mbr = m;
+    }
+
+    public InternalDistributedMember getMbr() {
+      return mbr;
+    }
+
+    @Override
+    public int hashCode() {
+      return mbr.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      InternalDistributedMember other = ((InternalDistributedMemberWrapper)obj).mbr;
+      return mbr.compareTo(other, false, false) == 0;
+    }
+
+    @Override
+    public String toString() {
+      return "InternalDistrubtedMemberWrapper [mbr=" + mbr + "]";
+    }        
   }
 }

@@ -2400,7 +2400,7 @@ public class LocalizedStrings {
   public static final StringId GemFireCacheImpl_STARTING_GEMFIRE_MEMCACHED_SERVER_ON_PORT_0_FOR_1_PROTOCOL = new StringId(3868, "Starting GemFireMemcachedServer on port {0} for {1} protocol");
   public static final StringId TransactionManagerImpl_TRANSACTIONMANAGERIMPL_SETTRANSACTIONTIMEOUT_TRANSACTION_HAS_EITHER_EXPIRED_OR_ROLLEDBACK_OR_COMITTED = new StringId(3869, "Transaction has either expired or rolledback or comitted");
   public static final StringId TransactionManagerImpl_TRANSACTIONMANAGERIMPL_RESUME_CANNOT_RESUME_A_NULL_TRANSACTION = new StringId(3870, "cannot resume a null transaction");
-  public static final StringId AbstractDistributionConfig_SECURITY_CLIENT_DHALGO_NAME_0 = new StringId(3871, "User defined name for the symmetric encryption algorithm to use in Diffie-Hellman key exchange for encryption of credentials.  Defaults to \"{0}\". Legal values can be any of the available symmetric algorithm names in JDK like \"DES\", \"DESede\", \"AES\", \"Blowfish\". It may be required to install Unlimited Strength Jurisdiction Policy Files from Sun for some symmetric algorithms to work (like \"AES\")");
+  public static final StringId AbstractDistributionConfig_SECURITY_CLIENT_DHALGO_NAME_0 = new StringId(3871, "User defined name for the symmetric encryption algorithm to use in Diffie-Hellman key exchange for encryption of credentials.  Defaults to \"{0}\". Legal values can be any of the available symmetric algorithm names in JDK like \"DES\", \"DESede\", \"AES\", \"Blowfish\". It may be required to install Unlimited Strength Jurisdiction Policy Files from Sun for some symmetric algorithms to work (like \"AES\")");  
   public static final StringId TransactionManagerImpl_TRANSACTIONMANAGERIMPL_RESUME_ERROR_IN_LISTING_THREAD_TO_TRANSACTION_MAP_DUE_TO_0 = new StringId(3872, "Error in listing thread to transaction map due to {0}");
   public static final StringId TransactionManagerImpl_TRANSACTIONMANAGERIMPL_GETGLOBALTRANSACTION_NO_TRANSACTION_EXISTS = new StringId(3873, "no transaction exists");
   public static final StringId UserTransactionImpl_USERTRANSACTIONIMPL_SETTRANSACTIONTIMEOUT_CANNOT_SET_A_NEGATIVE_TIME_OUT_FOR_TRANSACTIONS = new StringId(3874, "Cannot set a negative Time Out for transactions");
@@ -2495,6 +2495,7 @@ public class LocalizedStrings {
   public static final StringId PasswordUtil_ENCRYPTED_TO_0 = new StringId(3981, "Encrypted to {0}");
   public static final StringId DistributionManager_SHUTDOWN_MESSAGE_THREAD_FOR_0 = new StringId(3982, "Shutdown Message Thread for {0}");
   public static final StringId HealthMonitorImpl_HEALTH_MONITOR_OWNED_BY_0 = new StringId(3983, "Health Monitor owned by {0}");
+  public static final StringId AbstractDistributionConfig_SECURITY_UDP_DHALGO_NAME_0 = new StringId(3984, "User defined name for the symmetric encryption algorithm to use in Diffie-Hellman key exchange for encryption of udp messages.  Defaults to \"{0}\". Legal values can be any of the available symmetric algorithm names in JDK like \"DES\", \"DESede\", \"AES\", \"Blowfish\". It may be required to install Unlimited Strength Jurisdiction Policy Files from Sun for some symmetric algorithms to work (like \"AES\")");
   // ok to reuse 3984
   public static final StringId InternalDistributedSystem_COULD_NOT_RENAME_0_TO_1 = new StringId(3985, "Could not rename \"{0}\" to \"{1}\".");
   public static final StringId InternalDistributedSystem_RENAMED_OLD_LOG_FILE_TO_0 = new StringId(3986, "Renamed old log file to \"{0}\".");
@@ -3431,7 +3432,7 @@ public class LocalizedStrings {
   public static final StringId GatewaySenderImpl_GATEWAY_0_CANNOT_BE_CREATED_WITH_REMOTE_SITE_ID_LESS_THAN_ZERO = new StringId(5200, "GatewaySender {0} cannot be created with remote DS Id less than 0. ");
   public static final StringId CacheXmlParser_A_0_MUST_BE_DEFINED_IN_THE_CONTEXT_OF_GATEWAYSENDER_OR_GATEWAYRECEIVER = new StringId(5201, "A  {0}  must be defined in the context of gateway-sender or gateway-receiver.");
   public static final StringId Sender_COULD_NOT_START_GATEWAYSENDER_0_BECAUSE_OF_EXCEPTION_1 = new StringId(5202, "Could not start a gateway sender {0} because of exception {1}");
-  public static final StringId LOCATOR_DISCOVERY_TASK_EXCHANGED_LOCATOR_INFORMATION_0_WITH_1 = new StringId(5203, "Locator discovery task exchanged locator information {0} with {1}.");
+  public static final StringId LOCATOR_DISCOVERY_TASK_EXCHANGED_LOCATOR_INFORMATION_0_WITH_1 = new StringId(5203, "Locator discovery task exchanged locator information {0} with {1}: {2}.");
 
   public static final StringId DistributionManager_RECEIVED_NO_STARTUP_RESPONSES_BUT_OTHER_MEMBERS_EXIST_MULTICAST_IS_NOT_RESPONSIVE = new StringId(5205, "Did not receive a startup response but other members exist.  Multicast does not seem to be working.");
 

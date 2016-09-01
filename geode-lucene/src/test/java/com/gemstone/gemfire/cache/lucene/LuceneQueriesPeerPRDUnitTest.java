@@ -35,6 +35,9 @@ public class LuceneQueriesPeerPRDUnitTest extends LuceneQueriesPRBase {
   }
 
   @Override protected void initAccessor(final SerializableRunnableIF createIndex) throws Exception {
-    initDataStore(createIndex);
+    createIndex.run();
+    getCache().createRegionFactory(RegionShortcut.PARTITION_PROXY)
+        .setPartitionAttributes(getPartitionAttributes())
+        .create(REGION_NAME);
   }
 }

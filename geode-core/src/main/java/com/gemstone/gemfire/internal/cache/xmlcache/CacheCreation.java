@@ -485,30 +485,6 @@ public class CacheCreation implements InternalCache {
       }
     }
     
-    for (GatewayReceiver receiverCreation : this.getGatewayReceivers()) {
-      GatewayReceiverFactory factory = cache.createGatewayReceiverFactory();
-      factory.setBindAddress(receiverCreation.getBindAddress());
-      factory.setMaximumTimeBetweenPings(receiverCreation
-          .getMaximumTimeBetweenPings());
-      factory.setStartPort(receiverCreation.getStartPort());
-      factory.setEndPort(receiverCreation.getEndPort());
-      factory.setSocketBufferSize(receiverCreation.getSocketBufferSize());
-      factory.setManualStart(receiverCreation.isManualStart());
-      for (GatewayTransportFilter filter : receiverCreation
-          .getGatewayTransportFilters()) {
-        factory.addGatewayTransportFilter(filter);
-      }
-      factory.setHostnameForSenders(receiverCreation.getHost()); 
-      GatewayReceiver receiver = factory.create();
-       if (receiver.isManualStart()) {
-        cache
-            .getLoggerI18n()
-            .info(
-                LocalizedStrings.CacheCreation_0_IS_NOT_BEING_STARTED_SINCE_IT_IS_CONFIGURED_FOR_MANUAL_START,
-                receiver);
-      }
-    }
-
     cache.initializePdxRegistry();
 
     
@@ -540,6 +516,31 @@ public class CacheCreation implements InternalCache {
     String serverBindAdd = CacheServerLauncher.getServerBindAddress();
     Boolean disableDefaultServer = CacheServerLauncher.disableDefaultServer.get();
     startCacheServers(this.getCacheServers(), cache, serverPort, serverBindAdd, disableDefaultServer);
+
+    for (GatewayReceiver receiverCreation : this.getGatewayReceivers()) {
+      GatewayReceiverFactory factory = cache.createGatewayReceiverFactory();
+      factory.setBindAddress(receiverCreation.getBindAddress());
+      factory.setMaximumTimeBetweenPings(receiverCreation
+          .getMaximumTimeBetweenPings());
+      factory.setStartPort(receiverCreation.getStartPort());
+      factory.setEndPort(receiverCreation.getEndPort());
+      factory.setSocketBufferSize(receiverCreation.getSocketBufferSize());
+      factory.setManualStart(receiverCreation.isManualStart());
+      for (GatewayTransportFilter filter : receiverCreation
+          .getGatewayTransportFilters()) {
+        factory.addGatewayTransportFilter(filter);
+      }
+      factory.setHostnameForSenders(receiverCreation.getHost());
+      GatewayReceiver receiver = factory.create();
+      if (receiver.isManualStart()) {
+        cache
+            .getLoggerI18n()
+            .info(
+                LocalizedStrings.CacheCreation_0_IS_NOT_BEING_STARTED_SINCE_IT_IS_CONFIGURED_FOR_MANUAL_START,
+                receiver);
+      }
+    }
+
     cache.setBackupFiles(this.backups);
     cache.addDeclarableProperties(this.declarablePropertiesMap);
     runInitializer();

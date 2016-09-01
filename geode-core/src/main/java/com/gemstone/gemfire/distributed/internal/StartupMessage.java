@@ -178,20 +178,6 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
 
     String myVersion = GemFireVersion.getGemFireVersion();
     String theirVersion = this.version;
-    int myMajorVersion = GemFireVersion.getMajorVersion(myVersion);
-    int theirMajorVersion = GemFireVersion.getMajorVersion(theirVersion);
-    int myMinorVersion = GemFireVersion.getMinorVersion(myVersion);
-    int theirMinorVersion = GemFireVersion.getMinorVersion(theirVersion);
-    // fix for bug 43608
-    if (myMajorVersion != theirMajorVersion || myMinorVersion != theirMinorVersion) {
-      // now don't reject at this level since it will be handled at
-      // JGroups/Connection handshake level
-      /*
-      rejectionMessage = 
-          LocalizedStrings.StartupMessage_REJECTED_NEW_SYSTEM_NODE_0_WITH_PRODUCT_VERSION_1_BECAUSE_THE_EXISTING_DISTRIBUTED_SYSTEM_NODE_2_HAS_A_PRODUCT_VERSION_OF_3
-          .toLocalizedString(new Object[] {getSender(), this.version, dm.getId(), GemFireVersion.getGemFireVersion()});
-      */
-    }
     if (dm.getTransport().isMcastEnabled() != isMcastEnabled) {
       rejectionMessage =
         LocalizedStrings.StartupMessage_REJECTED_NEW_SYSTEM_NODE_0_BECAUSE_ISMCASTENABLED_1_DOES_NOT_MATCH_THE_DISTRIBUTED_SYSTEM_IT_IS_ATTEMPTING_TO_JOIN

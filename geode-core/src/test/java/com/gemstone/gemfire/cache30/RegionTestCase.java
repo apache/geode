@@ -24,8 +24,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -62,6 +64,7 @@ import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.cache.EntryExpiryTask;
 import com.gemstone.gemfire.internal.cache.EntrySnapshot;
 import com.gemstone.gemfire.internal.cache.ExpiryTask;
+import com.gemstone.gemfire.internal.cache.ExpiryTask.ExpiryTaskListener;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
@@ -3540,6 +3543,57 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     }
   }
   
+  class ExpiryCallbacks implements ExpiryTaskListener {
+
+    @Override
+    public void afterSchedule(ExpiryTask et) {
+      printState(et, "ExpiryCallbacks.afterSchedule " );
+    }
+    @Override
+    public void afterTaskRan(ExpiryTask et) {
+      printState(et, "ExpiryCallbacks.afterTaskRan " );
+    }
+    
+    void printState(ExpiryTask et, String callback) {
+      Date now = new Date();
+      Date ttl = now;
+      try {
+        ttl = new Date(et.getExpirationTime());
+      }catch(EntryNotFoundException enfx) {
+        //ignore
+      }
+      Date idleExpTime = now;
+      try {
+        idleExpTime = new Date(et.getIdleExpirationTime());
+      }catch(EntryNotFoundException enfx) {
+        //ignore
+      }
+      Date ttlTime = new Date(et.getTTLExpirationTime());
+      Date getNow = new Date(et.getNow());
+      Date scheduleETime = new Date(et.scheduledExecutionTime());
+      //et.getKey();
+      getCache().getLogger().info(callback + " now: " + getCurrentTimeStamp(now) + " ttl:" + getCurrentTimeStamp(ttl) + " idleExpTime:" + getCurrentTimeStamp(idleExpTime) + 
+          " ttlTime:" + getCurrentTimeStamp(ttlTime)  + " getNow:" + getCurrentTimeStamp(getNow) + " scheduleETime:" + getCurrentTimeStamp(scheduleETime) +
+          " getKey:" + et.getKey() + " isPending:" + et.isPending() +
+          " et :" + et +  
+          " Task reference " + System.identityHashCode(et));
+    }
+
+    public String getCurrentTimeStamp(Date d) {
+      return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(d);
+    }
+    @Override
+    public void afterReschedule(ExpiryTask et) {
+      printState(et, "ExpiryCallbacks.afterReschedule" );
+    }
+
+    @Override
+    public void afterExpire(ExpiryTask et) {
+      printState(et, "ExpiryCallbacks.afterExpire" );
+    }
+    
+  }
+  
   /**
    * Tests that an entry in a region that remains idle for a
    * given amount of time is destroyed.
@@ -3552,7 +3606,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     final int timeout = 20; // ms
     final String key = "KEY";
     final String value = "VALUE";
-    
+    EntryExpiryTask.expiryTaskListener = new ExpiryCallbacks();
     AttributesFactory factory = new AttributesFactory(getRegionAttributes());
     ExpirationAttributes expire =
             new ExpirationAttributes(timeout, ExpirationAction.DESTROY);
@@ -3599,6 +3653,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     } 
     finally {
       System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
+      EntryExpiryTask.expiryTaskListener = null;
     }
     
   }

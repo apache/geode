@@ -100,9 +100,9 @@ public class MemberFactory {
           File stateFile,
           String locatorString,
           boolean usePreferredCoordinators,
-          boolean networkPartitionDetectionEnabled, LocatorStats stats) {
+          boolean networkPartitionDetectionEnabled, LocatorStats stats, String securityUDPDHAlgo) {
     return services.newLocatorHandler(bindAddress, stateFile, locatorString,
-        usePreferredCoordinators, networkPartitionDetectionEnabled, stats);
+        usePreferredCoordinators, networkPartitionDetectionEnabled, stats, securityUDPDHAlgo);
   }
 
 }

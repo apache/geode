@@ -624,6 +624,28 @@ public class LonerDistributionManager implements DM {
     public long getUdpFinalCheckResponsesReceived() {return 0;}
     @Override
     public void incUdpFinalCheckResponsesReceived() {}
+    @Override
+    public long startUDPMsgEncryption() {
+      return 0;
+    }
+    @Override
+    public void endUDPMsgEncryption(long start) {
+    }
+    @Override
+    public long startUDPMsgDecryption() {
+      return 0;
+    }
+    @Override
+    public void endUDPMsgDecryption(long start) {
+    }
+    @Override
+    public long getUDPMsgEncryptionTiime() {
+      return 0;
+    }
+    @Override
+    public long getUDPMsgDecryptionTime() {
+      return 0;
+    }
   }
   protected static class DummyExecutor implements ExecutorService {
     @Override

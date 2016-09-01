@@ -110,4 +110,29 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
              +")";
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    InstallViewMessage other = (InstallViewMessage) obj;
+    if (credentials == null) {
+      if (other.credentials != null)
+        return false;
+    } else if (!credentials.equals(other.credentials))
+      return false;
+    if (kind != other.kind)
+      return false;
+    if (previousViewId != other.previousViewId)
+      return false;
+    if (view == null) {
+      if (other.view != null)
+        return false;
+    } else if (!view.equals(other.view))
+      return false;
+    return true;
+  }  
 }

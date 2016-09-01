@@ -18,7 +18,6 @@ package org.apache.geode.security.templates;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -98,10 +97,8 @@ public class SampleSecurityManager implements SecurityManager {
   private Map<String, User> userNameToUser;
 
   @Override
-  public boolean authorize(final Serializable principal, final ResourcePermission context) {
-    if (principal == null) {
-      return false;
-    }
+  public boolean authorize(final Object principal, final ResourcePermission context) {
+    if (principal == null) return false;
 
     User user = this.userNameToUser.get(principal.toString());
     if (user == null) {
@@ -133,7 +130,7 @@ public class SampleSecurityManager implements SecurityManager {
   }
 
   @Override
-  public Serializable authenticate(final Properties credentials) throws AuthenticationFailedException {
+  public Object authenticate(final Properties credentials) throws AuthenticationFailedException {
     String user = credentials.getProperty(ResourceConstants.USER_NAME);
     String password = credentials.getProperty(ResourceConstants.PASSWORD);
 

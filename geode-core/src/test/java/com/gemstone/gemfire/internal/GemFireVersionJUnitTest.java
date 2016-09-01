@@ -16,14 +16,16 @@
  */
 package com.gemstone.gemfire.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.internal.GemFireVersion.VersionDescription;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
@@ -34,73 +36,32 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class GemFireVersionJUnitTest {
 
-  /**
-   * Prints both the GemFire version info and the system properties.
-   * We have to print both 
-   */
   @Test
   public void testPrintInfo() {
-	  ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	  PrintStream ps = new PrintStream(baos);
-    GemFireVersion.print(ps);
-    final String versionOutput = baos.toString();
+    final String versionOutput = GemFireVersion.asString();
     System.out.println(versionOutput);
-    assertTrue(versionOutput.contains("Java version:"));
-    assertTrue(versionOutput.contains("Native version:"));
-    assertTrue(versionOutput.contains("Source revision:"));
-    assertTrue(versionOutput.contains("Source repository:"));
-    assertTrue(versionOutput.contains("Running on:"));
-  }
-
-  @Test
-  public void testMajorMinorVersions() {
-    assertEquals(1, GemFireVersion.getMajorVersion("1.0.3"));
-    assertEquals(33, GemFireVersion.getMajorVersion("33.0.3"));
     
-    assertEquals(7, GemFireVersion.getMinorVersion("1.7.3"));
-    assertEquals(79, GemFireVersion.getMinorVersion("1.79.3"));
-    assertEquals(0, GemFireVersion.getMinorVersion("1.RC1"));
-    assertEquals(5, GemFireVersion.getMinorVersion("1.5Beta2"));
-
-    assertEquals(13, GemFireVersion.getBuild("7.0.2.13"));
-    assertEquals(0, GemFireVersion.getBuild("1.7.3"));
-    assertEquals(0, GemFireVersion.getBuild("1.79.3"));
-    assertEquals(0, GemFireVersion.getBuild("1.RC1"));
-    assertEquals(0, GemFireVersion.getBuild("1.5Beta2"));
-
-    assertTrue("7.0 should be < 7.0.2.14", GemFireVersion.compareVersions("7.0", "7.0.2.14", true) < 0);
-    assertTrue("7.0.0 should be < 7.0.2.14", GemFireVersion.compareVersions("7.0.0", "7.0.2.14", true) < 0);
-    assertTrue("7.0.2 should be < 7.0.2.14", GemFireVersion.compareVersions("7.0.2", "7.0.2.14", true) < 0);
-    assertTrue("7.0.3 should be > 7.0.2.14", GemFireVersion.compareVersions("7.0.3", "7.0.2.14", true) > 0);
-    assertTrue("7.0.1.15 should be < 7.0.2.14", GemFireVersion.compareVersions("7.0.1.15", "7.0.2.14", true) < 0);
-    assertTrue("7.0.2.13 should be < 7.0.2.14", GemFireVersion.compareVersions("7.0.2.13", "7.0.2.14", true) < 0);
-    assertTrue("7.0.2.14 should be > 7.0.2.13", GemFireVersion.compareVersions("7.0.2.14", "7.0.2.13", true) > 0);
-    assertTrue("7.0.2.14 should be == 7.0.2.14", GemFireVersion.compareVersions("7.0.2.14", "7.0.2.14", true) == 0);
-    assertTrue("7.0.2.12 should be < 7.0.2.13", GemFireVersion.compareVersions("7.0.2.12", "7.0.2.13", true) < 0);
-    assertTrue("7.0.2.13 should be == 7.0.2.13", GemFireVersion.compareVersions("7.0.2.13", "7.0.2.13", true) == 0);
-    assertTrue("7.0.2.15 should be > 7.0.2.13", GemFireVersion.compareVersions("7.0.2.14", "7.0.2.13", true) > 0);
-  }
-
-  @Test
-  public void testVersionClass() throws Exception {
-    compare(Version.GFE_662, Version.GFE_66);
-    compare(Version.GFE_6622, Version.GFE_662);
-    compare(Version.GFE_71, Version.GFE_70);
-    compare(Version.GFE_80, Version.GFE_70);
-    compare(Version.GFE_80, Version.GFE_71);
-    compare(Version.GFE_81, Version.GFE_70);
-    compare(Version.GFE_81, Version.GFE_71);
-    compare(Version.GFE_81, Version.GFE_80);
+    assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.PRODUCT_NAME));
+    assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.GEMFIRE_VERSION));
+    assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.SOURCE_DATE));
+    assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.SOURCE_REVISION));
+    assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.SOURCE_REPOSITORY));
+    assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.BUILD_DATE));
+    assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.BUILD_ID));
+    assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.BUILD_PLATFORM));
+    assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.BUILD_JAVA_VERSION));
   }
   
-  private void compare(Version later, Version earlier) {
-    assertTrue(later.compareTo(earlier) > 0);
-    assertTrue(later.equals(later));
-    assertTrue(later.compareTo(later) == 0);
-    assertTrue(earlier.compareTo(later) < 0);
+  @Test
+  public void testNoFile() {
+    String noFile = "not a property file";
+    VersionDescription noVersion = new VersionDescription(noFile);
 
-    assertTrue(later.compareTo(earlier.ordinal()) > 0);
-    assertTrue(later.compareTo(later.ordinal()) == 0);
-    assertTrue(earlier.compareTo(later.ordinal()) < 0);
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    noVersion.print(pw);
+
+    String noFileOutput = sw.toString();
+    assertTrue(noFileOutput.contains(LocalizedStrings.GemFireVersion_COULD_NOT_FIND_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0.toLocalizedString(noFile)));
   }
 }

@@ -1202,6 +1202,15 @@ public interface ConfigurationProperties {
    */
   String SECURITY_CLIENT_DHALGO = SECURITY_PREFIX + "client-dhalgo";
   /**
+   * The static String definition of the <i>"security-udp-dhalgo"</i>
+   * property. Application can set this property to valid symmetric key
+   * algorithm, to encrypt udp messages in Geode. Geode will generate 
+   * symmetric key using Diffie-Hellman key exchange algorithm between
+   * peers. That key further used by specified algorithm to encrypt the
+   * udp messages.
+   */
+  String SECURITY_UDP_DHALGO = SECURITY_PREFIX + "udp-dhalgo";
+  /**
    * The static String definition of the <i>"security-log-file"</i>
    * property
    */

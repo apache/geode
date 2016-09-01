@@ -21,6 +21,7 @@ import java.util.Set;
 
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
 
 public interface Messenger extends Service {
@@ -28,6 +29,13 @@ public interface Messenger extends Service {
    * adds a handler for the given class/interface of messages
    */
   void addHandler(Class c, MessageHandler h);
+
+  /**
+   * sends an asynchronous message when the membership view may not have
+   * been established.  Returns destinations that did not
+   * receive the message due to no longer being in the view
+   */
+  Set<InternalDistributedMember> send(DistributionMessage m, NetView alternateView);
 
   /**
    * sends an asynchronous message.  Returns destinations that did not
@@ -78,4 +86,42 @@ public interface Messenger extends Service {
    * @param state the state of that member's outgoing messaging to this member
    */
   void waitForMessageState(InternalDistributedMember member, Map state) throws InterruptedException;
+  
+  /**
+   * Get the public key of member. 
+   * @param mbr
+   * @return byte[] public key for member
+   */
+  byte[] getPublicKey(InternalDistributedMember mbr);
+  
+  /**
+   * Set public key of member.
+   * @param publickey
+   * @param mbr
+   */
+  
+  void setPublicKey(byte[] publickey, InternalDistributedMember mbr);
+  
+  /**
+   * Set cluster key in local member.Memebr calls when it gets cluster key in join response
+   * @param clusterSecretKey
+   */
+  void setClusterSecretKey(byte[] clusterSecretKey);
+  
+  /** 
+   * To retrieve the cluster key. This needs to send cluster key to new memebr.
+   * @return byte[] cluster key
+   */
+  byte[] getClusterSecretKey();
+  
+  /**
+   * To set requestId in request. This requestId comes back in response to match the request.
+   * @return int request id
+   */
+  int getRequestId();
+  
+  /**
+   * Initialize the cluster key, this happens when member becomes coordinator.
+   */
+  void initClusterKey();
 }

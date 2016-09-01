@@ -29,9 +29,11 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
@@ -39,6 +41,7 @@ import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
 import com.gemstone.gemfire.cache.lucene.internal.xml.LuceneIndexCreation;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
@@ -50,24 +53,21 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   protected final String regionPath;
   protected final Cache cache;
   protected final LuceneIndexStats indexStats;
-  protected final FileSystemStats fileSystemStats;
 
   protected boolean hasInitialized = false;
   protected Map<String, Analyzer> fieldAnalyzers;
   protected String[] searchableFieldNames;
   protected RepositoryManager repositoryManager;
   protected Analyzer analyzer;
-  protected Region<String, File> fileRegion;
-  protected Region<ChunkKey, byte[]> chunkRegion;
-
+  protected LocalRegion dataRegion;
 
   protected LuceneIndexImpl(String indexName, String regionPath, Cache cache) {
     this.indexName = indexName;
     this.regionPath = regionPath;
     this.cache = cache;
+    
     final String statsName = indexName + "-" + regionPath;
     this.indexStats = new LuceneIndexStats(cache.getDistributedSystem(), statsName);
-    this.fileSystemStats = new FileSystemStats(cache.getDistributedSystem(), statsName);
   }
 
   @Override
@@ -78,6 +78,17 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   @Override
   public String getRegionPath() {
     return this.regionPath;
+  }
+ 
+  protected LocalRegion getDataRegion() {
+    return (LocalRegion)cache.getRegion(regionPath);
+  }
+
+  protected boolean withPersistence() {
+    RegionAttributes ra = dataRegion.getAttributes();
+    DataPolicy dp = ra.getDataPolicy();
+    final boolean withPersistence = dp.withPersistence();
+    return withPersistence;
   }
   
   protected void setSearchableFields(String[] fields) {
@@ -135,6 +146,10 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     return this.analyzer;
   }
 
+  public Cache getCache() {
+    return this.cache;
+  }
+  
   public void setFieldAnalyzers(Map<String, Analyzer> fieldAnalyzers) {
     this.fieldAnalyzers = fieldAnalyzers == null ? null : Collections.unmodifiableMap(fieldAnalyzers);
   }
@@ -143,17 +158,59 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     return indexStats;
   }
 
-  public FileSystemStats getFileSystemStats() {
-    return fileSystemStats;
+  protected void initialize() {
+    if (!hasInitialized) {
+      /* create index region */
+      dataRegion = getDataRegion();
+      //assert dataRegion != null;
+
+      repositoryManager = createRepositoryManager();
+      
+      // create AEQ, AEQ listener and specify the listener to repositoryManager
+      createAEQ(dataRegion);
+
+      addExtension(dataRegion);
+      hasInitialized = true;
+    }
+  }
+  
+  protected abstract RepositoryManager createRepositoryManager();
+  
+  protected AsyncEventQueue createAEQ(Region dataRegion) {
+    return createAEQ(createAEQFactory(dataRegion));
   }
 
-  protected abstract void initialize();
-  
-  /**
+  private AsyncEventQueueFactoryImpl createAEQFactory(final Region dataRegion) {
+    AsyncEventQueueFactoryImpl factory = (AsyncEventQueueFactoryImpl) cache.createAsyncEventQueueFactory();
+    if (dataRegion instanceof PartitionedRegion) {
+      factory.setParallel(true); // parallel AEQ for PR
+    } else {
+      factory.setParallel(false); // TODO: not sure if serial AEQ working or not
+    }
+    factory.setMaximumQueueMemory(1000);
+    factory.setDispatcherThreads(10);
+    factory.setIsMetaQueue(true);
+    if (dataRegion.getAttributes().getDataPolicy().withPersistence()) {
+      factory.setPersistent(true);
+    }
+    factory.setDiskStoreName(dataRegion.getAttributes().getDiskStoreName());
+    factory.setDiskSynchronous(dataRegion.getAttributes().isDiskSynchronous());
+    factory.setForwardExpirationDestroy(true);
+    return factory;
+  }
+
+  private AsyncEventQueue createAEQ(AsyncEventQueueFactoryImpl factory) {
+    LuceneEventListener listener = new LuceneEventListener(repositoryManager);
+    String aeqId = LuceneServiceImpl.getUniqueIndexName(getName(), regionPath);
+    AsyncEventQueue indexQueue = factory.create(aeqId, listener);
+    return indexQueue;
+  }
+
+/**
    * Register an extension with the region
    * so that xml will be generated for this index.
    */
-  protected void addExtension(PartitionedRegion dataRegion) {
+  protected void addExtension(LocalRegion dataRegion) {
     LuceneIndexCreation creation = new LuceneIndexCreation();
     creation.setName(this.getName());
     creation.addFieldNames(this.getFieldNames());

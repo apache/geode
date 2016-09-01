@@ -52,7 +52,10 @@ public class LuceneQueriesPeerPRRedundancyDUnitTest extends LuceneQueriesPRBase 
   }
 
   @Override protected void initAccessor(final SerializableRunnableIF createIndex) throws Exception {
-    initDataStore(createIndex);
+    createIndex.run();
+    Region region = getCache().createRegionFactory(RegionShortcut.PARTITION_PROXY_REDUNDANT)
+        .setPartitionAttributes(getPartitionAttributes())
+        .create(REGION_NAME);
   }
 
   @Test

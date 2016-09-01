@@ -215,8 +215,15 @@ public interface DMStats {
   public void endDeserialization(long start, int bytes);
   public long startMsgSerialization();
   public void endMsgSerialization(long start);
+  public long startUDPMsgEncryption();
+  public void endUDPMsgEncryption(long start);
+  public long startUDPMsgDecryption();
+  public void endUDPMsgDecryption(long start);
   public long startMsgDeserialization();
   public void endMsgDeserialization(long start);
+  
+  public long getUDPMsgEncryptionTiime();
+  public long getUDPMsgDecryptionTime();
 
   public int getNodes();
   public void setNodes(int val);

@@ -20,6 +20,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -37,19 +38,38 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
   private String rejectionMessage;
   private InternalDistributedMember memberID;
   private byte[] messengerData;
-  
-  public JoinResponseMessage(InternalDistributedMember memberID, NetView view) {
+  private int requestId;
+  private byte[] secretPk;
+    
+  public JoinResponseMessage(InternalDistributedMember memberID, NetView view, int requestId) {
     this.currentView = view;
     this.memberID = memberID;
+    this.requestId = requestId;
     setRecipient(memberID);
   }
   
-  public JoinResponseMessage(String rejectionMessage) {
+  public JoinResponseMessage(InternalDistributedMember memberID, byte[] sPk, int requestId) {
+    this.memberID = memberID;
+    this.requestId = requestId;
+    this.secretPk = sPk;
+    setRecipient(memberID);
+  }
+  
+  public JoinResponseMessage(String rejectionMessage, int requestId) {
     this.rejectionMessage = rejectionMessage;
+    this.requestId = requestId;
   }
   
   public JoinResponseMessage() {
     // no-arg constructor for serialization
+  }
+  
+  public byte[] getSecretPk() {
+    return secretPk;
+  }
+  
+  public int getRequestId() {
+    return requestId;
   }
 
   public NetView getCurrentView() {
@@ -101,6 +121,7 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
     DataSerializer.writeObject(memberID, out);
     DataSerializer.writeString(rejectionMessage, out);
     DataSerializer.writeByteArray(messengerData, out);
+    DataSerializer.writeByteArray(secretPk, out);
   }
 
   @Override
@@ -109,6 +130,42 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
     memberID = DataSerializer.readObject(in);
     rejectionMessage = DataSerializer.readString(in);
     messengerData = DataSerializer.readByteArray(in);
+    secretPk = DataSerializer.readByteArray(in);
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    JoinResponseMessage other = (JoinResponseMessage) obj;
+    if (currentView == null) {
+      if (other.currentView != null)
+        return false;
+    } else if (!currentView.equals(other.currentView))
+      return false;
+    if (memberID == null) {
+      if (other.memberID != null)
+        return false;
+    } else if (!memberID.equals(other.memberID))
+      return false;
+    if (!Arrays.equals(messengerData, other.messengerData))
+      return false;
+    if (rejectionMessage == null) {
+      if (other.rejectionMessage != null)
+        return false;
+    } else if (!rejectionMessage.equals(other.rejectionMessage))
+      return false;
+    //as we are not sending as part of JoinResposne
+    /*if (requestId != other.requestId)
+      return false;*/
+    if (!Arrays.equals(secretPk, other.secretPk))
+      return false;
+    return true;
+  }
+
+  
 }

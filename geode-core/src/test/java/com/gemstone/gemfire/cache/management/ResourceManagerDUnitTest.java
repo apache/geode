@@ -922,7 +922,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
             public void run() {
               invoked[0] = true;
               logger.debug("In bucketReadHook");
-              prds.removeBucket(0, false);
+              assertTrue(prds.removeBucket(0, false));
             }
           });
         try {
@@ -950,8 +950,8 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
         Bucket bucket = pr.getRegionAdvisor().getBucket(0);
         BucketRegion bucketRegion = bucket.getBucketAdvisor()
             .getProxyBucketRegion().getHostedBucketRegion();
-        
-        assertFalse("Target member is still hosting removed bucket", 
+
+        assertFalse("Target member is still hosting removed bucket. Bucket:"+ bucket+" Advisor state:"+bucket.getBucketAdvisor(),
                     bucket.isHosting());
         
         assertNull(bucketRegion);
@@ -1005,6 +1005,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
       });
   }
 
+  @Category(FlakyTest.class) // GEODE-1768: thread unsafe test hook (bucketReadHook), remove bucket fails, possible product bug in rebalancing
   @Test
   public void testRemoveDuringKeySet() {
     doOpDuringBucketRemove(new OpDuringBucketRemove() {

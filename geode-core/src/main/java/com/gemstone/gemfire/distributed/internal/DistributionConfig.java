@@ -2157,13 +2157,28 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @ConfigAttributeGetter(name = SECURITY_CLIENT_DHALGO)
   String getSecurityClientDHAlgo();
-
+  
   /**
    * Set the name of algorithm to use for Diffie-Hellman key exchange {@link ConfigurationProperties#SECURITY_CLIENT_DHALGO}
    * property.
    */
   @ConfigAttributeSetter(name = SECURITY_CLIENT_DHALGO)
   void setSecurityClientDHAlgo(String attValue);
+  
+  /**
+   * Returns name of algorithm to use for Diffie-Hellman key exchange <a
+   * href="../DistributedSystem.html#security-udp-dhalgo">"security-udp-dhalgo"</a>
+   */
+  @ConfigAttributeGetter(name = SECURITY_UDP_DHALGO)
+  String getSecurityUDPDHAlgo();
+
+  /**
+   * Set the name of algorithm to use for Diffie-Hellman key exchange <a
+   * href="../DistributedSystem.html#security-udp-dhalgo">"security-udp-dhalgo"</a>
+   * property.
+   */
+  @ConfigAttributeSetter(name = SECURITY_UDP_DHALGO)
+  void setSecurityUDPDHAlgo(String attValue);
 
   /**
    * The name of the Diffie-Hellman symmetric algorithm {@link ConfigurationProperties#SECURITY_CLIENT_DHALGO}
@@ -2171,6 +2186,13 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @ConfigAttribute(type = String.class)
   String SECURITY_CLIENT_DHALGO_NAME = SECURITY_CLIENT_DHALGO;
+  
+  /**
+   * The name of the Diffie-Hellman symmetric algorithm "security-client-dhalgo"
+   * property.
+   */
+  @ConfigAttribute(type = String.class)
+  String SECURITY_UDP_DHALGO_NAME = SECURITY_UDP_DHALGO;
 
   /**
    * The default Diffie-Hellman symmetric algorithm name.
@@ -2179,6 +2201,14 @@ public interface DistributionConfig extends Config, LogConfig {
    * JDK like "DES", "DESede", "AES", "Blowfish".
    */
   String DEFAULT_SECURITY_CLIENT_DHALGO = "";
+  
+  /**
+   * The default Diffie-Hellman symmetric algorithm name.
+   * <p>
+   * Actual value of this is one of the available symmetric algorithm names in
+   * JDK like "DES", "DESede", "AES", "Blowfish".
+   */
+  String DEFAULT_SECURITY_UDP_DHALGO = "";
 
   /**
    * Returns user defined method name for peer authentication initializer in {@link ConfigurationProperties#SECURITY_PEER_AUTH_INIT}

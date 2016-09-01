@@ -108,31 +108,62 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
    */
   @Test
   public void test_NY_Recognises_ALL_LN_Locators() throws Exception {
-    ArrayList<Integer> locatorPorts = new ArrayList<Integer>();
-    Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
+    Set<InetSocketAddress> locatorPorts = new HashSet<>();
+    Map<Integer, Set<InetSocketAddress>> dsVsPort = new HashMap<>();
     dsVsPort.put(1, locatorPorts);
 
     Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    locatorPorts.add(lnLocPort1);
+    locatorPorts.add(new InetSocketAddress("localhost", lnLocPort1));
 
     Integer lnLocPort2 = (Integer)vm1.invoke(() -> WANTestBase.createSecondLocator( 1, lnLocPort1 ));
-    locatorPorts.add(lnLocPort2);
+    locatorPorts.add(new InetSocketAddress("localhost", lnLocPort2));
     
-    locatorPorts = new ArrayList<Integer>();
+    locatorPorts = new HashSet<>();
     dsVsPort.put(2, locatorPorts);
     Integer nyLocPort1 = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnLocPort1 ));
-    locatorPorts.add(nyLocPort1);
+    locatorPorts.add(new InetSocketAddress("localhost", nyLocPort1));
     
     Integer nyLocPort2 = (Integer)vm3.invoke(() -> WANTestBase.createSecondRemoteLocator(
             2, nyLocPort1, lnLocPort1));
-    locatorPorts.add(nyLocPort2);
+    locatorPorts.add(new InetSocketAddress("localhost", nyLocPort2));
     
     vm0.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
     vm1.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
     vm2.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
     vm3.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
   }
- 
+
+  /**
+   * Test to validate that multiple locators added two sets receive eachothers
+   * hostname for client setting even when the locator is started through the API.
+   */
+  @Test
+  public void locatorsReceiveHostnameForClientsFromRemoteSite() throws Exception {
+    Set<InetSocketAddress> locatorPorts = new HashSet<>();
+    Map<Integer, Set<InetSocketAddress>> dsVsPort = new HashMap<>();
+    dsVsPort.put(1, locatorPorts);
+
+    Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    locatorPorts.add(new InetSocketAddress("localhost", lnLocPort1));
+
+    Integer lnLocPort2 = (Integer)vm1.invoke(() -> WANTestBase.createSecondLocator( 1, lnLocPort1 ));
+    locatorPorts.add(new InetSocketAddress("localhost", lnLocPort2));
+
+    locatorPorts = new HashSet<>();
+    dsVsPort.put(2, locatorPorts);
+    Integer nyLocPort1 = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnLocPort1 ));
+    locatorPorts.add(new InetSocketAddress("localhost", nyLocPort1));
+
+    Integer nyLocPort2 = (Integer)vm3.invoke(() -> WANTestBase.createSecondRemoteLocatorWithAPI(
+      2, nyLocPort1, lnLocPort1, "localhost"));
+    locatorPorts.add(new InetSocketAddress("localhost", nyLocPort2));
+
+    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm2.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+    vm3.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
+  }
+
   /**
    * Test to validate that TK site's locator is recognized by LN and NY. Test to
    * validate that HK site's locator is recognized by LN , NY, TK.
@@ -140,28 +171,28 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   @Test
   public void test_NY_Recognises_TK_AND_HK_Through_LN_Locator() {
 
-    Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
+    Map<Integer, Set<InetSocketAddress>> dsVsPort = new HashMap<>();
 
-    ArrayList<Integer> locatorPorts = new ArrayList<Integer>();
+    Set<InetSocketAddress> locatorPorts = new HashSet<>();
     dsVsPort.put(1, locatorPorts);
     
     Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
-    locatorPorts.add(lnLocPort1);
+    locatorPorts.add(new InetSocketAddress("localhost", lnLocPort1));
 
-    locatorPorts = new ArrayList<Integer>();
+    locatorPorts = new HashSet<>();
     dsVsPort.put(2, locatorPorts);
     Integer nyLocPort1 = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnLocPort1 ));
-    locatorPorts.add(nyLocPort1);
+    locatorPorts.add(new InetSocketAddress("localhost", nyLocPort1));
 
-    locatorPorts = new ArrayList<Integer>();
+    locatorPorts = new HashSet<>();
     dsVsPort.put(3, locatorPorts);
     Integer tkLocPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 3, lnLocPort1 ));
-    locatorPorts.add(tkLocPort);
+    locatorPorts.add(new InetSocketAddress("localhost", tkLocPort));
 
-    locatorPorts = new ArrayList<Integer>();
+    locatorPorts = new HashSet<>();
     dsVsPort.put(4, locatorPorts);
     Integer hkLocPort = (Integer)vm3.invoke(() -> WANTestBase.createFirstRemoteLocator( 4, lnLocPort1 ));
-    locatorPorts.add(hkLocPort);
+    locatorPorts.add(new InetSocketAddress("localhost", hkLocPort));
 
     vm0.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
     vm1.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
@@ -172,23 +203,23 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   @Test
   public void test_TK_Recognises_LN_AND_NY() {
 
-    Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
+    Map<Integer, Set<InetSocketAddress>> dsVsPort = new HashMap<>();
 
-    ArrayList<Integer> locatorPorts = new ArrayList<Integer>();
+    Set<InetSocketAddress> locatorPorts = new HashSet<>();
     dsVsPort.put(1, locatorPorts);
     
     Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
-    locatorPorts.add(lnLocPort1);
+    locatorPorts.add(new InetSocketAddress("localhost", lnLocPort1));
 
-    locatorPorts = new ArrayList<Integer>();
+    locatorPorts = new HashSet<>();
     dsVsPort.put(2, locatorPorts);
     Integer nyLocPort1 = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnLocPort1 ));
-    locatorPorts.add(nyLocPort1);
+    locatorPorts.add(new InetSocketAddress("localhost", nyLocPort1));
 
-    locatorPorts = new ArrayList<Integer>();
+    locatorPorts = new HashSet<>();
     dsVsPort.put(3, locatorPorts);
     Integer tkLocPort = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemoteLocator( 3, nyLocPort1 ));
-    locatorPorts.add(tkLocPort);
+    locatorPorts.add(new InetSocketAddress("localhost", tkLocPort));
 
 
     vm0.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
@@ -198,26 +229,26 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   
   @Test
   public void test_NY_Recognises_TK_AND_HK_Simultaneously() {
-    Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
+    Map<Integer, Set<InetSocketAddress>> dsVsPort = new HashMap<>();
 
-    ArrayList<Integer> locatorPortsln = new ArrayList<Integer>();
+    Set<InetSocketAddress> locatorPortsln = new HashSet<>();
     dsVsPort.put(1, locatorPortsln);
     Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
-    locatorPortsln.add(lnLocPort1);
+    locatorPortsln.add(new InetSocketAddress("localhost", lnLocPort1));
 
-    ArrayList<Integer> locatorPortsny = new ArrayList<Integer>();
+    Set<InetSocketAddress> locatorPortsny = new HashSet<>();
     dsVsPort.put(2, locatorPortsny);
     Integer nyLocPort1 = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnLocPort1 ));
-    locatorPortsny.add(nyLocPort1);
+    locatorPortsny.add(new InetSocketAddress("localhost", nyLocPort1));
 
     int AsyncInvocationArrSize = 4;
     AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
 
-    ArrayList<Integer> locatorPortstk = new ArrayList<Integer>();
+    Set<InetSocketAddress> locatorPortstk = new HashSet<>();
     dsVsPort.put(3, locatorPortstk);
     async[0] = vm2.invokeAsync(() -> WANTestBase.createFirstRemoteLocator( 3, lnLocPort1 ));
 
-    ArrayList<Integer> locatorPortshk = new ArrayList<Integer>();
+    Set<InetSocketAddress> locatorPortshk = new HashSet<>();
     dsVsPort.put(4, locatorPortshk);
     async[1] = vm3.invokeAsync(() -> WANTestBase.createFirstRemoteLocator(4, nyLocPort1));
 
@@ -238,10 +269,10 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
       fail();
     }
     
-    locatorPortstk.add((Integer)async[0].getReturnValue());
-    locatorPortshk.add((Integer)async[1].getReturnValue());
-    locatorPortsln.add((Integer)async[2].getReturnValue());
-    locatorPortsny.add((Integer)async[3].getReturnValue());
+    locatorPortstk.add(new InetSocketAddress("localhost", (Integer)async[0].getReturnValue()));
+    locatorPortshk.add(new InetSocketAddress("localhost", (Integer)async[1].getReturnValue()));
+    locatorPortsln.add(new InetSocketAddress("localhost", (Integer)async[2].getReturnValue()));
+    locatorPortsny.add(new InetSocketAddress("localhost", (Integer)async[3].getReturnValue()));
     
     vm0.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
     vm1.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
@@ -290,8 +321,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.checkLocatorsinSender("ln", locatorToWaitFor2 ));
 
   }
-  
-  
+
   @Test
   public void test_RingTopology() {
 
@@ -434,15 +464,15 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   
   @Test
   public void test_LN_Peer_Locators_Exchange_Information() {
-    ArrayList<Integer> locatorPorts = new ArrayList<Integer>();
-    Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
+    Set<InetSocketAddress> locatorPorts = new HashSet<>();
+    Map<Integer, Set<InetSocketAddress>> dsVsPort = new HashMap<>();
     dsVsPort.put(1, locatorPorts);
 
     Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstPeerLocator(1));
-    locatorPorts.add(lnLocPort1);
+    locatorPorts.add(new InetSocketAddress("localhost", lnLocPort1));
 
     Integer lnLocPort2 = (Integer)vm1.invoke(() -> WANTestBase.createSecondPeerLocator( 1, lnLocPort1 ));
-    locatorPorts.add(lnLocPort2);
+    locatorPorts.add(new InetSocketAddress("localhost", lnLocPort2));
     
     vm0.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
     vm1.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
@@ -450,31 +480,31 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   
   @Test
   public void test_LN_NY_TK_5_PeerLocators_1_ServerLocator() {
-    Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
+    Map<Integer, Set<InetSocketAddress>> dsVsPort = new HashMap<>();
     
     
-    ArrayList<Integer> locatorPorts = new ArrayList<Integer>();
+    Set<InetSocketAddress> locatorPorts = new HashSet<>();
     dsVsPort.put(1, locatorPorts);
     Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstPeerLocator(1));
-    locatorPorts.add(lnLocPort1);
+    locatorPorts.add(new InetSocketAddress("localhost", lnLocPort1));
     Integer lnLocPort2 = (Integer)vm1.invoke(() -> WANTestBase.createSecondPeerLocator( 1, lnLocPort1 ));
-    locatorPorts.add(lnLocPort2);
+    locatorPorts.add(new InetSocketAddress("localhost", lnLocPort2));
     
-    locatorPorts = new ArrayList<Integer>();
+    locatorPorts = new HashSet<>();
     dsVsPort.put(2, locatorPorts);
     Integer nyLocPort1 = (Integer)vm2.invoke(() -> WANTestBase.createFirstRemotePeerLocator(2, lnLocPort1));
-    locatorPorts.add(nyLocPort1);
+    locatorPorts.add(new InetSocketAddress("localhost", nyLocPort1));
     Integer nyLocPort2 = (Integer)vm3.invoke(() -> WANTestBase.createSecondRemotePeerLocator( 2, nyLocPort1, lnLocPort2));
-    locatorPorts.add(nyLocPort2);
+    locatorPorts.add(new InetSocketAddress("localhost", nyLocPort2));
     
-    locatorPorts = new ArrayList<Integer>();
+    locatorPorts = new HashSet<>();
     dsVsPort.put(3, locatorPorts);
     Integer tkLocPort1 = (Integer)vm4.invoke(() -> WANTestBase.createFirstRemotePeerLocator(3, nyLocPort1));
-    locatorPorts.add(tkLocPort1);
+    locatorPorts.add(new InetSocketAddress("localhost", tkLocPort1));
     Integer tkLocPort2 = (Integer)vm5.invoke(() -> WANTestBase.createSecondRemotePeerLocator( 3, tkLocPort1, nyLocPort1));
-    locatorPorts.add(tkLocPort2);
+    locatorPorts.add(new InetSocketAddress("localhost", tkLocPort2));
     Integer tkLocPort3 = (Integer)vm6.invoke(() -> WANTestBase.createSecondRemoteLocator( 3, tkLocPort1, nyLocPort2));
-    locatorPorts.add(tkLocPort3);
+    locatorPorts.add(new InetSocketAddress("localhost", tkLocPort3));
     
    // pause(5000);
     

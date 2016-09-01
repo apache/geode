@@ -6091,7 +6091,8 @@ public class LocalRegion extends AbstractRegion
       boolean clearConflict)
   {
     final boolean isNewKey = event.getOperation().isCreate();
-    final boolean invokeCallbacks = !entry.isTombstone(); // put() is creating a tombstone
+    //Invoke callbacks only if we are not creating a tombstone
+    final boolean invokeCallbacks = event.basicGetNewValue() != Token.TOMBSTONE;
 
     if (isNewKey) {
       updateStatsForCreate();
@@ -8696,6 +8697,10 @@ public class LocalRegion extends AbstractRegion
       }
       if (!es.addEntryExpiryTask(newTask)) {
         this.entryExpiryTasks.remove(re);
+      } else {
+        if (EntryExpiryTask.expiryTaskListener != null) {
+          EntryExpiryTask.expiryTaskListener.afterSchedule(newTask);
+        }
       }
       // @todo darrel: merge question: should we catch EntryNotFoundException
       // if addExpiryTask throws it?

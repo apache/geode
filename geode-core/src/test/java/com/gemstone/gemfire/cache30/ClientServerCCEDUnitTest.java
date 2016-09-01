@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,7 +32,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Scope;
@@ -40,6 +43,7 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
@@ -99,7 +103,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
     final String name = this.getUniqueName() + "Region";
     
     int port = createServerRegion(vm0, name, true);
-    createClientRegion(vm1, name, port, false);
+    createClientRegion(vm1, name, port, false, ClientRegionShortcut.CACHING_PROXY);
     doPutAllInClient(vm1);
   }
   
@@ -119,8 +123,8 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
     createServerRegion(vm0, name, replicatedRegion);
     int port = createServerRegion(vm1, name, replicatedRegion);
-    createClientRegion(vm2, name, port, true);
-    createClientRegion(vm3, name, port, true);
+    createClientRegion(vm2, name, port, true, ClientRegionShortcut.CACHING_PROXY);
+    createClientRegion(vm3, name, port, true, ClientRegionShortcut.CACHING_PROXY);
     createEntries(vm2);
     destroyEntries(vm3);
     unregisterInterest(vm3);
@@ -165,7 +169,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
     destroyEntries(vm0);
     
     LogWriterUtils.getLogWriter().info("***************** register interest on all keys");
-    createClientRegion(vm2, name, port, true);
+    createClientRegion(vm2, name, port, true, ClientRegionShortcut.CACHING_PROXY);
     registerInterest(vm2);
     ensureAllTombstonesPresent(vm2);
     
@@ -220,7 +224,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
     invalidateEntries(vm0);
     
     LogWriterUtils.getLogWriter().info("***************** register interest on all keys");
-    createClientRegion(vm2, name, port, true);
+    createClientRegion(vm2, name, port, true, ClientRegionShortcut.CACHING_PROXY);
     registerInterest(vm2);
     ensureAllInvalidsPresent(vm2);
     
@@ -249,6 +253,35 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
     clearLocalCache(vm2);
     getAll(vm2);
     ensureAllInvalidsPresent(vm2);
+  }
+
+  @Test
+  public void testClientCacheListenerDoesNotSeeTombstones() throws Exception {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    VM vm2 = host.getVM(2);
+    final String name = getUniqueName() + "Region";
+
+
+    createServerRegion(vm0, name, true);
+    int port = createServerRegion(vm1, name, true);
+    createEntries(vm0);
+    destroyEntries(vm0);
+
+
+    LogWriterUtils.getLogWriter().info("***************** register interest on all keys");
+    createClientRegion(vm2, name, port, true, ClientRegionShortcut.PROXY);
+    vm2.invoke(() ->
+      TestRegion.getAttributesMutator().addCacheListener(new RecordingCacheListener())
+    );
+
+    getAll(vm2);
+
+    vm2.invoke(() -> {
+      RecordingCacheListener listener = (RecordingCacheListener) TestRegion.getCacheListener();
+      assertEquals(Collections.emptyList(), listener.events);
+    });
   }
 
   
@@ -595,10 +628,12 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
     return (Integer) vm.invoke(createRegion);
   }
-  
-  
-  
-  private void createClientRegion(final VM vm, final String regionName, final int port, final boolean ccEnabled) {
+
+
+  private void createClientRegion(final VM vm,
+                                  final String regionName,
+                                  final int port,
+                                  final boolean ccEnabled, final ClientRegionShortcut clientRegionShortcut) {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         ClientCacheFactory cf = new ClientCacheFactory();
@@ -606,7 +641,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
         cf.setPoolSubscriptionEnabled(true);
         cf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache cache = getClientCache(cf);
-        ClientRegionFactory crf = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
+        ClientRegionFactory crf = cache.createClientRegionFactory(clientRegionShortcut);
         crf.setConcurrencyChecksEnabled(ccEnabled);
         TestRegion = (LocalRegion)crf.create(regionName);
         TestRegion.registerInterestRegex(".*", InterestResultPolicy.KEYS_VALUES, false, true);
@@ -642,4 +677,29 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
     };
     vm.invoke(createRegion);
   }
+
+  private static class RecordingCacheListener extends CacheListenerAdapter {
+    List<EntryEvent> events = new ArrayList<EntryEvent>();
+
+    @Override
+    public void afterCreate(final EntryEvent event) {
+      events.add(event);
+    }
+
+    @Override
+    public void afterDestroy(final EntryEvent event) {
+      events.add(event);
+    }
+
+    @Override
+    public void afterInvalidate(final EntryEvent event) {
+      events.add(event);
+    }
+
+    @Override
+    public void afterUpdate(final EntryEvent event) {
+      events.add(event);
+    }
+  }
+
 }
