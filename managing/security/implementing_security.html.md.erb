@@ -6,8 +6,9 @@ Apache Geode can authenticate system members, clients, and other system
 entities. It can also individually authorize cache operations 
 for those various entities.
 
-<a id="implementing_security__section_79F6CF928E764CA294D466D0CB2E5FAC"></a>
-An overview of How it all Works
+
+## <a id="implementing_security__section_79F6CF928E764CA294D466D0CB2E5FAC" class="no-quick-link"></a>An overview of How it all Works##
+
 The security of a distributed system can be greatly enhanced by
 authenticating all system participants.
 This verifies the identity of the participants,
@@ -20,7 +21,7 @@ or administrators.
 
 Given authentication,
 isolation and access to cache data and system state can be further
-protected by implementing a authorization mechanism.
+protected by implementing an authorization mechanism.
 For example, only certain system administrators might be permitted
 to start and stop servers. 
 The authority to do this needs to be limited to specific
@@ -60,7 +61,7 @@ There are three values:
 
 - `READ` looks at data; it does not modify anything. 
 - `WRITE` modifies data. `WRITE` does not imply `READ`.
-- `MANAGE` accesses admininistrative information. `MANAGE` does not imply `WRITE`.
+- `MANAGE` accesses administrative information. `MANAGE` does not imply `WRITE`.
 
 Data read and write operations may be further applied to regions
 and specific keys within regions.

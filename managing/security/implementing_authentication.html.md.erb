@@ -15,9 +15,10 @@ If approved, the connection request returns a `java.security.Principal` object, 
 -   Servers may be authenticated by their clients during the connection initialization.
 -   Depending on the member, the new member may in turn become an authenticator to other joining members. Members joining a system must trust that existing members are already authenticated.
 
-Locators maintain and distribute the authenticated member list. The distributed member list is also authenticated by all members, which prevents an unauthorized application from introducing itself into membership by distributing an member list that includes itself.
+Locators maintain and distribute the authenticated member list. The distributed member list is also authenticated by all members, which prevents an unauthorized application from introducing itself into membership by distributing a member list that includes itself.
 
 <img src="../../images/security-1.gif" id="how_authentication_works__image_D3AE53AB4E0441A5A078E5D07EC20C5D" class="image" />
+
 Geode authentication provides a flexible plug-in framework. Any security infrastructure can be plugged in to the system as long as the plug-ins implement the required Geode interfaces.
 ## Enable Authentication with Property Definitions
 
