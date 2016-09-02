@@ -29,9 +29,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import cacheRunner.Portfolio;
-import cacheRunner.Position;
-
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -53,7 +50,6 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -486,10 +482,10 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests remote complex query execution.
    */
-  @Ignore("TODO: test is disabled")
+  @Ignore("GEODE-1837: rewrite this test using Portfolio and Position in package com.gemstone.gemfire.cache.query.data")
   @Test
   public void testRemoteComplexQueries() throws CacheException {
-
+/*
     final String name = this.getName();
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -655,7 +651,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
           SelectResults results = null;
 
           queryString =
-            "IMPORT cacheRunner.Position; " +
+            "IMPORT Position; " +
             "SELECT DISTINCT id, status FROM " + region.getFullPath() +
             "WHERE NOT (SELECT DISTINCT * FROM positions.values posnVal TYPE Position " +
             "WHERE posnVal.secId='AOL' OR posnVal.secId='SAP').isEmpty";
@@ -676,7 +672,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
       public void run() {
         stopBridgeServer(getCache());
       }
-    });
+    });*/
   }
 
   /**
@@ -1484,7 +1480,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     String queryString = "import TestObject; select distinct * from /trade";
 
     String queryString =
-      "IMPORT cacheRunner.Position; " +
+      "IMPORT Position; " +
       "SELECT DISTINCT id, status FROM /root/portfolios " +
       "WHERE NOT (SELECT DISTINCT * FROM positions.values posnVal TYPE Position " +
       "WHERE posnVal.secId='AOL' OR posnVal.secId='SAP').isEmpty";
