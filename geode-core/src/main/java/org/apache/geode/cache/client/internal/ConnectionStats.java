@@ -3344,6 +3344,10 @@ public class ConnectionStats implements MessageStats {
     return this.stats.getLong(executeFunctionDurationId);
   }
 
+  public int getGetDurableCqs() {
+    return this.stats.getInt(getDurableCQsId);
+  }
+
   /**
    * Records that the specified GetClientPRMetadata operation is starting
    * <p>

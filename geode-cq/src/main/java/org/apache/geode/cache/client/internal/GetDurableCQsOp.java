@@ -43,7 +43,7 @@ public class GetDurableCQsOp {
    */
   public static List<String> execute(ExecutablePool pool) {
     AbstractOp op = new GetDurableCQsOpImpl();
-    return (List<String>) pool.execute(op);
+    return (List<String>) pool.executeOnPrimary(op);
   }
 
   private GetDurableCQsOp() {
