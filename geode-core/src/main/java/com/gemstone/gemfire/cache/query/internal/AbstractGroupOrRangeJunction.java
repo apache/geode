@@ -193,7 +193,7 @@ public abstract class AbstractGroupOrRangeJunction extends
           }
         }
         else {
-          if (newOperands.iterateOperand instanceof CompiledJunction) {
+          if (newOperands.iterateOperand instanceof CompiledJunction && ((CompiledJunction) newOperands.iterateOperand).getOperator() == getOperator()) {
             CompiledJunction temp = (CompiledJunction)newOperands.iterateOperand;
             List prevOps = temp.getOperands();
             unevaluatedFilterOps.addAll(prevOps);
