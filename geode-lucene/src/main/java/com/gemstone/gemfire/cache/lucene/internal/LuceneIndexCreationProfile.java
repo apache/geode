@@ -44,14 +44,6 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
   /* Used by DataSerializer */
   public LuceneIndexCreationProfile() {}
 
-  public LuceneIndexCreationProfile(String indexName, String[] fieldNames, Analyzer analyzer,
-      Map<String, Analyzer> fieldAnalyzers) {
-    this.indexName = indexName;
-    this.fieldNames = fieldNames;
-    this.analyzerClass = analyzer.getClass().getSimpleName();
-    initializeFieldAnalyzers(fieldAnalyzers);
-  }
-
   public LuceneIndexCreationProfile(String indexName, String regionPath, String[] fieldNames, Analyzer analyzer,
                                     Map<String, Analyzer> fieldAnalyzers) {
     this.indexName = indexName;
@@ -90,7 +82,7 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
 
   @Override
   public String getId() {
-    return this.indexName;
+    return "lucene_"+LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
   }
 
   @Override
@@ -143,6 +135,7 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
   @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.indexName, out);
+    DataSerializer.writeString(this.regionPath, out);
     DataSerializer.writeStringArray(this.fieldNames, out);
     DataSerializer.writeString(this.analyzerClass, out);
     DataSerializer.writeHashMap(this.fieldAnalyzers, out);
@@ -151,6 +144,7 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.indexName = DataSerializer.readString(in);
+    this.regionPath = DataSerializer.readString(in);
     this.fieldNames = DataSerializer.readStringArray(in);
     this.analyzerClass = DataSerializer.readString(in);
     this.fieldAnalyzers = DataSerializer.readHashMap(in);

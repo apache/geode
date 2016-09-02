@@ -183,7 +183,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
           }
 
           // Add index creation profile
-          internalRegionArgs.addCacheServiceProfile(new LuceneIndexCreationProfile(indexName, fields, analyzer, fieldAnalyzers));
+          internalRegionArgs.addCacheServiceProfile(new LuceneIndexCreationProfile(indexName, dataRegionPath, fields, analyzer, fieldAnalyzers));
         }
         return updatedRA;
       }
