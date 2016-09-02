@@ -535,5 +535,10 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
      */
     public void afterExpire(ExpiryTask et);
     
+    /**
+     * Called when task has been canceled
+     */
+    public void afterCancel(ExpiryTask et);
+    
   }
 }

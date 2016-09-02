@@ -345,6 +345,9 @@ public class EntryExpiryTask extends ExpiryTask {
     boolean superCancel = super.cancel();
     if (superCancel) {
       this.re = null;
+      if (expiryTaskListener != null) {
+        expiryTaskListener.afterCancel(this);
+      }
     }
     return superCancel;
   }
