@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.SystemFailure;
@@ -217,7 +218,7 @@ public class GemFireVersion {
       if (error.isPresent()) {
         pw.println(error.get());
       } else {
-        for (Entry<?,?> props : description.entrySet()) {
+        for (Entry<?,?> props : new TreeMap<>(description).entrySet()) {
           pw.println(props.getKey() + ": " + props.getValue());
         }
       }
