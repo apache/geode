@@ -48,13 +48,15 @@ public class IndexRepositoryImpl implements IndexRepository {
   private final LuceneSerializer serializer;
   private final SearcherManager searcherManager;
   private Region<?,?> region;
+  private Region<?,?> userRegion;
   private LuceneIndexStats stats;
   private DocumentCountSupplier documentCountSupplier;
 
   private static final Logger logger = LogService.getLogger();
   
-  public IndexRepositoryImpl(Region<?,?> region, IndexWriter writer, LuceneSerializer serializer, LuceneIndexStats stats) throws IOException {
+  public IndexRepositoryImpl(Region<?,?> region, IndexWriter writer, LuceneSerializer serializer, LuceneIndexStats stats, Region<?, ?> userRegion) throws IOException {
     this.region = region;
+    this.userRegion = userRegion;
     this.writer = writer;
     searcherManager = new SearcherManager(writer, APPLY_ALL_DELETES, true, null);
     this.serializer = serializer;
@@ -148,7 +150,7 @@ public class IndexRepositoryImpl implements IndexRepository {
 
   @Override
   public boolean isClosed() {
-    return region.isDestroyed();
+    return userRegion.isDestroyed();
   }
 
   @Override

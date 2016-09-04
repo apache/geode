@@ -105,38 +105,38 @@ public class LuceneIndexCreationProfileJUnitTest {
   }
 
   private LuceneIndexCreationProfile getOneFieldLuceneIndexCreationProfile() {
-    return new LuceneIndexCreationProfile(INDEX_NAME, new String[] { "field1" }, new StandardAnalyzer(), null);
+    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] { "field1" }, new StandardAnalyzer(), null);
   }
 
   private LuceneIndexCreationProfile getTwoFieldLuceneIndexCreationProfile() {
-    return new LuceneIndexCreationProfile(INDEX_NAME, new String[] { "field1", "field2" }, new StandardAnalyzer(), null);
+    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] { "field1", "field2" }, new StandardAnalyzer(), null);
   }
 
   private LuceneIndexCreationProfile getOneAnalyzerLuceneIndexCreationProfile(Analyzer analyzer) {
     Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
     fieldAnalyzers.put("field1", analyzer);
-    return new LuceneIndexCreationProfile(INDEX_NAME, new String[] { "field1", "field2" }, getPerFieldAnalyzerWrapper(fieldAnalyzers), fieldAnalyzers);
+    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] { "field1", "field2" }, getPerFieldAnalyzerWrapper(fieldAnalyzers), fieldAnalyzers);
   }
 
   private LuceneIndexCreationProfile getTwoAnalyzersLuceneIndexCreationProfile() {
     Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
     fieldAnalyzers.put("field1", new KeywordAnalyzer());
     fieldAnalyzers.put("field2", new KeywordAnalyzer());
-    return new LuceneIndexCreationProfile(INDEX_NAME, new String[] { "field1", "field2" }, getPerFieldAnalyzerWrapper(fieldAnalyzers), fieldAnalyzers);
+    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] { "field1", "field2" }, getPerFieldAnalyzerWrapper(fieldAnalyzers), fieldAnalyzers);
   }
 
   private LuceneIndexCreationProfile getNullField1AnalyzerLuceneIndexCreationProfile() {
     Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
     fieldAnalyzers.put("field1", null);
     fieldAnalyzers.put("field2", new KeywordAnalyzer());
-    return new LuceneIndexCreationProfile(INDEX_NAME, new String[] { "field1", "field2" }, getPerFieldAnalyzerWrapper(fieldAnalyzers), fieldAnalyzers);
+    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] { "field1", "field2" }, getPerFieldAnalyzerWrapper(fieldAnalyzers), fieldAnalyzers);
   }
 
   private LuceneIndexCreationProfile getNullField2AnalyzerLuceneIndexCreationProfile() {
     Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
     fieldAnalyzers.put("field1", new KeywordAnalyzer());
     fieldAnalyzers.put("field2", null);
-    return new LuceneIndexCreationProfile(INDEX_NAME, new String[] { "field1", "field2" }, getPerFieldAnalyzerWrapper(fieldAnalyzers), fieldAnalyzers);
+    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] { "field1", "field2" }, getPerFieldAnalyzerWrapper(fieldAnalyzers), fieldAnalyzers);
   }
 
   private Analyzer getPerFieldAnalyzerWrapper(Map<String, Analyzer> fieldAnalyzers) {

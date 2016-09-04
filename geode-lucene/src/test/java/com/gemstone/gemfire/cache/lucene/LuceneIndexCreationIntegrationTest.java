@@ -46,6 +46,9 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexCreationProfile;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexFactory;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneRawIndex;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneRawIndexFactory;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
 import com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities;
 import com.gemstone.gemfire.cache.lucene.test.TestObject;
@@ -156,6 +159,32 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
       assertNull(region.getAttributes().getPartitionAttributes().getFixedPartitionAttributes());
       assertTrue(((PartitionedRegion) region).isFixedPartitionedRegion());
     });
+  }
+
+  @Test
+  public void shouldCreateRawIndexIfSpecifiedItsFactory()
+    throws BucketNotFoundException, InterruptedException
+  {
+    Map<String, Analyzer> analyzers = new HashMap<>();
+
+    final RecordingAnalyzer field1Analyzer = new RecordingAnalyzer();
+    final RecordingAnalyzer field2Analyzer = new RecordingAnalyzer();
+    analyzers.put("field1", field1Analyzer);
+    analyzers.put("field2", field2Analyzer);
+    LuceneServiceImpl.luceneIndexFactory = new LuceneRawIndexFactory();
+    try {
+      luceneService.createIndex(INDEX_NAME, REGION_NAME, analyzers);
+      Region region = createRegion();
+      final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+      assertTrue(index instanceof LuceneRawIndex);
+      region.put("key1", new TestObject());
+      verifyIndexFinishFlushing(cache, INDEX_NAME, REGION_NAME);
+      assertEquals(analyzers, index.getFieldAnalyzers());
+      assertEquals(Arrays.asList("field1"), field1Analyzer.analyzedfields);
+      assertEquals(Arrays.asList("field2"), field2Analyzer.analyzedfields);
+    } finally {
+      LuceneServiceImpl.luceneIndexFactory = new LuceneIndexFactory();
+    }
   }
 
   @Test(expected = IllegalStateException.class)

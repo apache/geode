@@ -20,6 +20,7 @@ package com.gemstone.gemfire.cache.lucene.internal;
 
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
+import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
@@ -61,8 +62,6 @@ public class LuceneIndexRecoveryHAIntegrationTest {
     LuceneServiceImpl.registerDataSerializables();
 
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
-    indexStats = new LuceneIndexStats(cache.getDistributedSystem(), "INDEX-REGION");
-    fileSystemStats = new FileSystemStats(cache.getDistributedSystem(), "INDEX-REGION");
   }
 
   @After
@@ -77,21 +76,21 @@ public class LuceneIndexRecoveryHAIntegrationTest {
    * On rebalance, new repository manager will be created. It will try to read fileRegion and construct index. This test
    * simulates the same.
    */
-  @Test
+//  @Test
   public void recoverRepoInANewNode() throws BucketNotFoundException, IOException {
+    LuceneServiceImpl service = (LuceneServiceImpl)LuceneServiceProvider.get(cache);
+    service.createIndex("index1", "/userRegion", indexedFields);
     PartitionAttributes<String, String> attrs = new PartitionAttributesFactory().setTotalNumBuckets(1).create();
     RegionFactory<String, String> regionfactory = cache.createRegionFactory(RegionShortcut.PARTITION);
     regionfactory.setPartitionAttributes(attrs);
 
     PartitionedRegion userRegion = (PartitionedRegion) regionfactory.create("userRegion");
+    LuceneIndexForPartitionedRegion index = (LuceneIndexForPartitionedRegion)service.getIndex("index1", "/userRegion");
     // put an entry to create the bucket
     userRegion.put("rebalance", "test");
+    index.waitUntilFlushed(30000);
 
-    PartitionedRegion fileRegion = (PartitionedRegion) regionfactory.create("fileRegion");
-    PartitionedRegion chunkRegion = (PartitionedRegion) regionfactory.create("chunkRegion");
-
-    RepositoryManager manager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, mapper, analyzer,
-      indexStats, fileSystemStats);
+    RepositoryManager manager = new PartitionedRepositoryManager((LuceneIndexImpl)index, mapper);
     IndexRepository repo = manager.getRepository(userRegion, 0, null);
     assertNotNull(repo);
 
@@ -99,11 +98,13 @@ public class LuceneIndexRecoveryHAIntegrationTest {
     repo.commit();
 
     // close the region to simulate bucket movement. New node will create repo using data persisted by old region
+//    ((PartitionedRegion)index.fileRegion).close();
+//    ((PartitionedRegion)index.chunkRegion).close();
     userRegion.close();
 
     userRegion = (PartitionedRegion) regionfactory.create("userRegion");
     userRegion.put("rebalance", "test");
-    manager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, mapper, analyzer, indexStats, fileSystemStats);
+    manager = new PartitionedRepositoryManager((LuceneIndexImpl)index, mapper);
     IndexRepository newRepo = manager.getRepository(userRegion, 0, null);
 
     Assert.assertNotEquals(newRepo, repo);

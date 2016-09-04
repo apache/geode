@@ -271,6 +271,9 @@ public class TXExpiryJUnitTest {
       this.et = et;
     }
     @Override
+    public void afterCancel(ExpiryTask et) {
+    }
+    @Override
     public void afterSchedule(ExpiryTask et) {
     }
     @Override

@@ -18,9 +18,14 @@ package com.gemstone.gemfire.internal;
 
 import static org.junit.Assert.assertTrue;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.internal.GemFireVersion.VersionDescription;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
@@ -31,10 +36,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class GemFireVersionJUnitTest {
 
-  /**
-   * Prints both the GemFire version info and the system properties.
-   * We have to print both 
-   */
   @Test
   public void testPrintInfo() {
     final String versionOutput = GemFireVersion.asString();
@@ -49,5 +50,18 @@ public class GemFireVersionJUnitTest {
     assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.BUILD_ID));
     assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.BUILD_PLATFORM));
     assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.BUILD_JAVA_VERSION));
+  }
+  
+  @Test
+  public void testNoFile() {
+    String noFile = "not a property file";
+    VersionDescription noVersion = new VersionDescription(noFile);
+
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    noVersion.print(pw);
+
+    String noFileOutput = sw.toString();
+    assertTrue(noFileOutput.contains(LocalizedStrings.GemFireVersion_COULD_NOT_FIND_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0.toLocalizedString(noFile)));
   }
 }

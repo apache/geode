@@ -31,9 +31,10 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
-@Category({ DistributedTest.class, SecurityTest.class })
+@Category({ DistributedTest.class, SecurityTest.class, FlakyTest.class })
 public class IntegratedClientGetPutAuthDistributedTest extends AbstractSecureServerDUnitTest {
 
   @Test

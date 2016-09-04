@@ -19,7 +19,6 @@ package com.gemstone.gemfire.cache.lucene.internal;
 import java.io.IOException;
 
 import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
-import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepositoryImpl;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.LuceneSerializer;
@@ -27,7 +26,6 @@ import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.internal.cache.BucketRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 
@@ -37,25 +35,22 @@ public class IndexRepositoryFactory {
   }
 
   public IndexRepository createIndexRepository(final Integer bucketId,
-                                        PartitionedRegion userRegion,
-                                        PartitionedRegion fileRegion,
-                                        PartitionedRegion chunkRegion,
                                         LuceneSerializer serializer,
-                                        Analyzer analyzer,
-                                        LuceneIndexStats indexStats,
-                                        FileSystemStats fileSystemStats)
+                                        LuceneIndexImpl index, PartitionedRegion userRegion)
     throws IOException
   {
     final IndexRepository repo;
-    BucketRegion fileBucket = getMatchingBucket(fileRegion, bucketId);
-    BucketRegion chunkBucket = getMatchingBucket(chunkRegion, bucketId);
+    LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion)index; 
+    BucketRegion fileBucket = getMatchingBucket(indexForPR.getFileRegion(), bucketId);
+    BucketRegion chunkBucket = getMatchingBucket(indexForPR.getChunkRegion(), bucketId);
+    BucketRegion dataBucket = getMatchingBucket(userRegion, bucketId);
     if(fileBucket == null || chunkBucket == null) {
       return null;
     }
-    RegionDirectory dir = new RegionDirectory(fileBucket, chunkBucket, fileSystemStats);
-    IndexWriterConfig config = new IndexWriterConfig(analyzer);
+    RegionDirectory dir = new RegionDirectory(fileBucket, chunkBucket, indexForPR.getFileSystemStats());
+    IndexWriterConfig config = new IndexWriterConfig(indexForPR.getAnalyzer());
     IndexWriter writer = new IndexWriter(dir, config);
-    repo = new IndexRepositoryImpl(fileBucket, writer, serializer, indexStats);
+    repo = new IndexRepositoryImpl(fileBucket, writer, serializer, indexForPR.getIndexStats(), dataBucket);
     return repo;
   }
 

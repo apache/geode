@@ -3544,7 +3544,10 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   }
   
   class ExpiryCallbacks implements ExpiryTaskListener {
-
+	  @Override
+    public void afterCancel(ExpiryTask et) {
+      getCache().getLogger().info("ExpiryCallbacks.afterCancel", new RuntimeException("TaskCanceled"));
+    }
     @Override
     public void afterSchedule(ExpiryTask et) {
       printState(et, "ExpiryCallbacks.afterSchedule " );
@@ -3571,7 +3574,6 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
       Date ttlTime = new Date(et.getTTLExpirationTime());
       Date getNow = new Date(et.getNow());
       Date scheduleETime = new Date(et.scheduledExecutionTime());
-      //et.getKey();
       getCache().getLogger().info(callback + " now: " + getCurrentTimeStamp(now) + " ttl:" + getCurrentTimeStamp(ttl) + " idleExpTime:" + getCurrentTimeStamp(idleExpTime) + 
           " ttlTime:" + getCurrentTimeStamp(ttlTime)  + " getNow:" + getCurrentTimeStamp(getNow) + " scheduleETime:" + getCurrentTimeStamp(scheduleETime) +
           " getKey:" + et.getKey() + " isPending:" + et.isPending() +
@@ -3602,11 +3604,12 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testEntryIdleDestroy() throws Exception {
 
+	  EntryExpiryTask.expiryTaskListener = new ExpiryCallbacks();
     final String name = this.getUniqueName();
     final int timeout = 20; // ms
     final String key = "KEY";
     final String value = "VALUE";
-    EntryExpiryTask.expiryTaskListener = new ExpiryCallbacks();
+   
     AttributesFactory factory = new AttributesFactory(getRegionAttributes());
     ExpirationAttributes expire =
             new ExpirationAttributes(timeout, ExpirationAction.DESTROY);
