@@ -26,13 +26,11 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -305,8 +303,10 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    * The client Diffie-Hellman method name
    */
   private String securityClientDHAlgo = DEFAULT_SECURITY_CLIENT_DHALGO;
-  
-  /** The udp Diffie-Hellman method name*/
+
+  /**
+   * The udp Diffie-Hellman method name
+   */
   private String securityUDPDHAlgo = DEFAULT_SECURITY_UDP_DHALGO;
 
   /**
@@ -2118,17 +2118,17 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   public String getSecurityClientDHAlgo() {
     return securityClientDHAlgo;
   }
-  
+
   public void setSecurityClientDHAlgo(String value) {
     securityClientDHAlgo = (String) value;
   }
-  
+
   public String getSecurityUDPDHAlgo() {
     return securityUDPDHAlgo;
   }
 
   public void setSecurityUDPDHAlgo(String value) {
-    securityUDPDHAlgo = (String)checkAttribute(SECURITY_UDP_DHALGO, value);
+    securityUDPDHAlgo = (String) checkAttribute(SECURITY_UDP_DHALGO, value);
   }
 
   public String getSecurityPeerAuthInit() {
@@ -3060,7 +3060,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   /**
    * Used by gemfire build.xml to generate a default gemfire.properties
    * for use by applications. See bug 30995 for the feature request.
-   */ public static void main(String args[]) throws IOException {
+   */
+  public static void main(String args[]) throws IOException {
     DistributionConfigImpl cfg = new DistributionConfigImpl();
     String fileName = DistributionConfig.GEMFIRE_PREFIX + "properties";
     if (args != null && args.length > 0) {

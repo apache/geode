@@ -36,6 +36,7 @@ import org.junit.rules.TemporaryFolder;
 
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
@@ -72,7 +73,21 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  public void testConnectToLocatorWithClusterSSL() throws Exception{
+  public void testConnectToLocatorWithSSL() throws Exception{
+    Properties securityProps = new Properties();
+    securityProps.setProperty(SSL_ENABLED_COMPONENTS, SecurableComponent.LOCATOR.getConstant());
+    securityProps.setProperty(SSL_KEYSTORE, jks.getCanonicalPath());
+    securityProps.setProperty(SSL_KEYSTORE_PASSWORD, "password");
+    securityProps.setProperty(SSL_KEYSTORE_TYPE, "JKS");
+    securityProps.setProperty(SSL_TRUSTSTORE, jks.getCanonicalPath());
+    securityProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
+    securityProps.setProperty(SSL_PROTOCOLS, "TLSv1.2 TLSv1.1");
+
+    setUpLocatorAndConnect(securityProps);
+  }
+
+  @Test
+  public void testConnectToLocatorWithLegacyClusterSSL() throws Exception{
     Properties securityProps = new Properties();
     securityProps.setProperty(CLUSTER_SSL_ENABLED, "true");
     securityProps.setProperty(CLUSTER_SSL_KEYSTORE, jks.getCanonicalPath());
@@ -85,7 +100,7 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  public void testConnectToLocatorWithJMXSSL() throws Exception{
+  public void testConnectToLocatorWithLegacyJMXSSL() throws Exception{
     Properties securityProps = new Properties();
     securityProps.setProperty(JMX_MANAGER_SSL_ENABLED, "true");
     securityProps.setProperty(JMX_MANAGER_SSL_KEYSTORE, jks.getCanonicalPath());
@@ -129,7 +144,7 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
 
     gfsh.executeCommand(command.toString());
     CommandResult result = (CommandResult)gfsh.getResult();
-    assertEquals(result.getStatus(), Status.OK);
+    assertEquals(Status.OK,result.getStatus());
     assertTrue(result.getContent().toString().contains("Successfully connected to"));
   }
 

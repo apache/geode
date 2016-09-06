@@ -23,6 +23,7 @@ import java.net.InetAddress;
 import java.util.Map;
 import java.util.Properties;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.Version;
@@ -85,12 +86,7 @@ public class JmxManagerLocatorRequest implements DataSerializableFixedID {
         distributionConfigProps.putAll(sslConfigProps);
       }
 
-      // re-initialize the SocketCreator with the sslConfigProps. Note this initializes the SocketCreator with cluster-ssl-* settings since
-      // we are connecting to the locator only.
-      //TODO Udo: Look into this
-      // SocketCreator.getDefaultInstance(distributionConfigProps);
-
-      TcpClient client = new TcpClient();
+      TcpClient client = new TcpClient(new DistributionConfigImpl(distributionConfigProps));
       Object responseFromServer = client.requestToServer(networkAddress, locatorPort, SINGLETON, msTimeout);
 
       return (JmxManagerLocatorResponse) responseFromServer;

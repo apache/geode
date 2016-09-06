@@ -55,7 +55,6 @@ import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
-import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.internal.tcp.Connection;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
