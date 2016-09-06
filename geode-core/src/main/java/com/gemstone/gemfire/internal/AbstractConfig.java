@@ -322,6 +322,11 @@ public abstract class AbstractConfig implements Config {
       return "" + value[0] + "-" + value[1];
     }
 
+    if(result.getClass().isArray() && attName.startsWith("ssl-"))
+    {
+      return SystemAdmin.join((Object[]) result,",");
+    }
+
     if (result.getClass().isArray()) {
       return SystemAdmin.join((Object[]) result);
     }

@@ -39,10 +39,8 @@ public enum SecurableComponent {
 
   public static SecurableComponent getEnum(String enumString) {
     for (SecurableComponent securableComponent : SecurableComponent.values()) {
-      if (!StringUtils.isEmpty(enumString)) {
-        if (securableComponent.constant.equalsIgnoreCase(enumString)) {
-          return securableComponent;
-        }
+      if (securableComponent.constant.equalsIgnoreCase(enumString)) {
+        return securableComponent;
       }
     }
     throw new GemFireConfigException("There is no registered component for the name: " + enumString);
