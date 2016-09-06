@@ -333,6 +333,23 @@ public class BeanUtilFuncs {
     gemFirePropertyData.setHttpServiceBindAddress(config.getHttpServiceBindAddress());
     gemFirePropertyData.setStartDevRestApi(config.getStartDevRestApi());
 
+    gemFirePropertyData.setSSLCiphers(config.getSSLCiphers());
+    gemFirePropertyData.setSSLEnabledComponents(config.getSSLEnabledComponents());
+    gemFirePropertyData.setSSLHttpServiceRequireAuthentication(config.getSSLHTTPRequireAuthentication());
+    gemFirePropertyData.setSSLKeyStore(config.getSSLKeyStore());
+    gemFirePropertyData.setSSLKeyStoreType(config.getSSLKeyStoreType());
+    gemFirePropertyData.setSSLKeyStorePassword(config.getSSLKeyStorePassword());
+    gemFirePropertyData.setSSLTrustStore(config.getSSLTrustStore());
+    gemFirePropertyData.setSSLTrustStorePassword(config.getSSLTrustStorePassword());
+
+    gemFirePropertyData.setClusterSSLAlias(config.getClusterSSLAlias());
+    gemFirePropertyData.setServerSSLAlias(config.getServerSSLAlias());
+    gemFirePropertyData.setJmxSSLAlias(config.getJMXSSLAlias());
+    gemFirePropertyData.setGatewaySSLAlias(config.getGatewaySSLAlias());
+    gemFirePropertyData.setLocatorSSLAlias(config.getLocatorSSLAlias());
+    gemFirePropertyData.setHttpServiceSSLAlias(config.getHTTPServiceSSLAlias());
+    gemFirePropertyData.setSSLDefaultAlias(config.getSSLDefaultAlias());
+
     return gemFirePropertyData;
 
   }

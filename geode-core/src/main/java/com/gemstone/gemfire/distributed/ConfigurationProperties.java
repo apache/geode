@@ -849,7 +849,7 @@ public interface ConfigurationProperties {
    * <U>Default</U>: "" </p>
    * <U>Since</U>: Geode 1.0
    */
-  String SSL_JMX_MANAGER_ALIAS = "ssl-jmx-alias";
+  String SSL_JMX_ALIAS = "ssl-jmx-alias";
   /**
    * The static String definition of the <i>"jmx-manager-ssl-ciphers"</i> property
    * <a name="jmx-manager-ssl-ciphers"/a></p>
@@ -871,7 +871,7 @@ public interface ConfigurationProperties {
    * Ignored if jmx-manager is false.
    * </p>
    * <U>Default</U>: "false"
-   * @deprecated Since Geode 1.0 use {@link #SSL_ENABLED_COMPONENTS} with optional {@link #SSL_JMX_MANAGER_ALIAS}
+   * @deprecated Since Geode 1.0 use {@link #SSL_ENABLED_COMPONENTS} with optional {@link #SSL_JMX_ALIAS}
    */
   @Deprecated
   String JMX_MANAGER_SSL_ENABLED = "jmx-manager-ssl-enabled";
@@ -1813,7 +1813,7 @@ public interface ConfigurationProperties {
    *
    * <U>Description</U>This property will be set when using multi-key keystores. This will define the alias that
    * the ssl connection factory would use when no alias has been set for the different component aliases.
-   * {@link #SSL_CLUSTER_ALIAS}, {@link #SSL_SERVER_ALIAS},{@link #SSL_LOCATOR_ALIAS},{@link #SSL_GATEWAY_ALIAS},{@link #SSL_JMX_MANAGER_ALIAS} , {@link #SSL_HTTP_SERVICE_ALIAS}
+   * {@link #SSL_CLUSTER_ALIAS}, {@link #SSL_SERVER_ALIAS},{@link #SSL_LOCATOR_ALIAS},{@link #SSL_GATEWAY_ALIAS},{@link #SSL_JMX_ALIAS} , {@link #SSL_HTTP_SERVICE_ALIAS}
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: Geode 1.0

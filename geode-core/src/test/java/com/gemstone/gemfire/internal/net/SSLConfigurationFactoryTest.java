@@ -155,7 +155,7 @@ public class SSLConfigurationFactoryTest extends JUnit4DistributedTestCase {
       case HTTP_SERVICE:
         return getAliasForComponent(properties, SSL_HTTP_SERVICE_ALIAS);
       case JMX:
-        return getAliasForComponent(properties, SSL_JMX_MANAGER_ALIAS);
+        return getAliasForComponent(properties, SSL_JMX_ALIAS);
       case LOCATOR:
         return getAliasForComponent(properties, SSL_LOCATOR_ALIAS);
       case SERVER:

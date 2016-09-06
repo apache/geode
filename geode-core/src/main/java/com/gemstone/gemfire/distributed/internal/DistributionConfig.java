@@ -4316,27 +4316,27 @@ public interface DistributionConfig extends Config, LogConfig {
   String HTTP_SERVICE_SSL_ALIAS_NAME = SSL_HTTP_SERVICE_ALIAS;
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_JMX_MANAGER_ALIAS}
+   * Returns the value of the {@link ConfigurationProperties#SSL_JMX_ALIAS}
    * property.
    * @since Geode 1.0
    */
-  @ConfigAttributeGetter(name = SSL_JMX_MANAGER_ALIAS)
-  String getJMXManagerSSLAlias();
+  @ConfigAttributeGetter(name = SSL_JMX_ALIAS)
+  String getJMXSSLAlias();
 
   /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_JMX_MANAGER_ALIAS}
+   * Sets the value of the {@link ConfigurationProperties#SSL_JMX_ALIAS}
    * property.
    * @since Geode 1.0
    */
-  @ConfigAttributeSetter(name = SSL_JMX_MANAGER_ALIAS)
-  void setJMXManagerSSLAlias(String alias);
+  @ConfigAttributeSetter(name = SSL_JMX_ALIAS)
+  void setJMXSSLAlias(String alias);
 
   /**
-   * The name of the {@link ConfigurationProperties#SSL_JMX_MANAGER_ALIAS} property
+   * The name of the {@link ConfigurationProperties#SSL_JMX_ALIAS} property
    * @since Geode 1.0
    */
   @ConfigAttribute(type = String.class)
-  String JMX_MANAGER_SSL_ALIAS_NAME = SSL_JMX_MANAGER_ALIAS;
+  String JMX_SSL_ALIAS_NAME = SSL_JMX_ALIAS;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#SSL_SERVER_ALIAS}

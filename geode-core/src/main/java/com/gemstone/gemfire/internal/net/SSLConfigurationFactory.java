@@ -128,7 +128,7 @@ public class SSLConfigurationFactory {
       }
       case JMX: {
         if (sslEnabledComponents.length > 0) {
-          sslConfig = setAliasForComponent(sslConfig, getDistributionConfig().getJMXManagerSSLAlias());
+          sslConfig = setAliasForComponent(sslConfig, getDistributionConfig().getJMXSSLAlias());
         } else {
           sslConfig = configureLegacyJMXSSL(sslConfig);
         }

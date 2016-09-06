@@ -885,7 +885,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     m.put(JMX_MANAGER, "If true then this member is willing to be a jmx manager. Defaults to false except on a locator.");
     m.put(JMX_MANAGER_START, "If true then the jmx manager will be started when the cache is created. Defaults to false.");
     m.put(JMX_MANAGER_SSL_ENABLED, "If true then the jmx manager will only allow SSL clients to connect. Defaults to false. This property is ignored if jmx-manager-port is \"0\".");
-    m.put(SSL_JMX_MANAGER_ALIAS, LocalizedStrings.AbstractDistributionConfig_JMX_MANAGER_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_SSL_ALIAS)));
+    m.put(SSL_JMX_ALIAS, LocalizedStrings.AbstractDistributionConfig_JMX_MANAGER_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_SSL_ALIAS)));
     m.put(JMX_MANAGER_SSL_CIPHERS, "List of available SSL cipher suites that are to be enabled for JMX Manager. Defaults to \"" + DEFAULT_JMX_MANAGER_SSL_CIPHERS + "\" meaning your provider''s defaults.");
     m.put(JMX_MANAGER_SSL_PROTOCOLS, "List of available SSL protocols that are to be enabled for JMX Manager. Defaults to \"" + DEFAULT_JMX_MANAGER_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
     m.put(JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION, "If set to false, ciphers and protocols that permit anonymous JMX Clients are allowed. Defaults to \"" + DEFAULT_JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION + "\".");

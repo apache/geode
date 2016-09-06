@@ -22,9 +22,6 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
-import java.net.Socket;
-import java.rmi.server.RMIClientSocketFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -43,7 +40,6 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.distributed.LocatorLauncher;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
@@ -246,7 +242,7 @@ public class JMXMBeanDUnitTest extends DistributedTestCase {
         if (useMultiKey) {
           properties.setProperty(SSL_KEYSTORE, getMultiKeyKeystore());
           properties.setProperty(SSL_TRUSTSTORE, getMultiKeyTruststore());
-          properties.setProperty(SSL_JMX_MANAGER_ALIAS, "jmxkey");
+          properties.setProperty(SSL_JMX_ALIAS, "jmxkey");
         }
       }
     }

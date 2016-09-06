@@ -26,13 +26,11 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -770,7 +768,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.clusterSSLAlias = other.getClusterSSLAlias();
     this.gatewaySSLAlias = other.getGatewaySSLAlias();
     this.httpServiceSSLAlias = other.getHTTPServiceSSLAlias();
-    this.jmxManagerSSLAlias = other.getJMXManagerSSLAlias();
+    this.jmxManagerSSLAlias = other.getJMXSSLAlias();
     this.serverSSLAlias = other.getServerSSLAlias();
     this.locatorSSLAlias = other.getLocatorSSLAlias();
 
@@ -993,7 +991,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         return StringUtils.isEmpty(getHTTPServiceSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
       }
       case JMX: {
-        return StringUtils.isEmpty(getJMXManagerSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+        return StringUtils.isEmpty(getJMXSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
       }
       case LOCATOR: {
         return StringUtils.isEmpty(getLocatorSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
@@ -1470,6 +1468,10 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         continue;
       }
       Object propVal = me.getValue();
+      if(propName.equals(SSL_CIPHERS) || propName.equals(SSL_PROTOCOLS))
+      {
+        propVal = convertCommaDelimitedToSpaceDelimitedString((String)propVal);
+      }
       if (propVal != null && (propVal instanceof String)) { // weed out extraneous non-string properties
         this.setAttribute(propName, ((String) propVal).trim(), this.sourceMap.get(propName));
       }
@@ -1488,6 +1490,10 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
     // Make attributes read only
     this.modifiable = false;
+  }
+
+  private String convertCommaDelimitedToSpaceDelimitedString(final String propVal) {
+      return propVal.replace(","," ");
   }
 
   public void close() {
@@ -2559,12 +2565,12 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public String getJMXManagerSSLAlias() {
+  public String getJMXSSLAlias() {
     return jmxManagerSSLAlias;
   }
 
   @Override
-  public void setJMXManagerSSLAlias(final String alias) {
+  public void setJMXSSLAlias(final String alias) {
     jmxManagerSSLAlias = alias;
   }
 

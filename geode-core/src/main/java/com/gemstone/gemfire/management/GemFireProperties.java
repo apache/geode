@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.management;
 
 
+import com.gemstone.gemfire.internal.security.SecurableComponent;
 
 /**
  * Composite Data type to be used by member to depict gemfire properties in key value manner
@@ -478,7 +479,7 @@ public class GemFireProperties {
    */
   @Deprecated
   private String jmxManagerSSLTrustStorePassword;
-  private String jmxManagerSSLAlias;
+  private String jmxSSLAlias;
   
   private boolean clusterSSLEnabled;
   private String clusterSSLProtocols;
@@ -636,6 +637,20 @@ public class GemFireProperties {
    * Specifies whether the default transaction mode should be distributed.
    */
   private boolean distributedTransactions;
+
+  private String locatorSSLAlias;
+
+  private SecurableComponent[] sslEnabledComponents;
+  private String sslProtocols;
+  private String sslCiphers;
+  private boolean sslRequireAuthentication;
+  private String sslKeyStore;
+  private String sslKeyStoreType;
+  private String sslKeyStorePassword;
+  private String sslTrustStore;
+  private String sslTrustStorePassword;
+  private boolean sslHttpServiceRequireAuthentication;
+  private String sslDefaultAlias;
   
   
   /**
@@ -1018,22 +1033,22 @@ public class GemFireProperties {
     
   }
 
-//  public void setSslEnabled(boolean sslEnabled) {
+//  public void setSSLEnabled(boolean sslEnabled) {
 //    this.sslEnabled = sslEnabled;
 //
 //  }
 //
-//  public void setSslCiphers(String sslCiphers) {
+//  public void setSSLCiphers(String sslCiphers) {
 //    this.sslCiphers = sslCiphers;
 //
 //  }
 //
-//  public void setSslProtocols(String sslProtocols) {
+//  public void setSSLProtocols(String sslProtocols) {
 //    this.sslProtocols = sslProtocols;
 //
 //  }
 //
-//  public void setSslRequireAuthentication(boolean sslRequireAuthentication) {
+//  public void setSSLRequireAuthentication(boolean sslRequireAuthentication) {
 //    this.sslRequireAuthentication = sslRequireAuthentication;
 //
 //  }
@@ -1720,5 +1735,141 @@ public class GemFireProperties {
   
   public boolean getDistributedTransactions() {
     return this.distributedTransactions;
+  }
+
+  public String getJmxSSLAlias() {
+    return jmxSSLAlias;
+  }
+
+  public void setJmxSSLAlias(final String jmxSSLAlias) {
+    this.jmxSSLAlias = jmxSSLAlias;
+  }
+
+  public String getClusterSSLAlias() {
+    return clusterSSLAlias;
+  }
+
+  public void setClusterSSLAlias(final String clusterSSLAlias) {
+    this.clusterSSLAlias = clusterSSLAlias;
+  }
+
+  public String getServerSSLAlias() {
+    return serverSSLAlias;
+  }
+
+  public void setServerSSLAlias(final String serverSSLAlias) {
+    this.serverSSLAlias = serverSSLAlias;
+  }
+
+  public String getGatewaySSLAlias() {
+    return gatewaySSLAlias;
+  }
+
+  public void setGatewaySSLAlias(final String gatewaySSLAlias) {
+    this.gatewaySSLAlias = gatewaySSLAlias;
+  }
+
+  public String getHttpServiceSSLAlias() {
+    return httpServiceSSLAlias;
+  }
+
+  public void setHttpServiceSSLAlias(final String httpServiceSSLAlias) {
+    this.httpServiceSSLAlias = httpServiceSSLAlias;
+  }
+
+  public String getLocatorSSLAlias() {
+    return locatorSSLAlias;
+  }
+
+  public void setLocatorSSLAlias(final String locatorSSLAlias) {
+    this.locatorSSLAlias = locatorSSLAlias;
+  }
+
+  public SecurableComponent[] getSSLEnabledComponents() {
+    return sslEnabledComponents;
+  }
+
+  public void setSSLEnabledComponents(final SecurableComponent[] sslEnabledComponents) {
+    this.sslEnabledComponents = sslEnabledComponents;
+  }
+
+  public String getSSLProtocols() {
+    return sslProtocols;
+  }
+
+  public void setSSLProtocols(final String sslProtocols) {
+    this.sslProtocols = sslProtocols;
+  }
+
+  public String getSSLCiphers() {
+    return sslCiphers;
+  }
+
+  public void setSSLCiphers(final String sslCiphers) {
+    this.sslCiphers = sslCiphers;
+  }
+
+  public boolean isSSLRequireAuthentication() {
+    return sslRequireAuthentication;
+  }
+
+  public void setSSLRequireAuthentication(final boolean sslRequireAuthentication) {
+    this.sslRequireAuthentication = sslRequireAuthentication;
+  }
+
+  public String getSSLKeyStore() {
+    return sslKeyStore;
+  }
+
+  public void setSSLKeyStore(final String sslKeyStore) {
+    this.sslKeyStore = sslKeyStore;
+  }
+
+  public String getSSLKeyStoreType() {
+    return sslKeyStoreType;
+  }
+
+  public void setSSLKeyStoreType(final String sslKeyStoreType) {
+    this.sslKeyStoreType = sslKeyStoreType;
+  }
+
+  public String getSSLKeyStorePassword() {
+    return sslKeyStorePassword;
+  }
+
+  public void setSSLKeyStorePassword(final String sslKeyStorePassword) {
+    this.sslKeyStorePassword = sslKeyStorePassword;
+  }
+
+  public String getSSLTrustStore() {
+    return sslTrustStore;
+  }
+
+  public void setSSLTrustStore(final String sslTrustStore) {
+    this.sslTrustStore = sslTrustStore;
+  }
+
+  public String getSSLTrustStorePassword() {
+    return sslTrustStorePassword;
+  }
+
+  public void setSSLTrustStorePassword(final String sslTrustStorePassword) {
+    this.sslTrustStorePassword = sslTrustStorePassword;
+  }
+
+  public boolean isSSLHttpServiceRequireAuthentication() {
+    return sslHttpServiceRequireAuthentication;
+  }
+
+  public void setSSLHttpServiceRequireAuthentication(final boolean sslHttpServiceRequireAuthentication) {
+    this.sslHttpServiceRequireAuthentication = sslHttpServiceRequireAuthentication;
+  }
+
+  public String getSSLDefaultAlias() {
+    return sslDefaultAlias;
+  }
+
+  public void setSSLDefaultAlias(final String sslDefaultAlias) {
+    this.sslDefaultAlias = sslDefaultAlias;
   }
 }

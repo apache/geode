@@ -1019,11 +1019,12 @@ public class SocketCreator {
     }
     serverSocket.setEnableSessionCreation(true);
 
-    // restrict cyphers
+    // restrict protocols
     String[] protocols = this.sslConfig.getProtocolsAsStringArray();
     if (!"any".equalsIgnoreCase(protocols[0])) {
       serverSocket.setEnabledProtocols(protocols);
     }
+    // restrict ciphers
     String[] ciphers = this.sslConfig.getCiphersAsStringArray();
     if (!"any".equalsIgnoreCase(ciphers[0])) {
       serverSocket.setEnabledCipherSuites(ciphers);

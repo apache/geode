@@ -216,8 +216,8 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
 
       properties.setProperty(MCAST_PORT, "0");
       properties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
-      properties.setProperty(SSL_CIPHERS, "any");
-      properties.setProperty(SSL_PROTOCOLS, "TLSv1.2");
+      properties.setProperty(SSL_CIPHERS, "MD2withRSA,MD5withRSA,SHA1withRSA,SHA256withRSA,SHA384withRSA,SHA512withRS");
+      properties.setProperty(SSL_PROTOCOLS, "TLSv1,TLSv1.1,TLSv1.2");
       properties.setProperty(SSL_KEYSTORE, jks.getCanonicalPath());
       properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
       properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
