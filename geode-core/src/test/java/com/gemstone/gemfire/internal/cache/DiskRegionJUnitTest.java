@@ -2099,7 +2099,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
 
     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, props, Scope.LOCAL);
     CacheServer bs1 = cache.addCacheServer();
-    bs1.setPort(5555);
+    bs1.setPort(0);
     bs1.start();
 
     region.create("key1", new byte[16]);
@@ -2211,7 +2211,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
 
     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, props, Scope.LOCAL);
     CacheServer bs1 = cache.addCacheServer();
-    bs1.setPort(5555);
+    bs1.setPort(0);
     bs1.start();
 
     region.create("key1", new byte[16]);
