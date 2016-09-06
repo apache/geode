@@ -15,25 +15,6 @@
  * limitations under the License.
  */
 subprojects {
-  configurations.all {
-    resolutionStrategy {
-      //failOnVersionConflict()
-
-      //Force certain versions of transitive dependencies
-      //These are forced to match our old non-transitive configuration
-      //These force statements should be removed and tested with the automatically
-      //resolved version
-      force 'org.springframework:spring-context-support:' + project.'springframework.version'
-      force 'org.springframework:spring-context-support:' + project.'springframework.version'
-      force 'org.springframework:spring-context:' + project.'springframework.version'
-      force 'org.springframework:spring-web:' + project.'springframework.version'
-      force 'org.springframework:spring-tx:' + project.'springframework.version'
-      force 'org.springframework:spring-webmvc:' + project.'springframework.version'
-      force 'org.springframework:spring-core:' + project.'springframework.version'
-      force 'jline:jline:' + project.'jline.version'
-    }
-  }
-
   //Task to dump all depencies of all projects, in a way
   //that can be diffed before and after dependency changes
   task dumpDependencies() << {

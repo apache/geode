@@ -16,16 +16,26 @@
  */
 package com.gemstone.gemfire.rest.internal.web;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.annotation.Resource;
+
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.management.internal.AgentUtil;
-import com.gemstone.gemfire.pdx.*;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,15 +52,22 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Resource;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionService;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.GemFireVersion;
+import com.gemstone.gemfire.internal.util.IOUtils;
+import com.gemstone.gemfire.management.internal.AgentUtil;
+import com.gemstone.gemfire.pdx.PdxInstance;
+import com.gemstone.gemfire.pdx.PdxReader;
+import com.gemstone.gemfire.pdx.PdxSerializable;
+import com.gemstone.gemfire.pdx.PdxWriter;
+import com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * The GemFireRestInterfaceTest class is a test suite of test cases testing the contract and functionality of the
@@ -60,8 +77,6 @@ import static org.junit.Assert.*;
  *
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
- * @see org.springframework.test.context.ContextConfiguration
- * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @see org.springframework.web.client.RestTemplate
  * @see com.gemstone.gemfire.cache.Cache
  * @see com.gemstone.gemfire.cache.Region
