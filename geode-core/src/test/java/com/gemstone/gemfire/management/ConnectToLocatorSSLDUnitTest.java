@@ -81,7 +81,7 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
     securityProps.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     securityProps.setProperty(SSL_TRUSTSTORE, jks.getCanonicalPath());
     securityProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
-    securityProps.setProperty(SSL_PROTOCOLS, "TLSv1.2 TLSv1.1");
+    securityProps.setProperty(SSL_PROTOCOLS, "TLSv1.2,TLSv1.1");
 
     setUpLocatorAndConnect(securityProps);
   }

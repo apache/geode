@@ -157,7 +157,8 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
 
   @Test
   public void testNewSSLConfigSSLComponentCombinations2() {
-    Properties properties = configureSSLProperties(commaDelimitedString(SecurableComponent.CLUSTER.getConstant(), SecurableComponent.SERVER.getConstant(), SecurableComponent.HTTP_SERVICE.getConstant(), SecurableComponent.JMX.getConstant()));
+    Properties properties = configureSSLProperties(commaDelimitedString(SecurableComponent.CLUSTER.getConstant(), SecurableComponent.SERVER.getConstant(), SecurableComponent.HTTP_SERVICE
+      .getConstant(), SecurableComponent.JMX.getConstant()));
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
@@ -216,7 +217,7 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
 
       properties.setProperty(MCAST_PORT, "0");
       properties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
-      properties.setProperty(SSL_CIPHERS, "MD2withRSA,MD5withRSA,SHA1withRSA,SHA256withRSA,SHA384withRSA,SHA512withRS");
+      properties.setProperty(SSL_CIPHERS, "TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_DSS_WITH_AES_256_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
       properties.setProperty(SSL_PROTOCOLS, "TLSv1,TLSv1.1,TLSv1.2");
       properties.setProperty(SSL_KEYSTORE, jks.getCanonicalPath());
       properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");

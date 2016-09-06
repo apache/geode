@@ -1470,10 +1470,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         continue;
       }
       Object propVal = me.getValue();
-      if(propName.equals(SSL_CIPHERS) || propName.equals(SSL_PROTOCOLS))
-      {
-        propVal = convertCommaDelimitedToSpaceDelimitedString((String)propVal);
-      }
       if (propVal != null && (propVal instanceof String)) { // weed out extraneous non-string properties
         this.setAttribute(propName, ((String) propVal).trim(), this.sourceMap.get(propName));
       }
@@ -2603,7 +2599,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   @Override
   public void setSSLProtocols(final String sslProtocols) {
-    this.sslProtocols = sslProtocols;
+    //This conversion is required due to backwards compatibility of the existing protocols code
+    this.sslProtocols = convertCommaDelimitedToSpaceDelimitedString(sslProtocols);
   }
 
   @Override
@@ -2613,7 +2610,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   @Override
   public void setSSLCiphers(final String sslCiphers) {
-    this.sslCiphers = sslCiphers;
+    //This conversion is required due to backwards compatibility of the existing cipher code
+    this.sslCiphers = convertCommaDelimitedToSpaceDelimitedString(sslCiphers);
   }
 
   @Override
