@@ -81,12 +81,14 @@ public class JmxManagerLocatorRequest implements DataSerializableFixedID {
     InetAddress networkAddress = InetAddress.getByName(locatorHost);
 
     try {
-      // Changes for 46623
-      // initialize the SocketCreator with props which may contain SSL config
-      // empty distConfProps will reset SocketCreator
       if (sslConfigProps != null) {
         distributionConfigProps.putAll(sslConfigProps);
       }
+
+      // re-initialize the SocketCreator with the sslConfigProps. Note this initializes the SocketCreator with cluster-ssl-* settings since
+      // we are connecting to the locator only.
+      //TODO Udo: Look into this
+      // SocketCreator.getDefaultInstance(distributionConfigProps);
 
       TcpClient client = new TcpClient();
       Object responseFromServer = client.requestToServer(networkAddress, locatorPort, SINGLETON, msTimeout);
