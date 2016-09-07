@@ -26,17 +26,17 @@ Its definition restricts which system components invoke
 the authentication and authorization callbacks.
 The defined values for system components:
 
-- `all`.  All components invoke the security callbacks.
-- `server`. Invokes security callbacks upon connection and operation
+- `all`&mdash;All components invoke the security callbacks.
+- `server`&mdash;Invokes security callbacks upon connection and operation
 requests that a client makes of a server.
-- `cluster`.  Invokes security callbacks upon connection and operation
+- `cluster`&mdash;Invokes security callbacks upon connection and operation
 requests that a server makes as the peer of a locator.
-- `jmx`.  Invokes security callbacks upon connection and operation
+- `jmx`&mdash;Invokes security callbacks upon connection and operation
 requests that components communicating with a JMX manager make of a locator.
 Both `gfsh` and `Pulse` use this form of communication.
-- `http`.  Invokes security callbacks upon connection and operation
+- `http`&mdash;Invokes security callbacks upon connection and operation
 requests that applications communicating via the REST API make of a server.
-- `gateway`.  Invokes security callbacks upon connection and operation
+- `gateway`&mdash;Invokes security callbacks upon connection and operation
 requests that a gateway sender makes of a locator.
 
 The `security-enabled-components` property defines 
