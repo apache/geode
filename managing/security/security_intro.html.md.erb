@@ -5,14 +5,17 @@ title:  Security Features
 Encryption, SSL secure communication, authentication, and authorization 
 features help to secure the distributed system.
 
-Apache Geode features:
+The features include:
 
--   **Single interface for all components**. one way to rule them all
--   **System-wide role-based access control**. authorization
+-   **A single security interface for all components**. The single
+authentication and authorization mechanism simplifies the security
+implementation.
+It views and interacts with all components in a consistent manner. 
+-   **System-wide role-based access control**.
+Roles regiment authorized operations requested by the various components.
 -   **SSL communication**. Allows configuration of connections to be 
 SSL-based, rather than plain socket connections.
 You can enable SSL separately for peer-to-peer, client, JMX, gateway senders and receivers, and HTTP connections.
--   **Post processing of region data**. Filtering of return values for get type ops, to permit things like masking off fields. Allows authorization callbacks to modify or filter data from the server.
--   **Sample implementations**. Authentication and authorization sample implementations.
-
+-   **Post processing of region data**. Return values for operations that
+return region values may be altered, permitting the filtering of returned data.
 
