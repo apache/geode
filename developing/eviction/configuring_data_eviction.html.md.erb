@@ -19,7 +19,7 @@ Configure data eviction as follows. You do not need to perform these steps in th
     -   Overflow the entry data to disk. See [Persistence and Overflow](../storing_data_on_disk/chapter_overview.html).
 
 3.  Decide the maximum amount of data to allow in the member for the eviction measurement indicated. This is the maximum for all storage for the region in the member. For partitioned regions, this is the total for all buckets stored in the member for the region - including any secondary buckets used for redundancy.
-4.  Decide whether to program a custom sizer for your region. If you are able to provide such a class, it might be faster than the standard sizing done by Geode. Your custom class must follow the guidelines for defining custom classes and, additionally, must implement `com.gemstone.gemfire.cache.util.ObjectSizer`. See [Requirements for Using Custom Classes in Data Caching](../../basic_config/data_entries_custom_classes/using_custom_classes.html).
+4.  Decide whether to program a custom sizer for your region. If you are able to provide such a class, it might be faster than the standard sizing done by Geode. Your custom class must follow the guidelines for defining custom classes and, additionally, must implement `org.apache.geode.cache.util.ObjectSizer`. See [Requirements for Using Custom Classes in Data Caching](../../basic_config/data_entries_custom_classes/using_custom_classes.html).
 
 **Note:**
 You can also configure Regions using the gfsh command-line interface, however, you cannot configure `eviction-attributes` using gfsh. See [Region Commands](../../tools_modules/gfsh/quick_ref_commands_by_area.html#topic_EF03119A40EE492984F3B6248596E1DD) and [Disk Store Commands](../../tools_modules/gfsh/quick_ref_commands_by_area.html#topic_1ACC91B493EE446E89EC7DBFBBAE00EA).
@@ -48,7 +48,7 @@ Examples:
     <partition-attributes local-max-memory="512" total-num-buckets="13"/>
     <eviction-attributes>
        <lru-memory-size action="local-destroy"/>
-       <class-name>com.gemstone.gemfire.cache.util.ObjectSizer
+       <class-name>org.apache.geode.cache.util.ObjectSizer
        </class-name>
     </eviction-attributes>
   </region-attributes>

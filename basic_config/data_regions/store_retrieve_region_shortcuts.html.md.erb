@@ -5,7 +5,7 @@ title:  Storing and Retrieving Region Shortcuts and Custom Named Region Attribut
 Use these examples to get started with Geode region shortcuts.
 
 <a id="region_shortcuts__section_D9E58754D2B0435FA2986DBBF3063D4C"></a>
-Geode region shortcuts, in `com.gemstone.gemfire.cache.RegionShortcut` for peers and servers and `com.gemstone.gemfire.cache.client.ClientRegionShortcut` for clients, are available wherever you create a region in the `cache.xml` or through the API. Custom named attributes, stored by you, are available from the moment you store them on.
+Geode region shortcuts, in `org.apache.geode.cache.RegionShortcut` for peers and servers and `org.apache.geode.cache.client.ClientRegionShortcut` for clients, are available wherever you create a region in the `cache.xml` or through the API. Custom named attributes, stored by you, are available from the moment you store them on.
 
 The region shortcuts are special Geode named region attributes, with identifying names. Create custom named region attributes by setting the attributes and storing them with a unique identifier in the region attribute `id`. Retrieve named attributes by providing the shortcut enum value or the name you assigned in the `id` to the region creation:
 

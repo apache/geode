@@ -40,7 +40,7 @@ The cache.xml file has these requirements:
         </client-cache>
         ```
 
--   Any class name specified in the file **must have a public zero-argument constructor** and must implement the `com.gemstone.gemfire.cache.Declarable` interface. Parameters declared in the XML for the class are passed to the class init method.
+-   Any class name specified in the file **must have a public zero-argument constructor** and must implement the `org.apache.geode.cache.Declarable` interface. Parameters declared in the XML for the class are passed to the class init method.
 
 ## <a id="topic_7B1CABCAD056499AA57AF3CFDBF8ABE3__section_5DBA12F9FC08406AAD5557E13A3DEDF2" class="no-quick-link"></a>Variables in cache.xml
 
@@ -79,7 +79,7 @@ To configure cache servers, clients, and WAN topologies, see the following secti
     -   [&lt;region&gt;](cache_xml.html#region)
     -   [&lt;region-attributes&gt;](cache_xml.html#region-attributes)
 
-    You can set the same server configuration properties using the <span class="keyword apiname">`com.gemstone.gemfire.cache.server.CacheServer`</span> and <span class="keyword apiname">`com.gemstone.gemfire.cache.Cache`</span> interfaces. For detailed information, see the online Java API documentation.
+    You can set the same server configuration properties using the <span class="keyword apiname">`org.apache.geode.cache.server.CacheServer`</span> and <span class="keyword apiname">`org.apache.geode.cache.Cache`</span> interfaces. For detailed information, see the online Java API documentation.
 
 -   Client Configuration
 
@@ -87,7 +87,7 @@ To configure cache servers, clients, and WAN topologies, see the following secti
     -   [&lt;pool&gt;](client-cache.html#cc-pool)
     -   [&lt;region&gt;](client-cache.html#cc-region)
 
-    You can set the same client configuration properties using the <span class="keyword apiname">`com.gemstone.gemfire.cache.clientClientCache`</span> and <span class="keyword apiname">`Pool`</span> interfaces. For detailed information, see the online Java API documentation.
+    You can set the same client configuration properties using the <span class="keyword apiname">`org.apache.geode.cache.clientClientCache`</span> and <span class="keyword apiname">`Pool`</span> interfaces. For detailed information, see the online Java API documentation.
 
 -   Multi-site (WAN) Configuration and Asynchronous Event Queue Configuration
 
@@ -95,6 +95,6 @@ To configure cache servers, clients, and WAN topologies, see the following secti
     -   [&lt;gateway-receiver&gt;](../../reference/topics/gfe_cache_xml.html#gateway-receiver)
     -   [&lt;async-event-queue&gt;](../../reference/topics/gfe_cache_xml.html#id_zrr_scq_rr)
 
-    The gateway sender and receiver APIs in <span class="keyword apiname">`com.gemstone.gemfire.cache.util`</span> provide corresponding getter and setter methods for these attributes.
+    The gateway sender and receiver APIs in <span class="keyword apiname">`org.apache.geode.cache.util`</span> provide corresponding getter and setter methods for these attributes.
 
 

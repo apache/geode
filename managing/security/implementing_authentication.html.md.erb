@@ -14,7 +14,7 @@ Use the following procedure to implement authentication in your Geode applicatio
     -   Obtain the properties dynamically in the `AuthInitialize.getCredentials` method.
 
 3.  For joining members, program and configure the credentials initialization plug-in:
-    1.  Create an implementation of the Geode `com.gemstone.gemfire.security.AuthInitialize` interface.
+    1.  Create an implementation of the Geode `org.apache.geode.security.AuthInitialize` interface.
         1.  Program a public static method to return an instance of the class.
         2.  Program the `getCredentials` method to create all properties required by the `Authorize` method via the member's credentials.
 
@@ -37,7 +37,7 @@ Use the following procedure to implement authentication in your Geode applicatio
     4.  For all members, set any additional `gemfire.properties` (or `gfsecurity.properties` file if you are creating a special restricted access file for security configuration) `security-*` properties required by your `AuthInitialize` implementation.
 
 4.  For authorizing members, program and configure the credentials authorization plug-in:
-    1.  Implement the Geode `com.gemstone.gemfire.security.Authenticator` interface:
+    1.  Implement the Geode `org.apache.geode.security.Authenticator` interface:
         1.  Program a public static, zero-argument method to return an instance of the class.
         2.  Program the `authenticate` method to authenticate the credentials and return a `java.security.Principal` object.
 

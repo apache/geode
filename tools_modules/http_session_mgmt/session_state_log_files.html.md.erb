@@ -13,23 +13,23 @@ Several log files are written by the various parts of the session management cod
 To add Geode-specific FINE logging to the `catalina.log` file, add the following lines to your `<instance>/conf/logging.properties` file:
 
 ``` pre
-com.gemstone.gemfire.modules.session.catalina.DeltaSessionManager.level = FINE
-com.gemstone.gemfire.modules.session.catalina.DeltaSession.level = FINE
+org.apache.geode.modules.session.catalina.DeltaSessionManager.level = FINE
+org.apache.geode.modules.session.catalina.DeltaSession.level = FINE
 ```
 
 These configurations will add FINE logging to the `catalina.DATE.log` file. The following is an example of FINE logging:
 
 ``` pre
-06-Sep-2011 15:59:47.250 FINE com.gemstone.gemfire.modules.session.catalina.DeltaSessionManager.start 
+06-Sep-2011 15:59:47.250 FINE org.apache.geode.modules.session.catalina.DeltaSessionManager.start 
 DeltaSessionManager[container=StandardEngine[Catalina].StandardHost[localhost].StandardContext[/manager]; 
 regionName=gemfire_modules_sessions; regionAttributesId=PARTITION_REDUNDANT]: Starting
 
-06-Sep-2011 15:59:47.254 FINE com.gemstone.gemfire.modules.session.catalina.DeltaSessionManager.registerJvmRouteBinderValve 
+06-Sep-2011 15:59:47.254 FINE org.apache.geode.modules.session.catalina.DeltaSessionManager.registerJvmRouteBinderValve 
 DeltaSessionManager[container=StandardEngine[Catalina].StandardHost[localhost].StandardContext[/manager]; 
 regionName=gemfire_modules_sessions; regionAttributesId=PARTITION_REDUNDANT]: Registering JVM route binder valve
 
-06-Sep-2011 15:59:47.351 FINE com.gemstone.gemfire.modules.session.catalina.ClientServerSessionCache.createOrRetrieveRegion 
-Created session region: com.gemstone.gemfire.internal.cache.LocalRegion[path='/gemfire_modules_sessions';
+06-Sep-2011 15:59:47.351 FINE org.apache.geode.modules.session.catalina.ClientServerSessionCache.createOrRetrieveRegion 
+Created session region: org.apache.geode.internal.cache.LocalRegion[path='/gemfire_modules_sessions';
 scope=LOCAL';dataPolicy=EMPTY; gatewayEnabled=false]
 ```
 
@@ -77,7 +77,7 @@ To add fine-level logging to the Geode Cache Client, add the 'log-level' propert
 ``` pre
 <Listener log-level="fine" 
 cache-xml-file="${geode-cs.cache.configuration.file}" 
-className="com.gemstone.gemfire.modules.session.catalina.ClientServerCacheLifecycleListener"
+className="org.apache.geode.modules.session.catalina.ClientServerCacheLifecycleListener"
 criticalHeapPercentage="${geode-cs.critical.heap.percentage}"
 evictionHeapPercentage="${geode-cs.eviction.heap.percentage}"
 log-file="${geode-cs.log.file}"

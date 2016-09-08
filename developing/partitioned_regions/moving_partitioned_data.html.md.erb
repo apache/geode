@@ -32,7 +32,7 @@ source = sourceMembers.iterator().next();
 PartitionRegionHelper.moveBucketByKey(r, source, destination, product);
 ```
 
-See the Java API documentation for `com.gemstone.gemfire.cache.partition.PartitionRegionHelper.moveBucketByKey` for more details.
+See the Java API documentation for `org.apache.geode.cache.partition.PartitionRegionHelper.moveBucketByKey` for more details.
 
 The `moveData` method moves data up to a given percentage (measured in bytes) from a source member to a destination member. For example, you could use this method to move a specified percentage of data from an overloaded member to another member to improve distribution.
 
@@ -52,7 +52,7 @@ DistributedMember destination = ds.findDistributedMember(destName);
 PartitionRegionHelper.moveData(r, source, destination, 20);
 ```
 
-See the Java API documentation for `com.gemstone.gemfire.cache.partition.PartitionRegionHelper.moveData` for more details.
+See the Java API documentation for `org.apache.geode.cache.partition.PartitionRegionHelper.moveData` for more details.
 
 For more information on partitioned regions and rebalancing, see [Partitioned Regions](chapter_overview.html).
 

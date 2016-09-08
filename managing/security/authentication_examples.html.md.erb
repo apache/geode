@@ -17,7 +17,7 @@ These are the `gemfire.properties` file (or `gfsecurity.properties` file if you 
 -   Client:
 
     ``` pre
-    security-client-auth-init=com.gemstone.gemfire.security.templates.UserPasswordAuthInit.create 
+    security-client-auth-init=org.apache.geode.security.templates.UserPasswordAuthInit.create 
     security-username="username" 
     security-password="password"
     ```
@@ -25,8 +25,8 @@ These are the `gemfire.properties` file (or `gfsecurity.properties` file if you 
 -   Server system members:
 
     ``` pre
-    security-peer-auth-init=com.gemstone.gemfire.security.templates.UserPasswordAuthInit.create 
-    security-peer-authenticator=com.gemstone.gemfire.security.templates.LdapUserAuthenticator.create
+    security-peer-auth-init=org.apache.geode.security.templates.UserPasswordAuthInit.create 
+    security-peer-authenticator=org.apache.geode.security.templates.LdapUserAuthenticator.create
     security-ldap-server="name of ldap server"
     security-ldap-basedn="ou=www, dc=xxx, dc=yyy, dc=zzz" 
     ```
@@ -48,7 +48,7 @@ These are the `gemfire.properties` file (or `gfsecurity.properties` file if you 
 -   Client:
 
     ``` pre
-    security-client-auth-init=com.gemstone.gemfire.security.templates.PKCSAuthInit.create
+    security-client-auth-init=org.apache.geode.security.templates.PKCSAuthInit.create
     security-keystorepath="keystore path"
     security-alias="alias"
     security-keystorepass="keystore password" 
@@ -57,7 +57,7 @@ These are the `gemfire.properties` file (or `gfsecurity.properties` file if you 
 -   Server:
 
     ``` pre
-    security-client-authenticator=com.gemstone.gemfire.security.templates.PKCSAuthenticator.create
+    security-client-authenticator=org.apache.geode.security.templates.PKCSAuthenticator.create
     security-publickey-filepath="path and name of public key file"
     security-publickey-pass="password of public key file store on the server"
     ```

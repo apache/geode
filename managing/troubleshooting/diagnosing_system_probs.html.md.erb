@@ -42,17 +42,17 @@ Exception in thread "main" java.lang.RuntimeException: An IO error occurred whil
         starting a Locator in C:\devel\gfcache\locator\locator on 192.0.2.0[10999]: Network is
         unreachable; port (10999) is not available on 192.0.2.0.
 at
-com.gemstone.gemfire.distributed.LocatorLauncher.start(LocatorLauncher.java:622)
+org.apache.geode.distributed.LocatorLauncher.start(LocatorLauncher.java:622)
 at
-com.gemstone.gemfire.distributed.LocatorLauncher.run(LocatorLauncher.java:513)
+org.apache.geode.distributed.LocatorLauncher.run(LocatorLauncher.java:513)
 at
-com.gemstone.gemfire.distributed.LocatorLauncher.main(LocatorLauncher.java:188)
+org.apache.geode.distributed.LocatorLauncher.main(LocatorLauncher.java:188)
 Caused by: java.net.BindException: Network is unreachable; port (10999) is not available on
         192.0.2.0.
 at
-com.gemstone.gemfire.distributed.AbstractLauncher.assertPortAvailable(AbstractLauncher.java:136)
+org.apache.geode.distributed.AbstractLauncher.assertPortAvailable(AbstractLauncher.java:136)
 at
-com.gemstone.gemfire.distributed.LocatorLauncher.start(LocatorLauncher.java:596)
+org.apache.geode.distributed.LocatorLauncher.start(LocatorLauncher.java:596)
 ...
 ```
 
@@ -115,14 +115,14 @@ Response:
 System member startup fails with an error like one of these:
 
 ``` pre
-Exception in thread "main" com.gemstone.gemfire.cache.CacheXmlException:
+Exception in thread "main" org.apache.geode.cache.CacheXmlException:
 While reading Cache XML file:/C:/gemfire/client_cache.xml.
 Error while parsing XML, caused by org.xml.sax.SAXParseException:
 Document root element "client-cache", must match DOCTYPE root "cache".
 ```
 
 ``` pre
-Exception in thread "main" com.gemstone.gemfire.cache.CacheXmlException:
+Exception in thread "main" org.apache.geode.cache.CacheXmlException:
 While reading Cache XML file:/C:/gemfire/cache.xml.
 Error while parsing XML, caused by org.xml.sax.SAXParseException:
 Document root element "cache", must match DOCTYPE root "client-cache".
@@ -199,7 +199,7 @@ Response: Use a partitioned or replicate data-policy for your server regions. Th
 In partitioned regions that are persisted to disk, if you have any members offline, the partitioned region will still be available but may have some buckets represented only in offline disk stores. In this case, methods that access the bucket entries return a PartitionOfflineException, similar to this:
 
 ``` pre
-com.gemstone.gemfire.cache.persistence.PartitionOfflineException:
+org.apache.geode.cache.persistence.PartitionOfflineException:
 Region /__PR/_B__root_partitioned__region_7 has persistent data that is no
 longer online stored at these locations:
 [/192.0.2.1:/export/straw3/users/jpearson/bugfix_Apr10/testCL/hostB/backupDirectory 
@@ -247,7 +247,7 @@ The process may be hitting its virtual address space limits. The virtual address
 
 ## <a id="diagnosing_system_probs__section_B49BD03F4CA241C7BED4A2C4D5936A7A" class="no-quick-link"></a>PartitionedRegionDistributionException
 
-The com.gemstone.gemfire.cache.PartitionedRegionDistributionException appears when Geode fails after many attempts to complete a distributed operation. This exception indicates that no data store member can be found to perform a destroy, invalidate, or get operation.
+The org.apache.geode.cache.PartitionedRegionDistributionException appears when Geode fails after many attempts to complete a distributed operation. This exception indicates that no data store member can be found to perform a destroy, invalidate, or get operation.
 
 Response:
 
@@ -257,7 +257,7 @@ Response:
 
 ## <a id="diagnosing_system_probs__section_7DE15A6C99974821B6CA418BC2AF98F1" class="no-quick-link"></a>PartitionedRegionStorageException
 
-The com.gemstone.gemfire.cache.PartitionedRegionStorageException appears when Geode can’t create a new entry. This exception arises from a lack of storage space for put and create operations or for get operations with a loader. PartitionedRegionStorageException often indicates data loss or impending data loss.
+The org.apache.geode.cache.PartitionedRegionStorageException appears when Geode can’t create a new entry. This exception arises from a lack of storage space for put and create operations or for get operations with a loader. PartitionedRegionStorageException often indicates data loss or impending data loss.
 
 The text string indicates the cause of the exception, as in these examples:
 
@@ -299,7 +299,7 @@ A client and server produces a SocketTimeoutException when it stops waiting for 
 
 Response:
 
-Increase the default socket timeout setting for the member. This timeout is set separately for the client Pool. For a client/server configuration, adjust the "read-timeout" value as described in [&lt;pool&gt;](../../reference/topics/client-cache.html#cc-pool) or use the `com.gemstone.gemfire.cache.client.PoolFactory.setReadTimeout` method.
+Increase the default socket timeout setting for the member. This timeout is set separately for the client Pool. For a client/server configuration, adjust the "read-timeout" value as described in [&lt;pool&gt;](../../reference/topics/client-cache.html#cc-pool) or use the `org.apache.geode.cache.client.PoolFactory.setReadTimeout` method.
 
 ## <a id="diagnosing_system_probs__section_8C7CB2EA0A274DAF90083FECE0BF3B1F" class="no-quick-link"></a>Member logs ForcedDisconnectException, Cache and DistributedSystem forcibly closed
 

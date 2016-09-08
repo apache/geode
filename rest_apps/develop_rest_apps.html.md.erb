@@ -56,7 +56,7 @@ Date: Sat, 18 Jan 2014 20:05:47 GMT
             "name": "customers",
             "type": "REPLICATE",
             "key-constraint": "java.lang.String",
-            "value-constraint": "com.gemstone.gemfire.pdx.PdxInstance"
+            "value-constraint": "org.apache.geode.pdx.PdxInstance"
         },
         {
             "name": "items",
@@ -80,7 +80,7 @@ Date: Sat, 18 Jan 2014 20:05:47 GMT
             "name": "empty_region",
             "type": "EMPTY",
             "key-constraint": "java.lang.String",
-            "value-constraint": "com.gemstone.gemfire.pdx.PdxInstance"
+            "value-constraint": "org.apache.geode.pdx.PdxInstance"
         }
     ]
 }
@@ -216,7 +216,7 @@ POST /gemfire-api/v1/orders?key=2
 Accept: application/json
 Content-Type: application/json
 {
-    "@type":  "com.gemstone.gemfire.web.rest.domain.Order",
+    "@type":  "org.apache.geode.web.rest.domain.Order",
      "purchaseOrderNo": 112,
      "customerId": 1012,
      "description":  "Purchase Order for myCompany",
@@ -266,7 +266,7 @@ Request Payload: application/json
 Content-Type: application/json
 Accept: application/json
 {
-    "@type": "com.gemstone.gemfire.web.rest.domain.Order",
+    "@type": "org.apache.geode.web.rest.domain.Order",
      "purchaseOrderNo": 1121,
      "customerId": 1012,
      "description":  "Order for XYZ Corp",
@@ -325,7 +325,7 @@ Accept: application/json
 Content-Type: application/json
 {
     "@old": {
-         "@type":  "com.gemstone.gemfire.web.rest.domain.Order",
+         "@type":  "org.apache.geode.web.rest.domain.Order",
          "purchaseOrderNo": 1121,
          "customerId": 1012,
          "description":  "Order for  XYZ Corp",
@@ -346,7 +346,7 @@ Content-Type: application/json
          "totalPrice": 225
     },
      "@new ": {
-         "@type":  "com.gemstone.gemfire.web.rest.domain.Order",
+         "@type":  "org.apache.geode.web.rest.domain.Order",
          "purchaseOrderNo": 1121,
          "customerId": 1013,
          "description":  "Order for  New Corp",
@@ -508,7 +508,7 @@ Content-Type: application/json
                 "itemNo": 1,
                 "unitPrice": 20,
                 "totalPrice": 200,
-                "type-class": "com.gemstone.gemfire.web.rest.domain.Item"
+                "type-class": "org.apache.geode.web.rest.domain.Item"
             },
             {
                 "description": "Product-BBB",
@@ -516,11 +516,11 @@ Content-Type: application/json
                 "itemNo": 2,
                 "unitPrice": 10,
                 "totalPrice": 150,
-                "type-class": "com.gemstone.gemfire.web.rest.domain.Item"
+                "type-class": "org.apache.geode.web.rest.domain.Item"
             }
         ],
         "orderDate": "Mon Feb 10 00:00:00 IST 2014",
-        "type-class": "com.gemstone.gemfire.web.rest.domain.Order"
+        "type-class": "org.apache.geode.web.rest.domain.Order"
     },
     {...},
     {...}
@@ -557,7 +557,7 @@ Content-Type: application/json
         "firstName": "Jane",
         "lastName": "Doe",
         "customerId": 101,
-        "type-class": "com.gemstone.gemfire.web.rest.domain.Customer"
+        "type-class": "org.apache.geode.web.rest.domain.Customer"
     }
 ]
 ```
@@ -653,7 +653,7 @@ Content-Type: application/json
         "@value": 210
     },
     {
-        "@type": "com.gemstone.gemfire.web.rest.domain.Item",
+        "@type": "org.apache.geode.web.rest.domain.Item",
         "itemNo": "599",
         "description": "Part X Free on Bumper Offer",
         "quantity": "2",

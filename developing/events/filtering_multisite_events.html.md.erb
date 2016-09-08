@@ -28,13 +28,13 @@ You install a `GatewayEventFilter` implementation to a configured gateway sender
     <cache>
       <gateway-sender id="remoteA" parallel="true" remote-distributed-system-id="1"> 
         <gateway-event-filter>
-          <class-name>com.gemstone.gemfire.util.SampleEventFilter</class-name>
+          <class-name>org.apache.geode.util.SampleEventFilter</class-name>
           <parameter name="param1">
             <string>"value1"</string>
           </parameter>
         </gateway-event-filter>
         <gateway-transport-filter>
-          <class-name>com.gemstone.gemfire.util.SampleTransportFilter</class-name>
+          <class-name>org.apache.geode.util.SampleTransportFilter</class-name>
           <parameter name="param1">
             <string>"value1"</string>
           </parameter>
@@ -48,7 +48,7 @@ You install a `GatewayEventFilter` implementation to a configured gateway sender
       ...
       <gateway-receiver start-port="1530" end-port="1551"> 
         <gateway-transport-filter>
-          <class-name>com.gemstone.gemfire.util.SampleTransportFilter</class-name>
+          <class-name>org.apache.geode.util.SampleTransportFilter</class-name>
           <parameter name="param1">
             <string>"value1"</string>
           </parameter>
@@ -61,15 +61,15 @@ You install a `GatewayEventFilter` implementation to a configured gateway sender
 
     ``` pre
     gfsh>create gateway-sender --id=remoteA --parallel=true --remote-distributed-id="1" 
-    --gateway-event-filter=com.gemstone.gemfire.util.SampleEventFilter 
-    --gateway-transport-filter=com.gemstone.gemfire.util.SampleTransportFilter
+    --gateway-event-filter=org.apache.geode.util.SampleEventFilter 
+    --gateway-transport-filter=org.apache.geode.util.SampleTransportFilter
     ```
 
     See [create gateway-sender](../../tools_modules/gfsh/command-pages/create.html#topic_hg2_bjz_ck).
 
     ``` pre
     gfsh>create gateway-receiver --start-port=1530 --end-port=1551 \
-    --gateway-transport-filter=com.gemstone.gemfire.util.SampleTransportFilter
+    --gateway-transport-filter=org.apache.geode.util.SampleTransportFilter
     ```
 
     **Note:**

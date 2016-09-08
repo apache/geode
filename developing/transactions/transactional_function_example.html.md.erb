@@ -14,7 +14,7 @@ public class TransactionalFunction extends FunctionAdapter {
 
   private Random random = new Random();
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.execute.FunctionAdapter#execute(com.gemstone.gemfire.cache.execute.FunctionContext)
+   * @see org.apache.geode.cache.execute.FunctionAdapter#execute(org.apache.geode.cache.execute.FunctionContext)
    */
   @Override
   public void execute(FunctionContext context) {
@@ -42,7 +42,7 @@ public class TransactionalFunction extends FunctionAdapter {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.execute.FunctionAdapter#getId()
+   * @see org.apache.geode.cache.execute.FunctionAdapter#getId()
    */
   @Override
   public String getId() {

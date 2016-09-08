@@ -30,7 +30,7 @@ The following Java examples assume a project directory structure similar to the 
 ## \#1. REST Java Client (RestClientApp.java)
 
 ``` pre
-package com.gemstone.gemfire.restclient;
+package org.apache.geode.restclient;
 
  import org.springframework.http.HttpHeaders;
  import org.springframework.http.MediaType;
@@ -40,7 +40,7 @@ package com.gemstone.gemfire.restclient;
  import org.springframework.web.client.HttpClientErrorException;
  import org.springframework.web.client.HttpServerErrorException;
 
- import com.gemstone.gemfire.util.RestClientUtils;
+ import org.apache.geode.util.RestClientUtils;
 
  import java.util.ArrayList;
  import java.util.List;
@@ -50,7 +50,7 @@ package com.gemstone.gemfire.restclient;
    private static final String PEOPLE_REGION =  "/People";
 
    private static final String PERSON1_AS_JSON =  "{"
-          +  "\"@type\ ": \"com.gemstone.gemfire.domain.Person\ "," +  "\"id\ ": 1,"
+          +  "\"@type\ ": \"org.apache.geode.domain.Person\ "," +  "\"id\ ": 1,"
        +  " \"firstName\ ": \"Jane\ "," +  " \"middleName\ ": \"H\ ","
        +  " \"lastName\ ": \"Doe1\ "," +  " \"birthDate\ ": \"04/12/1983\ ","
        +  "\"gender\ ": \"MALE\ "" + "}";
@@ -95,21 +95,21 @@ package com.gemstone.gemfire.restclient;
 ## \#1a. Geode Cache Java Client (MyJavaClient.java)
 
 ``` pre
-package com.gemstone.gemfire.javaclient;
+package org.apache.geode.javaclient;
 
  import java.util.Calendar;
  import java.util.HashMap;
  import java.util.Map;
 
- import com.gemstone.gemfire.cache.Region;
- import com.gemstone.gemfire.cache.client.ClientCache;
- import com.gemstone.gemfire.cache.client.ClientCacheFactory;
- import com.gemstone.gemfire.cache.client.ClientRegionFactory;
- import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
- import com.gemstone.gemfire.domain.Gender;
- import com.gemstone.gemfire.domain.Person;
- import com.gemstone.gemfire.pdx.PdxInstance;
- import com.gemstone.gemfire.util.DateTimeUtils;
+ import org.apache.geode.cache.Region;
+ import org.apache.geode.cache.client.ClientCache;
+ import org.apache.geode.cache.client.ClientCacheFactory;
+ import org.apache.geode.cache.client.ClientRegionFactory;
+ import org.apache.geode.cache.client.ClientRegionShortcut;
+ import org.apache.geode.domain.Gender;
+ import org.apache.geode.domain.Person;
+ import org.apache.geode.pdx.PdxInstance;
+ import org.apache.geode.util.DateTimeUtils;
 
  public class MyJavaClient {
 
@@ -190,7 +190,7 @@ package com.gemstone.gemfire.javaclient;
 ## \#1b. REST Client Utilities (RestClientUtils.java)
 
 ``` pre
-package com.gemstone.gemfire.util;
+package org.apache.geode.util;
 
 
  import java.net.URI;
@@ -264,7 +264,7 @@ package com.gemstone.gemfire.util;
 ## \#1c. Date and Time Utilities (DateTimeUtils.java)
 
 ``` pre
-package com.gemstone.gemfire.util;
+package org.apache.geode.util;
 
 
  import java.text.SimpleDateFormat;
@@ -300,17 +300,17 @@ package com.gemstone.gemfire.util;
 ## \#1d. Person Class (Person.java)
 
 ``` pre
-package com.gemstone.gemfire.domain;
+package org.apache.geode.domain;
 
 
  import java.util.Date;
 
- import com.gemstone.gemfire.internal.lang.ObjectUtils;
- import com.gemstone.gemfire.pdx.PdxReader;
- import com.gemstone.gemfire.pdx.PdxSerializable;
- import com.gemstone.gemfire.pdx.PdxWriter;
+ import org.apache.geode.internal.lang.ObjectUtils;
+ import org.apache.geode.pdx.PdxReader;
+ import org.apache.geode.pdx.PdxSerializable;
+ import org.apache.geode.pdx.PdxWriter;
 
- import com.gemstone.gemfire.util.DateTimeUtils;
+ import org.apache.geode.util.DateTimeUtils;
 
 /**
  * The Person class is an abstraction modeling a person.
@@ -470,7 +470,7 @@ package com.gemstone.gemfire.domain;
 ## \#1e. Gender Class (Gender.java)
 
 ``` pre
-package com.gemstone.gemfire.domain;
+package org.apache.geode.domain;
 
 /**
  * The Gender  enum is a enumeration of genders (sexes).
@@ -498,7 +498,7 @@ class JsonSerializable
 
   def to_json
     hash = {}
-    hash["@type"] = "com.gemstone.gemfire.web.rest.domain.Person"
+    hash["@type"] = "org.apache.geode.web.rest.domain.Person"
     self.instance_variables.each do |var|
       if !var.to_s.end_with?("links")
         hash[var.to_s[1..-1]] = self.instance_variable_get var
@@ -600,7 +600,7 @@ Person is...
 Person modified is...
  { type = Person, id = 1, firstName = Jack, middleName = H, lastName = Handy, birthDate = 04/12/1983, gender = MALE}
 JSON sent to Server for Person with ID 1...
- {"@type":"com.gemstone.gemfire.web.rest.domain.Person","id":1,"firstName":"Jack","middleName":"H","lastName":"Handy","birthDate":"04/12/1983","gender":"MALE"}
+ {"@type":"org.apache.geode.web.rest.domain.Person","id":1,"firstName":"Jack","middleName":"H","lastName":"Handy","birthDate":"04/12/1983","gender":"MALE"}
 ```
 
 ## \#3. Python REST Client (restClient.py)

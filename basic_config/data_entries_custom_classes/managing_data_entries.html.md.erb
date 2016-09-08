@@ -85,7 +85,7 @@ Always change your entries using copies of the retrieved objects—never directl
     `EntryEvent.getOldValue`
     `Query.select`
 
-2.  Create a copy of the returned object and work with that. For objects that are cloneable or serializable, you can copy the entry value to a new object using `com.gemstone.gemfire.CopyHelper.copy`. Example:
+2.  Create a copy of the returned object and work with that. For objects that are cloneable or serializable, you can copy the entry value to a new object using `org.apache.geode.CopyHelper.copy`. Example:
 
     ``` pre
     Object o = (StringBuffer)region.get("stringBuf");

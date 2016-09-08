@@ -29,7 +29,7 @@ You must configure the node to allow it to become a JMX Manager. See [Configurin
 | Object Name        | GemFire:type=Member, service=Manager,member=&lt;name-or-dist-member-id&gt; |
 | Instances Per Node | 1                                                                          |
 
-See the `com.gemstone.gemfire.management.ManagerMXBean` JavaDocs for information on available MBean methods and attributes.
+See the `org.apache.geode.management.ManagerMXBean` JavaDocs for information on available MBean methods and attributes.
 
 ## <a id="topic_14E3721DD0CF47D7AD8C742DFBE9FB9C__section_4D7A4C82DD974BB5A5E52B34A6D888B4" class="no-quick-link"></a>DistributedSystemMXBean
 
@@ -50,7 +50,7 @@ This MBean also provides some MBean model navigation APIS. These APIs should be 
 | Object Name        | GemFire:type=Distributed,service=System |
 | Instances Per Node | 1                                       |
 
-See the `com.gemstone.gemfire.management.DistributedSystemMXBean` JavaDocs for information on available MBean methods and attributes.
+See the `org.apache.geode.management.DistributedSystemMXBean` JavaDocs for information on available MBean methods and attributes.
 
 ## <a id="topic_14E3721DD0CF47D7AD8C742DFBE9FB9C__section_48384B091AB846E591F22EEA2770DD36" class="no-quick-link"></a>DistributedRegionMXBean
 
@@ -65,7 +65,7 @@ System-wide aggregate MBean of a named region. It provides a high-level view of 
 | Object Name        | GemFire:type=Distributed,service=Region,name=&lt;regionName&gt; |
 | Instances Per Node | 0..N                                                            |
 
-See the `com.gemstone.gemfire.management.DistributedRegionMXBean` JavaDocs for information on available MBean methods and attributes.
+See the `org.apache.geode.management.DistributedRegionMXBean` JavaDocs for information on available MBean methods and attributes.
 
 ## <a id="topic_14E3721DD0CF47D7AD8C742DFBE9FB9C__section_9E004D8AA3D24647A5C19CAA1879F0A4" class="no-quick-link"></a>DistributedLockServiceMXBean
 
@@ -82,7 +82,7 @@ A named instance of DistributedLockService defines a space for locking arbitrary
 | Object Name        | GemFire:type=Distributed,service=LockService,name=&lt;dlsName&gt; |
 | Instances Per Node | 0..N                                                              |
 
-See the `com.gemstone.gemfire.management.DistributedLockServiceMXBean` JavaDocs for information on available MBean methods and attributes.
+See the `org.apache.geode.management.DistributedLockServiceMXBean` JavaDocs for information on available MBean methods and attributes.
 
 ## <a id="topic_48194A5BDF3F40F68E95A114DD702413" class="no-quick-link"></a>Managed Node MBeans
 
@@ -115,7 +115,7 @@ See [MemberMXBean Notifications](list_of_mbean_notifications.html#reference_czt_
 | Object Name        | GemFire:type=Member,member=&lt;name-or-dist-member-id&gt; |
 | Instances Per Node | 1                                                         |
 
-See the `com.gemstone.gemfire.management.MemberMXBean` JavaDocs for information on available MBean methods and attributes.
+See the `org.apache.geode.management.MemberMXBean` JavaDocs for information on available MBean methods and attributes.
 
 ## <a id="topic_48194A5BDF3F40F68E95A114DD702413__section_7287A7560650426E9B8249E2D87CE55F" class="no-quick-link"></a>CacheServerMXBean
 
@@ -132,7 +132,7 @@ See [CacheServerMXBean Notifications](list_of_mbean_notifications.html#cacheserv
 | Object Name        | GemFire:type=Member,service=CacheServer,member=&lt;name-or-dist-member-id&gt; |
 | Instances Per Node | 1                                                                             |
 
-See the `com.gemstone.gemfire.management.CacheServerMXBean` JavaDocs for information on available MBean methods and attributes.
+See the `org.apache.geode.management.CacheServerMXBean` JavaDocs for information on available MBean methods and attributes.
 
 ## <a id="topic_48194A5BDF3F40F68E95A114DD702413__section_577A666924E54352AF69294DC8DEFEBF" class="no-quick-link"></a>RegionMXBean
 
@@ -147,7 +147,7 @@ Member's local view of region.
 | Object Name        | GemFire:type=Member,service=Region,name=&lt;regionName&gt;,member=&lt;name-or-dist-member-id&gt; |
 | Instances Per Node | 0..N                                                                                             |
 
-See the `com.gemstone.gemfire.management.RegionMXBean` JavaDocs for information on available MBean methods and attributes.
+See the `org.apache.geode.management.RegionMXBean` JavaDocs for information on available MBean methods and attributes.
 
 ## <a id="topic_48194A5BDF3F40F68E95A114DD702413__section_2F9F00081BB14CE0ADA251F5B6289BF2" class="no-quick-link"></a>LockServiceMXBean
 
@@ -162,7 +162,7 @@ Represents a named instance of a LockService . Any number of LockServices can be
 | Object Name        | GemFire:type=Member,service=LockService,name=&lt;dlsName&gt;,member=&lt;name-or-dist-member-id&gt; |
 | Instances Per Node | 0..N                                                                                               |
 
-See the `com.gemstone.gemfire.management.LockServiceMXBean` JavaDocs for information on available MBean methods and attributes.
+See the `org.apache.geode.management.LockServiceMXBean` JavaDocs for information on available MBean methods and attributes.
 
 ## <a id="topic_48194A5BDF3F40F68E95A114DD702413__section_1F475F68E73B4EAE875BA40825E736C9" class="no-quick-link"></a>DiskStoreMXBean
 
@@ -177,7 +177,7 @@ Represents a DiskStore object which provides disk storage for one or more region
 | Object Name        | GemFire:type=Member,service=DiskStore,name=&lt;name&gt;,member=&lt;name-or-dist-member-id&gt; |
 | Instances Per Node | 0..N                                                                                          |
 
-See the `com.gemstone.gemfire.management.DiskStoreMXBean` JavaDocs for information on available MBean methods and attributes.
+See the `org.apache.geode.management.DiskStoreMXBean` JavaDocs for information on available MBean methods and attributes.
 
 ## <a id="topic_48194A5BDF3F40F68E95A114DD702413__section_6A77030A15704BFEAEBBD7DB88266BF6" class="no-quick-link"></a>AsyncEventQueueMXBean
 
@@ -192,7 +192,7 @@ An AsyncEventQueueMXBean provides access to an AsyncEventQueue, which represent 
 | Object Name        | GemFire:type=Member,service=AsyncEventQueue=&lt;AsyncEventQueue&gt; ,member=&lt;name-or-dist-member-id&gt; |
 | Instances Per Node | 0..N                                                                                                       |
 
-See the `com.gemstone.gemfire.management.AsyncEventQueueMXBean` JavaDocs for information on available MBean methods and attributes.
+See the `org.apache.geode.management.AsyncEventQueueMXBean` JavaDocs for information on available MBean methods and attributes.
 
 ## <a id="topic_48194A5BDF3F40F68E95A114DD702413__section_BB83107990D346F39271ACCC14CB84A0" class="no-quick-link"></a>LocatorMXBean
 
@@ -207,4 +207,4 @@ A LocatorMXBean represents a locator .
 | Object Name        | GemFire:type=Member,service=Locator,port=&lt;port&gt;,member=&lt;name-or-dist-member-id&gt; |
 | Instances Per Node | 0..1                                                                                        |
 
-See the `com.gemstone.gemfire.management.LocatorMXBean` JavaDocs for information on available MBean methods and attributes.
+See the `org.apache.geode.management.LocatorMXBean` JavaDocs for information on available MBean methods and attributes.

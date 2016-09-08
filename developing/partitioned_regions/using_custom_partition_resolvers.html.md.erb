@@ -10,7 +10,7 @@ If you are colocating data between regions and custom partitioning the data in t
 
 <a id="custom_partition_region_data__section_1D7043815DF24308ABE4C78BFDFEE686"></a>
 
-For standard partitioning, use `com.gemstone.gemfire.cache.PartitionResolver`. To implement fixed partitioning, use `com.gemstone.gemfire.cache.FixedPartitionResolver`.
+For standard partitioning, use `org.apache.geode.cache.PartitionResolver`. To implement fixed partitioning, use `org.apache.geode.cache.FixedPartitionResolver`.
 
 <a id="custom_partition_region_data__section_5A8D752F02834146A37D9430F1CA32DA"></a>
 
@@ -22,7 +22,7 @@ For standard partitioning, use `com.gemstone.gemfire.cache.PartitionResolver`. T
 
 **Procedure**
 
-1.  Using `com.gemstone.gemfire.cache.PartitionResolver` (standard partitioning) or `com.gemstone.gemfire.cache.FixedPartitionResolver` (fixed partitioning), implement the standard partitioning resolver or the fixed partitioning resolver in one of the following locations, listed here in the search order used by Geode:
+1.  Using `org.apache.geode.cache.PartitionResolver` (standard partitioning) or `org.apache.geode.cache.FixedPartitionResolver` (fixed partitioning), implement the standard partitioning resolver or the fixed partitioning resolver in one of the following locations, listed here in the search order used by Geode:
     -   **Custom class**. You provide this class as the partition resolver to the region creation.
     -   **Entry key**. You use the implementing key object for every operation on the region entries.
     -   **Cache callback argument**. This implementation restricts you to using methods that accept a cache callback argument to manage the region entries. For a full list of the methods that take a callback argument, see the `Region` Javadocs.
@@ -57,7 +57,7 @@ For standard partitioning, use `com.gemstone.gemfire.cache.PartitionResolver`. T
 4.  For fixed partitioning only, program and configure additional fixed partitioning pieces:
     1.  Set the fixed partition attributes for each member.
 
-        These attributes define the data stored for the region by the member and must be different for different members. See `com.gemstone.gemfire.cache.FixedPartitionAttributes` for definitions of the attributes. Define each `partition-name` in your data host members for the region. For each partition name, in the member you want to host the primary copy, define it with `is-primary` set to `true`. In every member you want to host the secondary copy, define it with `is-primary` set to `false` (the default). The number of secondaries must match the number of redundant copies you have defined for the region. See [Configure High Availability for a Partitioned Region](configuring_ha_for_pr.html).
+        These attributes define the data stored for the region by the member and must be different for different members. See `org.apache.geode.cache.FixedPartitionAttributes` for definitions of the attributes. Define each `partition-name` in your data host members for the region. For each partition name, in the member you want to host the primary copy, define it with `is-primary` set to `true`. In every member you want to host the secondary copy, define it with `is-primary` set to `false` (the default). The number of secondaries must match the number of redundant copies you have defined for the region. See [Configure High Availability for a Partitioned Region](configuring_ha_for_pr.html).
 
         **Note:**
         Buckets for a partition are hosted only by the members that have defined the partition name in their `FixedPartitionAttributes`.

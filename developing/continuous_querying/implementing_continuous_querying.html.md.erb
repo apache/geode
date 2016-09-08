@@ -38,7 +38,7 @@ Before you begin, you should be familiar with [Querying](../querying_basics/chap
     ```
 
 3. Write your CQ listeners to handle CQ events from the server.
-    Implement `com.gemstone.gemfire.cache.query.CqListener` in each event handler you need. In addition to your main CQ listeners, you might have listeners that you use for all CQs to track statistics or other general information.
+    Implement `org.apache.geode.cache.query.CqListener` in each event handler you need. In addition to your main CQ listeners, you might have listeners that you use for all CQs to track statistics or other general information.
 
     **Note:**
     Be especially careful if you choose to update your cache from your `CqListener`. If your listener updates the region that is queried in its own CQ and that region has a `Pool` named, the update will be forwarded to the server. If the update on the server satisfies the same CQ, it may be returned to the same listener that did the update, which could put your application into an infinite loop. This same scenario could be played out with multiple regions and multiple CQs, if the listeners are programmed to update each other's regions.
@@ -51,7 +51,7 @@ Before you begin, you should be familiar with [Querying](../querying_basics/chap
     {
       public void onEvent(CqEvent cqEvent)
       {
-        // com.gemstone.gemfire.cache Operation associated with the query op
+        // org.apache.geode.cache Operation associated with the query op
         Operation queryOperation = cqEvent.getQueryOperation();
         // key and new value from the event
         Object key = cqEvent.getKey();
@@ -92,7 +92,7 @@ Before you begin, you should be familiar with [Querying](../querying_basics/chap
     {
       public void onEvent(CqEvent cqEvent)
       {
-        // com.gemstone.gemfire.cache Operation associated with the query op
+        // org.apache.geode.cache Operation associated with the query op
         Operation queryOperation = cqEvent.getQueryOperation();
         // key and new value from the event
         Object key = cqEvent.getKey();

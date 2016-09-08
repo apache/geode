@@ -211,7 +211,7 @@ If index creation fails, you may receive an error message in gfsh similar to the
 
 ``` pre
 gfsh>create defined indexes
-Exception : com.gemstone.gemfire.cache.query.RegionNotFoundException , 
+Exception : org.apache.geode.cache.query.RegionNotFoundException , 
 Message : Region ' /r3' not found: from  /r3Occurred on following members
 1. india(s1:17866)<v1>:27809
 ```
@@ -889,7 +889,7 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-compressor</span></td>
-<td>Java class name that implements compression for the region. You can write a custom compressor that implements <code class="ph codeph">com.gemstone.gemfire.compression.Compressor</code> or you can specify the Snappy compressor (<code class="ph codeph">com.gemstone.gemfire.compression.SnappyCompressor</code>), which is bundled with Geode. See <a href="../../../managing/region_compression/region_compression.html#topic_r43_wgc_gl">Region Compression</a>.</td>
+<td>Java class name that implements compression for the region. You can write a custom compressor that implements <code class="ph codeph">org.apache.geode.compression.Compressor</code> or you can specify the Snappy compressor (<code class="ph codeph">org.apache.geode.compression.SnappyCompressor</code>), which is bundled with Geode. See <a href="../../../managing/region_compression/region_compression.html#topic_r43_wgc_gl">Region Compression</a>.</td>
 <td>no compression</td>
 </tr>
 <tr class="odd">
@@ -906,22 +906,22 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 
 ``` pre
 create region --name=region1 --type=REPLICATE_PERSISTENT \
---cache-writer=com.gemstone.gemfire.examples.MyCacheWriter \
+--cache-writer=org.apache.geode.examples.MyCacheWriter \
 --group=Group1 --disk-store=DiskStore1
 
 create region --name=region12 --template-region=/region1
 
 create region --name=region2 --type=REPLICATE \
---cache-listener=com.gemstone.gemfire.examples.MyCacheListener1,\
-com.gemstone.gemfire.examples.MyCacheListener2 \
+--cache-listener=org.apache.geode.examples.MyCacheListener1,\
+org.apache.geode.examples.MyCacheListener2 \
 --group=Group1,Group2
 
 create region --name=region3 --type=PARTITION_PERSISTENT --redundant-copies=2 --total-max-memory=1000 \
 --startup-recovery-delay=5 --total-num-buckets=100 --disk-store=DiskStore2 \
---cache-listener=com.gemstone.gemfire.examples.MyCacheListener3 \
+--cache-listener=org.apache.geode.examples.MyCacheListener3 \
 --group=Group2 
 
-create region --name=region4 --type=REPLICATE_PROXY --cache-listener=com.gemstone.gemfire.examples.MyCacheListener1 
+create region --name=region4 --type=REPLICATE_PROXY --cache-listener=org.apache.geode.examples.MyCacheListener1 
 --group=Group1,Group2
 ```
 

@@ -11,9 +11,9 @@ To program a data loader and configure your region to use it:
 ## <a id="implementing_data_loaders__section_88076AF5EC184FE88AAF4C806A0CA9DF" class="no-quick-link"></a>Program your loader
 To program your loader:
 
-1.  Implement `com.gemstone.gemfire.cache.CacheLoader`.
+1.  Implement `org.apache.geode.cache.CacheLoader`.
 
-2.  If you want to declare the loader in your `cache.xml`, implement the `com.gemstone.gemfire.cache.Declarable` interface as well.
+2.  If you want to declare the loader in your `cache.xml`, implement the `org.apache.geode.cache.Declarable` interface as well.
 
 3.  Program the single `CacheLoader` `load` method to do whatever your application requires for retrieving the value from outside the cache. If you need to run `Region` API calls from your loader, spawn separate threads for them. Do not make direct calls to `Region` methods from your load method implementation as it could cause the cache loader to block, hurting the performance of the distributed system. For example:
 

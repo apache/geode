@@ -34,10 +34,10 @@ public void afterCreate(EntryEvent event) {
       try {
         otherRegion.create(key, val);
       }
-      catch (com.gemstone.gemfire.cache.RegionDestroyedException e) {
+      catch (org.apache.geode.cache.RegionDestroyedException e) {
         ...
       }
-      catch (com.gemstone.gemfire.cache.EntryExistsException e) {
+      catch (org.apache.geode.cache.EntryExistsException e) {
         ...
       }
     }

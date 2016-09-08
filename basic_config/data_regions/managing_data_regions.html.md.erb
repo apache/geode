@@ -7,7 +7,7 @@ Apache Geode provides different APIs and XML configuration models to support con
 <a id="data_regions__section_18A9481217204613958897FE64105097"></a>
 You store your data in region entry key/value pairs, with keys and values being any object types your application needs.
 
-The `com.gemstone.gemfire.cache.Region` interface implements `java.util.Map`.
+The `org.apache.geode.cache.Region` interface implements `java.util.Map`.
 
 Each region's attributes define how the data in the region is stored, distributed, and managed. Data regions can be distributed, partitioned among system members, or local to the member.
 
@@ -20,21 +20,21 @@ If you change attributes that define a region, you must restart the member for t
 
 Geode's regions APIs provide specialized behavior for different system member types.
 
--   **Peer/Server Region APIs**. Use these methods, interfaces, and classes for peer/server region creation. These are in the `com.gemstone.gemfire.cache` package. They correspond to declarations in the `<cache>` element for creating and configuring regions.
-    -   **`com.gemstone.gemfire.cache.Cache.createRegionFactory`** . This method takes a `RegionShortcut` `enum` to initiate region configuration, and returns a `RegionFactory`. Use `createRegionFactory()`, not "`new                                     RegionFactory`," to create a RegionFactory.
-    -   **`com.gemstone.gemfire.cache.RegionFactory`**. Provides methods to set individual region attributes and to create the region. The `create` call returns `Region`.
-    -   **`com.gemstone.gemfire.cache.RegionShortcut`**. Common region configurations can be retrieved through `Cache` `createRegionShortcut` and with the region attribute, `refid`.
--   **Client Region APIs**. Use these methods, interfaces, and classes for client region creation. These are in the `com.gemstone.gemfire.cache.client` package. They correspond to declarations in the `<client-cache>` element for creating and configuring regions.
+-   **Peer/Server Region APIs**. Use these methods, interfaces, and classes for peer/server region creation. These are in the `org.apache.geode.cache` package. They correspond to declarations in the `<cache>` element for creating and configuring regions.
+    -   **`org.apache.geode.cache.Cache.createRegionFactory`** . This method takes a `RegionShortcut` `enum` to initiate region configuration, and returns a `RegionFactory`. Use `createRegionFactory()`, not "`new                                     RegionFactory`," to create a RegionFactory.
+    -   **`org.apache.geode.cache.RegionFactory`**. Provides methods to set individual region attributes and to create the region. The `create` call returns `Region`.
+    -   **`org.apache.geode.cache.RegionShortcut`**. Common region configurations can be retrieved through `Cache` `createRegionShortcut` and with the region attribute, `refid`.
+-   **Client Region APIs**. Use these methods, interfaces, and classes for client region creation. These are in the `org.apache.geode.cache.client` package. They correspond to declarations in the `<client-cache>` element for creating and configuring regions.
 
     These are client versions of the Peer/Server Region APIs. These client APIs provide similar functionality, but are tailored to the needs and behaviors of client regions.
 
-    -   **`com.gemstone.gemfire.cache.clientCache.createRegionFactory`** . This method takes a `ClientRegionShortcut` `enum` to initiate region configuration, and returns a `ClientRegionFactory`.
-    -   **`com.gemstone.gemfire.cache.client.ClientRegionFactory`**. Provides methods to set individual region attributes and to create the region. The `create` call returns `Region`.
-    -   **`com.gemstone.gemfire.cache.client.ClientRegionShortcut`** . Common region configurations can be retrieved through `ClientCache` `createClientRegionFactory` and with the region attribute, `refid`.
--   **Region APIs Used For All Member Types**. These interfaces and classes are used universally for region management. These are in the `com.gemstone.gemfire.cache` package. They correspond to declarations under the `<cache>` and `<client-cache>` elements for creating and configuring regions.
-    -   **`com.gemstone.gemfire.cache.Region`** . Interface for managing your regions and their entries.
-    -   **`com.gemstone.gemfire.cache.RegionAttributes`** . Object holding region configuration settings.
-    -   **`com.gemstone.gemfire.cache.createRegionFactory`**. Can be used to create `RegionAttributes` to pass to `RegionFactory` and `ClientRegionFactory`.
+    -   **`org.apache.geode.cache.clientCache.createRegionFactory`** . This method takes a `ClientRegionShortcut` `enum` to initiate region configuration, and returns a `ClientRegionFactory`.
+    -   **`org.apache.geode.cache.client.ClientRegionFactory`**. Provides methods to set individual region attributes and to create the region. The `create` call returns `Region`.
+    -   **`org.apache.geode.cache.client.ClientRegionShortcut`** . Common region configurations can be retrieved through `ClientCache` `createClientRegionFactory` and with the region attribute, `refid`.
+-   **Region APIs Used For All Member Types**. These interfaces and classes are used universally for region management. These are in the `org.apache.geode.cache` package. They correspond to declarations under the `<cache>` and `<client-cache>` elements for creating and configuring regions.
+    -   **`org.apache.geode.cache.Region`** . Interface for managing your regions and their entries.
+    -   **`org.apache.geode.cache.RegionAttributes`** . Object holding region configuration settings.
+    -   **`org.apache.geode.cache.createRegionFactory`**. Can be used to create `RegionAttributes` to pass to `RegionFactory` and `ClientRegionFactory`.
 
 ## <a id="data_regions__section_9F898C23D2164ED5BB3789FD8B1F68C3" class="no-quick-link"></a>Create and Access Data Regions
 

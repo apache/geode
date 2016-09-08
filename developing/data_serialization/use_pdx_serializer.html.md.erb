@@ -25,10 +25,10 @@ The `PdxSerializer` `toData` and `fromData` methods differ from those for `PdxSe
         Example:
 
         ``` pre
-        import com.gemstone.gemfire.cache.Declarable;
-        import com.gemstone.gemfire.pdx.PdxReader;
-        import com.gemstone.gemfire.pdx.PdxSerializer;
-        import com.gemstone.gemfire.pdx.PdxWriter;
+        import org.apache.geode.cache.Declarable;
+        import org.apache.geode.pdx.PdxReader;
+        import org.apache.geode.pdx.PdxSerializer;
+        import org.apache.geode.pdx.PdxWriter;
 
         public class ExamplePdxSerializer implements PdxSerializer, Declarable {
         ...
@@ -59,7 +59,7 @@ The `PdxSerializer` `toData` and `fromData` methods differ from those for `PdxSe
         ```
 
     **Note:**
-    You cannot specify a custom `pdx-serializer` class using gfsh, however the `configure pdx` command automatically configures the <span class="keyword apiname">com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer</span> class. See [configure pdx](../../tools_modules/gfsh/command-pages/configure.html#topic_jdkdiqbgphqh).
+    You cannot specify a custom `pdx-serializer` class using gfsh, however the `configure pdx` command automatically configures the <span class="keyword apiname">org.apache.geode.pdx.ReflectionBasedAutoSerializer</span> class. See [configure pdx](../../tools_modules/gfsh/command-pages/configure.html#topic_jdkdiqbgphqh).
 
 3.  Program `PdxSerializer.toData` to recognize, cast, and handle your domain object:
 

@@ -63,7 +63,7 @@ These steps provide a basic starting point for using the Tomcat module. For more
     For example, in a peer-to-peer configuration using Tomcat 7, you would add the following entry within the `<server>` element of server.xml:
 
     ``` pre
-    <Listener className="com.gemstone.gemfire.modules.session.catalina.
+    <Listener className="org.apache.geode.modules.session.catalina.
                              PeerToPeerCacheLifecycleListener"
                              locator="localhost[10334]" />
     ```
@@ -71,7 +71,7 @@ These steps provide a basic starting point for using the Tomcat module. For more
     and the following entry within the `<context>` tag in the context.xml file:
 
     ``` pre
-    <Manager className="com.gemstone.gemfire.modules.session.catalina.
+    <Manager className="org.apache.geode.modules.session.catalina.
                              Tomcat7DeltaSessionManager"/> 
     ```
 

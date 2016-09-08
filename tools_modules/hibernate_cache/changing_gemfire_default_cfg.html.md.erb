@@ -125,13 +125,13 @@ In a Hibernate application, the caching of query results is recommended for quer
 
 ## <a id="changing_gemfire_default_cfg__section_E884BF4251D6494695408B30D1F350B1" class="no-quick-link"></a>Remapping the Hibernate EnumType with the Geode EnumType
 
-Due to an issue with Hibernate in a client-server topology, application classes must be present on the Geode cache server when a Hibernate application uses annotations. If you do not want to place the application classes on the Geode cache server, you can modify the Hibernate configuration to use the `com.gemstone.gemfire.modules.hibernate.EnumType` in place of `org.hibernate.type.EnumType`.
+Due to an issue with Hibernate in a client-server topology, application classes must be present on the Geode cache server when a Hibernate application uses annotations. If you do not want to place the application classes on the Geode cache server, you can modify the Hibernate configuration to use the `org.apache.geode.modules.hibernate.EnumType` in place of `org.hibernate.type.EnumType`.
 
 To configure Hibernate to use the Geode EnumType, modify `hibernate.cfg.xml` to add a property for the mapping. For example:
 
 ``` pre
 <property name="myEnum">
-    <type name="com.gemstone.gemfire.modules.hibernate.EnumType">
+    <type name="org.apache.geode.modules.hibernate.EnumType">
     <param name="enumClass">com.mycompany.MyEnum</param>
    </type>
 </property>
