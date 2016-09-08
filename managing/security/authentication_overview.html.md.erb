@@ -2,11 +2,13 @@
 title:  Authentication
 ---
 
-A distributed system using authentication verifies the identities of peers, clients, and and other communicating entities.
+Authentication verifies the identities of components within the distributed
+system such as peers, clients, and those connecting to a JMX manager.
 
 -   **[Implementing Authentication](../../managing/security/implementing_authentication.html)**
 
-    Apache Geode provides a flexible framework for your security authentication plug-ins. You choose the method of authentication, such as LDAP or PKCS, and program the plug-ins accordingly.
+    All components of the distributed system authenticate the same way,
+    through a custom-written method.
 
 -   **[Encrypting Passwords for Use in cache.xml](../../managing/security/encrypting_passwords.html)**
 
