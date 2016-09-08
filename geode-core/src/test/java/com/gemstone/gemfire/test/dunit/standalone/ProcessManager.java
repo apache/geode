@@ -181,6 +181,7 @@ public class ProcessManager {
     cmds.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "disallowMcastDefaults=true");
     cmds.add("-D" + DistributionConfig.RESTRICT_MEMBERSHIP_PORT_RANGE + "=true");
     cmds.add("-ea");
+    cmds.add("-XX:MetaspaceSize=512m");
     cmds.add("-XX:+PrintGC");
     cmds.add("-XX:+PrintGCDetails");
     cmds.add("-XX:+PrintGCTimeStamps");
