@@ -22,25 +22,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.AuthCache;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.BasicAuthCache;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -51,106 +41,56 @@ import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class})
 public class RestSecurityDUnitTest extends AbstractSecureServerDUnitTest {
-
-  public final static String PROTOCOL = "http";
-  public final static String HOSTNAME = "localhost";
-  public final static String CONTEXT = "/gemfire-api/v1";
-
-
-  public RestSecurityDUnitTest() throws MalformedURLException {
+  private String endPoint = null;
+  public RestSecurityDUnitTest(){
     int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     this.jmxPort = ports[0];
     this.restPort = ports[1];
+    endPoint = "http://localhost:"+restPort+"/gemfire-api/v1";
   }
-
   @Test
   public void test(){
     client1.invoke(()->{
-      HttpResponse response = doGet("/servers", null, null);
-      assertEquals(getCode(response), 200);
-      assertEquals(getResponseBody(response), "[ \""+"http://localhost:"+this.restPort+"\" ]");
+      JSONArray response = doGet("/servers");
+      assertEquals(response.length(), 1);
+      assertEquals(response.get(0), "http://localhost:"+this.restPort);
     });
   }
 
-  protected HttpResponse doGet(String uri, String username, String password) throws MalformedURLException {
-    HttpGet getRequest = new HttpGet(CONTEXT + uri);
-    return doRequest(getRequest, username, password);
-  }
 
-  protected HttpResponse doDelete(String uri, String username, String password) throws MalformedURLException {
-    HttpDelete httpDelete = new HttpDelete(CONTEXT + uri);
-    return doRequest(httpDelete, username, password);
-  }
-
-  private HttpResponse doRequest(HttpRequestBase request, String username, String password) throws MalformedURLException {
-    HttpHost targetHost = new HttpHost(HOSTNAME, this.restPort, PROTOCOL);
-    CloseableHttpClient httpclient = HttpClients.custom().build();
-    HttpClientContext clientContext = HttpClientContext.create();
-    // if username is null, do not put in authentication
-    if (username != null) {
-      CredentialsProvider credsProvider = new BasicCredentialsProvider();
-      credsProvider.setCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()), new UsernamePasswordCredentials(username, password));
-      httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
-      AuthCache authCache = new BasicAuthCache();
-      BasicScheme basicAuth = new BasicScheme();
-      authCache.put(targetHost, basicAuth);
-      clientContext.setCredentialsProvider(credsProvider);
-      clientContext.setAuthCache(authCache);
-    }
+  private JSONArray doGet(String uri) {
+    HttpGet get = new HttpGet(endPoint + uri);
+    get.addHeader("Content-Type", "application/json");
+    get.addHeader("Accept", "application/json");
+    CloseableHttpClient httpclient = HttpClients.createDefault();
+    CloseableHttpResponse response;
 
     try {
-      return httpclient.execute(targetHost, request, clientContext);
+      response = httpclient.execute(get);
+      HttpEntity entity = response.getEntity();
+      InputStream content = entity.getContent();
+      BufferedReader reader = new BufferedReader(new InputStreamReader(
+        content));
+      String line;
+      StringBuffer str = new StringBuffer();
+      while ((line = reader.readLine()) != null) {
+        str.append(line);
+      }
+
+      //validate the satus code
+      assertEquals(response.getStatusLine().getStatusCode(), 200);
+      return new JSONArray(str.toString());
     } catch (ClientProtocolException e) {
       e.printStackTrace();
-      fail("Rest GET should not have thrown ClientProtocolException!");
+      fail(" Rest Request should not have thrown ClientProtocolException!");
     } catch (IOException e) {
       e.printStackTrace();
-      fail("Rest GET Request should not have thrown IOException!");
+      fail(" Rest Request should not have thrown IOException!");
+    } catch (JSONException e) {
+      e.printStackTrace();
+      fail(" Rest Request should not have thrown  JSONException!");
     }
     return null;
   }
 
-  /**
-   * Check the HTTP status of the response and return if it's within the OK range
-   * @param response The HttpResponse message received from the server
-   *
-   * @return true if the status code is a 2XX-type code (200-299), otherwise false
-   */
-  protected boolean isOK(HttpResponse response) {
-    int returnCode = response.getStatusLine().getStatusCode();
-    return (returnCode < 300 && returnCode >= 200);
-  }
-
-  /**
-   * Check the HTTP status of the response and return true if a 401
-   * @param response The HttpResponse message received from the server
-   *
-   * @return true if the status code is 401, otherwise false
-   */
-  protected boolean isUnauthorized(HttpResponse response) {
-    int returnCode = response.getStatusLine().getStatusCode();
-    return returnCode == 401;
-  }
-
-  /**
-   * Retrieve the status code of the HttpResponse
-   * @param response The HttpResponse message received from the server
-   *
-   * @return a numeric value
-   */
-  protected int getCode(HttpResponse response) {
-    return response.getStatusLine().getStatusCode();
-  }
-
-  protected String getResponseBody(HttpResponse response) throws IOException {
-    HttpEntity entity = response.getEntity();
-    InputStream content = entity.getContent();
-    BufferedReader reader = new BufferedReader(new InputStreamReader(content));
-    String line;
-    StringBuilder str = new StringBuilder();
-    while ((line = reader.readLine()) != null) {
-      str.append(line);
-    }
-    return str.toString();
-  }
 }

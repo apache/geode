@@ -16,12 +16,11 @@
  */
 package com.vmware.gemfire.tools.pulse.tests;
 
+import com.gemstone.gemfire.test.junit.categories.UITest;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
-
-import com.gemstone.gemfire.test.junit.categories.UITest;
 
 @Category(UITest.class)
 @FixMethodOrder(MethodSorters.JVM)
@@ -29,6 +28,6 @@ public class PulseAuthTest extends PulseAbstractTest {
 
   @BeforeClass
   public static void beforeClassSetup() throws Exception {
-    setUpServer("pulseUser", "12345", "pulse-auth.json");
+    setUpServer("pulseUser", "12345", "/pulse-auth.json");
   }
 }

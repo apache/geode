@@ -26,6 +26,10 @@ sourceSets {
 }
 
 dependencies {
+
+
+
+
   compile 'org.springframework:spring-beans:' + project.'springframework.version'
   
   compile 'commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version'

@@ -40,6 +40,7 @@ public class GemFireAuthenticationProvider implements AuthenticationProvider {
   private final static PulseLogWriter LOGGER = PulseLogWriter.getLogger();
 
   public GemFireAuthenticationProvider() {
+    System.out.println("here");
   }
 
   @Override

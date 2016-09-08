@@ -79,7 +79,6 @@ dependencies {
   runtime ('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
     ext.optional = true
   }
-  runtime ('org.springframework:spring-core:' + project.'springframework.version')
   compile ('org.eclipse.jetty:jetty-webapp:' + project.'jetty.version') {
     ext.optional = true
   }
@@ -95,7 +94,6 @@ dependencies {
     exclude module: 'guava'
     exclude module: 'spring-aop'
     exclude module: 'spring-context-support'
-    exclude module: 'spring-core'
     ext.optional = true
   }
   compile ('org.iq80.snappy:snappy:' + project.'snappy-java.version') {

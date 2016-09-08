@@ -1,5 +1,6 @@
 activation
 antlr
+aopalliance
 classmate
 commons-beanutils
 commons-collections
@@ -16,7 +17,6 @@ guava
 jackson-annotations
 jackson-core
 jackson-databind
-jackson-module-paranamer
 jackson-module-scala
 jansi
 javax.mail-api
