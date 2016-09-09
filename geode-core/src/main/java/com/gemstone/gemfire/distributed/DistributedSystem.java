@@ -62,7 +62,7 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
  * distributed system are located.  This discovery is performed
  * by contacting "locators"
  * running on a given host and port.  All DistributedSystems that are
- * configured to use the same same
+ * configured to use the same
  * locators are part of the same distributed system.
  *
  * <P>
