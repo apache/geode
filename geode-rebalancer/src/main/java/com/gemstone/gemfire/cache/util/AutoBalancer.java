@@ -189,6 +189,7 @@ public class AutoBalancer implements Declarable {
           Thread thread = new Thread(r, "AutoBalancer");
           thread.setDaemon(true);
           return thread;
+
         }
       });
     }
