@@ -86,6 +86,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
+import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
 import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
@@ -388,9 +389,9 @@ public class AcceptorImpl extends Acceptor implements Runnable
     {
       if(!isGatewayReceiver) {
         //If configured use SSL properties for cache-server
-        this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.SERVER);
+        this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER);
       } else {
-        this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.GATEWAY);
+        this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY);
       }
       
       final GemFireCacheImpl gc;

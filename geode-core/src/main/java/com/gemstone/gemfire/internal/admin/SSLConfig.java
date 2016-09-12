@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
 import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.management.internal.SSLUtil;
 
@@ -41,7 +42,7 @@ public class SSLConfig {
   private String truststorePassword = DistributionConfig.DEFAULT_SSL_TRUSTSTORE_PASSWORD;
   private String truststoreType = DistributionConfig.DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE;
   private String alias = null;
-  private SecurableComponent sslEnabledComponent = null;
+  private SecurableCommunicationChannel securableCommunicationChannel = null;
 
   /**
    * SSL implementation-specific key-value pairs. Each key should be prefixed
@@ -163,17 +164,17 @@ public class SSLConfig {
     }
   }
 
-  public SecurableComponent getSecuredComponent() {
-    return sslEnabledComponent;
+  public SecurableCommunicationChannel getSecuredCommunicationChannel() {
+    return securableCommunicationChannel;
   }
 
-  public void setSslEnabledComponent(final SecurableComponent sslEnabledComponent) {
-    this.sslEnabledComponent = sslEnabledComponent;
+  public void setSecurableCommunicationChannel(final SecurableCommunicationChannel securableCommunicationChannel) {
+    this.securableCommunicationChannel = securableCommunicationChannel;
   }
 
   @Override
   public String toString() {
-    return "SSLConfig{" + "enabled=" + enabled + ", protocols='" + protocols + '\'' + ", ciphers='" + ciphers + '\'' + ", requireAuth=" + requireAuth + ", keystore='" + keystore + '\'' + ", keystoreType='" + keystoreType + '\'' + ", keystorePassword='" + keystorePassword + '\'' + ", truststore='" + truststore + '\'' + ", truststorePassword='" + truststorePassword + '\'' + ", truststoreType='" + truststoreType + '\'' + ", alias='" + alias + '\'' + ", sslEnabledComponent=" + sslEnabledComponent + ", properties=" + properties + '}';
+    return "SSLConfig{" + "enabled=" + enabled + ", protocols='" + protocols + '\'' + ", ciphers='" + ciphers + '\'' + ", requireAuth=" + requireAuth + ", keystore='" + keystore + '\'' + ", keystoreType='" + keystoreType + '\'' + ", keystorePassword='" + keystorePassword + '\'' + ", truststore='" + truststore + '\'' + ", truststorePassword='" + truststorePassword + '\'' + ", truststoreType='" + truststoreType + '\'' + ", alias='" + alias + '\'' + ", securableCommunicationChannel=" + securableCommunicationChannel + ", properties=" + properties + '}';
   }
 
   /**

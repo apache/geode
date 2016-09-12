@@ -19,20 +19,18 @@ package com.gemstone.gemfire.internal.net;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.Vector;
 
 import org.apache.commons.lang.ArrayUtils;
 
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.admin.SSLConfig;
-import com.gemstone.gemfire.internal.security.SecurableComponent;
+import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
 
 public class SocketCreatorFactory {
 
   private static SocketCreatorFactory instance = null;
-  private Map<SecurableComponent, SocketCreator> socketCreators = new HashMap<>();
+  private Map<SecurableCommunicationChannel, SocketCreator> socketCreators = new HashMap<>();
   private DistributionConfig distributionConfig;
 
   /**
@@ -65,16 +63,16 @@ public class SocketCreatorFactory {
     return getInstance(false);
   }
 
-  public static SocketCreator getSocketCreatorForComponent(SecurableComponent sslEnabledComponent) {
+  public static SocketCreator getSocketCreatorForComponent(SecurableCommunicationChannel sslEnabledComponent) {
     SSLConfig sslConfigForComponent = SSLConfigurationFactory.getSSLConfigForComponent(sslEnabledComponent);
     return getInstance().getOrCreateSocketCreatorForSSLEnabledComponent(sslEnabledComponent, sslConfigForComponent);
   }
 
-  private SocketCreator getSSLSocketCreator(final SecurableComponent sslComponent, final SSLConfig sslConfig) {
+  private SocketCreator getSSLSocketCreator(final SecurableCommunicationChannel sslComponent, final SSLConfig sslConfig) {
     if (sslConfig.isEnabled()) {
-      if (ArrayUtils.contains(getDistributionConfig().getSSLEnabledComponents(), SecurableComponent.ALL)) {
-        return createSSLSocketCreator(SecurableComponent.ALL, sslConfig);
-//      } else if (ArrayUtils.contains(getDistributionConfig().getSSLEnabledComponents(), sslComponent)) {
+      if (ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(), SecurableCommunicationChannel.ALL)) {
+        return createSSLSocketCreator(SecurableCommunicationChannel.ALL, sslConfig);
+        //      } else if (ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(), sslComponent)) {
       } else {
         return createSSLSocketCreator(sslComponent, sslConfig);
       }
@@ -83,7 +81,7 @@ public class SocketCreatorFactory {
   }
 
 
-  private SocketCreator getOrCreateSocketCreatorForSSLEnabledComponent(final SecurableComponent sslEnabledComponent, final SSLConfig sslConfig) {
+  private SocketCreator getOrCreateSocketCreatorForSSLEnabledComponent(final SecurableCommunicationChannel sslEnabledComponent, final SSLConfig sslConfig) {
     SocketCreator socketCreator = getRegisteredSocketCreatorForComponent(sslEnabledComponent);
     if (socketCreator == null) {
       return getSSLSocketCreator(sslEnabledComponent, sslConfig);
@@ -92,7 +90,7 @@ public class SocketCreatorFactory {
     }
   }
 
-  private SocketCreator createSSLSocketCreator(final SecurableComponent sslEnableComponent, final SSLConfig sslConfig) {
+  private SocketCreator createSSLSocketCreator(final SecurableCommunicationChannel sslEnableComponent, final SSLConfig sslConfig) {
     SocketCreator socketCreator = null;
     if (sslConfig.isEnabled()) {
       socketCreator = new SocketCreator(sslConfig);
@@ -107,11 +105,11 @@ public class SocketCreatorFactory {
     return socketCreator;
   }
 
-  private synchronized void registerSocketCreatorForComponent(SecurableComponent sslEnabledComponent, SocketCreator socketCreator) {
+  private synchronized void registerSocketCreatorForComponent(SecurableCommunicationChannel sslEnabledComponent, SocketCreator socketCreator) {
     socketCreators.put(sslEnabledComponent, socketCreator);
   }
 
-  private synchronized SocketCreator getRegisteredSocketCreatorForComponent(SecurableComponent sslEnabledComponent) {
+  private synchronized SocketCreator getRegisteredSocketCreatorForComponent(SecurableCommunicationChannel sslEnabledComponent) {
     return socketCreators.get(sslEnabledComponent);
   }
 

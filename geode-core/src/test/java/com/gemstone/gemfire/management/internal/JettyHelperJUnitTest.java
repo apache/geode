@@ -30,7 +30,7 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.internal.net.SSLConfigurationFactory;
-import com.gemstone.gemfire.internal.security.SecurableComponent;
+import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
@@ -59,7 +59,7 @@ public class JettyHelperJUnitTest {
 
     final Server jetty;
     try {
-      jetty = JettyHelper.initJetty(null, 8090, SSLConfigurationFactory.getSSLConfigForComponent(SecurableComponent.HTTP_SERVICE));
+      jetty = JettyHelper.initJetty(null, 8090, SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
       assertNotNull(jetty);
       assertNotNull(jetty.getConnectors()[0]);
       assertEquals(8090, ((ServerConnector) jetty.getConnectors()[0]).getPort());
@@ -71,7 +71,7 @@ public class JettyHelperJUnitTest {
   @Test
   public void testSetPortWithBindAddress() throws Exception {
     try {
-      final Server jetty = JettyHelper.initJetty("10.123.50.1", 10480, SSLConfigurationFactory.getSSLConfigForComponent(SecurableComponent.HTTP_SERVICE));
+      final Server jetty = JettyHelper.initJetty("10.123.50.1", 10480, SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
 
       assertNotNull(jetty);
       assertNotNull(jetty.getConnectors()[0]);

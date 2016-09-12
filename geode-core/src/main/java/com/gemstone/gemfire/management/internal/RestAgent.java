@@ -36,7 +36,7 @@ import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.security.SecurableComponent;
+import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
 import com.gemstone.gemfire.management.ManagementService;
 
 /**
@@ -133,7 +133,7 @@ public class RestAgent {
 
         final int port = this.config.getHttpServicePort();
 
-        this.httpServer = JettyHelper.initJetty(httpServiceBindAddress, port, SSLConfigurationFactory.getSSLConfigForComponent(SecurableComponent.HTTP_SERVICE));
+        this.httpServer = JettyHelper.initJetty(httpServiceBindAddress, port, SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
 
         this.httpServer = JettyHelper.addWebApplication(httpServer, "/gemfire-api", gemfireAPIWar);
         this.httpServer = JettyHelper.addWebApplication(httpServer, "/geode", gemfireAPIWar);

@@ -25,7 +25,7 @@ import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
 import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
 import com.gemstone.gemfire.internal.process.ProcessType;
 import com.gemstone.gemfire.internal.process.ProcessUtils;
-import com.gemstone.gemfire.internal.security.SecurableComponent;
+import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.junit.After;
@@ -327,7 +327,7 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
       return;
     }
 
-    this.socket = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(this.locatorPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).createServerSocket(this.locatorPort, 50, null, -1);
     assertTrue(this.socket.isBound());
     assertFalse(this.socket.isClosed());
     assertFalse(AvailablePort.isPortAvailable(this.locatorPort, AvailablePort.SOCKET));
@@ -544,7 +544,7 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
     }
 
     // generate one free port and then use it instead of default
-    this.socket = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.CLUSTER).createServerSocket(this.locatorPort, 50, null, -1);
+    this.socket = SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).createServerSocket(this.locatorPort, 50, null, -1);
     
     this.launcher = new Builder()
         .setMemberName(getUniqueName())

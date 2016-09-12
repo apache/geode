@@ -40,6 +40,7 @@ import com.gemstone.gemfire.internal.VersionedDataOutputStream;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
+import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
 import com.gemstone.gemfire.internal.security.SecurableComponent;
 
 /**
@@ -58,7 +59,7 @@ public class TcpClient {
   private final SocketCreator socketCreator;
 
   public TcpClient(DistributionConfig distributionConfig) {
-    this(SocketCreatorFactory.setDistributionConfig(distributionConfig).getSocketCreatorForComponent(SecurableComponent.LOCATOR));
+    this(SocketCreatorFactory.setDistributionConfig(distributionConfig).getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR));
   }
 
   /**
@@ -66,7 +67,7 @@ public class TcpClient {
    * SocketCreatorFactory should be initialized before invoking this method.
    */
   public TcpClient() {
-    this(SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.LOCATOR));
+    this(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR));
   }
 
   /**

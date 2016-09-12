@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.management;
 
 
+import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
 import com.gemstone.gemfire.internal.security.SecurableComponent;
 
 /**
@@ -640,7 +641,7 @@ public class GemFireProperties {
 
   private String locatorSSLAlias;
 
-  private SecurableComponent[] sslEnabledComponents;
+  private SecurableCommunicationChannel[] securableCommunicationChannels;
   private String sslProtocols;
   private String sslCiphers;
   private boolean sslRequireAuthentication;
@@ -1785,12 +1786,12 @@ public class GemFireProperties {
     this.locatorSSLAlias = locatorSSLAlias;
   }
 
-  public SecurableComponent[] getSSLEnabledComponents() {
-    return sslEnabledComponents;
+  public SecurableCommunicationChannel[] getSecurableCommunicationChannel() {
+    return securableCommunicationChannels;
   }
 
-  public void setSSLEnabledComponents(final SecurableComponent[] sslEnabledComponents) {
-    this.sslEnabledComponents = sslEnabledComponents;
+  public void setSecurableCommunicationChannel(final SecurableCommunicationChannel[] sslEnabledComponents) {
+    this.securableCommunicationChannels = sslEnabledComponents;
   }
 
   public String getSSLProtocols() {

@@ -331,7 +331,7 @@ public class SocketCreator {
   private void initialize() {
     try {
       // set p2p values...
-      if (SecurableComponent.CLUSTER.equals(sslConfig.getSecuredComponent())) {
+      if (SecurableComponent.CLUSTER.equals(sslConfig.getSecuredCommunicationChannel())) {
         if (this.sslConfig.isEnabled()) {
           System.setProperty("p2p.useSSL", "true");
           System.setProperty("p2p.oldIO", "true");

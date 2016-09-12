@@ -49,6 +49,7 @@ import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
+import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
 import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
 
@@ -553,7 +554,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private String httpServiceSSLAlias = DEFAULT_SSL_ALIAS;
 
-  private SecurableComponent[] sslEnabledComponents = DEFAULT_SSL_ENABLED_COMPONENTS;
+  private SecurableCommunicationChannel[] securableCommunicationChannels = DEFAULT_SSL_ENABLED_COMPONENTS;
 
   private String sslProtocols = DEFAULT_SSL_PROTOCOLS;
   private String sslCiphers = DEFAULT_SSL_CIPHERS;
@@ -774,7 +775,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.serverSSLAlias = other.getServerSSLAlias();
     this.locatorSSLAlias = other.getLocatorSSLAlias();
 
-    this.sslEnabledComponents = ((DistributionConfigImpl) other).sslEnabledComponents;
+    this.securableCommunicationChannels = ((DistributionConfigImpl) other).securableCommunicationChannels;
 
     this.sslCiphers = other.getSSLCiphers();
     this.sslProtocols = other.getSSLProtocols();
@@ -984,22 +985,22 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         }
       }
       case CLUSTER: {
-        return StringUtils.isEmpty(getClusterSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+        return StringUtils.isEmpty(getClusterSSLAlias()) ? true : (getSecurableCommunicationChannels().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
       }
       case GATEWAY: {
-        return StringUtils.isEmpty(getGatewaySSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+        return StringUtils.isEmpty(getGatewaySSLAlias()) ? true : (getSecurableCommunicationChannels().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
       }
       case HTTP_SERVICE: {
-        return StringUtils.isEmpty(getHTTPServiceSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+        return StringUtils.isEmpty(getHTTPServiceSSLAlias()) ? true : (getSecurableCommunicationChannels().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
       }
       case JMX: {
-        return StringUtils.isEmpty(getJMXSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+        return StringUtils.isEmpty(getJMXSSLAlias()) ? true : (getSecurableCommunicationChannels().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
       }
       case LOCATOR: {
-        return StringUtils.isEmpty(getLocatorSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+        return StringUtils.isEmpty(getLocatorSSLAlias()) ? true : (getSecurableCommunicationChannels().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
       }
       case SERVER: {
-        return StringUtils.isEmpty(getServerSSLAlias()) ? true : (getSSLEnabledComponents().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
+        return StringUtils.isEmpty(getServerSSLAlias()) ? true : (getSecurableCommunicationChannels().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
       }
       default:
         return false;
@@ -2583,13 +2584,13 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public SecurableComponent[] getSSLEnabledComponents() {
-    return sslEnabledComponents;
+  public SecurableCommunicationChannel[] getSecurableCommunicationChannels() {
+    return securableCommunicationChannels;
   }
 
   @Override
-  public void setSSLEnabledComponents(final SecurableComponent[] sslEnabledComponents) {
-    this.sslEnabledComponents = sslEnabledComponents;
+  public void setSecurableCommunicationChannels(final SecurableCommunicationChannel[] sslEnabledComponents) {
+    this.securableCommunicationChannels = sslEnabledComponents;
   }
 
   @Override
@@ -2867,7 +2868,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
                               .append(httpServiceSSLTrustStore, that.httpServiceSSLTrustStore)
                               .append(httpServiceSSLTrustStorePassword, that.httpServiceSSLTrustStorePassword)
                               .append(httpServiceSSLAlias, that.httpServiceSSLAlias)
-                              .append(sslEnabledComponents, that.sslEnabledComponents)
+                              .append(securableCommunicationChannels, that.securableCommunicationChannels)
                               .append(sslProtocols, that.sslProtocols)
                               .append(sslCiphers, that.sslCiphers)
                               .append(sslKeyStore, that.sslKeyStore)
@@ -3041,7 +3042,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
                                       .append(httpServiceSSLTrustStore)
                                       .append(httpServiceSSLTrustStorePassword)
                                       .append(httpServiceSSLAlias)
-                                      .append(sslEnabledComponents)
+                                      .append(securableCommunicationChannels)
                                       .append(sslProtocols)
                                       .append(sslCiphers)
                                       .append(sslRequireAuthentication)

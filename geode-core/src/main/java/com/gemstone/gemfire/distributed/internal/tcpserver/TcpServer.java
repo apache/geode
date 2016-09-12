@@ -60,6 +60,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
+import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
 import com.gemstone.gemfire.internal.security.SecurableComponent;
 
 /**
@@ -167,7 +168,7 @@ public class TcpServer {
     }
 
     if (this.socketCreator == null) {
-      this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.LOCATOR);
+      this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR);
     } else {
       throw new RuntimeException("The socket Creator already exists");
     }

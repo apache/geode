@@ -33,6 +33,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
+import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
 import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 import org.apache.logging.log4j.Logger;
@@ -96,13 +97,13 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     this.cancelCriterion = cancelCriterion;
     this.pool = pool;
     if (this.usedByGateway || (this.gatewaySender != null)) {
-      this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.GATEWAY);
+      this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY);
       if (sender!= null && !sender.getGatewayTransportFilters().isEmpty()) {
         this.socketCreator.initializeTransportFilterClientSocketFactory(sender);
       }
     } else {
       //If configured use SSL properties for cache-server
-      this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.SERVER);
+      this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER);
     }
   }
   

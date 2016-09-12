@@ -61,6 +61,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
+import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
 import com.gemstone.gemfire.internal.security.SecurableComponent;
 
 /**
@@ -282,7 +283,7 @@ public class TCPConduit implements Runnable {
       }
     }
 
-    this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableComponent.CLUSTER);
+    this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
 
     startAcceptor();
   }
