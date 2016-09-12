@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.internal;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -63,5 +64,14 @@ public class GemFireVersionJUnitTest {
 
     String noFileOutput = sw.toString();
     assertTrue(noFileOutput.contains(LocalizedStrings.GemFireVersion_COULD_NOT_FIND_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0.toLocalizedString(noFile)));
+  }
+  
+  @Test
+  public void testNoFileGetProperty() {
+    String noFile = "not a property file";
+    VersionDescription noVersion = new VersionDescription(noFile);
+
+    String err = LocalizedStrings.GemFireVersion_COULD_NOT_FIND_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0.toLocalizedString(noFile);
+    assertEquals(err, noVersion.getProperty(VersionDescription.GEMFIRE_VERSION));
   }
 }

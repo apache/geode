@@ -118,13 +118,6 @@ if [ ! -f "$TOOLS_JAR" ]; then
     TOOLS_JAR="$GF_JAVA_PARENT/../lib/tools.jar"
     if [ ! -f "$TOOLS_JAR" ]; then
         TOOLS_JAR=
-        if [ "${UNAME}" = "darwin" ]; then
-            # For MacOS, try default path
-            TOOLS_JAR="/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Classes/classes.jar"
-            if [ ! -f "$TOOLS_JAR" ]; then
-              TOOLS_JAR=
-            fi
-        fi
     fi
 fi
 
