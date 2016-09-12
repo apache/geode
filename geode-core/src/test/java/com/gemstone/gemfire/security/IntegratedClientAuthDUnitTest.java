@@ -51,7 +51,7 @@ public class IntegratedClientAuthDUnitTest extends AbstractSecureServerDUnitTest
     IgnoredException.addIgnoredException(AuthenticationFailedException.class.getName());
 
     client2.invoke("logging in super-user with wrong password", () -> {
-      AuthenticationFailedException expected = new AuthenticationFailedException("Authentication error. Please check your username/password.");
+      AuthenticationFailedException expected = new AuthenticationFailedException("Authentication error. Please check your credentials.");
 
       catchException(new ClientCacheFactory(createClientProperties("super-user", "wrong")).setPoolSubscriptionEnabled(true)
                                                                                           .addPoolServer("localhost", serverPort))

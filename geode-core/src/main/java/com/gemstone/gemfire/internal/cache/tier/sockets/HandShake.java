@@ -1790,9 +1790,7 @@ public class HandShake implements ClientHandShake
     Authenticator auth = null;
     try {
       if(AcceptorImpl.isIntegratedSecurity()){
-        String username = credentials.getProperty("security-username");
-        String password = credentials.getProperty("security-password");
-        return securityService.login(username, password);
+        return securityService.login(credentials);
       }
       else {
         Method instanceGetter = ClassLoadUtil.methodFromName(authenticatorMethod);

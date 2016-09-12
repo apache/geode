@@ -20,8 +20,12 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.logging.log4j.Logger;
+import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -32,9 +36,6 @@ import com.gemstone.gemfire.management.internal.cli.multistep.CLIMultiStepHelper
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.web.util.UriUtils;
 import com.gemstone.gemfire.security.Authenticator;
-
-import org.apache.logging.log4j.Logger;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 /**
  * The GetEnvironmentHandlerInterceptor class handles extracting Gfsh environment variables encoded in the HTTP request

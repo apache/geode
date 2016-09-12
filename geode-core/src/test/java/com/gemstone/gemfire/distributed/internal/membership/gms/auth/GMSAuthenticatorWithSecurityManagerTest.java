@@ -22,12 +22,12 @@ import static org.mockito.Mockito.*;
 
 import java.util.Properties;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * Unit tests GMSAuthenticator using new integrated security.
@@ -135,7 +135,7 @@ public class GMSAuthenticatorWithSecurityManagerTest extends AbstractGMSAuthenti
 
   @Test
   public void authenticateShouldReturnFailureMessageIfLoginThrows() throws Exception {
-    when(securityService.login(anyString(), anyString())).thenThrow(new GemFireSecurityException("dummy"));
+    when(securityService.login(any(Properties.class))).thenThrow(new GemFireSecurityException("dummy"));
     props.setProperty(SECURITY_MANAGER, "dummy");
     String result = authenticator.authenticate(member, props, props, member);
     assertThat(result).startsWith("Authentication failed. See coordinator");

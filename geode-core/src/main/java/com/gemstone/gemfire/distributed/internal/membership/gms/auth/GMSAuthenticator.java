@@ -121,9 +121,7 @@ public class GMSAuthenticator implements Authenticator {
     String failMsg = null;
     try {
       if(this.securityService.isIntegratedSecurity()){
-        String username = credentials.getProperty("security-username");
-        String password = credentials.getProperty("security-password");
-        this.securityService.login(username, password);
+        this.securityService.login(credentials);
       }
       else {
         invokeAuthenticator(secProps, member, credentials);
