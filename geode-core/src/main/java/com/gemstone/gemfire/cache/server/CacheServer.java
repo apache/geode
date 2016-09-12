@@ -512,6 +512,12 @@ public interface CacheServer {
    * 
    * @since GemFire 6.0
    */ 
-  public Set<InterestRegistrationListener> getInterestRegistrationListeners(); 
+  public Set<InterestRegistrationListener> getInterestRegistrationListeners();
+
+    /**
+     * @author zhouwei
+     *
+     *
+     */
   
 }
