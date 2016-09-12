@@ -20,7 +20,7 @@ Geode system properties must be set by adding properties to Tomcat's `server.xml
 
 ``` pre
 <Listener 
-  className="com.gemstone.gemfire.modules.session.catalina.xxxLifecycleListener"
+  className="org.apache.geode.modules.session.catalina.xxxLifecycleListener"
   name="value" 
   name="value" 
   ...
@@ -31,7 +31,7 @@ If the `xxxLifecycleListener` is a `PeerToPeerCacheLifecycleListener`, then a mi
 
 ``` pre
 <Listener 
-  className="com.gemstone.gemfire.modules.session.catalina.
+  className="org.apache.geode.modules.session.catalina.
      PeerToPeerCacheLifecycleListener"
   cache-xml-file="cache-peer.xml" 
   locators="localhost[10334]" 
@@ -66,7 +66,7 @@ To edit Geode cache properties such as the name and the characteristics of the c
 
 ``` pre
 <Manager 
-  className="com.gemstone.gemfire.modules.session.catalina.Tomcat7DeltaSessionManager"
+  className="org.apache.geode.modules.session.catalina.Tomcat7DeltaSessionManager"
   name="value" 
   name="value" 
   ...
@@ -76,7 +76,7 @@ To edit Geode cache properties such as the name and the characteristics of the c
 In the preceding code snippet, `name` is the property name and `value` is the property value. For example:
 
 ``` pre
-<Manager className="com.gemstone.gemfire.modules.session.catalina.
+<Manager className="org.apache.geode.modules.session.catalina.
       Tomcat7DeltaSessionManager" 
   regionAttributesId="PARTITION_REDUNDANT" 
   regionName="my_region" 
@@ -95,7 +95,7 @@ Default: Set
 To disable this configuration, remove or comment out the following line from Tomcat's `context.xml` file.
 
 ``` pre
-<Valve className="com.gemstone.gemfire.modules.session.catalina.CommitSessionValve"/>
+<Valve className="org.apache.geode.modules.session.catalina.CommitSessionValve"/>
 ```
 
 <dt>**enableDebugListener**</dt>

@@ -17,7 +17,7 @@ A `GatewayConflictResolver` implementation is called only for update events that
 
 1.  Program the event handler:
     1.  Create a class that implements the `GatewayConflictResolver` interface.
-    2.  If you want to declare the handler in `cache.xml`, implement the `com.gemstone.gemfire.cache.Declarable` interface as well.
+    2.  If you want to declare the handler in `cache.xml`, implement the `org.apache.geode.cache.Declarable` interface as well.
     3.  Implement the handler's `onEvent()` method to determine whether the WAN event should be allowed. `onEvent()` receives both a `TimestampedEntryEvent` and a `GatewayConflictHelper` instance. `TimestampedEntryEvent` has methods for obtaining the timestamp and distributed system ID of both the update event and the current region entry. Use methods in the `GatewayConflictHelper` to either disallow the update event (retaining the existing region entry value) or provide an alternate value.
 
         **Example:**

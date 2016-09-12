@@ -157,7 +157,7 @@ It is likely that all processes using the locators will exit with the same messa
 Alert:
 
 ``` pre
-Membership service failure: Channel closed: com.gemstone.gemfire.ForcedDisconnectException: 
+Membership service failure: Channel closed: org.apache.geode.ForcedDisconnectException: 
 There are no processes eligible to be group membership coordinator 
 (last coordinator left view)
 ```
@@ -173,7 +173,7 @@ The operator should examine the locator processes and logs, and restart the loca
 Alert:
 
 ``` pre
-Membership service failure: Channel closed: com.gemstone.gemfire.ForcedDisconnectException: 
+Membership service failure: Channel closed: org.apache.geode.ForcedDisconnectException: 
 There are no processes eligible to be group membership coordinator 
 (all eligible coordinators are suspect)
 ```
@@ -189,7 +189,7 @@ The operator should examine the locator processes and logs, and restart the loca
 Alert:
 
 ``` pre
-Membership service failure: Channel closed: com.gemstone.gemfire.ForcedDisconnectException: 
+Membership service failure: Channel closed: org.apache.geode.ForcedDisconnectException: 
 Unable to contact any locators and network partition detection is enabled
 ```
 
@@ -204,7 +204,7 @@ The operator should examine the locator processes and logs, and restart the loca
 Alert:
 
 ``` pre
-Membership service failure: Channel closed: com.gemstone.gemfire.ForcedDisconnectException: 
+Membership service failure: Channel closed: org.apache.geode.ForcedDisconnectException: 
 Disconnected as a slow-receiver
 ```
 
@@ -252,7 +252,7 @@ The operator can turn this off by setting the system property gemfire.disable-sa
 Alert:
 
 ``` pre
-Membership service failure: Channel closed: com.gemstone.gemfire.ForcedDisconnectException: 
+Membership service failure: Channel closed: org.apache.geode.ForcedDisconnectException: 
 This member has been forced out of the Distributed System. Please consult GemFire logs to 
 find the reason.
 ```

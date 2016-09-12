@@ -12,7 +12,7 @@ Configuration is slightly different depending on the topology you are setting up
 To run Geode in a peer-to-peer configuration, add the following line to Tomcat's `$CATALINA_HOME$/conf/server.xml` within the `<Server>` tag:
 
 ``` pre
-<Listener className="com.gemstone.gemfire.modules.session.catalina.
+<Listener className="org.apache.geode.modules.session.catalina.
                          PeerToPeerCacheLifecycleListener"
         locators="localhost[10334]" />
 ```
@@ -22,14 +22,14 @@ Depending on the version of Tomcat you are using, add one of the following lines
 For Tomcat 6.0:
 
 ``` pre
-<Manager className="com.gemstone.gemfire.modules.session.catalina.
+<Manager className="org.apache.geode.modules.session.catalina.
                          Tomcat6DeltaSessionManager"/> 
 ```
 
 For Tomcat 7.0 and above:
 
 ``` pre
-<Manager className="com.gemstone.gemfire.modules.session.catalina.
+<Manager className="org.apache.geode.modules.session.catalina.
                          Tomcat7DeltaSessionManager"/> 
 ```
 
@@ -40,7 +40,7 @@ For Tomcat 7.0 and above:
 To run Geode in a client/server configuration, the application server will operate as a Geode client. To do this, add the following line to `$CATALINA_HOME$/conf/server.xml` within the `<Server>` tag:
 
 ``` pre
-<Listener className="com.gemstone.gemfire.modules.session.catalina.
+<Listener className="org.apache.geode.modules.session.catalina.
                          ClientServerCacheLifecycleListener"/>
 ```
 
@@ -49,14 +49,14 @@ Depending on the version of Tomcat you are using, add one of the following lines
 For Tomcat 6.0:
 
 ``` pre
-<Manager className="com.gemstone.gemfire.modules.session.catalina.
+<Manager className="org.apache.geode.modules.session.catalina.
                          Tomcat6DeltaSessionManager"/> 
 ```
 
 For Tomcat 7.0 and above:
 
 ``` pre
-<Manager className="com.gemstone.gemfire.modules.session.catalina.
+<Manager className="org.apache.geode.modules.session.catalina.
                          Tomcat7DeltaSessionManager"/> 
 ```
 
@@ -93,7 +93,7 @@ You can verify that Geode has successfully started by inspecting the Tomcat log 
 
 ``` pre
 Nov 8, 2010 12:12:12 PM
-com.gemstone.gemfire.modules.session.catalina.ClientServerCacheLifecycleListener
+org.apache.geode.modules.session.catalina.ClientServerCacheLifecycleListener
 createOrRetrieveCache
 INFO: Created GemFireCache[id = 2066231378; isClosing = false; 
    created = Mon Nov 08 12:12:12 PDT 2010; server = false; 

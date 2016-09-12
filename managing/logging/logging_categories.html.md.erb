@@ -137,11 +137,11 @@ These are the levels, in descending order, with sample output:
     ``` pre
     [warning 2008/06/09 13:12:31.833 PDT <main> tid=0x1] Unable to create a
     connection in the allowed time
-    com.gemstone.gemfire.cache.client.NoAvailableServersException
-        at com.gemstone.gemfire.cache.client.internal.pooling.ConnectionManagerImpl.
+    org.apache.geode.cache.client.NoAvailableServersException
+        at org.apache.geode.cache.client.internal.pooling.ConnectionManagerImpl.
     borrowConnection(ConnectionManagerImpl.java:166)
     . . .
-    com.gemstone.gemfire.internal.cache.LocalRegion.get(LocalRegion.java:1122
+    org.apache.geode.internal.cache.LocalRegion.get(LocalRegion.java:1122
     )
     ```
 

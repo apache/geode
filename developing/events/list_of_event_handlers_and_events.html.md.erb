@@ -44,7 +44,7 @@ Use either cache handlers or membership handlers in any single application. Do n
 </tr>
 <tr>
 <td><code class="ph codeph">ClientMembershipListener</code>
-<p>(com.gemstone.gemfire.management .membership.ClientMembershipListener)</p></td>
+<p>(org.apache.geode.management .membership.ClientMembershipListener)</p></td>
 <td><code class="ph codeph">ClientMembershipEvent</code></td>
 <td>One of the interfaces that replaces the deprecated Admin APIs. You can use the ClientMembershipListener to receive membership events only about clients. This listener's callback methods are invoked when this process detects connection changes to clients. Callback methods include <code class="ph codeph">memberCrashed</code>, <code class="ph codeph">memberJoined</code>, <code class="ph codeph">memberLeft</code> (graceful exit).</td>
 </tr>
@@ -60,7 +60,7 @@ Use either cache handlers or membership handlers in any single application. Do n
 </tr>
 <tr>
 <td><code class="ph codeph">MembershipListener</code>
-<p>(com.gemstone.gemfire.management .membership.MembershipListener)</p></td>
+<p>(org.apache.geode.management .membership.MembershipListener)</p></td>
 <td><code class="ph codeph">MembershipEvent</code></td>
 <td>Use this interface to receive membership events only about peers. This listener's callback methods are invoked when peer members join or leave the Geode distributed system. Callback methods include <code class="ph codeph">memberCrashed</code>, <code class="ph codeph">memberJoined</code>, and <code class="ph codeph">memberLeft</code> (graceful exit).</td>
 </tr>
@@ -86,7 +86,7 @@ Extends <code class="ph codeph">CacheCallback</code> interface. Installed in cac
 </tr>
 <tr>
 <td><code class="ph codeph">UniversalMembershipListenerAdapter</code>
-<p>(com.gemstone.gemfire .management.membership .UniversalMembershipListenerAdapter)</p></td>
+<p>(org.apache.geode .management.membership .UniversalMembershipListenerAdapter)</p></td>
 <td><code class="ph codeph">MembershipEvent</code> and <code class="ph codeph">ClientMembershipEvent</code></td>
 <td>One of the interfaces that replaces the deprecated Admin APIs. Provides a wrapper for MembershipListener and ClientMembershipListener callbacks for both clients and peers.</td>
 </tr>

@@ -20,7 +20,7 @@ To modify your war or ear file manually, make the following updates:
     <filter>
         <filter-name>gemfire-session-filter</filter-name>
         <filter-class>
-          com.gemstone.gemfire.modules.session.filter.SessionCachingFilter
+          org.apache.geode.modules.session.filter.SessionCachingFilter
         </filter-class>
         <init-param>
             <param-name>cache-type</param-name>
@@ -40,7 +40,7 @@ To modify your war or ear file manually, make the following updates:
         <dispatcher>ERROR</dispatcher>
     </filter-mapping>
     <listener>
-        <listener-class>com.gemstone.gemfire.modules.session.filter.SessionListener</listener-class>
+        <listener-class>org.apache.geode.modules.session.filter.SessionListener</listener-class>
     </listener>
     ```
 
@@ -100,7 +100,7 @@ to result in the following `web.xml` content:
 <filter>
     <filter-name>gemfire-session-filter</filter-name>
     <filter-class>
-        com.gemstone.gemfire.modules.session.filter.SessionCachingFilter
+        org.apache.geode.modules.session.filter.SessionCachingFilter
     </filter-class>
     <init-param>
         <param-name>cache-type</param-name>
@@ -127,7 +127,7 @@ to result in the following `web.xml` content:
 <filter>
     <filter-name>gemfire-session-filter</filter-name>
     <filter-class>
-        com.gemstone.gemfire.modules.session.filter.SessionCachingFileter
+        org.apache.geode.modules.session.filter.SessionCachingFileter
     </filter-class>
     <init-param>
         <param-name>cache-type</param-name>

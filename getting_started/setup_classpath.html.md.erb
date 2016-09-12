@@ -78,7 +78,7 @@ For example, to start up a Geode locator process using the LocatorLauncher API, 
 
 ``` pre
 prompt# java -cp "path_to_product/lib/geode-dependencies.jar"
-com.gemstone.gemfire.distributed.LocatorLauncher start locator1
+org.apache.geode.distributed.LocatorLauncher start locator1
 <locator-launcher-options>
 ```
 
@@ -86,7 +86,7 @@ To start up a Geode server process using the ServerLauncher API:
 
 ``` pre
 prompt# java -cp "path_to_product/lib/geode-dependencies.jar:/path/to/your/applications/classes.jar"
-com.gemstone.gemfire.distributed.ServerLauncher start server1
+org.apache.geode.distributed.ServerLauncher start server1
 <server-launcher-options>
 ```
 

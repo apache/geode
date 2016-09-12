@@ -4,11 +4,11 @@ title:  Creating Regions Dynamically
 
 You can dynamically create regions in your application code and automatically instantiate them on members of a distributed system.
 
-If your application does not require partitioned regions, you can use the <span class="keyword apiname">com.gemstone.gemfire.cache.DynamicRegionFactory</span> class to dynamically create regions, or you can create them using the `<dynamic-region-factory>` element in the cache.xml file that defines the region. See [&lt;dynamic-region-factory&gt;](../../reference/topics/cache_xml.html#dynamic-region-factory).
+If your application does not require partitioned regions, you can use the <span class="keyword apiname">org.apache.geode.cache.DynamicRegionFactory</span> class to dynamically create regions, or you can create them using the `<dynamic-region-factory>` element in the cache.xml file that defines the region. See [&lt;dynamic-region-factory&gt;](../../reference/topics/cache_xml.html#dynamic-region-factory).
 
 Due to the number of options involved, most developers use functions to create regions dynamically in their applications, as described in this topic. Dynamic regions can also be created from the `gfsh` command line.
 
-For a complete discussion of using Geode functions, see [Function Execution](../function_exec/chapter_overview.html). Functions use the <span class="keyword apiname">com.gemstone.gemfire.cache.execute.FunctionService</span> class.
+For a complete discussion of using Geode functions, see [Function Execution](../function_exec/chapter_overview.html). Functions use the <span class="keyword apiname">org.apache.geode.cache.execute.FunctionService</span> class.
 
 For example, the following Java classes define and use a function for dynamic region creation:
 
@@ -17,17 +17,17 @@ The <span class="keyword apiname">CreateRegionFunction</span> class defines a fu
 ``` pre
 #CreateRegionFunction.java
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Declarable;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.Scope;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.Scope;
 
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
 
 import java.util.Properties;
 
@@ -120,16 +120,16 @@ The <span class="keyword apiname">CreateRegionCacheListener</span> class is a ca
 ``` pre
 #CreateRegionCacheListener.java
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Declarable;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.RegionExistsException;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.RegionExistsException;
 
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
+import org.apache.geode.cache.util.CacheListenerAdapter;
 
 import java.util.Map;
 import java.util.Properties;

@@ -13,7 +13,7 @@ When conserve-sockets is set to false, each application thread uses a dedicated 
 **Note:**
 When you have transactions operating on EMPTY, NORMAL or PARTITION regions, make sure that `conserve-sockets` is set to false to avoid distributed deadlocks.
 
-You can override the `conserve-sockets` setting for individual threads. These methods are in `com.gemstone.gemfire.distributed.DistributedSystem`:
+You can override the `conserve-sockets` setting for individual threads. These methods are in `org.apache.geode.distributed.DistributedSystem`:
 
 -   `setThreadsSocketPolicy`. Sets the calling thread’s individual socket policy, overriding the policy set for the application as a whole. If set to true, the calling thread shares socket connections with other threads. If false, the calling thread has its own sockets.
 -   `releaseThreadsSockets`. Frees any sockets held by the calling thread. Threads hold their own sockets only when conserve-sockets is false. Threads holding their own sockets can call this method to avoid holding the sockets until the socket-lease-time has expired.

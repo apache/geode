@@ -7,14 +7,14 @@ For a domain object with source that you can modify, implement the `PdxSerializa
 <a id="use_pdx_serializable__section_7F357A8E56B54BFB9A5778C0F89E034E"></a>
 **Procedure**
 
-1.  In your domain class, implement `PdxSerializable`, importing the required `com.gemstone.gemfire.pdx` classes.
+1.  In your domain class, implement `PdxSerializable`, importing the required `org.apache.geode.pdx` classes.
 
     For example:
 
     ``` pre
-    import com.gemstone.gemfire.pdx.PdxReader;
-    import com.gemstone.gemfire.pdx.PdxSerializable;
-    import com.gemstone.gemfire.pdx.PdxWriter;
+    import org.apache.geode.pdx.PdxReader;
+    import org.apache.geode.pdx.PdxSerializable;
+    import org.apache.geode.pdx.PdxWriter;
 
     public class PortfolioPdx implements PdxSerializable {
       ...

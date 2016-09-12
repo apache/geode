@@ -90,6 +90,6 @@ Set the locator bind address using one of these methods:
 
 -   Inside a Geode application, take one of the following actions:
     -   Automatically start a co-located locator using the gemfire property `start-locator`, and specifying the bind address for it in that property setting.
-    -   Use `com.gemstone.gemfire.distributed.LocatorLauncher` API to start the locator inside your code. Use the `LocatorLauncher.Builder` class to construct an instance of the `LocatorLauncher`, use the `setBindAddress` method to specify the IP address to use and then use the start() method to start a Locator service embedded in your Java application process.
+    -   Use `org.apache.geode.distributed.LocatorLauncher` API to start the locator inside your code. Use the `LocatorLauncher.Builder` class to construct an instance of the `LocatorLauncher`, use the `setBindAddress` method to specify the IP address to use and then use the start() method to start a Locator service embedded in your Java application process.
 
 If your locator uses a bind address, make sure every process that accesses the locator has the address as well. For peer-to-peer access to the locator, use the locator's bind address and the locator's port in your `gemfire.properties` `locators` list. For server discovery in a client/server installation, use the locator's bind address and the locator's port in the locator list you provide to in the client’s server pool configuration.

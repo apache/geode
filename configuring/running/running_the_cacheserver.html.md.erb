@@ -8,7 +8,7 @@ A Geode server is a process that runs as a long-lived, configurable member of a 
 The Geode server is used primarily for hosting long-lived data regions and for running standard Geode processes such as the server in a client/server configuration. You can start and stop servers using the following methods:
 
 -   The `gfsh` tool allows you to manage Geode server processes from the command line.
--   You can also start, stop and manage the Geode servers through the `com.gemstone.gemfire.distributed.ServerLauncher` API. The `ServerLauncher` API can only be used for Geode Servers that were started with `gfsh` or with the `ServerLauncher` class itself. See the JavaDocs for additional specifics on using the `ServerLauncher` API.
+-   You can also start, stop and manage the Geode servers through the `org.apache.geode.distributed.ServerLauncher` API. The `ServerLauncher` API can only be used for Geode Servers that were started with `gfsh` or with the `ServerLauncher` class itself. See the JavaDocs for additional specifics on using the `ServerLauncher` API.
 
 ## <a id="running_the_cacheserver__section_E15FB1B039CE4F6CB2E4B5618D7ECAA1" class="no-quick-link"></a>Default Server Configuration and Log Files
 
@@ -99,10 +99,10 @@ gfsh>start server --name=server3 \
 
 ## Start the Server Programmatically
 
-Use `com.gemstone.gemfire.distributed.ServerLauncher` API to start the cache server process inside your code. Use the `ServerLauncher.Builder` class to construct an instance of the `ServerLauncher`, and then use the `start()` method to start the server service. The other methods in the `ServerLauncher` class provide status information about the server and allow you to stop the server.
+Use `org.apache.geode.distributed.ServerLauncher` API to start the cache server process inside your code. Use the `ServerLauncher.Builder` class to construct an instance of the `ServerLauncher`, and then use the `start()` method to start the server service. The other methods in the `ServerLauncher` class provide status information about the server and allow you to stop the server.
 
 ``` pre
-import com.gemstone.gemfire.distributed.ServerLauncher;
+import org.apache.geode.distributed.ServerLauncher;
 
  public class MyEmbeddedServer {
 

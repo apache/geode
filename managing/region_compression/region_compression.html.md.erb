@@ -73,7 +73,7 @@ To enable compression on your region, set the following region attribute in your
    <region name="compressedRegion" > 
       <region-attributes data-policy="replicate" ... /> 
          <Compressor>
-             <class-name>com.gemstone.gemfire.compression.SnappyCompressor</class-name>
+             <class-name>org.apache.geode.compression.SnappyCompressor</class-name>
          </Compressor>
         ...
       </region-attributes>
@@ -88,7 +88,7 @@ Compression can be enabled during region creation using gfsh or programmatically
 Using gfsh:
 
 ``` pre
-gfsh>create-region --name=”CompressedRegion” --compressor=”com.gemstone.gemfire.compression.SnappyCompressor”;
+gfsh>create-region --name=”CompressedRegion” --compressor=”org.apache.geode.compression.SnappyCompressor”;
 ```
 
 API:
@@ -126,7 +126,7 @@ This example provides a custom Compressor implementation:
 ``` pre
 package com.mybiz.myproduct.compression;
 
-import com.gemstone.gemfire.compression.Compressor;
+import org.apache.geode.compression.Compressor;
 
 public class LZWCompressor implements Compressor {
   private final LZWCodec lzwCodec = new LZWCodec(); 

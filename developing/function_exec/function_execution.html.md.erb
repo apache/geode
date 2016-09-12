@@ -14,7 +14,7 @@ Main tasks:
 
 ## <a id="function_execution__section_7D43B0C628D54F579D5C434D3DF69B3C" class="no-quick-link"></a>Write the Function Code
 
-To write the function code, you implement the `Function` interface or extend the `FunctionAdapter` class. Both are in the `com.gemstone.gemfire.cache.execute` package. The adapter class provides some default implementations for methods, which you can override.
+To write the function code, you implement the `Function` interface or extend the `FunctionAdapter` class. Both are in the `org.apache.geode.cache.execute` package. The adapter class provides some default implementations for methods, which you can override.
 
 Code the methods you need for the function. These steps do not have to be done in this order.
 
@@ -52,10 +52,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.execute.FunctionAdapter;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
-import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
+import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.RegionFunctionContext;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
 
 public class MultiGetFunction extends FunctionAdapter {
 

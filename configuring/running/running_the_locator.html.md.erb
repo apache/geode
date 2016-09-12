@@ -59,12 +59,12 @@ Use the following guidelines to start the locator:
         gfsh> start locator --name=locator2 --bind-address=192.0.2.0 --port=13489
         ```
 
-    -   Start the locator using the `main` method in the `com.gemstone.gemfire.distributed.LocatorLauncher` class and the Java executable. For example:
+    -   Start the locator using the `main` method in the `org.apache.geode.distributed.LocatorLauncher` class and the Java executable. For example:
 
         ``` pre
         working/directory/of/Locator/process$java -server \
          -classpath "$GEMFIRE/lib/locator-dependencies.jar:/path/to/application/classes.jar" \
-         com.gemstone.gemfire.distributed.LocatorLauncher start Locator1 --port=11235 \
+         org.apache.geode.distributed.LocatorLauncher start Locator1 --port=11235 \
           --redirect-output
         ```
 
@@ -87,10 +87,10 @@ Use the following guidelines to start the locator:
         start-locator=13489
         ```
 
-    -   Use `com.gemstone.gemfire.distributed.LocatorLauncher` API to start the locator inside your code. Use the `LocatorLauncher.Builder` class to construct an instance of the `LocatorLauncher`, and then use the `start()` method to start a Locator service embedded in your Java application process. The other methods in the `LocatorLauncher` class provide status information about the locator and allow you to stop the locator.
+    -   Use `org.apache.geode.distributed.LocatorLauncher` API to start the locator inside your code. Use the `LocatorLauncher.Builder` class to construct an instance of the `LocatorLauncher`, and then use the `start()` method to start a Locator service embedded in your Java application process. The other methods in the `LocatorLauncher` class provide status information about the locator and allow you to stop the locator.
 
         ``` pre
-        import com.gemstone.gemfire.distributed.LocatorLauncher;
+        import org.apache.geode.distributed.LocatorLauncher;
 
          public class MyEmbeddedLocator {
 

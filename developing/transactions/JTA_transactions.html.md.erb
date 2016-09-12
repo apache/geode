@@ -198,7 +198,7 @@ To run a global transaction, perform the following steps:
 3.  Configure Geode for any necessary transactional behavior. Enable `copy-on-read` for your cache and specify a transaction listener, if you need one. See [Setting Global Copy on Read](working_with_transactions.html#concept_vx2_gs4_5k) and [Configuring Transaction Plug-In Event Handlers](working_with_transactions.html#concept_ocw_vf1_wk) for details. 
 4.  Make sure that JTA transactions are not disabled in the `cache.xml` file or the application code. 
 5.  Initialize the Geode cache. 
-6.  Get an initial context through `com.gemstone.gemfire.cache.Cache.getJNDIContext`. For example: 
+6.  Get an initial context through `org.apache.geode.cache.Cache.getJNDIContext`. For example: 
 
     ``` pre
     Context ctx = cache.getJNDIContext();

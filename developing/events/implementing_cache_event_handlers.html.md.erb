@@ -13,11 +13,11 @@ Write-behind cache listeners are created by extending the `AsyncEventListener` i
 **Procedure**
 
 1.  Decide which events your application needs to handle. For each region, decide which events you want to handle. For the cache, decide whether to handle transaction events.
-2.  For each event, decide which handlers to use. The `*Listener` and `*Adapter` classes in `com.gemstone.gemfire.cache.util` show the options.
+2.  For each event, decide which handlers to use. The `*Listener` and `*Adapter` classes in `org.apache.geode.cache.util` show the options.
 3.  Program each event handler:
 
     1.  Extend the handler's adapter class.
-    2.  If you want to declare the handler in the `cache.xml`, implement the `com.gemstone.gemfire.cache.Declarable` interface as well.
+    2.  If you want to declare the handler in the `cache.xml`, implement the `org.apache.geode.cache.Declarable` interface as well.
     3.  Implement the handler's callback methods as needed by your application.
 
         **Note:**
@@ -27,9 +27,9 @@ Write-behind cache listeners are created by extending the `AsyncEventListener` i
 
         ``` pre
         package myPackage;
-        import com.gemstone.gemfire.cache.Declarable;
-        import com.gemstone.gemfire.cache.EntryEvent;
-        import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
+        import org.apache.geode.cache.Declarable;
+        import org.apache.geode.cache.EntryEvent;
+        import org.apache.geode.cache.util.CacheListenerAdapter;
         import java.util.Properties;
                                 
         public class MyCacheListener extends CacheListenerAdapter implements Declarable {

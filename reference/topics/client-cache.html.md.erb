@@ -7,7 +7,7 @@ This section documents all `cache.xml` elements that you use to configure Geode 
 
 For Geode server configuration, see [&lt;cache&gt; Element Reference](cache_xml.html).
 
-API: `com.gemstone.gemfire.cache.client.ClientCacheFactory` and `PoolFactory` interfaces.
+API: `org.apache.geode.cache.client.ClientCacheFactory` and `PoolFactory` interfaces.
 
 <a id="cc-client-cache__table_B079C5A320194B3A98AD82DDB67DA43D"></a>
 
@@ -103,7 +103,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 Use for client caches. Defines a client's server pool used to communicate with servers running in a different distributed system.
 
-**API:** `com.gemstone.gemfire.cache.client.PoolFactory`
+**API:** `org.apache.geode.cache.client.PoolFactory`
 
 <a id="cc-pool__d93e1237"></a>
 
@@ -267,7 +267,7 @@ Addresses and ports of the locators to connect to. You can define multiple locat
 **Note:**
 Provide a locator list or `server` list, but not both.
 
-**API:** `com.gemstone.gemfire.distributed.LocatorLauncher`
+**API:** `org.apache.geode.distributed.LocatorLauncher`
 
 <a id="cc-locator__d93e1621"></a>
 
@@ -296,7 +296,7 @@ Provide a server list or `locator` list, but not both.
 
 **Default:**
 
-**API:** `com.gemstone.gemfire.distributed.ServerLauncher`
+**API:** `org.apache.geode.distributed.ServerLauncher`
 
 <a id="cc-server__d93e1724"></a>
 
@@ -323,7 +323,7 @@ Defines a pool of one or more disk stores, which can be used by regions, and cli
 
 **Default:** The cache default disk store, named "DEFAULT", is used when disk is used but no disk store is named.
 
-**API:** `com.gemstone.gemfire.cache.DiskStore`
+**API:** `org.apache.geode.cache.DiskStore`
 
 <a id="cc-disk-store__d93e1818"></a>
 
@@ -461,7 +461,7 @@ Specifies a region or disk store's disk directory.
 
 Specifies the configuration for the Portable Data eXchange (PDX) method of serialization.
 
-**API:** `com.gemstone.gemfire.cache.CacheFactory.setPdxReadSerialized`, `setPdxDiskStore`, `setPdxPersistent`, `setPdxIgnoreUnreadFields` and `com.gemstone.gemfire.cache.ClientCacheFactory.setPdxReadSerialized`, `setPdxDiskStore`, `setPdxPersistent`, `setPdxIgnoreUnreadFields`
+**API:** `org.apache.geode.cache.CacheFactory.setPdxReadSerialized`, `setPdxDiskStore`, `setPdxPersistent`, `setPdxIgnoreUnreadFields` and `org.apache.geode.cache.ClientCacheFactory.setPdxReadSerialized`, `setPdxDiskStore`, `setPdxPersistent`, `setPdxIgnoreUnreadFields`
 
 <a id="cc-pdx__d93e2117"></a>
 
@@ -481,7 +481,7 @@ Specifies the configuration for the Portable Data eXchange (PDX) method of seria
   <pdx persistent="true" disk-store-name="myDiskStore">
     <pdx-serializer>
       <class-name>
-       com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer
+       org.apache.geode.pdx.ReflectionBasedAutoSerializer
       </class-name>
     <parameter name="classes">
       <string>com.company.domain.DomainObject</string>>
@@ -500,7 +500,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 **Default:**
 
-**API:** `com.gemstone.gemfire.cache.CacheFactory.setPdxSerializer`
+**API:** `org.apache.geode.cache.CacheFactory.setPdxSerializer`
 
 **Example:**
 
@@ -519,7 +519,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 Specifies a region attributes template that can be named (by `id`) and referenced (by `refid`) later in the `cache.xml` and through the API.
 
-**API:** `com.gemstone.gemfire.cache.RegionFactory` or `com.gemstone.gemfire.cache.ClientRegionFactory`
+**API:** `org.apache.geode.cache.RegionFactory` or `org.apache.geode.cache.ClientRegionFactory`
 
 <a id="cc-region-attributes__d93e2287"></a>
 
@@ -857,7 +857,7 @@ Used only with GemFire version 6.x gateway configurations. For GemFire 7.0 confi
 </tr>
 <tr class="even">
 <td>statistics-enabled</td>
-<td>Boolean specifying whether to gather statistics on the region. Must be true to use expiration on the region. Geode provides a standard set of statistics for cached regions and region entries, which give you information for fine-tuning your distributed system. Unlike other Geode statistics, statistics for local and distributed regions are not archived and cannot be charted. They are kept in instances of <code class="ph codeph">com.gemstone.gemfire.cache.CacheStatistics</code> and made available through the region and its entries through the <code class="ph codeph">Region.getStatistics</code> and <code class="ph codeph">Region.Entry.getStatistics</code> methods.
+<td>Boolean specifying whether to gather statistics on the region. Must be true to use expiration on the region. Geode provides a standard set of statistics for cached regions and region entries, which give you information for fine-tuning your distributed system. Unlike other Geode statistics, statistics for local and distributed regions are not archived and cannot be charted. They are kept in instances of <code class="ph codeph">org.apache.geode.cache.CacheStatistics</code> and made available through the region and its entries through the <code class="ph codeph">Region.getStatistics</code> and <code class="ph codeph">Region.Entry.getStatistics</code> methods.
 <p><strong>API:</strong> <code class="ph codeph">setStatisticsEnabled</code></p>
 <p><strong>Example:</strong></p>
 <pre class="pre codeblock language-xml"><code>&lt;region-attributes 
@@ -913,7 +913,7 @@ Set the constraint in every cache where you create or update the region entries.
 
 **Default:** not set
 
-**API:** `com.gemstone.gemfire.cache.RegionFactory.setKeyConstraint`
+**API:** `org.apache.geode.cache.RegionFactory.setKeyConstraint`
 
 **Example:**
 
@@ -934,7 +934,7 @@ Set the constraint in every cache where you create or update the region entries.
 
 **Default:** not set
 
-**API:** `com.gemstone.gemfire.cache.RegionFactory.setValueConstraint`
+**API:** `org.apache.geode.cache.RegionFactory.setValueConstraint`
 
 **Example:**
 
@@ -952,7 +952,7 @@ Expiration setting that specifies how long the region can remain in the cache wi
 
 **Default:** not set - no expiration of this type
 
-**API:** `com.gemstone.gemfire.cache.RegionFactory.setRegionTimeToLive`
+**API:** `org.apache.geode.cache.RegionFactory.setRegionTimeToLive`
 
 **Example:**
 
@@ -1043,11 +1043,11 @@ Select one of the following expiration actions:
 
 ## <a id="cc-custom-expiry" class="no-quick-link"></a>&lt;custom-expiry&gt;
 
-Specifies the custom class that implements `com.gemstone.gemfire.cache.CustomExpiry`. You define this class in order to override the region-wide settings for specific entries. See [Configure Data Expiration](../../developing/expiration/configuring_data_expiration.html) for an example.
+Specifies the custom class that implements `org.apache.geode.cache.CustomExpiry`. You define this class in order to override the region-wide settings for specific entries. See [Configure Data Expiration](../../developing/expiration/configuring_data_expiration.html) for an example.
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements.
 
-**API:** `com.gemstone.gemfire.cache.RegionFactory.setCustomEntryIdleTimeout`, `setCustomeEntryTimeToLive`
+**API:** `org.apache.geode.cache.RegionFactory.setCustomEntryIdleTimeout`, `setCustomeEntryTimeToLive`
 
 **Example:**
 
@@ -1075,7 +1075,7 @@ To ensure reliable read behavior across the partitioned region, use `region-time
 
 **Default:** not set - no expiration of this type
 
-**API:** `com.gemstone.gemfire.cache.RegionFactory.setRegionIdleTimeout`
+**API:** `org.apache.geode.cache.RegionFactory.setRegionIdleTimeout`
 
 **Example:**
 
@@ -1165,11 +1165,11 @@ Select one of the following expiration actions:
 
 ## <a id="cc-rit-custom-expiry" class="no-quick-link"></a>&lt;custom-expiry&gt;
 
-Specifies the custom class that implements `com.gemstone.gemfire.cache.CustomExpiry`. You define this class in order to override the region-wide settings for specific entries. See [Configure Data Expiration](../../developing/expiration/configuring_data_expiration.html) for an example.
+Specifies the custom class that implements `org.apache.geode.cache.CustomExpiry`. You define this class in order to override the region-wide settings for specific entries. See [Configure Data Expiration](../../developing/expiration/configuring_data_expiration.html) for an example.
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements.
 
-**API:** `com.gemstone.gemfire.cache.RegionFactory.setCustomEntryIdleTimeout`, `setCustomeEntryTimeToLive`
+**API:** `org.apache.geode.cache.RegionFactory.setCustomEntryIdleTimeout`, `setCustomeEntryTimeToLive`
 
 **Example:**
 
@@ -1194,7 +1194,7 @@ Expiration setting that specifies how long the region’s entries can remain in 
 
 **Default:** not set - no expiration of this type.
 
-**API:** `com.gemstone.gemfire.cache.RegionFactory.setEntryTimeToLive`
+**API:** `org.apache.geode.cache.RegionFactory.setEntryTimeToLive`
 
 **Example:**
 
@@ -1285,11 +1285,11 @@ Select one of the following expiration actions:
 
 ## <a id="cc-ettl-custom-expiry" class="no-quick-link"></a>&lt;custom-expiry&gt;
 
-Specifies the custom class that implements `com.gemstone.gemfire.cache.CustomExpiry`. You define this class in order to override the region-wide settings for specific entries. See [Configure Data Expiration](../../developing/expiration/configuring_data_expiration.html) for an example.
+Specifies the custom class that implements `org.apache.geode.cache.CustomExpiry`. You define this class in order to override the region-wide settings for specific entries. See [Configure Data Expiration](../../developing/expiration/configuring_data_expiration.html) for an example.
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements.
 
-**API:** `com.gemstone.gemfire.cache.RegionFactory.setCustomEntryIdleTimeout`, `setCustomeEntryTimeToLive`
+**API:** `org.apache.geode.cache.RegionFactory.setCustomEntryIdleTimeout`, `setCustomeEntryTimeToLive`
 
 **Example:**
 
@@ -1315,7 +1315,7 @@ Expiration setting that specifies how long the region’s entries can remain in 
 **Note:**
 To ensure reliable read behavior across the partitioned region, use `entry-time-to-live` for entry expiration instead of this setting.
 
-**API:** `com.gemstone.gemfire.cache.RegionFactory.setEntryIdleTimeout`
+**API:** `org.apache.geode.cache.RegionFactory.setEntryIdleTimeout`
 
 **Example:**
 
@@ -1407,11 +1407,11 @@ Select one of the following expiration actions:
 
 ## <a id="cc-eit-custom-expiry" class="no-quick-link"></a>&lt;custom-expiry&gt;
 
-Specifies the custom class that implements `com.gemstone.gemfire.cache.CustomExpiry`. You define this class in order to override the region-wide settings for specific entries. See [Configure Data Expiration](../../developing/expiration/configuring_data_expiration.html) for an example.
+Specifies the custom class that implements `org.apache.geode.cache.CustomExpiry`. You define this class in order to override the region-wide settings for specific entries. See [Configure Data Expiration](../../developing/expiration/configuring_data_expiration.html) for an example.
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements.
 
-**API:** `com.gemstone.gemfire.cache.RegionFactory.setCustomEntryIdleTimeout`, `setCustomeEntryTimeToLive`
+**API:** `org.apache.geode.cache.RegionFactory.setCustomEntryIdleTimeout`, `setCustomeEntryTimeToLive`
 
 **Example:**
 
@@ -1436,7 +1436,7 @@ An event-handler plug-in that allows you to program for cache misses. At most, o
 
 For partitioned regions, if you want to have a cache loader, install an instance of the cache loader in every data store. Partitioned regions support partitioned loading, where each cache loader loads only the data entries in the local member. If data redundancy is configured, data is loaded only if the local member holds the primary copy.
 
-**API:** `com.gemstone.gemfire.cache.RegionFactory.setCacheLoader`
+**API:** `org.apache.geode.cache.RegionFactory.setCacheLoader`
 
 **Example:**
 
@@ -1452,7 +1452,7 @@ For partitioned regions, if you want to have a cache loader, install an instance
 
 An event-handler plug-in that allows you to receive before-event notification for changes to the region and its entries. It also has the ability to abort events. At most, one cache writer can be defined in each member for the region. A cache writer may be invoked remotely from other members that have the region defined.
 
-**API:** `com.gemstone.gemfire.cache.RegionFactory.setCacheWriter`
+**API:** `org.apache.geode.cache.RegionFactory.setCacheWriter`
 
 **Example:**
 
@@ -1470,7 +1470,7 @@ An event-handler plug-in that receives after-event notification of changes to th
 
 Specify the Java class for the cache listener and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](cache_xml.html#class-name_parameter).
 
-**API:** `com.gemstone.gemfire.cache.RegionFactory.addCacheListener`
+**API:** `org.apache.geode.cache.RegionFactory.addCacheListener`
 
 **Example:**
 
@@ -1490,7 +1490,7 @@ Specifies whether and how to control a region’s size. Size is controlled by re
 
 **Default:** Uses the lru-entry-count algorithm.
 
-**API:** `com.gemstone.gemfire.cache.RegionFactory.setEvictionAttributes`
+**API:** `org.apache.geode.cache.RegionFactory.setEvictionAttributes`
 
 **Example:**
 
@@ -1879,7 +1879,7 @@ Defines a region in the cache. See [&lt;region-attributes&gt;](cache_xml.html#re
 
 **Default:**
 
-**API:** `com.gemstone.gemfire.cache.RegionFactory` or `com.gemstone.gemfire.cache.ClientRegionFactory`
+**API:** `org.apache.geode.cache.RegionFactory` or `org.apache.geode.cache.ClientRegionFactory`
 
 <a id="cc-region__d93e5829"></a>
 
@@ -1918,7 +1918,7 @@ See[&lt;region-attributes&gt;](cache_xml.html#region-attributes) for a complete 
 
 Specifies a region attributes template that can be named (by `id`) and referenced (by `refid`) later in the `cache.xml` and through the API.
 
-**API:** `com.gemstone.gemfire.cache.RegionFactory` or `com.gemstone.gemfire.cache.ClientRegionFactory`
+**API:** `org.apache.geode.cache.RegionFactory` or `org.apache.geode.cache.ClientRegionFactory`
 
 <a id="cc-r-region-attributes__d93e2287"></a>
 
@@ -2256,7 +2256,7 @@ Used only with GemFire version 6.x gateway configurations. For GemFire 7.0 confi
 </tr>
 <tr class="even">
 <td>statistics-enabled</td>
-<td>Boolean specifying whether to gather statistics on the region. Must be true to use expiration on the region. Geode provides a standard set of statistics for cached regions and region entries, which give you information for fine-tuning your distributed system. Unlike other Geode statistics, statistics for local and distributed regions are not archived and cannot be charted. They are kept in instances of <code class="ph codeph">com.gemstone.gemfire.cache.CacheStatistics</code> and made available through the region and its entries through the <code class="ph codeph">Region.getStatistics</code> and <code class="ph codeph">Region.Entry.getStatistics</code> methods.
+<td>Boolean specifying whether to gather statistics on the region. Must be true to use expiration on the region. Geode provides a standard set of statistics for cached regions and region entries, which give you information for fine-tuning your distributed system. Unlike other Geode statistics, statistics for local and distributed regions are not archived and cannot be charted. They are kept in instances of <code class="ph codeph">org.apache.geode.cache.CacheStatistics</code> and made available through the region and its entries through the <code class="ph codeph">Region.getStatistics</code> and <code class="ph codeph">Region.Entry.getStatistics</code> methods.
 <p><strong>API:</strong> <code class="ph codeph">setStatisticsEnabled</code></p>
 <p><strong>Example:</strong></p>
 <pre class="pre codeblock language-xml"><code>&lt;region-attributes 
@@ -2309,7 +2309,7 @@ Describes an index to be created on a region. The index node, if any, should all
 
 **Default:**
 
-**API:** `com.gemstone.gemfire.cache.query.QueryService.createIndex, createKeyIndex,                     createHashIndex`
+**API:** `org.apache.geode.cache.query.QueryService.createIndex, createKeyIndex,                     createHashIndex`
 
 <a id="cc-index__d93e5943"></a>
 
@@ -2352,7 +2352,7 @@ An "entry" element describes an entry to be added to a region. Note that if an e
 
 **Default:**
 
-**API:** `com.gemstone.gemfire.cache.Region.create`, `put`, `get`, `putAll`, `getAll`
+**API:** `org.apache.geode.cache.Region.create`, `put`, `get`, `putAll`, `getAll`
 
 **Example:**
 
@@ -2403,7 +2403,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 ``` pre
 <parameter name="cacheserver">
   <declarable>
-    <class-name>com.gemstone.gemfire.addon.cache.CacheServerInitializer</class-name>
+    <class-name>org.apache.geode.addon.cache.CacheServerInitializer</class-name>
     <parameter name="system.property.prefix">
     <string>cacheserver</string>
     </parameter>
@@ -2446,7 +2446,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 ``` pre
 <parameter name="cacheserver">
   <declarable>
-    <class-name>com.gemstone.gemfire.addon.cache.CacheServerInitializer</class-name>
+    <class-name>org.apache.geode.addon.cache.CacheServerInitializer</class-name>
     <parameter name="system.property.prefix">
     <string>cacheserver</string>
     </parameter>
@@ -2460,7 +2460,7 @@ Defines a region in the cache. See [&lt;region-attributes&gt;](cache_xml.html#re
 
 **Default:**
 
-**API:** `com.gemstone.gemfire.cache.RegionFactory` or `com.gemstone.gemfire.cache.ClientRegionFactory`
+**API:** `org.apache.geode.cache.RegionFactory` or `org.apache.geode.cache.ClientRegionFactory`
 
 <a id="cc-ra-region__d93e5829"></a>
 
@@ -2520,7 +2520,7 @@ Specify the Java class for the function and its initialization parameters with t
 
 **Default:**
 
-**API:** `com.gemstone.gemfire.cache.execute.FunctionService`
+**API:** `org.apache.geode.cache.execute.FunctionService`
 
 **Example:**
 
@@ -2536,7 +2536,7 @@ Specify the Java class for the function and its initialization parameters with t
 
 A memory monitor that tracks cache size as a percentage of total heap or off-heap memory and controls size by restricting access to the cache and prompting eviction of old entries from the cache. For tenured heap, used in conjunction with settings for JVM memory and Java garbage collection. For off-heap memory, used with the off-heap memory manager.
 
-**API:** `com.gemstone.gemfire.cache.control.ResourceManager`
+**API:** `org.apache.geode.cache.control.ResourceManager`
 
 <a id="cc-resource-manager__d93e6336"></a>
 
@@ -2622,7 +2622,7 @@ Allows you to configure the DataSerializer for this Geode member. It registers a
 
 Specify the Java class for the `DataSerializer` and its initialization parameters with the `<class-name>` sub-element.
 
-**API:** You can also register a `DataSerializer` by using the `com.gemstone.gemfire.DataSerializer.register` API. Use the `com.gemstone.gemfire.Instantiator` API to register a `DataSerializable` implementation.
+**API:** You can also register a `DataSerializer` by using the `org.apache.geode.DataSerializer.register` API. Use the `org.apache.geode.Instantiator` API to register a `DataSerializable` implementation.
 
 ## <a id="cc-instantiator" class="no-quick-link"></a>&lt;instantiator&gt;
 
@@ -2632,7 +2632,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 **API:** `DataSerializable`
 
-You can also directly specify `<instantiator>` as a sub-element of `<cache>`. Use the `com.gemstone.gemfire.Instantiator` API to register a `DataSerializable` implementation as the serialization framework for the cache. The following table lists the attribute that can be specified for an `<instantiator>`.
+You can also directly specify `<instantiator>` as a sub-element of `<cache>`. Use the `org.apache.geode.Instantiator` API to register a `DataSerializable` implementation as the serialization framework for the cache. The following table lists the attribute that can be specified for an `<instantiator>`.
 
 <a id="cc-instantiator__d93e6596"></a>
 

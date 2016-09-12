@@ -60,7 +60,7 @@ When heap use passes the eviction threshold in either direction, the manager log
 
 When heap use exceeds the critical threshold, the manager logs an error-level message. Avoid exceeding the critical threshold. Once identified as critical, the Geode member becomes a read-only member that refuses cache updates for all of its regions, including incoming distributed updates.
 
-For more information, see `com.gemstone.gemfire.cache.control.ResourceManager` in the online API documentation.
+For more information, see `org.apache.geode.cache.control.ResourceManager` in the online API documentation.
 
 ## <a id="how_the_resource_manager_works__section_EA5E52E65923486488A71E3E6F0DE9DA" class="no-quick-link"></a>How Background Eviction Is Performed
 
@@ -97,7 +97,7 @@ For the members where you want to activate the resource manager:
 
 ## <a id="configuring_resource_manager__section_4949882892DA46F6BB8588FA97037F45" class="no-quick-link"></a>Configure Geode for Heap LRU Management
 
-The configuration terms used here are `cache.xml` elements and attributes, but you can also configure through `gfsh` and the `com.gemstone.gemfire.cache.control.ResourceManager` and `Region` APIs.
+The configuration terms used here are `cache.xml` elements and attributes, but you can also configure through `gfsh` and the `org.apache.geode.cache.control.ResourceManager` and `Region` APIs.
 
 1.  When starting up your server, set `initial-heap` and `max-heap` to the same value.
 
