@@ -69,6 +69,7 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
 import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.management.ManagementException;
 import com.gemstone.gemfire.test.dunit.Host;
@@ -481,7 +482,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableComponent.HTTP_SERVICE.getConstant());
+    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "SSL", props);
   }
@@ -495,7 +496,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableComponent.HTTP_SERVICE.getConstant());
+    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
     props.setProperty(SSL_HTTP_SERVICE_ALIAS, "httpservicekey");
     props.setProperty(SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION, "true");
     String restEndpoint = startInfraWithSSL(props, false);
@@ -511,7 +512,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableComponent.HTTP_SERVICE.getConstant());
+    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
     props.setProperty(SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION, "true");
     props.setProperty(SSL_HTTP_SERVICE_ALIAS, "httpservicekey");
     props.setProperty(INVALID_CLIENT_ALIAS, "someAlias");
@@ -526,7 +527,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_TRUSTSTORE, findTrustedJKSWithSingleEntry().getCanonicalPath());
     props.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
-    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableComponent.HTTP_SERVICE.getConstant());
+    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "SSL", props);
@@ -541,7 +542,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_PROTOCOLS, "SSL");
-    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableComponent.HTTP_SERVICE.getConstant());
+    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "SSL", props);
@@ -556,7 +557,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_PROTOCOLS, "TLS");
-    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableComponent.HTTP_SERVICE.getConstant());
+    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "TLS", props);
@@ -571,7 +572,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_PROTOCOLS, "TLSv1.1");
-    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableComponent.HTTP_SERVICE.getConstant());
+    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "TLSv1.1", props);
@@ -586,7 +587,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_PROTOCOLS, "TLSv1.2");
-    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableComponent.HTTP_SERVICE.getConstant());
+    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "TLSv1.2", props);
@@ -601,7 +602,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_PROTOCOLS, "SSL,TLSv1.2");
-    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableComponent.HTTP_SERVICE.getConstant());
+    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "TLSv1.2", props);
@@ -617,7 +618,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_PROTOCOLS, "TLSv1.2");
-    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableComponent.HTTP_SERVICE.getConstant());
+    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
 
     SSLContext ssl = SSLContext.getInstance("TLSv1.2");
 
@@ -639,7 +640,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_PROTOCOLS, "TLSv1.2");
-    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableComponent.HTTP_SERVICE.getConstant());
+    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
 
     SSLContext ssl = SSLContext.getInstance("TLSv1.2");
 
@@ -664,7 +665,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_PROTOCOLS, "SSL");
     props.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
     props.setProperty(SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION, "true");
-    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableComponent.HTTP_SERVICE.getConstant());
+    props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "SSL", props);

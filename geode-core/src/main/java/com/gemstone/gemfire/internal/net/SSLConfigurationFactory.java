@@ -28,7 +28,6 @@ import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.admin.SSLConfig;
 import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
-import com.gemstone.gemfire.internal.security.SecurableComponent;
 
 public class SSLConfigurationFactory {
 
@@ -163,10 +162,10 @@ public class SSLConfigurationFactory {
   }
 
   private boolean determineIfSSLEnabledForSSLComponent(final SecurableCommunicationChannel sslEnabledComponent) {
-    if (ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(), SecurableComponent.NONE)) {
+    if (ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(), SecurableCommunicationChannel.NONE)) {
       return false;
     }
-    if (ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(), SecurableComponent.ALL)) {
+    if (ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(), SecurableCommunicationChannel.ALL)) {
       return true;
     }
     return ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(), sslEnabledComponent) ? true : false;

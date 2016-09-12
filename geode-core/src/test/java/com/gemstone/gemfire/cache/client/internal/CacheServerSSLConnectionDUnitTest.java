@@ -38,6 +38,7 @@ import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
+import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
 import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
 import com.gemstone.gemfire.test.dunit.Host;
@@ -111,7 +112,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     String cacheServerSslciphers = "any";
     boolean cacheServerSslRequireAuth = true;
     if (!legacy) {
-      gemFireProps.put(SSL_ENABLED_COMPONENTS, SecurableComponent.CLUSTER + "," + SecurableComponent.SERVER);
+      gemFireProps.put(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.CLUSTER + "," + SecurableCommunicationChannel.SERVER);
       gemFireProps.put(SSL_PROTOCOLS, cacheServerSslprotocols);
       gemFireProps.put(SSL_CIPHERS, cacheServerSslciphers);
       gemFireProps.put(SSL_REQUIRE_AUTHENTICATION, String.valueOf(cacheServerSslRequireAuth));

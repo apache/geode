@@ -41,6 +41,7 @@ import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.internal.net.SocketCreator;
+import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
 import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
 
@@ -462,27 +463,27 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
    * This would mean one is mixing the "old" with the "new"
    */
   @ConfigAttributeChecker(name = SSL_ENABLED_COMPONENTS)
-  protected SecurableComponent[] checkLegacySSLWhenSSLEnabledComponentsSet(SecurableComponent[] value) {
-    for (SecurableComponent component : value) {
+  protected SecurableCommunicationChannel[] checkLegacySSLWhenSSLEnabledComponentsSet(SecurableCommunicationChannel[] value) {
+    for (SecurableCommunicationChannel component : value) {
       switch (component) {
         case ALL:
         case CLUSTER:
         case SERVER:
         case GATEWAY:
         case JMX:
-        case HTTP_SERVICE:
+        case WEB:
         case LOCATOR:
           continue;
         default:
           throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_0_INVALID_TRY_1.toLocalizedString(new Object[] {
             value, StringUtils.join(new String[] {
-            SecurableComponent.ALL.getConstant(),
-            SecurableComponent.CLUSTER.getConstant(),
-            SecurableComponent.SERVER.getConstant(),
-            SecurableComponent.GATEWAY.getConstant(),
-            SecurableComponent.JMX.getConstant(),
-            SecurableComponent.HTTP_SERVICE.getConstant(),
-            SecurableComponent.LOCATOR.getConstant()
+            SecurableCommunicationChannel.ALL.getConstant(),
+            SecurableCommunicationChannel.CLUSTER.getConstant(),
+            SecurableCommunicationChannel.SERVER.getConstant(),
+            SecurableCommunicationChannel.GATEWAY.getConstant(),
+            SecurableCommunicationChannel.JMX.getConstant(),
+            SecurableCommunicationChannel.WEB.getConstant(),
+            SecurableCommunicationChannel.LOCATOR.getConstant()
           }, ",")
           }));
       }

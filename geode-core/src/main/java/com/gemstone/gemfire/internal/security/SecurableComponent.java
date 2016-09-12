@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.internal.security;
 
-import org.springframework.util.StringUtils;
-
 import com.gemstone.gemfire.GemFireConfigException;
 import org.apache.geode.security.SecurableComponents;
 

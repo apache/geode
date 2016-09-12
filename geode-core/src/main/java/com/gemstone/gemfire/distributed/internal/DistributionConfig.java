@@ -4382,7 +4382,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS} property
    * @since Geode 1.0
    */
-  @ConfigAttribute(type = SecurableComponent[].class)
+  @ConfigAttribute(type = SecurableCommunicationChannel[].class)
   String SSL_ENABLED_COMPONENTS_NAME = SSL_ENABLED_COMPONENTS;
 
   /**

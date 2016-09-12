@@ -36,6 +36,7 @@ import org.junit.rules.TemporaryFolder;
 
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
 import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.CliUtil;
@@ -75,7 +76,7 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testConnectToLocatorWithSSL() throws Exception{
     Properties securityProps = new Properties();
-    securityProps.setProperty(SSL_ENABLED_COMPONENTS, SecurableComponent.LOCATOR.getConstant());
+    securityProps.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.LOCATOR.getConstant());
     securityProps.setProperty(SSL_KEYSTORE, jks.getCanonicalPath());
     securityProps.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     securityProps.setProperty(SSL_KEYSTORE_TYPE, "JKS");

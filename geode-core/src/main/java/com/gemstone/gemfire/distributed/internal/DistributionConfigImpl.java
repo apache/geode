@@ -960,27 +960,27 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         throw new InternalGemFireException("error invoking getter for property" + ConfigurationProperties.SSL_ENABLED_COMPONENTS);
       }
     }
-    SecurableComponent[] sslEnabledComponents = (SecurableComponent[]) value;
-    for (SecurableComponent sslEnabledComponent : sslEnabledComponents) {
-      if (!isAliasCorrectlyConfiguredForComponents(sslEnabledComponent)) {
+    SecurableCommunicationChannel[] sslEnabledComponents = (SecurableCommunicationChannel[]) value;
+    for (SecurableCommunicationChannel securableCommunicationChannel : sslEnabledComponents) {
+      if (!isAliasCorrectlyConfiguredForComponents(securableCommunicationChannel)) {
         throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_INVALID_ALIAS_OPTIONS.toLocalizedString());
       }
     }
 
   }
 
-  private boolean isAliasCorrectlyConfiguredForComponents(final SecurableComponent component) {
+  private boolean isAliasCorrectlyConfiguredForComponents(final SecurableCommunicationChannel component) {
     switch (component) {
       case ALL: {
         //If the default alias is not set, then check that all the other component aliases are set
         if (StringUtils.isEmpty(getSSLDefaultAlias())) {
           boolean correctAlias = true;
-          correctAlias &= isAliasCorrectlyConfiguredForComponents(SecurableComponent.CLUSTER);
-          correctAlias &= isAliasCorrectlyConfiguredForComponents(SecurableComponent.GATEWAY);
-          correctAlias &= isAliasCorrectlyConfiguredForComponents(SecurableComponent.HTTP_SERVICE);
-          correctAlias &= isAliasCorrectlyConfiguredForComponents(SecurableComponent.JMX);
-          correctAlias &= isAliasCorrectlyConfiguredForComponents(SecurableComponent.LOCATOR);
-          correctAlias &= isAliasCorrectlyConfiguredForComponents(SecurableComponent.SERVER);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SecurableCommunicationChannel.CLUSTER);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SecurableCommunicationChannel.GATEWAY);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SecurableCommunicationChannel.WEB);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SecurableCommunicationChannel.JMX);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SecurableCommunicationChannel.LOCATOR);
+          correctAlias &= isAliasCorrectlyConfiguredForComponents(SecurableCommunicationChannel.SERVER);
           return correctAlias;
         }
       }
@@ -990,7 +990,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
       case GATEWAY: {
         return StringUtils.isEmpty(getGatewaySSLAlias()) ? true : (getSecurableCommunicationChannels().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
       }
-      case HTTP_SERVICE: {
+      case WEB: {
         return StringUtils.isEmpty(getHTTPServiceSSLAlias()) ? true : (getSecurableCommunicationChannels().length > 1 ? !StringUtils.isEmpty(getSSLDefaultAlias()) : true);
       }
       case JMX: {
