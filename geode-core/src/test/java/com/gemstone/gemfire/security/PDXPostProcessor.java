@@ -18,7 +18,6 @@ package com.gemstone.gemfire.security;
 
 import static org.junit.Assert.*;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -38,7 +37,7 @@ public class PDXPostProcessor implements PostProcessor{
     count = 0;
   }
   @Override
-  public Object processRegionValue(final Serializable principal,
+  public Object processRegionValue(final Object principal,
                                    final String regionName,
                                    final Object key,
                                    final Object value) {

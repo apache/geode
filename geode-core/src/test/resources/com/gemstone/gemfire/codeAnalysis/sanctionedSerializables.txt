@@ -557,8 +557,8 @@ com/gemstone/gemfire/management/internal/cli/functions/CreateAsyncEventQueueFunc
 com/gemstone/gemfire/management/internal/cli/functions/CreateDefinedIndexesFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/CreateDiskStoreFunction,true,1
 com/gemstone/gemfire/management/internal/cli/functions/CreateIndexFunction,true,1
-com/gemstone/gemfire/management/internal/cli/functions/DataCommandFunction,true,1,optimizeForWrite:boolean,securityService:com/gemstone/gemfire/internal/security/SecurityService
-com/gemstone/gemfire/management/internal/cli/functions/DataCommandFunction$SelectExecStep,true,1,securityService:com/gemstone/gemfire/internal/security/SecurityService
+com/gemstone/gemfire/management/internal/cli/functions/DataCommandFunction,true,1,optimizeForWrite:boolean
+com/gemstone/gemfire/management/internal/cli/functions/DataCommandFunction$SelectExecStep,true,1
 com/gemstone/gemfire/management/internal/cli/functions/DataCommandFunction$SelectMoveStep,true,1
 com/gemstone/gemfire/management/internal/cli/functions/DataCommandFunction$SelectQuitStep,true,1
 com/gemstone/gemfire/management/internal/cli/functions/DeployFunction,true,1

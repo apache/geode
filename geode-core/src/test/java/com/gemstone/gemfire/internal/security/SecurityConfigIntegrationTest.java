@@ -35,6 +35,7 @@ public class SecurityConfigIntegrationTest {
 
   @Test
   public void securityEnabledComponentsDefaultShouldBeAll() throws Exception {
+    SecurityService securityService = SecurityService.getSecurityService();
     Properties props = new Properties();
     props.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
     props.put(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/security/templates/security.json");
@@ -45,12 +46,12 @@ public class SecurityConfigIntegrationTest {
     assertThat(securityProps).containsKeys(SECURITY_MANAGER, SECURITY_ENABLED_COMPONENTS);
     assertThat(securityProps.getProperty(SECURITY_ENABLED_COMPONENTS)).isEqualTo(SecurableComponents.ALL);
 
-    GeodeSecurityUtil.initSecurity(securityProps);
+    securityService.initSecurity(securityProps);
 
-    assertThat(GeodeSecurityUtil.isClientSecurityRequired());
-    assertThat(GeodeSecurityUtil.isGatewaySecurityRequired());
-    assertThat(GeodeSecurityUtil.isPeerSecurityRequired());
-    assertThat(GeodeSecurityUtil.isJmxSecurityRequired());
-    assertThat(GeodeSecurityUtil.isHttpServiceSecurityRequired());
+    assertThat(securityService.isClientSecurityRequired());
+    assertThat(securityService.isGatewaySecurityRequired());
+    assertThat(securityService.isPeerSecurityRequired());
+    assertThat(securityService.isJmxSecurityRequired());
+    assertThat(securityService.isHttpSecurityRequired());
   }
 }

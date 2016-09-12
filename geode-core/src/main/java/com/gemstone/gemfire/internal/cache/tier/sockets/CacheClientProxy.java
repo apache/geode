@@ -106,10 +106,8 @@ import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
 import com.gemstone.gemfire.internal.security.SecurityService;
-import com.gemstone.gemfire.internal.util.BlobHelper;
 import com.gemstone.gemfire.security.AccessControl;
 
 /**
@@ -1680,7 +1678,7 @@ public class CacheClientProxy implements ClientSession {
     // post process
     if(this.securityService.needPostProcess()) {
       Object oldValue = clientMessage.getValue();
-      Object newValue = GeodeSecurityUtil.postProcess(clientMessage.getRegionName(), clientMessage.getKeyOfInterest(), oldValue, clientMessage.valueIsObject());
+      Object newValue = IntegratedSecurityService.getSecurityService().postProcess(clientMessage.getRegionName(), clientMessage.getKeyOfInterest(), oldValue, clientMessage.valueIsObject());
       clientMessage.setLatestValue(newValue);
     }
 

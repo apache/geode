@@ -16,10 +16,10 @@
  */
 package com.gemstone.gemfire.internal.security;
 
-import java.io.Serializable;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
+import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 import org.apache.shiro.subject.Subject;
@@ -54,7 +54,7 @@ public interface SecurityService {
   void close();
   boolean needPostProcess();
   Object postProcess(String regionPath, Object key, Object value, boolean valueIsSerialized);
-  Object postProcess(Serializable principal, String regionPath, Object key, Object value, boolean valueIsSerialized);
+  Object postProcess(Object principal, String regionPath, Object key, Object value, boolean valueIsSerialized);
   boolean isClientSecurityRequired();
   boolean isJmxSecurityRequired();
   boolean isGatewaySecurityRequired();
@@ -62,16 +62,21 @@ public interface SecurityService {
   boolean isPeerSecurityRequired();
   boolean isIntegratedSecurity();
   SecurityManager getSecurityManager();
+  PostProcessor getPostProcessor();
 
   static <T> T getObjectOfType(String factoryName, Class<T> clazz) {
-    return GeodeSecurityUtil.getObjectOfType(factoryName, clazz);
+    return IntegratedSecurityService.getObjectOfType(factoryName, clazz);
   }
 
   static <T> T getObjectOfTypeFromFactoryMethod(String factoryMethodName, Class<T> expectedClazz) {
-    return GeodeSecurityUtil.getObjectOfTypeFromFactoryMethod(factoryMethodName, expectedClazz);
+    return IntegratedSecurityService.getObjectOfTypeFromFactoryMethod(factoryMethodName, expectedClazz);
   }
 
   static <T> T getObjectOfTypeFromClassName(String className, Class<T> expectedClazz) {
-    return GeodeSecurityUtil.getObjectOfTypeFromClassName(className, expectedClazz);
+    return IntegratedSecurityService.getObjectOfTypeFromClassName(className, expectedClazz);
+  }
+
+  static SecurityService getSecurityService(){
+    return IntegratedSecurityService.getSecurityService();
   }
 }

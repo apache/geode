@@ -22,11 +22,11 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.Properties;
 
 import org.apache.geode.security.ResourcePermission;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
 import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.security.GemFireSecurityException;
@@ -34,19 +34,23 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 /**
- * Integration tests for {@link GeodeSecurityUtil} using shiro.ini
+ * Integration tests for {@link IntegratedSecurityService} using shiro.ini
  */
 @Category({ IntegrationTest.class, SecurityTest.class })
-public class GeodeSecurityUtilWithIniFileJUnitTest {
+public class IntegratedSecurityServiceWithIniFileJUnitTest {
 
   protected static Properties props = new Properties();
 
-  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
+  private SecurityService securityService = SecurityService.getSecurityService();
 
   @BeforeClass
   public static void beforeClass() throws Exception{
     props.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
-    GeodeSecurityUtil.initSecurity(props);
+  }
+
+  @Before
+  public void before(){
+    securityService.initSecurity(props);
   }
 
   @Test

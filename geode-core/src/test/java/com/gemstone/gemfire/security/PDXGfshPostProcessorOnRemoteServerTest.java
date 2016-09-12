@@ -38,7 +38,7 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.CliUtil;
@@ -150,7 +150,7 @@ public class PDXGfshPostProcessorOnRemoteServerTest extends JUnit4DistributedTes
 
     CliUtil.isGfshVM = false;
     server.invoke(()-> {
-      PDXPostProcessor pp = (PDXPostProcessor) GeodeSecurityUtil.getPostProcessor();
+      PDXPostProcessor pp = (PDXPostProcessor) SecurityService.getSecurityService().getPostProcessor();
       // verify that the post processor is called 6 times. (5 for the query, 1 for the get)
       assertEquals(pp.getCount(), 6);
     });

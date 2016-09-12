@@ -46,6 +46,7 @@ public class CustomAuthRealm extends AuthorizingRealm {
    */
   public CustomAuthRealm(SecurityManager securityManager) {
     this.securityManager = securityManager;
+    setAuthenticationTokenClass(GeodeAuthenticationToken.class);
   }
 
   /**

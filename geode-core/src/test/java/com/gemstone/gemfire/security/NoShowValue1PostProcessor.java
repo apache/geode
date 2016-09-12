@@ -23,7 +23,7 @@ import org.apache.geode.security.PostProcessor;
 public class NoShowValue1PostProcessor implements PostProcessor {
 
   @Override
-  public Object processRegionValue(final Serializable principal,
+  public Object processRegionValue(final Object principal,
                                    final String regionName,
                                    final Object key,
                                    final Object value) {
