@@ -155,7 +155,7 @@ public class JGroupsMessengerJUnitTest {
     when(services.getMessenger()).thenReturn(messenger);
     
     String jgroupsConfig = messenger.getJGroupsStackConfig();
-    int startIdx = jgroupsConfig.indexOf("<com");
+    int startIdx = jgroupsConfig.indexOf("<org");
     int insertIdx = jgroupsConfig.indexOf('>', startIdx+4) + 1;
     jgroupsConfig = jgroupsConfig.substring(0, insertIdx) +
         "<"+InterceptUDP.class.getName()+"/>" +
