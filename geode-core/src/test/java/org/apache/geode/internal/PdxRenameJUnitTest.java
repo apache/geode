@@ -91,21 +91,21 @@ public class PdxRenameJUnitTest {
         region1.put("key1", new PdxValue(1));
         cache.close();
 
-        Collection<Object> renameResults = DiskStoreImpl.pdxRename(DS_NAME, new File[]{f}, "gemstone", "pivotal");
+        Collection<Object> renameResults = DiskStoreImpl.pdxRename(DS_NAME, new File[]{f}, "apache", "pivotal");
         assertEquals(2, renameResults.size());
         
         for(Object o : renameResults) {
           if(o instanceof PdxType) {
             PdxType t = (PdxType)o;
-            assertEquals("com.pivotal.gemfire.internal.PdxRenameJUnitTest$PdxValue", t.getClassName());
+            assertEquals("org.pivotal.geode.internal.PdxRenameJUnitTest$PdxValue", t.getClassName());
           } else {
             EnumInfo ei = (EnumInfo) o;
-            assertEquals("com.pivotal.gemfire.internal.PdxRenameJUnitTest$Day", ei.getClassName());
+            assertEquals("org.pivotal.geode.internal.PdxRenameJUnitTest$Day", ei.getClassName());
           }
         }
         Collection<PdxType> types = DiskStoreImpl.getPdxTypes(DS_NAME, new File[]{f});
         assertEquals(1, types.size());
-        assertEquals("com.pivotal.gemfire.internal.PdxRenameJUnitTest$PdxValue", types.iterator().next().getClassName());
+        assertEquals("org.pivotal.geode.internal.PdxRenameJUnitTest$PdxValue", types.iterator().next().getClassName());
 
       } finally {
         if (!cache.isClosed()) {

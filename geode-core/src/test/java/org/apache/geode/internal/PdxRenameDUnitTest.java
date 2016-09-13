@@ -122,16 +122,16 @@ public class PdxRenameDUnitTest  extends JUnit4CacheTestCase{
     
     vm1.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        Collection<Object> renameResults = DiskStoreImpl.pdxRename(DS_NAME, new File[]{f}, "gemstone", "pivotal");
+        Collection<Object> renameResults = DiskStoreImpl.pdxRename(DS_NAME, new File[]{f}, "apache", "pivotal");
         assertEquals(2, renameResults.size());
         
         for(Object o : renameResults) {
           if(o instanceof PdxType) {
             PdxType t = (PdxType)o;
-            assertEquals("com.pivotal.gemfire.internal.PdxRenameDUnitTest$PdxValue", t.getClassName());
+            assertEquals("org.pivotal.geode.internal.PdxRenameDUnitTest$PdxValue", t.getClassName());
           } else {
             EnumInfo ei = (EnumInfo) o;
-            assertEquals("com.pivotal.gemfire.internal.PdxRenameDUnitTest$Day", ei.getClassName());
+            assertEquals("org.pivotal.geode.internal.PdxRenameDUnitTest$Day", ei.getClassName());
           }
         }
         return null;
@@ -166,7 +166,7 @@ public class PdxRenameDUnitTest  extends JUnit4CacheTestCase{
         Region region1 = rf1.create("region1");
         PdxInstance v = (PdxInstance) region1.get("key1");
         assertNotNull(v);
-        assertEquals("com.pivotal.gemfire.internal.PdxRenameDUnitTest$PdxValue", ((PdxInstanceImpl)v).getClassName());
+        assertEquals("org.pivotal.geode.internal.PdxRenameDUnitTest$PdxValue", ((PdxInstanceImpl)v).getClassName());
         cache.close();
         return null;
       }

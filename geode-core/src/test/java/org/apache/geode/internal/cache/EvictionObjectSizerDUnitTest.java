@@ -173,10 +173,10 @@ public class EvictionObjectSizerDUnitTest extends JUnit4CacheTestCase {
 
     // Size of overhead= 49
     // Size of Integer key= 0(inlined)
-    // Size of TestObjectSizerImpl= 160 (serialized size)
+    // Size of TestObjectSizerImpl= 160 (serialized size), changed to 156 because package changed to org.apache.geode
     // Total Size of entry should be= 71
     putCustomizedData(1, new TestObjectSizerImpl());
-    int expected = (0+160+(Sizeable.PER_OBJECT_OVERHEAD*2)+((HeapLRUCapacityController)((PartitionedRegion)region).getEvictionController()).getPerEntryOverhead());
+    int expected = (0+156+(Sizeable.PER_OBJECT_OVERHEAD*2)+((HeapLRUCapacityController)((PartitionedRegion)region).getEvictionController()).getPerEntryOverhead());
     LogWriterUtils.getLogWriter().info("testObjectSizerForHeapLRU_CustomizedSizerObject expected= " + expected);
     assertEquals(expected, getSizeOfCustomizedData(1));
     assertEquals(expected, ((PartitionedRegion)region).getEvictionController()
@@ -192,10 +192,10 @@ public class EvictionObjectSizerDUnitTest extends JUnit4CacheTestCase {
 
     // Size of overhead= 49
     // Size of TestNonSizerObject key= 1(customized)
-    // Size of TestObjectSizerImpl= 160 (serialized size)
+    // Size of TestObjectSizerImpl= 160 (serialized size), changed to 156 because package changed to org.apache.geode
     // Total Size of entry should be= 72
     putCustomizedObjects(new TestNonSizerObject("1"), new TestObjectSizerImpl());
-    int expected = (1+160+(Sizeable.PER_OBJECT_OVERHEAD*2)+((HeapLRUCapacityController)((PartitionedRegion)region).getEvictionController()).getPerEntryOverhead());
+    int expected = (1+156+(Sizeable.PER_OBJECT_OVERHEAD*2)+((HeapLRUCapacityController)((PartitionedRegion)region).getEvictionController()).getPerEntryOverhead());
     LogWriterUtils.getLogWriter().info("testObjectSizerForHeapLRU_CustomizedSizerObjects expected= " + expected);
     assertEquals(expected, getSizeOfCustomizedObject(new TestNonSizerObject("1")));
     assertEquals(expected, ((PartitionedRegion)region).getEvictionController()

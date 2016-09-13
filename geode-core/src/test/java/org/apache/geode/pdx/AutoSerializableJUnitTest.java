@@ -1219,7 +1219,7 @@ public class AutoSerializableJUnitTest {
     setupSerializer(stdSerializableClasses);
     ChildFirstClassLoader cfcl = 
         new ChildFirstClassLoader(javaClassPathToUrl(), this.getClass().getClassLoader());
-    cfcl.addIncludedClass("com\\.gemstone.*");
+    cfcl.addIncludedClass("org\\.apache.*");
     // Need to exclude DomainObject as that is what the newly created objects
     // get cast to.
     cfcl.addExcludedClass(".*DomainObject");
