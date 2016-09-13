@@ -18,9 +18,7 @@ package com.gemstone.gemfire.internal.cache;
 
 import static org.junit.Assert.*;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -30,7 +28,7 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
+import com.gemstone.gemfire.distributed.*;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
@@ -56,6 +54,13 @@ public class Bug41733DUnitTest extends JUnit4CacheTestCase {
     disconnectAllFromDS();
   }
 
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION, "false");
+    return result;
+  }
+  
   /** 
    * Test the we can handle a member departing after creating
    * a bucket on the remote node but before we choose a primary

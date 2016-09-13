@@ -16,12 +16,14 @@
  */
 package com.gemstone.gemfire.test.dunit.standalone;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.internal.FileUtil;
-import org.apache.commons.io.FileUtils;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.rmi.AccessException;
@@ -33,7 +35,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import org.apache.commons.io.FileUtils;
+
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.internal.FileUtil;
 
 /**
  *
@@ -168,6 +174,11 @@ public class ProcessManager {
     cmds.add("-D" + DUnitLauncher.WORKSPACE_DIR_PARAM + "=" + new File(".").getAbsolutePath());
     if (vmNum >= 0) { // let the locator print a banner
       cmds.add("-D" + InternalLocator.INHIBIT_DM_BANNER + "=true");
+    } else {
+      // most distributed unit tests were written under the assumption that network partition
+      // detection is disabled, so we turn it off in the locator.  Tests for network partition
+      // detection should create a separate locator that has it enabled
+      cmds.add("-D"+DistributionConfig.GEMFIRE_PREFIX+ENABLE_NETWORK_PARTITION_DETECTION+"=false");
     }
     cmds.add("-D"+LOG_LEVEL+"=" + DUnitLauncher.logLevel);
     if (DUnitLauncher.LOG4J != null) {

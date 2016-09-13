@@ -529,6 +529,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
   public Properties getDistributedSystemProperties() {
     Properties p = super.getDistributedSystemProperties();
     p.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+    p.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
     return p;
   }
 

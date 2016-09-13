@@ -1590,7 +1590,7 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @ConfigAttribute(type = Boolean.class)
   String ENABLE_NETWORK_PARTITION_DETECTION_NAME = ENABLE_NETWORK_PARTITION_DETECTION;
-  boolean DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION = false;
+  boolean DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION = true;
 
   /**
    * Get the value of the

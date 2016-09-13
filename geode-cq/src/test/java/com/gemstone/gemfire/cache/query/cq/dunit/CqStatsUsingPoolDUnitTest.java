@@ -21,11 +21,12 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import com.gemstone.gemfire.distributed.*;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.Collection;
+import java.util.*;
 
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.query.CqException;
@@ -63,6 +64,13 @@ public class CqStatsUsingPoolDUnitTest extends JUnit4CacheTestCase {
   
   public CqStatsUsingPoolDUnitTest() {
     super();
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION, "false");
+    return result;
   }
 
   @Override

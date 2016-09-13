@@ -166,11 +166,6 @@ public class JGroupsMessenger implements Messenger {
     
 
     boolean b = dc.getEnableNetworkPartitionDetection();
-    if (b) {
-      if (!SocketCreator.FORCE_DNS_USE) {
-        SocketCreator.resolve_dns = false;
-      }
-    }
     System.setProperty("jgroups.resolve_dns", String.valueOf(!b));
 
     InputStream is;

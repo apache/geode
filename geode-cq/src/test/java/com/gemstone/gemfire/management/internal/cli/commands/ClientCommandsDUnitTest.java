@@ -795,6 +795,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
   protected Properties getServerProperties() {
     Properties p = new Properties();
     p.setProperty(LOCATORS, "localhost[" + getDUnitLocatorPort() + "]");
+    p.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
     return p;
   }
 

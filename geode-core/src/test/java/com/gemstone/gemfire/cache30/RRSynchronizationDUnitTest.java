@@ -21,6 +21,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import java.util.*;
+
+import com.gemstone.gemfire.distributed.*;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
@@ -50,6 +53,13 @@ public class RRSynchronizationDUnitTest extends JUnit4CacheTestCase {
 
   public RRSynchronizationDUnitTest() {
     super();
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION, "false");
+    return result;
   }
 
   @Test

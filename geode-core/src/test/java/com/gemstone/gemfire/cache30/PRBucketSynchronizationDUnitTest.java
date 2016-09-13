@@ -21,13 +21,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import com.gemstone.gemfire.distributed.*;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -35,7 +35,6 @@ import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
@@ -75,6 +74,13 @@ public class PRBucketSynchronizationDUnitTest extends JUnit4CacheTestCase {
 
   public PRBucketSynchronizationDUnitTest() {
     super();
+  }
+  
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION, "false");
+    return result;
   }
 
   @Test

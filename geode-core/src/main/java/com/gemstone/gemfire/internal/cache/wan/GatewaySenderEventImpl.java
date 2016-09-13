@@ -751,7 +751,7 @@ public class GatewaySenderEventImpl implements
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     short version = in.readShort();
     if (version != VERSION) {
-      // warning?
+      // warning?`
     }
     this.isInitialized = true;
     this.action = in.readInt();

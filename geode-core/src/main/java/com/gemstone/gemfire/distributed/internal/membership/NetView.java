@@ -39,7 +39,6 @@ import com.gemstone.gemfire.internal.Version;
  * 
  * @since GemFire 5.5
  */
-@SuppressWarnings("SynchronizeOnNonFinalField")
 public class NetView implements DataSerializableFixedID {
 
   private int viewId;
@@ -51,6 +50,7 @@ public class NetView implements DataSerializableFixedID {
   private Set<InternalDistributedMember> crashedMembers;
   private InternalDistributedMember creator;
   private Set<InternalDistributedMember> hashedMembers;
+  private final Object membersLock = new Object();
   static public final Random RANDOM = new Random();
 
   
@@ -286,7 +286,7 @@ public class NetView implements DataSerializableFixedID {
   }
 
   public InternalDistributedMember getCoordinator() {
-    synchronized (members) {
+    synchronized (membersLock) {
       for (InternalDistributedMember addr : members) {
         if (addr.getNetMember().preferredForCoordinator()) {
           return addr;
@@ -307,7 +307,7 @@ public class NetView implements DataSerializableFixedID {
     if (rejections == null) {
       return getCoordinator();
     }
-    synchronized (members) {
+    synchronized (membersLock) {
       for (InternalDistributedMember addr : members) {
         if (addr.getNetMember().preferredForCoordinator() && !rejections.contains(addr)) {
           return addr;
@@ -337,7 +337,7 @@ public class NetView implements DataSerializableFixedID {
     List<InternalDistributedMember> results = new ArrayList<>();
     List<InternalDistributedMember> notPreferredCoordinatorList = new ArrayList<>();
 
-    synchronized (members) {
+    synchronized (membersLock) {
       for (InternalDistributedMember addr : members) {
         if (addr.equals(localAddress)) {
           continue;// this is must to add

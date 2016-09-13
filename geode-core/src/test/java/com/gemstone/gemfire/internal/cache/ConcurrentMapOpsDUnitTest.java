@@ -23,8 +23,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Ignore;
@@ -72,6 +71,13 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
   private static final int MAX_ENTRIES = 113;
   
   enum OP {PUTIFABSENT, REPLACE, REMOVE}
+  
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
+    return result;
+  }
   
   private void createRegions(VM vm) {
     vm.invoke(new SerializableCallable() {

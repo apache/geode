@@ -415,7 +415,7 @@ public interface ConfigurationProperties {
    * <U>Description</U>: Turns on network partitioning detection algorithms, which
    * detect loss of quorum and shuts down losing partitions.
    * </p>
-   * <U>Default</U>: "false"
+   * <U>Default</U>: "true"
    */
   String ENABLE_NETWORK_PARTITION_DETECTION = "enable-network-partition-detection";
   /**

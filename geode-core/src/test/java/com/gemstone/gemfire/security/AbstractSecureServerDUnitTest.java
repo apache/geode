@@ -36,6 +36,7 @@ import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.distributed.*;
 import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
@@ -57,6 +58,7 @@ public class AbstractSecureServerDUnitTest extends JUnit4CacheTestCase {
   protected int jmxPort = 0;
   protected int restPort = 0;
   protected Map<String, Object> values;
+  protected volatile Properties dsProperties;
 
   public AbstractSecureServerDUnitTest(){
     values = new HashMap();
@@ -96,6 +98,10 @@ public class AbstractSecureServerDUnitTest extends JUnit4CacheTestCase {
       props.setProperty(HTTP_SERVICE_PORT, restPort+"");
     }
 
+    props.put(ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION, "false");
+    
+    this.dsProperties = props;
+
     getSystem(props);
 
     CacheFactory cf = new CacheFactory();
@@ -117,6 +123,11 @@ public class AbstractSecureServerDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Override
+  public Properties getDistributedSystemProperties() {
+    return dsProperties;
+  }
+
+  @Override
   public void preTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(()->closeCache());
     closeCache();
@@ -130,6 +141,7 @@ public class AbstractSecureServerDUnitTest extends JUnit4CacheTestCase {
     Properties props = new Properties();
     props.setProperty(UserPasswordAuthInit.USER_NAME, userName);
     props.setProperty(UserPasswordAuthInit.PASSWORD, password);
+    props.setProperty(LOG_LEVEL, "fine");
     props.setProperty(LOCATORS, "");
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName() + ".create");

@@ -287,7 +287,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
 
   public static final void disconnectAllFromDS() {
     disconnectFromDS();
-    Invoke.invokeInEveryVM(()->disconnectFromDS());
+    Invoke.invokeInEveryVM("disconnectFromDS", ()->disconnectFromDS());
   }
 
   /**

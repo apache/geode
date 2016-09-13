@@ -201,7 +201,7 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
       System.out.println("Response : " + httpResponseString);
       //verify function execution result
       JSONArray resultArray = new JSONArray(httpResponseString);
-      assertEquals(resultArray.length(), expectedServerResponses);
+      assertEquals(expectedServerResponses, resultArray.length());
     } catch (Exception e) {
       //fail("exception", e);
     }

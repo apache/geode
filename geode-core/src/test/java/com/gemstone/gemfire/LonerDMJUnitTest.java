@@ -60,6 +60,7 @@ public class LonerDMJUnitTest {
     cfg.setProperty(MCAST_PORT, "0");
     cfg.setProperty(LOCATORS, "");
     cfg.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
+    cfg.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
 
     for (int i=0; i < 2; i++) {
       start = System.currentTimeMillis();
@@ -114,6 +115,7 @@ public class LonerDMJUnitTest {
     cfg.setProperty(LOCATORS, "");
     cfg.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
     cfg.setProperty(STATISTIC_ARCHIVE_FILE, "lonerStats.gfs");
+    cfg.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
 
     for (int i=0; i < 1; i++) {
       start = System.currentTimeMillis();
@@ -167,6 +169,7 @@ public class LonerDMJUnitTest {
     cfg.setProperty(LOCATORS, "");
     cfg.setProperty(ROLES, "lonelyOne");
     cfg.setProperty(NAME, name);
+    cfg.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
     DistributedSystem ds = DistributedSystem.connect(cfg);
     System.out.println("MemberId = " + ds.getMemberId());
     assertEquals(host.toString(), ds.getDistributedMember().getHost());

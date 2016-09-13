@@ -39,9 +39,8 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.ServerConnectivityException;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DurableClientAttributes;
-import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.distributed.*;
+import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
@@ -95,7 +94,14 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   public final void postTearDownCacheTestCase() throws Exception {
     InternalClientMembership.unregisterAllListeners();
   }
-  
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION, "false");
+    return result;
+  }
+
   /**
    * Tests wrapping of BridgeMembershipEvent fired as MembershipEvent.
    */
@@ -429,6 +435,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
         Properties config = new Properties();
         config.setProperty(MCAST_PORT, "0");
         config.setProperty(LOCATORS, "");
+        config.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
         getSystem(config);
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
@@ -1840,6 +1847,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, "0");
     config.setProperty(LOCATORS, "");
+//    config.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
     getSystem(config);
         
     getLogWriter().info("[testServerEventsInLonerClient] create system bridge client");
@@ -1881,7 +1889,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     
     // gather details for later creation of pool...
     assertEquals(ports[0],
-                 (int) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getTestServerEventsInLonerClient_port()));
+                 (int) vm0.invoke("getServerPort", () -> UniversalMembershipListenerAdapterDUnitTest.getTestServerEventsInLonerClient_port()));
 
     getLogWriter().info("[testServerEventsInLonerClient] ports[0]=" + ports[0]);
     getLogWriter().info("[testServerEventsInLonerClient] serverMemberId=" + serverMemberId);
