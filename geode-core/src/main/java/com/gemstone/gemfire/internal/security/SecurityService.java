@@ -31,6 +31,7 @@ public interface SecurityService {
 
   ThreadState bindSubject(Subject subject);
   Subject getSubject();
+  Subject login(Properties credentials);
   Subject login(String username, String password);
   void logout();
   Callable associateWith(Callable callable);

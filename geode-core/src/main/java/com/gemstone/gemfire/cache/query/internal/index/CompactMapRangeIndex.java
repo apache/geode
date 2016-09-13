@@ -125,6 +125,13 @@ public class CompactMapRangeIndex extends AbstractMapIndex
   protected void doIndexAddition(Object mapKey, Object indexKey, Object value,
       RegionEntry entry) throws IMQException
   {
+    if (indexKey == null) {
+      indexKey = IndexManager.NULL;
+    }
+    if(mapKey == null) {
+      mapKey = IndexManager.NULL;
+    }
+
     boolean isPr = this.region instanceof BucketRegion;
     // Get RangeIndex for it or create it if absent
     CompactRangeIndex rg = (CompactRangeIndex)this.mapKeyToValueIndex.get(mapKey);
@@ -168,6 +175,10 @@ public class CompactMapRangeIndex extends AbstractMapIndex
     if (indexKey == null) {
       indexKey = IndexManager.NULL;
     }
+    if(mapKey == null) {
+      mapKey = IndexManager.NULL;
+    }
+
     boolean isPr = this.region instanceof BucketRegion;
     // Get RangeIndex for it or create it if absent
     CompactRangeIndex rg = (CompactRangeIndex) this.mapKeyToValueIndex.get(mapKey);

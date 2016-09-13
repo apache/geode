@@ -19,6 +19,7 @@ package com.gemstone.gemfire.modules.session.catalina;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.LifecycleState;
+import org.apache.catalina.session.StandardSession;
 import org.apache.catalina.util.LifecycleSupport;
 
 import java.io.IOException;
@@ -144,4 +145,9 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
   public void removeLifecycleListener(LifecycleListener listener) {
     this.lifecycle.removeLifecycleListener(listener);
   }
+
+  protected StandardSession getNewSession() {
+    return new DeltaSession7(this);
+  }
+
 }

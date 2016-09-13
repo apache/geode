@@ -86,7 +86,7 @@ public class CompactRangeIndexJUnitTest  {
   public void testNullKeyCompactRangeIndex() throws Exception {
     index = utils.createIndex("indexName", "status", "/exampleRegion");
     Region region = utils.getCache().getRegion("exampleRegion");
-   
+
     //create objects
     int numObjects = 10;
     for (int i = 1; i <= numObjects; i++) {
@@ -97,6 +97,52 @@ public class CompactRangeIndexJUnitTest  {
     //execute query and check result size
     QueryService qs = utils.getCache().getQueryService();
     SelectResults results = (SelectResults) qs.newQuery("Select * from /exampleRegion r where r.status = null").execute();
+    assertEquals("Null matched Results expected", numObjects, results.size());
+  }
+
+  /**
+   * Tests adding entries to compact range index where the the key
+   * of an indexed map field is null.
+   */
+  @Test
+  public void testNullMapKeyCompactRangeIndex() throws Exception {
+    index = utils.createIndex("indexName", "positions[*]", "/exampleRegion");
+    Region region = utils.getCache().getRegion("exampleRegion");
+
+    //create objects
+    int numObjects = 10;
+    for (int i = 1; i <= numObjects; i++) {
+      Portfolio p = new Portfolio(i);
+      p.status = null;
+      p.getPositions().put(null, "something");
+      region.put("KEY-"+ i, p);
+    }
+    //execute query and check result size
+    QueryService qs = utils.getCache().getQueryService();
+    SelectResults results = (SelectResults) qs.newQuery("Select * from /exampleRegion r where r.position[null] = something").execute();
+    assertEquals("Null matched Results expected", numObjects, results.size());
+  }
+
+  /**
+   * Tests adding entries to compact range index where the the key
+   * of an indexed map field is null.
+   */
+  @Test
+  public void testNullMapKeyCompactRangeIndexCreateIndexLater() throws Exception {
+    Region region = utils.getCache().getRegion("exampleRegion");
+
+    //create objects
+    int numObjects = 10;
+    for (int i = 1; i <= numObjects; i++) {
+      Portfolio p = new Portfolio(i);
+      p.status = null;
+      p.getPositions().put(null, "something");
+      region.put("KEY-"+ i, p);
+    }
+    index = utils.createIndex("indexName", "positions[*]", "/exampleRegion");
+    //execute query and check result size
+    QueryService qs = utils.getCache().getQueryService();
+    SelectResults results = (SelectResults) qs.newQuery("Select * from /exampleRegion r where r.position[null] = something").execute();
     assertEquals("Null matched Results expected", numObjects, results.size());
   }
 

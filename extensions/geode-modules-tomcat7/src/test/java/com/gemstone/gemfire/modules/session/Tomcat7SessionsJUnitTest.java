@@ -16,9 +16,17 @@
 */
 package com.gemstone.gemfire.modules.session;
 
+import static org.junit.Assert.assertEquals;
+
 import com.gemstone.gemfire.modules.session.catalina.Tomcat7DeltaSessionManager;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
+import com.meterware.httpunit.GetMethodWebRequest;
+import com.meterware.httpunit.WebConversation;
+import com.meterware.httpunit.WebRequest;
+import com.meterware.httpunit.WebResponse;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
@@ -28,5 +36,37 @@ public class Tomcat7SessionsJUnitTest extends TestSessionsBase {
   @BeforeClass
   public static void setupClass() throws Exception {
     setupServer(new Tomcat7DeltaSessionManager());
+  }
+
+  /**
+   * Test setting the session expiration
+   */
+  @Test
+  @Override
+  public void testSessionExpiration1() throws Exception {
+    // TestSessions only live for a minute
+    sessionManager.getTheContext().setSessionTimeout(1);
+
+    String key = "value_testSessionExpiration1";
+    String value = "Foo";
+
+    WebConversation wc = new WebConversation();
+    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
+
+    // Set an attribute
+    req.setParameter("cmd", QueryCommand.SET.name());
+    req.setParameter("param", key);
+    req.setParameter("value", value);
+    WebResponse response = wc.getResponse(req);
+
+    // Sleep a while
+    Thread.sleep(65000);
+
+    // The attribute should not be accessible now...
+    req.setParameter("cmd", QueryCommand.GET.name());
+    req.setParameter("param", key);
+    response = wc.getResponse(req);
+
+    assertEquals("", response.getText());
   }
 }

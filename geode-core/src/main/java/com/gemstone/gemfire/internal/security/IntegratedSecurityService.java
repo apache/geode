@@ -60,6 +60,11 @@ public class IntegratedSecurityService implements SecurityService, Serializable 
   }
 
   @Override
+  public Subject login(final Properties credentials) {
+    return GeodeSecurityUtil.login(credentials);
+  }
+
+  @Override
   public Subject login(final String username, final String password) {
     return GeodeSecurityUtil.login(username, password);
   }

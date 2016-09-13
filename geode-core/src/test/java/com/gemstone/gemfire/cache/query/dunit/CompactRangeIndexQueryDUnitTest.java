@@ -16,39 +16,27 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
-import static com.gemstone.gemfire.internal.cache.execute.DistributedRegionFunctionExecutionDUnitTest.region;
-import static java.rmi.activation.ActivationGroup.getSystem;
 import static org.junit.Assert.*;
 
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.query.Query;
 import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.QueryTestUtils;
 import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.data.PortfolioPdx;
-import com.gemstone.gemfire.cache.query.internal.ResultsSet;
-import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
-import com.gemstone.gemfire.cache.query.internal.index.IndexManager.TestHook;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
@@ -88,4 +76,29 @@ public class CompactRangeIndexQueryDUnitTest extends JUnit4CacheTestCase {
     assertEquals( numMatching, rs.size());
   }
 
+  @Test
+  public void whenAuxFilterWithAnIterableFilterShouldNotCombineFiltersIntoAndJunction() throws Exception {
+    Cache cache = getCache();
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("ExampleRegion");
+    QueryService qs = cache.getQueryService();
+    qs.createIndex("ExampleRegionIndex", "er['codeNumber','origin']", "/ExampleRegion er");
+
+    for (int i = 0; i < 10; i++) {
+      Map<String, Object> data = new HashMap<String, Object>();
+      data.put("codeNumber", 1);
+      if ((i % 3) == 0) {
+        data.put("origin", "src_common");
+      } else {
+        data.put("origin", "src_" + i);
+      }
+      data.put("attr", "attrValue");
+      data.put("country", "JPY");
+
+      region.put(String.valueOf(i), data);
+    }
+
+    Query q = qs.newQuery("select * from /ExampleRegion E where E['codeNumber']=1 and E['origin']='src_common' and (E['country']='JPY' or E['ccountrycy']='USD')");
+    SelectResults rs = (SelectResults) q.execute();
+    assertEquals( 4, rs.size());
+  }
 }

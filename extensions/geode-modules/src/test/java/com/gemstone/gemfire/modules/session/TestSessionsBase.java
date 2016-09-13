@@ -48,9 +48,9 @@ public abstract class TestSessionsBase {
 
   private static StandardWrapper servlet;
 
-  private static DeltaSessionManager sessionManager;
+  protected static DeltaSessionManager sessionManager;
 
-  private static int port;
+  protected static int port;
 
   // Set up the servers we need
   public static void setupServer(DeltaSessionManager manager) throws Exception {

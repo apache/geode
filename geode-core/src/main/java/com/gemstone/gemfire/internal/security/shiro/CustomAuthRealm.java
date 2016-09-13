@@ -25,14 +25,12 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
-import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 
 import com.gemstone.gemfire.internal.security.SecurityService;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 
 public class CustomAuthRealm extends AuthorizingRealm {
 
@@ -63,21 +61,10 @@ public class CustomAuthRealm extends AuthorizingRealm {
 
   @Override
   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
-    UsernamePasswordToken authToken = (UsernamePasswordToken) token;
-    String username = authToken.getUsername();
-    String password = new String(authToken.getPassword());
+    GeodeAuthenticationToken authToken = (GeodeAuthenticationToken) token;
+    Object principal  = securityManager.authenticate(authToken.getProperties());
+    return new SimpleAuthenticationInfo(principal, authToken.getCredentials(), REALM_NAME);
 
-    Properties credentialProps = new Properties();
-    credentialProps.put(ResourceConstants.USER_NAME, username);
-    credentialProps.put(ResourceConstants.PASSWORD, password);
-
-    Object principal  = securityManager.authenticate(credentialProps);
-
-    try {
-      return new SimpleAuthenticationInfo(principal, authToken.getPassword(), REALM_NAME);
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("failed for " + username + " " + password, e);
-    }
   }
 
   @Override

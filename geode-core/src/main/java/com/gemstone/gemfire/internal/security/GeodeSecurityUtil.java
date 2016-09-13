@@ -32,11 +32,11 @@ import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.SecurableComponents;
 import org.apache.geode.security.SecurityManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.ShiroException;
-import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.config.Ini.Section;
 import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.mgt.DefaultSecurityManager;
@@ -47,14 +47,15 @@ import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.util.ThreadState;
 
 import com.gemstone.gemfire.GemFireIOException;
-import org.apache.geode.security.SecurableComponents;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.ClassLoadUtil;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.security.shiro.CustomAuthRealm;
+import com.gemstone.gemfire.internal.security.shiro.GeodeAuthenticationToken;
 import com.gemstone.gemfire.internal.security.shiro.ShiroPrincipal;
 import com.gemstone.gemfire.internal.util.BlobHelper;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
@@ -118,27 +119,44 @@ public class GeodeSecurityUtil {
   }
 
   /**
+   * convenient method for testing
+   * @param username
+   * @param password
+   * @return
+   */
+  public static Subject login(String username, String password){
+    if(StringUtils.isBlank(username) || StringUtils.isBlank(password))
+      return null;
+
+    Properties credentials = new Properties();
+    credentials.setProperty(ResourceConstants.USER_NAME, username);
+    credentials.setProperty(ResourceConstants.PASSWORD, password);
+    return login(credentials);
+  }
+
+  /**
    * @return null if security is not enabled, otherwise return a shiro subject
    */
-  public static Subject login(String username, String password) {
+  public static Subject login(Properties credentials) {
     if (!isIntegratedSecurity) {
       return null;
     }
+
+    if(credentials == null)
+      return null;
 
     // this makes sure it starts with a clean user object
     ThreadContext.remove();
 
     Subject currentUser = SecurityUtils.getSubject();
-
-    UsernamePasswordToken token =
-      new UsernamePasswordToken(username, password);
+    GeodeAuthenticationToken token = new GeodeAuthenticationToken(credentials);
     try {
-      logger.info("Logging in " + username);
+      logger.info("Logging in " + token.getPrincipal());
       currentUser.login(token);
     }
     catch (ShiroException e) {
       logger.info(e.getMessage(), e);
-      throw new AuthenticationFailedException("Authentication error. Please check your username/password.", e);
+      throw new AuthenticationFailedException("Authentication error. Please check your credentials.", e);
     }
 
     return currentUser;

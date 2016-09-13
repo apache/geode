@@ -155,3 +155,4 @@ org/apache/geode/security/ResourcePermission$Operation
 org/apache/geode/security/ResourcePermission$Resource
 com/gemstone/gemfire/distributed/internal/tcpserver/LocatorCancelException
 com.gemstone.gemfire.internal.security.SecurableCommunicationChannel
+com/gemstone/gemfire/internal/security/shiro/GeodeAuthenticationToken
