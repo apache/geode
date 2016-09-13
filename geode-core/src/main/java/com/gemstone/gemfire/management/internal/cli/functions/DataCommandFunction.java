@@ -63,7 +63,6 @@ import com.gemstone.gemfire.internal.InternalEntity;
 import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
 import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.CliUtil;
@@ -99,7 +98,8 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
   protected static final String SELECT_STEP_EXEC = "SELECT_EXEC";
   private static final int NESTED_JSON_LENGTH = 20;
 
-  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
+  // this needs to be static so that it won't get serialized
+  private static SecurityService securityService = SecurityService.getSecurityService();
 
   @Override
   public String getId() {
@@ -223,7 +223,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
   }
   
   @SuppressWarnings("rawtypes")
-  private DataCommandResult select(Serializable principal, String queryString) {
+  private DataCommandResult select(Object principal, String queryString) {
 
     Cache cache = CacheFactory.getAnyInstance();
     AtomicInteger nestedObjectCount = new AtomicInteger(0);
@@ -423,7 +423,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
   }
   
   @SuppressWarnings({ "rawtypes" })
-  public DataCommandResult get(Serializable principal, String key, String keyClass, String valueClass, String regionName, Boolean loadOnCacheMiss) {
+  public DataCommandResult get(Object principal, String key, String keyClass, String valueClass, String regionName, Boolean loadOnCacheMiss) {
     
     Cache cache = CacheFactory.getAnyInstance();
     
@@ -879,7 +879,7 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
     
     private static final long serialVersionUID = 1L;
 
-    private SecurityService securityService = IntegratedSecurityService.getSecurityService();
+    private static SecurityService securityService = SecurityService.getSecurityService();
 
     public SelectExecStep(Object[] arguments) {
       super(SELECT_STEP_EXEC, arguments);

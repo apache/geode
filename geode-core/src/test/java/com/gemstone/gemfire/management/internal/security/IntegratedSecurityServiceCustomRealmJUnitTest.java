@@ -22,18 +22,17 @@ import org.apache.geode.security.templates.SampleSecurityManager;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
 /**
- * Integration tests for {@link GeodeSecurityUtil} using shiro-ini.json.
+ * Integration tests for {@link IntegratedSecurityService} using shiro-ini.json.
  *
- * @see GeodeSecurityUtilWithIniFileJUnitTest
+ * @see IntegratedSecurityServiceWithIniFileJUnitTest
  */
 @Category({ IntegrationTest.class, SecurityTest.class })
-public class GeodeSecurityUtilCustomRealmJUnitTest extends GeodeSecurityUtilWithIniFileJUnitTest {
+public class IntegratedSecurityServiceCustomRealmJUnitTest extends IntegratedSecurityServiceWithIniFileJUnitTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {

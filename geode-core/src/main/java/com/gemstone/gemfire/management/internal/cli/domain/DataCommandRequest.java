@@ -46,7 +46,7 @@ public class DataCommandRequest implements /*Data*/ Serializable{
   private String removeAllKeys;
   private String value;
   private String valueClass;
-  private Serializable principal;
+  private Object principal;
 
   public static final String NEW_LINE = System.getProperty("line.separator");
 
@@ -136,7 +136,7 @@ public class DataCommandRequest implements /*Data*/ Serializable{
   public boolean isLoadOnCacheMiss() {
     return loadOnCacheMiss;
   }
-  public Serializable getPrincipal() {
+  public Object getPrincipal() {
     return principal;
   }
 
@@ -184,7 +184,7 @@ public class DataCommandRequest implements /*Data*/ Serializable{
     this.loadOnCacheMiss = loadOnCacheMiss;
   }
 
-  public void setPrincipal(Serializable principal){
+  public void setPrincipal(Object principal){
     this.principal = principal;
   }
 

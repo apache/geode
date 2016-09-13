@@ -56,10 +56,10 @@ import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
 import com.gemstone.gemfire.internal.net.SSLConfigurationFactory;
 import com.gemstone.gemfire.internal.net.SocketCreator;
 import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
 import com.gemstone.gemfire.internal.security.shiro.JMXShiroAuthenticator;
 import com.gemstone.gemfire.internal.tcp.TCPConduit;
@@ -496,7 +496,7 @@ public class ManagementAgent {
 
 
   private boolean isIntegratedSecurity() {
-    return GeodeSecurityUtil.isJmxSecurityRequired();
+    return IntegratedSecurityService.getSecurityService().isJmxSecurityRequired();
   }
 
   private static class GemFireRMIClientSocketFactory implements RMIClientSocketFactory, Serializable {

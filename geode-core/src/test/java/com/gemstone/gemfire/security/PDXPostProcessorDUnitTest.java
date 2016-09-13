@@ -41,7 +41,7 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
@@ -97,7 +97,7 @@ public class PDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
     });
 
     // this makes sure PostProcessor is getting called
-    PDXPostProcessor pp = (PDXPostProcessor) GeodeSecurityUtil.getPostProcessor();
+    PDXPostProcessor pp = (PDXPostProcessor) SecurityService.getSecurityService().getPostProcessor();
     assertEquals(pp.getCount(), 2);
   }
 
@@ -132,7 +132,7 @@ public class PDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
     });
 
     // this makes sure PostProcessor is getting called
-    PDXPostProcessor pp = (PDXPostProcessor) GeodeSecurityUtil.getPostProcessor();
+    PDXPostProcessor pp = (PDXPostProcessor) SecurityService.getSecurityService().getPostProcessor();
     assertEquals(pp.getCount(), 2);
   }
 
@@ -175,7 +175,7 @@ public class PDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
 
     // wait for events to fire
     Awaitility.await().atMost(1, TimeUnit.SECONDS);
-    PDXPostProcessor pp = (PDXPostProcessor) GeodeSecurityUtil.getPostProcessor();
+    PDXPostProcessor pp = (PDXPostProcessor) SecurityService.getSecurityService().getPostProcessor();
     assertEquals(pp.getCount(), 2);
   }
 
@@ -226,7 +226,7 @@ public class PDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
       System.out.println("gfsh result: " + result);
     });
 
-    PDXPostProcessor pp = (PDXPostProcessor) GeodeSecurityUtil.getPostProcessor();
+    PDXPostProcessor pp = (PDXPostProcessor) SecurityService.getSecurityService().getPostProcessor();
     assertEquals(pp.getCount(), 4);
   }
 

@@ -42,7 +42,7 @@ import com.gemstone.gemfire.cache.query.CqResults;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.internal.cq.CqListenerImpl;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.SecurityService;
 import com.gemstone.gemfire.pdx.SimpleClass;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
@@ -109,7 +109,7 @@ public class CQPDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
 
     // wait for events to fire
     Awaitility.await().atMost(1, TimeUnit.SECONDS);
-    PDXPostProcessor pp = (PDXPostProcessor) GeodeSecurityUtil.getPostProcessor();
+    PDXPostProcessor pp = (PDXPostProcessor) SecurityService.getSecurityService().getPostProcessor();
     assertEquals(pp.getCount(), 2);
   }
 
